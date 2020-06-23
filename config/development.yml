@@ -1,0 +1,18 @@
+#
+# Created on Tue May 12 2020
+#
+# @Auther:- Parth Virani
+# Copyright (c) 2020 Oneclick
+# my variables are ${myvar1} and ${myvar2}
+#
+
+db:
+    type: "postgres"
+    port: 5432
+    username: "postgres"
+    host: "localhost"
+    database: "laytravel"
+    synchronize: true
+
+jwt:
+    secret: 'topSecret51'

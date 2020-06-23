@@ -1,0 +1,10 @@
+#
+# Created on Tue May 12 2020
+#
+# @Auther:- Parth Virani
+# Copyright (c) 2020 Oneclick
+# my variables are ${myvar1} and ${myvar2}
+#
+
+db:
+    synchronize: false
