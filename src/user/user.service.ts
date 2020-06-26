@@ -38,7 +38,7 @@ export class UserService {
 
 
     async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
-        await this.userRepository.changePassword(changePasswordDto, userId);
+        return await this.userRepository.changePassword(changePasswordDto, userId);
     }
 
 

@@ -1,7 +1,7 @@
-import { Controller, Post, Body, UseGuards, Patch, UnauthorizedException, Param, ParseIntPipe, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiTags, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../entity/user.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -9,7 +9,6 @@ import { ListUserDto } from './dto/list-user.dto';
 import { OrderByEnum } from './orderby.enum';
 import { OrderByPipe } from './pipes/orderBy.pipes'
 import { GetUser } from 'src/auth/get-user.dacorator';
-import { CreateUserDto } from 'src/auth/dto/crete-user.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -50,21 +49,24 @@ export class UserController {
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 400, description: 'Bad Request or API error message' })
     async getUserData(
-        @Param('id', ParseIntPipe) userId: number
+        @Param('id') userId: number
     ): Promise<User> {
         return await this.userService.getUserData(userId);
     }
 
     @Put('change-password')
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiOperation({ summary: "Change user password" })
+    @ApiResponse({ status: 200, description: "Api success, [Logged out successfully]" })
+	@ApiResponse({ status: 401, description: "Please login to continue." })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "User Details not found!, [Invalid user id! Please enter correct user id]" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
     async changePassword(
         @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
         @GetUser() user: User,
-    ): Promise<void> {
+    ){
         const userId = user.userId
-        await this.userService.changePassword(changePasswordDto, userId);
+        return await this.userService.changePassword(changePasswordDto, userId);
     }
 
 

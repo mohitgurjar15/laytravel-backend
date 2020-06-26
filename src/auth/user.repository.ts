@@ -16,18 +16,16 @@ export class UserRepository extends Repository<User>
         const {
             email,
             password,
-            firstName,
-            lastName,
-            middleName,
+            first_name,
+            last_name,
             } = createUserDto;
 
         const salt = await bcrypt.genSalt();
         const user = new User();
         console.table(user)
         user.email = email;
-        user.firstName = firstName;
-        user.middleName = middleName || '';
-        user.lastName = lastName;
+        user.firstName = first_name;
+        user.lastName = last_name;
         user.salt = salt;
         user.createdDate = new Date();
         user.updatedDate = new Date();
@@ -91,31 +89,30 @@ export class UserRepository extends Repository<User>
     }
 
     async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
-        const { oldPassword, newPassword } = changePasswordDto;
+        const { old_password,password } = changePasswordDto;
 
         const user = await this.findOne({
-            where: { user_id: userId, isDeleted: 0 }
+            where: { userId: userId, isDeleted: 0 }
         });
 
-        if (await user.validatePassword(oldPassword)) {
+        if (await user.validatePassword(old_password)) {
             const salt = await bcrypt.genSalt();
             user.salt = salt;
-            user.password = await this.hashPassword(newPassword, salt);
+            user.password = await this.hashPassword(password, salt);
             user.updatedDate = new Date();
             user.updatedBy = user;
 
         }
         else {
-            throw new UnauthorizedException('Given Old Password Is Wrong')
+            throw new BadRequestException(`Your old password doesn't match.&&&old_pasword`)
         }
 
         try {
-            await user.save();
+             await user.save();
+             return { message : `Your password is updated successfully.`}
         }
         catch (error) {
-
             throw new InternalServerErrorException(error.sqlMessage);
-
         }
     }
 

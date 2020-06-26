@@ -1,94 +1,66 @@
-import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, IsDate } from 'class-validator'
+import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEqualTo } from "../password.decorator";
 
 export class CreateUserDto {
 
-    @IsNotEmpty()
-    @MaxLength(25)
-    @ApiProperty({
-        description: 'Enter First Name',
-        example: 'Jon'
+    @IsNotEmpty({
+        message : `Please enter your first name.&&&first_name`
     })
-    firstName: string;
-
     @ApiProperty({
-        description: 'Enter Middle Name',
-        example: 'K'
+        description: `Enter First Name`,
+        example: `Jon`
     })
-    middleName: string;
+    first_name: string;
 
-    @IsNotEmpty()
-    @MaxLength(25)
-    @ApiProperty({
-        description: 'Enter Last Name',
-        example: 'Doe'
+    @IsNotEmpty({
+        message : `Please enter your last name.&&&last_name`
     })
-    lastName: string;
-
-    @IsNotEmpty()
-    @IsEmail()
     @ApiProperty({
-        description: 'Enter Email Id',
-        example: 'jon.doe@gmail.com'
+        description: `Enter Last Name`,
+        example: `Doe`
+    })
+    last_name: string;
+
+    @IsEmail(
+		{},
+		{
+			message: (args: ValidationArguments) => {
+				if (typeof args.value == "undefined" || args.value == "") {
+					return `Please enter your email address.&&&email`;
+				} else {
+					return `Please Enter valid email address.&&&email`;
+				}
+			},
+		},
+	)
+    @ApiProperty({
+        description: `Enter Email Id`,
+        example: `jon.doe@gmail.com`
     })
     email: string;
 
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'Enter Password',
-        example: 'Jon@Doe'
+    @IsNotEmpty({
+        message : `Please enter your password.&&&password`
     })
-    @MinLength(8)
+    @ApiProperty({
+        description: `Enter Password`,
+        example: `Jondoe123@`
+    })
     @MaxLength(20)
-    @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, { message: 'Password Too weak' })
-    password: string;
+	@MinLength(8, { message: `Password is too short. It should be minimum 8 characters.&&&password` })
+	@Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+		message: `Your password must be 8 characters long, should contain at least 1 uppercase, 1 lowercase, 1 numeric or special character.&&&password`,
+	})
+	password: string;
 
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'profile Picture Url',
-        example: 'ex.jpg'
-    })
-    profilePic: string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'gender',
-        example: 'f'
-    })
-    gender: string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'Country',
-        example: 'india'
-    })
-    country: string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'State',
-        example: 'guj'
-    })
-    state: string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'city',
-        example: 'ahmbdabad'
-    })
-    city: string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'Address',
-        example: 'ploat :av at b flore'
-    })
-    address: string;
-
-    @IsNotEmpty()
-    @ApiProperty({
-        description: 'profile Picture Url',
-        example: '345434'
-    })
-    zipCode: string;
+	@ApiProperty({
+		description: `Enter confirm password`,
+		example: `Jondoe123@`,
+	})
+	@IsEqualTo(`password`)
+	@IsNotEmpty({
+		message: `Please enter your confirm password.&&&confirm_password`,
+	})
+	confirm_password: string;
 }

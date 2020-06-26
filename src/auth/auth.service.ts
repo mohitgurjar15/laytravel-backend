@@ -6,7 +6,7 @@
  * my variables are ${myvar1} and ${myvar2}
  */
 
-import { Injectable, ConflictException, InternalServerErrorException, UnauthorizedException, NotFoundException, RequestTimeoutException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
@@ -23,8 +23,12 @@ import { forgetPass } from './forget-Pass.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { forget_password } from 'src/entity/forget-password.entity';
 import { ForgetPassWordRepository } from './forget-password.repository';
-import { Exception, escapeExpression } from 'handlebars';
-
+import { v4 as uuidv4 } from "uuid";
+import { NewPasswordDto } from './dto/new-password.dto';
+import { errorMessage } from 'src/config/common.config';
+import { MobileAuthCredentialDto } from './dto/mobile-auth-credentials.dto';
+import { UserDeviceDetail } from 'src/entity/user-device-detail.entity';
+import * as md5 from "md5";
 
 @Injectable()
 export class AuthService {
@@ -39,47 +43,51 @@ export class AuthService {
 
     async signUp(createUser: CreateUserDto): Promise<User> {
 
-        const { firstName,
-            middleName,
-            lastName,
+        const { first_name,
+            last_name,
             email,
-            password,
-            profilePic,
-            gender,
-            country,
-            state,
-            city,
-            address,
-            zipCode } = createUser;
+            password
+        } = createUser;
 
-        const salt = await bcrypt.genSalt();
+        const userExist =await this.userRepository.findOne({
+            email : email
+        })
+
+        console.log(userExist)
+        if(userExist)
+            throw new ConflictException(`This email address is already registered with us. Please enter different email address .`);
+    
         const user = new User();
+        const salt = await bcrypt.genSalt();
+        user.userId = uuidv4();
+        user.accountType=1;
         user.email = email;
-        user.firstName = firstName;
-        user.middleName = middleName || '';
-        user.lastName = lastName;
+        user.firstName = first_name;
+        user.lastName = last_name;
         user.salt = salt;
         user.createdDate = new Date();
         user.updatedDate = new Date();
+        user.socialAccountId="";
+        user.phoneNo="";
+        user.profilePic="";
+        user.timezone="";
+        user.status=1;
+        user.middleName="";
+        user.zipCode="";
         user.password = await this.hashPassword(password, salt);
-        user.profilePic = profilePic;
         /* user.gender = gender;
         user.country = country;
         user.state = state;
         user.city = city;
         user.address = address */
-        user.zipCode = zipCode
 
         try {
             await user.save();
         } catch (error) {
-            if (error.code == 'ER_DUP_ENTRY') {
-                throw new ConflictException('Email Id Used');
-            }
-            else {
-                throw new InternalServerErrorException(error.sqlMessage);
-            }
+            
+            throw new InternalServerErrorException(error.sqlMessage);
         }
+
         delete user.password;
         delete user.salt;
         return user;
@@ -111,14 +119,13 @@ export class AuthService {
                 state: user.state,
                 city: user.city,
                 address: user.address, */
-                zipCode: user.zipCode,
             };
             const accessToken = this.jwtService.sign(payload);
             const token = { token: accessToken };
             return token
         }
         else {
-            throw new UnauthorizedException("Invalid Credentials")
+            throw new UnauthorizedException(`Invalid login credentials! Please enter correct email id and password.`)
         }
 
     }
@@ -127,34 +134,36 @@ export class AuthService {
         const { email } = forgetPasswordDto;
         const user = await this.userRepository.findOne({ email });
         if (!user) {
-            throw new NotFoundException('Given Email Not Ragister');
+            throw new NotFoundException(`Email is not registered with us. Please check the email.`);
         }
 
 
         var unixTimestamp = Math.round(new Date().getTime() / 1000);
-        console.log('time:' + unixTimestamp);
 
         const tokenhash = crypto.createHmac('sha256', unixTimestamp.toString()).digest('hex');
-        console.log('token===>' + tokenhash);
 
         const payload: forgetPass = {
             email,
             tokenhash
         };
         const forgetPassToken = this.jwtService.sign(payload);
-        console.log(forgetPassToken);
-        const resetLink = 'http://localhost:3000/v1/auth/forget-password?token=' + forgetPassToken + '&newPassword=1Boss67-';
+        const resetLink = `http://localhost:4040/v1/auth/forget-password?token=${forgetPassToken}`;
         this.mailerService.sendMail({
-            to: 'viraniparth00001@gmail.com',
-            from: 'rajnee@itoneclick.com',
-            subject: 'Forgot password',
-            template: 'forgotEmail.html',
-            context: {  // Data to be sent to template files.
-                username: email,
+            to: email,
+            from: "vaibhav@itoneclick.com",
+            subject: "Forgot Password",
+            template: "forgotEmail.html",
+            context: {
+                // Data to be sent to template files.
+                username: user.firstName + " " + user.lastName,
                 link: resetLink,
-            }
-        }).then(() => { })
-            .catch(() => { });
+            },
+        }).then((res) => {
+            console.log("res", res);
+        })
+        .catch((err) => {
+            console.log("err", err);
+        });
 
 
         const row = new forget_password();
@@ -167,49 +176,122 @@ export class AuthService {
         try {
             await row.save();
         } catch (error) {
-            throw new InternalServerErrorException(error.sqlMessage);
+            throw new InternalServerErrorException(`Oops. Something went wrong. Please try again.`);
         }
-        return user;
+        const token = { message: `Link sent to your email address successfully.`};
+        console.log(token)
+		return token;
     }
 
-    async updatePassword(updatePasswordDto: UpdatePasswordDto) {
-        const { token, newPassword } = updatePasswordDto;
+    async updatePassword(updatePasswordDto: UpdatePasswordDto, newPasswordDto: NewPasswordDto) {
+		const { token } = updatePasswordDto;
+		const { new_password } = newPasswordDto;
+		var decoded = jwt_decode(token);
+		const { email, tokenhash, iat } = decoded;
+		const unixTimestamp = Math.round(new Date().getTime() / 1000);
+		const time = unixTimestamp - iat;
+		if (time >= 900) {
+			throw new BadRequestException(`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`);
+		}
+		const user = await this.userRepository.findOne({
+			where: { email: email, isDeleted: 0, status: 1 },
+		});
+		if (!user) {
+			throw new NotFoundException(`Email is not registered with us. Please check the email.&&&email`);
+		}
 
-        var decoded = jwt_decode(token);
-        console.log(decoded)
-        const { email, tokenhash, iat } = decoded
-        const unixTimestamp = Math.round(new Date().getTime() / 1000);
-        const time = unixTimestamp - iat;
-        if (time >= 900) {
-            throw new RequestTimeoutException('Token Is Expire Please Try Again')
-        }
-        const user = await this.userRepository.findOne({
-            where: { email: email, isDeleted: 0 }
-        });
-        if (!user) {
-            throw new NotFoundException('email not Found')
-        }
-
-        const validToken = await this.forgetPasswordRepository.findOne({
-            where: { email: email, is_used: 0 }
-        });
-        if (validToken && validToken.validateToken(tokenhash)) {
-            const salt = await bcrypt.genSalt();
-            user.salt = salt;
-            user.password = await this.hashPassword(newPassword, salt);
-            validToken.is_used = 1;
-            validToken.updateTime = new Date();
-            try {
-                await user.save();
-                await validToken.save()
-            }
-            catch (error) {
-                throw new InternalServerErrorException(error.sqlMessage);
-            }
-        }
-        else {
-            throw new BadRequestException('error while update Password:- Token Can Not Validate')
-        }
+		const validToken = await this.forgetPasswordRepository.findOne({
+			where: { email: email, is_used: 0, token: token },
+		});
+		if (validToken && validToken.validateToken(tokenhash)) {
+			const salt = await bcrypt.genSalt();
+			user.salt = salt;
+			user.password = await this.hashPassword(new_password, salt);
+			validToken.is_used = 1;
+			validToken.updateTime = new Date();
+			try {
+				await user.save();
+				await validToken.save();
+				const res = { message: `Your Password has been succesfully updated`};
+				return res;
+			} catch (error) {
+				throw new InternalServerErrorException(`${error.sqlMessage}&&& &&&` + errorMessage);
+			}
+		} else {
+			throw new BadRequestException(`Token Can not be validate.&&&token&&&${errorMessage}`);
+		}
     }
+    
+    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto) {
+		const { email, password, device_type, device_token, app_version, os_version } = mobileAuthCredentialDto;
+		const user = await this.userRepository.findOne({ email});
+
+		if (user && (await user.validatePassword(password))) {
+			let dateObj = new Date();
+			let newToken = md5(dateObj);
+
+			let device = new UserDeviceDetail();
+			device.deviceType = device_type;
+			device.deviceToken = device_token;
+			device.accessToken = newToken;
+			device.appVersion = app_version;
+			device.osVersion = os_version;
+			device.createdDate = new Date();
+			device.user = user;
+			// Remove old entries of this user
+			await UserDeviceDetail.delete({
+				user: user,
+			});
+
+			try {
+				// Save Latest entry
+				await device.save();
+
+				const payload: JwtPayload = {
+					user_id: user.userId,
+                    firstName: user.firstName,
+                    middleName:"",
+                    profilePic:"",
+					lastName: user.lastName,
+					email,
+					salt: user.salt,
+					accessToken: newToken,
+				};
+
+				const accessToken = this.jwtService.sign(payload);
+
+				const token = {
+					user_details: {
+						access_token: accessToken,
+						id: user.userId,
+						first_name: user.firstName,
+						last_name: user.lastName,
+						email: user.email,
+						//profilePic: user.profilePic != "" ? `${siteUrl.url}${user.profilePic}` : "",
+					},
+				};
+
+				return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
+			} catch (error) {
+				throw new InternalServerErrorException(`Oops. Something went wrong. Please try again.`);
+			}
+		} else {
+			throw new NotFoundException(`Invalid login credentials! Please enter correct email address and password.`);
+		}
+    }
+    
+    async logout(id: string): Promise<any> {
+		try {
+			const user = await this.userRepository.findOne({ userId:id});
+			if (!user) {
+				throw new NotFoundException(`Invalid user id! Please enter correct user id&&&user_id&&&${errorMessage}`);
+			}
+			await UserDeviceDetail.delete({ user: user });
+			const userData = { message: `Logged out successfully.`};
+			return userData;
+		} catch (error) {
+			throw new NotFoundException(`Invalid user id! Please enter correct user id.&&&user_id&&&${errorMessage}`);
+		}
+	}
 
 }

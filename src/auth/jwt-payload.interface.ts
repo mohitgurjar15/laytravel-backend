@@ -6,10 +6,5 @@ export interface JwtPayload {
     email: string;
     salt: string;
     profilePic: string;
-    /* gender: string;
-    country: string;
-    state: string;
-    city: string;
-    address: string; */
-    zipCode: string;
+	accessToken?: string;
 }

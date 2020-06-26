@@ -11,6 +11,7 @@ import { Booking } from "./booking.entity";
 import { UserCard } from "./user-card.entity";
 import * as bcrypt from "bcrypt";
 import { Module } from "./module.entity";
+import { UserDeviceDetail } from "./user-device-detail.entity";
 
 
 //@Index("user_pk", ["userId"], { unique: true })
@@ -110,6 +111,12 @@ export class User extends BaseEntity {
     module => module.updatedBy
   )
   modules: Module[];
+
+  @OneToMany(
+		() => UserDeviceDetail,
+		(userDeviceDetail) => userDeviceDetail.user,
+	)
+	userDeviceDetails: UserDeviceDetail[];
 
   async validatePassword(password: string): Promise<boolean> {
 		const hash = await bcrypt.hash(password, this.salt);
