@@ -28,6 +28,7 @@ import { NewPasswordDto } from './dto/new-password.dto';
 import { errorMessage } from 'src/config/common.config';
 import { MobileAuthCredentialDto } from './dto/mobile-auth-credentials.dto';
 import { UserDeviceDetail } from 'src/entity/user-device-detail.entity';
+import { SocialLoginDto } from './dto/social-login.dto'
 import * as md5 from "md5";
 
 @Injectable()
@@ -294,4 +295,135 @@ export class AuthService {
 		}
 	}
 
+    async socialLogin(socialLoginDto:SocialLoginDto){
+
+        const { 
+                account_type, 
+                social_account_id, 
+                email,
+                name,
+                device_type,
+                device_token,
+                app_version,
+                os_version
+
+            } = socialLoginDto;
+        
+        let conditions=[];
+        conditions.push({socialAccountId:social_account_id})
+        if(email){
+
+            conditions.push({email:email})
+        }
+        
+        const userExist =await this.userRepository.findOne({
+            where : conditions
+        })
+
+        const user = new User();
+        user.email = email || "";
+        user.firstName = name || "";
+        
+        if(!userExist){
+            user.userId = uuidv4();
+            user.accountType=account_type;
+            user.lastName = "";
+            user.salt = "";
+            user.createdDate = new Date();
+            user.updatedDate = new Date();
+            user.socialAccountId=social_account_id;
+            user.phoneNo="";
+            user.profilePic="";
+            user.timezone="";
+            user.status=1;
+            user.middleName="";
+            user.zipCode="";
+            user.password = "";
+            
+            try {
+                await user.save();
+            } catch (error) {
+                
+                throw new InternalServerErrorException(error.sqlMessage);
+            }
+        }
+        else{
+
+            try{
+                const user1 = { email : email || "", firstName: name || ""}
+                await this.userRepository.update({socialAccountId:social_account_id},user1);
+            }
+            catch(error){
+                throw new InternalServerErrorException(error.sqlMessage);
+            }
+        }
+
+        const userDetail =await this.userRepository.findOne({
+            where : conditions
+        })
+
+        let dateObj = new Date();
+        let newToken = md5(dateObj);
+
+        let device = new UserDeviceDetail();
+        device.deviceType = device_type;
+        device.deviceToken = device_token || "";
+        device.accessToken = newToken;
+        device.appVersion = app_version;
+        device.osVersion = os_version;
+        device.createdDate = new Date();
+        device.user = userDetail;
+        // Remove old entries of this user
+        await UserDeviceDetail.delete({
+            user: userDetail,
+        });
+
+        try {
+            // Save Latest entry
+            await device.save();
+
+            const payload: JwtPayload = {
+                user_id: userDetail.userId,
+                firstName: userDetail.firstName,
+                middleName:"",
+                profilePic:"",
+                lastName: userDetail.lastName || "",
+                email:email || "",
+                salt: "",
+                accessToken: newToken,
+            };
+
+            const accessToken = this.jwtService.sign(payload);
+
+            const token = {
+                user_details: {
+                    access_token: accessToken,
+                    id: userDetail.userId,
+                    first_name: userDetail.firstName,
+                    last_name: userDetail.lastName || "",
+                    email: userDetail.email || "",
+                    //profilePic: user.profilePic != "" ? `${siteUrl.url}${user.profilePic}` : "",
+                },
+            };
+
+            return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
+        } catch (error) {
+            throw new InternalServerErrorException(errorMessage);
+        }
+    }
+
+    async getProfile(user){
+
+        const userId = user.userId;
+        try{
+            const userDetail = await this.userRepository.findOne({
+                select : ["userId","firstName","lastName","email","phoneNo","profilePic"],
+                where : {userId}
+            })
+            return userDetail;
+        }
+        catch(error){
+            throw new InternalServerErrorException(errorMessage)
+        }   
+    }
 }
