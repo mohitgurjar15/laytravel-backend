@@ -5,11 +5,13 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  OneToMany
 } from "typeorm";
 import { Airline } from "./airline.entity";
 import { Airport } from "./airport.entity";
 import { Flight } from "./flight.entity";
+import { SeatAllocation } from "./seat-allocation.entity";
 
 //@Index("flight_route_pk", ["id"], { unique: true })
 @Entity("flight_route")
@@ -65,4 +67,10 @@ export class FlightRoute extends BaseEntity {
   )
   @JoinColumn([{ name: "flight_id", referencedColumnName: "id" }])
   flight: Flight;
+
+  @OneToMany(
+    () => SeatAllocation,
+    seatAllocation => seatAllocation.route
+  )
+  seatAllocations: SeatAllocation[];
 }

@@ -32,7 +32,7 @@ export class AuthController {
     @Post('/signup')
     @ApiOperation({ summary: "Signup frontend user" })
     @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 400, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not found!' })
     @ApiResponse({ status: 409, description: 'User Already Exist' })
     @ApiResponse({ status: 500, description: 'Internal server error!' })
@@ -47,7 +47,7 @@ export class AuthController {
     @Post(['signin'])
     @ApiOperation({ summary: "Web Sign in without using social media" })
     @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 400, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
     @ApiResponse({ status: 404, description: 'Not found!' })
     @ApiResponse({ status: 409, description: 'User Already Exist' })
@@ -94,7 +94,7 @@ export class AuthController {
     @Post('forget-password')
     @ApiOperation({ summary: "Forgot password of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 400, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not found!' })
     @ApiResponse({ status: 409, description: 'User Already Exist' })
     @ApiResponse({ status: 500, description: 'Internal server error!' })
@@ -102,7 +102,7 @@ export class AuthController {
     async forgetPassword(
         @Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto
     ) {
-        await this.authService.forgetPassword(forgetPasswordDto);
+        return await this.authService.forgetPassword(forgetPasswordDto);
     }
 
     @ApiOperation({ summary: "Reset password of user" })

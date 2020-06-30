@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEqualTo } from "../password.decorator";
+import { Gender } from 'src/enum/gender.enum';
 
 export class CreateUserDto {
 
@@ -62,5 +63,14 @@ export class CreateUserDto {
 	@IsNotEmpty({
 		message: `Please enter your confirm password.&&&confirm_password`,
 	})
-	confirm_password: string;
+    confirm_password: string;
+    
+    @IsNotEmpty({
+        message : `Please select your grnder.&&&gender`
+    })
+    @ApiProperty({
+        description: `Select Gender (M,F)`,
+        example: `M`
+    })
+    gender : Gender
 }

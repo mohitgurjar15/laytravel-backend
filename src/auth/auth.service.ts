@@ -47,7 +47,8 @@ export class AuthService {
         const { first_name,
             last_name,
             email,
-            password
+            password,
+            gender
         } = createUser;
 
         const userExist =await this.userRepository.findOne({
@@ -76,8 +77,8 @@ export class AuthService {
         user.middleName="";
         user.zipCode="";
         user.password = await this.hashPassword(password, salt);
-        /* user.gender = gender;
-        user.country = country;
+        user.gender = gender;
+        /*user.country = country;
         user.state = state;
         user.city = city;
         user.address = address */

@@ -59,6 +59,9 @@ export class User extends BaseEntity {
   @Column("integer", { name: "status" })
   status: number;
 
+  @Column("character varying", { name :"gender", length:10, nullable : true})
+  gender:string
+
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
 

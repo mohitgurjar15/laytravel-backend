@@ -5,9 +5,11 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  OneToMany
 } from "typeorm";
 import { Flight } from "./flight.entity";
+import { SeatAllocation } from "./seat-allocation.entity";
 
 //@Index("seat_plan_pk", ["id"], { unique: true })
 @Entity("seat_plan")
@@ -26,6 +28,12 @@ export class SeatPlan extends BaseEntity {
 
   @Column("boolean", { name: "is_enabled", default: () => "true" })
   isEnabled: boolean;
+
+  @OneToMany(
+    () => SeatAllocation,
+    seatAllocation => seatAllocation.seat
+  )
+  seatAllocations: SeatAllocation[];
 
   @ManyToOne(
     () => Flight,

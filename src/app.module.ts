@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import * as config from 'config';
 import {  MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { FlightModule } from './flight/flight.module';
 
 const mailConfig = config.get('email');
 
@@ -37,6 +38,7 @@ const mailConfig = config.get('email');
         },
       },
     }),
+    FlightModule,
   ],
  
 })

@@ -23,8 +23,8 @@ jwt:
 
 email:
     host: "smtpout.secureserver.net"
-    user: "rajnee@itoneclick.com"
-    pass: "Oneclick1@2!3#"
+    user: "suresh@itoneclick.com"
+    pass: "Oneclick1@"
     port: 465
     secure: true
 

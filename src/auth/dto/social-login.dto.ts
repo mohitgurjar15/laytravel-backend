@@ -9,7 +9,7 @@ export class SocialLoginDto {
 	})
 	@ApiProperty({
 		description: `Account type (Facebook(1), google(2) or Apple(3))`,
-		example: `1`,
+		example: 1,
 	})
 	account_type : number
 
