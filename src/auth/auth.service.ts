@@ -44,18 +44,17 @@ export class AuthService {
 
     async signUp(createUser: CreateUserDto): Promise<User> {
 
-        const { first_name,
-            last_name,
-            email,
-            password,
-            gender
+        const { 
+            first_name,last_name,
+            email,password,
+            gender,
+            signup_via, device_type, device_token, os_version, app_version
         } = createUser;
 
         const userExist =await this.userRepository.findOne({
             email : email
         })
 
-        console.log(userExist)
         if(userExist)
             throw new ConflictException(`This email address is already registered with us. Please enter different email address .`);
     
@@ -92,7 +91,76 @@ export class AuthService {
 
         delete user.password;
         delete user.salt;
-        return user;
+
+        let accessToken;
+        if(signup_via=='mobile'){
+            let dateObj = new Date();
+            let newToken = md5(dateObj);
+
+            let device = new UserDeviceDetail();
+            device.deviceType = device_type;
+            device.deviceToken = device_token;
+            device.accessToken = newToken;
+            device.appVersion = app_version;
+            device.osVersion = os_version;
+            device.createdDate = new Date();
+            device.user = user;
+            // Remove old entries of this user
+            await UserDeviceDetail.delete({
+                user: user,
+            });
+
+            try {
+                // Save Latest entry
+                await device.save();
+
+                const payload: JwtPayload = {
+                    user_id: user.userId,
+                    firstName: user.firstName,
+                    middleName:"",
+                    profilePic:"",
+                    lastName: user.lastName,
+                    email,
+                    salt: user.salt,
+                    accessToken: newToken,
+                };
+
+                accessToken = this.jwtService.sign(payload);
+
+            } catch (error) {
+                throw new InternalServerErrorException(`Oops. Something went wrong. Please try again.`);
+            }
+        }
+        else{
+            const payload: JwtPayload = {
+                user_id: user.userId,
+                email,
+                firstName: user.firstName,
+                middleName: user.middleName,
+                lastName: user.lastName,
+                salt: user.salt,
+                profilePic: user.profilePic,
+                /* gender: user.gender,
+                country: user.country,
+                state: user.state,
+                city: user.city,
+                address: user.address, */
+            };
+            accessToken = this.jwtService.sign(payload);
+        }
+
+        let userDetails= Object.create(null);
+        userDetails.userId = user.userId;
+        userDetails.email = user.email;
+        userDetails.firstName = user.firstName;
+        userDetails.middleName = user.middleName;
+        userDetails.lastName = user.lastName;
+        userDetails.phoneNo = user.phoneNo;
+        userDetails.profilePic = user.profilePic;
+        userDetails.gender = user.gender;
+        userDetails.token = accessToken;
+        
+        return userDetails;
     }
 
     hashPassword(password: string, salt: string): Promise<string> {
@@ -115,12 +183,7 @@ export class AuthService {
                 middleName: user.middleName,
                 lastName: user.lastName,
                 salt: user.salt,
-                profilePic: user.profilePic,
-                /* gender: user.gender,
-                country: user.country,
-                state: user.state,
-                city: user.city,
-                address: user.address, */
+                profilePic: user.profilePic
             };
             const accessToken = this.jwtService.sign(payload);
             const token = { token: accessToken };

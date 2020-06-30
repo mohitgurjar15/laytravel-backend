@@ -1,11 +1,14 @@
-import { IsNotEmpty, IsEmail, ValidationArguments, ValidateIf, isNotEmpty } from "class-validator";
+import { IsNotEmpty, IsEmail, ValidationArguments, ValidateIf, IsEnum } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
 
 export class SocialLoginDto {
 
 	@IsNotEmpty({
-		message : `Please enter account type`
+		message : `Please enter account type&&&account_type&&&${errorMessage}`
+	})
+	@IsEnum([1,2,3],{
+		message : `Please enter valid account type.&&&account_type&&&${errorMessage}`
 	})
 	@ApiProperty({
 		description: `Account type (Facebook(1), google(2) or Apple(3))`,
@@ -15,7 +18,7 @@ export class SocialLoginDto {
 
 	@ValidateIf(o => o.account_type === 1 || o.account_type === 2)
 	@IsNotEmpty({
-		message : `Please enter your user name&&&name`
+		message : `Please enter your user name.&&&name`
 	})
 	@ApiProperty({
 		description: `User Name`,
@@ -44,7 +47,7 @@ export class SocialLoginDto {
 	email: string;
 
 	@ApiProperty({
-		description: `Account id return by social media account&&&social_account_id`,
+		description: `Account id return by social media account.&&&social_account_id`,
 		example: `ere45tytyu34fff`,
 	})
 	social_account_id : string

@@ -6,7 +6,7 @@
  * my variables are ${myvar1} and ${myvar2}
  */
 
-import { Controller, Post, Body, ValidationPipe, HttpCode, Put, UseGuards, Get, Query, UseInterceptors, Param } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, HttpCode, UseGuards, Get, UseInterceptors, Param } from '@nestjs/common';
 import { AuthCredentialDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 import { User } from '../entity/user.entity';
