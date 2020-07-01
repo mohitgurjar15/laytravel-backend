@@ -1,79 +1,32 @@
-import { Repository, EntityRepository, QueryBuilder, Like, Timestamp } from "typeorm";
+import { Repository, EntityRepository } from "typeorm";
 import { User } from "../entity/user.entity";
-import { ConflictException, BadRequestException, UnprocessableEntityException, NotFoundException, NotAcceptableException, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
+import {  BadRequestException, NotFoundException, NotAcceptableException, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 import { UpdateUserDto } from "src/user/dto/update-user.dto";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { ListUserDto } from "src/user/dto/list-user.dto";
-import { OrderByEnum } from "src/user/orderby.enum";
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from "./dto/crete-user.dto";
-
+import { errorMessage } from "src/config/common.config";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
 {
-    async saveUser(createUserDto: CreateUserDto): Promise<User> {
-        const {
-            email,
-            password,
-            first_name,
-            last_name,
-            } = createUserDto;
-
-        const salt = await bcrypt.genSalt();
-        const user = new User();
-        console.table(user)
-        user.email = email;
-        user.firstName = first_name;
-        user.lastName = last_name;
-        user.salt = salt;
-        user.createdDate = new Date();
-        user.updatedDate = new Date();
-        user.password = await this.hashPassword(password, salt);
-        try {
-            await user.save();
-        } catch (error) {
-            if (error.code == 'ER_DUP_ENTRY') {
-                throw new ConflictException('Email Id Used');
-            }
-            else {
-                throw new InternalServerErrorException(error.sqlMessage);
-            }
-        }
-
-        delete user.password;
-        delete user.salt;
-        return user;
-    }
-
     hashPassword(password: string, salt: string): Promise<string> {
         return bcrypt.hash(password, salt)
     }
 
-    async updateProfile(updateUserDto: UpdateUserDto, userId: string): Promise<void> {
+    async updateUser(updateUserDto: UpdateUserDto, userId: string){
         const { firstName,
             middleName,
-            lastName,
-            email,
-            profilePic,
-            gender,
-            country,
-            state,
-            city,
-            address,
-            zipCode  } = updateUserDto;
+            lastName
+            } = updateUserDto;
         const userData = await this.findOne({
-            where: { user_id: userId, isDeleted: 0 }
+            where: { userId, isDeleted: 0 }
         });
 
-        console.table(userData)
-        userData.email = email;
         userData.firstName = firstName;
         userData.middleName = middleName || '';
-        userData.lastName = lastName;        
-        userData.createdDate = new Date();
+        userData.lastName = lastName;       
         userData.updatedDate = new Date();
-        userData.profilePic = profilePic;
         /* userData.gender = gender;
         userData.country = country;
         userData.state = state;
@@ -82,9 +35,10 @@ export class UserRepository extends Repository<User>
         userData.zipCode = zipCode */
         try {
             await userData.save();
+            return userData;
         }
         catch (error) {
-            throw new UnprocessableEntityException('Error while Update the User')
+            throw new InternalServerErrorException(`${error.message}&&&no_key&&&${errorMessage}`)
         }
     }
 
@@ -117,21 +71,28 @@ export class UserRepository extends Repository<User>
     }
 
 
-    async listUser(paginationOption: ListUserDto, orderBy: OrderByEnum): Promise<{ data: User[], TotalReseult: number }> {
-        const { page, search, NoOfResult } = paginationOption;
+    async listUser(paginationOption: ListUserDto): Promise<{ data: User[], TotalReseult: number }> {
+        const { page_no, search, limit } = paginationOption;
 
-        const take = NoOfResult || 10
-        const skip = page * NoOfResult || 0
+        const take = limit || 10
+        const skip = (page_no-1) * limit || 0
         const keyword = search || ''
 
+        let where;
+        if(keyword){
+             where =`("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%')`
+        }
+        else{
+             where = `1=1`
+        }
         const [result, total] = await this.findAndCount({
+            where : where,
             skip: skip,
             take: take,
         });
         if (!result || total <= skip) {
-            throw new NotAcceptableException('wrong PageNumber')
+            throw new NotFoundException(`No user found.`)
         }
         return { data: result, TotalReseult: total };
     }
-
 }

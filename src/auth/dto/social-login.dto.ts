@@ -59,6 +59,13 @@ export class SocialLoginDto {
 	})
 	device_type: number;
 
+    @IsNotEmpty({ message: `Please enter your device model.&&&device_model&&&${errorMessage}` })
+	@ApiProperty({
+		description: `Device Model`,
+		example: 'RNE-L22',
+	})
+	device_model: string;
+
 	//@IsNotEmpty({ message: `Please enter your device token.&&&device_token&&&${errorMessage}` })
 	@ApiProperty({
 		description: `Device Token`,

@@ -26,6 +26,13 @@ export class UserDeviceDetail extends BaseEntity {
   })
   deviceToken: string | null;
 
+  @Column("character varying", {
+    name: "device_model",
+    nullable: true,
+    length: 255
+  })
+  deviceModel: string | null;
+
   @Column("text", {
     name: "access_token",
     nullable: true

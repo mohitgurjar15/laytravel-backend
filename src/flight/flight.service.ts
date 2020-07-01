@@ -36,7 +36,7 @@ export class FlightService {
         }
         catch(error){
 
-            if (error.response.statusCode == 404) {
+            if (typeof error.response!=='undefined' && error.response.statusCode == 404) {
                 throw new NotFoundException(`No Airport Found.`)
             }
             throw new InternalServerErrorException(error.message)

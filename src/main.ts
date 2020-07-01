@@ -8,6 +8,7 @@ import { UnauthorizedExceptionFilter } from "./unauthorized-exception.filter";
 import { ConflictExcepionFilter } from "./conflict-exception.filter";
 import { BadRequestException } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
+import { InternalServerErrorExceptionFilter } from './internal-server-exception.filter';
 
 
 async function bootstrap() {
@@ -19,6 +20,7 @@ async function bootstrap() {
 	app.useGlobalFilters(new ConflictExcepionFilter());
 	app.useGlobalFilters(new NotFoundExceptionFilter());
   app.useGlobalFilters(new UnauthorizedExceptionFilter());
+  app.useGlobalFilters(new InternalServerErrorExceptionFilter());
   
   const options = new DocumentBuilder()
     .addBearerAuth()

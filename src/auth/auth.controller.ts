@@ -39,8 +39,7 @@ export class AuthController {
     @HttpCode(200)
     signUp(
         @Body(ValidationPipe) createUser: CreateUserDto
-    ): Promise<User> {
-
+    ){
         return this.authService.signUp(createUser)
     }
 
@@ -50,7 +49,6 @@ export class AuthController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
     @ApiResponse({ status: 404, description: 'Not found!' })
-    @ApiResponse({ status: 409, description: 'User Already Exist' })
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @HttpCode(200)
     async signIn(
@@ -82,7 +80,6 @@ export class AuthController {
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
 	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 409, description: "User Already Exist" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@ApiResponse({ status: 403, description: "Forbidden, The user does not have access." })
 	@HttpCode(200)
@@ -96,7 +93,6 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not found!' })
-    @ApiResponse({ status: 409, description: 'User Already Exist' })
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @HttpCode(200)
     async forgetPassword(
@@ -111,7 +107,6 @@ export class AuthController {
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
 	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 409, description: "User Already Exist" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
     @ApiResponse({ status: 403, description: "Forbidden, The user does not have access." })
     @HttpCode(200)

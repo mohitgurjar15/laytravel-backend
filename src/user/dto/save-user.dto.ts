@@ -1,25 +1,10 @@
 import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEqualTo } from "../password.decorator";
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
+import { IsEqualTo } from 'src/auth/password.decorator';
 
-export class CreateUserDto {
-
-    @IsEnum(['mobile','web'],{
-        message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please enter sign up type.&&&signup_via&&&${errorMessage}`;
-            } else {
-                return `Please enter valid sign up type(mobile or web).&&&signup_via&&&${errorMessage}`
-            }
-        }
-    })
-    @ApiProperty({
-        description: `Sign up via mobile or web`,
-        example: `mobile`
-    })
-    signup_via: string;
+export class SaveUserDto {
 
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`
@@ -93,51 +78,10 @@ export class CreateUserDto {
             }
         }
     })
+    
     @ApiProperty({
         description: `Select Gender (M,F)`,
         example: `M`
     })
     gender : Gender;
-
-    @ValidateIf(o => o.signup_via === 'mobile')
-    @IsNotEmpty({ message: `Please enter your device type.&&&device_type&&&${errorMessage}` })
-	@ApiProperty({
-		description: `Device Type`,
-		example: 1,
-	})
-    device_type: number;
-    
-    @ValidateIf(o => o.signup_via === 'mobile')
-    @IsNotEmpty({ message: `Please enter your device model.&&&device_model&&&${errorMessage}` })
-	@ApiProperty({
-		description: `Device Model`,
-		example: 'RNE-L22',
-	})
-	device_model: string;
-
-    @ValidateIf(o => o.signup_via === 'mobile')
-	@IsNotEmpty({ message: `Please enter your device token.&&&device_token&&&${errorMessage}` })
-	@ApiProperty({
-		description: `Device Token`,
-		example: `123abc#$%456`,
-	})
-	device_token: string;
-
-    @ValidateIf(o => o.signup_via === 'mobile')
-	@IsNotEmpty({ message: `Please enter your app version.&&&app_version&&&${errorMessage}` })
-	@ApiProperty({
-		description: `App Version`,
-		example: `1.0`,
-	})
-	app_version: string;
-
-    @ValidateIf(o => o.signup_via === 'mobile')
-	@IsNotEmpty({ message: `Please enter your os version. &&&os_version&&&${errorMessage}` })
-	@ApiProperty({
-		description: `OS Version`,
-		example: `7.0`,
-	})
-    os_version: string;
-    
-
 }

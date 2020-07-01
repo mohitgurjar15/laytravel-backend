@@ -29,7 +29,7 @@ const mailConfig = config.get('email');
       defaults: {
         from: config.user,
       },
-      preview: true,
+      preview: false,
       template: {
         dir: 'src/config/email_template',
         adapter: new HandlebarsAdapter(), 

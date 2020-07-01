@@ -42,13 +42,14 @@ export class AuthService {
         private forgetPasswordRepository: ForgetPassWordRepository
     ) { }
 
-    async signUp(createUser: CreateUserDto): Promise<User> {
+    async signUp(createUser: CreateUserDto) {
 
         const { 
             first_name,last_name,
             email,password,
             gender,
-            signup_via, device_type, device_token, os_version, app_version
+            signup_via, device_type, device_token, os_version, 
+            app_version,device_model
         } = createUser;
 
         const userExist =await this.userRepository.findOne({
@@ -57,7 +58,7 @@ export class AuthService {
 
         if(userExist)
             throw new ConflictException(`This email address is already registered with us. Please enter different email address .`);
-    
+        
         const user = new User();
         const salt = await bcrypt.genSalt();
         user.userId = uuidv4();
@@ -65,10 +66,12 @@ export class AuthService {
         user.email = email;
         user.firstName = first_name;
         user.lastName = last_name;
+        user.gender = "";
         user.salt = salt;
         user.createdDate = new Date();
         user.updatedDate = new Date();
         user.socialAccountId="";
+        
         user.phoneNo="";
         user.profilePic="";
         user.timezone="";
@@ -99,7 +102,8 @@ export class AuthService {
 
             let device = new UserDeviceDetail();
             device.deviceType = device_type;
-            device.deviceToken = device_token;
+            device.deviceToken = device_token || "";
+            device.deviceModel=device_model;
             device.accessToken = newToken;
             device.appVersion = app_version;
             device.osVersion = os_version;
@@ -150,17 +154,17 @@ export class AuthService {
         }
 
         let userDetails= Object.create(null);
-        userDetails.userId = user.userId;
+        userDetails.id = user.userId;
         userDetails.email = user.email;
-        userDetails.firstName = user.firstName;
-        userDetails.middleName = user.middleName;
-        userDetails.lastName = user.lastName;
-        userDetails.phoneNo = user.phoneNo;
-        userDetails.profilePic = user.profilePic;
+        userDetails.first_name = user.firstName;
+        userDetails.middle_name = user.middleName;
+        userDetails.last_name = user.lastName;
+        userDetails.phone_no = user.phoneNo;
+        userDetails.profile_pic = user.profilePic;
         userDetails.gender = user.gender;
-        userDetails.token = accessToken;
+        userDetails.access_token = accessToken;
         
-        return userDetails;
+        return { user_details : userDetails};
     }
 
     hashPassword(password: string, salt: string): Promise<string> {
@@ -171,10 +175,13 @@ export class AuthService {
 
         const { email, password } = authCredentialDto;
         const user = await this.userRepository.findOne(
-            { email }
+            { email, isDeleted:false }
         );
-        console.log(user);
+        
         if (user && await user.validatePassword(password)) {
+
+            if(user.status!=1)
+                throw new UnauthorizedException(`Your account has been disabled. Please contact administrator person.`)
 
             const payload: JwtPayload = {
                 user_id: user.userId,
@@ -215,7 +222,7 @@ export class AuthService {
         const resetLink = `http://localhost:4040/v1/auth/forget-password?token=${forgetPassToken}`;
         this.mailerService.sendMail({
             to: email,
-            from: "vaibhav@itoneclick.com",
+            from: "no-reply@laytrip.com",
             subject: "Forgot Password",
             template: "forgotEmail.html",
             context: {
@@ -288,7 +295,7 @@ export class AuthService {
     }
     
     async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto) {
-		const { email, password, device_type, device_token, app_version, os_version } = mobileAuthCredentialDto;
+		const { email, password, device_type, device_token, app_version, os_version, device_model } = mobileAuthCredentialDto;
 		const user = await this.userRepository.findOne({ email});
 
 		if (user && (await user.validatePassword(password))) {
@@ -297,7 +304,8 @@ export class AuthService {
 
 			let device = new UserDeviceDetail();
 			device.deviceType = device_type;
-			device.deviceToken = device_token;
+            device.deviceToken = device_token || "";
+            device.deviceModel=device_model;
 			device.accessToken = newToken;
 			device.appVersion = app_version;
 			device.osVersion = os_version;
@@ -329,10 +337,12 @@ export class AuthService {
 					user_details: {
 						access_token: accessToken,
 						id: user.userId,
-						first_name: user.firstName,
+                        first_name: user.firstName,
+                        middle_name : user.middleName || "",
 						last_name: user.lastName,
 						email: user.email,
-						//profilePic: user.profilePic != "" ? `${siteUrl.url}${user.profilePic}` : "",
+                        profile_pic: "",
+                        gender : user.gender || ""
 					},
 				};
 
@@ -369,7 +379,8 @@ export class AuthService {
                 device_type,
                 device_token,
                 app_version,
-                os_version
+                os_version,
+                device_model
 
             } = socialLoginDto;
         
@@ -399,6 +410,7 @@ export class AuthService {
             user.phoneNo="";
             user.profilePic="";
             user.timezone="";
+            user.gender = "";
             user.status=1;
             user.middleName="";
             user.zipCode="";
@@ -432,6 +444,7 @@ export class AuthService {
         let device = new UserDeviceDetail();
         device.deviceType = device_type;
         device.deviceToken = device_token || "";
+        device.deviceModel=device_model;
         device.accessToken = newToken;
         device.appVersion = app_version;
         device.osVersion = os_version;
@@ -465,8 +478,10 @@ export class AuthService {
                     id: userDetail.userId,
                     first_name: userDetail.firstName,
                     last_name: userDetail.lastName || "",
+                    middle_name : userDetail.middleName || "",
                     email: userDetail.email || "",
-                    //profilePic: user.profilePic != "" ? `${siteUrl.url}${user.profilePic}` : "",
+                    profile_pic: "",
+                    gender : userDetail.gender || ""
                 },
             };
 
@@ -477,7 +492,6 @@ export class AuthService {
     }
 
     async getProfile(user){
-
         const userId = user.userId;
         try{
             const userDetail = await this.userRepository.findOne({

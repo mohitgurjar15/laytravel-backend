@@ -12,6 +12,7 @@ import { UserCard } from "./user-card.entity";
 import * as bcrypt from "bcrypt";
 import { Module } from "./module.entity";
 import { UserDeviceDetail } from "./user-device-detail.entity";
+import { Role } from "./role.entity";
 
 
 //@Index("user_pk", ["userId"], { unique: true })
@@ -20,6 +21,9 @@ export class User extends BaseEntity {
   @Column("uuid", { primary: true, name: "user_id" })
   userId: string;
 
+  /* @Column("integer", { name: "role_id" })
+  roleId: number; */
+  
   @Column("character varying", { name: "first_name", length: 255 })
   firstName: string;
 
@@ -119,7 +123,9 @@ export class User extends BaseEntity {
 		() => UserDeviceDetail,
 		(userDeviceDetail) => userDeviceDetail.user,
 	)
-	userDeviceDetails: UserDeviceDetail[];
+  userDeviceDetails: UserDeviceDetail[];
+  
+  
 
   async validatePassword(password: string): Promise<boolean> {
 		const hash = await bcrypt.hash(password, this.salt);
