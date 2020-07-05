@@ -5,7 +5,8 @@ import { async } from "rxjs/internal/scheduler/async";
 import { createQueryBuilder, getManager } from "typeorm";
 import { SeatPlan } from "src/entity/seat-plan.entity";
 import { SeatAllocation } from "src/entity/seat-allocation.entity";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
+import { Airport } from "src/entity/airport.entity";
 
 
 export class Static implements SearchFlight{
@@ -26,11 +27,35 @@ export class Static implements SearchFlight{
             flight_class
         } = searchFlightDto;
 
+        let departurePort =  await getManager()
+                .createQueryBuilder(Airport, "Airport")
+                .where(`("Airport"."code"=:source_location)`,{ source_location})
+                .getOne(); 
+
+        let departureId;
+        let arrivalId;
+
+        if(!departurePort)
+            throw new BadRequestException(`Please send valid source airport id`)
+        
+        
+        departureId =departurePort.id; 
+        
+        let arrivalPort =  await getManager()
+            .createQueryBuilder(Airport, "Airport")
+            .where(`("Airport"."code"=:destination_location)`,{ destination_location})
+            .getOne();
+        
+        if(!arrivalPort)
+            throw new BadRequestException(`Please send valid arrival airport id`)
+        
+        arrivalId = arrivalPort.id;
+
+
         var d = new Date();
         var time = `${d.getHours()}:${d.getMinutes()}`;
         var today = d.getFullYear() + "-" + ('0' + (d.getMonth()+1)).slice(-2) + "-" + d.getDate();
-        let departureId = 1;
-        let arrivalId = 4;
+        
         console.log(today,time)
        
         let searchResult=[];

@@ -71,7 +71,7 @@ export class AuthService {
         user.createdDate = new Date();
         user.updatedDate = new Date();
         user.socialAccountId="";
-        
+        user.roleId=2;
         user.phoneNo="";
         user.profilePic="";
         user.timezone="";
@@ -407,6 +407,7 @@ export class AuthService {
             user.createdDate = new Date();
             user.updatedDate = new Date();
             user.socialAccountId=social_account_id;
+            user.roleId=2;
             user.phoneNo="";
             user.profilePic="";
             user.timezone="";

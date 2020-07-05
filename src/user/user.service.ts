@@ -37,6 +37,7 @@ export class UserService {
         user.profilePic="";
         user.timezone="";
         user.status=1;
+        user.roleId=2;
         user.email = email;
         user.firstName = first_name;
         user.middleName="";
@@ -118,5 +119,31 @@ export class UserService {
 
     async listUser(paginationOption: ListUserDto): Promise<{ data: User[], TotalReseult: number }> {
         return await this.userRepository.listUser(paginationOption);
+    }
+
+    async deleteUser(userId:string){
+
+        try{
+            const user = await this.userRepository.findOne({
+                userId, isDeleted:false
+            });
+
+            if(!user)
+                throw new NotFoundException(`No user found`)
+            else{
+                user.isDeleted=true;
+                await user.save();
+                return { messge: `User deleted successfully` }
+            }
+        }
+        catch(error){
+
+            if (typeof error.response!=='undefined' && error.response.statusCode == 404) {
+                throw new NotFoundException(`No user Found.&&&id`)
+            }
+            
+            throw new InternalServerErrorException(`${error.message}&&&id&&&${errorMessage}`)
+        }
+        
     }
 }

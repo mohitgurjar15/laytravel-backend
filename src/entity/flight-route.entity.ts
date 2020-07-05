@@ -31,6 +31,15 @@ export class FlightRoute extends BaseEntity {
   @Column("numeric", { name: "amount", precision: 10, scale: 2 })
   amount: string;
 
+  @Column("numeric", { name: "adult_price", precision: 10, scale: 2,nullable:true })
+  adultPrice: string;
+
+  @Column("numeric", { name: "child_price", precision: 10, scale: 2 ,nullable:true })
+  childPrice: string;
+
+  @Column("numeric", { name: "infant_price", precision: 10, scale: 2, nullable:true })
+  infantPrice: string;
+
   @Column("boolean", { name: "is_refundable" })
   isRefundable: boolean;
 

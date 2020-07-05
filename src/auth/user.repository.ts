@@ -80,10 +80,10 @@ export class UserRepository extends Repository<User>
 
         let where;
         if(keyword){
-             where =`("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%')`
+             where =`("is_deleted"=false) and ("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%')`
         }
         else{
-             where = `1=1`
+             where = ` ("is_deleted"=false) and 1=1`
         }
         const [result, total] = await this.findAndCount({
             where : where,

@@ -13,6 +13,8 @@ import * as bcrypt from "bcrypt";
 import { Module } from "./module.entity";
 import { UserDeviceDetail } from "./user-device-detail.entity";
 import { Role } from "./role.entity";
+import { Countries } from "./countries.entity";
+import { States } from "./states.entity";
 
 
 //@Index("user_pk", ["userId"], { unique: true })
@@ -21,8 +23,8 @@ export class User extends BaseEntity {
   @Column("uuid", { primary: true, name: "user_id" })
   userId: string;
 
-  /* @Column("integer", { name: "role_id" })
-  roleId: number; */
+  @Column("integer", { name: "role_id" , nullable: true})
+  roleId: number | null;
   
   @Column("character varying", { name: "first_name", length: 255 })
   firstName: string;
@@ -46,7 +48,7 @@ export class User extends BaseEntity {
   salt: string;
 
   @Column("character varying", { name: "password", length: 255 })
-  password: string;
+  password: string | null
 
   @Column("character varying", { name: "phone_no", length: 20 })
   phoneNo: string;
@@ -65,6 +67,22 @@ export class User extends BaseEntity {
 
   @Column("character varying", { name :"gender", length:10, nullable : true})
   gender:string
+
+  @Column("character varying", {
+    name: "country_code",
+    nullable: true,
+    length: 10
+  })
+  countryCode: string | null;
+
+  @Column("character varying", { name: "address", nullable: true, length: 500 })
+  address: string | null;
+
+  @Column("integer", { name: "country_id", nullable: true })
+  countryId: number | null;
+
+  @Column("integer", { name: "state_id", nullable: true })
+  stateId: number | null;
 
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
@@ -125,7 +143,19 @@ export class User extends BaseEntity {
 	)
   userDeviceDetails: UserDeviceDetail[];
   
-  
+  @ManyToOne(
+    () => Countries,
+    countries => countries.users
+  )
+  @JoinColumn([{ name: "country_id", referencedColumnName: "id" }])
+  country: Countries;
+
+  @ManyToOne(
+    () => States,
+    states => states.users
+  )
+  @JoinColumn([{ name: "state_id", referencedColumnName: "id" }])
+  state: States;
 
   async validatePassword(password: string): Promise<boolean> {
 		const hash = await bcrypt.hash(password, this.salt);
