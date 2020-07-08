@@ -7,6 +7,7 @@ import * as config from 'config';
 import {  MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { FlightModule } from './flight/flight.module';
+import { AdminModule } from './admin/admin.module';
 const mailConfig = config.get('email');
 import { I18nModule, I18nJsonParser, QueryResolver, HeaderResolver } from 'nestjs-i18n';
 import * as path from 'path';
@@ -44,6 +45,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
       },
     }),
     FlightModule,
+    AdminModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       parser: I18nJsonParser,

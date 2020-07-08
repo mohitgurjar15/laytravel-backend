@@ -1,15 +1,19 @@
 import { Repository, EntityRepository } from "typeorm";
 import { User } from "../entity/user.entity";
-import {  BadRequestException, NotFoundException, NotAcceptableException, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
+import {  BadRequestException, NotFoundException, NotAcceptableException, InternalServerErrorException, UnauthorizedException, ConflictException } from "@nestjs/common";
 import { UpdateUserDto } from "src/user/dto/update-user.dto";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { ListUserDto } from "src/user/dto/list-user.dto";
 import * as bcrypt from 'bcrypt';
 import { errorMessage } from "src/config/common.config";
+import { SaveUserDto } from "src/user/dto/save-user.dto";
+import { v4 as uuidv4 } from "uuid";
+import { MailerService } from "@nestjs-modules/mailer";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
 {
+    
     hashPassword(password: string, salt: string): Promise<string> {
         return bcrypt.hash(password, salt)
     }
@@ -94,5 +98,50 @@ export class UserRepository extends Repository<User>
             throw new NotFoundException(`No user found.`)
         }
         return { data: result, TotalReseult: total };
+    }
+
+
+
+
+
+    async createUser(saveUserDto: SaveUserDto,roleId:number): Promise<User> {
+        const {
+            email,
+            password,
+            first_name,
+            last_name,
+            } = saveUserDto;
+
+        const salt = await bcrypt.genSalt();
+        const user = new User();
+        user.userId = uuidv4();
+        user.accountType=1;
+        user.socialAccountId="";
+        user.phoneNo="";
+        user.profilePic="";
+        user.timezone="";
+        user.status=1;
+        user.roleId=roleId;
+        user.email = email;
+        user.firstName = first_name;
+        user.middleName="";
+        user.zipCode="";
+        user.lastName = last_name;
+        user.salt = salt;
+        user.createdDate = new Date();
+        user.updatedDate = new Date();
+        user.password = await this.hashPassword(password, salt);
+
+        const userExist = await this.findOne({
+            email
+        })
+
+        if(userExist){
+            throw new ConflictException(`This email address is already registered with us. Please enter different email address .`);
+        }
+        else{
+            await user.save();
+            return user;
+        }
     }
 }

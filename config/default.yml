@@ -27,6 +27,7 @@ email:
     pass: "Oneclick1@"
     port: 465
     secure: true
+    from: "no-reply@laytrip.com"
 
 Sentry:
     DSN: "https://ae1830da5d4744fa9a03efeff65d68c7@o399378.ingest.sentry.io/5256424"
