@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, CacheModule, CacheInterceptor } from '@nestjs/common';
 import { typeOrmConfig } from './config/typeorm.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
@@ -7,8 +7,13 @@ import * as config from 'config';
 import {  MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { FlightModule } from './flight/flight.module';
-
 const mailConfig = config.get('email');
+import { I18nModule, I18nJsonParser, QueryResolver, HeaderResolver } from 'nestjs-i18n';
+import * as path from 'path';
+import * as redisStore from 'cache-manager-redis-store';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+
+
 
 @Module({
   imports: [
@@ -39,7 +44,27 @@ const mailConfig = config.get('email');
       },
     }),
     FlightModule,
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      parser: I18nJsonParser,
+      parserOptions: {
+        path: path.join(__dirname, '/i18n/'),
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang', 'locale', 'l'] }
+      ]
+    }),
+    CacheModule.register({
+      store: redisStore,
+      host: 'localhost',
+      port: 6379,
+    }),
   ],
- 
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+  ],
 })
 export class AppModule {}

@@ -8,12 +8,11 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm";
 import { User } from "./user.entity";
-
+@Index("user_device_detail_user_id", ["userId"], {})
 //@Index("user_device_detail_pk", ["id"], { unique: true })
 @Entity("user_device_detail")
 export class UserDeviceDetail extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  @Column("integer", { primary: true, name: "id", generated: "increment" })
+  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
   @Column("integer", { name: "device_type" })
@@ -26,17 +25,7 @@ export class UserDeviceDetail extends BaseEntity {
   })
   deviceToken: string | null;
 
-  @Column("character varying", {
-    name: "device_model",
-    nullable: true,
-    length: 255
-  })
-  deviceModel: string | null;
-
-  @Column("text", {
-    name: "access_token",
-    nullable: true
-  })
+  @Column("text", { name: "access_token", nullable: true })
   accessToken: string | null;
 
   @Column("character varying", {
@@ -58,6 +47,16 @@ export class UserDeviceDetail extends BaseEntity {
 
   @Column("timestamp with time zone", { name: "updated_date", nullable: true })
   updatedDate: Date | null;
+
+  @Column("uuid", { name: "user_id", nullable: true })
+  userId: string | null;
+
+  @Column("character varying", {
+    name: "device_model",
+    nullable: true,
+    length: 255
+  })
+  deviceModel: string | null;
 
   @ManyToOne(
     () => User,

@@ -1,14 +1,16 @@
 import { IsNotEmpty, IsEmail, ValidationArguments } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { I18nService } from "nestjs-i18n";
 
 export class AuthCredentialDto{
-    
+	constructor(private readonly i18n: I18nService) {}
+	
     @IsEmail(
 		{},
 		{
 			message: (args: ValidationArguments) => {
 				if (typeof args.value == "undefined" || args.value == "") {
-					return `Please enter your email address.&&&email`;
+					return ``;
 				} else {
 					return `Please Enter valid email address.&&&email`;
 				}

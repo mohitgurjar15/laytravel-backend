@@ -8,12 +8,18 @@ import {
 } from "typeorm";
 import { PaymentGateway } from "./payment-gateway.entity";
 import { User } from "./user.entity";
-
+@Index("user_card_payment_gateway_id", ["paymentGatewayId"], {})
 //@Index("user_card_pk", ["id"], { unique: true })
 @Entity("user_card")
 export class UserCard extends BaseEntity {
   @Column("uuid", { primary: true, name: "id" })
   id: string;
+
+  @Column("uuid", { name: "user_id", nullable: true })
+  userId: string | null;
+
+  @Column("integer", { name: "payment_gateway_id", nullable: true })
+  paymentGatewayId: number | null;
 
   @Column("integer", { name: "card_type" })
   cardType: number;

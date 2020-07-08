@@ -7,6 +7,7 @@ import {
 } from "typeorm";
 
 //@Index("baggage_pk", ["id"], { unique: true })
+@Index("baggage_route_id", ["routeId"], {})
 @Entity("baggage")
 export class Baggage extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
