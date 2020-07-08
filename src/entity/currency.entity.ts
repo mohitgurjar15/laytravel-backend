@@ -7,6 +7,10 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm";
 import { Booking } from "./booking.entity";
+import { BookingInstalments } from "./booking-instalments.entity";
+import { Invoice } from "./invoice.entity";
+import { Plan } from "./plan.entity";
+import { PlanSubscription } from "./plan-subscription.entity";
 
 //@Index("currency_pk", ["id"], { unique: true })
 @Entity("currency")
@@ -37,7 +41,31 @@ export class Currency extends BaseEntity {
 
   @OneToMany(
     () => Booking,
-    booking => booking.currency
+    booking => booking.currency2
   )
   bookings: Booking[];
+
+  @OneToMany(
+    () => BookingInstalments,
+    bookingInstalments => bookingInstalments.currency
+  )
+  bookingInstalments: BookingInstalments[];
+
+  @OneToMany(
+    () => Invoice,
+    invoice => invoice.currency
+  )
+  invoices: Invoice[];
+
+  @OneToMany(
+    () => Plan,
+    plan => plan.currency
+  )
+  plans: Plan[];
+
+  @OneToMany(
+    () => PlanSubscription,
+    planSubscription => planSubscription.currency
+  )
+  planSubscriptions: PlanSubscription[];
 }
