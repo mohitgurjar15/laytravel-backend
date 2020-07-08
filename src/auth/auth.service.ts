@@ -273,7 +273,7 @@ export class AuthService {
 		}
 
 		const validToken = await this.forgetPasswordRepository.findOne({
-			where: { email: email, is_used: 0, token: token },
+			where: { email: email, is_used: 0, token: tokenhash },
 		});
 		if (validToken && validToken.validateToken(tokenhash)) {
 			const salt = await bcrypt.genSalt();
