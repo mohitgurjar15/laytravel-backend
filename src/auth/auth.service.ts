@@ -492,17 +492,58 @@ export class AuthService {
         }
     }
 
-    async getProfile(user){
+    async getProfile(user,req){
         const userId = user.userId;
         try{
             const userDetail = await this.userRepository.findOne({
-                select : ["userId","firstName","lastName","email","phoneNo","profilePic"],
+                select : [
+                            "userId","title","firstName","lastName",
+                            "email","phoneNo","profilePic",
+                            "countryCode","phoneNo","countryId","stateId","cityName",
+                            "address"
+                        ],
                 where : {userId}
             })
+            
+            userDetail.profilePic = userDetail.profilePic?`${req.headers.host}/profile/${userDetail.profilePic}`:"";
             return userDetail;
         }
         catch(error){
             throw new InternalServerErrorException(errorMessage)
         }   
+    }
+
+    async updateProfile(updateProfileDto,loginUser,files){
+
+        const userId = loginUser.userId;
+        const { 
+            title,
+            first_name,
+            last_name,
+            zip_code,
+            country_code,
+            phone_no,
+            country_id,
+            state_id,
+            city_name,
+            profile_pic
+        }=updateProfileDto;
+        console.log(files)
+
+        const user = new User();
+        user.title = title;
+        user.firstName=first_name;
+        user.lastName=last_name;
+        user.zipCode=zip_code;
+        user.countryCode=country_code;
+        user.phoneNo=phone_no;
+        user.countryId=country_id;
+        user.stateId=state_id;
+        user.cityName=city_name;
+        if(typeof files.profile_pic!='undefined')
+            user.profilePic=files.profile_pic[0].filename;
+        
+        await this.userRepository.update(userId,user)
+        return {"message":`Your profile has been updated successfully.`};
     }
 }
