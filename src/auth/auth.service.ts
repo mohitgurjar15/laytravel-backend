@@ -171,7 +171,7 @@ export class AuthService {
         return bcrypt.hash(password, salt)
     }
 
-    async validateUserPassword(authCredentialDto: AuthCredentialDto) {
+    async validateUserPassword(authCredentialDto: AuthCredentialDto,siteUrl) {
 
         const { email, password } = authCredentialDto;
         const user = await this.userRepository.findOne(
@@ -190,7 +190,7 @@ export class AuthService {
                 middleName: user.middleName,
                 lastName: user.lastName,
                 salt: user.salt,
-                profilePic: user.profilePic
+                profilePic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
             };
             const accessToken = this.jwtService.sign(payload);
             const token = { token: accessToken };
@@ -202,7 +202,7 @@ export class AuthService {
 
     }
 
-    async forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
+    async forgetPassword(forgetPasswordDto: ForgetPasswordDto,siteUrl) {
         const { email } = forgetPasswordDto;
         const user = await this.userRepository.findOne({ email });
         if (!user) {
@@ -219,7 +219,7 @@ export class AuthService {
             tokenhash
         };
         const forgetPassToken = this.jwtService.sign(payload);
-        const resetLink = `http://localhost:4040/v1/auth/forget-password?token=${forgetPassToken}`;
+        const resetLink = `${siteUrl}/v1/auth/forget-password?token=${forgetPassToken}`;
         this.mailerService.sendMail({
             to: email,
             from: "no-reply@laytrip.com",
@@ -294,7 +294,7 @@ export class AuthService {
 		}
     }
     
-    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto) {
+    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto,siteUrl) {
 		const { email, password, device_type, device_token, app_version, os_version, device_model } = mobileAuthCredentialDto;
 		const user = await this.userRepository.findOne({ email});
 
@@ -324,7 +324,7 @@ export class AuthService {
 					user_id: user.userId,
                     firstName: user.firstName,
                     middleName:"",
-                    profilePic:"",
+                    profilePic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
 					lastName: user.lastName,
 					email,
 					salt: user.salt,
@@ -341,7 +341,7 @@ export class AuthService {
                         middle_name : user.middleName || "",
 						last_name: user.lastName,
 						email: user.email,
-                        profile_pic: "",
+                        profile_pic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
                         gender : user.gender || ""
 					},
 				};
@@ -492,7 +492,7 @@ export class AuthService {
         }
     }
 
-    async getProfile(user,req){
+    async getProfile(user,siteUrl){
         const userId = user.userId;
         try{
             const userDetail = await this.userRepository.findOne({
@@ -505,7 +505,7 @@ export class AuthService {
                 where : {userId}
             })
             
-            userDetail.profilePic = userDetail.profilePic?`${req.headers.host}/profile/${userDetail.profilePic}`:"";
+            userDetail.profilePic = userDetail.profilePic?`${siteUrl}/profile/${userDetail.profilePic}`:"";
             return userDetail;
         }
         catch(error){

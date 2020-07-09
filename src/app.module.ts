@@ -13,6 +13,7 @@ import { I18nModule, I18nJsonParser, QueryResolver, HeaderResolver } from 'nestj
 import * as path from 'path';
 import * as redisStore from 'cache-manager-redis-store';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { GeneralModule } from './general/general.module';
 
 
 
@@ -56,6 +57,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
         { use: QueryResolver, options: ['lang', 'locale', 'l'] }
       ]
     }),
+    GeneralModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
