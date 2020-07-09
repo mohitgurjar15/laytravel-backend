@@ -24,7 +24,10 @@ export class Static implements SearchFlight{
             source_location,
             destination_location,
             departure_date,
-            flight_class
+            flight_class,
+            adult_count,
+            child_count,
+            infant_count
         } = searchFlightDto;
 
         let departurePort =  await getManager()
@@ -72,7 +75,7 @@ export class Static implements SearchFlight{
             where: qb => {
                 qb.where().
                     orWhere(`("arrival"."id" = :arrivalId OR "departure"."id"=:departureId)`,{arrivalId:arrivalId,departureId:departureId}).
-                    andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class}).
+                    //andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class}).
                     andWhere(departure_date==today ? (`"departure_time">=:departure_time`): `1=1`,{departure_time:time}) 
             }
         });
@@ -100,18 +103,25 @@ export class Static implements SearchFlight{
             });
         }
 
-        let searchItem={ stop:0, route_details: [] };
+        let searchItem={ stop:0,  price:0.00,route_details: [] };
         
         if(result.length){
 
             for(let i=0; i < result.length; i++){
                     
-                searchItem={ stop:0, route_details: [] };
+                searchItem={ stop:0, price:0.00, route_details: [] };
                 if(result[i].departure.id ===departureId && result[i].arrival.id===arrivalId){
                 
-                searchItem.stop=1;
-                searchItem.route_details.push(result[i]);
-                searchResult.push(searchItem)
+                    searchItem.stop=1;
+                    searchItem.route_details.push(result[i]);
+                    let totalPrice = searchItem.route_details.map(route=>{
+
+                        return (parseInt(route.adultPrice)*adult_count + parseInt(route.childPrice)*child_count +parseInt(route.infantPrice)*infant_count)  
+                    })
+
+                    searchItem.price = (totalPrice.reduce((a, b) => a + b, 0));
+
+                    searchResult.push(searchItem)
                 }
                 
                 else{
@@ -133,12 +143,21 @@ export class Static implements SearchFlight{
                         })
                         
                         searchItem.stop = searchItem.route_details.length;
+                        let totalPrice = searchItem.route_details.map(route=>{
+                            
+                            return (parseInt(route.adultPrice)*adult_count + parseInt(route.childPrice)*child_count +parseInt(route.infantPrice)*infant_count)  
+                        })
+        
+                        searchItem.price = (totalPrice.reduce((a, b) => a + b, 0));
+                        
+
                         if(searchItem.route_details[searchItem.route_details.length-1].arrival.id!=arrivalId)
                             continue;
                         else
                             searchResult.push(searchItem)
                         
                     }
+
                 }
             }
 

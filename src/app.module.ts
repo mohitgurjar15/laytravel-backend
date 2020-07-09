@@ -56,17 +56,17 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
         { use: QueryResolver, options: ['lang', 'locale', 'l'] }
       ]
     }),
-    CacheModule.register({
+    /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
       port: 6379,
-    }),
+    }), */
   ],
-  providers: [
+  /* providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     },
-  ],
+  ], */
 })
 export class AppModule {}
