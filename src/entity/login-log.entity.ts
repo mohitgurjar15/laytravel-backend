@@ -22,6 +22,9 @@ export class LoginLog extends BaseEntity {
   @Column("character varying", { name: "ip_address", length: 25 })
   ipAddress: string;
 
+  @Column("character varying", { name: "login_via", length: 25 })
+  loginVia: string;
+
   @Column("text", { name: "login_agent" })
   loginAgent: string;
 

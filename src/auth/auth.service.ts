@@ -6,7 +6,7 @@
  * my variables are ${myvar1} and ${myvar2}
  */
 
-import { Injectable, ConflictException, InternalServerErrorException, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, UnauthorizedException, NotFoundException, BadRequestException, Req } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
@@ -30,6 +30,8 @@ import { MobileAuthCredentialDto } from './dto/mobile-auth-credentials.dto';
 import { UserDeviceDetail } from 'src/entity/user-device-detail.entity';
 import { SocialLoginDto } from './dto/social-login.dto'
 import * as md5 from "md5";
+import { In, getConnection } from 'typeorm';
+import { LoginLog } from 'src/entity/login-log.entity';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +44,7 @@ export class AuthService {
         private forgetPasswordRepository: ForgetPassWordRepository
     ) { }
 
-    async signUp(createUser: CreateUserDto) {
+    async signUp(createUser: CreateUserDto,request) {
 
         const { 
             first_name,last_name,
@@ -52,6 +54,7 @@ export class AuthService {
             app_version,device_model
         } = createUser;
 
+        let loginvia='';
         const userExist =await this.userRepository.findOne({
             email : email
         })
@@ -80,6 +83,16 @@ export class AuthService {
         user.zipCode="";
         user.password = await this.hashPassword(password, salt);
         user.gender = gender;
+        
+        if(signup_via=='web')
+            user.registerVia='web';
+        else{
+
+            if(device_type==1)
+                user.registerVia='android';
+            else
+                user.registerVia='ios';
+        }
         /*user.country = country;
         user.state = state;
         user.city = city;
@@ -97,6 +110,7 @@ export class AuthService {
 
         let accessToken;
         if(signup_via=='mobile'){
+            loginvia=device_type==1?'android':'ios';
             let dateObj = new Date();
             let newToken = md5(dateObj);
 
@@ -136,6 +150,7 @@ export class AuthService {
             }
         }
         else{
+            loginvia='web';
             const payload: JwtPayload = {
                 user_id: user.userId,
                 email,
@@ -164,6 +179,7 @@ export class AuthService {
         userDetails.gender = user.gender;
         userDetails.access_token = accessToken;
         
+        this.addLoginLog(user.userId,request,loginvia);
         return { user_details : userDetails};
     }
 
@@ -171,11 +187,11 @@ export class AuthService {
         return bcrypt.hash(password, salt)
     }
 
-    async validateUserPassword(authCredentialDto: AuthCredentialDto,siteUrl) {
+    async validateUserPassword(authCredentialDto: AuthCredentialDto,siteUrl,roles,request) {
 
         const { email, password } = authCredentialDto;
         const user = await this.userRepository.findOne(
-            { email, isDeleted:false }
+             { email, isDeleted:false, roleId: In(roles) }
         );
         
         if (user && await user.validatePassword(password)) {
@@ -194,6 +210,7 @@ export class AuthService {
             };
             const accessToken = this.jwtService.sign(payload);
             const token = { token: accessToken };
+            this.addLoginLog(user.userId,request,'web');
             return token
         }
         else {
@@ -294,11 +311,17 @@ export class AuthService {
 		}
     }
     
-    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto,siteUrl) {
+    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto,siteUrl,request,roles) {
 		const { email, password, device_type, device_token, app_version, os_version, device_model } = mobileAuthCredentialDto;
-		const user = await this.userRepository.findOne({ email});
+		const user = await this.userRepository.findOne(
+            { email, isDeleted:false, roleId: In(roles) }
+        );
 
 		if (user && (await user.validatePassword(password))) {
+
+            if(user.status!=1)
+                throw new UnauthorizedException(`Your account has been disabled. Please contact administrator person.`)
+
 			let dateObj = new Date();
 			let newToken = md5(dateObj);
 
@@ -344,8 +367,9 @@ export class AuthService {
                         profile_pic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
                         gender : user.gender || ""
 					},
-				};
-
+                };
+                let loginvia=device_type==1?'android':'ios';
+                this.addLoginLog(user.userId,request,loginvia);
 				return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 			} catch (error) {
 				throw new InternalServerErrorException(`Oops. Something went wrong. Please try again.`);
@@ -369,7 +393,7 @@ export class AuthService {
 		}
 	}
 
-    async socialLogin(socialLoginDto:SocialLoginDto){
+    async socialLogin(socialLoginDto:SocialLoginDto,request){
 
         const { 
                 account_type, 
@@ -387,7 +411,6 @@ export class AuthService {
         let conditions=[];
         conditions.push({socialAccountId:social_account_id})
         if(email){
-
             conditions.push({email:email})
         }
         
@@ -485,7 +508,8 @@ export class AuthService {
                     gender : userDetail.gender || ""
                 },
             };
-
+            let loginvia=device_type==1?'android':'ios';
+            this.addLoginLog(user.userId,request,loginvia);
             return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
         } catch (error) {
             throw new InternalServerErrorException(errorMessage);
@@ -545,5 +569,21 @@ export class AuthService {
         
         await this.userRepository.update(userId,user)
         return {"message":`Your profile has been updated successfully.`};
+    }
+
+     addLoginLog(userId,request,loginVia){
+
+        const loginLog = new LoginLog();
+        loginLog.userId = userId;
+        loginLog.ipAddress = request.ip || "";
+        loginLog.loginAgent = typeof request.headers['user-agent']!='undefined'?request.headers['user-agent']:request.headers;
+        loginLog.loginDate = new Date();
+        loginLog.loginVia=loginVia;
+        getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(LoginLog)
+            .values(loginLog)
+            .execute();
     }
 }

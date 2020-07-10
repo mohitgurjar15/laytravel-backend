@@ -26,6 +26,7 @@ import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from './file-validator';
 import { ProfilePicDto } from './dto/profile-pic.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
+import { Role } from 'src/enum/role.enum';
 @ApiTags("Auth")
 @Controller('auth')
 @UseInterceptors(SentryInterceptor)
@@ -43,25 +44,26 @@ export class AuthController {
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @HttpCode(200)
     signUp(
-        @Body(ValidationPipe) createUser: CreateUserDto
+		@Body(ValidationPipe) createUser: CreateUserDto,
+		@Req() req
     ){
-        return this.authService.signUp(createUser)
+        return this.authService.signUp(createUser,req)
     }
 
     @Post(['signin'])
-    @ApiOperation({ summary: "Web Sign in without using social media" })
+    @ApiOperation({ summary: "Frontend Sign in without using social media" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
-    @ApiResponse({ status: 404, description: 'Not found!' })
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @HttpCode(200)
     async signIn(
 		@Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
-		@SiteUrl() siteUrl:string
+		@SiteUrl() siteUrl:string,
+		@Req() req
     ) {
-
-        const result = await this.authService.validateUserPassword(authCredentialDto,siteUrl);
+		const roles = [Role.FREE_USER, Role.PAID_USER];
+        const result = await this.authService.validateUserPassword(authCredentialDto,siteUrl,roles,req);
         return result
     }
 
@@ -70,17 +72,37 @@ export class AuthController {
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 409, description: "User Already Exist" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@ApiResponse({ status: 403, description: "Forbidden, The user does not have access." })
 	@HttpCode(200)
 	async mobileSignIn(
 		@Body(ValidationPipe) mobileAuthCredentialDto: MobileAuthCredentialDto,
-		@SiteUrl() siteUrl:string
+		@SiteUrl() siteUrl:string,
+		@Req() req
 	) {
-		const result = await this.authService.validateUserPasswordMobile(mobileAuthCredentialDto,siteUrl);
+		const roles = [Role.FREE_USER, Role.PAID_USER];
+		const result = await this.authService.validateUserPasswordMobile(mobileAuthCredentialDto,siteUrl,req,roles);
 		return result;
+	}
+	
+	@Post(["backend-signin"])
+    @ApiOperation({ summary: "Backend Sign in without social media" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 409, description: "User Already Exist" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@ApiResponse({ status: 403, description: "Forbidden, The user does not have access." })
+	@HttpCode(200)
+	async adminSignIn(
+		@Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
+		@SiteUrl() siteUrl:string,
+		@Req() req
+    ) {
+		const roles = [Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT, Role.SUPPLIER];
+        const result = await this.authService.validateUserPassword(authCredentialDto,siteUrl,roles,req);
+        return result
     }
     
     @Post(["social-login"])
@@ -92,8 +114,11 @@ export class AuthController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@ApiResponse({ status: 403, description: "Forbidden, The user does not have access." })
 	@HttpCode(200)
-	async socialLogin(@Body(ValidationPipe) socialLoginDto: SocialLoginDto) {
-		const result = await this.authService.socialLogin(socialLoginDto);
+	async socialLogin(
+		@Body(ValidationPipe) socialLoginDto: SocialLoginDto,
+		@Req() req
+	) {
+		const result = await this.authService.socialLogin(socialLoginDto,req);
 		return result;
 	}
 
