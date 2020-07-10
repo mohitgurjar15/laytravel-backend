@@ -18,7 +18,7 @@ db:
     password: "Oneclick1@"
 
 jwt:
-    ExpireIn: 3600
+    ExpireIn: 604800
     SecretKey: "mySecre@tKey"
 
 email:

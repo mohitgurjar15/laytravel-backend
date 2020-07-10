@@ -6,5 +6,6 @@ export interface JwtPayload {
     email: string;
     salt: string;
     profilePic: string;
-	accessToken?: string;
+    accessToken?: string;
+    roleId?:number
 }

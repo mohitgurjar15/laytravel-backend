@@ -11,6 +11,7 @@ import { InternalServerErrorExceptionFilter } from './internal-server-exception.
 import { ForbiddenExceptionFilter } from './forbidden-resources-exception.filter';
 import * as path from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const serverConfig = config.get('server');
@@ -23,6 +24,7 @@ async function bootstrap() {
   app.useGlobalFilters(new UnauthorizedExceptionFilter());
   app.useGlobalFilters(new InternalServerErrorExceptionFilter());
   app.useGlobalFilters(new ForbiddenExceptionFilter());
+  app.useGlobalPipes(new ValidationPipe());
   
   const options = new DocumentBuilder()
     .addBearerAuth()

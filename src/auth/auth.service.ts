@@ -141,6 +141,7 @@ export class AuthService {
                     email,
                     salt: user.salt,
                     accessToken: newToken,
+                    roleId:user.roleId
                 };
 
                 accessToken = this.jwtService.sign(payload);
@@ -159,11 +160,7 @@ export class AuthService {
                 lastName: user.lastName,
                 salt: user.salt,
                 profilePic: user.profilePic,
-                /* gender: user.gender,
-                country: user.country,
-                state: user.state,
-                city: user.city,
-                address: user.address, */
+                roleId:user.roleId
             };
             accessToken = this.jwtService.sign(payload);
         }
@@ -207,6 +204,7 @@ export class AuthService {
                 lastName: user.lastName,
                 salt: user.salt,
                 profilePic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
+                roleId:user.roleId
             };
             const accessToken = this.jwtService.sign(payload);
             const token = { token: accessToken };
@@ -351,7 +349,8 @@ export class AuthService {
 					lastName: user.lastName,
 					email,
 					salt: user.salt,
-					accessToken: newToken,
+                    accessToken: newToken,
+                    roleId:user.roleId
 				};
 
 				const accessToken = this.jwtService.sign(payload);
@@ -492,6 +491,7 @@ export class AuthService {
                 email:email || "",
                 salt: "",
                 accessToken: newToken,
+                roleId:userDetail.roleId
             };
 
             const accessToken = this.jwtService.sign(payload);
