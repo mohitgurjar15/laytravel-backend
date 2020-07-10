@@ -1,0 +1,5 @@
+{
+    "VALIDATION":{
+        "EMAIL_REQUIRED":"Please enter your email address."
+    }
+}

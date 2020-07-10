@@ -15,10 +15,14 @@ import { SeatAllocation } from "./seat-allocation.entity";
 import { SeatPlan } from "./seat-plan.entity";
 
 //@Index("flight_pk", ["id"], { unique: true })
+@Index("flight_airline_id", ["airlineId"], {})
 @Entity("flight")
 export class Flight extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
+
+  @Column("integer", { name: "airline_id", nullable: true })
+  airlineId: number | null;
 
   @Column("character varying", { name: "flight_number", length: 30 })
   flightNumber: string;
@@ -31,12 +35,6 @@ export class Flight extends BaseEntity {
 
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
-
-  @OneToMany(
-    () => Booking,
-    booking => booking.module
-  )
-  bookings: Booking[];
 
   @ManyToOne(
     () => Airline,
@@ -53,7 +51,7 @@ export class Flight extends BaseEntity {
 
   @OneToMany(
     () => SeatAllocation,
-    seatAllocation => seatAllocation.isConfirm
+    seatAllocation => seatAllocation.flight
   )
   seatAllocations: SeatAllocation[];
 

@@ -58,7 +58,7 @@ export class UserRepository extends Repository<User>
             user.salt = salt;
             user.password = await this.hashPassword(password, salt);
             user.updatedDate = new Date();
-            user.updatedBy = user;
+            user.updatedBy = user.userId;
 
         }
         else {

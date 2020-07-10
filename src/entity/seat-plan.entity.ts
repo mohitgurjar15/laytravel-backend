@@ -12,10 +12,15 @@ import { Flight } from "./flight.entity";
 import { SeatAllocation } from "./seat-allocation.entity";
 
 //@Index("seat_plan_pk", ["id"], { unique: true })
+@Index("seat_plan_flight_id", ["flightId"], {})
+//@Index("seat_plan_pk", ["id"], { unique: true })
 @Entity("seat_plan")
 export class SeatPlan extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
+
+  @Column("integer", { name: "flight_id", nullable: true })
+  flightId: number | null;
 
   @Column("integer", { name: "row_no" })
   rowNo: number;
