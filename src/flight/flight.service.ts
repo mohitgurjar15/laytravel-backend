@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { Search } from './search/search';
-import { Static } from './search/static';
+import { Strategy } from './strategy/strategy';
+import { Static } from './strategy/static';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FlightRepository } from './flight.repository';
@@ -45,7 +45,7 @@ export class FlightService {
 
     async searchFlight(searchFlightDto:SearchFlightDto){
 
-        const local = new Search(new Static(this.flightRepository,this.seatAllocationRepository));
+        const local = new Strategy(new Static(this.flightRepository));
         const result = new Promise((resolve) => resolve(local.oneWaySearch(searchFlightDto)));
         return result;
     }

@@ -1,4 +1,4 @@
-export interface SearchFlight{
+export interface StrategyAirline{
 
     oneWaySearch(params);
 
