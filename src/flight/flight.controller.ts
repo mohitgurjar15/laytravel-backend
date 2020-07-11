@@ -15,19 +15,20 @@ export class FlightController {
     ) { }
     
     @Get('/search-airport/:name')
-    @CacheKey('custom_key')
+    //@CacheKey('custom_key')
     @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     async searchAirport(
-       @Param('name', MinCharPipe) name:String
-    ){
-        //console.log(custom_key)
-        return await this.flightService.searchAirport(name);
-    }
-
-
-    @Post('/search-flight')
+        @Param('name', MinCharPipe) name:String
+        ){
+            //console.log(custom_key)
+            return await this.flightService.searchAirport(name);
+        }
+        
+        
+    @Post('/search-oneway-flight')
+    @ApiOperation({ summary: "Search One Way flight" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })

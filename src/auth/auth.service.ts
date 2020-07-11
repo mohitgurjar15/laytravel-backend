@@ -171,7 +171,7 @@ export class AuthService {
         return bcrypt.hash(password, salt)
     }
 
-    async validateUserPassword(authCredentialDto: AuthCredentialDto) {
+    async validateUserPassword(authCredentialDto: AuthCredentialDto,siteUrl) {
 
         const { email, password } = authCredentialDto;
         const user = await this.userRepository.findOne(
@@ -190,7 +190,7 @@ export class AuthService {
                 middleName: user.middleName,
                 lastName: user.lastName,
                 salt: user.salt,
-                profilePic: user.profilePic
+                profilePic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
             };
             const accessToken = this.jwtService.sign(payload);
             const token = { token: accessToken };
@@ -202,7 +202,7 @@ export class AuthService {
 
     }
 
-    async forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
+    async forgetPassword(forgetPasswordDto: ForgetPasswordDto,siteUrl) {
         const { email } = forgetPasswordDto;
         const user = await this.userRepository.findOne({ email });
         if (!user) {
@@ -219,7 +219,7 @@ export class AuthService {
             tokenhash
         };
         const forgetPassToken = this.jwtService.sign(payload);
-        const resetLink = `http://localhost:4040/v1/auth/forget-password?token=${forgetPassToken}`;
+        const resetLink = `${siteUrl}/v1/auth/forget-password?token=${forgetPassToken}`;
         this.mailerService.sendMail({
             to: email,
             from: "no-reply@laytrip.com",
@@ -294,7 +294,7 @@ export class AuthService {
 		}
     }
     
-    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto) {
+    async validateUserPasswordMobile(mobileAuthCredentialDto: MobileAuthCredentialDto,siteUrl) {
 		const { email, password, device_type, device_token, app_version, os_version, device_model } = mobileAuthCredentialDto;
 		const user = await this.userRepository.findOne({ email});
 
@@ -324,7 +324,7 @@ export class AuthService {
 					user_id: user.userId,
                     firstName: user.firstName,
                     middleName:"",
-                    profilePic:"",
+                    profilePic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
 					lastName: user.lastName,
 					email,
 					salt: user.salt,
@@ -341,7 +341,7 @@ export class AuthService {
                         middle_name : user.middleName || "",
 						last_name: user.lastName,
 						email: user.email,
-                        profile_pic: "",
+                        profile_pic: user.profilePic? `${siteUrl}/profile/${user.profilePic}`:"",
                         gender : user.gender || ""
 					},
 				};
@@ -492,17 +492,58 @@ export class AuthService {
         }
     }
 
-    async getProfile(user){
+    async getProfile(user,siteUrl){
         const userId = user.userId;
         try{
             const userDetail = await this.userRepository.findOne({
-                select : ["userId","firstName","lastName","email","phoneNo","profilePic"],
+                select : [
+                            "userId","title","firstName","lastName",
+                            "email","phoneNo","profilePic",
+                            "countryCode","phoneNo","countryId","stateId","cityName",
+                            "address"
+                        ],
                 where : {userId}
             })
+            
+            userDetail.profilePic = userDetail.profilePic?`${siteUrl}/profile/${userDetail.profilePic}`:"";
             return userDetail;
         }
         catch(error){
             throw new InternalServerErrorException(errorMessage)
         }   
+    }
+
+    async updateProfile(updateProfileDto,loginUser,files){
+
+        const userId = loginUser.userId;
+        const { 
+            title,
+            first_name,
+            last_name,
+            zip_code,
+            country_code,
+            phone_no,
+            country_id,
+            state_id,
+            city_name,
+            profile_pic
+        }=updateProfileDto;
+        console.log(files)
+
+        const user = new User();
+        user.title = title;
+        user.firstName=first_name;
+        user.lastName=last_name;
+        user.zipCode=zip_code;
+        user.countryCode=country_code;
+        user.phoneNo=phone_no;
+        user.countryId=country_id;
+        user.stateId=state_id;
+        user.cityName=city_name;
+        if(typeof files.profile_pic!='undefined')
+            user.profilePic=files.profile_pic[0].filename;
+        
+        await this.userRepository.update(userId,user)
+        return {"message":`Your profile has been updated successfully.`};
     }
 }

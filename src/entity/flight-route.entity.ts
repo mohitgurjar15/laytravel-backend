@@ -44,8 +44,8 @@ export class FlightRoute extends BaseEntity {
   @Column("character varying", { name: "currency_code", length: 5 })
   currencyCode: string;
 
-  @Column("numeric", { name: "amount", precision: 10, scale: 2 })
-  amount: string;
+  /* @Column("numeric", { name: "amount", precision: 10, scale: 2 })
+  amount: string; */
 
   @Column("boolean", { name: "is_refundable" })
   isRefundable: boolean;

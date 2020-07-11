@@ -1,27 +1,25 @@
 import {
 	Injectable,
-	ConflictException,
-	UnprocessableEntityException,
-	InternalServerErrorException,
-	NotFoundException,
 	ForbiddenException,
+	NotFoundException,
+	InternalServerErrorException,
 } from "@nestjs/common";
-import { UserRepository } from "../auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
-import * as bcrypt from "bcrypt";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { ChangePasswordDto } from "./dto/change-password.dto";
-import { ListUserDto } from "./dto/list-user.dto";
-import { User } from "src/entity/user.entity";
-import { SaveUserDto } from "./dto/save-user.dto";
-import { errorMessage } from "src/config/common.config";
+import { UserRepository } from "src/auth/user.repository";
 import { MailerService } from "@nestjs-modules/mailer";
-import { v4 as uuidv4 } from "uuid";
+import { User } from "@sentry/node";
+import { SaveUserDto } from "src/user/dto/save-user.dto";
 import * as config from "config";
+import { UpdateUserDto } from "src/user/dto/update-user.dto";
 const mailConfig = config.get("email");
+import { errorMessage } from "src/config/common.config";
+import { ListUserDto } from "src/user/dto/list-user.dto";
+import { SaveSupplierDto } from "./dto/save-supplier.dto";
+import { UpdateSupplierDto } from "./dto/update-supplier.dto";
+import { ListSupplierDto } from "./dto/list-supplier.dto";
 
 @Injectable()
-export class UserService {
+export class SupplierService {
 	constructor(
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
@@ -29,12 +27,18 @@ export class UserService {
 		private readonly mailerService: MailerService
 	) {}
 
-	async create(saveUserDto: SaveUserDto): Promise<User> {
+	/**
+	 *
+	 * Create new supplier
+	 * @param saveUserDto
+	 */
+
+	async createSupplier(saveUserDto: SaveSupplierDto): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		const user = await this.userRepository.createUser(saveUserDto, 6);
+		const user = await this.userRepository.createUser(saveUserDto, 4);
 		delete user.password;
-		delete user.salt;
-		if(user)
+        delete user.salt;
+        if(user)
 		{
             this.mailerService
 			.sendMail({
@@ -59,53 +63,26 @@ export class UserService {
 		return user;
 	}
 
-	async updateUser(updateUserDto: UpdateUserDto, UserId: string) {
-		const userId = UserId;
-		const userData = await this.userRepository.findOne({
-			where: { userId, isDeleted: 0 },
-		});
-		if (userData.roleId <= 2) {
-			throw new ForbiddenException(
-				`You are not allowed to access this resource.`
-			);
-		}
-		return await this.userRepository.updateUser(updateUserDto, UserId, 6);
-	}
+	/**
+	 * update supplier
+	 * @param updateUserDto
+	 * @param UserId
+	 */
 
-	async getUserData(userId: string): Promise<User> {
+	async updateSupplier(updateUserDto: UpdateSupplierDto, UserId: string) {
 		try {
-			const user = await this.userRepository.findOne({
-				where: { userId, isDeleted: false },
-			});
-
-			if (!user) {
-				throw new NotFoundException(`No user found`);
+			const userId = UserId;
+			const userData = await this.userRepository.findOne({
+				where: { userId, isDeleted: 0,roleId:4 },
+            });
+            
+            
+			if (userData.roleId <= 1) {
+				throw new ForbiddenException(
+					`You are not allowed to access this resource.`
+				);
 			}
-			delete user.salt;
-			delete user.password;
-			return user;
-		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No user found`);
-			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
-		}
-	}
-
-	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
-		return await this.userRepository.changePassword(changePasswordDto, userId);
-	}
-
-	async listUser(
-		paginationOption: ListUserDto
-	): Promise<{ data: User[]; TotalReseult: number }> {
-		try {
-			return await this.userRepository.listUser(paginationOption, [5,6,7]);
+			return await this.userRepository.updateUser(updateUserDto, UserId , 4);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -120,7 +97,34 @@ export class UserService {
 		}
 	}
 
-	async deleteUser(userId: string) {
+	/**
+	 * - list supplier
+	 * @param paginationOption
+	 */
+	async listSupplier(
+		paginationOption: ListSupplierDto
+	): Promise<{ data: User[]; TotalReseult: number }> {
+		try {
+			return await this.userRepository.listUser(paginationOption, [4]);
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No supplier Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	/**
+	 * delete supplier
+	 * @param userId
+	 */
+	async deleteSupplier(userId: string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -128,21 +132,22 @@ export class UserService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-			if (user.roleId <= 2) {
+
+			if (user.roleId == 1) {
 				throw new ForbiddenException(
 					`You are not allowed to access this resource.`
 				);
 			} else {
 				user.isDeleted = true;
 				await user.save();
-				return { messge: `User deleted successfully` };
+				return { messge: `supplier deleted successfully` };
 			}
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No user Found.&&&id`);
+				throw new NotFoundException(`No supplier Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

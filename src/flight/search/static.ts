@@ -24,7 +24,10 @@ export class Static implements SearchFlight{
             source_location,
             destination_location,
             departure_date,
-            flight_class
+            flight_class,
+            adult_count,
+            child_count,
+            infant_count
         } = searchFlightDto;
 
         let departurePort =  await getManager()
@@ -64,6 +67,7 @@ export class Static implements SearchFlight{
             join: {
                 alias: 'flight_route',
                 leftJoinAndSelect: {
+                    airline: 'flight_route.airline',
                     arrival: 'flight_route.arrival',
                     departure: 'flight_route.departure',
                     flight: 'flight_route.flight'
@@ -72,7 +76,7 @@ export class Static implements SearchFlight{
             where: qb => {
                 qb.where().
                     orWhere(`("arrival"."id" = :arrivalId OR "departure"."id"=:departureId)`,{arrivalId:arrivalId,departureId:departureId}).
-                    andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class}).
+                    //andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class}).
                     andWhere(departure_date==today ? (`"departure_time">=:departure_time`): `1=1`,{departure_time:time}) 
             }
         });
@@ -100,18 +104,25 @@ export class Static implements SearchFlight{
             });
         }
 
-        let searchItem={ stop:0, route_details: [] };
+        let searchItem={ stop:0,  price:0.00,route_details: [] };
         
         if(result.length){
 
             for(let i=0; i < result.length; i++){
                     
-                searchItem={ stop:0, route_details: [] };
+                searchItem={ stop:0, price:0.00, route_details: [] };
                 if(result[i].departure.id ===departureId && result[i].arrival.id===arrivalId){
                 
-                searchItem.stop=1;
-                searchItem.route_details.push(result[i]);
-                searchResult.push(searchItem)
+                    searchItem.stop=0;
+                    searchItem.route_details.push(result[i]);
+                    let totalPrice = searchItem.route_details.map(route=>{
+
+                        return (parseInt(route.adultPrice)*adult_count + parseInt(route.childPrice)*child_count +parseInt(route.infantPrice)*infant_count)  
+                    })
+
+                    searchItem.price = (totalPrice.reduce((a, b) => a + b, 0));
+
+                    searchResult.push(searchItem)
                 }
                 
                 else{
@@ -132,13 +143,21 @@ export class Static implements SearchFlight{
                                 
                         })
                         
-                        searchItem.stop = searchItem.route_details.length;
+                        searchItem.stop = searchItem.route_details.length-1;
+                        let totalPrice = searchItem.route_details.map(route=>{
+                            
+                            return (parseInt(route.adultPrice)*adult_count + parseInt(route.childPrice)*child_count +parseInt(route.infantPrice)*infant_count)  
+                        })
+        
+                        searchItem.price = (totalPrice.reduce((a, b) => a + b, 0));
+                        
+
                         if(searchItem.route_details[searchItem.route_details.length-1].arrival.id!=arrivalId)
                             continue;
                         else
                             searchResult.push(searchItem)
-                        
                     }
+
                 }
             }
 
@@ -149,7 +168,41 @@ export class Static implements SearchFlight{
 
             throw new NotFoundException(`No search result found.`)
         }
-        return searchResult;
+
+        const arrivalTime=[];
+        const departureTime=[];
+        const airlines=[];
+        searchResult.forEach(item=>{
+
+            item.route_details.forEach(subItem=>{
+                departureTime.push(subItem.departureTime);
+                arrivalTime.push(subItem.arrivalTime);
+                airlines.push(subItem.airline.name)
+            })
+        })
+
+        //const minPrice = Math.min.apply(null, searchResult.map(item => item.price));
+        const minPrice = Math.min.apply(null, searchResult.map(item => item.price));
+        const maxPrice = Math.max.apply(null, searchResult.map(item => item.price));
+
+        arrivalTime.sort((a,b) => a.localeCompare(b));
+        departureTime.sort((a,b) => a.localeCompare(b));
+        return {
+            "flight_list":searchResult,
+            "price_range":{
+                "min_price":minPrice,
+                "max_price":maxPrice
+            },
+            "departure_time_duration":{
+                "min_time":departureTime[0],
+                "max_time":departureTime[departureTime.length-1]
+            },
+            "arrival_time_duration":{
+                "min_time":arrivalTime[0],
+                "max_time":arrivalTime[arrivalTime.length-1]
+            },
+            "airlines":[...new Set(airlines)]
+        }
     }
 
     async roundTripSearch(params){

@@ -6,21 +6,26 @@
  * my variables are ${myvar1} and ${myvar2}
  */
 
-import { Controller, Post, Body, ValidationPipe, HttpCode, UseGuards, Get, UseInterceptors, Param } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, HttpCode, UseGuards, Get, UseInterceptors, Param, Put, UploadedFiles, Req, BadRequestException } from '@nestjs/common';
 import { AuthCredentialDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 import { User } from '../entity/user.entity';
-import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/crete-user.dto';
 import { ForgetPasswordDto } from './dto/forget-paasword.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { SentryInterceptor } from 'src/sentry/sentry';
 import { NewPasswordDto } from './dto/new-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { MobileAuthCredentialDto } from './dto/mobile-auth-credentials.dto';
 import { SocialLoginDto } from './dto/social-login.dto';
 import { GetUser } from './get-user.dacorator';
 import { AuthGuard } from '@nestjs/passport';
-
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { editFileName, imageFileFilter } from './file-validator';
+import { ProfilePicDto } from './dto/profile-pic.dto';
+import { SiteUrl } from 'src/decorator/site-url.decorator';
 @ApiTags("Auth")
 @Controller('auth')
 @UseInterceptors(SentryInterceptor)
@@ -52,10 +57,11 @@ export class AuthController {
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @HttpCode(200)
     async signIn(
-        @Body(ValidationPipe) authCredentialDto: AuthCredentialDto
+		@Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
+		@SiteUrl() siteUrl:string
     ) {
 
-        const result = await this.authService.validateUserPassword(authCredentialDto);
+        const result = await this.authService.validateUserPassword(authCredentialDto,siteUrl);
         return result
     }
 
@@ -69,8 +75,11 @@ export class AuthController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@ApiResponse({ status: 403, description: "Forbidden, The user does not have access." })
 	@HttpCode(200)
-	async mobileSignIn(@Body(ValidationPipe) mobileAuthCredentialDto: MobileAuthCredentialDto) {
-		const result = await this.authService.validateUserPasswordMobile(mobileAuthCredentialDto);
+	async mobileSignIn(
+		@Body(ValidationPipe) mobileAuthCredentialDto: MobileAuthCredentialDto,
+		@SiteUrl() siteUrl:string
+	) {
+		const result = await this.authService.validateUserPasswordMobile(mobileAuthCredentialDto,siteUrl);
 		return result;
     }
     
@@ -96,9 +105,10 @@ export class AuthController {
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @HttpCode(200)
     async forgetPassword(
-        @Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto
+		@Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
+		@SiteUrl() siteUrl:string
     ) {
-        return await this.authService.forgetPassword(forgetPasswordDto);
+        return await this.authService.forgetPassword(forgetPasswordDto,siteUrl);
     }
 
     @ApiOperation({ summary: "Reset password of user" })
@@ -136,25 +146,49 @@ export class AuthController {
 	@ApiResponse({ status: 404, description: "User Details not found!, [Invalid user id! Please enter correct user id]" })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async getProfile(
-        @GetUser() user: User
+        @GetUser() user: User,
+		@SiteUrl() siteUrl:string,
     ){
-        return await this.authService.getProfile(user);
+        return await this.authService.getProfile(user,siteUrl);
     }
 
-    //@Put('/profile')
-    @ApiOperation({ summary: "Update Profile Details"})
-    @HttpCode(200)
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success, [Logged out successfully]" })
-	@ApiResponse({ status: 401, description: "Please login to continue." })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "User Details not found!, [Invalid user id! Please enter correct user id]" })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    async updateProfile(
-        @GetUser() user: User
-    ){
-        return await this.authService.getProfile(user);
-    }
+   
 
+	@Put("/profile")
+	@ApiOperation({summary:"Update user profile"})
+	@ApiConsumes("multipart/form-data")
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 400, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	@UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: "profile_pic", maxCount: 1 }
+			],
+			{
+				storage: diskStorage({
+					destination: "./assets/profile",
+					filename: editFileName,
+				}),
+				fileFilter: imageFileFilter,
+				limits:{fileSize:2097152}
+			},
+		),
+	)
+	async updateProfile(
+        @Body() updateProfileDto: UpdateProfileDto,
+        @UploadedFiles() files: ProfilePicDto,
+		@Req() req,
+		@GetUser() user: User,
+	) {
+		
+		if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+        }
+        return await this.authService.updateProfile(updateProfileDto,user,files);
+	}
 }
