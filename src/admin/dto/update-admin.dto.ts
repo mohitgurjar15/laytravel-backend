@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsEmail, MaxLength} from 'class-validator'
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateAdminDto{
 
@@ -24,4 +24,12 @@ export class UpdateAdminDto{
         example: 'Doe'
     })
     lastName: string;
+
+    @ApiPropertyOptional({
+		type: "string",
+		format: "binary",
+		description: "profile Picture Url (Allow Only 'JPG,JPEG,PNG')",
+		example: "profile.jpg",
+	})
+	profile_pic: string;
 }

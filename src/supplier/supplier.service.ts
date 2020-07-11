@@ -17,6 +17,7 @@ import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveSupplierDto } from "./dto/save-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { ListSupplierDto } from "./dto/list-supplier.dto";
+import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 
 @Injectable()
 export class SupplierService {
@@ -69,7 +70,7 @@ export class SupplierService {
 	 * @param UserId
 	 */
 
-	async updateSupplier(updateUserDto: UpdateSupplierDto, UserId: string) {
+	async updateSupplier(updateUserDto: UpdateSupplierDto, UserId: string,files:ProfilePicDto) {
 		try {
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
@@ -82,7 +83,7 @@ export class SupplierService {
 					`You are not allowed to access this resource.`
 				);
 			}
-			return await this.userRepository.updateUser(updateUserDto, UserId , 4);
+			return await this.userRepository.updateUser(updateUserDto,files, UserId , [4]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

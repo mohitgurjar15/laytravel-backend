@@ -16,6 +16,7 @@ import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveSupporterDto } from "./dto/save-supporter.dto";
 import { UpdateSupporterDto } from "./dto/update-supporter.dto";
 import { ListSupporterDto } from "./dto/list-suppoerter.dto";
+import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -68,7 +69,7 @@ export class SupportUserService {
 	 * @param updateUserDto
 	 * @param UserId
 	 */
-	async updateSupportUser(updateSupporterDto: UpdateSupporterDto, UserId: string) {
+	async updateSupportUser(updateSupporterDto: UpdateSupporterDto, UserId: string,files:ProfilePicDto) {
 		try {
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
@@ -79,7 +80,7 @@ export class SupportUserService {
 					`You are not allowed to access this resource.`
 				);
 			}
-			return await this.userRepository.updateUser(updateSupporterDto, UserId,3);
+			return await this.userRepository.updateUser(updateSupporterDto,files, UserId,[3]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

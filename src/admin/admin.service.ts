@@ -25,6 +25,7 @@ import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveAdminDto } from "./dto/save-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";
+import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 
 @Injectable()
 export class AdminService {
@@ -77,7 +78,7 @@ export class AdminService {
 	 * @param UserId
 	 */
 
-	async updateAdmin(updateUserDto: UpdateAdminDto, UserId: string) {
+	async updateAdmin(updateAdminDto: UpdateAdminDto, UserId: string,files:ProfilePicDto) {
 		try {
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
@@ -88,7 +89,7 @@ export class AdminService {
 					`You are not allowed to access this resource.`
 				);
 			}
-			return await this.userRepository.updateUser(updateUserDto, UserId, 2);
+			return await this.userRepository.updateUser(updateAdminDto,files, UserId, [2]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

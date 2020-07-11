@@ -1,7 +1,7 @@
-import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode, Post, Delete } from '@nestjs/common';
+import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode, Post, Delete, UseInterceptors, UploadedFiles, Req, BadRequestException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../entity/user.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -11,6 +11,10 @@ import { SaveUserDto } from './dto/save-user.dto';
 import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Role } from 'src/enum/role.enum';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from "multer";
+import { editFileName, imageFileFilter } from '../auth/file-validator';
+import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -71,17 +75,38 @@ export class UserController {
 
     @Put('/:id')
     @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @ApiConsumes("multipart/form-data")
     @ApiOperation({ summary: "Update user by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
 	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: "profile_pic", maxCount: 1 }
+			],
+			{
+				storage: diskStorage({
+					destination: "./assets/profile",
+					filename: editFileName,
+				}),
+				fileFilter: imageFileFilter,
+				limits:{fileSize:2097152}
+			},
+		),
+	)
     async updateUser(
         @Body(ValidationPipe) updateUserDto: UpdateUserDto,
-        @Param('id') user_id: string
+        @Param('id') user_id: string,
+        @UploadedFiles() files: ProfilePicDto,
+		@Req() req,
     ){
-        return await this.userService.updateUser(updateUserDto,user_id);
+        if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+        }
+        return await this.userService.updateUser(updateUserDto,user_id,files);
     }
 
     @Put('change-password')

@@ -1,5 +1,5 @@
-import { Controller, UseGuards, Post, HttpCode, Body, ValidationPipe, Param, Put, Delete, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, UseGuards, Post, HttpCode, Body, ValidationPipe, Param, Put, Delete, Get, Query, UseInterceptors, UploadedFiles, Req, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/guards/role.guard';
 import { SupportUserService } from './support-user.service';
@@ -13,6 +13,10 @@ import { ListUserDto } from 'src/user/dto/list-user.dto';
 import { SaveSupporterDto } from './dto/save-supporter.dto';
 import { UpdateSupporterDto } from './dto/update-supporter.dto';
 import { ListSupporterDto } from './dto/list-suppoerter.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from "multer";
+import { editFileName, imageFileFilter } from '../auth/file-validator';
+import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
 
 @Controller('support-user')
 @ApiTags("Support-User")
@@ -41,17 +45,38 @@ export class SupportUserController {
      */
 	@Put("/:id")
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiConsumes("multipart/form-data")
 	@ApiOperation({ summary: "Update Support user by Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: "profile_pic", maxCount: 1 }
+			],
+			{
+				storage: diskStorage({
+					destination: "./assets/profile",
+					filename: editFileName,
+				}),
+				fileFilter: imageFileFilter,
+				limits:{fileSize:2097152}
+			},
+		),
+	)
 	async updateUser(
 		@Body(ValidationPipe) updateSupporterDto: UpdateSupporterDto,
-		@Param("id") user_id: string
+		@Param("id") user_id: string,
+		@UploadedFiles() files: ProfilePicDto,
+		@Req() req
 	) {
-		return await this.supportUserService.updateSupportUser(updateSupporterDto, user_id);
+		if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+        }
+		return await this.supportUserService.updateSupportUser(updateSupporterDto, user_id,files);
     }
     
 

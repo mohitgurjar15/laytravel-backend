@@ -18,6 +18,7 @@ import { errorMessage } from "src/config/common.config";
 import { MailerService } from "@nestjs-modules/mailer";
 import { v4 as uuidv4 } from "uuid";
 import * as config from "config";
+import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -59,7 +60,7 @@ export class UserService {
 		return user;
 	}
 
-	async updateUser(updateUserDto: UpdateUserDto, UserId: string) {
+	async updateUser(updateUserDto: UpdateUserDto, UserId: string,files:ProfilePicDto) {
 		const userId = UserId;
 		const userData = await this.userRepository.findOne({
 			where: { userId, isDeleted: 0 },
@@ -69,7 +70,8 @@ export class UserService {
 				`You are not allowed to access this resource.`
 			);
 		}
-		return await this.userRepository.updateUser(updateUserDto, UserId, 6);
+		
+		return await this.userRepository.updateUser(updateUserDto,files, UserId, [5,6,7]);
 	}
 
 	async getUserData(userId: string): Promise<User> {
