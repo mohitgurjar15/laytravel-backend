@@ -1,21 +1,17 @@
-import { SearchFlight } from "./search-flight.interface";
+import { StrategyAirline } from "./strategy.interface";
 import { SearchFlightDto } from "../dto/search-flight.dto";
-import { json } from "express";
-import { async } from "rxjs/internal/scheduler/async";
-import { createQueryBuilder, getManager } from "typeorm";
+import { getManager } from "typeorm";
 import { SeatPlan } from "src/entity/seat-plan.entity";
 import { SeatAllocation } from "src/entity/seat-allocation.entity";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { Airport } from "src/entity/airport.entity";
 
 
-export class Static implements SearchFlight{
+export class Static implements StrategyAirline{
 
     private flightRepository;
-    private seatAllocationRepository;
-    constructor(flightRepository,seatAllocationRepository){
+    constructor(flightRepository){
         this.flightRepository = flightRepository;
-        this.seatAllocationRepository = seatAllocationRepository;
     }
 
     async oneWaySearch(searchFlightDto:SearchFlightDto){
