@@ -34,9 +34,9 @@ export class SupportUserService {
 	 * @param saveUserDto
 	 */
 
-	async createSupportUser(saveSupporterDto: SaveSupporterDto): Promise<User> {
+	async createSupportUser(saveSupporterDto: SaveSupporterDto,files: ProfilePicDto): Promise<User> {
 		const { email, password, first_name, last_name } = saveSupporterDto;
-		const user = await this.userRepository.createUser(saveSupporterDto, 3);
+		const user = await this.userRepository.createUser(saveSupporterDto, 3,files);
 		delete user.password;
 		delete user.salt;
 		if(user)

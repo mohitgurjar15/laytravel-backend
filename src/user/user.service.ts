@@ -30,9 +30,10 @@ export class UserService {
 		private readonly mailerService: MailerService
 	) {}
 
-	async create(saveUserDto: SaveUserDto): Promise<User> {
+	async create(saveUserDto: SaveUserDto,files: ProfilePicDto): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		const user = await this.userRepository.createUser(saveUserDto, 6);
+		
+		const user = await this.userRepository.createUser(saveUserDto, 6,files);
 		delete user.password;
 		delete user.salt;
 		if(user)

@@ -43,10 +43,10 @@ import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveAdminDto } from "./dto/save-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-import { editFileName, imageFileFilter } from '../auth/file-validator';
-import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
+import { editFileName, imageFileFilter } from "../auth/file-validator";
+import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -55,51 +55,71 @@ import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
 export class AdminController {
 	constructor(private adminService: AdminService) {}
 
-    /**
-     * create a sub admin 
-     * @param saveUserDto 
-     * @param user 
-     */
+	/**
+	 * create a sub admin
+	 * @param saveUserDto
+	 * @param user
+	 */
 	@Post()
 	@Roles(Role.SUPER_ADMIN)
+	@ApiConsumes("multipart/form-data")
 	@ApiOperation({ summary: "Create new Sub-Admin by Super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
-	async createUser(@Body() saveAdminDto: SaveAdminDto, @GetUser() user: User) {
-		return await this.adminService.createAdmin(saveAdminDto);
+	@UseInterceptors(
+		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
+			storage: diskStorage({
+				destination: "./assets/profile",
+				filename: editFileName,
+			}),
+			fileFilter: imageFileFilter,
+			limits: { fileSize: 2097152 },
+		})
+	)
+	async createUser(
+		@Body() saveAdminDto: SaveAdminDto,
+		@GetUser() user: User,
+		@UploadedFiles() files: ProfilePicDto,
+		@Req() req 
+	) {
+		if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+		}
+		return await this.adminService.createAdmin(saveAdminDto,files);
 	}
-    /**
-     * Update User and admin 
-     * @param updateUserDto 
-     * @param user_id 
-     */
+	/**
+	 * Update User and admin
+	 * @param updateUserDto
+	 * @param user_id
+	 */
 	@Put("/:id")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiConsumes("multipart/form-data")
 	@ApiOperation({ summary: "Update Sub-Admin by Super-Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@UseInterceptors(
-		FileFieldsInterceptor(
-			[
-				{ name: "profile_pic", maxCount: 1 }
-			],
-			{
-				storage: diskStorage({
-					destination: "./assets/profile",
-					filename: editFileName,
-				}),
-				fileFilter: imageFileFilter,
-				limits:{fileSize:2097152}
-			},
-		),
+		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
+			storage: diskStorage({
+				destination: "./assets/profile",
+				filename: editFileName,
+			}),
+			fileFilter: imageFileFilter,
+			limits: { fileSize: 2097152 },
+		})
 	)
 	async updateUser(
 		@Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
@@ -109,8 +129,8 @@ export class AdminController {
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
-        }
-		return await this.adminService.updateAdmin(updateAdminDto, user_id,files);
+		}
+		return await this.adminService.updateAdmin(updateAdminDto, user_id, files);
 	}
 
 	/**
@@ -122,27 +142,33 @@ export class AdminController {
 	@ApiOperation({ summary: "Delete user and admin  by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async deleteUser(@Param("id") user_id: string) {
 		return await this.adminService.deleteAdmin(user_id);
 	}
 	/**
-	 * 
-	 * @param paginationOption 
+	 *
+	 * @param paginationOption
 	 */
 	@Get()
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
-    @ApiOperation({ summary: "List sub-admin by Super-Admin" })
-    @ApiResponse({ status: 200, description: "Api success" })
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "List sub-admin by Super-Admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    async listAdmin(
-        @Query() paginationOption: ListAdminDto,
-    ): Promise<{data:User[], TotalReseult:number}> {
-        return await this.adminService.listAdmin(paginationOption);
-    }
+	async listAdmin(
+		@Query() paginationOption: ListAdminDto
+	): Promise<{ data: User[]; TotalReseult: number }> {
+		return await this.adminService.listAdmin(paginationOption);
+	}
 }

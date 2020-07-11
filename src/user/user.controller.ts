@@ -56,6 +56,7 @@ export class UserController {
 
     @Post()
     @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @ApiConsumes("multipart/form-data")
     @ApiOperation({ summary: "Create new user by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -63,13 +64,32 @@ export class UserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
+    @UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: "profile_pic", maxCount: 1 }
+			],
+			{
+				storage: diskStorage({
+					destination: "./assets/profile",
+					filename: editFileName,
+				}),
+				fileFilter: imageFileFilter,
+				limits:{fileSize:2097152}
+			},
+		),
+	)
     async createUser(
         @Body() saveUserDto:SaveUserDto,
-        @GetUser() user:User
+        @GetUser() user:User,
+        @UploadedFiles() files: ProfilePicDto,
+		@Req() req,
     ){
-
+        if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+        }
         console.log("user",user)
-        return await this.userService.create(saveUserDto)
+        return await this.userService.create(saveUserDto,files)
     }
 
 

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
 import { IsEqualTo } from 'src/auth/password.decorator';
@@ -84,4 +84,12 @@ export class SaveUserDto {
         example: `M`
     })
     gender : Gender;
+
+    @ApiPropertyOptional({
+		type: "string",
+		format: "binary",
+		description: "profile Picture Url (Allow Only 'JPG,JPEG,PNG')",
+		example: "profile.jpg",
+	})
+	profile_pic: string;
 }

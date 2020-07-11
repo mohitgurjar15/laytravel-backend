@@ -113,7 +113,7 @@ export class UserRepository extends Repository<User>
     }
 
     
-    async createUser(saveUserDto: SaveUserDto,roleId:number): Promise<User> {
+    async createUser(saveUserDto: SaveUserDto,roleId:number,files: ProfilePicDto): Promise<User> {
         const {
             email,
             password,
@@ -127,7 +127,8 @@ export class UserRepository extends Repository<User>
         user.accountType=1;
         user.socialAccountId="";
         user.phoneNo="";
-        user.profilePic="";
+        if(typeof files.profile_pic!='undefined')
+        user.profilePic=files.profile_pic[0].filename;
         user.timezone="";
         user.status=1;
         user.roleId=roleId;

@@ -34,9 +34,9 @@ export class SupplierService {
 	 * @param saveUserDto
 	 */
 
-	async createSupplier(saveUserDto: SaveSupplierDto): Promise<User> {
+	async createSupplier(saveUserDto: SaveSupplierDto,files: ProfilePicDto): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		const user = await this.userRepository.createUser(saveUserDto, 4);
+		const user = await this.userRepository.createUser(saveUserDto, 4,files);
 		delete user.password;
         delete user.salt;
         if(user)
