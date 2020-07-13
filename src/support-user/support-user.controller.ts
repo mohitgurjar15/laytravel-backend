@@ -1,69 +1,56 @@
-/*
- * Created on Mon Jul 06 2020
- *
- * @Auther:- Parth Virani
- * Copyright (c) 2020 Oneclick
- * my variables are ${myvar1} and ${myvar2}
- */
-
 import {
 	Controller,
 	UseGuards,
-	HttpCode,
 	Post,
+	HttpCode,
 	Body,
-	Put,
 	ValidationPipe,
 	Param,
+	Put,
 	Delete,
-	Query,
 	Get,
+	Query,
 	UseInterceptors,
 	UploadedFiles,
 	Req,
 	BadRequestException,
 } from "@nestjs/common";
-import { AdminService } from "./admin.service";
-import { RolesGuard } from "src/guards/role.guard";
-import { AuthGuard } from "@nestjs/passport";
 import {
-	ApiBearerAuth,
 	ApiTags,
+	ApiBearerAuth,
 	ApiOperation,
 	ApiResponse,
 	ApiConsumes,
 } from "@nestjs/swagger";
-import { Roles } from "src/guards/role.decorator";
-import { GetUser } from "src/auth/get-user.dacorator";
-import { SaveUserDto } from "src/user/dto/save-user.dto";
-import { User } from "@sentry/node";
+import { AuthGuard } from "@nestjs/passport";
+import { RolesGuard } from "src/guards/role.guard";
+import { SupportUserService } from "./support-user.service";
 import { Role } from "src/enum/role.enum";
+import { Roles } from "src/guards/role.decorator";
+import { SaveUserDto } from "src/user/dto/save-user.dto";
+import { GetUser } from "src/auth/get-user.dacorator";
+import { User } from "@sentry/node";
 import { UpdateUserDto } from "src/user/dto/update-user.dto";
 import { ListUserDto } from "src/user/dto/list-user.dto";
-import { SaveAdminDto } from "./dto/save-admin.dto";
-import { UpdateAdminDto } from "./dto/update-admin.dto";
-import { ListAdminDto } from "./dto/list-admin.dto";
+import { SaveSupporterDto } from "./dto/save-supporter.dto";
+import { UpdateSupporterDto } from "./dto/update-supporter.dto";
+import { ListSupporterDto } from "./dto/list-suppoerter.dto";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 
-@Controller("admin")
-@ApiTags("Admin")
+@Controller("support-user")
+@ApiTags("Support-User")
 @ApiBearerAuth()
 @UseGuards(AuthGuard(), RolesGuard)
-export class AdminController {
-	constructor(private adminService: AdminService) {}
+export class SupportUserController {
+	constructor(private supportUserService: SupportUserService) {}
 
-	/**
-	 * create a sub admin
-	 * @param saveUserDto
-	 * @param user
-	 */
 	@Post()
-	@Roles(Role.SUPER_ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiConsumes("multipart/form-data")
-	@ApiOperation({ summary: "Create new Sub-Admin by Super admin" })
+	@ApiOperation({ summary: "Create new support user by  admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -84,16 +71,17 @@ export class AdminController {
 		})
 	)
 	async createUser(
-		@Body() saveAdminDto: SaveAdminDto,
+		@Body() saveSupporterDto: SaveSupporterDto,
 		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
-		@Req() req 
+		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.adminService.createAdmin(saveAdminDto,files);
+		return await this.supportUserService.createSupportUser(saveSupporterDto,files);
 	}
+
 	/**
 	 * Update User and admin
 	 * @param updateUserDto
@@ -102,7 +90,7 @@ export class AdminController {
 	@Put("/:id")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiConsumes("multipart/form-data")
-	@ApiOperation({ summary: "Update Sub-Admin by Super-Admin" })
+	@ApiOperation({ summary: "Update Support user by Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -122,7 +110,7 @@ export class AdminController {
 		})
 	)
 	async updateUser(
-		@Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
+		@Body(ValidationPipe) updateSupporterDto: UpdateSupporterDto,
 		@Param("id") user_id: string,
 		@UploadedFiles() files: ProfilePicDto,
 		@Req() req
@@ -130,16 +118,20 @@ export class AdminController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.adminService.updateAdmin(updateAdminDto, user_id, files);
+		return await this.supportUserService.updateSupportUser(
+			updateSupporterDto,
+			user_id,
+			files
+		);
 	}
 
 	/**
-	 * delete All type of user using the Super Admin
+	 * delete supporter
 	 * @param user_id
 	 */
 	@Delete(":id")
-	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "Delete user and admin  by super admin" })
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Delete support user  by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -149,15 +141,16 @@ export class AdminController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async deleteUser(@Param("id") user_id: string) {
-		return await this.adminService.deleteAdmin(user_id);
+		return await this.supportUserService.deleteSupportUser(user_id);
 	}
+
 	/**
-	 *
+	 * list of supporter
 	 * @param paginationOption
 	 */
 	@Get()
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "List sub-admin by Super-Admin" })
+	@ApiOperation({ summary: "List support user by Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -167,8 +160,8 @@ export class AdminController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
-		@Query() paginationOption: ListAdminDto
+		@Query() paginationOption: ListSupporterDto
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.adminService.listAdmin(paginationOption);
+		return await this.supportUserService.listSupportUser(paginationOption);
 	}
 }

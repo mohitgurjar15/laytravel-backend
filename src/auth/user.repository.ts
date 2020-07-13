@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from "typeorm";
+import { Repository, EntityRepository, In } from "typeorm";
 import { User } from "../entity/user.entity";
 import {  BadRequestException, NotFoundException, NotAcceptableException, InternalServerErrorException, UnauthorizedException, ConflictException } from "@nestjs/common";
 import { UpdateUserDto } from "src/user/dto/update-user.dto";
@@ -9,6 +9,7 @@ import { errorMessage } from "src/config/common.config";
 import { SaveUserDto } from "src/user/dto/save-user.dto";
 import { v4 as uuidv4 } from "uuid";
 import { MailerService } from "@nestjs-modules/mailer";
+import { ProfilePicDto } from "./dto/profile-pic.dto";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
@@ -18,18 +19,25 @@ export class UserRepository extends Repository<User>
         return bcrypt.hash(password, salt)
     }
 
-    async updateUser(updateUserDto: UpdateUserDto, userId: string){
+    async updateUser(updateUserDto: UpdateUserDto,files:ProfilePicDto, userId: string , roleId:number[]){
         const { firstName,
             middleName,
-            lastName
+            lastName,
+            profile_pic
             } = updateUserDto;
         const userData = await this.findOne({
-            where: { userId, isDeleted: 0 }
+            where: { userId, isDeleted: 0 ,roleId: In(roleId)}
         });
-
+        
+        if(!userData)
+        {
+            throw new NotFoundException(`No user Found.&&&id`);
+        }
         userData.firstName = firstName;
         userData.middleName = middleName || '';
-        userData.lastName = lastName;       
+        userData.lastName = lastName;
+        if(typeof files.profile_pic!='undefined')
+        userData.profilePic=files.profile_pic[0].filename;       
         userData.updatedDate = new Date();
         /* userData.gender = gender;
         userData.country = country;
@@ -74,20 +82,24 @@ export class UserRepository extends Repository<User>
         }
     }
 
-
-    async listUser(paginationOption: ListUserDto): Promise<{ data: User[], TotalReseult: number }> {
+    /**
+     * list user using own role id and the pagination option 
+     * @param paginationOption 
+     * @param role 
+     */
+    async listUser(paginationOption: ListUserDto,role:number[]): Promise<{ data: User[], TotalReseult: number }> {
         const { page_no, search, limit } = paginationOption;
 
         const take = limit || 10
         const skip = (page_no-1) * limit || 0
         const keyword = search || ''
-
+        
         let where;
         if(keyword){
-             where =`("is_deleted"=false) and ("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%')`
+             where =`("role_id" IN (${role}) and ("is_deleted"=false) and ("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%')`
         }
         else{
-             where = ` ("is_deleted"=false) and 1=1`
+             where = `("role_id" IN (${role}) ) and ("is_deleted"=false) and 1=1`
         }
         const [result, total] = await this.findAndCount({
             where : where,
@@ -100,11 +112,8 @@ export class UserRepository extends Repository<User>
         return { data: result, TotalReseult: total };
     }
 
-
-
-
-
-    async createUser(saveUserDto: SaveUserDto,roleId:number): Promise<User> {
+    
+    async createUser(saveUserDto: SaveUserDto,roleId:number,files: ProfilePicDto): Promise<User> {
         const {
             email,
             password,
@@ -118,7 +127,8 @@ export class UserRepository extends Repository<User>
         user.accountType=1;
         user.socialAccountId="";
         user.phoneNo="";
-        user.profilePic="";
+        if(typeof files.profile_pic!='undefined')
+        user.profilePic=files.profile_pic[0].filename;
         user.timezone="";
         user.status=1;
         user.roleId=roleId;

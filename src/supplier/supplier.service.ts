@@ -1,11 +1,3 @@
-/*
- * Created on Mon Jul 06 2020
- *
- * @Auther:- Parth Virani
- * Copyright (c) 2020 Oneclick
- * my variables are ${myvar1} and ${myvar2}
- */
-
 import {
 	Injectable,
 	ForbiddenException,
@@ -22,13 +14,13 @@ import { UpdateUserDto } from "src/user/dto/update-user.dto";
 const mailConfig = config.get("email");
 import { errorMessage } from "src/config/common.config";
 import { ListUserDto } from "src/user/dto/list-user.dto";
-import { SaveAdminDto } from "./dto/save-admin.dto";
-import { UpdateAdminDto } from "./dto/update-admin.dto";
-import { ListAdminDto } from "./dto/list-admin.dto";
+import { SaveSupplierDto } from "./dto/save-supplier.dto";
+import { UpdateSupplierDto } from "./dto/update-supplier.dto";
+import { ListSupplierDto } from "./dto/list-supplier.dto";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 
 @Injectable()
-export class AdminService {
+export class SupplierService {
 	constructor(
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
@@ -38,16 +30,16 @@ export class AdminService {
 
 	/**
 	 *
-	 * Create new Sub Admin
+	 * Create new supplier
 	 * @param saveUserDto
 	 */
 
-	async createAdmin(saveUserDto: SaveAdminDto,files: ProfilePicDto): Promise<User> {
+	async createSupplier(saveUserDto: SaveSupplierDto,files: ProfilePicDto): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		const user = await this.userRepository.createUser(saveUserDto, 2,files);
+		const user = await this.userRepository.createUser(saveUserDto, 4,files);
 		delete user.password;
-		delete user.salt;
-		if(user)
+        delete user.salt;
+        if(user)
 		{
             this.mailerService
 			.sendMail({
@@ -73,23 +65,25 @@ export class AdminService {
 	}
 
 	/**
-	 * update sub admin  only access to a super admin
+	 * update supplier
 	 * @param updateUserDto
 	 * @param UserId
 	 */
 
-	async updateAdmin(updateAdminDto: UpdateAdminDto, UserId: string,files:ProfilePicDto) {
+	async updateSupplier(updateUserDto: UpdateSupplierDto, UserId: string,files:ProfilePicDto) {
 		try {
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
-				where: { userId, isDeleted: 0 },
-			});
+				where: { userId, isDeleted: 0,roleId:4 },
+            });
+            
+            
 			if (userData.roleId <= 1) {
 				throw new ForbiddenException(
 					`You are not allowed to access this resource.`
 				);
 			}
-			return await this.userRepository.updateUser(updateAdminDto,files, UserId, [2]);
+			return await this.userRepository.updateUser(updateUserDto,files, UserId , [4]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -105,14 +99,14 @@ export class AdminService {
 	}
 
 	/**
-	 * - list Admin by Super admin
+	 * - list supplier
 	 * @param paginationOption
 	 */
-	async listAdmin(
-		paginationOption: ListAdminDto
+	async listSupplier(
+		paginationOption: ListSupplierDto
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [2]);
+			return await this.userRepository.listUser(paginationOption, [4]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -128,10 +122,10 @@ export class AdminService {
 	}
 
 	/**
-	 * delete Admin
+	 * delete supplier
 	 * @param userId
 	 */
-	async deleteAdmin(userId: string) {
+	async deleteSupplier(userId: string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -147,14 +141,14 @@ export class AdminService {
 			} else {
 				user.isDeleted = true;
 				await user.save();
-				return { messge: `User deleted successfully` };
+				return { messge: `supplier deleted successfully` };
 			}
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No user Found.&&&id`);
+				throw new NotFoundException(`No supplier Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
