@@ -4,7 +4,7 @@ import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
 import { IsEqualTo } from 'src/auth/password.decorator';
 
-export class SaveUserDto {
+export class SaveSupplierDto {
 
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`
