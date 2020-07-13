@@ -27,12 +27,14 @@ import { editFileName, imageFileFilter } from './file-validator';
 import { ProfilePicDto } from './dto/profile-pic.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
 import { Role } from 'src/enum/role.enum';
+import { I18nService } from 'nestjs-i18n';
 @ApiTags("Auth")
 @Controller('auth')
 @UseInterceptors(SentryInterceptor)
 export class AuthController {
     constructor(
-        private authService: AuthService
+		private authService: AuthService,
+		private readonly i18n: I18nService
     ) { }
 
     @Post('/signup')
@@ -62,6 +64,7 @@ export class AuthController {
 		@SiteUrl() siteUrl:string,
 		@Req() req
     ) {
+		console.log(await this.i18n.translate('TEST'))
 		const roles = [Role.FREE_USER, Role.PAID_USER];
         const result = await this.authService.validateUserPassword(authCredentialDto,siteUrl,roles,req);
         return result

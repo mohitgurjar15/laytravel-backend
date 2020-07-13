@@ -52,6 +52,7 @@ import { GeneralModule } from './general/general.module';
       parser: I18nJsonParser,
       parserOptions: {
         path: path.join(__dirname, '/i18n/'),
+        watch: true,
       },
       resolvers: [
         { use: QueryResolver, options: ['lang', 'locale', 'l'] }

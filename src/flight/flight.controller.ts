@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
+import { BaggageDetailsDto } from './dto/baggage.dto';
 
 
 @ApiTags('Flight')
@@ -38,5 +39,18 @@ export class FlightController {
     ){
         return await this.flightService.searchFlight(searchFlightDto);
     }
+
+    @Post('/baggage-details')
+    @ApiOperation({ summary: "Flight baggage details" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @HttpCode(200)
+    async baggageDetails(
+       @Body() baggageDetailsDto:BaggageDetailsDto
+    ){
+        //return await this.flightService.searchFlight(searchFlightDto);
+    }
+
     
 }

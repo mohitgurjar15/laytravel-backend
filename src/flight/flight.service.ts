@@ -26,7 +26,11 @@ export class FlightService {
 
         try{
             let result = await this.airportRepository.find({
-                where : `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`
+                where : `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
+                cache : {
+                    id:'flight_search',
+                    milliseconds:15000
+                }
             })
 
             if(!result.length)
