@@ -1,5 +1,5 @@
 {
-    "VALIDATION":{
-        "EMAIL_REQUIRED":"Please enter your email address."
-    }
+
+    "TEST":"Please enter your email address.",
+    "HELLO_MESSAGE": "Hello"   
 }

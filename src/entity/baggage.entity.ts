@@ -3,11 +3,14 @@ import {
   Column,
   Entity,
   Index,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn
 } from "typeorm";
+import { FlightRoute } from "./flight-route.entity";
 
 //@Index("baggage_pk", ["id"], { unique: true })
-@Index("baggage_route_id", ["routeId"], {})
+@Index("baggage_route_id1", ["routeId"], {})
 @Entity("baggage")
 export class Baggage extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
@@ -27,4 +30,11 @@ export class Baggage extends BaseEntity {
 
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
+
+  @ManyToOne(
+    () => FlightRoute,
+    flightRoute => flightRoute.baggages
+  )
+  @JoinColumn([{ name: "route_id", referencedColumnName: "id" }])
+  route: FlightRoute;
 }

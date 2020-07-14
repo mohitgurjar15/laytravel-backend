@@ -13,6 +13,7 @@ export const typeOrmConfig: TypeOrmModuleOptions={
     password: process.env.RDS_Password || dbConfig.password,
     database: process.env.RDS_Database || dbConfig.database,
     logging:true,
+    cache: true,
     entities: [
         __dirname + '/../**/entity/*.entity{.ts,.js}',
     ],

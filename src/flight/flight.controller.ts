@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
+import { BaggageDetailsDto } from './dto/baggage.dto';
 
 
 @ApiTags('Flight')
@@ -19,6 +20,8 @@ export class FlightController {
     @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
     async searchAirport(
         @Param('name', MinCharPipe) name:String
         ){
@@ -32,11 +35,26 @@ export class FlightController {
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async searchFlight(
        @Body() searchFlightDto:SearchFlightDto
     ){
         return await this.flightService.searchFlight(searchFlightDto);
     }
+
+    @Post('/baggage-details')
+    @ApiOperation({ summary: "Flight baggage details" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @HttpCode(200)
+    async baggageDetails(
+       @Body() baggageDetailsDto:BaggageDetailsDto
+    ){
+        //console.log(baggageDetailsDto)
+        return await this.flightService.baggageDetails(baggageDetailsDto);
+    }
+
     
 }

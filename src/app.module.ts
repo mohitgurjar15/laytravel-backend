@@ -21,49 +21,58 @@ import { APP_INTERCEPTOR } from "@nestjs/core";
 import { GeneralModule } from "./general/general.module";
 import { SupplierModule } from "./supplier/supplier.module";
 import { SupportUserModule } from "./support-user/support-user.module";
+import { LangunageModule } from './langunage/langunage.module';
+import { CurrencyModule } from './currency/currency.module';
+import { HotelModule } from './hotel/hotel.module';
 
 @Module({
-	imports: [
-		TypeOrmModule.forRoot(typeOrmConfig),
-		AuthModule,
-		UserModule,
-		MailerModule.forRoot({
-			transport: {
-				host: mailConfig.host,
-				port: mailConfig.port,
-				ignoreTLS: true,
-				secure: mailConfig.secure,
-				auth: {
-					user: mailConfig.user,
-					pass: mailConfig.pass,
-				},
-			},
-			defaults: {
-				from: config.user,
-			},
-			preview: false,
-			template: {
-				dir: "src/config/email_template",
-				adapter: new HandlebarsAdapter(),
-				options: {
-					strict: true,
-				},
-			},
-		}),
-		FlightModule,
-		AdminModule,
-		I18nModule.forRoot({
-			fallbackLanguage: "en",
-			parser: I18nJsonParser,
-			parserOptions: {
-				path: path.join(__dirname, "/i18n/"),
-			},
-			resolvers: [{ use: QueryResolver, options: ["lang", "locale", "l"] }],
-		}),
-		GeneralModule,
-		SupplierModule,
+  imports: [
+    TypeOrmModule.forRoot(typeOrmConfig),
+    AuthModule,
+    UserModule,
+    MailerModule.forRoot({
+      transport: {
+        host: mailConfig.host,
+        port: mailConfig.port,
+        ignoreTLS: true,
+        secure: mailConfig.secure,
+        auth: {
+          user: mailConfig.user,
+          pass: mailConfig.pass,
+        },
+      },
+      defaults: {
+        from: config.user,
+      },
+      preview: false,
+      template: {
+        dir: 'src/config/email_template',
+        adapter: new HandlebarsAdapter(), 
+        options: {
+          strict: true,
+        },
+      },
+    }),
+    FlightModule,
+    AdminModule,
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      parser: I18nJsonParser,
+      parserOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang', 'locale', 'l'] }
+      ]
+    }),
+    GeneralModule,
+    SupplierModule,
 		SupportUserModule,
-		/* CacheModule.register({
+		LangunageModule,
+		CurrencyModule,
+		HotelModule,
+    /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
       port: 6379,
