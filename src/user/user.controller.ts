@@ -81,15 +81,16 @@ export class UserController {
 	)
     async createUser(
         @Body() saveUserDto:SaveUserDto,
-        @GetUser() user:User,
         @UploadedFiles() files: ProfilePicDto,
-		@Req() req,
+        @Req() req,
+        @GetUser() user:User
     ){
         if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
         }
         console.log("user",user)
-        return await this.userService.create(saveUserDto,files)
+        const userId = user.userId;
+        return await this.userService.create(saveUserDto,files,userId)
     }
 
 
@@ -120,13 +121,15 @@ export class UserController {
     async updateUser(
         @Body(ValidationPipe) updateUserDto: UpdateUserDto,
         @Param('id') user_id: string,
+        @GetUser() user:User,
         @UploadedFiles() files: ProfilePicDto,
 		@Req() req,
     ){
         if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
         }
-        return await this.userService.updateUser(updateUserDto,user_id,files);
+        const adminId = user.userId;
+        return await this.userService.updateUser(updateUserDto,user_id,files,adminId);
     }
 
     @Put('change-password')

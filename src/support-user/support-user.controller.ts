@@ -79,11 +79,12 @@ export class SupportUserController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.supportUserService.createSupportUser(saveSupporterDto,files);
+		const adminId = user.userId;
+		return await this.supportUserService.createSupportUser(saveSupporterDto,files,adminId);
 	}
 
 	/**
-	 * Update User and admin
+	 * Update suppoerter admin
 	 * @param updateUserDto
 	 * @param user_id
 	 */
@@ -112,16 +113,19 @@ export class SupportUserController {
 	async updateUser(
 		@Body(ValidationPipe) updateSupporterDto: UpdateSupporterDto,
 		@Param("id") user_id: string,
+		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
+		const adminId = user.userId;
 		return await this.supportUserService.updateSupportUser(
 			updateSupporterDto,
 			user_id,
-			files
+			files,
+			adminId
 		);
 	}
 

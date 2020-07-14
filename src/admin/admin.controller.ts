@@ -92,10 +92,11 @@ export class AdminController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.adminService.createAdmin(saveAdminDto,files);
+		const adminId = user.userId;
+		return await this.adminService.createAdmin(saveAdminDto,files,adminId);
 	}
 	/**
-	 * Update User and admin
+	 * Update sub admin
 	 * @param updateUserDto
 	 * @param user_id
 	 */
@@ -125,12 +126,14 @@ export class AdminController {
 		@Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
 		@Param("id") user_id: string,
 		@UploadedFiles() files: ProfilePicDto,
+		@GetUser() user:User,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.adminService.updateAdmin(updateAdminDto, user_id, files);
+		const adminId = user.userId;
+		return await this.adminService.updateAdmin(updateAdminDto, user_id, files,adminId);
 	}
 
 	/**

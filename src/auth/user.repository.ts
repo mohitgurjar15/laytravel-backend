@@ -19,41 +19,6 @@ export class UserRepository extends Repository<User>
         return bcrypt.hash(password, salt)
     }
 
-    async updateUser(updateUserDto: UpdateUserDto,files:ProfilePicDto, userId: string , roleId:number[]){
-        const { firstName,
-            middleName,
-            lastName,
-            profile_pic
-            } = updateUserDto;
-        const userData = await this.findOne({
-            where: { userId, isDeleted: 0 ,roleId: In(roleId)}
-        });
-        
-        if(!userData)
-        {
-            throw new NotFoundException(`No user Found.&&&id`);
-        }
-        userData.firstName = firstName;
-        userData.middleName = middleName || '';
-        userData.lastName = lastName;
-        if(typeof files.profile_pic!='undefined')
-        userData.profilePic=files.profile_pic[0].filename;       
-        userData.updatedDate = new Date();
-        /* userData.gender = gender;
-        userData.country = country;
-        userData.state = state;
-        userData.city = city;
-        userData.address = address
-        userData.zipCode = zipCode */
-        try {
-            await userData.save();
-            return userData;
-        }
-        catch (error) {
-            throw new InternalServerErrorException(`${error.message}&&&no_key&&&${errorMessage}`)
-        }
-    }
-
     async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
         const { old_password,password } = changePasswordDto;
 
@@ -113,39 +78,11 @@ export class UserRepository extends Repository<User>
     }
 
     
-    async createUser(saveUserDto: SaveUserDto,roleId:number,files: ProfilePicDto): Promise<User> {
-        const {
-            email,
-            password,
-            first_name,
-            last_name,
-            } = saveUserDto;
-
-        const salt = await bcrypt.genSalt();
-        const user = new User();
-        user.userId = uuidv4();
-        user.accountType=1;
-        user.socialAccountId="";
-        user.phoneNo="";
-        if(typeof files.profile_pic!='undefined')
-        user.profilePic=files.profile_pic[0].filename;
-        user.timezone="";
-        user.status=1;
-        user.roleId=roleId;
-        user.email = email;
-        user.firstName = first_name;
-        user.middleName="";
-        user.zipCode="";
-        user.lastName = last_name;
-        user.salt = salt;
-        user.createdDate = new Date();
-        user.updatedDate = new Date();
-        user.password = await this.hashPassword(password, salt);
-
+    async createUser(user: User): Promise<User> {
+        const email = user.email;
         const userExist = await this.findOne({
             email
         })
-
         if(userExist){
             throw new ConflictException(`This email address is already registered with us. Please enter different email address .`);
         }

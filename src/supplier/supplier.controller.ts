@@ -84,7 +84,8 @@ export class SupplierController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.supplierService.createSupplier(saveSupplierDto,files);
+		const adminId = user.userId;
+		return await this.supplierService.createSupplier(saveSupplierDto,files,adminId);
 	}
 	/**
 	 * Update supplier
@@ -116,16 +117,19 @@ export class SupplierController {
 	async updateUser(
 		@Body(ValidationPipe) updateSupplierDto: UpdateSupplierDto,
 		@Param("id") user_id: string,
+		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
+		const adminId = user.userId;
 		return await this.supplierService.updateSupplier(
 			updateSupplierDto,
 			user_id,
-			files
+			files,
+			adminId
 		);
 	}
 

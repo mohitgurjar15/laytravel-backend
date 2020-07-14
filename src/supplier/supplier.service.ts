@@ -7,7 +7,6 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
 import { MailerService } from "@nestjs-modules/mailer";
-import { User } from "@sentry/node";
 import { SaveUserDto } from "src/user/dto/save-user.dto";
 import * as config from "config";
 import { UpdateUserDto } from "src/user/dto/update-user.dto";
@@ -18,6 +17,10 @@ import { SaveSupplierDto } from "./dto/save-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { ListSupplierDto } from "./dto/list-supplier.dto";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
+import * as bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
+import { User } from "src/entity/user.entity";
+import { In } from "typeorm";
 
 @Injectable()
 export class SupplierService {
@@ -36,23 +39,45 @@ export class SupplierService {
 
 	async createSupplier(
 		saveUserDto: SaveSupplierDto,
-		files: ProfilePicDto
+		files: ProfilePicDto,
+		adminId: string
 	): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		const user = await this.userRepository.createUser(saveUserDto, 4, files);
-		delete user.password;
-		delete user.salt;
-		if (user) {
+		const salt = await bcrypt.genSalt();
+		const user = new User();
+		user.userId = uuidv4();
+		user.accountType = 1;
+		user.socialAccountId = "";
+		user.phoneNo = "";
+		if (typeof files.profile_pic != "undefined")
+			user.profilePic = files.profile_pic[0].filename;
+		user.timezone = "";
+		user.status = 1;
+		user.roleId = 4;
+		user.email = email;
+		user.firstName = first_name;
+		user.middleName = "";
+		user.zipCode = "";
+		user.lastName = last_name;
+		user.salt = salt;
+		user.createdBy = adminId
+		user.createdDate = new Date();
+		user.updatedDate = new Date();
+		user.password = await this.userRepository.hashPassword(password, salt);
+		const userdata = await this.userRepository.createUser(user);
+		delete userdata.password;
+		delete userdata.salt;
+		if (userdata) {
 			this.mailerService
 				.sendMail({
-					to: user.email,
+					to: userdata.email,
 					from: mailConfig.from,
 					subject: `Welcome on board`,
 					template: "welcome.html",
 					context: {
 						// Data to be sent to template files.
-						username: user.firstName + " " + user.lastName,
-						email: user.email,
+						username: userdata.firstName + " " + userdata.lastName,
+						email: userdata.email,
 						password: password,
 					},
 				})
@@ -63,7 +88,7 @@ export class SupplierService {
 					console.log("err", err);
 				});
 		}
-		return user;
+		return userdata;
 	}
 
 	/**
@@ -73,27 +98,33 @@ export class SupplierService {
 	 */
 
 	async updateSupplier(
-		updateUserDto: UpdateSupplierDto,
+		updateSupplierDto: UpdateSupplierDto,
 		UserId: string,
-		files: ProfilePicDto
+		files: ProfilePicDto,
+		adminId: string
 	) {
 		try {
+			const {
+				firstName,
+				middleName,
+				lastName,
+				profile_pic,
+			} = updateSupplierDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
-				where: { userId, isDeleted: 0, roleId: 4 },
+				where: { userId, isDeleted: 0, roleId: In([4]) },
 			});
 
-			if (userData.roleId <= 1) {
-				throw new ForbiddenException(
-					`You are not allowed to access this resource.`
-				);
-			}
-			return await this.userRepository.updateUser(
-				updateUserDto,
-				files,
-				UserId,
-				[4]
-			);
+			userData.firstName = firstName;
+			userData.middleName = middleName || "";
+			userData.lastName = lastName;
+			userData.updatedBy = adminId
+			if (typeof files.profile_pic != "undefined")
+				userData.profilePic = files.profile_pic[0].filename;
+			userData.updatedDate = new Date();
+			
+			await userData.save();
+			return userData;
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
