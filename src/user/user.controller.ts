@@ -158,4 +158,22 @@ export class UserController {
         return await this.userService.deleteUser(user_id);
     }
 
+    /**
+	 * export Customer
+	 */
+	@Get('export')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "export customer" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportCustomer(
+	): Promise<{ data: User[]}> {
+		return await this.userService.exportUser();
+	}
 }

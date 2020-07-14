@@ -34,33 +34,39 @@ export class SupportUserService {
 	 * @param saveUserDto
 	 */
 
-	async createSupportUser(saveSupporterDto: SaveSupporterDto,files: ProfilePicDto): Promise<User> {
+	async createSupportUser(
+		saveSupporterDto: SaveSupporterDto,
+		files: ProfilePicDto
+	): Promise<User> {
 		const { email, password, first_name, last_name } = saveSupporterDto;
-		const user = await this.userRepository.createUser(saveSupporterDto, 3,files);
+		const user = await this.userRepository.createUser(
+			saveSupporterDto,
+			3,
+			files
+		);
 		delete user.password;
 		delete user.salt;
-		if(user)
-		{
-            this.mailerService
-			.sendMail({
-				to: user.email,
-				from: mailConfig.from,
-				subject: `Welcome on board`,
-				template: "welcome.html",
-				context: {
-					// Data to be sent to template files.
-					username: user.firstName + " " + user.lastName,
-					email: user.email,
-					password: password,
-				},
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
-        }
+		if (user) {
+			this.mailerService
+				.sendMail({
+					to: user.email,
+					from: mailConfig.from,
+					subject: `Welcome on board`,
+					template: "welcome.html",
+					context: {
+						// Data to be sent to template files.
+						username: user.firstName + " " + user.lastName,
+						email: user.email,
+						password: password,
+					},
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+		}
 		return user;
 	}
 
@@ -69,7 +75,11 @@ export class SupportUserService {
 	 * @param updateUserDto
 	 * @param UserId
 	 */
-	async updateSupportUser(updateSupporterDto: UpdateSupporterDto, UserId: string,files:ProfilePicDto) {
+	async updateSupportUser(
+		updateSupporterDto: UpdateSupporterDto,
+		UserId: string,
+		files: ProfilePicDto
+	) {
 		try {
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
@@ -80,7 +90,12 @@ export class SupportUserService {
 					`You are not allowed to access this resource.`
 				);
 			}
-			return await this.userRepository.updateUser(updateSupporterDto,files, UserId,[3]);
+			return await this.userRepository.updateUser(
+				updateSupporterDto,
+				files,
+				UserId,
+				[3]
+			);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -152,5 +167,10 @@ export class SupportUserService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	//Export user
+	async exportSupporter(): Promise<{ data: User[] }> {
+		return await this.userRepository.exportUser([3]);
 	}
 }

@@ -34,33 +34,35 @@ export class SupplierService {
 	 * @param saveUserDto
 	 */
 
-	async createSupplier(saveUserDto: SaveSupplierDto,files: ProfilePicDto): Promise<User> {
+	async createSupplier(
+		saveUserDto: SaveSupplierDto,
+		files: ProfilePicDto
+	): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		const user = await this.userRepository.createUser(saveUserDto, 4,files);
+		const user = await this.userRepository.createUser(saveUserDto, 4, files);
 		delete user.password;
-        delete user.salt;
-        if(user)
-		{
-            this.mailerService
-			.sendMail({
-				to: user.email,
-				from: mailConfig.from,
-				subject: `Welcome on board`,
-				template: "welcome.html",
-				context: {
-					// Data to be sent to template files.
-					username: user.firstName + " " + user.lastName,
-					email: user.email,
-					password: password,
-				},
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
-        }
+		delete user.salt;
+		if (user) {
+			this.mailerService
+				.sendMail({
+					to: user.email,
+					from: mailConfig.from,
+					subject: `Welcome on board`,
+					template: "welcome.html",
+					context: {
+						// Data to be sent to template files.
+						username: user.firstName + " " + user.lastName,
+						email: user.email,
+						password: password,
+					},
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+		}
 		return user;
 	}
 
@@ -70,20 +72,28 @@ export class SupplierService {
 	 * @param UserId
 	 */
 
-	async updateSupplier(updateUserDto: UpdateSupplierDto, UserId: string,files:ProfilePicDto) {
+	async updateSupplier(
+		updateUserDto: UpdateSupplierDto,
+		UserId: string,
+		files: ProfilePicDto
+	) {
 		try {
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
-				where: { userId, isDeleted: 0,roleId:4 },
-            });
-            
-            
+				where: { userId, isDeleted: 0, roleId: 4 },
+			});
+
 			if (userData.roleId <= 1) {
 				throw new ForbiddenException(
 					`You are not allowed to access this resource.`
 				);
 			}
-			return await this.userRepository.updateUser(updateUserDto,files, UserId , [4]);
+			return await this.userRepository.updateUser(
+				updateUserDto,
+				files,
+				UserId,
+				[4]
+			);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -155,5 +165,9 @@ export class SupplierService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+	//Export user
+	async exportSupplier(): Promise<{ data: User[] }> {
+		return await this.userRepository.exportUser([4]);
 	}
 }

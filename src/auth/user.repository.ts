@@ -154,4 +154,34 @@ export class UserRepository extends Repository<User>
             return user;
         }
     }
+
+
+    /**
+     * export user
+     * @param roleId 
+     */
+    async exportUser(
+		roleId:number[]
+	): Promise<{ data: User[]}> {
+		try {
+			const userData = await this.find({
+				where: {isDeleted: 0 ,roleId: In(roleId)}
+			});
+			if (!userData) {
+				throw new NotFoundException(`No user found.`)
+			}
+			return { data: userData };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
 }

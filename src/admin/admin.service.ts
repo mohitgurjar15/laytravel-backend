@@ -26,6 +26,7 @@ import { SaveAdminDto } from "./dto/save-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
+import { In } from "typeorm";
 
 @Injectable()
 export class AdminService {
@@ -125,6 +126,12 @@ export class AdminService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	//Export user
+	async exportAdmin(
+	): Promise<{ data: User[]}> {
+		return await this.userRepository.exportUser([2]);
 	}
 
 	/**

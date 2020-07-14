@@ -30,38 +30,41 @@ export class UserService {
 		private readonly mailerService: MailerService
 	) {}
 
-	async create(saveUserDto: SaveUserDto,files: ProfilePicDto): Promise<User> {
+	async create(saveUserDto: SaveUserDto, files: ProfilePicDto): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
-		
-		const user = await this.userRepository.createUser(saveUserDto, 6,files);
+
+		const user = await this.userRepository.createUser(saveUserDto, 6, files);
 		delete user.password;
 		delete user.salt;
-		if(user)
-		{
-            this.mailerService
-			.sendMail({
-				to: user.email,
-				from: mailConfig.from,
-				subject: `Welcome on board`,
-				template: "welcome.html",
-				context: {
-					// Data to be sent to template files.
-					username: user.firstName + " " + user.lastName,
-					email: user.email,
-					password: password,
-				},
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
-        }
+		if (user) {
+			this.mailerService
+				.sendMail({
+					to: user.email,
+					from: mailConfig.from,
+					subject: `Welcome on board`,
+					template: "welcome.html",
+					context: {
+						// Data to be sent to template files.
+						username: user.firstName + " " + user.lastName,
+						email: user.email,
+						password: password,
+					},
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+		}
 		return user;
 	}
 
-	async updateUser(updateUserDto: UpdateUserDto, UserId: string,files:ProfilePicDto) {
+	async updateUser(
+		updateUserDto: UpdateUserDto,
+		UserId: string,
+		files: ProfilePicDto
+	) {
 		const userId = UserId;
 		const userData = await this.userRepository.findOne({
 			where: { userId, isDeleted: 0 },
@@ -71,8 +74,12 @@ export class UserService {
 				`You are not allowed to access this resource.`
 			);
 		}
-		
-		return await this.userRepository.updateUser(updateUserDto,files, UserId, [5,6,7]);
+
+		return await this.userRepository.updateUser(updateUserDto, files, UserId, [
+			5,
+			6,
+			7,
+		]);
 	}
 
 	async getUserData(userId: string): Promise<User> {
@@ -108,7 +115,7 @@ export class UserService {
 		paginationOption: ListUserDto
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [5,6,7]);
+			return await this.userRepository.listUser(paginationOption, [5, 6, 7]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -152,5 +159,10 @@ export class UserService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	//Export user
+	async exportUser(): Promise<{ data: User[] }> {
+		return await this.userRepository.exportUser([5,6,7]);
 	}
 }
