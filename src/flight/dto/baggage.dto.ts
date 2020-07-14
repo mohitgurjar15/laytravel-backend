@@ -4,14 +4,14 @@ import { ApiProperty } from "@nestjs/swagger";
 export class BaggageDetailsDto{
     
     @IsNotEmpty({
-		message: `Please enter source location.&&&source_location`,
+		message: `Please enter routes ids.&&&source_location`,
 	})
     @ApiProperty({
-        description:`From Airport Location`,
-        example:`ADS`
+        description:`Route ids`,
+        example:[1,3]
     })
-    @ValidateNested({ each: true })
-    flights: Baggage[]
+    //@ValidateNested({ each: true })
+    routes: number[]
 }
 
 class Baggage{

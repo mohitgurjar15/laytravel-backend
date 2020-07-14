@@ -12,6 +12,7 @@ import { Airline } from "./airline.entity";
 import { Airport } from "./airport.entity";
 import { Flight } from "./flight.entity";
 import { SeatAllocation } from "./seat-allocation.entity";
+import { Baggage } from "./baggage.entity";
 
 @Index("flight_route_airline_id", ["airlineId"], {})
 @Index("flight_route_arrival_id", ["arrivalId"], {})
@@ -113,4 +114,10 @@ export class FlightRoute extends BaseEntity {
     seatAllocation => seatAllocation.route
   )
   seatAllocations: SeatAllocation[];
+
+  @OneToMany(
+    () => Baggage,
+    baggage => baggage.route
+  )
+  baggages: Baggage[];
 }

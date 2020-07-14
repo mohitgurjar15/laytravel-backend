@@ -21,6 +21,9 @@ import { APP_INTERCEPTOR } from "@nestjs/core";
 import { GeneralModule } from "./general/general.module";
 import { SupplierModule } from "./supplier/supplier.module";
 import { SupportUserModule } from "./support-user/support-user.module";
+import { LangunageModule } from './langunage/langunage.module';
+import { CurrencyModule } from './currency/currency.module';
+import { HotelModule } from './hotel/hotel.module';
 
 @Module({
   imports: [
@@ -66,6 +69,9 @@ import { SupportUserModule } from "./support-user/support-user.module";
     GeneralModule,
     SupplierModule,
 		SupportUserModule,
+		LangunageModule,
+		CurrencyModule,
+		HotelModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
