@@ -20,6 +20,8 @@ export class FlightController {
     @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
     async searchAirport(
         @Param('name', MinCharPipe) name:String
         ){
@@ -33,6 +35,7 @@ export class FlightController {
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async searchFlight(
        @Body() searchFlightDto:SearchFlightDto
@@ -49,7 +52,8 @@ export class FlightController {
     async baggageDetails(
        @Body() baggageDetailsDto:BaggageDetailsDto
     ){
-        //return await this.flightService.searchFlight(searchFlightDto);
+        //console.log(baggageDetailsDto)
+        return await this.flightService.baggageDetails(baggageDetailsDto);
     }
 
     

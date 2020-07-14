@@ -5,6 +5,7 @@ import { SeatPlan } from "src/entity/seat-plan.entity";
 import { SeatAllocation } from "src/entity/seat-allocation.entity";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { Airport } from "src/entity/airport.entity";
+import { FlightRoute } from "src/entity/flight-route.entity";
 
 
 export class Static implements StrategyAirline{
@@ -59,9 +60,12 @@ export class Static implements StrategyAirline{
        
         let searchResult=[];
 
-        const result = await this.flightRepository.find({
+        /* const result = await this.flightRepository.find({
             join: {
                 alias: 'flight_route',
+                select :[
+                    "flight_route.id"
+                ],
                 leftJoinAndSelect: {
                     airline: 'flight_route.airline',
                     arrival: 'flight_route.arrival',
@@ -75,7 +79,26 @@ export class Static implements StrategyAirline{
                     //andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class}).
                     andWhere(departure_date==today ? (`"departure_time">=:departure_time`): `1=1`,{departure_time:time}) 
             }
-        });
+        }); */
+        let result =  await getManager()
+            .createQueryBuilder(FlightRoute, "FlightRoute")
+            .leftJoinAndSelect("FlightRoute.airline","airline")
+            .leftJoinAndSelect("FlightRoute.arrival","arrival")
+            .leftJoinAndSelect("FlightRoute.departure","departure")
+            .leftJoinAndSelect("FlightRoute.flight","flight")
+            .select([
+                "FlightRoute.id","FlightRoute.departureTime","FlightRoute.arrivalTime",
+                "FlightRoute.departureId","FlightRoute.arrivalId","FlightRoute.adultPrice",
+                "FlightRoute.childPrice","FlightRoute.infantPrice",
+                "airline.id","airline.name","airline.logo",
+                "arrival.id","arrival.code","arrival.name",
+                "departure.id","departure.code","departure.name",
+                "flight.id","flight.flightNumber","flight.class"
+            ])
+            .orWhere(`("arrival"."id" = :arrivalId OR "departure"."id"=:departureId)`,{arrivalId:arrivalId,departureId:departureId})
+            .andWhere(departure_date==today ? (`"departure_time">=:departure_time`): `1=1`,{departure_time:time}) 
+            //.andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class})
+            .getMany();
 
         if(result.length > 0){
             
@@ -131,7 +154,7 @@ export class Static implements StrategyAirline{
                             
                             if(res.departure.id === xArrivalId && (res.departure.id !==departureId) && i!=j){
                                 searchItem.route_details.push(res);
-                                xArrivalId = res.arrival.arrivalId;
+                                xArrivalId = res.arrival.id;
                             }
                             
                             if(xArrivalId==arrivalId)
