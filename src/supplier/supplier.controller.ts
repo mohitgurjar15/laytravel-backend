@@ -39,6 +39,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
+import { SiteUrl } from "src/decorator/site-url.decorator";
 
 @Controller("supplier-user")
 @ApiTags("Supplier User")
@@ -84,7 +85,8 @@ export class SupplierController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.supplierService.createSupplier(saveSupplierDto,files);
+		const adminId = user.userId;
+		return await this.supplierService.createSupplier(saveSupplierDto,files,adminId);
 	}
 	/**
 	 * Update supplier
@@ -116,16 +118,19 @@ export class SupplierController {
 	async updateUser(
 		@Body(ValidationPipe) updateSupplierDto: UpdateSupplierDto,
 		@Param("id") user_id: string,
+		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
+		const adminId = user.userId;
 		return await this.supplierService.updateSupplier(
 			updateSupplierDto,
 			user_id,
-			files
+			files,
+			adminId
 		);
 	}
 
@@ -163,8 +168,29 @@ export class SupplierController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
-		@Query() paginationOption: ListSupplierDto
+		@Query() paginationOption: ListSupplierDto,
+		@SiteUrl() siteUrl:string,
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.supplierService.listSupplier(paginationOption);
+		return await this.supplierService.listSupplier(paginationOption,siteUrl);
+	}
+
+
+	/**
+	 * export supplier
+	 */
+	@Get('export')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "export supplier user by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportSupplier(
+	): Promise<{ data: User[]}> {
+		return await this.supplierService.exportSupplier();
 	}
 }
