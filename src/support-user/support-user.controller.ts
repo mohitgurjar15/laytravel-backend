@@ -39,6 +39,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
+import { SiteUrl } from "src/decorator/site-url.decorator";
 
 @Controller("support-user")
 @ApiTags("Support-User")
@@ -164,9 +165,9 @@ export class SupportUserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
-		@Query() paginationOption: ListSupporterDto
+		@Query() paginationOption: ListSupporterDto,@SiteUrl() siteUrl:string,
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.supportUserService.listSupportUser(paginationOption);
+		return await this.supportUserService.listSupportUser(paginationOption,siteUrl);
 	}
 
 	/**

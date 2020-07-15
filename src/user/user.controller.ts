@@ -15,6 +15,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from '../auth/file-validator';
 import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
+import { SiteUrl } from 'src/decorator/site-url.decorator';
 
 @ApiTags('User')
 @Controller('user')
@@ -36,8 +37,9 @@ export class UserController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
     async listUser(
         @Query() paginationOption: ListUserDto,
+        @SiteUrl() siteUrl:string,
     ): Promise<{data:User[], TotalReseult:number}> {
-        return await this.userService.listUser(paginationOption);
+        return await this.userService.listUser(paginationOption,siteUrl);
     }
 
     @Get('/:id')

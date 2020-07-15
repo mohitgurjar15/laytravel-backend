@@ -144,10 +144,11 @@ export class SupplierService {
 	 * @param paginationOption
 	 */
 	async listSupplier(
-		paginationOption: ListSupplierDto
+		paginationOption: ListSupplierDto,
+		siteUrl:string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [4]);
+			return await this.userRepository.listUser(paginationOption, [4],siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

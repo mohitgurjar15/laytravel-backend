@@ -10,6 +10,7 @@ import { SaveUserDto } from "src/user/dto/save-user.dto";
 import { v4 as uuidv4 } from "uuid";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ProfilePicDto } from "./dto/profile-pic.dto";
+import { SiteUrl } from "src/decorator/site-url.decorator";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
@@ -52,7 +53,7 @@ export class UserRepository extends Repository<User>
      * @param paginationOption 
      * @param role 
      */
-    async listUser(paginationOption: ListUserDto,role:number[]): Promise<{ data: User[], TotalReseult: number }> {
+    async listUser(paginationOption: ListUserDto,role:number[],siteUrl:string): Promise<{ data: User[], TotalReseult: number }> {
         const { page_no, search, limit } = paginationOption;
 
         const take = limit || 10
@@ -70,6 +71,9 @@ export class UserRepository extends Repository<User>
             where : where,
             skip: skip,
             take: take,
+        });
+        result.forEach(function(data) {
+            data.profilePic = data.profilePic ? `${siteUrl}/profile/${data.profilePic}`:"";
         });
         if (!result || total <= skip) {
             throw new NotFoundException(`No user found.`)

@@ -143,10 +143,11 @@ export class SupportUserService {
 	 * @param paginationOption
 	 */
 	async listSupportUser(
-		paginationOption: ListSupporterDto
+		paginationOption: ListSupporterDto,
+		siteUrl:string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [3]);
+			return await this.userRepository.listUser(paginationOption, [3],siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

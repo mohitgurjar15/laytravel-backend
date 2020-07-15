@@ -66,14 +66,14 @@ export class UserService {
 		user.lastName = last_name;
 		user.salt = salt;
 		user.title = title;
-		user.countryCode = country_code;
+		//user.countryCode = country_code;
 		user.phoneNo = phone_no;
-		user.countryId = country_id;
+		//user.countryId = country_id;
 		user.address = address;
 		user.stateId = state_id;
 		user.cityName = city_name;
 		user.gender = gender;
-		// user.createdBy = adminId;
+		user.createdBy = adminId;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
@@ -185,10 +185,11 @@ export class UserService {
 	}
 
 	async listUser(
-		paginationOption: ListUserDto
+		paginationOption: ListUserDto,
+		siteUrl:string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [5, 6, 7]);
+			return await this.userRepository.listUser(paginationOption, [5, 6, 7],siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

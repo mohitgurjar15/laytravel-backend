@@ -156,10 +156,11 @@ export class AdminService {
 	 * @param paginationOption
 	 */
 	async listAdmin(
-		paginationOption: ListAdminDto
+		paginationOption: ListAdminDto,
+		siteUrl:string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [2]);
+			return await this.userRepository.listUser(paginationOption, [2],siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
