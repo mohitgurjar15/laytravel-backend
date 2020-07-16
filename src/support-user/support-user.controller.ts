@@ -39,6 +39,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
+import { SiteUrl } from "src/decorator/site-url.decorator";
 
 @Controller("support-user")
 @ApiTags("Support-User")
@@ -79,11 +80,12 @@ export class SupportUserController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.supportUserService.createSupportUser(saveSupporterDto,files);
+		const adminId = user.userId;
+		return await this.supportUserService.createSupportUser(saveSupporterDto,files,adminId);
 	}
 
 	/**
-	 * Update User and admin
+	 * Update suppoerter admin
 	 * @param updateUserDto
 	 * @param user_id
 	 */
@@ -112,16 +114,19 @@ export class SupportUserController {
 	async updateUser(
 		@Body(ValidationPipe) updateSupporterDto: UpdateSupporterDto,
 		@Param("id") user_id: string,
+		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
+		const adminId = user.userId;
 		return await this.supportUserService.updateSupportUser(
 			updateSupporterDto,
 			user_id,
-			files
+			files,
+			adminId
 		);
 	}
 
@@ -160,8 +165,27 @@ export class SupportUserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
-		@Query() paginationOption: ListSupporterDto
+		@Query() paginationOption: ListSupporterDto,@SiteUrl() siteUrl:string,
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.supportUserService.listSupportUser(paginationOption);
+		return await this.supportUserService.listSupportUser(paginationOption,siteUrl);
+	}
+
+	/**
+	 * export supporter
+	 */
+	@Get('export')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "export support user by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportSuppoerter(
+	): Promise<{ data: User[]}> {
+		return await this.supportUserService.exportSupporter();
 	}
 }

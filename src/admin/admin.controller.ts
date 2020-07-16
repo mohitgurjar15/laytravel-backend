@@ -47,6 +47,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
+import { SiteUrl } from "src/decorator/site-url.decorator";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -92,10 +93,11 @@ export class AdminController {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.adminService.createAdmin(saveAdminDto,files);
+		const adminId = user.userId;
+		return await this.adminService.createAdmin(saveAdminDto,files,adminId);
 	}
 	/**
-	 * Update User and admin
+	 * Update sub admin
 	 * @param updateUserDto
 	 * @param user_id
 	 */
@@ -125,12 +127,14 @@ export class AdminController {
 		@Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
 		@Param("id") user_id: string,
 		@UploadedFiles() files: ProfilePicDto,
+		@GetUser() user:User,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
-		return await this.adminService.updateAdmin(updateAdminDto, user_id, files);
+		const adminId = user.userId;
+		return await this.adminService.updateAdmin(updateAdminDto, user_id, files,adminId);
 	}
 
 	/**
@@ -167,8 +171,30 @@ export class AdminController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
-		@Query() paginationOption: ListAdminDto
+		@Query() paginationOption: ListAdminDto,
+		@SiteUrl() siteUrl:string,
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.adminService.listAdmin(paginationOption);
+		return await this.adminService.listAdmin(paginationOption,siteUrl);
+	}
+
+	
+
+	/**
+	 * export admin
+	 */
+	@Get('export')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "export admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportAdmin(
+	): Promise<{ data: User[]}> {
+		return await this.adminService.exportAdmin();
 	}
 }

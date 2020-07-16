@@ -10,6 +10,7 @@ import { SaveUserDto } from "src/user/dto/save-user.dto";
 import { v4 as uuidv4 } from "uuid";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ProfilePicDto } from "./dto/profile-pic.dto";
+import { SiteUrl } from "src/decorator/site-url.decorator";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
@@ -17,41 +18,6 @@ export class UserRepository extends Repository<User>
     
     hashPassword(password: string, salt: string): Promise<string> {
         return bcrypt.hash(password, salt)
-    }
-
-    async updateUser(updateUserDto: UpdateUserDto,files:ProfilePicDto, userId: string , roleId:number[]){
-        const { firstName,
-            middleName,
-            lastName,
-            profile_pic
-            } = updateUserDto;
-        const userData = await this.findOne({
-            where: { userId, isDeleted: 0 ,roleId: In(roleId)}
-        });
-        
-        if(!userData)
-        {
-            throw new NotFoundException(`No user Found.&&&id`);
-        }
-        userData.firstName = firstName;
-        userData.middleName = middleName || '';
-        userData.lastName = lastName;
-        if(typeof files.profile_pic!='undefined')
-        userData.profilePic=files.profile_pic[0].filename;       
-        userData.updatedDate = new Date();
-        /* userData.gender = gender;
-        userData.country = country;
-        userData.state = state;
-        userData.city = city;
-        userData.address = address
-        userData.zipCode = zipCode */
-        try {
-            await userData.save();
-            return userData;
-        }
-        catch (error) {
-            throw new InternalServerErrorException(`${error.message}&&&no_key&&&${errorMessage}`)
-        }
     }
 
     async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
@@ -87,7 +53,7 @@ export class UserRepository extends Repository<User>
      * @param paginationOption 
      * @param role 
      */
-    async listUser(paginationOption: ListUserDto,role:number[]): Promise<{ data: User[], TotalReseult: number }> {
+    async listUser(paginationOption: ListUserDto,role:number[],siteUrl:string): Promise<{ data: User[], TotalReseult: number }> {
         const { page_no, search, limit } = paginationOption;
 
         const take = limit || 10
@@ -106,6 +72,9 @@ export class UserRepository extends Repository<User>
             skip: skip,
             take: take,
         });
+        result.forEach(function(data) {
+            data.profilePic = data.profilePic ? `${siteUrl}/profile/${data.profilePic}`:"";
+        });
         if (!result || total <= skip) {
             throw new NotFoundException(`No user found.`)
         }
@@ -113,39 +82,11 @@ export class UserRepository extends Repository<User>
     }
 
     
-    async createUser(saveUserDto: SaveUserDto,roleId:number,files: ProfilePicDto): Promise<User> {
-        const {
-            email,
-            password,
-            first_name,
-            last_name,
-            } = saveUserDto;
-
-        const salt = await bcrypt.genSalt();
-        const user = new User();
-        user.userId = uuidv4();
-        user.accountType=1;
-        user.socialAccountId="";
-        user.phoneNo="";
-        if(typeof files.profile_pic!='undefined')
-        user.profilePic=files.profile_pic[0].filename;
-        user.timezone="";
-        user.status=1;
-        user.roleId=roleId;
-        user.email = email;
-        user.firstName = first_name;
-        user.middleName="";
-        user.zipCode="";
-        user.lastName = last_name;
-        user.salt = salt;
-        user.createdDate = new Date();
-        user.updatedDate = new Date();
-        user.password = await this.hashPassword(password, salt);
-
+    async createUser(user: User): Promise<User> {
+        const email = user.email;
         const userExist = await this.findOne({
             email
         })
-
         if(userExist){
             throw new ConflictException(`This email address is already registered with us. Please enter different email address .`);
         }
@@ -154,4 +95,34 @@ export class UserRepository extends Repository<User>
             return user;
         }
     }
+
+
+    /**
+     * export user
+     * @param roleId 
+     */
+    async exportUser(
+		roleId:number[]
+	): Promise<{ data: User[]}> {
+		try {
+			const userData = await this.find({
+				where: {isDeleted: 0 ,roleId: In(roleId)}
+			});
+			if (!userData) {
+				throw new NotFoundException(`No user found.`)
+			}
+			return { data: userData };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
 }
