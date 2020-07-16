@@ -235,7 +235,7 @@ export class AuthService {
             tokenhash
         };
         const forgetPassToken = this.jwtService.sign(payload);
-        const resetLink = `${siteUrl}/v1/auth/forget-password?token=${forgetPassToken}`;
+        const resetLink = `http://laytrip.oneclickitmarketing.co.in/reset-password?token=${forgetPassToken}`;
         this.mailerService.sendMail({
             to: email,
             from: "no-reply@laytrip.com",
