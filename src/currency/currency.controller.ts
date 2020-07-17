@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Put, Patch, Delete, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Patch, Delete, UseGuards, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
@@ -7,88 +7,111 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 import { CurrencyStatusDto } from './dto/currency-status.dto';
+import { ListCurrencyDto } from './dto/list-currency.dto';
+import { SiteUrl } from 'src/decorator/site-url.decorator';
+import { Currency } from 'src/entity/currency.entity';
+import { CurrencyService } from './currency.service';
+import { GetUser } from 'src/auth/get-user.dacorator';
+import { User } from '@sentry/node';
 
 @Controller('currency')
 @ApiTags('Currency')
 @ApiBearerAuth()
 export class CurrencyController {
+    constructor(private currencyService: CurrencyService) {}
+    	/**
+	 *
+	 * @param paginationOption
+	 */
+	@Get()
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "List currency by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "currency not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listAdmin(
+		@Query() paginationOption: ListCurrencyDto
+	): Promise<{ data: Currency[]; TotalReseult: number }> {
+		return await this.currencyService.listCurrency(paginationOption);
+	}
 
-    @ApiOperation({ summary: "List all currency"})
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Not Found' })
-    @Get()
-    listCurrency(){
+    @Get("/:id")
+	@ApiOperation({ summary: "get a detail of currency" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getLangunage(@Param("id") id: number): Promise<Currency> {
+		return await this.currencyService.CurrencyDetail(id);
+	}
 
-        return "API is pending";
-    }
-
-    @ApiOperation({ summary: "Get currency details"})
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Not Found' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Get('/:id')
-    getCurrency(
-        @Param('id') id:number
-    ){
-        return "API is pending";
-    }
-
-    @Roles(Role.SUPER_ADMIN)
-    @UseGuards(AuthGuard(),RolesGuard)
-    @ApiOperation({ summary: "Save new currency by super admin"})
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post()
-    saveCurrency(
-        @Body() createCurrencyDto:CreateCurrencyDto
-    ){
-        return "API is pending";
-    }
-
-    @Roles(Role.SUPER_ADMIN)
-    @UseGuards(AuthGuard(),RolesGuard)
-    @ApiOperation({ summary: "Update currency by super admin"})
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Not Found' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Put('/:id')
-    updateCurrency(
-        @Param('id') id:number,
-        @Body() updateCurrencyDto:UpdateCurrencyDto
-    ){
-        return "API is pending";
-    }
-
-    @Roles(Role.SUPER_ADMIN)
-    @UseGuards(AuthGuard(),RolesGuard)
-    @ApiOperation({ summary: "Change status by super admin"})
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Not Found' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Patch('/:id')
-    changeStatus(
-        @Param('id') id:number,
-        @Body() currencyStatusDto:CurrencyStatusDto 
-    ){
-        return "API is pending";
-    }
+    // @Roles(Role.SUPER_ADMIN)
+    // @UseGuards(AuthGuard(),RolesGuard)
+    // @ApiOperation({ summary: "Save new currency by super admin"})
+    // @ApiResponse({ status: 200, description: 'Api success' })
+    // @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @Post()
+    // async saveCurrency(
+    //     @Body() createCurrencyDto:CreateCurrencyDto,@GetUser() user: User
+    // ){
+	// 	const adminId = user.userId;
+	// 	return await this.currencyService.CurrencyInsert(createCurrencyDto,adminId);
+	
+    // }
 
     @Roles(Role.SUPER_ADMIN)
-    @UseGuards(AuthGuard(),RolesGuard)
-    @ApiOperation({ summary: "Delete currency by super admin"})
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Not Found' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Delete('/:id')
-    deleteCurrency(
-        @Param('id') id:number
-    ){
-        return "API is pending";
-    }
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "Update Currency rate by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Put("/:id")
+	async updateCurrency(
+		@Param("id") id: number,
+
+		@Body() updateCurrencyDto: UpdateCurrencyDto,
+		@GetUser() user: User
+	):Promise<{ message : string}> {
+        const adminId = user.userId;
+		return await this.currencyService.CurrencyUpdate(id, updateCurrencyDto,adminId);
+	}
+
+    // @Roles(Role.SUPER_ADMIN)
+    // @UseGuards(AuthGuard(),RolesGuard)
+    // @ApiOperation({ summary: "Change status by super admin"})
+    // @ApiResponse({ status: 200, description: 'Api success' })
+    // @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    // @ApiResponse({ status: 404, description: 'Not Found' })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @Patch('/:id')
+    // changeStatus(
+    //     @Param('id') id:number,
+    //     @Body() currencyStatusDto:CurrencyStatusDto 
+    // ){
+    //     return "API is pending";
+    // }
+
+    @Roles(Role.SUPER_ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "Delete Currency by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Delete("/:id")
+	async deleteCurrency(@Param("id") id: number,@GetUser() user: User):Promise<{ message : string}> {
+		const adminId = user.userId;
+		return await this.currencyService.CurrencyDelete(id,adminId);
+	}
 }

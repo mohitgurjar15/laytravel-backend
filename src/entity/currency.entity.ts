@@ -37,7 +37,7 @@ export class Currency extends BaseEntity {
   createdDate: string;
 
   @Column("date", { name: "updated_date" })
-  updatedDate: string;
+  updatedDate: Date;
 
   @OneToMany(
     () => Booking,

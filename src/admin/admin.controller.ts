@@ -22,6 +22,7 @@ import {
 	UploadedFiles,
 	Req,
 	BadRequestException,
+	Patch,
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { RolesGuard } from "src/guards/role.guard";
@@ -88,13 +89,13 @@ export class AdminController {
 		@Body() saveAdminDto: SaveAdminDto,
 		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
-		@Req() req 
+		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
 		const adminId = user.userId;
-		return await this.adminService.createAdmin(saveAdminDto,files,adminId);
+		return await this.adminService.createAdmin(saveAdminDto, files, adminId);
 	}
 	/**
 	 * Update sub admin
@@ -127,18 +128,23 @@ export class AdminController {
 		@Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
 		@Param("id") user_id: string,
 		@UploadedFiles() files: ProfilePicDto,
-		@GetUser() user:User,
+		@GetUser() user: User,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
 		const adminId = user.userId;
-		return await this.adminService.updateAdmin(updateAdminDto, user_id, files,adminId);
+		return await this.adminService.updateAdmin(
+			updateAdminDto,
+			user_id,
+			files,
+			adminId
+		);
 	}
 
 	/**
-	 * delete All type of user using the Super Admin
+	 * Active type of user using the Super Admin
 	 * @param user_id
 	 */
 	@Delete(":id")
@@ -154,6 +160,38 @@ export class AdminController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async deleteUser(@Param("id") user_id: string) {
 		return await this.adminService.deleteAdmin(user_id);
+	}
+
+	@Patch("active-user:id")
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "Active the user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async activeUser(@Param("id") user_id: string, @GetUser() user: User) {
+		const adminId = user.userId;
+		return await this.adminService.activeUser(user_id, adminId);
+	}
+
+	@Patch("deactive-user:id")
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "Active the user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async deActiveUser(@Param("id") user_id: string, @GetUser() user: User) {
+		const adminId = user.userId;
+		return await this.adminService.deActiveUser(user_id, adminId);
 	}
 	/**
 	 *
@@ -172,17 +210,55 @@ export class AdminController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
 		@Query() paginationOption: ListAdminDto,
-		@SiteUrl() siteUrl:string,
+		@SiteUrl() siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.adminService.listAdmin(paginationOption,siteUrl);
+		return await this.adminService.listAdmin(paginationOption, siteUrl);
 	}
 
-	
+	/**
+	 * Get count of user base on status
+	 * 
+	 */
+	@Get('get-counts')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "get-counts Of all user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getCount(
+	):Promise<{ result : any }>{
+		return await this.adminService.getCounts();
+	}
+
+	/**
+	 * return count of user ragister in current weak 
+	 */
+
+	@Get('weekly-ragister-user')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "get-counts Of user which ragister in current week" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async weeklyRagisterUser(
+	): Promise<{ count: number }>{
+		return await this.adminService.weeklyRagisterUser();
+	}
 
 	/**
 	 * export admin
 	 */
-	@Get('export')
+	@Get("export")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "export admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -193,8 +269,7 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportAdmin(
-	): Promise<{ data: User[]}> {
+	async exportAdmin(): Promise<{ data: User[] }> {
 		return await this.adminService.exportAdmin();
 	}
 }

@@ -37,7 +37,6 @@ export class FlightService {
 
             if(!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`)
-            
             return result;
         }
         catch(error){
