@@ -29,6 +29,8 @@ import { In } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { User } from "src/entity/user.entity";
+import { Role } from "src/enum/role.enum";
+import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 
 @Injectable()
 export class AdminService {
@@ -213,27 +215,56 @@ export class AdminService {
 		}
 	}
 
-	async activeUser(userId: string, adminId: string) {
+	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
 			const user = await this.userRepository.findOne({
+				where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
+			});
+
+			if (!user) {
+				throw new NotFoundException(`No Admin found`);
+			}
+			delete user.salt;
+			delete user.password;
+			user.profilePic = user.profilePic
+				? `${siteUrl}/profile/${user.profilePic}`
+				: "";
+			return user;
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No Admin found`);
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+	async activeDeactiveAdmin(
+		userId: string,
+		activeDeactiveDto: ActiveDeactiveDto,
+		adminId: string
+	) {
+		try {
+			const { status } = activeDeactiveDto;
+			const user = await this.userRepository.findOne({
 				userId,
-				status: 2,
+				roleId: In([Role.ADMIN]),
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
 
-			if (user.roleId == 1) {
-				throw new ForbiddenException(
-					`You are not allowed to access this resource.`
-				);
-			} else {
-				user.status = 1;
-				user.updatedBy = adminId;
-				user.isDeleted = true;
-				user.updatedDate = new Date();
-				await user.save();
-				return { messge: `User Active successfully` };
-			}
+			console.log(status);
+
+			user.status = status;
+			user.updatedBy = adminId;
+			user.isDeleted = true;
+			user.updatedDate = new Date();
+			await user.save();
+			var statusWord = status == 1 ? "Active" : "Deactive";
+			return { messge: `User ${statusWord} successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -248,11 +279,12 @@ export class AdminService {
 		}
 	}
 
-	async getCounts(): Promise<{ result : any }> {
+	async getCounts(): Promise<{ result: any }> {
 		try {
-			const activeUser = await this.userRepository
-				.query(`SELECT status,role_id,count(user_id) as cnt FROM user GROUP BY status,role_id`)
-			return { result : activeUser }
+			const activeUser = await this.userRepository.query(
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where role_id In (${Role.ADMIN}) GROUP BY status`
+			);
+			return { result: activeUser };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -267,7 +299,7 @@ export class AdminService {
 		}
 	}
 
-	async weeklyRagisterUser(): Promise<{ count:number }> {
+	async weeklyRegisterAdmin(): Promise<{ count: number }> {
 		try {
 			var date = new Date();
 			var fdate = date.toLocaleString("en-US", {
@@ -286,53 +318,25 @@ export class AdminService {
 			fromDate.setDate(fromDate.getDate() - day);
 
 			var mondayDate = fromDate.toLocaleDateString();
-			mondayDate = mondayDate.split("/").reverse().join("/");
+			mondayDate = mondayDate
+				.split("/")
+				.reverse()
+				.join("/");
 			var toDate = new Date();
 
 			var todayDate = toDate.toLocaleDateString();
-			todayDate = todayDate.split("/").reverse().join("/");
+			todayDate = todayDate
+				.split("/")
+				.reverse()
+				.join("/");
+			console.log(todayDate);
 			const result = await this.userRepository
 				.createQueryBuilder()
 				.where(
-					`created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
+					`role_id In (${Role.ADMIN}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
 				)
 				.getCount();
-			return  { count:result } ;
-		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No user Found.&&&id`);
-			}
-
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
-		}
-	}
-
-	async deActiveUser(userId: string, adminId: string) {
-		try {
-			const user = await this.userRepository.findOne({
-				userId,
-				status: 1,
-			});
-
-			if (!user) throw new NotFoundException(`No user found`);
-
-			if (user.roleId == 1) {
-				throw new ForbiddenException(
-					`You are not allowed to access this resource.`
-				);
-			} else {
-				user.status = 2;
-				user.updatedBy = adminId;
-				user.isDeleted = true;
-				user.updatedDate = new Date();
-				await user.save();
-				return { messge: `User deactive successfully` };
-			}
+			return { count: result };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

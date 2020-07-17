@@ -49,6 +49,8 @@ import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
+import { statusPipe } from "src/user/pipes/status.pipes";
+import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -65,14 +67,14 @@ export class AdminController {
 	@Post()
 	@Roles(Role.SUPER_ADMIN)
 	@ApiConsumes("multipart/form-data")
-	@ApiOperation({ summary: "Create new Sub-Admin by Super admin" })
+	@ApiOperation({ summary: "Create new Admin by Super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	@UseInterceptors(
@@ -105,14 +107,14 @@ export class AdminController {
 	@Put("/:id")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiConsumes("multipart/form-data")
-	@ApiOperation({ summary: "Update Sub-Admin by Super-Admin" })
+	@ApiOperation({ summary: "Update Admin by Super-Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@UseInterceptors(
 		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
@@ -124,7 +126,7 @@ export class AdminController {
 			limits: { fileSize: 2097152 },
 		})
 	)
-	async updateUser(
+	async updateAdmin(
 		@Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
 		@Param("id") user_id: string,
 		@UploadedFiles() files: ProfilePicDto,
@@ -144,54 +146,38 @@ export class AdminController {
 	}
 
 	/**
-	 * Active type of user using the Super Admin
+	 * delete admin
 	 * @param user_id
 	 */
 	@Delete(":id")
 	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "Delete user and admin  by super admin" })
+	@ApiOperation({ summary: "Delete admin  by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async deleteUser(@Param("id") user_id: string) {
 		return await this.adminService.deleteAdmin(user_id);
 	}
 
-	@Patch("active-user:id")
+	@Patch("active-deactive-admin/:id")
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
-	@ApiOperation({ summary: "Active the user" })
+	@ApiOperation({ summary: "Active-deactive admin by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async activeUser(@Param("id") user_id: string, @GetUser() user: User) {
+	async activeUser(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
 		const adminId = user.userId;
-		return await this.adminService.activeUser(user_id, adminId);
-	}
-
-	@Patch("deactive-user:id")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
-	@ApiOperation({ summary: "Active the user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async deActiveUser(@Param("id") user_id: string, @GetUser() user: User) {
-		const adminId = user.userId;
-		return await this.adminService.deActiveUser(user_id, adminId);
+		return await this.adminService.activeDeactiveAdmin(user_id,activeDeactiveDto,adminId);
 	}
 	/**
 	 *
@@ -199,14 +185,14 @@ export class AdminController {
 	 */
 	@Get()
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "List sub-admin by Super-Admin" })
+	@ApiOperation({ summary: "List admin by Super-Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
 		@Query() paginationOption: ListAdminDto,
@@ -215,13 +201,26 @@ export class AdminController {
 		return await this.adminService.listAdmin(paginationOption, siteUrl);
 	}
 
+	@Get('/:id')
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @ApiOperation({ summary: "Get admin details by super admin" })
+    @ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({ status: 404, description: "super not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+    async getUserData(
+        @Param('id') userId: string,@SiteUrl() siteUrl: string
+    ): Promise<User> {
+        return await this.adminService.getAdminData(userId,siteUrl);
+    }
 	/**
 	 * Get count of user base on status
 	 * 
 	 */
-	@Get('get-counts')
+	@Get('report/counts')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "get-counts Of all user" })
+	@ApiOperation({ summary: "counts Of all admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -239,26 +238,28 @@ export class AdminController {
 	 * return count of user ragister in current weak 
 	 */
 
-	@Get('weekly-ragister-user')
+	@Get('report/weekly-register')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "get-counts Of user which ragister in current week" })
+	@ApiOperation({ summary: "Count of register admin in current week" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async weeklyRagisterUser(
 	): Promise<{ count: number }>{
-		return await this.adminService.weeklyRagisterUser();
+		console.log("week");
+		
+		return await this.adminService.weeklyRegisterAdmin();
 	}
 
 	/**
 	 * export admin
 	 */
-	@Get("export")
+	@Get("report/export")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "export admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
