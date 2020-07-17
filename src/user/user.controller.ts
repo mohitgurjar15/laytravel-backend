@@ -1,4 +1,4 @@
-import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode, Post, Delete, UseInterceptors, UploadedFiles, Req, BadRequestException } from '@nestjs/common';
+import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode, Post, Delete, UseInterceptors, UploadedFiles, Req, BadRequestException, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiConsumes } from '@nestjs/swagger';
@@ -16,6 +16,9 @@ import { diskStorage } from "multer";
 import { editFileName, imageFileFilter } from '../auth/file-validator';
 import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
+import { pipe } from 'rxjs';
+import { ActiveDeactiveDto } from './dto/active-deactive-user.dto';
+import { statusPipe } from './pipes/status.pipes';
 
 @ApiTags('User')
 @Controller('user')
@@ -51,9 +54,9 @@ export class UserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
     async getUserData(
-        @Param('id') userId: string
+        @Param('id') userId: string,@SiteUrl() siteUrl: string
     ): Promise<User> {
-        return await this.userService.getUserData(userId);
+        return await this.userService.getUserData(userId,siteUrl);
     }
 
     @Post()
@@ -163,10 +166,26 @@ export class UserController {
         return await this.userService.deleteUser(user_id);
     }
 
+
+    @Patch("active-deactive-user/:id")
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "Active-deactive user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async activeUser(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
+		const adminId = user.userId;
+		return await this.userService.activeDeactiveUser(user_id,activeDeactiveDto,adminId);
+	}
     /**
 	 * export Customer
 	 */
-	@Get('export')
+	@Get('report/export')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "export customer" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -180,5 +199,37 @@ export class UserController {
 	async exportCustomer(
 	): Promise<{ data: User[]}> {
 		return await this.userService.exportUser();
+	}
+
+	@Get('report/weekly-register')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Count of register user in current week" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async weeklyRagisterUser(
+	): Promise<{ count: number }>{
+		return await this.userService.weeklyRagisterUser();
+	}
+
+	@Get('report/counts')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "get-counts Of all user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getCount(
+	):Promise<{ result : any }>{
+		return await this.userService.getCounts();
 	}
 }

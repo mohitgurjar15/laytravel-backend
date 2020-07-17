@@ -34,6 +34,7 @@ export class GeneralService {
         .createQueryBuilder(States, "states")
         .select(["states.id","states.name","states.iso2"])
         .where("states.countryId=:id and states.flag = :flag", { id, flag: 1 })
+        .orderBy(`states.name`)
         .getMany();
 
         if(states.length)
