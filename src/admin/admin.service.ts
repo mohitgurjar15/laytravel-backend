@@ -47,7 +47,8 @@ export class AdminService {
 
 	async createAdmin(
 		saveUserDto: SaveAdminDto,
-		files: ProfilePicDto,adminId:string
+		files: ProfilePicDto,
+		adminId: string
 	): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
 		const salt = await bcrypt.genSalt();
@@ -67,7 +68,7 @@ export class AdminService {
 		user.zipCode = "";
 		user.lastName = last_name;
 		user.salt = salt;
-		user.createdBy = adminId
+		user.createdBy = adminId;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
@@ -107,24 +108,20 @@ export class AdminService {
 	async updateAdmin(
 		updateAdminDto: UpdateAdminDto,
 		UserId: string,
-		files: ProfilePicDto,adminId:string
+		files: ProfilePicDto,
+		adminId: string
 	) {
 		try {
-			const {
-				firstName,
-				middleName,
-				lastName,
-				profile_pic,
-			} = updateAdminDto;
+			const { firstName, middleName, lastName, profile_pic } = updateAdminDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
 			});
-			
+
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
-			userData.updatedBy = adminId
+			userData.updatedBy = adminId;
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
 			userData.updatedDate = new Date();
@@ -157,10 +154,10 @@ export class AdminService {
 	 */
 	async listAdmin(
 		paginationOption: ListAdminDto,
-		siteUrl:string
+		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [2],siteUrl);
+			return await this.userRepository.listUser(paginationOption, [2], siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -201,6 +198,140 @@ export class AdminService {
 				user.isDeleted = true;
 				await user.save();
 				return { messge: `User deleted successfully` };
+			}
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async activeUser(userId: string, adminId: string) {
+		try {
+			const user = await this.userRepository.findOne({
+				userId,
+				status: 2,
+			});
+
+			if (!user) throw new NotFoundException(`No user found`);
+
+			if (user.roleId == 1) {
+				throw new ForbiddenException(
+					`You are not allowed to access this resource.`
+				);
+			} else {
+				user.status = 1;
+				user.updatedBy = adminId;
+				user.isDeleted = true;
+				user.updatedDate = new Date();
+				await user.save();
+				return { messge: `User Active successfully` };
+			}
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async getCounts(): Promise<{ result : any }> {
+		try {
+			const activeUser = await this.userRepository
+				.query(`SELECT status,role_id,count(user_id) as cnt FROM user GROUP BY status,role_id`)
+			return { result : activeUser }
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async weeklyRagisterUser(): Promise<{ count:number }> {
+		try {
+			var date = new Date();
+			var fdate = date.toLocaleString("en-US", {
+				weekday: "long",
+			});
+			var weekday = new Array(7);
+			weekday[0] = "Monday";
+			weekday[1] = "Tuesday";
+			weekday[2] = "Wednesday";
+			weekday[3] = "Thursday";
+			weekday[4] = "Friday";
+			weekday[5] = "Saturday";
+			weekday[6] = "Sunday";
+			var day = weekday.indexOf(fdate);
+			var fromDate = new Date();
+			fromDate.setDate(fromDate.getDate() - day);
+
+			var mondayDate = fromDate.toLocaleDateString();
+			mondayDate = mondayDate.split("/").reverse().join("/");
+			var toDate = new Date();
+
+			var todayDate = toDate.toLocaleDateString();
+			todayDate = todayDate.split("/").reverse().join("/");
+			const result = await this.userRepository
+				.createQueryBuilder()
+				.where(
+					`created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
+				)
+				.getCount();
+			return  { count:result } ;
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async deActiveUser(userId: string, adminId: string) {
+		try {
+			const user = await this.userRepository.findOne({
+				userId,
+				status: 1,
+			});
+
+			if (!user) throw new NotFoundException(`No user found`);
+
+			if (user.roleId == 1) {
+				throw new ForbiddenException(
+					`You are not allowed to access this resource.`
+				);
+			} else {
+				user.status = 2;
+				user.updatedBy = adminId;
+				user.isDeleted = true;
+				user.updatedDate = new Date();
+				await user.save();
+				return { messge: `User deactive successfully` };
 			}
 		} catch (error) {
 			if (

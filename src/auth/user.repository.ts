@@ -26,7 +26,7 @@ export class UserRepository extends Repository<User>
         const user = await this.findOne({
             where: { userId: userId, isDeleted: 0 }
         });
-
+        
         if (await user.validatePassword(old_password)) {
             const salt = await bcrypt.genSalt();
             user.salt = salt;
@@ -110,7 +110,8 @@ export class UserRepository extends Repository<User>
 			});
 			if (!userData) {
 				throw new NotFoundException(`No user found.`)
-			}
+            }
+            
 			return { data: userData };
 		} catch (error) {
 			if (

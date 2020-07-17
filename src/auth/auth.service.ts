@@ -32,6 +32,7 @@ import { SocialLoginDto } from './dto/social-login.dto'
 import * as md5 from "md5";
 import { In, getConnection } from 'typeorm';
 import { LoginLog } from 'src/entity/login-log.entity';
+import { Role } from 'src/enum/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -74,7 +75,7 @@ export class AuthService {
         user.createdDate = new Date();
         user.updatedDate = new Date();
         user.socialAccountId="";
-        user.roleId=2;
+        user.roleId=Role.FREE_USER;
         user.phoneNo="";
         user.profilePic="";
         user.timezone="";
@@ -224,8 +225,6 @@ export class AuthService {
         if (!user) {
             throw new NotFoundException(`Email is not registered with us. Please check the email.`);
         }
-
-
         var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
         const tokenhash = crypto.createHmac('sha256', unixTimestamp.toString()).digest('hex');
@@ -430,7 +429,7 @@ export class AuthService {
             user.createdDate = new Date();
             user.updatedDate = new Date();
             user.socialAccountId=social_account_id;
-            user.roleId=2;
+            user.roleId=Role.FREE_USER;
             user.phoneNo="";
             user.profilePic="";
             user.timezone="";
