@@ -60,7 +60,7 @@ export class User extends BaseEntity {
   phoneNo: string;
 
   @Column("character varying", { name: "profile_pic", length: 255 })
-  profilePic: string;
+  profilePic: string | null;
 
   @Column("character varying", { name: "timezone", length: 255 })
   timezone: string;

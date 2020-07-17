@@ -171,9 +171,9 @@ export class UserService {
 		try {
 			const user = await this.userRepository.findOne({
 				where: {
-					userId,
+					userId:userId,
 					isDeleted: false,
-					roleId: In[(Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER)],
+					roleId: In([Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER]),
 				},
 			});
 

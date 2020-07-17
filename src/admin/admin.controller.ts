@@ -87,7 +87,7 @@ export class AdminController {
 			limits: { fileSize: 2097152 },
 		})
 	)
-	async createUser(
+	async createAdmin(
 		@Body() saveAdminDto: SaveAdminDto,
 		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
@@ -160,7 +160,7 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async deleteUser(@Param("id") user_id: string) {
+	async deleteAdmin(@Param("id") user_id: string) {
 		return await this.adminService.deleteAdmin(user_id);
 	}
 
@@ -175,7 +175,7 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async activeUser(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
+	async activeAdmin(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
 		const adminId = user.userId;
 		return await this.adminService.activeDeactiveAdmin(user_id,activeDeactiveDto,adminId);
 	}
@@ -207,9 +207,9 @@ export class AdminController {
     @ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
-	@ApiResponse({ status: 404, description: "super not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    async getUserData(
+    async getAdminData(
         @Param('id') userId: string,@SiteUrl() siteUrl: string
     ): Promise<User> {
         return await this.adminService.getAdminData(userId,siteUrl);
@@ -227,7 +227,7 @@ export class AdminController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getCount(
 	):Promise<{ result : any }>{
@@ -249,7 +249,7 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async weeklyRagisterUser(
+	async weeklyRagisterAdmin(
 	): Promise<{ count: number }>{
 		console.log("week");
 		
@@ -268,7 +268,7 @@ export class AdminController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async exportAdmin(): Promise<{ data: User[] }> {
 		return await this.adminService.exportAdmin();
