@@ -45,10 +45,12 @@ export class UserService {
 			first_name,
 			last_name,
 			country_code,
+			user_type,
 			phone_no,
 			address,
 			zip_code,
 			country_id,
+			prefer_language,
 			state_id,
 			city_name,
 			gender,
@@ -64,7 +66,7 @@ export class UserService {
 			user.profilePic = files.profile_pic[0].filename;
 		user.timezone = "";
 		user.status = 1;
-		user.roleId = 6;
+		user.roleId = user_type;
 		user.email = email;
 		user.firstName = first_name;
 		user.middleName = "";
@@ -72,9 +74,10 @@ export class UserService {
 		user.lastName = last_name;
 		user.salt = salt;
 		user.title = title;
-		//user.countryCode = country_code;
+		user.countryCode = country_code;
 		user.phoneNo = phone_no;
-		//user.countryId = country_id;
+		user.countryId = country_id;
+		user.preferredLanguage = prefer_language
 		user.address = address;
 		user.stateId = state_id;
 		user.cityName = city_name;
@@ -222,7 +225,7 @@ export class UserService {
 			user.updatedDate = new Date();
 			await user.save();
 			var statusWord = status == 1 ? "Active" : "Deactive";
-			return { messge: `User ${statusWord} successfully` };
+			return { message: `User ${statusWord} successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
