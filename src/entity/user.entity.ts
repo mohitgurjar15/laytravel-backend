@@ -59,8 +59,8 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "phone_no", length: 20 })
   phoneNo: string;
 
-  @Column("character varying", { name: "profile_pic", length: 255 })
-  profilePic: string;
+  @Column("character varying", { name: "profile_pic", length: 255 , nullable: true })
+  profilePic: string | null;
 
   @Column("character varying", { name: "timezone", length: 255 })
   timezone: string;

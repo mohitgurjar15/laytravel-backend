@@ -29,11 +29,11 @@ export class Language extends BaseEntity {
   isDeleted: boolean;
 
   @Column("date", { name: "updated_date" })
-  updatedDate: string;
+  updatedDate: Date;
 
   @ManyToOne(
     () => User,
-    user => user.languages
+    user => user.userId
   )
   @JoinColumn([{ name: "updated_by", referencedColumnName: "userId" }])
   updatedBy: User;
