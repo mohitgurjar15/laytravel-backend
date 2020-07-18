@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsEmail, ValidationArguments } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
 export class SearchFlightDto{
     
@@ -20,15 +21,22 @@ export class SearchFlightDto{
         example:`CHI`
     })
 	destination_location:string;
-	
-	@IsNotEmpty({
-		message: `Please enter departure date.&&&departure_date`,
-	})
+
+    
+    @IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter departure date.&&&departure_date`;
+            } else {
+                return `Please enter valid departure date format(YYYY-MM-DD)&&&departure_date`;
+            }
+        },
+    })
     @ApiProperty({
         description:`Departure date`,
         example:`2020-11-06`
     })
-	departure_date:string;
+    departure_date : string;
 
 	@IsNotEmpty({
 		message: `Please enter flight class.&&&departure_date`,

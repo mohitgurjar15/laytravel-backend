@@ -13,6 +13,7 @@ import { BookingInstalments } from "./booking-instalments.entity";
 import { Invoice } from "./invoice.entity";
 import { User } from "./user.entity";
 import { Supplier } from "./supplier.entity";
+import { Markup } from "./markup.entity";
 
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
@@ -52,6 +53,12 @@ export class Module extends BaseEntity {
     invoice => invoice.module
   )
   invoices: Invoice[];
+
+  @OneToMany(
+    () => Markup,
+    markup => markup.module
+  )
+  markups: Markup[];
 
   @ManyToOne(
     () => User,
