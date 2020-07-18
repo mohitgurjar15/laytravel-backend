@@ -13,6 +13,7 @@ import { BookingInstalments } from "./booking-instalments.entity";
 import { Invoice } from "./invoice.entity";
 import { Module } from "./module.entity";
 import { User } from "./user.entity";
+import { Markup } from "./markup.entity";
 
 //@Index("supplier_pk", ["id"], { unique: true })
 @Index("supplier_module_id", ["moduleId"], {})
@@ -27,9 +28,6 @@ export class Supplier extends BaseEntity {
 
   @Column("character varying", { name: "name", length: 255 })
   name: string;
-
-  @Column("numeric", { name: "markup", precision: 4, scale: 2 })
-  markup: string;
 
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
@@ -57,6 +55,12 @@ export class Supplier extends BaseEntity {
     invoice => invoice.supplier
   )
   invoices: Invoice[];
+
+  @OneToMany(
+    () => Markup,
+    markup => markup.supplier
+  )
+  markups: Markup[];
 
   @ManyToOne(
     () => Module,

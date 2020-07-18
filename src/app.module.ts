@@ -24,6 +24,7 @@ import { SupportUserModule } from "./support-user/support-user.module";
 import { LangunageModule } from './langunage/langunage.module';
 import { CurrencyModule } from './currency/currency.module';
 import { HotelModule } from './hotel/hotel.module';
+import { InstalmentModule } from './instalment/instalment.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { HotelModule } from './hotel/hotel.module';
 		LangunageModule,
 		CurrencyModule,
 		HotelModule,
+		InstalmentModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

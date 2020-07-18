@@ -23,6 +23,7 @@ import { Countries } from "./countries.entity";
 import { States } from "./states.entity";
 import { UserCard } from "./user-card.entity";
 import { UserDeviceDetail } from "./user-device-detail.entity";
+import { Markup } from "./markup.entity";
 
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
@@ -195,6 +196,12 @@ export class User extends BaseEntity {
     planSubscription => planSubscription.user
   )
   planSubscriptions: PlanSubscription[];
+
+  @OneToMany(
+    () => Markup,
+    markup => markup.updatedBy
+  )
+  markups: Markup[];
 
   @OneToMany(
     () => Supplier,
