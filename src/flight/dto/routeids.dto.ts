@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsEmail, ValidationArguments, IsInt, ValidateNested } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
-export class BaggageDetailsDto{
+export class RouteIdsDto{
     
     @IsNotEmpty({
 		message: `Please enter routes ids.&&&source_location`,

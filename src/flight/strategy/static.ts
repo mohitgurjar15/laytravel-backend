@@ -6,6 +6,8 @@ import { SeatAllocation } from "src/entity/seat-allocation.entity";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { Airport } from "src/entity/airport.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
+import { PriceMarkup } from "src/utility/markup.utility";
+import { Markup } from "src/entity/markup.entity";
 
 
 export class Static implements StrategyAirline{
@@ -56,30 +58,8 @@ export class Static implements StrategyAirline{
         var time = `${d.getHours()}:${d.getMinutes()}`;
         var today = d.getFullYear() + "-" + ('0' + (d.getMonth()+1)).slice(-2) + "-" + d.getDate();
         
-        console.log(today,time)
-       
         let searchResult=[];
-
-        /* const result = await this.flightRepository.find({
-            join: {
-                alias: 'flight_route',
-                select :[
-                    "flight_route.id"
-                ],
-                leftJoinAndSelect: {
-                    airline: 'flight_route.airline',
-                    arrival: 'flight_route.arrival',
-                    departure: 'flight_route.departure',
-                    flight: 'flight_route.flight'
-                }
-            },
-            where: qb => {
-                qb.where().
-                    orWhere(`("arrival"."id" = :arrivalId OR "departure"."id"=:departureId)`,{arrivalId:arrivalId,departureId:departureId}).
-                    //andWhere(`"flight"."class"=:flight_class`,{flight_class:flight_class}).
-                    andWhere(departure_date==today ? (`"departure_time">=:departure_time`): `1=1`,{departure_time:time}) 
-            }
-        }); */
+        let supplierData;
         let result =  await getManager()
             .createQueryBuilder(FlightRoute, "FlightRoute")
             .leftJoinAndSelect("FlightRoute.airline","airline")
@@ -121,8 +101,18 @@ export class Static implements StrategyAirline{
                 if(availableSeat == 0)
                     delete result[i];
             });
+
+            supplierData = await getManager()
+                               .createQueryBuilder(Markup,'markup')
+                               .leftJoinAndSelect("markup.supplier","supplier")
+                               .select([
+                                   "markup.supplierId"
+                               ])
+                               .where("supplier.name=:name",{ name:'local1' })
+                               .getOne();
         }
 
+        let supplierId = typeof supplierData!='undefined'?supplierData.supplierId : 0
         let searchItem={ stop:0,  price:0.00,route_details: [] };
         
         if(result.length){
@@ -139,8 +129,8 @@ export class Static implements StrategyAirline{
                         return (parseInt(route.adultPrice)*adult_count + parseInt(route.childPrice)*child_count +parseInt(route.infantPrice)*infant_count)  
                     })
 
-                    searchItem.price = (totalPrice.reduce((a, b) => a + b, 0));
-
+                    let total = (totalPrice.reduce((a, b) => a + b, 0));
+                    searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,6);
                     searchResult.push(searchItem)
                 }
                 
@@ -168,8 +158,8 @@ export class Static implements StrategyAirline{
                             return (parseInt(route.adultPrice)*adult_count + parseInt(route.childPrice)*child_count +parseInt(route.infantPrice)*infant_count)  
                         })
         
-                        searchItem.price = (totalPrice.reduce((a, b) => a + b, 0));
-                        
+                        let total = (totalPrice.reduce((a, b) => a + b, 0));
+                        searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,5);
 
                         if(searchItem.route_details[searchItem.route_details.length-1].arrival.id!=arrivalId)
                             continue;

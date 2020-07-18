@@ -1,10 +1,10 @@
-import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, UseInterceptors, CacheInterceptor, CacheKey } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, Body, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
-import { BaggageDetailsDto } from './dto/baggage.dto';
+import { RouteIdsDto } from './dto/routeids.dto';
 
 
 @ApiTags('Flight')
@@ -50,10 +50,22 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @HttpCode(200)
     async baggageDetails(
-       @Body() baggageDetailsDto:BaggageDetailsDto
+       @Body() routeIdsDto:RouteIdsDto
     ){
         //console.log(baggageDetailsDto)
-        return await this.flightService.baggageDetails(baggageDetailsDto);
+        return await this.flightService.baggageDetails(routeIdsDto);
+    }
+
+    @Post('/cancellation-policy')
+    @ApiOperation({ summary: "Flight cancellation policy" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @HttpCode(200)
+    async cancellationPolicy(
+       @Body() routeIdsDto:RouteIdsDto
+    ){
+        return await this.flightService.cancellationPolicy(routeIdsDto);
     }
 
     

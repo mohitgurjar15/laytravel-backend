@@ -9,6 +9,8 @@ import { errorMessage } from 'src/config/common.config';
 import { SeatAllocationRepository } from './seat-allocation.repository';
 import { getManager } from 'typeorm';
 import { Baggage } from 'src/entity/baggage.entity';
+import { FlightRoute } from 'src/entity/flight-route.entity';
+import { RouteIdsDto } from './dto/routeids.dto';
 
 @Injectable()
 export class FlightService {
@@ -55,9 +57,9 @@ export class FlightService {
         return result;
     }
 
-    async baggageDetails(baggageDetailsDto){
+    async baggageDetails(routeIdsDto:RouteIdsDto){
 
-        const { routes } = baggageDetailsDto;
+        const { routes } = routeIdsDto;
 
         let baggageResult =  await getManager()
             .createQueryBuilder(Baggage, "Baggage")
@@ -79,7 +81,7 @@ export class FlightService {
             baggageDetails = baggageResult.map(baggage=>{
 
                 return {
-                    routr_id       : baggage.id,
+                    route_id       : baggage.id,
                     arrival_id     : baggage.route.arrival.id,
                     arrival_code   : baggage.route.arrival.code,
                     departure_id   : baggage.route.departure.id,
@@ -93,6 +95,48 @@ export class FlightService {
         else{
             throw new NotFoundException(`No baggage details found(s)`)
         }
+        
+     }
+
+     
+     async cancellationPolicy(routeIdsDto:RouteIdsDto){
+
+        const { routes } = routeIdsDto;
+
+        let policyResult =  await getManager()
+            .createQueryBuilder(FlightRoute, "FlightRoute")
+            .leftJoinAndSelect("FlightRoute.arrival","arrival")
+            .leftJoinAndSelect("FlightRoute.departure","departure")
+            .select([
+                "FlightRoute.id",
+                "FlightRoute.isRefundable",
+                "arrival.id",
+                "arrival.code",
+                "departure.code",
+                "departure.code"
+            ])
+            .where(`("FlightRoute"."id" in (:...routes)) and "FlightRoute"."is_available"=:status and "FlightRoute"."is_deleted"=:is_deleted`,{ routes, status:true, is_deleted:false})
+            .getMany();
+        
+         let policyDetails=[];
+        if(policyResult){
+
+            policyDetails = policyResult.map(policy=>{
+
+                return {
+                    route_id       : policy.id,
+                    arrival_id     : policy.arrival.id,
+                    arrival_code   : policy.arrival.code,
+                    departure_id   : policy.departure.id,
+                    departure_code : policy.departure.code,
+                    is_refundable  : policy.isRefundable,
+                }
+            })
+            return policyDetails;
+        }
+        else{
+            throw new NotFoundException(`No cancellation policy found(s)`)
+        } 
         
      }
 }
