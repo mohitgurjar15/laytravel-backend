@@ -11,6 +11,7 @@ import { BookingInstalments } from "./booking-instalments.entity";
 import { Invoice } from "./invoice.entity";
 import { Plan } from "./plan.entity";
 import { PlanSubscription } from "./plan-subscription.entity";
+import { User } from "./user.entity";
 
 //@Index("currency_pk", ["id"], { unique: true })
 @Entity("currency")
@@ -68,4 +69,10 @@ export class Currency extends BaseEntity {
     planSubscription => planSubscription.currency
   )
   planSubscriptions: PlanSubscription[];
+
+  @OneToMany(
+    () => User,
+    user => user.preferredCurrency
+  )
+  users: User[];
 }
