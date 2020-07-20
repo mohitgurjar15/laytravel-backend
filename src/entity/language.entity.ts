@@ -14,7 +14,10 @@ import { User } from "./user.entity";
 @Entity("language")
 export class Language extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
-  id: number;
+  id: number; 
+
+  @Column("character varying", { name: "name", length: 100, nullable:true })
+  name: string;
 
   @Column("character varying", { name: "iso_1_code", length: 5 })
   iso_1Code: string;

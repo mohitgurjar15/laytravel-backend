@@ -1,16 +1,16 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Strategy } from './strategy/strategy';
 import { Static } from './strategy/static';
-import { SearchFlightDto } from './dto/search-flight.dto';
+import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FlightRepository } from './flight.repository';
 import { AirportRepository } from './airport.repository';
-import { errorMessage } from 'src/config/common.config';
 import { SeatAllocationRepository } from './seat-allocation.repository';
 import { getManager } from 'typeorm';
 import { Baggage } from 'src/entity/baggage.entity';
 import { FlightRoute } from 'src/entity/flight-route.entity';
 import { RouteIdsDto } from './dto/routeids.dto';
+import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 
 @Injectable()
 export class FlightService {
@@ -50,7 +50,7 @@ export class FlightService {
         }
     }
 
-    async searchFlight(searchFlightDto:SearchFlightDto){
+    async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto){
 
         const local = new Strategy(new Static(this.flightRepository));
         const result = new Promise((resolve) => resolve(local.oneWaySearch(searchFlightDto)));
@@ -138,5 +138,11 @@ export class FlightService {
             throw new NotFoundException(`No cancellation policy found(s)`)
         } 
         
+     }
+
+     async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
+        const local = new Strategy(new Static(this.flightRepository));
+        const result = new Promise((resolve) => resolve(local.roundTripSearch(searchFlightDto)));
+        return result;
      }
 }
