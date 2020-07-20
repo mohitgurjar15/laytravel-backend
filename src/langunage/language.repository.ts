@@ -14,7 +14,7 @@ export class LanguageRepository extends Repository<Language>
         
         let where;
         if(keyword){
-             where =`(("is_deleted"=false) and ("iso_1_code" ILIKE '%${keyword}%') or ("iso_1_code" ILIKE '%${keyword}%'))`
+             where =`"is_deleted"=false and (("iso_1_code" ILIKE '%${keyword}%') or ("iso_1_code" ILIKE '%${keyword}%'))`
         }
         else{
              where = `("is_deleted"=false) and 1=1`
@@ -27,7 +27,7 @@ export class LanguageRepository extends Repository<Language>
                 milliseconds:604800000
             }
         });
-        if (!result) {
+        if (!result[0]) {
             throw new NotFoundException(`No lenguage found.`)
         }
         return { data: result, TotalReseult: total };

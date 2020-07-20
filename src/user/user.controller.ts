@@ -129,7 +129,7 @@ export class UserController {
         @GetUser() user:User,
         @UploadedFiles() files: ProfilePicDto,
 		@Req() req,
-    ){
+    ):Promise<User>{
         if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
         }
