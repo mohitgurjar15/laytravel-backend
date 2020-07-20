@@ -162,6 +162,8 @@ export class UserService {
 		userData.updatedDate = new Date();
 		try {
 			await userData.save();
+			delete userData.password;
+			delete userData.salt;
 			return userData;
 		} catch (error) {
 			throw new InternalServerErrorException(
@@ -261,18 +263,18 @@ export class UserService {
 			mondayDate = mondayDate
 				.split("/")
 				.reverse()
-				.join("/");
+				.join("-");
 			var toDate = new Date();
 
 			var todayDate = toDate.toLocaleDateString();
 			todayDate = todayDate
 				.split("/")
 				.reverse()
-				.join("/");
+				.join("-");
 			const result = await this.userRepository
 				.createQueryBuilder()
 				.where(
-					`role_id In ([${Role.FREE_USER},${Role.PAID_USER},${Role.GUEST_USER}]) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
+					`role_id In (${Role.FREE_USER},${Role.PAID_USER},${Role.GUEST_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
 				)
 				.getCount();
 			return { count: result };

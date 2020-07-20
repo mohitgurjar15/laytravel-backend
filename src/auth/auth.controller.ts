@@ -212,7 +212,7 @@ export class AuthController {
         @UploadedFiles() files: ProfilePicDto,
 		@Req() req,
 		@GetUser() user: User,
-	) {
+	): Promise<User> {
 		
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);

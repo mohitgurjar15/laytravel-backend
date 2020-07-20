@@ -134,6 +134,9 @@ export class AdminService {
 			userData.address = address
 			userData.zipCode = zipCode */
 
+			delete userData.password;
+			delete userData.salt;
+
 			await userData.save();
 			return userData;
 		} catch (error) {
@@ -321,14 +324,14 @@ export class AdminService {
 			mondayDate = mondayDate
 				.split("/")
 				.reverse()
-				.join("/");
+				.join("-");
 			var toDate = new Date();
 
 			var todayDate = toDate.toLocaleDateString();
 			todayDate = todayDate
 				.split("/")
 				.reverse()
-				.join("/");
+				.join("-");
 			console.log(todayDate);
 			const result = await this.userRepository
 				.createQueryBuilder()
