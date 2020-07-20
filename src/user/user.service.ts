@@ -272,7 +272,7 @@ export class UserService {
 			const result = await this.userRepository
 				.createQueryBuilder()
 				.where(
-					`role_id In ([${Role.FREE_USER},${Role.PAID_USER},${Role.GUEST_USER}]) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
+					`role_id In (${Role.FREE_USER},${Role.PAID_USER},${Role.GUEST_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
 				)
 				.getCount();
 			return { count: result };
