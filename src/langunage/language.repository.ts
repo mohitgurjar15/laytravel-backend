@@ -21,6 +21,7 @@ export class LanguageRepository extends Repository<Language>
         }
         const [result, total] = await this.findAndCount({
             where : where,
+            select: ["id","name","iso_1Code","iso_2Code"],
             cache : {
                 id:'language',
                 milliseconds:604800000
