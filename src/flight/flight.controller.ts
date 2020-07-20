@@ -2,9 +2,10 @@ import { Controller, UseGuards, Get, Param, Post, Body, HttpCode } from '@nestjs
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
-import { SearchFlightDto } from './dto/search-flight.dto';
+import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
 import { RouteIdsDto } from './dto/routeids.dto';
+import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 
 
 @ApiTags('Flight')
@@ -38,9 +39,9 @@ export class FlightController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async searchFlight(
-       @Body() searchFlightDto:SearchFlightDto
+       @Body() searchFlightDto:OneWaySearchFlightDto
     ){
-        return await this.flightService.searchFlight(searchFlightDto);
+        return await this.flightService.searchOneWayFlight(searchFlightDto);
     }
 
     @Post('/baggage-details')
@@ -68,5 +69,16 @@ export class FlightController {
         return await this.flightService.cancellationPolicy(routeIdsDto);
     }
 
-    
+    //@Post('/search-roundtrip-flight')
+    @ApiOperation({ summary: "Round trip flight search" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async searchRoundTrip(
+       @Body() searchFlightDto:RoundtripSearchFlightDto
+    ){
+        return await this.flightService.searchRoundTripFlight(searchFlightDto);
+    }
 }

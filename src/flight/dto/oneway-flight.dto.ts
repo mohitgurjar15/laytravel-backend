@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsEmail, ValidationArguments } from "class-validator";
+import { IsNotEmpty,  ValidationArguments } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
-export class SearchFlightDto{
+export class OneWaySearchFlightDto{
     
     @IsNotEmpty({
 		message: `Please enter source location.&&&source_location`,
