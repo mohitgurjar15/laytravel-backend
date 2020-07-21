@@ -42,6 +42,8 @@ import { In, getConnection, getManager } from "typeorm";
 import { LoginLog } from "src/entity/login-log.entity";
 import { Role } from "src/enum/role.enum";
 import { Currency } from "src/entity/currency.entity";
+import { Countries } from "src/entity/countries.entity";
+import { States } from "src/entity/states.entity";
 
 @Injectable()
 export class AuthService {
@@ -289,7 +291,6 @@ export class AuthService {
 			);
 		}
 		const token = { message: `Link sent to your email address successfully.` };
-		console.log(token);
 		return token;
 	}
 
@@ -578,57 +579,13 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			
-			let userDetail =  await getManager()
-            .createQueryBuilder(User, "user")
-            .leftJoinAndSelect("user.state","state")
-            .leftJoinAndSelect("user.country","countries")
-            .leftJoinAndSelect("user.preferredCurrency","currency")
-            .leftJoinAndSelect("user.preferredLanguage2","language")
-            .select([
-                	"user.userId","user.title","user.dob",
-					"user.firstName","user.lastName",
-					"user.email","user.profilePic",
-					"user.countryCode","user.phoneNo",
-					"user.cityName","user.address","user.zipCode",
-					"user.preferredCurrency","user.preferredLanguage2",
-					"user.passportNumber","user.passportExpiry",
-					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
-					"currency.id","currency.code","currency.country",
-					"countries.name","countries.iso2","countries.iso3","countries.id",
-					"state.id","state.name","state.iso2","state.country_id",
-            ])
-            .where(`("user"."user_id"=:userId)`,{ userId})
-            .getOne();
-			let user:any={};
-			console.log(userDetail)
-			user.userId = userDetail.userId;
-			user.firstName = userDetail.firstName;
-			user.lastName = userDetail.lastName || "";
-			user.email = userDetail.email;
-			user.phoneNo = userDetail.phoneNo || "";
-			user.countryCode= userDetail.countryCode || "";
-			user.address= userDetail.address || "";
-			user.country= userDetail.country || {};
-			user.state= userDetail.state || {};
-			user.title= userDetail.title || "";
-			user.cityName= userDetail.cityName || "";
-			user.dob= userDetail.dob || "";
-			user.ziCode= userDetail.zipCode || "";
-			user.preferredCurrency= userDetail.preferredCurrency || {};
-			user.preferredLanguage= userDetail.preferredLanguage2 || {};
-			user.passportNumber= userDetail.passportNumber || "";
-			user.passportExpiry= userDetail.passportExpiry || "";
-			user.profilePic = userDetail.profilePic
-				? `${siteUrl}/profile/${userDetail.profilePic}`
-				: "";
-			return user;
+			return this.getUserDetails(userId,siteUrl);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
 	}
 
-	async updateProfile(updateProfileDto, loginUser, files): Promise<User> {
+	async updateProfile(updateProfileDto, loginUser, files,siteUrl): Promise<User> {
 		try {
 			const userId = loginUser.userId;
 			const {
@@ -642,8 +599,25 @@ export class AuthService {
 				state_id,
 				city_name,
 				profile_pic,
+				passport_number,
+				passport_expiry,
+				dob
 			} = updateProfileDto;
-			console.log(files);
+			
+			let countryDetails = await getManager()
+			.createQueryBuilder(Countries,"country")
+			.where(`id=:country_id`,{country_id})
+			.getOne();
+
+			if(!countryDetails)
+				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
+			
+			let stateDetails = await getManager()
+				.createQueryBuilder(States,"states")
+				.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+				.getOne();
+			if(!stateDetails)
+				throw new BadRequestException(`State id not exist with country id.&&&country_id`)
 
 			const user = new User();
 			user.title = title;
@@ -652,6 +626,14 @@ export class AuthService {
 			user.zipCode = zip_code;
 			user.countryCode = country_code;
 			user.phoneNo = phone_no;
+			user.dob = dob;
+			
+			if(passport_expiry){
+				user.passportExpiry=passport_expiry;
+			}
+			if(passport_number){
+				user.passportNumber=passport_number;
+			}
 			user.countryId = country_id;
 			user.stateId = state_id;
 			user.cityName = city_name;
@@ -659,13 +641,15 @@ export class AuthService {
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
-			return user;
+			return this.getUserDetails(userId,siteUrl);
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
+			if (error instanceof NotFoundException
 			) {
 				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			if (error instanceof BadRequestException) {
+				throw new BadRequestException(error.message);
 			}
 
 			throw new InternalServerErrorException(
@@ -690,5 +674,54 @@ export class AuthService {
 			.into(LoginLog)
 			.values(loginLog)
 			.execute();
+	}
+
+	async getUserDetails(userId:string, siteUrl){
+
+		let userDetail =  await getManager()
+            .createQueryBuilder(User, "user")
+            .leftJoinAndSelect("user.state","state")
+            .leftJoinAndSelect("user.country","countries")
+            .leftJoinAndSelect("user.preferredCurrency","currency")
+            .leftJoinAndSelect("user.preferredLanguage2","language")
+            .select([
+                	"user.userId","user.title","user.dob",
+					"user.firstName","user.lastName",
+					"user.email","user.profilePic","user.dob",
+					"user.countryCode","user.phoneNo",
+					"user.cityName","user.address","user.zipCode",
+					"user.preferredCurrency","user.preferredLanguage2",
+					"user.passportNumber","user.passportExpiry",
+					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
+					"currency.id","currency.code","currency.country",
+					"countries.name","countries.iso2","countries.iso3","countries.id",
+					"state.id","state.name","state.iso2","state.country_id",
+            ])
+            .where(`("user"."user_id"=:userId)`,{ userId})
+            .getOne();
+			let user:any={};
+			user.userId = userDetail.userId;
+			user.firstName = userDetail.firstName;
+			user.lastName = userDetail.lastName || "";
+			user.email = userDetail.email;
+			user.phoneNo = userDetail.phoneNo || "";
+			user.countryCode= userDetail.countryCode || "";
+			user.address= userDetail.address || "";
+			user.country= userDetail.country || {};
+			user.state= userDetail.state || {};
+			user.dob = userDetail.dob || "";
+			user.title= userDetail.title || "";
+			user.cityName= userDetail.cityName || "";
+			user.dob= userDetail.dob || "";
+			user.ziCode= userDetail.zipCode || "";
+			user.preferredCurrency= userDetail.preferredCurrency || {};
+			user.preferredLanguage= userDetail.preferredLanguage2 || {};
+			user.passportNumber= userDetail.passportNumber || "";
+			user.passportExpiry= userDetail.passportExpiry || "";
+			user.profilePic = userDetail.profilePic
+				? `${siteUrl}/profile/${userDetail.profilePic}`
+				: "";
+
+			return user;
 	}
 }
