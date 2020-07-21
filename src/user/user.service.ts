@@ -5,6 +5,7 @@ import {
 	InternalServerErrorException,
 	NotFoundException,
 	ForbiddenException,
+	BadRequestException,
 } from "@nestjs/common";
 import { UserRepository } from "../auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -20,8 +21,10 @@ import { v4 as uuidv4 } from "uuid";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
-import { In, AdvancedConsoleLogger } from "typeorm";
+import { In, AdvancedConsoleLogger, getManager } from "typeorm";
 import { ActiveDeactiveDto } from "./dto/active-deactive-user.dto";
+import { Countries } from "src/entity/countries.entity";
+import { States } from "src/entity/states.entity";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -55,6 +58,20 @@ export class UserService {
 			city_name,
 			gender,
 		} = saveUserDto;
+
+		let countryDetails = await getManager()
+			.createQueryBuilder(Countries,"country")
+			.where(`id=:country_id`,{country_id})
+			.getOne();
+		if(!countryDetails)
+				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
+			
+		let stateDetails = await getManager()
+			.createQueryBuilder(States,"states")
+			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			.getOne();
+		if(!stateDetails)
+			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
 
 		const salt = await bcrypt.genSalt();
 		const user = new User();
@@ -134,6 +151,21 @@ export class UserService {
 			gender,
 		} = updateUserDto;
 		const userId = UserId;
+
+		let countryDetails = await getManager()
+			.createQueryBuilder(Countries,"country")
+			.where(`id=:country_id`,{country_id})
+			.getOne();
+		if(!countryDetails)
+				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
+			
+		let stateDetails = await getManager()
+			.createQueryBuilder(States,"states")
+			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			.getOne();
+		if(!stateDetails)
+			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
+			
 		const userData = await this.userRepository.findOne({
 			where: {
 				userId,
@@ -173,34 +205,12 @@ export class UserService {
 	}
 
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
-		try {
-			const user = await this.userRepository.findOne({
-				where: {
-					userId:userId,
-					isDeleted: false,
-					roleId: In([Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER]),
-				},
-			});
 
-			if (!user) {
-				throw new NotFoundException(`No user found`);
-			}
-			delete user.salt;
-			delete user.password;
-			user.profilePic = user.profilePic
-				? `${siteUrl}/profile/${user.profilePic}`
-				: "";
-			return user;
+		try {
+			const roles=[Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
+			return this.userRepository.getUserDetails(userId,siteUrl,roles);
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No user found`);
-			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
+			throw new InternalServerErrorException(errorMessage);
 		}
 	}
 

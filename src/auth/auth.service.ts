@@ -579,7 +579,7 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			return this.getUserDetails(userId,siteUrl);
+			return this.userRepository.getUserDetails(userId,siteUrl);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
@@ -641,7 +641,7 @@ export class AuthService {
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
-			return this.getUserDetails(userId,siteUrl);
+			return this.userRepository.getUserDetails(userId,siteUrl);
 		} catch (error) {
 			if (error instanceof NotFoundException
 			) {
@@ -676,52 +676,5 @@ export class AuthService {
 			.execute();
 	}
 
-	async getUserDetails(userId:string, siteUrl){
-
-		let userDetail =  await getManager()
-            .createQueryBuilder(User, "user")
-            .leftJoinAndSelect("user.state","state")
-            .leftJoinAndSelect("user.country","countries")
-            .leftJoinAndSelect("user.preferredCurrency","currency")
-            .leftJoinAndSelect("user.preferredLanguage2","language")
-            .select([
-                	"user.userId","user.title","user.dob",
-					"user.firstName","user.lastName",
-					"user.email","user.profilePic","user.dob",
-					"user.countryCode","user.phoneNo",
-					"user.cityName","user.address","user.zipCode",
-					"user.preferredCurrency","user.preferredLanguage2",
-					"user.passportNumber","user.passportExpiry",
-					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
-					"currency.id","currency.code","currency.country",
-					"countries.name","countries.iso2","countries.iso3","countries.id",
-					"state.id","state.name","state.iso2","state.country_id",
-            ])
-            .where(`("user"."user_id"=:userId)`,{ userId})
-            .getOne();
-			let user:any={};
-			user.userId = userDetail.userId;
-			user.firstName = userDetail.firstName;
-			user.lastName = userDetail.lastName || "";
-			user.email = userDetail.email;
-			user.phoneNo = userDetail.phoneNo || "";
-			user.countryCode= userDetail.countryCode || "";
-			user.address= userDetail.address || "";
-			user.country= userDetail.country || {};
-			user.state= userDetail.state || {};
-			user.dob = userDetail.dob || "";
-			user.title= userDetail.title || "";
-			user.cityName= userDetail.cityName || "";
-			user.dob= userDetail.dob || "";
-			user.ziCode= userDetail.zipCode || "";
-			user.preferredCurrency= userDetail.preferredCurrency || {};
-			user.preferredLanguage= userDetail.preferredLanguage2 || {};
-			user.passportNumber= userDetail.passportNumber || "";
-			user.passportExpiry= userDetail.passportExpiry || "";
-			user.profilePic = userDetail.profilePic
-				? `${siteUrl}/profile/${userDetail.profilePic}`
-				: "";
-
-			return user;
-	}
+	
 }
