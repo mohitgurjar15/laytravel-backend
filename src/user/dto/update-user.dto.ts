@@ -98,7 +98,7 @@ export class UpdateUserDto{
     })
     @ApiProperty({
         description: `Enter your country id`,
-        example: 1
+        example: 233
     })
     country_id: number;
 
@@ -107,7 +107,7 @@ export class UpdateUserDto{
     })
     @ApiProperty({
         description: `Enter your state id`,
-        example: 1
+        example: 1452
     })
     state_id: number;
 
