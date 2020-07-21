@@ -24,10 +24,12 @@ import { States } from "./states.entity";
 import { UserCard } from "./user-card.entity";
 import { UserDeviceDetail } from "./user-device-detail.entity";
 import { Markup } from "./markup.entity";
+import { Currency } from "./currency.entity";
 
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
 @Index("user_preferred_language", ["preferredLanguage"], {})
+@Index("user_preferred_currency", ["preferredCurrency"], {})
 @Index("user_state_id", ["stateId"], {})
 @Index("user_updated_by", ["updatedBy"], {})
 //@Index("user_pk", ["userId"], { unique: true })
@@ -60,7 +62,11 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "phone_no", length: 20 })
   phoneNo: string;
 
-  @Column("character varying", { name: "profile_pic", length: 255 , nullable: true })
+  @Column("character varying", {
+    name: "profile_pic",
+    nullable: true,
+    length: 255
+  })
   profilePic: string | null;
 
   @Column("character varying", { name: "timezone", length: 255 })
@@ -112,9 +118,6 @@ export class User extends BaseEntity {
   @Column("integer", { name: "state_id", nullable: true })
   stateId: number | null;
 
-  @Column("character varying", { name: "city_name", nullable: true, length: 255 })
-  cityName: string | null;
-
   @Column("character varying", { name: "title", nullable: true, length: 10 })
   title: string | null;
 
@@ -130,6 +133,26 @@ export class User extends BaseEntity {
 
   @Column("date", { name: "next_subscription_date", nullable: true })
   nextSubscriptionDate: string | null;
+
+  @Column("character varying", {
+    name: "city_name",
+    nullable: true,
+    length: 255
+  })
+  cityName: string | null;
+
+  @Column("date", { name: "dob", nullable: true })
+  dob: string | null;
+
+  @Column("character varying", {
+    name: "passport_number",
+    nullable: true,
+    length: 150
+  })
+  passportNumber: string | null;
+
+  @Column("date", { name: "passport_expiry", nullable: true })
+  passportExpiry: string | null;
 
   @OneToMany(
     () => ActivityLog,
@@ -186,6 +209,12 @@ export class User extends BaseEntity {
   loginLogs: LoginLog[];
 
   @OneToMany(
+    () => Markup,
+    markup => markup.updatedBy
+  )
+  markups: Markup[];
+
+  @OneToMany(
     () => Module,
     module => module.updatedBy
   )
@@ -196,12 +225,6 @@ export class User extends BaseEntity {
     planSubscription => planSubscription.user
   )
   planSubscriptions: PlanSubscription[];
-
-  @OneToMany(
-    () => Markup,
-    markup => markup.updatedBy
-  )
-  markups: Markup[];
 
   @OneToMany(
     () => Supplier,
@@ -228,6 +251,13 @@ export class User extends BaseEntity {
     user => user.createdBy2
   )
   users: User[];
+
+  @ManyToOne(
+    () => Currency,
+    currency => currency.users
+  )
+  @JoinColumn([{ name: "preferred_currency", referencedColumnName: "id" }])
+  preferredCurrency: Currency;
 
   @ManyToOne(
     () => Language,
