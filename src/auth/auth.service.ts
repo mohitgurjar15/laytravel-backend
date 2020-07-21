@@ -601,7 +601,8 @@ export class AuthService {
 				profile_pic,
 				passport_number,
 				passport_expiry,
-				dob
+				dob,
+				address,
 			} = updateProfileDto;
 			
 			let countryDetails = await getManager()
@@ -627,6 +628,7 @@ export class AuthService {
 			user.countryCode = country_code;
 			user.phoneNo = phone_no;
 			user.dob = dob;
+			user.address = address;
 			
 			if(passport_expiry){
 				user.passportExpiry=passport_expiry;
