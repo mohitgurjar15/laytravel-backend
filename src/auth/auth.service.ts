@@ -38,9 +38,10 @@ import { MobileAuthCredentialDto } from "./dto/mobile-auth-credentials.dto";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { SocialLoginDto } from "./dto/social-login.dto";
 import * as md5 from "md5";
-import { In, getConnection } from "typeorm";
+import { In, getConnection, getManager } from "typeorm";
 import { LoginLog } from "src/entity/login-log.entity";
 import { Role } from "src/enum/role.enum";
+import { Currency } from "src/entity/currency.entity";
 
 @Injectable()
 export class AuthService {
@@ -577,29 +578,51 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			const userDetail = await this.userRepository.findOne({
-				select: [
-					"userId",
-					"title",
-					"firstName",
-					"lastName",
-					"email",
-					"phoneNo",
-					"profilePic",
-					"countryCode",
-					"phoneNo",
-					"countryId",
-					"stateId",
-					"cityName",
-					"address",
-				],
-				where: { userId },
-			});
-
-			userDetail.profilePic = userDetail.profilePic
+			
+			let userDetail =  await getManager()
+            .createQueryBuilder(User, "user")
+            .leftJoinAndSelect("user.state","state")
+            .leftJoinAndSelect("user.country","countries")
+            .leftJoinAndSelect("user.preferredCurrency","currency")
+            .leftJoinAndSelect("user.preferredLanguage2","language")
+            .select([
+                	"user.userId","user.title","user.dob",
+					"user.firstName","user.lastName",
+					"user.email","user.profilePic",
+					"user.countryCode","user.phoneNo",
+					"user.cityName","user.address","user.zipCode",
+					"user.preferredCurrency","user.preferredLanguage2",
+					"user.passportNumber","user.passportExpiry",
+					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
+					"currency.id","currency.code","currency.country",
+					"countries.name","countries.iso2","countries.iso3","countries.id",
+					"state.id","state.name","state.iso2","state.country_id",
+            ])
+            .where(`("user"."user_id"=:userId)`,{ userId})
+            .getOne();
+			let user:any={};
+			console.log(userDetail)
+			user.userId = userDetail.userId;
+			user.firstName = userDetail.firstName;
+			user.lastName = userDetail.lastName || "";
+			user.email = userDetail.email;
+			user.phoneNo = userDetail.phoneNo || "";
+			user.countryCode= userDetail.countryCode || "";
+			user.address= userDetail.address || "";
+			user.country= userDetail.country || {};
+			user.state= userDetail.state || {};
+			user.title= userDetail.title || "";
+			user.cityName= userDetail.cityName || "";
+			user.dob= userDetail.dob || "";
+			user.ziCode= userDetail.zipCode || "";
+			user.preferredCurrency= userDetail.preferredCurrency || {};
+			user.preferredLanguage= userDetail.preferredLanguage2 || {};
+			user.passportNumber= userDetail.passportNumber || "";
+			user.passportExpiry= userDetail.passportExpiry || "";
+			user.profilePic = userDetail.profilePic
 				? `${siteUrl}/profile/${userDetail.profilePic}`
 				: "";
-			return userDetail;
+			return user;
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
