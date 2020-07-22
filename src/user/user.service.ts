@@ -22,7 +22,10 @@ import { Role } from "src/enum/role.enum";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 import { In, AdvancedConsoleLogger } from "typeorm";
 import { ActiveDeactiveDto } from "./dto/active-deactive-user.dto";
+import { isEmail } from "class-validator";
 const mailConfig = config.get("email");
+const csv = require("csv-parser");
+const fs = require("fs");
 
 @Injectable()
 export class UserService {
@@ -77,7 +80,7 @@ export class UserService {
 		user.countryCode = country_code;
 		user.phoneNo = phone_no;
 		user.countryId = country_id;
-		user.preferredLanguage = prefer_language
+		user.preferredLanguage = prefer_language;
 		user.address = address;
 		user.stateId = state_id;
 		user.cityName = city_name;
@@ -119,51 +122,50 @@ export class UserService {
 		files: ProfilePicDto,
 		adminId: string
 	) {
-		const {
-			title,
-			email,
-			first_name,
-			last_name,
-			country_code,
-			phone_no,
-			address,
-			zip_code,
-			country_id,
-			state_id,
-			city_name,
-			gender,
-		} = updateUserDto;
-		const userId = UserId;
-		const userData = await this.userRepository.findOne({
-			where: {
-				userId,
-				isDeleted: 0,
-				roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
-			},
-		});
-
-		if (typeof files.profile_pic != "undefined")
-			userData.profilePic = files.profile_pic[0].filename;
-		userData.timezone = "";
-		userData.email = email;
-		userData.firstName = first_name;
-		userData.middleName = "";
-		userData.zipCode = zip_code;
-		userData.lastName = last_name;
-		userData.title = title;
-		userData.countryCode = country_code;
-		userData.phoneNo = phone_no;
-		userData.countryId = country_id;
-		userData.address = address;
-		userData.stateId = state_id;
-		userData.cityName = city_name;
-		userData.gender = gender;
-		userData.updatedBy = adminId;
-		userData.updatedDate = new Date();
 		try {
+			const {
+				title,
+				email,
+				first_name,
+				last_name,
+				country_code,
+				phone_no,
+				address,
+				zip_code,
+				country_id,
+				state_id,
+				city_name,
+				gender,
+			} = updateUserDto;
+			const userId = UserId;
+			const userData = await this.userRepository.findOne({
+				where: {
+					userId,
+					isDeleted: 0,
+					roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
+				},
+			});
+
+			if (typeof files.profile_pic != "undefined")
+				userData.profilePic = files.profile_pic[0].filename;
+			userData.timezone = "";
+			userData.email = email;
+			userData.firstName = first_name;
+			userData.middleName = "";
+			userData.zipCode = zip_code;
+			userData.lastName = last_name;
+			userData.title = title;
+			userData.countryCode = country_code;
+			userData.phoneNo = phone_no;
+			userData.countryId = country_id;
+			userData.address = address;
+			userData.stateId = state_id;
+			userData.cityName = city_name;
+			userData.gender = gender;
+			userData.updatedBy = adminId;
+			userData.updatedDate = new Date();
+
 			await userData.save();
-			delete userData.password;
-			delete userData.salt;
 			return userData;
 		} catch (error) {
 			throw new InternalServerErrorException(
@@ -176,7 +178,7 @@ export class UserService {
 		try {
 			const user = await this.userRepository.findOne({
 				where: {
-					userId:userId,
+					userId: userId,
 					isDeleted: false,
 					roleId: In([Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER]),
 				},
@@ -258,19 +260,16 @@ export class UserService {
 			var day = weekday.indexOf(fdate);
 			var fromDate = new Date();
 			fromDate.setDate(fromDate.getDate() - day);
-
-			var mondayDate = fromDate.toLocaleDateString();
+			var mondayDate = fromDate.toISOString();
 			mondayDate = mondayDate
-				.split("/")
-				.reverse()
-				.join("-");
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
 			var toDate = new Date();
 
-			var todayDate = toDate.toLocaleDateString();
+			var todayDate = toDate.toISOString();
 			todayDate = todayDate
-				.split("/")
-				.reverse()
-				.join("-");
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
 			const result = await this.userRepository
 				.createQueryBuilder()
 				.where(
@@ -367,6 +366,68 @@ export class UserService {
 		}
 	}
 
+	async importUser(importUserDto, files, userId, siteUrl) {
+		var count = 0;
+		const unsuccessRecord = new Array();
+		const csvData = [];
+		const csv = require("csvtojson");
+		const array = await csv().fromFile("./" + files[0].path);
+
+		array.forEach(function(row) {
+			if (
+				row.first_name != "" &&
+				row.email_id != "" &&
+				isEmail(row.email_id) &&
+				row.password != "" &&
+				row.type != "" &&
+				parseInt(row.type) >= 5 &&
+				parseInt(row.type) <= 7
+			) {
+				var data = {
+					firstName: row.first_name,
+					middleName: row.middle_name,
+					lastName: row.last_name,
+					email: row.email_id,
+					contryCode: row.contry_code,
+					phoneNumber: row.phone_number,
+					password: row.password,
+					roleId: row.type,
+					adminId: userId,
+				};
+				
+				var userData = this.userRepository.insertNewUser(data);
+				
+				if (userData) {
+					this.mailerService
+					.sendMail({
+						to: userData.email,
+						from: mailConfig.from,
+						subject: `Welcome on board`,
+						template: "welcome.html",
+						context: {
+							// Data to be sent to template files.
+							username: userData.firstName + " " + userData.lastName,
+							email: userData.email,
+							password: data.password,
+						},
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+					count++;
+				} else {
+					unsuccessRecord.push(row);
+				}
+			} else {
+				unsuccessRecord.push(row);
+			}
+		});
+		
+		return { importCount: count, unsuccessRecord: unsuccessRecord };
+	}
 	//Export user
 	async exportUser(): Promise<{ data: User[] }> {
 		return await this.userRepository.exportUser([

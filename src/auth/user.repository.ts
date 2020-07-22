@@ -79,11 +79,11 @@ export class UserRepository extends Repository<User> {
 			skip: skip,
 			take: take,
 		});
-		
+
 		if (!result || total <= skip) {
 			throw new NotFoundException(`No user found.`);
-        }
-        result.forEach(function(data) {
+		}
+		result.forEach(function(data) {
 			data.profilePic = data.profilePic
 				? `${siteUrl}/profile/${data.profilePic}`
 				: "";
@@ -131,6 +131,52 @@ export class UserRepository extends Repository<User> {
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
 			);
+		}
+	}
+
+	async insertNewUser(data: any): Promise<any> {
+		try {
+			const salt = await bcrypt.genSalt();
+			const user = new User();
+			user.userId = uuidv4();
+			user.accountType = 1;
+			user.socialAccountId = "";
+			user.phoneNo = "";
+			user.profilePic = "";
+			user.timezone = "";
+			user.status = 1;
+			user.roleId = data.roleId;
+			user.email = data.email;
+			user.firstName = data.firstName;
+			user.middleName = data.middleName;
+			user.zipCode = "";
+			user.lastName = data.lastName;
+			user.salt = salt;
+			user.title = "";
+			user.countryCode = data.countryCode;
+			user.phoneNo = data.phoneNumber;
+			user.countryId = null;
+			user.preferredLanguage = null;
+			user.address = "";
+			user.stateId = null;
+			user.cityName = "";
+			user.gender = "";
+			user.createdBy = data.UserId;
+			user.createdDate = new Date();
+			user.updatedDate = new Date();
+			user.password = await this.hashPassword(data.password, salt);
+			const email = user.email;
+			const userExist = await this.findOne({
+				email,
+			});
+			if (userExist) {
+				return false;
+			} else {
+				await user.save();
+				return user;
+			}
+		} catch (error) {
+			return false;
 		}
 	}
 }

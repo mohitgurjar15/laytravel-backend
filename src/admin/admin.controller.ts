@@ -23,6 +23,7 @@ import {
 	Req,
 	BadRequestException,
 	Patch,
+	NotFoundException,
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { RolesGuard } from "src/guards/role.guard";
@@ -46,11 +47,13 @@ import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-import { editFileName, imageFileFilter } from "../auth/file-validator";
+import { editFileName, imageFileFilter, csvFileFilter } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { statusPipe } from "src/user/pipes/status.pipes";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { ImportUserDto } from "src/user/dto/import-user.dto";
+import { csvFileDto } from "src/user/dto/csv-file.dto";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -273,4 +276,50 @@ export class AdminController {
 	async exportAdmin(): Promise<{ data: User[] }> {
 		return await this.adminService.exportAdmin();
 	}
+
+
+	@Post("report/import")
+	@ApiConsumes("multipart/form-data")
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "import admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: "file", maxCount: 1 }
+			],
+			{
+				storage: diskStorage({
+					destination: "./assets/otherfiles",
+					filename: editFileName,
+				}),
+				fileFilter: csvFileFilter
+			},
+		),
+	)
+	async importUser(
+        @Body() importUserDto:ImportUserDto,
+        @UploadedFiles() files: csvFileDto,
+        @Req() req,
+		@GetUser() user:User,
+		@SiteUrl() siteUrl:string,
+    ){
+        if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+		}
+		if (typeof files.file[0] == "undefined") {
+			throw new NotFoundException(`file is not available&&&file`);
+		}
+		const userId = user.userId;
+		const file = files.file;
+
+		return await this.adminService.importAdmin(importUserDto,file,userId,siteUrl)
+    }
 }

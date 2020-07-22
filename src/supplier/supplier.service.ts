@@ -11,6 +11,7 @@ import { SaveUserDto } from "src/user/dto/save-user.dto";
 import * as config from "config";
 import { UpdateUserDto } from "src/user/dto/update-user.dto";
 const mailConfig = config.get("email");
+import { Role } from "src/enum/role.enum";
 import { errorMessage } from "src/config/common.config";
 import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveSupplierDto } from "./dto/save-supplier.dto";
@@ -21,6 +22,8 @@ import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { User } from "src/entity/user.entity";
 import { In } from "typeorm";
+import { isEmail } from "class-validator";
+
 
 @Injectable()
 export class SupplierService {
@@ -53,7 +56,7 @@ export class SupplierService {
 			user.profilePic = files.profile_pic[0].filename;
 		user.timezone = "";
 		user.status = 1;
-		user.roleId = 4;
+		user.roleId = Role.SUPPLIER;
 		user.email = email;
 		user.firstName = first_name;
 		user.middleName = "";
@@ -112,7 +115,7 @@ export class SupplierService {
 			} = updateSupplierDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
-				where: { userId, isDeleted: 0, roleId: In([4]) },
+				where: { userId, isDeleted: 0, roleId: In([Role.SUPPLIER]) },
 			});
 
 			userData.firstName = firstName;
@@ -148,7 +151,7 @@ export class SupplierService {
 		siteUrl:string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [4],siteUrl);
+			return await this.userRepository.listUser(paginationOption, [Role.SUPPLIER],siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -200,6 +203,87 @@ export class SupplierService {
 	}
 	//Export user
 	async exportSupplier(): Promise<{ data: User[] }> {
-		return await this.userRepository.exportUser([4]);
+		return await this.userRepository.exportUser([Role.SUPPLIER]);
+	}
+
+
+	async importSupplier(importUserDto, files, userId, siteUrl) {
+		var count = 0;
+		const unsuccessRecord = new Array();
+		const csvData = [];
+		const csv = require("csvtojson");
+		const array = await csv().fromFile("./" + files[0].path);
+
+		array.forEach(function(row) {
+			if (
+				row.first_name != "" &&
+				row.email_id != "" &&
+				isEmail(row.email_id) &&
+				row.password != "" &&
+				parseInt(row.type) == 4 
+			) {
+				var data = {
+					firstName: row.first_name,
+					middleName: row.middle_name,
+					lastName: row.last_name,
+					email: row.email_id,
+					contryCode: row.contry_code,
+					phoneNumber: row.phone_number,
+					password: row.password,
+					roleId: row.type,
+					adminId: userId,
+				};
+				
+				var userData = this.userRepository.insertNewUser(data);
+				
+				if (userData) {
+					this.mailerService
+					.sendMail({
+						to: userData.email,
+						from: mailConfig.from,
+						subject: `Welcome on board`,
+						template: "welcome.html",
+						context: {
+							// Data to be sent to template files.
+							username: userData.firstName + " " + userData.lastName,
+							email: userData.email,
+							password: data.password,
+						},
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+					count++;
+				} else {
+					unsuccessRecord.push(row);
+				}
+			} else {
+				unsuccessRecord.push(row);
+			}
+		});		
+		return { importCount: count, unsuccessRecord: unsuccessRecord };
+	}
+
+	async getCounts(): Promise<{ result: any }> {
+		try {
+			const activeUser = await this.userRepository.query(
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where role_id In (${Role.SUPPLIER}) GROUP BY status`
+			);
+			return { result: activeUser };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
 	}
 }

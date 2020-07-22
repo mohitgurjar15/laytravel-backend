@@ -31,6 +31,7 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "src/entity/user.entity";
 import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { isEmail } from "class-validator";
 
 @Injectable()
 export class AdminService {
@@ -352,5 +353,66 @@ export class AdminService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	async importAdmin(importUserDto, files, userId, siteUrl) {
+		var count = 0;
+		const unsuccessRecord = new Array();
+		const csvData = [];
+		const csv = require("csvtojson");
+		const array = await csv().fromFile("./" + files[0].path);
+
+		array.forEach(function(row) {
+			if (
+				row.first_name != "" &&
+				row.email_id != "" &&
+				isEmail(row.email_id) &&
+				row.password != "" &&
+				row.type != "" &&
+				parseInt(row.type) == 2
+			) {
+				var data = {
+					firstName: row.first_name,
+					middleName: row.middle_name,
+					lastName: row.last_name,
+					email: row.email_id,
+					contryCode: row.contry_code,
+					phoneNumber: row.phone_number,
+					password: row.password,
+					roleId: row.type,
+					adminId: userId,
+				};
+				
+				var userData = this.userRepository.insertNewUser(data);
+				
+				if (userData) {
+					this.mailerService
+					.sendMail({
+						to: userData.email,
+						from: mailConfig.from,
+						subject: `Welcome on board`,
+						template: "welcome.html",
+						context: {
+							// Data to be sent to template files.
+							username: userData.firstName + " " + userData.lastName,
+							email: userData.email,
+							password: data.password,
+						},
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+					count++;
+				} else {
+					unsuccessRecord.push(row);
+				}
+			} else {
+				unsuccessRecord.push(row);
+			}
+		});
+		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 }
