@@ -212,12 +212,13 @@ export class AuthController {
         @UploadedFiles() files: ProfilePicDto,
 		@Req() req,
 		@GetUser() user: User,
+		@SiteUrl() siteUrl
 	): Promise<User> {
 		
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
         }
-        return await this.authService.updateProfile(updateProfileDto,user,files);
+        return await this.authService.updateProfile(updateProfileDto,user,files,siteUrl);
 	}
 
 	

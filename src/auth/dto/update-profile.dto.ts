@@ -1,7 +1,8 @@
-import { IsNotEmpty, ValidationArguments, IsEnum } from 'class-validator'
+import { IsNotEmpty, ValidationArguments, IsEnum, IsOptional } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
+import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
 export class UpdateProfileDto {
 
@@ -80,7 +81,7 @@ export class UpdateProfileDto {
     })
     @ApiProperty({
         description: `Enter your country id`,
-        example: 1
+        example: 233
     })
     country_id: number;
 
@@ -89,7 +90,7 @@ export class UpdateProfileDto {
     })
     @ApiProperty({
         description: `Enter your state id`,
-        example: 1
+        example: 1452
     })
     state_id: number;
 
@@ -102,6 +103,21 @@ export class UpdateProfileDto {
     })
     city_name: string;
 
+    @IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter date of birth.&&&dob`;
+            } else {
+                return `Please enter valid date of birth format(YYYY-MM-DD)&&&dob`;
+            }
+        },
+    })
+    @ApiProperty({
+        description: `Enter your dob`,
+        example: `1995-06-22`
+    })
+    dob: string;
+
 
     @ApiPropertyOptional({
 		type: "string",
@@ -109,5 +125,34 @@ export class UpdateProfileDto {
 		description: "profile Picture Url (Allow Only 'JPG,JPEG,PNG')",
 		example: "profile.jpg",
 	})
-	profile_pic: string;
+    profile_pic: string;
+    
+    @ApiPropertyOptional({
+		type: "string",
+		description: "Passport number",
+	})
+    @ApiProperty({
+        description: `Enter your passport number`,
+        example: `S1234X7896`
+    })
+    passport_number: string;
+
+    @ApiPropertyOptional({
+		type: "string",
+		description: "Passport expiry date",
+	})
+    @IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter passport expiry date.&&&passport_expiry`;
+            } else {
+                return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
+            }
+        },
+    })
+    @ApiProperty({
+        description: `Enter your passport expiry date`,
+        example: `2030-07-20`
+    })
+    passport_expiry: string;
 }

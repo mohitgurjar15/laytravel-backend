@@ -5,6 +5,7 @@ import {
 	InternalServerErrorException,
 	NotFoundException,
 	ForbiddenException,
+	BadRequestException,
 } from "@nestjs/common";
 import { UserRepository } from "../auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -20,9 +21,13 @@ import { v4 as uuidv4 } from "uuid";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
-import { In, AdvancedConsoleLogger } from "typeorm";
+import { In, AdvancedConsoleLogger, getManager } from "typeorm";
 import { ActiveDeactiveDto } from "./dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
+
+import { Countries } from "src/entity/countries.entity";
+import { States } from "src/entity/states.entity";
+
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
 const fs = require("fs");
@@ -58,6 +63,20 @@ export class UserService {
 			city_name,
 			gender,
 		} = saveUserDto;
+
+		let countryDetails = await getManager()
+			.createQueryBuilder(Countries,"country")
+			.where(`id=:country_id`,{country_id})
+			.getOne();
+		if(!countryDetails)
+				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
+			
+		let stateDetails = await getManager()
+			.createQueryBuilder(States,"states")
+			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			.getOne();
+		if(!stateDetails)
+			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
 
 		const salt = await bcrypt.genSalt();
 		const user = new User();
@@ -123,48 +142,63 @@ export class UserService {
 		adminId: string
 	) {
 		try {
-			const {
-				title,
-				email,
-				first_name,
-				last_name,
-				country_code,
-				phone_no,
-				address,
-				zip_code,
-				country_id,
-				state_id,
-				city_name,
-				gender,
-			} = updateUserDto;
-			const userId = UserId;
-			const userData = await this.userRepository.findOne({
-				where: {
-					userId,
-					isDeleted: 0,
-					roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
-				},
-			});
+		const {
+			title,
+			email,
+			first_name,
+			last_name,
+			country_code,
+			phone_no,
+			address,
+			zip_code,
+			country_id,
+			state_id,
+			city_name,
+			gender,
+		} = updateUserDto;
+		const userId = UserId;
 
-			if (typeof files.profile_pic != "undefined")
-				userData.profilePic = files.profile_pic[0].filename;
-			userData.timezone = "";
-			userData.email = email;
-			userData.firstName = first_name;
-			userData.middleName = "";
-			userData.zipCode = zip_code;
-			userData.lastName = last_name;
-			userData.title = title;
-			userData.countryCode = country_code;
-			userData.phoneNo = phone_no;
-			userData.countryId = country_id;
-			userData.address = address;
-			userData.stateId = state_id;
-			userData.cityName = city_name;
-			userData.gender = gender;
-			userData.updatedBy = adminId;
-			userData.updatedDate = new Date();
+		let countryDetails = await getManager()
+			.createQueryBuilder(Countries,"country")
+			.where(`id=:country_id`,{country_id})
+			.getOne();
+		if(!countryDetails)
+				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
+			
+		let stateDetails = await getManager()
+			.createQueryBuilder(States,"states")
+			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			.getOne();
+		if(!stateDetails)
+			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
+			
+		const userData = await this.userRepository.findOne({
+			where: {
+				userId,
+				isDeleted: 0,
+				roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
+			},
+		});
 
+		if (typeof files.profile_pic != "undefined")
+			userData.profilePic = files.profile_pic[0].filename;
+		userData.timezone = "";
+		userData.email = email;
+		userData.firstName = first_name;
+		userData.middleName = "";
+		userData.zipCode = zip_code;
+		userData.lastName = last_name;
+		userData.title = title;
+		userData.countryCode = country_code;
+		userData.phoneNo = phone_no;
+		userData.countryId = country_id;
+		userData.address = address;
+		userData.stateId = state_id;
+		userData.cityName = city_name;
+		userData.gender = gender;
+		userData.updatedBy = adminId;
+		userData.updatedDate = new Date();
+		
 			await userData.save();
 			return userData;
 		} catch (error) {
@@ -176,33 +210,10 @@ export class UserService {
 
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			const user = await this.userRepository.findOne({
-				where: {
-					userId: userId,
-					isDeleted: false,
-					roleId: In([Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER]),
-				},
-			});
-
-			if (!user) {
-				throw new NotFoundException(`No user found`);
-			}
-			delete user.salt;
-			delete user.password;
-			user.profilePic = user.profilePic
-				? `${siteUrl}/profile/${user.profilePic}`
-				: "";
-			return user;
+			const roles=[Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
+			return this.userRepository.getUserDetails(userId,siteUrl,roles);
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No user found`);
-			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
+			throw new InternalServerErrorException(errorMessage);
 		}
 	}
 
