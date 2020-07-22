@@ -9,6 +9,17 @@ export const imageFileFilter = (req, file, callback) => {
 	callback(null, true);
 };
 
+
+export const csvFileFilter = (req, file, callback) => {
+	if (!file.originalname.match(/\.(csv)$/)) {
+		req.fileValidationError = "Only csv are allowed.";
+		req.statusCode = 422;
+		return callback(null, false, new Error(req.fileValidationError), file.originialname);
+	}
+	callback(null, true);
+};
+
+
 export const editFileName = (req, file, callback) => {
 	let name = file.originalname.split(".")[0];
 	name = name.split(" ").join("");

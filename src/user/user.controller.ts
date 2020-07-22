@@ -1,4 +1,4 @@
-import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode, Post, Delete, UseInterceptors, UploadedFiles, Req, BadRequestException, Patch } from '@nestjs/common';
+import { Controller,  Body, UseGuards, Param, Put, ValidationPipe, Get, Query, HttpStatus, HttpCode, Post, Delete, UseInterceptors, UploadedFiles, Req, BadRequestException, Patch, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiConsumes } from '@nestjs/swagger';
@@ -13,12 +13,14 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { Role } from 'src/enum/role.enum';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from "multer";
-import { editFileName, imageFileFilter } from '../auth/file-validator';
+import { editFileName, imageFileFilter, csvFileFilter } from '../auth/file-validator';
 import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
 import { pipe } from 'rxjs';
 import { ActiveDeactiveDto } from './dto/active-deactive-user.dto';
 import { statusPipe } from './pipes/status.pipes';
+import { ImportUserDto } from './dto/import-user.dto';
+import { csvFileDto } from './dto/csv-file.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -161,9 +163,11 @@ export class UserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteUser(
-        @Param('id') user_id:string
+		@Param('id') user_id:string,
+		@GetUser() user: User
     ){
-        return await this.userService.deleteUser(user_id);
+		const adminId = user.userId;
+        return await this.userService.deleteUser(user_id,adminId);
     }
 
 
@@ -196,9 +200,11 @@ export class UserController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportCustomer(
+	async exportCustomer( @GetUser() user: User
 	): Promise<{ data: User[]}> {
-		return await this.userService.exportUser();
+		
+		const adminId = user.userId;
+		return await this.userService.exportUser(adminId);
 	}
 
 	@Get('report/weekly-register')
@@ -228,8 +234,54 @@ export class UserController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getCount(
+	async getCount( 
 	):Promise<{ result : any }>{
+		
 		return await this.userService.getCounts();
 	}
+
+	@Post("report/import")
+	@ApiConsumes("multipart/form-data")
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "import user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: "file", maxCount: 1 }
+			],
+			{
+				storage: diskStorage({
+					destination: "./assets/otherfiles",
+					filename: editFileName,
+				}),
+				fileFilter: csvFileFilter
+			},
+		),
+	)
+	async importUser(
+        @Body() importUserDto:ImportUserDto,
+        @UploadedFiles() files: csvFileDto,
+        @Req() req,
+		@GetUser() user:User,
+		@SiteUrl() siteUrl:string,
+    ){
+        if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+		}
+		if (typeof files.file[0] == "undefined") {
+			throw new NotFoundException(`file is not available&&&file`);
+		}
+		const userId = user.userId;
+		const file = files.file;
+
+		return await this.userService.importUser(importUserDto,file,userId,siteUrl)
+    }
 }

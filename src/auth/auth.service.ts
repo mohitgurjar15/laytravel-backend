@@ -44,6 +44,7 @@ import { Role } from "src/enum/role.enum";
 import { Currency } from "src/entity/currency.entity";
 import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class AuthService {
@@ -191,6 +192,7 @@ export class AuthService {
 		userDetails.access_token = accessToken;
 
 		this.addLoginLog(user.userId, request, loginvia);
+		Activity.logActivity(user.userId, `auth`, `login using ${loginvia}`);
 		return { user_details: userDetails };
 	}
 
@@ -256,7 +258,9 @@ export class AuthService {
 			email,
 			tokenhash,
 		};
+		
 		const forgetPassToken = this.jwtService.sign(payload);
+		Activity.logActivity(user.userId, `auth`, `forget password Token : ${forgetPassToken}`);
 		const resetLink = `http://laytrip.oneclickitmarketing.co.in/reset-password?token=${forgetPassToken}`;
 		this.mailerService
 			.sendMail({
@@ -312,6 +316,7 @@ export class AuthService {
 		const user = await this.userRepository.findOne({
 			where: { email: email, isDeleted: 0, status: 1 },
 		});
+		Activity.logActivity(user.userId, `auth`, `update password Token : ${token}`);
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.&&&email`
@@ -424,6 +429,7 @@ export class AuthService {
 				};
 				let loginvia = device_type == 1 ? "android" : "ios";
 				this.addLoginLog(user.userId, request, loginvia);
+				Activity.logActivity(user.userId, `auth`, `login user via : ${loginvia}`);
 				return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 			} catch (error) {
 				throw new InternalServerErrorException(
@@ -446,6 +452,7 @@ export class AuthService {
 				);
 			}
 			await UserDeviceDetail.delete({ user: user });
+			Activity.logActivity(id, `auth`, `logout the user`);
 			const userData = { message: `Logged out successfully.` };
 			return userData;
 		} catch (error) {
@@ -570,6 +577,7 @@ export class AuthService {
 			};
 			let loginvia = device_type == 1 ? "android" : "ios";
 			this.addLoginLog(user.userId, request, loginvia);
+			Activity.logActivity(user.userId, `auth`, `login  the user via : ${loginvia}`);
 			return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
@@ -643,6 +651,7 @@ export class AuthService {
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
+			Activity.logActivity(user.userId, `auth`, `update profile by the user via `);
 			return this.userRepository.getUserDetails(userId,siteUrl);
 		} catch (error) {
 			if (error instanceof NotFoundException

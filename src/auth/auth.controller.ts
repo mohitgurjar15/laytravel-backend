@@ -220,4 +220,6 @@ export class AuthController {
         }
         return await this.authService.updateProfile(updateProfileDto,user,files,siteUrl);
 	}
+
+	
 }
