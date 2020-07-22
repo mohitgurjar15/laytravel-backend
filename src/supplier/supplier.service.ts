@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "src/entity/user.entity";
 import { In } from "typeorm";
 import { isEmail } from "class-validator";
+import { Activity } from "src/utility/activity.utility";
 
 
 @Injectable()
@@ -91,6 +92,7 @@ export class SupplierService {
 					console.log("err", err);
 				});
 		}
+		Activity.logActivity(adminId,'supplier-user',`create user ${user.userId}`)
 		return userdata;
 	}
 
@@ -127,6 +129,7 @@ export class SupplierService {
 			userData.updatedDate = new Date();
 			
 			await userData.save();
+			Activity.logActivity(adminId,'supplier-user',`update user ${userId}`)
 			return userData;
 		} catch (error) {
 			if (
@@ -170,7 +173,7 @@ export class SupplierService {
 	 * delete supplier
 	 * @param userId
 	 */
-	async deleteSupplier(userId: string) {
+	async deleteSupplier(userId: string,adminId:string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -185,7 +188,10 @@ export class SupplierService {
 				);
 			} else {
 				user.isDeleted = true;
+				user.updatedBy = adminId;
+				user.updatedDate = new Date();
 				await user.save();
+				Activity.logActivity(adminId,'supplier-user',`delete user ${userId}`)
 				return { messge: `supplier deleted successfully` };
 			}
 		} catch (error) {
@@ -202,7 +208,8 @@ export class SupplierService {
 		}
 	}
 	//Export user
-	async exportSupplier(): Promise<{ data: User[] }> {
+	async exportSupplier(adminId:string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId,'supplier-user',`export user `)
 		return await this.userRepository.exportUser([Role.SUPPLIER]);
 	}
 
@@ -213,7 +220,7 @@ export class SupplierService {
 		const csvData = [];
 		const csv = require("csvtojson");
 		const array = await csv().fromFile("./" + files[0].path);
-
+		
 		array.forEach(function(row) {
 			if (
 				row.first_name != "" &&
@@ -264,6 +271,7 @@ export class SupplierService {
 				unsuccessRecord.push(row);
 			}
 		});		
+		Activity.logActivity(userId,'supplier-user',`import ${count}  user`)
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 

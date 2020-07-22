@@ -32,6 +32,7 @@ import { User } from "src/entity/user.entity";
 import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class AdminService {
@@ -79,6 +80,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
+			Activity.logActivity(adminId,'Admin',`create new admin${user.userId}`)
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -139,6 +141,7 @@ export class AdminService {
 			delete userData.salt;
 
 			await userData.save();
+			Activity.logActivity(adminId,'admin',`update admin ${userId}`)
 			return userData;
 		} catch (error) {
 			if (
@@ -163,6 +166,7 @@ export class AdminService {
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
+			
 			return await this.userRepository.listUser(paginationOption, [2], siteUrl);
 		} catch (error) {
 			if (
@@ -179,7 +183,8 @@ export class AdminService {
 	}
 
 	//Export user
-	async exportAdmin(): Promise<{ data: User[] }> {
+	async exportAdmin(adminId:string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId,'admin',`export admin`)
 		return await this.userRepository.exportUser([2]);
 	}
 
@@ -187,7 +192,7 @@ export class AdminService {
 	 * delete Admin
 	 * @param userId
 	 */
-	async deleteAdmin(userId: string) {
+	async deleteAdmin(userId: string,adminId:string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -202,7 +207,10 @@ export class AdminService {
 				);
 			} else {
 				user.isDeleted = true;
+				user.updatedBy = adminId;
+				user.updatedDate = new Date();
 				await user.save();
+				Activity.logActivity(adminId,'admin',`delete admin ${userId}`)
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -268,6 +276,7 @@ export class AdminService {
 			user.updatedDate = new Date();
 			await user.save();
 			var statusWord = status == 1 ? "Active" : "Deactive";
+			Activity.logActivity(adminId, `Admin`, `${statusWord} admin ${userId}`);
 			return { messge: `User ${statusWord} successfully` };
 		} catch (error) {
 			if (
@@ -413,6 +422,7 @@ export class AdminService {
 				unsuccessRecord.push(row);
 			}
 		});
+		Activity.logActivity(userId, `Admin`, `import admin Source :- ${files[0].path}`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 }

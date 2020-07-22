@@ -163,9 +163,11 @@ export class UserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteUser(
-        @Param('id') user_id:string
+		@Param('id') user_id:string,
+		@GetUser() user: User
     ){
-        return await this.userService.deleteUser(user_id);
+		const adminId = user.userId;
+        return await this.userService.deleteUser(user_id,adminId);
     }
 
 
@@ -198,9 +200,11 @@ export class UserController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportCustomer(
+	async exportCustomer( @GetUser() user: User
 	): Promise<{ data: User[]}> {
-		return await this.userService.exportUser();
+		
+		const adminId = user.userId;
+		return await this.userService.exportUser(adminId);
 	}
 
 	@Get('report/weekly-register')
@@ -230,8 +234,9 @@ export class UserController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getCount(
+	async getCount( 
 	):Promise<{ result : any }>{
+		
 		return await this.userService.getCounts();
 	}
 

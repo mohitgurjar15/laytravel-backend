@@ -27,6 +27,7 @@ import { isEmail } from "class-validator";
 
 import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
+import { Activity } from "src/utility/activity.utility";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -112,6 +113,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
+			Activity.logActivity(adminId,'user',`create new ${user_type}`)
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -200,6 +202,7 @@ export class UserService {
 		userData.updatedDate = new Date();
 		
 			await userData.save();
+			Activity.logActivity(adminId,'user',`update user ${userId}`)
 			return userData;
 		} catch (error) {
 			throw new InternalServerErrorException(
@@ -240,6 +243,7 @@ export class UserService {
 			user.updatedDate = new Date();
 			await user.save();
 			var statusWord = status == 1 ? "Active" : "Deactive";
+			Activity.logActivity(adminId,'user',`${statusWord} user ${userId}`)
 			return { message: `User ${statusWord} successfully` };
 		} catch (error) {
 			if (
@@ -346,7 +350,7 @@ export class UserService {
 		}
 	}
 
-	async deleteUser(userId: string) {
+	async deleteUser(userId: string,adminId:string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -360,7 +364,10 @@ export class UserService {
 				);
 			} else {
 				user.isDeleted = true;
+				user.updatedBy = adminId;
+				user.updatedDate = new Date();
 				await user.save();
+				Activity.logActivity(adminId,'user',`delete user ${userId}`)
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -436,11 +443,12 @@ export class UserService {
 				unsuccessRecord.push(row);
 			}
 		});
-		
+		Activity.logActivity(userId,'user',`import ${count}  user`)
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
-	async exportUser(): Promise<{ data: User[] }> {
+	async exportUser(adminId:string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId,'user',`export  user`)
 		return await this.userRepository.exportUser([
 			Role.PAID_USER,
 			Role.GUEST_USER,

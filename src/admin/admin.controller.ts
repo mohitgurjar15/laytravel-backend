@@ -47,13 +47,18 @@ import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-import { editFileName, imageFileFilter, csvFileFilter } from "../auth/file-validator";
+import {
+	editFileName,
+	imageFileFilter,
+	csvFileFilter,
+} from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { statusPipe } from "src/user/pipes/status.pipes";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { ImportUserDto } from "src/user/dto/import-user.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
+import { Activity } from "src/utility/activity.utility";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -163,12 +168,13 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async deleteAdmin(@Param("id") user_id: string) {
-		return await this.adminService.deleteAdmin(user_id);
+	async deleteAdmin(@Param("id") user_id: string,@GetUser() user: User) {
+		const adminId = user.userId;
+		return await this.adminService.deleteAdmin(user_id,adminId);
 	}
 
 	@Patch("active-deactive-admin/:id")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Active-deactive admin by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -178,9 +184,19 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async activeAdmin(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
+	async activeAdmin(
+		@Param("id") user_id: string,
+		@Body(statusPipe) activeDeactiveDto: ActiveDeactiveDto,
+		@GetUser() user: User
+	) {
 		const adminId = user.userId;
-		return await this.adminService.activeDeactiveAdmin(user_id,activeDeactiveDto,adminId);
+
+		
+		return await this.adminService.activeDeactiveAdmin(
+			user_id,
+			activeDeactiveDto,
+			adminId
+		);
 	}
 	/**
 	 *
@@ -204,24 +220,28 @@ export class AdminController {
 		return await this.adminService.listAdmin(paginationOption, siteUrl);
 	}
 
-	@Get('/:id')
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
-    @ApiOperation({ summary: "Get admin details by super admin" })
-    @ApiResponse({ status: 200, description: "Api success" })
+	@Get("/:id")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Get admin details by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    async getAdminData(
-        @Param('id') userId: string,@SiteUrl() siteUrl: string
-    ): Promise<User> {
-        return await this.adminService.getAdminData(userId,siteUrl);
-    }
+	async getAdminData(
+		@Param("id") userId: string,
+		@SiteUrl() siteUrl: string
+	): Promise<User> {
+		return await this.adminService.getAdminData(userId, siteUrl);
+	}
 	/**
 	 * Get count of user base on status
-	 * 
+	 *
 	 */
-	@Get('report/counts')
+	@Get("report/counts")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "counts Of all admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -232,16 +252,15 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getCount(
-	):Promise<{ result : any }>{
+	async getCount(): Promise<{ result: any }> {
 		return await this.adminService.getCounts();
 	}
 
 	/**
-	 * return count of user ragister in current weak 
+	 * return count of user ragister in current weak
 	 */
 
-	@Get('report/weekly-register')
+	@Get("report/weekly-register")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Count of register admin in current week" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -252,10 +271,9 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async weeklyRagisterAdmin(
-	): Promise<{ count: number }>{
+	async weeklyRagisterAdmin(): Promise<{ count: number }> {
 		console.log("week");
-		
+
 		return await this.adminService.weeklyRegisterAdmin();
 	}
 
@@ -273,14 +291,14 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportAdmin(): Promise<{ data: User[] }> {
-		return await this.adminService.exportAdmin();
+	async exportAdmin(@GetUser() user: User): Promise<{ data: User[] }> {
+		const userId = user.userId;
+		return await this.adminService.exportAdmin(userId);
 	}
-
 
 	@Post("report/import")
 	@ApiConsumes("multipart/form-data")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "import admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -291,27 +309,22 @@ export class AdminController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@UseInterceptors(
-		FileFieldsInterceptor(
-			[
-				{ name: "file", maxCount: 1 }
-			],
-			{
-				storage: diskStorage({
-					destination: "./assets/otherfiles",
-					filename: editFileName,
-				}),
-				fileFilter: csvFileFilter
-			},
-		),
+		FileFieldsInterceptor([{ name: "file", maxCount: 1 }], {
+			storage: diskStorage({
+				destination: "./assets/otherfiles",
+				filename: editFileName,
+			}),
+			fileFilter: csvFileFilter,
+		})
 	)
 	async importUser(
-        @Body() importUserDto:ImportUserDto,
-        @UploadedFiles() files: csvFileDto,
-        @Req() req,
-		@GetUser() user:User,
-		@SiteUrl() siteUrl:string,
-    ){
-        if (req.fileValidationError) {
+		@Body() importUserDto: ImportUserDto,
+		@UploadedFiles() files: csvFileDto,
+		@Req() req,
+		@GetUser() user: User,
+		@SiteUrl() siteUrl: string
+	) {
+		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
 		if (typeof files.file[0] == "undefined") {
@@ -320,6 +333,11 @@ export class AdminController {
 		const userId = user.userId;
 		const file = files.file;
 
-		return await this.adminService.importAdmin(importUserDto,file,userId,siteUrl)
-    }
+		return await this.adminService.importAdmin(
+			importUserDto,
+			file,
+			userId,
+			siteUrl
+		);
+	}
 }

@@ -38,7 +38,11 @@ import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { ListSupplierDto } from "./dto/list-supplier.dto";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-import { editFileName, imageFileFilter, csvFileFilter } from "../auth/file-validator";
+import {
+	editFileName,
+	imageFileFilter,
+	csvFileFilter,
+} from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { ImportUserDto } from "src/user/dto/import-user.dto";
@@ -89,7 +93,11 @@ export class SupplierController {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
 		const adminId = user.userId;
-		return await this.supplierService.createSupplier(saveSupplierDto,files,adminId);
+		return await this.supplierService.createSupplier(
+			saveSupplierDto,
+			files,
+			adminId
+		);
 	}
 	/**
 	 * Update supplier
@@ -152,8 +160,9 @@ export class SupplierController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async deleteUser(@Param("id") user_id: string) {
-		return await this.supplierService.deleteSupplier(user_id);
+	async deleteUser(@Param("id") user_id: string, @GetUser() user: User) {
+		const adminId = user.userId;
+		return await this.supplierService.deleteSupplier(user_id, adminId);
 	}
 	/**
 	 * supplier List
@@ -172,12 +181,12 @@ export class SupplierController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
 		@Query() paginationOption: ListSupplierDto,
-		@SiteUrl() siteUrl:string,
+		@SiteUrl() siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.supplierService.listSupplier(paginationOption,siteUrl);
+		return await this.supplierService.listSupplier(paginationOption, siteUrl);
 	}
 
-	@Get('report/counts')
+	@Get("report/counts")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "counts Of all Supplier" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -188,18 +197,14 @@ export class SupplierController {
 	})
 	@ApiResponse({ status: 404, description: "supplier not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getCount(
-	):Promise<{ result : any }>{
+	async getCount(): Promise<{ result: any }> {
 		return await this.supplierService.getCounts();
 	}
-
-
-
 
 	/**
 	 * export supplier
 	 */
-	@Get('export')
+	@Get("export")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "export supplier user by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -210,16 +215,14 @@ export class SupplierController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportSupplier(
-	): Promise<{ data: User[]}> {
-		return await this.supplierService.exportSupplier();
+	async exportSupplier(@GetUser() user: User): Promise<{ data: User[] }> {
+		const adminId = user.userId;
+		return await this.supplierService.exportSupplier(adminId);
 	}
-
-
 
 	@Post("report/import")
 	@ApiConsumes("multipart/form-data")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "import supplier user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -230,27 +233,22 @@ export class SupplierController {
 	@ApiResponse({ status: 404, description: "supplier user not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@UseInterceptors(
-		FileFieldsInterceptor(
-			[
-				{ name: "file", maxCount: 1 }
-			],
-			{
-				storage: diskStorage({
-					destination: "./assets/otherfiles",
-					filename: editFileName,
-				}),
-				fileFilter: csvFileFilter
-			},
-		),
+		FileFieldsInterceptor([{ name: "file", maxCount: 1 }], {
+			storage: diskStorage({
+				destination: "./assets/otherfiles",
+				filename: editFileName,
+			}),
+			fileFilter: csvFileFilter,
+		})
 	)
 	async importUser(
-        @Body() importUserDto:ImportUserDto,
-        @UploadedFiles() files: csvFileDto,
-        @Req() req,
-		@GetUser() user:User,
-		@SiteUrl() siteUrl:string,
-    ){
-        if (req.fileValidationError) {
+		@Body() importUserDto: ImportUserDto,
+		@UploadedFiles() files: csvFileDto,
+		@Req() req,
+		@GetUser() user: User,
+		@SiteUrl() siteUrl: string
+	) {
+		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
 		if (typeof files.file[0] == "undefined") {
@@ -259,6 +257,11 @@ export class SupplierController {
 		const userId = user.userId;
 		const file = files.file;
 
-		return await this.supplierService.importSupplier(importUserDto,file,userId,siteUrl)
-    }
+		return await this.supplierService.importSupplier(
+			importUserDto,
+			file,
+			userId,
+			siteUrl
+		);
+	}
 }
