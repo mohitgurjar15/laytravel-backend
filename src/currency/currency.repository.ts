@@ -33,7 +33,7 @@ export class CurrencyRepository extends Repository<Currency>
         });
         
         if (!result || total <= skip) {
-            throw new NotFoundException(`No user found.`)
+            throw new NotFoundException(`No currency found.`)
         }
         return { data: result, TotalReseult: total };
     }

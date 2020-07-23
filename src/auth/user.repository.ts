@@ -134,7 +134,7 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
-	async insertNewUser(data: any): Promise<any> {
+	async insertNewUser(data: any): Promise<boolean> {
 		try {
 			const salt = await bcrypt.genSalt();
 			const user = new User();
@@ -173,7 +173,7 @@ export class UserRepository extends Repository<User> {
 				return false;
 			} else {
 				await user.save();
-				return user;
+				return true;
 			}
 		} catch (error) {
 			return false;

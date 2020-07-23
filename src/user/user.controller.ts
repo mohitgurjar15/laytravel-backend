@@ -139,20 +139,7 @@ export class UserController {
         return await this.userService.updateUser(updateUserDto,user_id,files,adminId);
     }
 
-    @Put('change-password')
-    @ApiOperation({ summary: "Change user password" })
-    @ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-    async changePassword(
-        @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
-        @GetUser() user: User,
-    ){
-        const userId = user.userId
-        return await this.userService.changePassword(changePasswordDto, userId);
-    }
+    
 
     @Delete(':id')
     @Roles(Role.SUPER_ADMIN,Role.ADMIN)

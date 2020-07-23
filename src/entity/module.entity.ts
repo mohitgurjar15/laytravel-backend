@@ -31,10 +31,10 @@ export class Module extends BaseEntity {
   createdBy: string;
 
   @Column("date", { name: "created_date" })
-  createdDate: string;
+  createdDate: Date;
 
   @Column("date", { name: "update_date" })
-  updateDate: string;
+  updateDate: Date;
 
   @OneToMany(
     () => Booking,

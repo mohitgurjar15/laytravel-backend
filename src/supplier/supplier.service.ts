@@ -25,7 +25,6 @@ import { In } from "typeorm";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 
-
 @Injectable()
 export class SupplierService {
 	constructor(
@@ -64,7 +63,7 @@ export class SupplierService {
 		user.zipCode = "";
 		user.lastName = last_name;
 		user.salt = salt;
-		user.createdBy = adminId
+		user.createdBy = adminId;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
@@ -92,7 +91,11 @@ export class SupplierService {
 					console.log("err", err);
 				});
 		}
-		Activity.logActivity(adminId,'supplier-user',`create user ${user.userId}`)
+		Activity.logActivity(
+			adminId,
+			"supplier-user",
+			`create user ${user.userId}`
+		);
 		return userdata;
 	}
 
@@ -123,13 +126,13 @@ export class SupplierService {
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
-			userData.updatedBy = adminId
+			userData.updatedBy = adminId;
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
 			userData.updatedDate = new Date();
-			
+
 			await userData.save();
-			Activity.logActivity(adminId,'supplier-user',`update user ${userId}`)
+			Activity.logActivity(adminId, "supplier-user", `update user ${userId}`);
 			return userData;
 		} catch (error) {
 			if (
@@ -151,10 +154,14 @@ export class SupplierService {
 	 */
 	async listSupplier(
 		paginationOption: ListSupplierDto,
-		siteUrl:string
+		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [Role.SUPPLIER],siteUrl);
+			return await this.userRepository.listUser(
+				paginationOption,
+				[Role.SUPPLIER],
+				siteUrl
+			);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -173,7 +180,7 @@ export class SupplierService {
 	 * delete supplier
 	 * @param userId
 	 */
-	async deleteSupplier(userId: string,adminId:string) {
+	async deleteSupplier(userId: string, adminId: string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -191,7 +198,7 @@ export class SupplierService {
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId,'supplier-user',`delete user ${userId}`)
+				Activity.logActivity(adminId, "supplier-user", `delete user ${userId}`);
 				return { messge: `supplier deleted successfully` };
 			}
 		} catch (error) {
@@ -208,71 +215,119 @@ export class SupplierService {
 		}
 	}
 	//Export user
-	async exportSupplier(adminId:string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId,'supplier-user',`export user `)
+	async exportSupplier(adminId: string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId, "supplier-user", `export user `);
 		return await this.userRepository.exportUser([Role.SUPPLIER]);
 	}
-
 
 	async importSupplier(importUserDto, files, userId, siteUrl) {
 		var count = 0;
 		const unsuccessRecord = new Array();
-		const csvData = [];
 		const csv = require("csvtojson");
 		const array = await csv().fromFile("./" + files[0].path);
-		
-		array.forEach(function(row) {
-			if (
-				row.first_name != "" &&
-				row.email_id != "" &&
-				isEmail(row.email_id) &&
-				row.password != "" &&
-				parseInt(row.type) == 4 
-			) {
-				var data = {
-					firstName: row.first_name,
-					middleName: row.middle_name,
-					lastName: row.last_name,
-					email: row.email_id,
-					contryCode: row.contry_code,
-					phoneNumber: row.phone_number,
-					password: row.password,
-					roleId: row.type,
-					adminId: userId,
-				};
-				
-				var userData = this.userRepository.insertNewUser(data);
-				
-				if (userData) {
-					this.mailerService
-					.sendMail({
-						to: userData.email,
-						from: mailConfig.from,
-						subject: `Welcome on board`,
-						template: "welcome.html",
-						context: {
-							// Data to be sent to template files.
-							username: userData.firstName + " " + userData.lastName,
-							email: userData.email,
-							password: data.password,
-						},
-					})
-					.then((res) => {
-						console.log("res", res);
-					})
-					.catch((err) => {
-						console.log("err", err);
-					});
-					count++;
+		for (let index = 0; index < array.length; index++) {
+			var row = array[index];
+			if (row) {
+				if (
+					row.first_name != "" &&
+					row.email_id != "" &&
+					isEmail(row.email_id) &&
+					row.password != "" &&
+					row.type != "" &&
+					parseInt(row.type) == 4
+				) {
+					var data = {
+						firstName: row.first_name,
+						middleName: row.middle_name,
+						lastName: row.last_name,
+						email: row.email_id,
+						contryCode: row.contry_code,
+						phoneNumber: row.phone_number,
+						password: row.password,
+						roleId: row.type,
+						adminId: userId,
+					};
+					var userData = await this.userRepository.insertNewUser(data);
+
+					if (userData) {
+						count++;
+						this.mailerService
+							.sendMail({
+								to: data.email,
+								from: mailConfig.from,
+								subject: `Welcome on board`,
+								template: "welcome.html",
+								context: {
+									// Data to be sent to template files.
+									username: data.firstName + " " + data.lastName,
+									email: data.email,
+									password: data.password,
+								},
+							})
+							.then((res) => {
+								console.log("res", res);
+							})
+							.catch((err) => {
+								console.log("err", err);
+							});
+					} else {
+						unsuccessRecord.push(row);
+					}
 				} else {
 					unsuccessRecord.push(row);
 				}
-			} else {
-				unsuccessRecord.push(row);
 			}
-		});		
-		Activity.logActivity(userId,'supplier-user',`import ${count}  user`)
+		}
+		Activity.logActivity(userId, "supplier-user", `import ${count}  user`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
+	}
+
+	async weeklyRagisterUser(): Promise<{ count: number }> {
+		try {
+			var date = new Date();
+			var fdate = date.toLocaleString("en-US", {
+				weekday: "long",
+			});
+			var weekday = new Array(7);
+			weekday[0] = "Monday";
+			weekday[1] = "Tuesday";
+			weekday[2] = "Wednesday";
+			weekday[3] = "Thursday";
+			weekday[4] = "Friday";
+			weekday[5] = "Saturday";
+			weekday[6] = "Sunday";
+			var day = weekday.indexOf(fdate);
+			var fromDate = new Date();
+			fromDate.setDate(fromDate.getDate() - day);
+			var mondayDate = fromDate.toISOString();
+			mondayDate = mondayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			var toDate = new Date();
+
+			var todayDate = toDate.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			const result = await this.userRepository
+				.createQueryBuilder()
+				.where(
+					`role_id In (${Role.SUPPLIER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
+				)
+				.getCount();
+			return { count: result };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
 	}
 
 	async getCounts(): Promise<{ result: any }> {

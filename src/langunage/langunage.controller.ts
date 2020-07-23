@@ -80,8 +80,8 @@ export class LangunageController {
 	//     return "API is pending";
 	// }
 
-	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN)
 	@ApiOperation({ summary: "Update langunage by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -113,8 +113,8 @@ export class LangunageController {
 	// 	return "API is pending";
 	// }
 
-	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN)	
 	@ApiOperation({ summary: "Delete langunage by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

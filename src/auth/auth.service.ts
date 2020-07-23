@@ -45,6 +45,7 @@ import { Currency } from "src/entity/currency.entity";
 import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
 import { Activity } from "src/utility/activity.utility";
+import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -667,6 +668,10 @@ export class AuthService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
+		return await this.userRepository.changePassword(changePasswordDto, userId);
 	}
 
 	addLoginLog(userId, request, loginVia) {

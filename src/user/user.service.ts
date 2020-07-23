@@ -37,9 +37,9 @@ const fs = require("fs");
 export class UserService {
 	constructor(
 		@InjectRepository(UserRepository)
-		private userRepository: UserRepository,
+		public userRepository: UserRepository,
 
-		private readonly mailerService: MailerService
+		public readonly mailerService: MailerService
 	) {}
 
 	async create(
@@ -66,18 +66,25 @@ export class UserService {
 		} = saveUserDto;
 
 		let countryDetails = await getManager()
-			.createQueryBuilder(Countries,"country")
-			.where(`id=:country_id`,{country_id})
+			.createQueryBuilder(Countries, "country")
+			.where(`id=:country_id`, { country_id })
 			.getOne();
-		if(!countryDetails)
-				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
-			
+		if (!countryDetails)
+			throw new BadRequestException(
+				`Country id not exist with database.&&&country_id`
+			);
+
 		let stateDetails = await getManager()
-			.createQueryBuilder(States,"states")
-			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			.createQueryBuilder(States, "states")
+			.where(`id=:state_id and country_id=:country_id`, {
+				state_id,
+				country_id,
+			})
 			.getOne();
-		if(!stateDetails)
-			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
+		if (!stateDetails)
+			throw new BadRequestException(
+				`State id not exist with country id.&&&country_id`
+			);
 
 		const salt = await bcrypt.genSalt();
 		const user = new User();
@@ -113,7 +120,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId,'user',`create new ${user_type}`)
+			Activity.logActivity(adminId, "user", `create new ${user_type}`);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -144,65 +151,72 @@ export class UserService {
 		adminId: string
 	) {
 		try {
-		const {
-			title,
-			email,
-			first_name,
-			last_name,
-			country_code,
-			phone_no,
-			address,
-			zip_code,
-			country_id,
-			state_id,
-			city_name,
-			gender,
-		} = updateUserDto;
-		const userId = UserId;
+			const {
+				title,
+				email,
+				first_name,
+				last_name,
+				country_code,
+				phone_no,
+				address,
+				zip_code,
+				country_id,
+				state_id,
+				city_name,
+				gender,
+			} = updateUserDto;
+			const userId = UserId;
 
-		let countryDetails = await getManager()
-			.createQueryBuilder(Countries,"country")
-			.where(`id=:country_id`,{country_id})
-			.getOne();
-		if(!countryDetails)
-				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
-			
-		let stateDetails = await getManager()
-			.createQueryBuilder(States,"states")
-			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
-			.getOne();
-		if(!stateDetails)
-			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
-			
-		const userData = await this.userRepository.findOne({
-			where: {
-				userId,
-				isDeleted: 0,
-				roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
-			},
-		});
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_id`, { country_id })
+				.getOne();
+			if (!countryDetails)
+				throw new BadRequestException(
+					`Country id not exist with database.&&&country_id`
+				);
 
-		if (typeof files.profile_pic != "undefined")
-			userData.profilePic = files.profile_pic[0].filename;
-		userData.timezone = "";
-		userData.email = email;
-		userData.firstName = first_name;
-		userData.middleName = "";
-		userData.zipCode = zip_code;
-		userData.lastName = last_name;
-		userData.title = title;
-		userData.countryCode = country_code;
-		userData.phoneNo = phone_no;
-		userData.countryId = country_id;
-		userData.address = address;
-		userData.stateId = state_id;
-		userData.cityName = city_name;
-		userData.gender = gender;
-		userData.updatedBy = adminId;
-		userData.updatedDate = new Date();
-		
+			let stateDetails = await getManager()
+				.createQueryBuilder(States, "states")
+				.where(`id=:state_id and country_id=:country_id`, {
+					state_id,
+					country_id,
+				})
+				.getOne();
+			if (!stateDetails)
+				throw new BadRequestException(
+					`State id not exist with country id.&&&country_id`
+				);
+
+			const userData = await this.userRepository.findOne({
+				where: {
+					userId,
+					isDeleted: 0,
+					roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
+				},
+			});
+
+			if (typeof files.profile_pic != "undefined")
+				userData.profilePic = files.profile_pic[0].filename;
+			userData.timezone = "";
+			userData.email = email;
+			userData.firstName = first_name;
+			userData.middleName = "";
+			userData.zipCode = zip_code;
+			userData.lastName = last_name;
+			userData.title = title;
+			userData.countryCode = country_code;
+			userData.phoneNo = phone_no;
+			userData.countryId = country_id;
+			userData.address = address;
+			userData.stateId = state_id;
+			userData.cityName = city_name;
+			userData.gender = gender;
+			userData.updatedBy = adminId;
+			userData.updatedDate = new Date();
+
 			await userData.save();
-			Activity.logActivity(adminId,'user',`update user ${userId}`)
+			Activity.logActivity(adminId, "user", `update user ${userId}`);
 			return userData;
 		} catch (error) {
 			throw new InternalServerErrorException(
@@ -213,16 +227,13 @@ export class UserService {
 
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			const roles=[Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
-			return this.userRepository.getUserDetails(userId,siteUrl,roles);
+			const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
+			return this.userRepository.getUserDetails(userId, siteUrl, roles);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
 	}
 
-	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
-		return await this.userRepository.changePassword(changePasswordDto, userId);
-	}
 	async activeDeactiveUser(
 		userId: string,
 		activeDeactiveDto: ActiveDeactiveDto,
@@ -243,7 +254,7 @@ export class UserService {
 			user.updatedDate = new Date();
 			await user.save();
 			var statusWord = status == 1 ? "Active" : "Deactive";
-			Activity.logActivity(adminId,'user',`${statusWord} user ${userId}`)
+			Activity.logActivity(adminId, "user", `${statusWord} user ${userId}`);
 			return { message: `User ${statusWord} successfully` };
 		} catch (error) {
 			if (
@@ -350,7 +361,7 @@ export class UserService {
 		}
 	}
 
-	async deleteUser(userId: string,adminId:string) {
+	async deleteUser(userId: string, adminId: string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -367,7 +378,7 @@ export class UserService {
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId,'user',`delete user ${userId}`)
+				Activity.logActivity(adminId, "user", `delete user ${userId}`);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -391,64 +402,68 @@ export class UserService {
 		const csv = require("csvtojson");
 		const array = await csv().fromFile("./" + files[0].path);
 
-		array.forEach(function(row) {
-			if (
-				row.first_name != "" &&
-				row.email_id != "" &&
-				isEmail(row.email_id) &&
-				row.password != "" &&
-				row.type != "" &&
-				parseInt(row.type) >= 5 &&
-				parseInt(row.type) <= 7
-			) {
-				var data = {
-					firstName: row.first_name,
-					middleName: row.middle_name,
-					lastName: row.last_name,
-					email: row.email_id,
-					contryCode: row.contry_code,
-					phoneNumber: row.phone_number,
-					password: row.password,
-					roleId: row.type,
-					adminId: userId,
-				};
-				
-				var userData = this.userRepository.insertNewUser(data);
-				
-				if (userData) {
-					this.mailerService
-					.sendMail({
-						to: userData.email,
-						from: mailConfig.from,
-						subject: `Welcome on board`,
-						template: "welcome.html",
-						context: {
-							// Data to be sent to template files.
-							username: userData.firstName + " " + userData.lastName,
-							email: userData.email,
-							password: data.password,
-						},
-					})
-					.then((res) => {
-						console.log("res", res);
-					})
-					.catch((err) => {
-						console.log("err", err);
-					});
-					count++;
+		for (let index = 0; index < array.length; index++) {
+			console.log(index);
+			var row = array[index];
+			console.log(row.first_name);
+			if (row) {
+				if (
+					row.first_name != "" &&
+					row.email_id != "" &&
+					isEmail(row.email_id) &&
+					row.password != "" &&
+					row.type != "" &&
+					parseInt(row.type) >= 5 &&
+					parseInt(row.type) <= 7
+				) {
+					var data = {
+						firstName: row.first_name,
+						middleName: row.middle_name,
+						lastName: row.last_name,
+						email: row.email_id,
+						contryCode: row.contry_code,
+						phoneNumber: row.phone_number,
+						password: row.password,
+						roleId: row.type,
+						adminId: userId,
+					};
+					var userData = await this.userRepository.insertNewUser(data);
+
+					if (userData) {
+						count++;
+						this.mailerService
+							.sendMail({
+								to: data.email,
+								from: mailConfig.from,
+								subject: `Welcome on board`,
+								template: "welcome.html",
+								context: {
+									// Data to be sent to template files.
+									username: data.firstName + " " + data.lastName,
+									email: data.email,
+									password: data.password,
+								},
+							})
+							.then((res) => {
+								console.log("res", res);
+							})
+							.catch((err) => {
+								console.log("err", err);
+							});
+					} else {
+						unsuccessRecord.push(row);
+					}
 				} else {
 					unsuccessRecord.push(row);
 				}
-			} else {
-				unsuccessRecord.push(row);
 			}
-		});
-		Activity.logActivity(userId,'user',`import ${count}  user`)
+		}
+		Activity.logActivity(userId, "user", `import ${count}  user`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
-	async exportUser(adminId:string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId,'user',`export  user`)
+	async exportUser(adminId: string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId, "user", `export  user`);
 		return await this.userRepository.exportUser([
 			Role.PAID_USER,
 			Role.GUEST_USER,
