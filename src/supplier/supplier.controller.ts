@@ -201,10 +201,26 @@ export class SupplierController {
 		return await this.supplierService.getCounts();
 	}
 
+
+	@Get('report/weekly-register')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Count of register user in current week" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async weeklyRagisterUser(
+	): Promise<{ count: number }>{
+		return await this.supplierService.weeklyRagisterUser();
+	}
 	/**
 	 * export supplier
 	 */
-	@Get("export")
+	@Get("report/export")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "export supplier user by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })

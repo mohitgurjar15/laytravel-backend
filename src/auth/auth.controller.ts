@@ -28,6 +28,7 @@ import { ProfilePicDto } from './dto/profile-pic.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
 import { Role } from 'src/enum/role.enum';
 import { I18nService } from 'nestjs-i18n';
+import { ChangePasswordDto } from 'src/user/dto/change-password.dto';
 @ApiTags("Auth")
 @Controller('auth')
 @UseInterceptors(SentryInterceptor)
@@ -220,6 +221,24 @@ export class AuthController {
         }
         return await this.authService.updateProfile(updateProfileDto,user,files,siteUrl);
 	}
+
+
+	@Put('change-password')
+	@ApiOperation({ summary: "Change user password" })
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+    @ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+    async changePassword(
+        @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+        @GetUser() user: User,
+    ){
+        const userId = user.userId
+        return await this.authService.changePassword(changePasswordDto, userId);
+    }
 
 	
 }
