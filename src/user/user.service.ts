@@ -296,12 +296,9 @@ export class UserService {
 			todayDate = todayDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			const result = await this.userRepository
-				.createQueryBuilder()
-				.where(
-					`role_id In (${Role.FREE_USER},${Role.PAID_USER},${Role.GUEST_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
-				)
-				.getCount();
+			const result = await this.userRepository.query(
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "cnt" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and created_date BETWEEN '${mondayDate}' AND '${toDate}' GROUP BY DATE("created_date")`
+			);
 			return { count: result };
 		} catch (error) {
 			if (

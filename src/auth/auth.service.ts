@@ -151,6 +151,8 @@ export class AuthService {
 				const payload: JwtPayload = {
 					user_id: user.userId,
 					firstName: user.firstName,
+					username: user.firstName + " " + user.lastName,
+					phone: user.phoneNo,
 					middleName: "",
 					profilePic: "",
 					lastName: user.lastName,
@@ -171,6 +173,8 @@ export class AuthService {
 			const payload: JwtPayload = {
 				user_id: user.userId,
 				email,
+				username : user.firstName +' '+user.lastName,
+				phone : user.phoneNo,
 				firstName: user.firstName,
 				middleName: user.middleName,
 				lastName: user.lastName,
@@ -221,7 +225,9 @@ export class AuthService {
 			const payload: JwtPayload = {
 				user_id: user.userId,
 				email,
+				username: user.firstName + " " + user.lastName,
 				firstName: user.firstName,
+				phone: user.phoneNo,
 				middleName: user.middleName,
 				lastName: user.lastName,
 				salt: user.salt,
@@ -259,9 +265,13 @@ export class AuthService {
 			email,
 			tokenhash,
 		};
-		
+
 		const forgetPassToken = this.jwtService.sign(payload);
-		Activity.logActivity(user.userId, `auth`, `forget password Token : ${forgetPassToken}`);
+		Activity.logActivity(
+			user.userId,
+			`auth`,
+			`forget password Token : ${forgetPassToken}`
+		);
 		const resetLink = `http://laytrip.oneclickitmarketing.co.in/reset-password?token=${forgetPassToken}`;
 		this.mailerService
 			.sendMail({
@@ -317,7 +327,11 @@ export class AuthService {
 		const user = await this.userRepository.findOne({
 			where: { email: email, isDeleted: 0, status: 1 },
 		});
-		Activity.logActivity(user.userId, `auth`, `update password Token : ${token}`);
+		Activity.logActivity(
+			user.userId,
+			`auth`,
+			`update password Token : ${token}`
+		);
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.&&&email`
@@ -400,7 +414,9 @@ export class AuthService {
 
 				const payload: JwtPayload = {
 					user_id: user.userId,
+					username: user.firstName + " " + user.lastName,
 					firstName: user.firstName,
+					phone: user.phoneNo,
 					middleName: "",
 					profilePic: user.profilePic
 						? `${siteUrl}/profile/${user.profilePic}`
@@ -430,7 +446,11 @@ export class AuthService {
 				};
 				let loginvia = device_type == 1 ? "android" : "ios";
 				this.addLoginLog(user.userId, request, loginvia);
-				Activity.logActivity(user.userId, `auth`, `login user via : ${loginvia}`);
+				Activity.logActivity(
+					user.userId,
+					`auth`,
+					`login user via : ${loginvia}`
+				);
 				return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 			} catch (error) {
 				throw new InternalServerErrorException(
@@ -552,6 +572,8 @@ export class AuthService {
 
 			const payload: JwtPayload = {
 				user_id: userDetail.userId,
+				username: userDetail.firstName + " " + userDetail.lastName,
+				phone: userDetail.phoneNo,
 				firstName: userDetail.firstName,
 				middleName: "",
 				profilePic: "",
@@ -578,7 +600,11 @@ export class AuthService {
 			};
 			let loginvia = device_type == 1 ? "android" : "ios";
 			this.addLoginLog(user.userId, request, loginvia);
-			Activity.logActivity(user.userId, `auth`, `login  the user via : ${loginvia}`);
+			Activity.logActivity(
+				user.userId,
+				`auth`,
+				`login  the user via : ${loginvia}`
+			);
 			return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
@@ -588,13 +614,18 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			return this.userRepository.getUserDetails(userId,siteUrl);
+			return this.userRepository.getUserDetails(userId, siteUrl);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
 	}
 
-	async updateProfile(updateProfileDto, loginUser, files,siteUrl): Promise<User> {
+	async updateProfile(
+		updateProfileDto,
+		loginUser,
+		files,
+		siteUrl
+	): Promise<User> {
 		try {
 			const userId = loginUser.userId;
 			const {
@@ -613,21 +644,28 @@ export class AuthService {
 				dob,
 				address,
 			} = updateProfileDto;
-			
-			let countryDetails = await getManager()
-			.createQueryBuilder(Countries,"country")
-			.where(`id=:country_id`,{country_id})
-			.getOne();
 
-			if(!countryDetails)
-				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
-			
-			let stateDetails = await getManager()
-				.createQueryBuilder(States,"states")
-				.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_id`, { country_id })
 				.getOne();
-			if(!stateDetails)
-				throw new BadRequestException(`State id not exist with country id.&&&country_id`)
+
+			if (!countryDetails)
+				throw new BadRequestException(
+					`Country id not exist with database.&&&country_id`
+				);
+
+			let stateDetails = await getManager()
+				.createQueryBuilder(States, "states")
+				.where(`id=:state_id and country_id=:country_id`, {
+					state_id,
+					country_id,
+				})
+				.getOne();
+			if (!stateDetails)
+				throw new BadRequestException(
+					`State id not exist with country id.&&&country_id`
+				);
 
 			const user = new User();
 			user.title = title;
@@ -638,12 +676,12 @@ export class AuthService {
 			user.phoneNo = phone_no;
 			user.dob = dob;
 			user.address = address;
-			
-			if(passport_expiry){
-				user.passportExpiry=passport_expiry;
+
+			if (passport_expiry) {
+				user.passportExpiry = passport_expiry;
 			}
-			if(passport_number){
-				user.passportNumber=passport_number;
+			if (passport_number) {
+				user.passportNumber = passport_number;
 			}
 			user.countryId = country_id;
 			user.stateId = state_id;
@@ -652,11 +690,14 @@ export class AuthService {
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
-			Activity.logActivity(user.userId, `auth`, `update profile by the user via `);
-			return this.userRepository.getUserDetails(userId,siteUrl);
+			Activity.logActivity(
+				user.userId,
+				`auth`,
+				`update profile by the user via `
+			);
+			return this.userRepository.getUserDetails(userId, siteUrl);
 		} catch (error) {
-			if (error instanceof NotFoundException
-			) {
+			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
 			}
 
@@ -691,6 +732,4 @@ export class AuthService {
 			.values(loginLog)
 			.execute();
 	}
-
-	
 }
