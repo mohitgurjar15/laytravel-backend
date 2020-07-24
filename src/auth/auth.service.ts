@@ -46,6 +46,8 @@ import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
 import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
+import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
+import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
 
 @Injectable()
 export class AuthService {
@@ -173,8 +175,8 @@ export class AuthService {
 			const payload: JwtPayload = {
 				user_id: user.userId,
 				email,
-				username : user.firstName +' '+user.lastName,
-				phone : user.phoneNo,
+				username: user.firstName + " " + user.lastName,
+				phone: user.phoneNo,
 				firstName: user.firstName,
 				middleName: user.middleName,
 				lastName: user.lastName,
@@ -614,8 +616,15 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			const roleId = [Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPLIER,Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER]
-			return this.userRepository.getUserDetails(userId, siteUrl,roleId);
+			const roleId = [
+				Role.SUPER_ADMIN,
+				Role.ADMIN,
+				Role.SUPPLIER,
+				Role.FREE_USER,
+				Role.GUEST_USER,
+				Role.PAID_USER,
+			];
+			return this.userRepository.getUserDetails(userId, siteUrl, roleId);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
@@ -696,8 +705,16 @@ export class AuthService {
 				`auth`,
 				`update profile by the user via `
 			);
-			const roleId = [Role.ADMIN,Role.SUPER_ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER,Role.SUPPLIER,Role.SUPPORT];
-			return this.userRepository.getUserDetails(userId, siteUrl,roleId);
+			const roleId = [
+				Role.ADMIN,
+				Role.SUPER_ADMIN,
+				Role.PAID_USER,
+				Role.FREE_USER,
+				Role.GUEST_USER,
+				Role.SUPPLIER,
+				Role.SUPPORT,
+			];
+			return this.userRepository.getUserDetails(userId, siteUrl, roleId);
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -715,6 +732,80 @@ export class AuthService {
 
 	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
 		return await this.userRepository.changePassword(changePasswordDto, userId);
+	}
+
+	async prefferedLanguage(
+		prefferedLanguageDto: PrefferedLanguageDto,
+		userId: string
+	) {
+		const { langugeId } = prefferedLanguageDto;
+
+		const user = await this.userRepository.findOne({
+			userId: userId,
+			isDeleted: false,
+		});
+
+		user.preferredLanguage = langugeId;
+		user.updatedDate = new Date();
+		try {
+			await user.save();
+			Activity.logActivity(
+				userId,
+				`auth`,
+				`preffered Languge Updated By user `
+			);
+			return { message: "Preffered Languge Updated Successfully" };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			if (error instanceof BadRequestException) {
+				throw new BadRequestException(error.message);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+
+
+	async prefferedCurrency(
+		preferedCurrencyDto: PrefferedCurrencyDto,
+		userId: string
+	) {
+		const { currencyId } = preferedCurrencyDto;
+
+		const user = await this.userRepository.findOne({
+			userId: userId,
+			isDeleted: false,
+		});
+
+		user.preferredCurrency = currencyId;
+		user.updatedDate = new Date();
+		try {
+			await user.save();
+			Activity.logActivity(
+				userId,
+				`auth`,
+				`preffered Currency Updated By user `
+			);
+			return { message: "Preffered Currency Updated Successfully" };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			if (error instanceof BadRequestException) {
+				throw new BadRequestException(error.message);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
 	}
 
 	addLoginLog(userId, request, loginVia) {
