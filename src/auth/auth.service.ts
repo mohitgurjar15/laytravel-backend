@@ -752,9 +752,9 @@ export class AuthService {
 			Activity.logActivity(
 				userId,
 				`auth`,
-				`preffered Languge Updated By user `
+				`prefered Languge Updated By user `
 			);
-			return { message: "Preffered Languge Updated Successfully" };
+			return { message: "Prefered Languge Updated Successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -792,7 +792,7 @@ export class AuthService {
 				`auth`,
 				`preffered Currency Updated By user `
 			);
-			return { message: "Preffered Currency Updated Successfully" };
+			return { message: "Prefered Currency Updated Successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
