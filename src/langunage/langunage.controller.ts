@@ -33,9 +33,9 @@ import { UpdateLangunageDto } from "./dto/update-language.dto";
 import { LanguageStatusDto } from "./dto/langugeEnableDisable.dto";
 import { LanguageStatusPipe } from "./pipes/languge-status.pipes";
 
-@ApiTags("Langunage")
+@ApiTags("Language")
 @ApiBearerAuth()
-@Controller("langunage")
+@Controller("language")
 export class LangunageController {
 	constructor(private languageService: LangunageService) {}
 
@@ -84,7 +84,7 @@ export class LangunageController {
 
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "Update langunage by super admin" })
+	@ApiOperation({ summary: "Update language by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
@@ -103,7 +103,7 @@ export class LangunageController {
 
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "Enable-Disable langunage by super admin" })
+	@ApiOperation({ summary: "Enable-Disable language by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
@@ -135,7 +135,7 @@ export class LangunageController {
 
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)	
-	@ApiOperation({ summary: "Delete langunage by super admin" })
+	@ApiOperation({ summary: "Delete language by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })

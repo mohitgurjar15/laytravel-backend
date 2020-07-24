@@ -143,7 +143,7 @@ export class LangunageService {
 			Data.updatedDate = new Date();
 			Data.save();
 			await getConnection().queryResultCache!.remove(["language"]);
-			return { message: `Languge ${Data.name} is ${task}` };
+			return { message: `Language ${Data.name} is ${task}` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

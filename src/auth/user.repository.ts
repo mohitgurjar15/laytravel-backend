@@ -227,7 +227,7 @@ export class UserRepository extends Repository<User> {
 			user.cityName= userDetail.cityName || "";
 			user.dob= userDetail.dob || "";
 			user.ziCode= userDetail.zipCode || "";
-			user.preferredCurrency= userDetail.preferredCurrency || {};
+			user.preferredCurrency= userDetail.preferredCurrency2 || {};
 			user.preferredLanguage= userDetail.preferredLanguage2 || {};
 			user.passportNumber= userDetail.passportNumber || "";
 			user.passportExpiry= userDetail.passportExpiry || "";
