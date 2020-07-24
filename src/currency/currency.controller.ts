@@ -6,7 +6,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/guards/role.guard';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
-import { CurrencyStatusDto } from './dto/currency-status.dto';
 import { ListCurrencyDto } from './dto/list-currency.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
 import { Currency } from 'src/entity/currency.entity';
@@ -14,6 +13,7 @@ import { CurrencyService } from './currency.service';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
 import { CurrencytStatusPipe } from './pipes/currency-status.pipes';
+import { CurrencyEnableDisableDto } from './dto/currency-EnableDisable.dto';
 
 @Controller('currency')
 @ApiTags('Currency')
@@ -116,10 +116,6 @@ export class CurrencyController {
 		return await this.currencyService.CurrencyDelete(id,adminId);
 	}
 
-
-
-
-
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)
 	@ApiOperation({ summary: "Enable-Disable currency by super admin" })
@@ -128,13 +124,12 @@ export class CurrencyController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Patch("enable-disable/:id")
-	async changeLangugeStatus(
+	async changeCurrencyStatus(
 		@Param("id") id: number,
-		@Body(CurrencytStatusPipe) currencyStatusDto:CurrencyStatusDto,
+		@Body(CurrencytStatusPipe) CurrencyEnableDisableDto:CurrencyEnableDisableDto,
 		@GetUser() user: User
 	):Promise<{ message : string}> {
-        
-		return await this.currencyService.changeCurrencyStatus(id, currencyStatusDto,user);
+		return await this.currencyService.changeCurrencyStatus(id, CurrencyEnableDisableDto,user);
 	}
 
 }

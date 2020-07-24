@@ -6,7 +6,7 @@
  * my variables are ${myvar1} and ${myvar2}
  */
 
-import { Controller, Post, Body, ValidationPipe, HttpCode, UseGuards, Get, UseInterceptors, Param, Put, UploadedFiles, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, HttpCode, UseGuards, Get, UseInterceptors, Param, Put, UploadedFiles, Req, BadRequestException, Patch } from '@nestjs/common';
 import { AuthCredentialDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 import { User } from '../entity/user.entity';
@@ -29,6 +29,8 @@ import { SiteUrl } from 'src/decorator/site-url.decorator';
 import { Role } from 'src/enum/role.enum';
 import { I18nService } from 'nestjs-i18n';
 import { ChangePasswordDto } from 'src/user/dto/change-password.dto';
+import { PrefferedLanguageDto } from './dto/preffered-languge.dto';
+import { PrefferedCurrencyDto } from './dto/preffered-currency.dto';
 @ApiTags("Auth")
 @Controller('auth')
 @UseInterceptors(SentryInterceptor)
@@ -240,5 +242,42 @@ export class AuthController {
         return await this.authService.changePassword(changePasswordDto, userId);
     }
 
+
+
+
+	@Patch('preffered-language')
+	@ApiOperation({ summary: "Change prefered-language" })
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+    @ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+    async preferedLanguage(
+        @Body(ValidationPipe) PrefferedLanguageDto: PrefferedLanguageDto,
+        @GetUser() user: User,
+    ){
+        const userId = user.userId
+        return await this.authService.prefferedLanguage(PrefferedLanguageDto, userId);
+	}
+	
+
+	@Patch('prefered-Currency')
+	@ApiOperation({ summary: "Change prefered-currency" })
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+    @ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 403, description: "You are not allowed to access this resource." })
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+    async prefferedLanguage(
+        @Body(ValidationPipe) PrefferedCurrencyDto: PrefferedCurrencyDto,
+        @GetUser() user: User,
+    ){
+        const userId = user.userId
+        return await this.authService.prefferedCurrency(PrefferedCurrencyDto, userId);
+    }
 	
 }

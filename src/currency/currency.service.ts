@@ -6,8 +6,8 @@ import { Currency } from 'src/entity/currency.entity';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 import { getConnection } from 'typeorm';
 import { CreateLangunageDto } from 'src/langunage/dto/create-langunage.dto';
-import { CurrencyStatusDto } from './dto/currency-status.dto';
 import { User } from '@sentry/node';
+import { CurrencyEnableDisableDto } from './dto/currency-EnableDisable.dto';
 
 @Injectable()
 export class CurrencyService {
@@ -93,7 +93,7 @@ export class CurrencyService {
 
 	async changeCurrencyStatus(
 		id: number,
-		currencyStatusDto: CurrencyStatusDto,
+		currencyStatusDto: CurrencyEnableDisableDto,
 		adminId: User
 	): Promise<{ message: string }> {
 		try {
@@ -102,11 +102,11 @@ export class CurrencyService {
 				id: id,
 			});
 			if (!Data) throw new NotFoundException(`No language found`);
-			var statusName = status == true ? true : false;
-			var task = statusName ? "Enable" : "Disable";
-			Data.status = statusName;
+			console.log(status)
+			var  statusname  = status == 'true' ? true :false;
+			var task = statusname ? "Enable" : "Disable";
+			Data.status = statusname;
 			//Data. = adminId.userId;
-			
 			Data.updatedDate = new Date();
 			Data.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
