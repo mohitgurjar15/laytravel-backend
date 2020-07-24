@@ -90,7 +90,6 @@ export class LangunageController {
 	@Put("/:id")
 	async updateCurrency(
 		@Param("id") id: number,
-
 		@Body() updateLangunageDto: UpdateLangunageDto,
 		@GetUser() user: User
 	):Promise<{ message : string}> {

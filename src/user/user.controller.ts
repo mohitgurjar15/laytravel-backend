@@ -58,6 +58,7 @@ export class UserController {
     async getUserData(
         @Param('id') userId: string,@SiteUrl() siteUrl: string
     ): Promise<User> {
+		console.log(userId)
         return await this.userService.getUserData(userId,siteUrl);
     }
 
@@ -171,6 +172,7 @@ export class UserController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async activeUser(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
 		const adminId = user.userId;
+		console.log('From active deactive '+user_id);
 		return await this.userService.activeDeactiveUser(user_id,activeDeactiveDto,adminId);
 	}
     /**
@@ -206,7 +208,7 @@ export class UserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async weeklyRagisterUser(
-	): Promise<{ count: number }>{
+	): Promise<any>{
 		return await this.userService.weeklyRagisterUser();
 	}
 

@@ -269,7 +269,7 @@ export class UserService {
 			);
 		}
 	}
-	async weeklyRagisterUser(): Promise<{ count: number }> {
+	async weeklyRagisterUser(): Promise<any> {
 		try {
 			var date = new Date();
 			var fdate = date.toLocaleString("en-US", {
@@ -297,9 +297,9 @@ export class UserService {
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 			const result = await this.userRepository.query(
-				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "cnt" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and created_date BETWEEN '${mondayDate}' AND '${toDate}' GROUP BY DATE("created_date")`
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
 			);
-			return { count: result };
+			return { result };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
