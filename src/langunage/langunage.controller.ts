@@ -30,6 +30,8 @@ import { promises } from "dns";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import { UpdateLangunageDto } from "./dto/update-language.dto";
+import { LanguageStatusDto } from "./dto/langugeEnableDisable.dto";
+import { LanguageStatusPipe } from "./pipes/languge-status.pipes";
 
 @ApiTags("Langunage")
 @ApiBearerAuth()
@@ -95,6 +97,25 @@ export class LangunageController {
 	):Promise<{ message : string}> {
         const adminId = user.userId;
 		return await this.languageService.languageUpdate(id, updateLangunageDto,adminId);
+	}
+
+
+
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN)
+	@ApiOperation({ summary: "Enable-Disable langunage by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Patch("enable-disable/:id")
+	async changeLangugeStatus(
+		@Param("id") id: number,
+		@Body(LanguageStatusPipe) languageStatusDto:LanguageStatusDto,
+		@GetUser() user: User
+	):Promise<{ message : string}> {
+        
+		return await this.languageService.changeLangugeStatus(id, languageStatusDto,user);
 	}
 
 	// @Roles(Role.SUPER_ADMIN)
