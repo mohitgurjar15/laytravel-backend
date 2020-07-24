@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ProfilePicDto } from "./dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
+import { Role } from "src/enum/role.enum";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -70,9 +71,9 @@ export class UserRepository extends Repository<User> {
 
 		let where;
 		if (keyword) {
-			where = `"role_id" IN (${role}) AND (("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%'))`;
+			where = `("is_deleted" = false) AND ("role_id" IN (${role})) AND (("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%'))`;
 		} else {
-			where = `("role_id" IN (${role}) ) and 1=1`;
+			where = `("is_deleted" = false) AND("role_id" IN (${role}) ) and 1=1`;
 		}
 		const [result, total] = await this.findAndCount({
 			where: where,
@@ -181,8 +182,8 @@ export class UserRepository extends Repository<User> {
 	}
 
 
-	async getUserDetails(userId:string, siteUrl,roles=null){
-
+	async getUserDetails(userId:string, siteUrl:any,roles:Role[]){
+		
 		let userDetail =  await getManager()
             .createQueryBuilder(User, "user")
             .leftJoinAndSelect("user.state","state")
@@ -204,7 +205,13 @@ export class UserRepository extends Repository<User> {
             ])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`,{ userId,is_deleted:false})
 			.andWhere(roles!=null ? (`"user"."role_id" in (:...roles) `):`1=1`,{roles})
-            .getOne();
+			.getOne();
+			
+			if (!userDetail) {
+				throw new NotFoundException(`No user found.`);
+			}
+
+			
 			let user:any={};
 			user.userId = userDetail.userId;
 			user.firstName = userDetail.firstName;

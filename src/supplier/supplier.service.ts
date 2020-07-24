@@ -282,7 +282,7 @@ export class SupplierService {
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 
-	async weeklyRagisterUser(): Promise<{ count: number }> {
+	async weeklyRagisterUser(): Promise<any> {
 		try {
 			var date = new Date();
 			var fdate = date.toLocaleString("en-US", {
@@ -309,13 +309,10 @@ export class SupplierService {
 			todayDate = todayDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			const result = await this.userRepository
-				.createQueryBuilder()
-				.where(
-					`role_id In (${Role.SUPPLIER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
-				)
-				.getCount();
-			return { count: result };
+			const result = await this.userRepository.query(
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.SUPPLIER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
+			);
+			return { result };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

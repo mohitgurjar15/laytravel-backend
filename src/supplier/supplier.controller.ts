@@ -214,7 +214,7 @@ export class SupplierController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async weeklyRagisterUser(
-	): Promise<{ count: number }>{
+	): Promise<any>{
 		return await this.supplierService.weeklyRagisterUser();
 	}
 	/**

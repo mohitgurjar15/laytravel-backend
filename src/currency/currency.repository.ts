@@ -28,7 +28,7 @@ export class CurrencyRepository extends Repository<Currency>
             take: take,
             cache : {
                 id:'Currency',
-                milliseconds:86499000
+                milliseconds:46399000
             }
         });
         

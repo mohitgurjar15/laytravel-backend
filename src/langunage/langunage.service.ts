@@ -106,7 +106,7 @@ export class LangunageService {
             //languageData.updatedBy = adminId;
             languageData.updatedDate = new Date()
 			languageData.save();
-			await getConnection().queryResultCache!.remove(['language']);
+			await getConnection().queryResultCache.remove(['language']);
 			return { message : "Language is Deleted"};
 		} catch (error) {
 			if (

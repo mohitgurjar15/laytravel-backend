@@ -271,9 +271,8 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async weeklyRagisterAdmin(): Promise<{ count: number }> {
-		console.log("week");
-
+	async weeklyRagisterAdmin(): Promise<any> {
+	
 		return await this.adminService.weeklyRegisterAdmin();
 	}
 
