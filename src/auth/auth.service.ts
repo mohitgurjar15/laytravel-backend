@@ -614,7 +614,7 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			const roleId = [Role.ADMIN,Role.SUPPLIER,Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER]
+			const roleId = [Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPLIER,Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER]
 			return this.userRepository.getUserDetails(userId, siteUrl,roleId);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
@@ -696,7 +696,7 @@ export class AuthService {
 				`auth`,
 				`update profile by the user via `
 			);
-			const roleId = [Role.ADMIN];
+			const roleId = [Role.ADMIN,Role.SUPER_ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER,Role.SUPPLIER,Role.SUPPORT];
 			return this.userRepository.getUserDetails(userId, siteUrl,roleId);
 		} catch (error) {
 			if (error instanceof NotFoundException) {
