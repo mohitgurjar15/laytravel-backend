@@ -6,6 +6,8 @@ import { Currency } from 'src/entity/currency.entity';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 import { getConnection } from 'typeorm';
 import { CreateLangunageDto } from 'src/langunage/dto/create-langunage.dto';
+import { CurrencyStatusDto } from './dto/currency-status.dto';
+import { User } from '@sentry/node';
 
 @Injectable()
 export class CurrencyService {
@@ -80,6 +82,41 @@ export class CurrencyService {
 				error.response.statusCode == 404
 			) {
 				throw new NotFoundException(`No Currency Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${error.Message}`
+			);
+		}
+	}
+
+
+	async changeCurrencyStatus(
+		id: number,
+		currencyStatusDto: CurrencyStatusDto,
+		adminId: User
+	): Promise<{ message: string }> {
+		try {
+			const { status } = currencyStatusDto;
+			const Data = await this.currencyRepository.findOne({
+				id: id,
+			});
+			if (!Data) throw new NotFoundException(`No language found`);
+			var statusName = status == true ? true : false;
+			var task = statusName ? "Enable" : "Disable";
+			Data.status = statusName;
+			//Data. = adminId.userId;
+			
+			Data.updatedDate = new Date();
+			Data.save();
+			await getConnection().queryResultCache!.remove(["Currency"]);
+			return { message: `Currency ${Data.code} is ${task}` };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No language Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

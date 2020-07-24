@@ -13,6 +13,7 @@ import { Currency } from 'src/entity/currency.entity';
 import { CurrencyService } from './currency.service';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
+import { CurrencytStatusPipe } from './pipes/currency-status.pipes';
 
 @Controller('currency')
 @ApiTags('Currency')
@@ -114,4 +115,26 @@ export class CurrencyController {
 		const adminId = user.userId;
 		return await this.currencyService.CurrencyDelete(id,adminId);
 	}
+
+
+
+
+
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN)
+	@ApiOperation({ summary: "Enable-Disable currency by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Patch("enable-disable/:id")
+	async changeLangugeStatus(
+		@Param("id") id: number,
+		@Body(CurrencytStatusPipe) currencyStatusDto:CurrencyStatusDto,
+		@GetUser() user: User
+	):Promise<{ message : string}> {
+        
+		return await this.currencyService.changeCurrencyStatus(id, currencyStatusDto,user);
+	}
+
 }

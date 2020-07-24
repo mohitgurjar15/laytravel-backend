@@ -38,13 +38,13 @@ export class ModulesController {
 
     @UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)	
-	@ApiOperation({ summary: "Delete module by super admin" })
+	@ApiOperation({ summary: "Enable/Disable module by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Patch("/:id")
-	async deleteCurrency(@Param("id") id: number,@GetUser() user: User,@Body(moduleStatusPipe) moduleStatusDto:moduleStatusDto):Promise<{ message : string}> {
+	async moduleChangeStatus(@Param("id") id: number,@GetUser() user: User,@Body(moduleStatusPipe) moduleStatusDto:moduleStatusDto):Promise<{ message : string}> {
 		
 		return await this.modulesService.moduleChangeStatus(id,moduleStatusDto,user);
 	}

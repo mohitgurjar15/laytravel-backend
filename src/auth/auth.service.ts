@@ -614,7 +614,7 @@ export class AuthService {
 	async getProfile(user, siteUrl) {
 		const userId = user.userId;
 		try {
-			const roleId = [Role.ADMIN]
+			const roleId = [Role.ADMIN,Role.SUPPLIER,Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER]
 			return this.userRepository.getUserDetails(userId, siteUrl,roleId);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);

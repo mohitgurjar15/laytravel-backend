@@ -42,7 +42,7 @@ export class ModulesService {
 			const moduleData = await this.moduleRepository.findOne({
                 id:id
 			});
-            if (!moduleData) throw new NotFoundException(`No language found`);
+            if (!moduleData) throw new NotFoundException(`No module found`);
             console.log(statusName);
             var statusName = status == 'true' ? true : false ;
             var task = statusName ? 'Enable' : 'Disable';
@@ -57,7 +57,7 @@ export class ModulesService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No module Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
