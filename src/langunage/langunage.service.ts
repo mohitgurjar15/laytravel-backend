@@ -21,10 +21,10 @@ export class LangunageService {
 	) {}
 
 	async listLanguge(
-		paginationOption: ListLangugeDto
-	): Promise<{ data: Language[]; TotalReseult: number }> {
+		//paginationOption: ListLangugeDto
+	): Promise<{ data: Language[];}> {
 		try {
-			return await this.languageRepository.listLanguage(paginationOption);
+			return await this.languageRepository.listLanguage();
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
