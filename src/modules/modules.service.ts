@@ -17,7 +17,7 @@ export class ModulesService {
 		private moduleRepository: ModuleRepository
 	) {}
 
-	async listmodule(): Promise<{ data: Module[]; TotalReseult: number }> {
+	async listmodule(): Promise<{ data: Module[];}> {
 		try {
 			return await this.moduleRepository.listModules();
 		} catch (error) {
@@ -50,8 +50,9 @@ export class ModulesService {
             moduleData.updatedBy = adminId.userId;
             moduleData.updateDate = new Date()
 			moduleData.save();
+			
 			await getConnection().queryResultCache!.remove(['modules']);
-			return { message : `module is ${task}`};
+			return { message : `module ${moduleData.name} is ${task}`};
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

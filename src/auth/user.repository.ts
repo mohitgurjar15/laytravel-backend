@@ -188,7 +188,7 @@ export class UserRepository extends Repository<User> {
             .createQueryBuilder(User, "user")
             .leftJoinAndSelect("user.state","state")
             .leftJoinAndSelect("user.country","countries")
-            .leftJoinAndSelect("user.preferredCurrency","currency")
+            .leftJoinAndSelect("user.preferredCurrency2","currency")
             .leftJoinAndSelect("user.preferredLanguage2","language")
             .select([
                 	"user.userId","user.title","user.dob",
@@ -196,7 +196,7 @@ export class UserRepository extends Repository<User> {
 					"user.email","user.profilePic","user.dob",
 					"user.countryCode","user.phoneNo",
 					"user.cityName","user.address","user.zipCode",
-					"user.preferredCurrency","user.preferredLanguage2",
+					"user.preferredCurrency2","user.preferredLanguage2",
 					"user.passportNumber","user.passportExpiry",
 					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
 					"currency.id","currency.code","currency.country",

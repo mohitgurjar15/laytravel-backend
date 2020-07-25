@@ -12,7 +12,7 @@ export class LanguageRepository extends Repository<Language>
 
        
         
-        // let where;
+         let where;
         // console.log(keyword);
         
         // if(keyword){
@@ -21,7 +21,9 @@ export class LanguageRepository extends Repository<Language>
         // else{
         //   where = `("is_deleted"=false) and 1=1`
         // }
+        where = `("is_deleted"=false) and 1=1`
         const [result,total] = await this.findAndCount({
+            where:where,
             cache : {
                 id:'languages',
                 milliseconds:604800000
