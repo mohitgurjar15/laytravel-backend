@@ -50,9 +50,9 @@ export class LangunageController {
 	@ApiResponse({ status: 404, description: "language not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listLanguge(
-		@Query() paginationOption: ListLangugeDto
-	): Promise<{ data: Language[]; TotalReseult: number }> {
-		return await this.languageService.listLanguge(paginationOption);
+		// @Query() paginationOption: ListLangugeDto
+	): Promise<{ data: Language[]; }> {
+		return await this.languageService.listLanguge();
 	}
 
 	@Get("/:id")
