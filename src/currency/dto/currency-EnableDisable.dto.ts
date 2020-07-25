@@ -8,7 +8,7 @@ export class CurrencyEnableDisableDto {
 	})
 	@ApiProperty({
 		description: `Enter status`,
-		example: "Enable/Disable",
+		example: "true",
 	})
-	status: CurrencyStatusEnum;
+	status: boolean;
 }

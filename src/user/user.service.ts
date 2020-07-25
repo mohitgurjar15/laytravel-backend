@@ -247,14 +247,14 @@ export class UserService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-
-			user.status = status;
+			var  statusWord = status  == true ? 1 : 0 ;
+			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			var statusWord = status == 1 ? "Active" : "Deactive";
-			Activity.logActivity(adminId, "user", `${statusWord} user ${userId}`);
-			return { message: `User ${statusWord} successfully` };
+			
+			Activity.logActivity(adminId, "user", `user status changed`);
+			return { message: `user status changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

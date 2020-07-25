@@ -158,7 +158,6 @@ export class UserController {
         return await this.userService.deleteUser(user_id,adminId);
     }
 
-
     @Patch("active-deactive-user/:id")
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
 	@ApiOperation({ summary: "Active-deactive user" })
@@ -170,9 +169,8 @@ export class UserController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async activeUser(@Param("id") user_id: string,@Body(statusPipe) activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
+	async activeUser(@Param("id") user_id: string,@Body() activeDeactiveDto:ActiveDeactiveDto, @GetUser() user: User) {
 		const adminId = user.userId;
-		console.log('From active deactive '+user_id);
 		return await this.userService.activeDeactiveUser(user_id,activeDeactiveDto,adminId);
 	}
     /**

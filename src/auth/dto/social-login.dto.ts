@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, ValidationArguments, ValidateIf, IsEnum } from "class-validator";
+import { IsNotEmpty, IsEmail, ValidationArguments, ValidateIf, IsEnum, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
 
@@ -27,14 +27,14 @@ export class SocialLoginDto {
 	name : string
 
 	
-	@ValidateIf(o => o.account_type === 2 || o.account_type === 3)
+	@IsOptional()
+	//@
+	//@ValidateIf(o => o.account_type === 2 || o.account_type === 3)
 	@IsEmail(
 		{},
 		{
 			message: (args: ValidationArguments) => {
-				if (typeof args.value == "undefined" || args.value == "") {
-					return `Please enter your email address.&&&email`;
-				} else {
+				if (typeof args.value != "undefined" || args.value != "") {
 					return `Please Enter valid email address.&&&email`;
 				}
 			},

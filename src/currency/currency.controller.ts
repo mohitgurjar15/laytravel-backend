@@ -147,7 +147,7 @@ export class CurrencyController {
 	@Patch("enable-disable/:id")
 	async changeCurrencyStatus(
 		@Param("id") id: number,
-		@Body(CurrencytStatusPipe)
+		@Body()
 		CurrencyEnableDisableDto: CurrencyEnableDisableDto,
 		@GetUser() user: User
 	): Promise<{ message: string }> {
