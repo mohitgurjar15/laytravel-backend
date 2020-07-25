@@ -30,7 +30,7 @@ export class UserRepository extends Repository<User> {
 		const { old_password, password } = changePasswordDto;
 
 		const user = await this.findOne({
-			where: { userId: userId, isDeleted: 0 },
+			where: { userId: userId, isDeleted: true },
 		});
 
 		if (await user.validatePassword(old_password)) {
@@ -182,7 +182,7 @@ export class UserRepository extends Repository<User> {
 	}
 
 
-	async getUserDetails(userId:string, siteUrl:any,roles:Role[]){
+	async getUserDetails(userId:string, siteUrl:any,roles:Role[]=null){
 		
 		let userDetail =  await getManager()
             .createQueryBuilder(User, "user")

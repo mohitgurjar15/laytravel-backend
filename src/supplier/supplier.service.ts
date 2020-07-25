@@ -327,6 +327,35 @@ export class SupplierService {
 		}
 	}
 
+	async getSupplierData(userId: string, siteUrl: string): Promise<User> {
+		try {
+			return this.userRepository.getUserDetails(userId,siteUrl,[Role.SUPPLIER])
+			// const user = await this.userRepository.findOne({
+			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
+			// });
+
+			// if (!user) {
+			// 	throw new NotFoundException(`No Admin found`);
+			// }
+			// delete user.salt;
+			// delete user.password;
+			// user.profilePic = user.profilePic
+			// 	? `${siteUrl}/profile/${user.profilePic}`
+			// 	: "";
+			// return user;
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No Admin found`);
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
 	async getCounts(): Promise<{ result: any }> {
 		try {
 			const activeUser = await this.userRepository.query(

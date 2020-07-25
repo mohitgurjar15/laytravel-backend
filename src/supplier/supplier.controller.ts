@@ -114,7 +114,7 @@ export class SupplierController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: "supplier User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@UseInterceptors(
 		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
@@ -151,7 +151,7 @@ export class SupplierController {
 	 */
 	@Delete(":id")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "Delete supplier" })
+	@ApiOperation({ summary: "Delete supplier user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -170,14 +170,14 @@ export class SupplierController {
 	 */
 	@Get()
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "List supplier" })
+	@ApiOperation({ summary: "List supplier user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 404, description: " supplier user not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
 		@Query() paginationOption: ListSupplierDto,
@@ -204,7 +204,7 @@ export class SupplierController {
 
 	@Get('report/weekly-register')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "Count of register user in current week" })
+	@ApiOperation({ summary: "Count of register supplier user in current week" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -216,6 +216,24 @@ export class SupplierController {
 	async weeklyRagisterUser(
 	): Promise<any>{
 		return await this.supplierService.weeklyRagisterUser();
+	}
+
+	@Get("/:id")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Get Supplier user details by  admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "supplier user not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getSupplierData(
+		@Param("id") userId: string,
+		@SiteUrl() siteUrl: string
+	): Promise<User> {
+		return await this.supplierService.getSupplierData(userId, siteUrl);
 	}
 	/**
 	 * export supplier
