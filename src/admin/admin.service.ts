@@ -228,19 +228,20 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			const user = await this.userRepository.findOne({
-				where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
-			});
+			return this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
+			// const user = await this.userRepository.findOne({
+			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
+			// });
 
-			if (!user) {
-				throw new NotFoundException(`No Admin found`);
-			}
-			delete user.salt;
-			delete user.password;
-			user.profilePic = user.profilePic
-				? `${siteUrl}/profile/${user.profilePic}`
-				: "";
-			return user;
+			// if (!user) {
+			// 	throw new NotFoundException(`No Admin found`);
+			// }
+			// delete user.salt;
+			// delete user.password;
+			// user.profilePic = user.profilePic
+			// 	? `${siteUrl}/profile/${user.profilePic}`
+			// 	: "";
+			// return user;
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
