@@ -186,7 +186,7 @@ export class AdminController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async activeAdmin(
 		@Param("id") user_id: string,
-		@Body(statusPipe) activeDeactiveDto: ActiveDeactiveDto,
+		@Body() activeDeactiveDto: ActiveDeactiveDto,
 		@GetUser() user: User
 	) {
 		const adminId = user.userId;

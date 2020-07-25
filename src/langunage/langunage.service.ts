@@ -68,18 +68,17 @@ export class LangunageService {
 		adminId: string
 	): Promise<{ message: string }> {
 		try {
-			const { iso_1_code, iso_2_code } = updateLangunageDto;
+			const { name } = updateLangunageDto;
 			const languageData = await this.languageRepository.findOne({
 				id,
 				isDeleted: false,
 			});
 			if (!languageData) throw new NotFoundException(`No language found`);
-			languageData.iso_1Code = iso_1_code;
-			languageData.iso_2Code = iso_2_code;
+			languageData.name = name;
 			//languageData.updatedBy = adminId;
 			languageData.updatedDate = new Date();
 			languageData.save();
-			await getConnection().queryResultCache!.remove(["language"]);
+			await getConnection().queryResultCache!.remove(["languages"]);
 			return { message: "Language is Updated" };
 		} catch (error) {
 			if (
@@ -109,7 +108,7 @@ export class LangunageService {
 			//languageData.updatedBy = adminId;
 			languageData.updatedDate = new Date();
 			languageData.save();
-			await getConnection().queryResultCache.remove(["language"]);
+			await getConnection().queryResultCache!.remove(["languages"]);
 			return { message: "Language is Deleted" };
 		} catch (error) {
 			if (
@@ -136,14 +135,13 @@ export class LangunageService {
 				id: id,
 			});
 			if (!Data) throw new NotFoundException(`No language found`);
-			var statusName = status == "true" ? true : false;
-			var task = statusName ? "Enable" : "Disable";
-			Data.active = statusName;
+			
+			Data.active = status;
 			Data.updatedBy = adminId.userId;
 			Data.updatedDate = new Date();
 			Data.save();
-			await getConnection().queryResultCache!.remove(["language"]);
-			return { message: `Language ${Data.name} is ${task}` };
+			await getConnection().queryResultCache!.remove(["languages"]);
+			return { message: `Language ${Data.name} status Changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

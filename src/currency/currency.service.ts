@@ -104,14 +104,14 @@ export class CurrencyService {
 			});
 			if (!Data) throw new NotFoundException(`No language found`);
 			console.log(status);
-			var statusname = status == "true" ? true : false;
-			var task = statusname ? "Enable" : "Disable";
-			Data.status = statusname;
+			
+			
+			Data.status = status;
 			//Data. = adminId.userId;
 			Data.updatedDate = new Date();
 			Data.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
-			return { message: `Currency ${Data.code} is ${task}` };
+			return { message: `Currency ${Data.code} Status Changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

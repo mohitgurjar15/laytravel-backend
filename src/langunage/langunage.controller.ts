@@ -111,7 +111,7 @@ export class LangunageController {
 	@Patch("enable-disable/:id")
 	async changeLangugeStatus(
 		@Param("id") id: number,
-		@Body(LanguageStatusPipe) languageStatusDto:LanguageStatusDto,
+		@Body() languageStatusDto:LanguageStatusDto,
 		@GetUser() user: User
 	):Promise<{ message : string}> {
         

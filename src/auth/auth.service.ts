@@ -503,7 +503,7 @@ export class AuthService {
 		if (email) {
 			conditions.push({ email: email });
 		}
-
+		
 		const userExist = await this.userRepository.findOne({
 			where: conditions,
 		});

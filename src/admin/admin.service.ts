@@ -267,22 +267,20 @@ export class AdminService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-
-			console.log(status);
-
-			user.status = status;
+			var  statusWord = status == true ? 1 : 0 ;
+			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			var statusWord = status == 1 ? "Active" : "Deactive";
-			Activity.logActivity(adminId, `Admin`, `${statusWord} admin ${userId}`);
-			return { messge: `User ${statusWord} successfully` };
+			
+			Activity.logActivity(adminId, `Admin`, `admin status changed`);
+			return { messge: `admin status changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No user Found.&&&id`);
+				throw new NotFoundException(`No Admin Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

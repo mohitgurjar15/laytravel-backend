@@ -9,7 +9,7 @@ export class LanguageStatusDto {
 	})
 	@ApiProperty({
 		description: `Enter status`,
-		example: `Enable/Disable`,
+		example: `true`,
 	})
-	status: langugeStatusEnum;
+	status: boolean;
 }

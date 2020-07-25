@@ -193,7 +193,7 @@ export class UserRepository extends Repository<User> {
             .select([
                 	"user.userId","user.title","user.dob",
 					"user.firstName","user.lastName",
-					"user.email","user.profilePic","user.dob",
+					"user.email","user.profilePic","user.dob","user.gender","user.roleId",
 					"user.countryCode","user.phoneNo",
 					"user.cityName","user.address","user.zipCode",
 					"user.preferredCurrency2","user.preferredLanguage2",
@@ -217,6 +217,8 @@ export class UserRepository extends Repository<User> {
 			user.firstName = userDetail.firstName;
 			user.lastName = userDetail.lastName || "";
 			user.email = userDetail.email;
+			user.gender = userDetail.gender || "";
+			user.roleId = userDetail.roleId;
 			user.phoneNo = userDetail.phoneNo || "";
 			user.countryCode= userDetail.countryCode || "";
 			user.address= userDetail.address || "";
