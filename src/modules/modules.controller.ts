@@ -30,7 +30,7 @@ export class ModulesController {
 	@ApiResponse({ status: 404, description: "modules not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listLanguge(
-	): Promise<{ data: Module[]; TotalReseult: number }> {
+	): Promise<{ data: Module[];}> {
 		return await this.modulesService.listmodule();
     }
     

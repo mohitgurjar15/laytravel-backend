@@ -15,24 +15,24 @@ export class CurrencyRepository extends Repository<Currency>
         // const skip = (page_no-1) * limit || 0
         // const keyword = search || ''
         
-        // let where;
+        let where;
         // if(keyword){
         //      where =`(("is_deleted"=false) and ("country" ILIKE '%${keyword}%') or ("code" ILIKE '%${keyword}%')`
         // }
         // else{
         //      where = `("is_deleted"=false) and 1=1`
         // }
+        where = `("is_deleted"=false) and 1=1`
         const [result, total] = await this.findAndCount({
+            where:where,
             cache : {
                 id:'Currency',
                 milliseconds:46399000
             }
         });
-        
         if (!result) {
             throw new NotFoundException(`No currency found.`)
         }
         return { data: result};
     }
-
 }

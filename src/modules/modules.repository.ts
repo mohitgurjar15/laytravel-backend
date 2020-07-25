@@ -5,7 +5,9 @@ import { NotFoundException } from "@nestjs/common";
 @EntityRepository(Module)
 export class ModuleRepository extends Repository<Module> {
 
-	async listModules(): Promise<{ data: Module[]; TotalReseult: number }> {
+	async listModules(): Promise<{ data: Module[]; }> {
+		// let where;
+		// where = `status = true`;
 
 		const [result, total] = await this.findAndCount({
 			select: ["id", "name", "status"],
@@ -17,6 +19,6 @@ export class ModuleRepository extends Repository<Module> {
 		if (!result[0]) {
 			throw new NotFoundException(`No module found.`);
 		}
-		return { data: result, TotalReseult: total };
+		return { data: result};
 	}
 }
