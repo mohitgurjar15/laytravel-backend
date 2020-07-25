@@ -250,7 +250,6 @@ export class UserService {
 
 			user.status = status;
 			user.updatedBy = adminId;
-			user.isDeleted = true;
 			user.updatedDate = new Date();
 			await user.save();
 			var statusWord = status == 1 ? "Active" : "Deactive";
