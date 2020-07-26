@@ -30,10 +30,12 @@ import { promises } from "dns";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import { UpdateLangunageDto } from "./dto/update-language.dto";
+import { LanguageStatusDto } from "./dto/langugeEnableDisable.dto";
+import { LanguageStatusPipe } from "./pipes/languge-status.pipes";
 
-@ApiTags("Langunage")
+@ApiTags("Language")
 @ApiBearerAuth()
-@Controller("langunage")
+@Controller("language")
 export class LangunageController {
 	constructor(private languageService: LangunageService) {}
 
@@ -48,9 +50,9 @@ export class LangunageController {
 	@ApiResponse({ status: 404, description: "language not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listLanguge(
-		@Query() paginationOption: ListLangugeDto
-	): Promise<{ data: Language[]; TotalReseult: number }> {
-		return await this.languageService.listLanguge(paginationOption);
+		// @Query() paginationOption: ListLangugeDto
+	): Promise<{ data: Language[]; }> {
+		return await this.languageService.listLanguge();
 	}
 
 	@Get("/:id")
@@ -80,9 +82,9 @@ export class LangunageController {
 	//     return "API is pending";
 	// }
 
-	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
-	@ApiOperation({ summary: "Update langunage by super admin" })
+	@Roles(Role.SUPER_ADMIN)
+	@ApiOperation({ summary: "Update language by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
@@ -90,12 +92,30 @@ export class LangunageController {
 	@Put("/:id")
 	async updateCurrency(
 		@Param("id") id: number,
-
 		@Body() updateLangunageDto: UpdateLangunageDto,
 		@GetUser() user: User
 	):Promise<{ message : string}> {
         const adminId = user.userId;
 		return await this.languageService.languageUpdate(id, updateLangunageDto,adminId);
+	}
+
+
+
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN)
+	@ApiOperation({ summary: "Enable-Disable language by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Patch("enable-disable/:id")
+	async changeLangugeStatus(
+		@Param("id") id: number,
+		@Body() languageStatusDto:LanguageStatusDto,
+		@GetUser() user: User
+	):Promise<{ message : string}> {
+        
+		return await this.languageService.changeLangugeStatus(id, languageStatusDto,user);
 	}
 
 	// @Roles(Role.SUPER_ADMIN)
@@ -113,9 +133,9 @@ export class LangunageController {
 	// 	return "API is pending";
 	// }
 
-	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
-	@ApiOperation({ summary: "Delete langunage by super admin" })
+	@Roles(Role.SUPER_ADMIN)	
+	@ApiOperation({ summary: "Delete language by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })

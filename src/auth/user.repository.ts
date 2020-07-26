@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ProfilePicDto } from "./dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
+import { Role } from "src/enum/role.enum";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -29,7 +30,7 @@ export class UserRepository extends Repository<User> {
 		const { old_password, password } = changePasswordDto;
 
 		const user = await this.findOne({
-			where: { userId: userId, isDeleted: 0 },
+			where: { userId: userId, isDeleted: true },
 		});
 
 		if (await user.validatePassword(old_password)) {
@@ -70,20 +71,20 @@ export class UserRepository extends Repository<User> {
 
 		let where;
 		if (keyword) {
-			where = `"role_id" IN (${role}) AND (("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%'))`;
+			where = `("is_deleted" = false) AND ("role_id" IN (${role})) AND (("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%'))`;
 		} else {
-			where = `("role_id" IN (${role}) ) and 1=1`;
+			where = `("is_deleted" = false) AND("role_id" IN (${role}) ) and 1=1`;
 		}
 		const [result, total] = await this.findAndCount({
 			where: where,
 			skip: skip,
 			take: take,
 		});
-		
+
 		if (!result || total <= skip) {
 			throw new NotFoundException(`No user found.`);
-        }
-        result.forEach(function(data) {
+		}
+		result.forEach(function(data) {
 			data.profilePic = data.profilePic
 				? `${siteUrl}/profile/${data.profilePic}`
 				: "";
@@ -134,21 +135,68 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
-	async getUserDetails(userId:string, siteUrl,roles=null){
+	async insertNewUser(data: any): Promise<boolean> {
+		try {
+			const salt = await bcrypt.genSalt();
+			const user = new User();
+			user.userId = uuidv4();
+			user.accountType = 1;
+			user.socialAccountId = "";
+			user.phoneNo = "";
+			user.profilePic = "";
+			user.timezone = "";
+			user.status = 1;
+			user.roleId = data.roleId;
+			user.email = data.email;
+			user.firstName = data.firstName;
+			user.middleName = data.middleName;
+			user.zipCode = "";
+			user.lastName = data.lastName;
+			user.salt = salt;
+			user.title = "";
+			user.countryCode = data.countryCode;
+			user.phoneNo = data.phoneNumber;
+			user.countryId = null;
+			user.preferredLanguage = null;
+			user.address = "";
+			user.stateId = null;
+			user.cityName = "";
+			user.gender = "";
+			user.createdBy = data.UserId;
+			user.createdDate = new Date();
+			user.updatedDate = new Date();
+			user.password = await this.hashPassword(data.password, salt);
+			const email = user.email;
+			const userExist = await this.findOne({
+				email,
+			});
+			if (userExist) {
+				return false;
+			} else {
+				await user.save();
+				return true;
+			}
+		} catch (error) {
+			return false;
+		}
+	}
 
+
+	async getUserDetails(userId:string, siteUrl:any,roles:Role[]=null){
+		
 		let userDetail =  await getManager()
             .createQueryBuilder(User, "user")
             .leftJoinAndSelect("user.state","state")
             .leftJoinAndSelect("user.country","countries")
-            .leftJoinAndSelect("user.preferredCurrency","currency")
+            .leftJoinAndSelect("user.preferredCurrency2","currency")
             .leftJoinAndSelect("user.preferredLanguage2","language")
             .select([
                 	"user.userId","user.title","user.dob",
 					"user.firstName","user.lastName",
-					"user.email","user.profilePic","user.dob",
+					"user.email","user.profilePic","user.dob","user.gender","user.roleId",
 					"user.countryCode","user.phoneNo",
 					"user.cityName","user.address","user.zipCode",
-					"user.preferredCurrency","user.preferredLanguage2",
+					"user.preferredCurrency2","user.preferredLanguage2",
 					"user.passportNumber","user.passportExpiry",
 					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
 					"currency.id","currency.code","currency.country",
@@ -157,12 +205,20 @@ export class UserRepository extends Repository<User> {
             ])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`,{ userId,is_deleted:false})
 			.andWhere(roles!=null ? (`"user"."role_id" in (:...roles) `):`1=1`,{roles})
-            .getOne();
+			.getOne();
+			
+			if (!userDetail) {
+				throw new NotFoundException(`No user found.`);
+			}
+
+			
 			let user:any={};
 			user.userId = userDetail.userId;
 			user.firstName = userDetail.firstName;
 			user.lastName = userDetail.lastName || "";
 			user.email = userDetail.email;
+			user.gender = userDetail.gender || "";
+			user.roleId = userDetail.roleId;
 			user.phoneNo = userDetail.phoneNo || "";
 			user.countryCode= userDetail.countryCode || "";
 			user.address= userDetail.address || "";
@@ -173,14 +229,13 @@ export class UserRepository extends Repository<User> {
 			user.cityName= userDetail.cityName || "";
 			user.dob= userDetail.dob || "";
 			user.ziCode= userDetail.zipCode || "";
-			user.preferredCurrency= userDetail.preferredCurrency || {};
+			user.preferredCurrency= userDetail.preferredCurrency2 || {};
 			user.preferredLanguage= userDetail.preferredLanguage2 || {};
 			user.passportNumber= userDetail.passportNumber || "";
 			user.passportExpiry= userDetail.passportExpiry || "";
 			user.profilePic = userDetail.profilePic
 				? `${siteUrl}/profile/${userDetail.profilePic}`
 				: "";
-
 			return user;
 	}
 }

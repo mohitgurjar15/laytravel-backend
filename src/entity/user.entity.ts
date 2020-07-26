@@ -124,6 +124,10 @@ export class User extends BaseEntity {
   @Column("integer", { name: "preferred_language", nullable: true })
   preferredLanguage: number | null;
 
+  @Column("integer", { name: "preferred_currency", nullable: true })
+  preferredCurrency: number | null;
+
+
   @Column("character varying", {
     name: "register_via",
     nullable: true,
@@ -257,7 +261,7 @@ export class User extends BaseEntity {
     currency => currency.users
   )
   @JoinColumn([{ name: "preferred_currency", referencedColumnName: "id" }])
-  preferredCurrency: Currency;
+  preferredCurrency2: Currency;
 
   @ManyToOne(
     () => Language,

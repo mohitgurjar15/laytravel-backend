@@ -23,17 +23,23 @@ import { Role } from "src/enum/role.enum";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 import { In, AdvancedConsoleLogger, getManager } from "typeorm";
 import { ActiveDeactiveDto } from "./dto/active-deactive-user.dto";
+import { isEmail } from "class-validator";
+
 import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
+import { Activity } from "src/utility/activity.utility";
+
 const mailConfig = config.get("email");
+const csv = require("csv-parser");
+const fs = require("fs");
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(UserRepository)
-		private userRepository: UserRepository,
+		public userRepository: UserRepository,
 
-		private readonly mailerService: MailerService
+		public readonly mailerService: MailerService
 	) {}
 
 	async create(
@@ -60,18 +66,25 @@ export class UserService {
 		} = saveUserDto;
 
 		let countryDetails = await getManager()
-			.createQueryBuilder(Countries,"country")
-			.where(`id=:country_id`,{country_id})
+			.createQueryBuilder(Countries, "country")
+			.where(`id=:country_id`, { country_id })
 			.getOne();
-		if(!countryDetails)
-				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
-			
+		if (!countryDetails)
+			throw new BadRequestException(
+				`Country id not exist with database.&&&country_id`
+			);
+
 		let stateDetails = await getManager()
-			.createQueryBuilder(States,"states")
-			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
+			.createQueryBuilder(States, "states")
+			.where(`id=:state_id and country_id=:country_id`, {
+				state_id,
+				country_id,
+			})
 			.getOne();
-		if(!stateDetails)
-			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
+		if (!stateDetails)
+			throw new BadRequestException(
+				`State id not exist with country id.&&&country_id`
+			);
 
 		const salt = await bcrypt.genSalt();
 		const user = new User();
@@ -94,7 +107,7 @@ export class UserService {
 		user.countryCode = country_code;
 		user.phoneNo = phone_no;
 		user.countryId = country_id;
-		user.preferredLanguage = prefer_language
+		user.preferredLanguage = prefer_language;
 		user.address = address;
 		user.stateId = state_id;
 		user.cityName = city_name;
@@ -107,6 +120,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
+			Activity.logActivity(adminId, "user", `create new ${user_type}`);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -136,66 +150,73 @@ export class UserService {
 		files: ProfilePicDto,
 		adminId: string
 	) {
-		const {
-			title,
-			email,
-			first_name,
-			last_name,
-			country_code,
-			phone_no,
-			address,
-			zip_code,
-			country_id,
-			state_id,
-			city_name,
-			gender,
-		} = updateUserDto;
-		const userId = UserId;
-
-		let countryDetails = await getManager()
-			.createQueryBuilder(Countries,"country")
-			.where(`id=:country_id`,{country_id})
-			.getOne();
-		if(!countryDetails)
-				throw new BadRequestException(`Country id not exist with database.&&&country_id`)
-			
-		let stateDetails = await getManager()
-			.createQueryBuilder(States,"states")
-			.where(`id=:state_id and country_id=:country_id`,{state_id,country_id})
-			.getOne();
-		if(!stateDetails)
-			throw new BadRequestException(`State id not exist with country id.&&&country_id`)
-			
-		const userData = await this.userRepository.findOne({
-			where: {
-				userId,
-				isDeleted: 0,
-				roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
-			},
-		});
-
-		if (typeof files.profile_pic != "undefined")
-			userData.profilePic = files.profile_pic[0].filename;
-		userData.timezone = "";
-		userData.email = email;
-		userData.firstName = first_name;
-		userData.middleName = "";
-		userData.zipCode = zip_code;
-		userData.lastName = last_name;
-		userData.title = title;
-		userData.countryCode = country_code;
-		userData.phoneNo = phone_no;
-		userData.countryId = country_id;
-		userData.address = address;
-		userData.stateId = state_id;
-		userData.cityName = city_name;
-		userData.gender = gender;
-		userData.updatedBy = adminId;
-		userData.updatedDate = new Date();
 		try {
+			const {
+				title,
+				email,
+				first_name,
+				last_name,
+				country_code,
+				phone_no,
+				address,
+				zip_code,
+				country_id,
+				state_id,
+				city_name,
+				gender,
+			} = updateUserDto;
+			const userId = UserId;
+
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_id`, { country_id })
+				.getOne();
+			if (!countryDetails)
+				throw new BadRequestException(
+					`Country id not exist with database.&&&country_id`
+				);
+
+			let stateDetails = await getManager()
+				.createQueryBuilder(States, "states")
+				.where(`id=:state_id and country_id=:country_id`, {
+					state_id,
+					country_id,
+				})
+				.getOne();
+			if (!stateDetails)
+				throw new BadRequestException(
+					`State id not exist with country id.&&&country_id`
+				);
+
+			const userData = await this.userRepository.findOne({
+				where: {
+					userId,
+					isDeleted: 0,
+					roleId: In([Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER]),
+				},
+			});
+
+			if (typeof files.profile_pic != "undefined")
+				userData.profilePic = files.profile_pic[0].filename;
+			userData.timezone = "";
+			userData.email = email;
+			userData.firstName = first_name;
+			userData.middleName = "";
+			userData.zipCode = zip_code;
+			userData.lastName = last_name;
+			userData.title = title;
+			userData.countryCode = country_code;
+			userData.phoneNo = phone_no;
+			userData.countryId = country_id;
+			userData.address = address;
+			userData.stateId = state_id;
+			userData.cityName = city_name;
+			userData.gender = gender;
+			userData.updatedBy = adminId;
+			userData.updatedDate = new Date();
+
 			await userData.save();
-			delete userData.password;
-			delete userData.salt;
+			Activity.logActivity(adminId, "user", `update user ${userId}`);
 			return userData;
 		} catch (error) {
 			throw new InternalServerErrorException(
@@ -205,18 +226,14 @@ export class UserService {
 	}
 
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
-
 		try {
-			const roles=[Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
-			return this.userRepository.getUserDetails(userId,siteUrl,roles);
+			const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
+			return this.userRepository.getUserDetails(userId, siteUrl, roles);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
 	}
 
-	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
-		return await this.userRepository.changePassword(changePasswordDto, userId);
-	}
 	async activeDeactiveUser(
 		userId: string,
 		activeDeactiveDto: ActiveDeactiveDto,
@@ -230,14 +247,14 @@ export class UserService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-
-			user.status = status;
+			var  statusWord = status  == true ? 1 : 0 ;
+			user.status = statusWord;
 			user.updatedBy = adminId;
-			user.isDeleted = true;
 			user.updatedDate = new Date();
 			await user.save();
-			var statusWord = status == 1 ? "Active" : "Deactive";
-			return { message: `User ${statusWord} successfully` };
+			
+			Activity.logActivity(adminId, "user", `user status changed`);
+			return { message: `user status changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -251,7 +268,7 @@ export class UserService {
 			);
 		}
 	}
-	async weeklyRagisterUser(): Promise<{ count: number }> {
+	async weeklyRagisterUser(): Promise<any> {
 		try {
 			var date = new Date();
 			var fdate = date.toLocaleString("en-US", {
@@ -268,26 +285,20 @@ export class UserService {
 			var day = weekday.indexOf(fdate);
 			var fromDate = new Date();
 			fromDate.setDate(fromDate.getDate() - day);
-
-			var mondayDate = fromDate.toLocaleDateString();
+			var mondayDate = fromDate.toISOString();
 			mondayDate = mondayDate
-				.split("/")
-				.reverse()
-				.join("-");
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
 			var toDate = new Date();
 
-			var todayDate = toDate.toLocaleDateString();
+			var todayDate = toDate.toISOString();
 			todayDate = todayDate
-				.split("/")
-				.reverse()
-				.join("-");
-			const result = await this.userRepository
-				.createQueryBuilder()
-				.where(
-					`role_id In (${Role.FREE_USER},${Role.PAID_USER},${Role.GUEST_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
-				)
-				.getCount();
-			return { count: result };
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			const result = await this.userRepository.query(
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
+			);
+			return { result };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -346,7 +357,7 @@ export class UserService {
 		}
 	}
 
-	async deleteUser(userId: string) {
+	async deleteUser(userId: string, adminId: string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -360,7 +371,10 @@ export class UserService {
 				);
 			} else {
 				user.isDeleted = true;
+				user.updatedBy = adminId;
+				user.updatedDate = new Date();
 				await user.save();
+				Activity.logActivity(adminId, "user", `delete user ${userId}`);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -377,8 +391,75 @@ export class UserService {
 		}
 	}
 
+	async importUser(importUserDto, files, userId, siteUrl) {
+		var count = 0;
+		const unsuccessRecord = new Array();
+		const csvData = [];
+		const csv = require("csvtojson");
+		const array = await csv().fromFile("./" + files[0].path);
+
+		for (let index = 0; index < array.length; index++) {
+			console.log(index);
+			var row = array[index];
+			console.log(row.first_name);
+			if (row) {
+				if (
+					row.first_name != "" &&
+					row.email_id != "" &&
+					isEmail(row.email_id) &&
+					row.password != "" &&
+					row.type != "" &&
+					parseInt(row.type) >= 5 &&
+					parseInt(row.type) <= 7
+				) {
+					var data = {
+						firstName: row.first_name,
+						middleName: row.middle_name,
+						lastName: row.last_name,
+						email: row.email_id,
+						contryCode: row.contry_code,
+						phoneNumber: row.phone_number,
+						password: row.password,
+						roleId: row.type,
+						adminId: userId,
+					};
+					var userData = await this.userRepository.insertNewUser(data);
+
+					if (userData) {
+						count++;
+						this.mailerService
+							.sendMail({
+								to: data.email,
+								from: mailConfig.from,
+								subject: `Welcome on board`,
+								template: "welcome.html",
+								context: {
+									// Data to be sent to template files.
+									username: data.firstName + " " + data.lastName,
+									email: data.email,
+									password: data.password,
+								},
+							})
+							.then((res) => {
+								console.log("res", res);
+							})
+							.catch((err) => {
+								console.log("err", err);
+							});
+					} else {
+						unsuccessRecord.push(row);
+					}
+				} else {
+					unsuccessRecord.push(row);
+				}
+			}
+		}
+		Activity.logActivity(userId, "user", `import ${count}  user`);
+		return { importCount: count, unsuccessRecord: unsuccessRecord };
+	}
 	//Export user
-	async exportUser(): Promise<{ data: User[] }> {
+	async exportUser(adminId: string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId, "user", `export  user`);
 		return await this.userRepository.exportUser([
 			Role.PAID_USER,
 			Role.GUEST_USER,

@@ -31,6 +31,8 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "src/entity/user.entity";
 import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { isEmail } from "class-validator";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class AdminService {
@@ -78,6 +80,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
+			Activity.logActivity(adminId, "Admin", `create new admin${user.userId}`);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -138,6 +141,7 @@ export class AdminService {
 			delete userData.salt;
 
 			await userData.save();
+			Activity.logActivity(adminId, "admin", `update admin ${userId}`);
 			return userData;
 		} catch (error) {
 			if (
@@ -178,7 +182,8 @@ export class AdminService {
 	}
 
 	//Export user
-	async exportAdmin(): Promise<{ data: User[] }> {
+	async exportAdmin(adminId: string): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId, "admin", `export admin`);
 		return await this.userRepository.exportUser([2]);
 	}
 
@@ -186,7 +191,7 @@ export class AdminService {
 	 * delete Admin
 	 * @param userId
 	 */
-	async deleteAdmin(userId: string) {
+	async deleteAdmin(userId: string, adminId: string) {
 		try {
 			const user = await this.userRepository.findOne({
 				userId,
@@ -201,7 +206,10 @@ export class AdminService {
 				);
 			} else {
 				user.isDeleted = true;
+				user.updatedBy = adminId;
+				user.updatedDate = new Date();
 				await user.save();
+				Activity.logActivity(adminId, "admin", `delete admin ${userId}`);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -220,19 +228,20 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			const user = await this.userRepository.findOne({
-				where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
-			});
+			return this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
+			// const user = await this.userRepository.findOne({
+			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
+			// });
 
-			if (!user) {
-				throw new NotFoundException(`No Admin found`);
-			}
-			delete user.salt;
-			delete user.password;
-			user.profilePic = user.profilePic
-				? `${siteUrl}/profile/${user.profilePic}`
-				: "";
-			return user;
+			// if (!user) {
+			// 	throw new NotFoundException(`No Admin found`);
+			// }
+			// delete user.salt;
+			// delete user.password;
+			// user.profilePic = user.profilePic
+			// 	? `${siteUrl}/profile/${user.profilePic}`
+			// 	: "";
+			// return user;
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -258,22 +267,20 @@ export class AdminService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-
-			console.log(status);
-
-			user.status = status;
+			var  statusWord = status == true ? 1 : 0 ;
+			user.status = statusWord;
 			user.updatedBy = adminId;
-			user.isDeleted = true;
 			user.updatedDate = new Date();
 			await user.save();
-			var statusWord = status == 1 ? "Active" : "Deactive";
-			return { messge: `User ${statusWord} successfully` };
+			
+			Activity.logActivity(adminId, `Admin`, `admin status changed`);
+			return { messge: `admin status changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No user Found.&&&id`);
+				throw new NotFoundException(`No Admin Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -302,7 +309,7 @@ export class AdminService {
 		}
 	}
 
-	async weeklyRegisterAdmin(): Promise<{ count: number }> {
+	async weeklyRegisterAdmin(): Promise<any> {
 		try {
 			var date = new Date();
 			var fdate = date.toLocaleString("en-US", {
@@ -319,27 +326,20 @@ export class AdminService {
 			var day = weekday.indexOf(fdate);
 			var fromDate = new Date();
 			fromDate.setDate(fromDate.getDate() - day);
-
-			var mondayDate = fromDate.toLocaleDateString();
+			var mondayDate = fromDate.toISOString();
 			mondayDate = mondayDate
-				.split("/")
-				.reverse()
-				.join("-");
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
 			var toDate = new Date();
 
-			var todayDate = toDate.toLocaleDateString();
+			var todayDate = toDate.toISOString();
 			todayDate = todayDate
-				.split("/")
-				.reverse()
-				.join("-");
-			console.log(todayDate);
-			const result = await this.userRepository
-				.createQueryBuilder()
-				.where(
-					`role_id In (${Role.ADMIN}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}'`
-				)
-				.getCount();
-			return { count: result };
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			const result = await this.userRepository.query(
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.ADMIN}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
+			);
+			return { result };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -352,5 +352,67 @@ export class AdminService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	async importAdmin(importUserDto, files, userId, siteUrl) {
+		var count = 0;
+		const unsuccessRecord = new Array();
+		const csv = require("csvtojson");
+		const array = await csv().fromFile("./" + files[0].path);
+		for (let index = 0; index < array.length; index++) {
+			var row = array[index];
+			if (row) {
+				if (
+					row.first_name != "" &&
+					row.email_id != "" &&
+					isEmail(row.email_id) &&
+					row.password != "" &&
+					row.type != "" &&
+					parseInt(row.type) == 2
+				) {
+					var data = {
+						firstName: row.first_name,
+						middleName: row.middle_name,
+						lastName: row.last_name,
+						email: row.email_id,
+						contryCode: row.contry_code,
+						phoneNumber: row.phone_number,
+						password: row.password,
+						roleId: row.type,
+						adminId: userId,
+					};
+					var userData = await this.userRepository.insertNewUser(data);
+
+					if (userData) {
+						count++;
+						this.mailerService
+							.sendMail({
+								to: data.email,
+								from: mailConfig.from,
+								subject: `Welcome on board`,
+								template: "welcome.html",
+								context: {
+									// Data to be sent to template files.
+									username: data.firstName + " " + data.lastName,
+									email: data.email,
+									password: data.password,
+								},
+							})
+							.then((res) => {
+								console.log("res", res);
+							})
+							.catch((err) => {
+								console.log("err", err);
+							});
+					} else {
+						unsuccessRecord.push(row);
+					}
+				} else {
+					unsuccessRecord.push(row);
+				}
+			}
+		}
+		Activity.logActivity(userId, "admin", `import ${count}  admin`);
+		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 }

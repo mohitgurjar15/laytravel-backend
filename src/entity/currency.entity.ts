@@ -75,7 +75,7 @@ export class Currency extends BaseEntity {
 
   @OneToMany(
     () => User,
-    user => user.preferredCurrency
+    user => user.preferredCurrency2
   )
   users: User[];
 }
