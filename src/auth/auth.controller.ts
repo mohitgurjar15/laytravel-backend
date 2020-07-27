@@ -31,6 +31,8 @@ import { I18nService } from 'nestjs-i18n';
 import { ChangePasswordDto } from 'src/user/dto/change-password.dto';
 import { PrefferedLanguageDto } from './dto/preffered-languge.dto';
 import { PrefferedCurrencyDto } from './dto/preffered-currency.dto';
+import { SignInOtherUserDto } from './dto/signin-other-user.dto';
+import { Roles } from 'src/guards/role.decorator';
 @ApiTags("Auth")
 @Controller('auth')
 @UseInterceptors(SentryInterceptor)
@@ -280,4 +282,23 @@ export class AuthController {
         return await this.authService.prefferedCurrency(PrefferedCurrencyDto, userId);
     }
 	
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Post(['signin-other-account'])
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+    @ApiOperation({ summary: "Signin to other account" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: 'Internal server error!' })
+    @HttpCode(200)
+    async signInToOtherUser(
+		@Body(ValidationPipe) signInOtherUserDto: SignInOtherUserDto,
+		@SiteUrl() siteUrl:string,
+		@GetUser() user:User
+    ) {
+		
+        const result = await this.authService.signInToOtherUser(signInOtherUserDto,siteUrl,user);
+        return result
+    }
 }

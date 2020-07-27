@@ -9,5 +9,6 @@ export interface JwtPayload {
     salt: string;
     profilePic: string;
     accessToken?: string;
-    roleId?:number
+    roleId?:number;
+    refrenceId?:string;
 }
