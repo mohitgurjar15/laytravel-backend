@@ -25,14 +25,13 @@ export class UserRepository extends Repository<User> {
 	hashPassword(password: string, salt: string): Promise<string> {
 		return bcrypt.hash(password, salt);
 	}
-
+	
 	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
 		const { old_password, password } = changePasswordDto;
-
+		
 		const user = await this.findOne({
-			where: { userId: userId, isDeleted: true },
+			where: { userId: userId, isDeleted: false },
 		});
-
 		if (await user.validatePassword(old_password)) {
 			const salt = await bcrypt.genSalt();
 			user.salt = salt;
