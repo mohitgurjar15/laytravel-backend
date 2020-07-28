@@ -25,6 +25,9 @@ export class Currency extends BaseEntity {
   @Column("character varying", { name: "code", length: 10 })
   code: string;
 
+  @Column("character varying", { name: "symbol", length: 10, nullable:true })
+  symbol: string;
+
   @Column("numeric", { name: "live_rate", precision: 8, scale: 3 })
   liveRate: string;
 

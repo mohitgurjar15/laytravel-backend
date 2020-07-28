@@ -808,6 +808,52 @@ export class AuthService {
 		}
 	}
 
+	async signInToOtherUser(signInOtherUserDto,siteUrl,parentUser){
+		const { user_id } = signInOtherUserDto;
+		try{
+			// inactive user also can login
+			let user = await this.userRepository.findOne({
+				userId:user_id,
+				isDeleted:false
+			});
+
+			if(!user){
+				throw new UnauthorizedException(`Invalid user id! Please enter valid user id.`)
+			}
+			else{
+				const payload: JwtPayload = {
+					user_id: user.userId,
+					email:user.email,
+					username: user.firstName + " " + user.lastName,
+					firstName: user.firstName,
+					phone: user.phoneNo,
+					middleName: user.middleName,
+					lastName: user.lastName,
+					salt: user.salt,
+					profilePic: user.profilePic
+						? `${siteUrl}/profile/${user.profilePic}`
+						: "",
+					roleId: user.roleId,
+					refrenceId:parentUser.userId
+				};
+				const accessToken = this.jwtService.sign(payload);
+				const token = { token: accessToken };
+				return token;
+			}
+		} 
+		catch (error) {
+			if (error instanceof UnauthorizedException) {
+				throw new UnauthorizedException(error.message);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+		);
+	}
+
+		
+	}
+
 	addLoginLog(userId, request, loginVia) {
 		const loginLog = new LoginLog();
 		loginLog.userId = userId;
