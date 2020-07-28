@@ -1,7 +1,25 @@
-import { IsNotEmpty, IsEmail, MaxLength} from 'class-validator'
+import { IsNotEmpty, IsEmail, MaxLength, IsEnum, ValidationArguments} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Gender } from 'src/enum/gender.enum';
+import { errorMessage } from 'src/config/common.config';
 
 export class UpdateSupplierDto{
+
+
+    @IsEnum(["mr", "ms", "mrs"], {
+		message: (args: ValidationArguments) => {
+			if (typeof args.value == "undefined" || args.value == "") {
+				return `Please select your title.&&&gender`;
+			} else {
+				return `Please select valid title('mr','ms','mrs').&&&title&&&${errorMessage}`;
+			}
+		},
+	})
+	@ApiProperty({
+		description: `Select Title ('mr','ms','mrs')`,
+		example: `mr`,
+	})
+	title: string;
 
     @IsNotEmpty()
     @MaxLength(25)
@@ -24,6 +42,26 @@ export class UpdateSupplierDto{
         example: 'Doe'
     })
     lastName: string;
+
+    @IsNotEmpty({
+        message : `Please select your gender.&&&gender`
+    })
+    @IsEnum(['M','F'],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please select your gender.&&&gender`;
+            } else {
+                return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`
+            }
+        }
+    })
+    
+    @ApiProperty({
+        description: `Select Gender (M,F)`,
+        example: `M`
+    })
+    gender : Gender;
+
 
     @ApiPropertyOptional({
 		type: "string",
