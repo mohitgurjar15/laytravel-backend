@@ -9,7 +9,7 @@ export class ActiveDeactiveDto
     })
     @ApiProperty({
         description:`Enter status`,
-        example:`true`
+        example: true
     })
     status:boolean;
 }

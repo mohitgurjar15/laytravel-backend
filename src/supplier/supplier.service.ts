@@ -24,6 +24,7 @@ import { User } from "src/entity/user.entity";
 import { In } from "typeorm";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
+import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 
 @Injectable()
 export class SupplierService {
@@ -116,6 +117,8 @@ export class SupplierService {
 				firstName,
 				middleName,
 				lastName,
+				gender,
+				title,
 				profile_pic,
 			} = updateSupplierDto;
 			const userId = UserId;
@@ -126,6 +129,8 @@ export class SupplierService {
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
+			userData.title = title;
+			userData.gender = gender;
 			userData.updatedBy = adminId;
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
@@ -368,6 +373,42 @@ export class SupplierService {
 				error.response.statusCode == 404
 			) {
 				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+
+	async activeDeactivesupplier(
+		userId: string,
+		activeDeactiveDto: ActiveDeactiveDto,
+		adminId: string
+	) {
+		try {
+			const { status } = activeDeactiveDto;
+			const user = await this.userRepository.findOne({
+				userId,
+				roleId: In([Role.SUPPLIER]),
+			});
+
+			if (!user) throw new NotFoundException(`No supplier user found`);
+			var  statusWord = status  == true ? 1 : 0 ;
+			user.status = statusWord;
+			user.updatedBy = adminId;
+			user.updatedDate = new Date();
+			await user.save();
+			
+			Activity.logActivity(adminId, "supplier-user", `supplier user status changed`);
+			return { message: `supplier user status changed` };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No supplier user Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
