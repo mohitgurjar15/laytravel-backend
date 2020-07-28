@@ -22,7 +22,6 @@ export class UpdateSupplierDto{
 	title: string;
 
     @IsNotEmpty()
-    @MaxLength(25)
     @ApiProperty({
         description: 'Enter First Name',
         example: 'Jon'
@@ -36,7 +35,6 @@ export class UpdateSupplierDto{
     middleName: string;
 
     @IsNotEmpty()
-    @MaxLength(25)
     @ApiProperty({
         description: 'Enter Last Name',
         example: 'Doe'
