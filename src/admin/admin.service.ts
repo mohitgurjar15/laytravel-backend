@@ -172,7 +172,7 @@ export class AdminService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No supplier Found.&&&id`);
+				throw new NotFoundException(`No admin Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class UpdateAdminDto{
 
     @IsNotEmpty()
-    @MaxLength(25)
+    
     @ApiProperty({
         description: 'Enter First Name',
         example: 'Jon'
@@ -18,7 +18,6 @@ export class UpdateAdminDto{
     middleName: string;
 
     @IsNotEmpty()
-    @MaxLength(25)
     @ApiProperty({
         description: 'Enter Last Name',
         example: 'Doe'
