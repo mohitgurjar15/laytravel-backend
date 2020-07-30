@@ -89,6 +89,7 @@ export class SupplierController {
 		@Body() saveSupplierDto: SaveSupplierDto,
 		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
+		@SiteUrl() siteUrl: string,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
@@ -98,7 +99,8 @@ export class SupplierController {
 		return await this.supplierService.createSupplier(
 			saveSupplierDto,
 			files,
-			adminId
+			adminId,
+			siteUrl
 		);
 	}
 	/**
@@ -133,6 +135,7 @@ export class SupplierController {
 		@Param("id") user_id: string,
 		@GetUser() user: User,
 		@UploadedFiles() files: ProfilePicDto,
+		@SiteUrl() siteUrl: string,
 		@Req() req
 	) {
 		if (req.fileValidationError) {
@@ -143,7 +146,8 @@ export class SupplierController {
 			updateSupplierDto,
 			user_id,
 			files,
-			adminId
+			adminId,
+			siteUrl
 		);
 	}
 
