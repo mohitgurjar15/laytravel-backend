@@ -44,9 +44,10 @@ export class SupplierService {
 	async createSupplier(
 		saveUserDto: SaveSupplierDto,
 		files: ProfilePicDto,
-		adminId: string
+		adminId: string,
+		siteUrl
 	): Promise<User> {
-		const { email, password, first_name, last_name } = saveUserDto;
+		const { email, password, first_name, last_name ,gender} = saveUserDto;
 		const salt = await bcrypt.genSalt();
 		const user = new User();
 		user.userId = uuidv4();
@@ -59,6 +60,7 @@ export class SupplierService {
 		user.status = 1;
 		user.roleId = Role.SUPPLIER;
 		user.email = email;
+		user.gender = gender;
 		user.firstName = first_name;
 		user.middleName = "";
 		user.zipCode = "";
@@ -97,7 +99,7 @@ export class SupplierService {
 			"supplier-user",
 			`create user ${user.userId}`
 		);
-		return userdata;
+		return this.userRepository.getUserDetails(userdata.userId,siteUrl,[Role.SUPPLIER]);
 	}
 
 	/**
@@ -110,7 +112,8 @@ export class SupplierService {
 		updateSupplierDto: UpdateSupplierDto,
 		UserId: string,
 		files: ProfilePicDto,
-		adminId: string
+		adminId: string,
+		siteUrl:string
 	) {
 		try {
 			const {
@@ -138,7 +141,7 @@ export class SupplierService {
 
 			await userData.save();
 			Activity.logActivity(adminId, "supplier-user", `update user ${userId}`);
-			return userData;
+			return this.userRepository.getUserDetails(userData.userId,siteUrl,[Role.SUPPLIER]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -334,7 +337,9 @@ export class SupplierService {
 
 	async getSupplierData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return this.userRepository.getUserDetails(userId,siteUrl,[Role.SUPPLIER])
+			return this.userRepository.getUserDetails(userId, siteUrl, [
+				Role.SUPPLIER,
+			]);
 			// const user = await this.userRepository.findOne({
 			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
 			// });
@@ -381,7 +386,6 @@ export class SupplierService {
 		}
 	}
 
-
 	async activeDeactivesupplier(
 		userId: string,
 		activeDeactiveDto: ActiveDeactiveDto,
@@ -395,13 +399,17 @@ export class SupplierService {
 			});
 
 			if (!user) throw new NotFoundException(`No supplier user found`);
-			var  statusWord = status  == true ? 1 : 0 ;
+			var statusWord = status == true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			
-			Activity.logActivity(adminId, "supplier-user", `supplier user status changed`);
+
+			Activity.logActivity(
+				adminId,
+				"supplier-user",
+				`supplier user status changed`
+			);
 			return { message: `supplier user status changed` };
 		} catch (error) {
 			if (
