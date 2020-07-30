@@ -80,7 +80,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "Admin", `create new admin${user.userId}`);
+			Activity.logActivity(adminId, "Admin", `create new admin ${userdata.email} By super admin ${adminId}`);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -141,7 +141,7 @@ export class AdminService {
 			delete userData.salt;
 
 			await userData.save();
-			Activity.logActivity(adminId, "admin", `update admin ${userId}`);
+			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`);
 			return userData;
 		} catch (error) {
 			if (
@@ -183,7 +183,7 @@ export class AdminService {
 
 	//Export user
 	async exportAdmin(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "admin", `export admin`);
+		Activity.logActivity(adminId, "admin", `${adminId} is export the  all admin data`);
 		return await this.userRepository.exportUser([2]);
 	}
 
@@ -209,7 +209,7 @@ export class AdminService {
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId, "admin", `delete admin ${userId}`);
+				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -273,7 +273,7 @@ export class AdminService {
 			user.updatedDate = new Date();
 			await user.save();
 			
-			Activity.logActivity(adminId, `Admin`, `admin status changed`);
+			Activity.logActivity(adminId, `Admin`, `admin status changed ${statusWord}`);
 			return { messge: `admin status changed` };
 		} catch (error) {
 			if (
