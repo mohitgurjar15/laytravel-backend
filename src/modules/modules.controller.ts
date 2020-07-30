@@ -20,7 +20,7 @@ export class ModulesController {
     constructor(private modulesService:ModulesService) {}
 
     @Get()
-	@ApiOperation({ summary: "List language" })
+	@ApiOperation({ summary: "List Modules" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
