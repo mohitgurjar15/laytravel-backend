@@ -48,6 +48,7 @@ import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
+import { isError } from "util";
 
 @Injectable()
 export class AuthService {
@@ -255,6 +256,12 @@ export class AuthService {
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.`
+			);
+		}
+		if(user.isDeleted == true || user.status == 0)
+		{
+			throw new NotFoundException(
+				`Given Email id is Deleted`
 			);
 		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);

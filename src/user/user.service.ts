@@ -164,6 +164,7 @@ export class UserService {
 				state_id,
 				city_name,
 				gender,
+				prefer_language
 			} = updateUserDto;
 			const userId = UserId;
 
@@ -207,6 +208,7 @@ export class UserService {
 			userData.title = title;
 			userData.countryCode = country_code;
 			userData.phoneNo = phone_no;
+			userData.preferredLanguage = prefer_language;
 			userData.countryId = country_id;
 			userData.address = address;
 			userData.stateId = state_id;
