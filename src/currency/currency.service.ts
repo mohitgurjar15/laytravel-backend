@@ -102,7 +102,7 @@ export class CurrencyService {
 			const Data = await this.currencyRepository.findOne({
 				id: id,
 			});
-			if (!Data) throw new NotFoundException(`No language found`);
+			if (!Data) throw new NotFoundException(`No currency found`);
 			console.log(status);
 			
 			
@@ -117,7 +117,7 @@ export class CurrencyService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No currency Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

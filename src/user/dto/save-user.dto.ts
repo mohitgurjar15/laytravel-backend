@@ -185,8 +185,7 @@ export class SaveUserDto {
 	})
 	user_type: number;
 
-	@IsOptional()
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: `Select user prefer Language `,
 		example: `1`,
 	})
@@ -199,4 +198,7 @@ export class SaveUserDto {
 		example: "profile.jpg",
 	})
 	profile_pic: string;
+
+
+	
 }

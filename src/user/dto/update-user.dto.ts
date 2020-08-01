@@ -120,6 +120,13 @@ export class UpdateUserDto{
     })
     city_name: string;
     
+    @ApiPropertyOptional({
+		description: `Select user prefer Language `,
+		example: `1`,
+	})
+	prefer_language: number;
+
+
     @IsNotEmpty({
         message : `Please select your gender.&&&gender`
     })

@@ -48,6 +48,7 @@ import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
+import { isError } from "util";
 
 @Injectable()
 export class AuthService {
@@ -199,7 +200,7 @@ export class AuthService {
 		userDetails.access_token = accessToken;
 
 		this.addLoginLog(user.userId, request, loginvia);
-		Activity.logActivity(user.userId, `auth`, `login using ${loginvia}`);
+		
 		return { user_details: userDetails };
 	}
 
@@ -257,6 +258,12 @@ export class AuthService {
 				`Email is not registered with us. Please check the email.`
 			);
 		}
+		if(user.isDeleted == true || user.status == 0)
+		{
+			throw new NotFoundException(
+				`Given Email id is Deleted`
+			);
+		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
 		const tokenhash = crypto
@@ -272,7 +279,7 @@ export class AuthService {
 		Activity.logActivity(
 			user.userId,
 			`auth`,
-			`forget password Token : ${forgetPassToken}`
+			` ${email} user is request to forget password using ${forgetPassToken} token`
 		);
 		const resetLink = `http://laytrip.oneclickitmarketing.co.in/reset-password?token=${forgetPassToken}`;
 		this.mailerService
@@ -332,7 +339,7 @@ export class AuthService {
 		Activity.logActivity(
 			user.userId,
 			`auth`,
-			`update password Token : ${token}`
+			`${user.email} is forget password using ${token} token`
 		);
 		if (!user) {
 			throw new NotFoundException(
@@ -448,11 +455,6 @@ export class AuthService {
 				};
 				let loginvia = device_type == 1 ? "android" : "ios";
 				this.addLoginLog(user.userId, request, loginvia);
-				Activity.logActivity(
-					user.userId,
-					`auth`,
-					`login user via : ${loginvia}`
-				);
 				return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 			} catch (error) {
 				throw new InternalServerErrorException(
@@ -475,7 +477,6 @@ export class AuthService {
 				);
 			}
 			await UserDeviceDetail.delete({ user: user });
-			Activity.logActivity(id, `auth`, `logout the user`);
 			const userData = { message: `Logged out successfully.` };
 			return userData;
 		} catch (error) {
@@ -602,11 +603,7 @@ export class AuthService {
 			};
 			let loginvia = device_type == 1 ? "android" : "ios";
 			this.addLoginLog(user.userId, request, loginvia);
-			Activity.logActivity(
-				user.userId,
-				`auth`,
-				`login  the user via : ${loginvia}`
-			);
+			
 			return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
@@ -703,7 +700,7 @@ export class AuthService {
 			Activity.logActivity(
 				user.userId,
 				`auth`,
-				`update profile by the user via `
+				`user ${user.email} is update profile`
 			);
 			const roleId = [
 				Role.ADMIN,
@@ -752,7 +749,7 @@ export class AuthService {
 			Activity.logActivity(
 				userId,
 				`auth`,
-				`prefered Languge Updated By user `
+				`prefered Languge Updated By user ${user.email} `
 			);
 			return { message: "Prefered Languge Updated Successfully" };
 		} catch (error) {
@@ -790,7 +787,7 @@ export class AuthService {
 			Activity.logActivity(
 				userId,
 				`auth`,
-				`preffered Currency Updated By user `
+				`preffered Currency Updated By user ${user.email}`
 			);
 			return { message: "Prefered Currency Updated Successfully" };
 		} catch (error) {
