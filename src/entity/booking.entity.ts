@@ -85,6 +85,9 @@ export class Booking extends BaseEntity {
   @Column("date", { name: "next_instalment_date", nullable: true })
   nextInstalmentDate: string | null;
 
+  @Column("character varying", { name: "supplier_booking_id", length: 255 })
+  supplierBookingId: string;
+
   @ManyToOne(
     () => Currency,
     currency => currency.bookings
