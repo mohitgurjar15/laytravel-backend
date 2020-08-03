@@ -91,7 +91,6 @@ export class UserService {
 		user.userId = uuidv4();
 		user.accountType = 1;
 		user.socialAccountId = "";
-		user.phoneNo = "";
 		if (typeof files.profile_pic != "undefined")
 			user.profilePic = files.profile_pic[0].filename;
 		user.timezone = "";
@@ -120,7 +119,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `create new ${user_type}`);
+			Activity.logActivity(adminId, "user", `new user ${user.email} create by admin `);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -218,7 +217,7 @@ export class UserService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
-			Activity.logActivity(adminId, "user", `update user ${userId}`);
+			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`);
 			return userData;
 		} catch (error) {
 			throw new InternalServerErrorException(
@@ -255,7 +254,7 @@ export class UserService {
 			user.updatedDate = new Date();
 			await user.save();
 			
-			Activity.logActivity(adminId, "user", `user status changed`);
+			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`);
 			return { message: `user status changed` };
 		} catch (error) {
 			if (
@@ -376,7 +375,7 @@ export class UserService {
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId, "user", `delete user ${userId}`);
+				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -456,12 +455,12 @@ export class UserService {
 				}
 			}
 		}
-		Activity.logActivity(userId, "user", `import ${count}  user`);
+		Activity.logActivity(userId, "user", `admin import the  ${count}  users`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
 	async exportUser(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "user", `export  user`);
+		Activity.logActivity(adminId, "user", `all user list export by admin`);
 		return await this.userRepository.exportUser([
 			Role.PAID_USER,
 			Role.GUEST_USER,
