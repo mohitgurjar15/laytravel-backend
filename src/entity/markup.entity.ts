@@ -35,10 +35,10 @@ export class Markup extends BaseEntity {
   operand: string;
 
   @Column("date", { name: "created_date" })
-  createdDate: string;
+  createdDate: Date;
 
   @Column("date", { name: "updated_date" })
-  updatedDate: string;
+  updatedDate: Date;
 
   @ManyToOne(
     () => Module,

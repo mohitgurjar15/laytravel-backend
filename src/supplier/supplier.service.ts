@@ -97,7 +97,7 @@ export class SupplierService {
 		Activity.logActivity(
 			adminId,
 			"supplier-user",
-			`create user ${user.userId}`
+			`supplier-user ${user.email} is added by admin`
 		);
 		return this.userRepository.getUserDetails(userdata.userId,siteUrl,[Role.SUPPLIER]);
 	}
@@ -140,7 +140,7 @@ export class SupplierService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
-			Activity.logActivity(adminId, "supplier-user", `update user ${userId}`);
+			Activity.logActivity(adminId, "supplier-user", ` ${userData.email} is updated by the admin`);
 			return this.userRepository.getUserDetails(userData.userId,siteUrl,[Role.SUPPLIER]);
 		} catch (error) {
 			if (
@@ -206,7 +206,7 @@ export class SupplierService {
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId, "supplier-user", `delete user ${userId}`);
+				Activity.logActivity(adminId, "supplier-user", ` ${user.email} is deleted by admin`);
 				return { messge: `supplier deleted successfully` };
 			}
 		} catch (error) {
@@ -224,7 +224,7 @@ export class SupplierService {
 	}
 	//Export user
 	async exportSupplier(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "supplier-user", `export user `);
+		Activity.logActivity(adminId, "supplier-user", `all supplier user list export by admin `);
 		return await this.userRepository.exportUser([Role.SUPPLIER]);
 	}
 
@@ -286,7 +286,7 @@ export class SupplierService {
 				}
 			}
 		}
-		Activity.logActivity(userId, "supplier-user", `import ${count}  user`);
+		Activity.logActivity(userId, "supplier-user", `admin ipport  ${count} supplier user`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 
@@ -408,7 +408,7 @@ export class SupplierService {
 			Activity.logActivity(
 				adminId,
 				"supplier-user",
-				`supplier user status changed`
+				`${user.email} supplier user status changed by admin`
 			);
 			return { message: `supplier user status changed` };
 		} catch (error) {

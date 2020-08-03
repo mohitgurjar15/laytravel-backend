@@ -26,6 +26,8 @@ import { CurrencyModule } from './currency/currency.module';
 import { HotelModule } from './hotel/hotel.module';
 import { InstalmentModule } from './instalment/instalment.module';
 import { ModulesModule } from './modules/modules.module';
+import { MarkupModule } from './markup/markup.module';
+import { ActivitiesModule } from './activities/activities.module';
 
 @Module({
   imports: [
@@ -76,6 +78,8 @@ import { ModulesModule } from './modules/modules.module';
 		HotelModule,
 		InstalmentModule,
 		ModulesModule,
+		MarkupModule,
+		ActivitiesModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
