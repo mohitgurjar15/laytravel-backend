@@ -265,7 +265,7 @@ export class AuthController {
 	}
 	
 
-	@Patch('prefered-Currency')
+	@Patch('prefered-currency')
 	@ApiOperation({ summary: "Change prefered-currency" })
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard())
