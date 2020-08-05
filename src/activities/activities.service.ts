@@ -41,7 +41,7 @@ export class ActivitiesService {
 
     async listloginlog(
 		paginationOption: ListActivityDto,
-	): Promise<{ data: LoginLog[]; TotalReseult: number }> {
+	): Promise<{ data: LoginLog[]; TotalReseult: any }> {
 		try {
 			return await this.LoginLogRepository.loginLogList(paginationOption);
 		} catch (error) {

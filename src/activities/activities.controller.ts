@@ -52,7 +52,7 @@ export class ActivitiesController {
 	async listAdmin(
 		@Query() paginationOption: ListActivityDto,
 		
-	): Promise<{ data: LoginLog[]; TotalReseult: number }> {
+	): Promise<{ data: LoginLog[]; TotalReseult: any }> {
 		return await this.activitiesService.listloginlog(paginationOption);
 	}
 }
