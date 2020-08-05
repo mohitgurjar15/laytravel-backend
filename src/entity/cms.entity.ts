@@ -15,6 +15,18 @@ export class Cms extends BaseEntity {
   @Column("text", { name: "en_content", nullable: true })
   enContent: string | null;
 
+  @Column("text", { name: "fr_content", nullable: true })
+  frContent: string | null;
+
+  @Column("text", { name: "it_content", nullable: true })
+  itContent: string | null;
+
+  @Column("text", { name: "es_content", nullable: true })
+  esContent: string | null;
+
+  @Column("text", { name: "de_content", nullable: true })
+  deContent: string | null;
+
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
 

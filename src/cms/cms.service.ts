@@ -17,7 +17,7 @@ export class CmsService {
 
         const {
             page_type,
-            title,en_content
+            title,en_content,es_content,it_content,de_content,fr_content
 
         }=updateCmsDto;
 
@@ -31,6 +31,10 @@ export class CmsService {
         cmsPage.pageType=page_type;
         cmsPage.title = title;
         cmsPage.enContent=en_content;
+        cmsPage.esContent=es_content;
+        cmsPage.itContent=it_content;
+        cmsPage.deContent=de_content;
+        cmsPage.frContent=fr_content;
 
         await this.cmsRepository.update({ pageType:page_type},cmsPage);
         return cmsPage;
