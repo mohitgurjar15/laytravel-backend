@@ -11,6 +11,7 @@ import { Baggage } from 'src/entity/baggage.entity';
 import { FlightRoute } from 'src/entity/flight-route.entity';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
+import { Mystifly } from './strategy/mystifly';
 
 @Injectable()
 export class FlightService {
@@ -52,8 +53,9 @@ export class FlightService {
 
     async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto){
 
-        const local = new Strategy(new Static(this.flightRepository));
-        const result = new Promise((resolve) => resolve(local.oneWaySearch(searchFlightDto)));
+        //const local = new Strategy(new Static(this.flightRepository));
+        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        const result = new Promise((resolve) => resolve(mystifly.oneWaySearch(searchFlightDto)));
         return result;
     }
 
@@ -141,8 +143,9 @@ export class FlightService {
      }
 
      async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
-        const local = new Strategy(new Static(this.flightRepository));
-        const result = new Promise((resolve) => resolve(local.roundTripSearch(searchFlightDto)));
+        //const local = new Strategy(new Static(this.flightRepository));
+        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        const result = new Promise((resolve) => resolve(mystifly.roundTripSearch(searchFlightDto)));
         return result;
      }
 }

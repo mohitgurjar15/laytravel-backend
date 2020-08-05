@@ -16,3 +16,11 @@ db:
 
 jwt:
     secret: 'topSecret51'
+
+mystifly:
+         account_number: "MCN001506"
+         password : "MWR2018_xml"
+         target: "Test"
+         user_name: "MWR_XML"
+         url: "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"
+
