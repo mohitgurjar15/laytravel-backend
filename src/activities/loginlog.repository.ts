@@ -49,14 +49,17 @@ export class LoginLogRepository extends Repository<LoginLog> {
 				"log.loginVia",
 				"log.loginAgent",
 				"log.id",
-				"log.loginDate"
+				"log.loginDate",
 			])
 			.where(where)
 			.skip(skip)
 			.take(take)
 			.getMany();
 		var total = await getManager()
-		.createQueryBuilder(LoginLog, "log").where(where).getCount();
+			.createQueryBuilder(LoginLog, "log")
+			.leftJoinAndSelect("log.user", "user")
+			.where(where)
+			.getCount();
 		if (!result) {
 			throw new NotFoundException(`No Log found.`);
 		}
