@@ -28,6 +28,7 @@ import { InstalmentModule } from './instalment/instalment.module';
 import { ModulesModule } from './modules/modules.module';
 import { MarkupModule } from './markup/markup.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { CmsModule } from './cms/cms.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { ActivitiesModule } from './activities/activities.module';
 		ModulesModule,
 		MarkupModule,
 		ActivitiesModule,
+		CmsModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
