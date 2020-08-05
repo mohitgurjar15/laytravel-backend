@@ -10,15 +10,19 @@ import { DateTime } from "src/utility/datetime.utility";
 import { Stop } from "../model/stop.model";
 import { Route, RouteType } from "../model/route.model";
 const mystiflyConfig = config.get('mystifly');
+const fs = require('fs').promises;
 
 export class Mystifly implements StrategyAirline{
 
-    private flightRepository;
-    constructor(flightRepository){
-        this.flightRepository = flightRepository;
+    private headers;
+    constructor(
+        headers
+    ){
+        this.headers = headers;
     }
 
-    async startSession(){
+    async createSession(){
+
         const requestBody = 
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
             <soapenv:Header/>
@@ -50,12 +54,36 @@ export class Mystifly implements StrategyAirline{
             normalizeTags :true,
             ignoreAttrs:true
         });
-        console.log(sessionResult)
-        return sessionResult['s:Envelope']['s:Body'].CreateSessionResponse.CreateSessionResult['a:SessionId'];
+        const sessionToken = sessionResult['s:envelope']['s:body'][0].createsessionresponse[0].createsessionresult[0]['a:sessionid'][0];
+        await fs.writeFile("src/flight/mystifly-session.json", JSON.stringify({sessionToken, created_time:new Date()}))
+        console.log("createSession")
+        return sessionToken;
+    }
+    async startSession(){
+        try{
+            let sessionDetails = await fs.readFile("src/flight/mystifly-session.json","binary");
+            sessionDetails = JSON.parse(sessionDetails);
+            let currentTime = new Date();
+            let diff = moment(currentTime).diff(sessionDetails.created_time,'seconds')
+            console.log(sessionDetails.created_time,currentTime,diff);
+            if(diff>1200){
+               return await this.createSession();
+            }
+            else{
+                return sessionDetails.sessionToken;
+            }
+        }
+        catch(e){
+           return await this.createSession();
+        }
+
+        //console.log(sessionDetails);
+        
     }
 
-    async oneWaySearch(searchFlightDto:OneWaySearchFlightDto):Promise<Route[]>{
+    async oneWaySearch(searchFlightDto:OneWaySearchFlightDto)/* :Promise<Route[]> */{
 
+        const sessionToken = await this.startSession();
         const {
             source_location,
             destination_location,
@@ -109,7 +137,7 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</mys1:PassengerTypeQuantities>`
         requestBody += `<mys1:PricingSourceType>All</mys1:PricingSourceType>`
         requestBody += `<mys1:RequestOptions>Fifty</mys1:RequestOptions>`
-        requestBody += `<mys1:SessionId>bccbcbae-ab4a-4fe9-9d73-728643bf1cc2</mys1:SessionId>`
+        requestBody += `<mys1:SessionId>${sessionToken}</mys1:SessionId>`
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
         requestBody += `<mys1:TravelPreferences>`
         requestBody += `<mys1:AirTripType>OneWay</mys1:AirTripType>`
@@ -213,7 +241,7 @@ export class Mystifly implements StrategyAirline{
 
             throw new NotFoundException(`No flight founds`)
         }
-        //const sessionToken = await this.startSession();
+       
     }
 
     async roundTripSearch(searchFlightDto:RoundtripSearchFlightDto){

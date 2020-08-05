@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Strategy } from './strategy/strategy';
 import { Static } from './strategy/static';
 import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
@@ -12,6 +12,8 @@ import { FlightRoute } from 'src/entity/flight-route.entity';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 import { Mystifly } from './strategy/mystifly';
+import { Currency } from 'src/entity/currency.entity';
+import { Language } from 'src/entity/language.entity';
 
 @Injectable()
 export class FlightService {
@@ -51,10 +53,30 @@ export class FlightService {
         }
     }
 
-    async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto){
+    async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto,headers){
 
         //const local = new Strategy(new Static(this.flightRepository));
-        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        let currency = headers.currency;
+        let language=headers.language;
+        if(typeof currency=='undefined' || currency==''){
+            throw new BadRequestException(`Please enter currency code&&&currency`)
+        }
+        else if(typeof language=='undefined' || language==''){
+            throw new BadRequestException(`Please enter language code&&&language`)
+        }
+
+        let currencyDetails = await getManager().createQueryBuilder(Currency,"currency").where(`"currency"."code"=:currency and "currency"."status"=true`,{currency}).getOne();
+        if(!currencyDetails){
+            throw new BadRequestException(`Invalid currency code sent!`)
+        }
+
+        let languageDetails = await getManager().createQueryBuilder(Language,"language").where(`"language"."iso_1_code"=:language and "language"."active"=true`,{language}).getOne();
+        if(!languageDetails){
+            throw new BadRequestException(`Invalid language code sent!`)
+        }
+
+        
+        const mystifly = new Strategy(new Mystifly(headers));
         const result = new Promise((resolve) => resolve(mystifly.oneWaySearch(searchFlightDto)));
         return result;
     }
