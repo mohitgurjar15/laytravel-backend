@@ -51,7 +51,7 @@ export class CurrencyController {
 	})
 	@ApiResponse({ status: 404, description: "currency not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listAdmin(): Promise<{ data: Currency[] }> {
+	async listCurrency(): Promise<{ data: Currency[] }> {
 		return await this.currencyService.listCurrency();
 	}
 
@@ -65,7 +65,7 @@ export class CurrencyController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getLangunage(@Param("id") id: number): Promise<Currency> {
+	async currencyDetail(@Param("id") id: number): Promise<Currency> {
 		return await this.currencyService.CurrencyDetail(id);
 	}
 
