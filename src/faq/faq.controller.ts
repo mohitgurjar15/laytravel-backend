@@ -38,7 +38,7 @@ export class FaqController {
 	constructor(private faqService: FaqService) {}
 
 	@Get()
-	@ApiOperation({ summary: "List of Faq" })
+	@ApiOperation({ summary: "List Of Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Faq Not Found" })
@@ -52,7 +52,7 @@ export class FaqController {
 	@Post()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "new Faq create" })
+	@ApiOperation({ summary: "Create New Faq " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: " Faq Not Found" })
@@ -118,7 +118,7 @@ export class FaqController {
 	@Get("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "get Faq by id" })
+	@ApiOperation({ summary: "Get Faq By Id" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })

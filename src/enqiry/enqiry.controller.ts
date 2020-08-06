@@ -22,7 +22,7 @@ export class EnqiryController {
     @ApiOperation({ summary: "List of Enquiry" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Faq Not Found" })
+	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getFaq(
 		@Query() paginationOption: EnquiryListDto
