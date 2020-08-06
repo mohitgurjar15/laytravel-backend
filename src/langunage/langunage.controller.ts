@@ -90,7 +90,7 @@ export class LangunageController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Put("/:id")
-	async updateCurrency(
+	async languageUpdate(
 		@Param("id") id: number,
 		@Body() updateLangunageDto: UpdateLangunageDto,
 		@GetUser() user: User
@@ -141,7 +141,7 @@ export class LangunageController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Delete("/:id")
-	async deleteCurrency(@Param("id") id: number,@GetUser() user: User):Promise<{ message : string}> {
+	async languageDelete(@Param("id") id: number,@GetUser() user: User):Promise<{ message : string}> {
 		const adminId = user.userId;
 		return await this.languageService.languageDelete(id,adminId);
 	}

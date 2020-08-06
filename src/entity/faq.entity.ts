@@ -22,8 +22,14 @@ export class Faq extends BaseEntity {
   answer: string;
 
   @Column("date", { name: "created_date" })
-  createdDate: string;
+  createdDate: Date;
 
   @Column("date", { name: "updated_date" })
-  updatedDate: string;
+  updatedDate: Date;
+
+  @Column("boolean", { name: "is_deleted" , default : false})
+  isDeleted: boolean;
+
+  @Column("boolean", { name: "status" , default : true})
+  status: boolean;
 }

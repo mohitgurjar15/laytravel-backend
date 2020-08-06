@@ -12,6 +12,7 @@ import { getConnection } from "typeorm";
 import { CreateLangunageDto } from "src/langunage/dto/create-langunage.dto";
 import { User } from "@sentry/node";
 import { CurrencyEnableDisableDto } from "./dto/currency-EnableDisable.dto";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class CurrencyService {
@@ -77,6 +78,7 @@ export class CurrencyService {
 			CurrencyData.updatedDate = new Date();
 			CurrencyData.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
+			Activity.logActivity(adminId, "currency", `currency rate ${rate} changed by admin`);
 			return { message: "Currency is Updated" };
 		} catch (error) {
 			if (
@@ -103,7 +105,6 @@ export class CurrencyService {
 				id: id,
 			});
 			if (!Data) throw new NotFoundException(`No currency found`);
-			console.log(status);
 			
 			
 			Data.status = status;
@@ -111,6 +112,7 @@ export class CurrencyService {
 			Data.updatedDate = new Date();
 			Data.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
+			Activity.logActivity(adminId.id, "currency", `currency ${Data.code} status ${status} changed by admin`);
 			return { message: `Currency ${Data.code} Status Changed` };
 		} catch (error) {
 			if (
@@ -169,6 +171,7 @@ export class CurrencyService {
 			CurrencyData.updatedDate = new Date();
 			CurrencyData.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
+			Activity.logActivity(adminId, "currency", `currency ${CurrencyData.code} Deleted by admin`);
 			return { message: "Currency is Deleted" };
 		} catch (error) {
 			if (

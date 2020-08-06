@@ -28,6 +28,8 @@ import { InstalmentModule } from './instalment/instalment.module';
 import { ModulesModule } from './modules/modules.module';
 import { MarkupModule } from './markup/markup.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { FaqModule } from './faq/faq.module';
+import { EnqiryModule } from './enqiry/enqiry.module';
 
 @Module({
   imports: [
@@ -80,6 +82,8 @@ import { ActivitiesModule } from './activities/activities.module';
 		ModulesModule,
 		MarkupModule,
 		ActivitiesModule,
+		FaqModule,
+		EnqiryModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
