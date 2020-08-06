@@ -23,9 +23,10 @@ async function bootstrap() {
 	const serverConfig = config.get("server");
 	const sentryConfig = config.get("Sentry");
 	let httpsOptions = {
-		key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem")),
-		cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem")),
+		key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem"), 'utf8'),
+		cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem"), 'utf8'),
 	};
+	
 
 	const server = express();
 	const app = await NestFactory.create<NestExpressApplication>(
