@@ -292,7 +292,7 @@ export class AdminService {
 	async getCounts(): Promise<{ result: any }> {
 		try {
 			const activeUser = await this.userRepository.query(
-				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where role_id In (${Role.ADMIN}) GROUP BY status`
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND "role_id" In (${Role.ADMIN}) GROUP BY status`
 			);
 			return { result: activeUser };
 		} catch (error) {
