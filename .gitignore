@@ -2,7 +2,7 @@
 /dist
 /node_modules
 package-lock.json
-
+src/flight/mystifly-session.json
 # Logs
 logs
 *.log

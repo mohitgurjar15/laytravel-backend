@@ -1,6 +1,6 @@
 import { IsEnum, ValidationArguments, IsNotEmpty } from "class-validator";
 import { InstalmentType } from "src/enum/instalment-type.enum";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
 export class InstalmentDto{
@@ -60,6 +60,15 @@ export class InstalmentDto{
         example:150.50
     })
     amount : number;
+
+    /* @IsNotEmpty({
+        message : `Please enter additional amount&&&additional_amount`
+    }) */
+    @ApiPropertyOptional({
+        description:`Additonal Amount`,
+        example:10
+    })
+    additional_amount : number;
 
     
 

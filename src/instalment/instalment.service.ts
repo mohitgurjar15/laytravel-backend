@@ -11,11 +11,13 @@ export class InstalmentService {
 
         const { 
             instalment_type, amount,
-            checkin_date, booking_date
+            checkin_date, booking_date, additional_amount
         } = instalmentDto;
 
-        if(instalment_type==InstalmentType.WEEKLY)
-            return Instalment.weeklyInstalment(amount,checkin_date,booking_date);
+        if(instalment_type==InstalmentType.WEEKLY){
+
+            return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount);
+        }
         
         else if(instalment_type==InstalmentType.BIWEEKLY)
             return Instalment.biWeeklyInstalment(amount,checkin_date,booking_date);

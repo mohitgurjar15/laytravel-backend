@@ -30,6 +30,8 @@ import { MarkupModule } from './markup/markup.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { FaqModule } from './faq/faq.module';
 import { EnqiryModule } from './enqiry/enqiry.module';
+import { CmsModule } from "./cms/cms.module";
+
 
 @Module({
   imports: [
@@ -84,6 +86,7 @@ import { EnqiryModule } from './enqiry/enqiry.module';
 		ActivitiesModule,
 		FaqModule,
 		EnqiryModule,
+		CmsModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
