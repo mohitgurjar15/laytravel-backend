@@ -369,7 +369,7 @@ export class SupplierService {
 	async getCounts(): Promise<{ result: any }> {
 		try {
 			const activeUser = await this.userRepository.query(
-				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where role_id In (${Role.SUPPLIER}) GROUP BY status`
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND "role_id" In (${Role.SUPPLIER}) GROUP BY status`
 			);
 			return { result: activeUser };
 		} catch (error) {

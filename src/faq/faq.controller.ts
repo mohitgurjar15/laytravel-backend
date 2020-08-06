@@ -38,10 +38,10 @@ export class FaqController {
 	constructor(private faqService: FaqService) {}
 
 	@Get()
-	@ApiOperation({ summary: "List of Faq" })
+	@ApiOperation({ summary: "List Of Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Faq Not Found" })
+	@ApiResponse({ status: 403, description: "Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getFaq(
 		@Query() paginationOption: ListFaqDto
@@ -51,11 +51,11 @@ export class FaqController {
 
 	@Post()
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "new Faq create" })
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "Create New Faq " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: " Faq Not Found" })
+	@ApiResponse({ status: 403, description: " Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async insertFaq(
@@ -67,11 +67,11 @@ export class FaqController {
 
 	@Put("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
 	@ApiOperation({ summary: "Update Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Faq Not Found" })
+	@ApiResponse({ status: 403, description: "Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async updateFaq(
@@ -84,11 +84,11 @@ export class FaqController {
 
 	@Delete("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
 	@ApiOperation({ summary: "Delete Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 403, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async DeleteFaq(
@@ -100,11 +100,11 @@ export class FaqController {
 
 	@Patch("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
 	@ApiOperation({ summary: "Change Faq Status" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 403, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async activeDeactiveFaq(
@@ -117,8 +117,8 @@ export class FaqController {
 
 	@Get("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN)
-	@ApiOperation({ summary: "get Faq by id" })
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@ApiOperation({ summary: "Get Faq By Id" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
