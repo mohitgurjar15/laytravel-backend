@@ -23,8 +23,8 @@ async function bootstrap() {
 	const serverConfig = config.get("server");
 	const sentryConfig = config.get("Sentry");
 	let httpsOptions = {
-		key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem"), 'utf8'),
-		cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem"), 'utf8'),
+		key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem")),
+		cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem")),
 	};
 	
 
@@ -61,8 +61,8 @@ async function bootstrap() {
 
 	await app.init();
 	
-	http.createServer(server).listen(port);
-	https.createServer(httpsOptions, server).listen(4047);
+	http.createServer(server).listen(4047);
+	https.createServer(httpsOptions, server).listen(port);
 }
 
 bootstrap();
