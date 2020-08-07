@@ -316,6 +316,7 @@ export class AdminController {
 			fileFilter: csvFileFilter,
 		})
 	)
+	@HttpCode(200)
 	async importUser(
 		@Body() importUserDto: ImportUserDto,
 		@UploadedFiles() files: csvFileDto,
