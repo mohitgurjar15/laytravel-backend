@@ -22,6 +22,7 @@ export class EnquiryRepository extends Repository<Enquiry> {
         }
         const [result, total] = await this.findAndCount({
             where:where,
+            order: { createdDate : "DESC"},
             skip:skip,
             take:take
         });

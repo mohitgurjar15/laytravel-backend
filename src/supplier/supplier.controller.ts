@@ -298,6 +298,7 @@ export class SupplierController {
 			fileFilter: csvFileFilter,
 		})
 	)
+	@HttpCode(200)
 	async importUser(
 		@Body() importUserDto: ImportUserDto,
 		@UploadedFiles() files: csvFileDto,

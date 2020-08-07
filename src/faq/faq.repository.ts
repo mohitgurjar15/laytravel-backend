@@ -22,6 +22,7 @@ export class FaqRepository extends Repository<Faq> {
         }
         const [result, total] = await this.findAndCount({
             where:where,
+            order: { createdDate : "DESC"},
             skip:skip,
             take:take
         });
