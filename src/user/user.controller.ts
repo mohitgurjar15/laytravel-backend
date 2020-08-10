@@ -253,6 +253,7 @@ export class UserController {
 			},
 		),
 	)
+	@HttpCode(200)
 	async importUser(
         @Body() importUserDto:ImportUserDto,
         @UploadedFiles() files: csvFileDto,

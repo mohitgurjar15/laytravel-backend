@@ -28,7 +28,10 @@ import { InstalmentModule } from './instalment/instalment.module';
 import { ModulesModule } from './modules/modules.module';
 import { MarkupModule } from './markup/markup.module';
 import { ActivitiesModule } from './activities/activities.module';
-import { CmsModule } from './cms/cms.module';
+import { FaqModule } from './faq/faq.module';
+import { EnqiryModule } from './enqiry/enqiry.module';
+import { CmsModule } from "./cms/cms.module";
+
 
 @Module({
   imports: [
@@ -81,6 +84,8 @@ import { CmsModule } from './cms/cms.module';
 		ModulesModule,
 		MarkupModule,
 		ActivitiesModule,
+		FaqModule,
+		EnqiryModule,
 		CmsModule,
     /* CacheModule.register({
       store: redisStore,

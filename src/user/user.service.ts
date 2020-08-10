@@ -119,7 +119,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `new user ${user.email} create by admin `);
+			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -296,8 +296,11 @@ export class UserService {
 			todayDate = todayDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
+				console.log(mondayDate);
+				console.log(mondayDate);
+				
 			const result = await this.userRepository.query(
-				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`
 			);
 			return { result };
 		} catch (error) {
@@ -317,7 +320,7 @@ export class UserService {
 	async getCounts(): Promise<{ result: any }> {
 		try {
 			const activeUser = await this.userRepository.query(
-				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) GROUP BY status`
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) GROUP BY status`
 			);
 			return { result: activeUser };
 		} catch (error) {

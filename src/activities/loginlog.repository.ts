@@ -1,10 +1,7 @@
 import { EntityRepository, Repository, getManager } from "typeorm";
 import { LoginLog } from "src/entity/login-log.entity";
 import { ListActivityDto } from "./dto/list-activities.dto";
-import { isEmpty } from "rxjs/operators";
 import { NotFoundException } from "@nestjs/common";
-import { UserRepository } from "src/auth/user.repository";
-import { User } from "src/entity/user.entity";
 
 @EntityRepository(LoginLog)
 export class LoginLogRepository extends Repository<LoginLog> {

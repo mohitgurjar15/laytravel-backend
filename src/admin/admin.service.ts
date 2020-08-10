@@ -80,7 +80,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "Admin", `create new admin ${userdata.email} By super admin ${adminId}`);
+			Activity.logActivity(adminId, "Admin", ` new admin ${userdata.email} created By super admin ${adminId}`);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -292,7 +292,7 @@ export class AdminService {
 	async getCounts(): Promise<{ result: any }> {
 		try {
 			const activeUser = await this.userRepository.query(
-				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where role_id In (${Role.ADMIN}) GROUP BY status`
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND "role_id" In (${Role.ADMIN}) GROUP BY status`
 			);
 			return { result: activeUser };
 		} catch (error) {
@@ -337,8 +337,7 @@ export class AdminService {
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 			const result = await this.userRepository.query(
-				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.ADMIN}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
-			);
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.ADMIN},${Role.SUPER_ADMIN}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`			);
 			return { result };
 		} catch (error) {
 			if (
