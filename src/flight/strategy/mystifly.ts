@@ -9,7 +9,7 @@ import * as moment from 'moment';
 import { DateTime } from "src/utility/datetime.utility";
 import { Stop } from "../model/stop.model";
 import { Route, RouteType } from "../model/route.model";
-const mystiflyConfig = config.get('mystifly');
+import { Generic } from "src/utility/generic.utility";
 const fs = require('fs').promises;
 
 export class Mystifly implements StrategyAirline{
@@ -23,6 +23,13 @@ export class Mystifly implements StrategyAirline{
 
     async createSession(){
 
+        const config = await Generic.getCredential('flight');
+        let mystiflyConfig= JSON.parse(config.testCredential)
+        if(config.mode){
+            mystiflyConfig = JSON.parse(config.liveCredential);
+        }
+        console.log(mystiflyConfig)
+        
         const requestBody = 
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
             <soapenv:Header/>
