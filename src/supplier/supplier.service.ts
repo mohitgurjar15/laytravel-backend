@@ -47,7 +47,7 @@ export class SupplierService {
 		adminId: string,
 		siteUrl
 	): Promise<User> {
-		const { email, password, first_name, last_name ,gender} = saveUserDto;
+		const { email, password, first_name, last_name, gender } = saveUserDto;
 		const salt = await bcrypt.genSalt();
 		const user = new User();
 		user.userId = uuidv4();
@@ -99,7 +99,9 @@ export class SupplierService {
 			"supplier-user",
 			`supplier-user ${user.email} is added by admin`
 		);
-		return this.userRepository.getUserDetails(userdata.userId,siteUrl,[Role.SUPPLIER]);
+		return this.userRepository.getUserDetails(userdata.userId, siteUrl, [
+			Role.SUPPLIER,
+		]);
 	}
 
 	/**
@@ -113,7 +115,7 @@ export class SupplierService {
 		UserId: string,
 		files: ProfilePicDto,
 		adminId: string,
-		siteUrl:string
+		siteUrl: string
 	) {
 		try {
 			const {
@@ -140,8 +142,14 @@ export class SupplierService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
-			Activity.logActivity(adminId, "supplier-user", ` ${userData.email} is updated by the admin`);
-			return this.userRepository.getUserDetails(userData.userId,siteUrl,[Role.SUPPLIER]);
+			Activity.logActivity(
+				adminId,
+				"supplier-user",
+				` ${userData.email} is updated by the admin`
+			);
+			return this.userRepository.getUserDetails(userData.userId, siteUrl, [
+				Role.SUPPLIER,
+			]);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -206,7 +214,11 @@ export class SupplierService {
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId, "supplier-user", ` ${user.email} is deleted by admin`);
+				Activity.logActivity(
+					adminId,
+					"supplier-user",
+					` ${user.email} is deleted by admin`
+				);
 				return { messge: `supplier deleted successfully` };
 			}
 		} catch (error) {
@@ -224,7 +236,11 @@ export class SupplierService {
 	}
 	//Export user
 	async exportSupplier(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "supplier-user", `all supplier user list export by admin `);
+		Activity.logActivity(
+			adminId,
+			"supplier-user",
+			`all supplier user list export by admin `
+		);
 		return await this.userRepository.exportUser([Role.SUPPLIER]);
 	}
 
@@ -286,7 +302,11 @@ export class SupplierService {
 				}
 			}
 		}
-		Activity.logActivity(userId, "supplier-user", `admin ipport  ${count} supplier user`);
+		Activity.logActivity(
+			userId,
+			"supplier-user",
+			`admin ipport  ${count} supplier user`
+		);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 
@@ -318,7 +338,7 @@ export class SupplierService {
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 			const result = await this.userRepository.query(
-				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.SUPPLIER}) and created_date BETWEEN '${mondayDate}' AND '${todayDate}' GROUP BY DATE("created_date")`
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.SUPPLIER}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`
 			);
 			return { result };
 		} catch (error) {
