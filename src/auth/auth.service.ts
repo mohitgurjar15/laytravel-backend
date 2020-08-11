@@ -744,9 +744,9 @@ export class AuthService {
 				roleId: data.roleId,
 			};
 			const accessToken = this.jwtService.sign(payload);
-			const token = { token: accessToken };
+			const token = accessToken ;
 			
-			return  { data:data , token};
+			return  { data:data , token:token};
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
