@@ -1,24 +1,15 @@
-import { IsNotEmpty, IsEmail, ValidationArguments, IsInt, ValidateNested } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { errorMessage } from "src/config/common.config";
 
 export class RouteIdsDto{
     
     @IsNotEmpty({
-		message: `Please enter routes ids.&&&source_location`,
+		message: `Please enter route code.&&&source_location&&&${errorMessage}`,
 	})
     @ApiProperty({
-        description:`Route ids`,
-        example:[1,3]
+        description:`Route code`,
+        example:`h687a0asad00llgf45`
     })
-    //@ValidateNested({ each: true })
-    routes: number[]
-}
-
-class Baggage{
-
-    @IsInt()
-    @IsNotEmpty({
-		message: `Please enter source location.&&&source_location`,
-	})
-    flight_id: number;
+    route_code: string
 }

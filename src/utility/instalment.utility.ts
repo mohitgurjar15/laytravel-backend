@@ -162,7 +162,6 @@ export class Instalment{
     static instalmentAvailbility(checkinDate, bookingDate){
         let dayDiffernce = moment(checkinDate).diff(moment(bookingDate), 'days')
         let available=true;
-
         if(dayDiffernce<30)
             available=false;
         

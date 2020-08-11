@@ -7,8 +7,6 @@ import { FlightRepository } from './flight.repository';
 import { AirportRepository } from './airport.repository';
 import { SeatAllocationRepository } from './seat-allocation.repository';
 import { getManager } from 'typeorm';
-import { Baggage } from 'src/entity/baggage.entity';
-import { FlightRoute } from 'src/entity/flight-route.entity';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 import { Mystifly } from './strategy/mystifly';
@@ -55,7 +53,41 @@ export class FlightService {
 
     async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto,headers){
 
+        this.validateHeaders(headers);
+        const mystifly = new Strategy(new Mystifly(headers));
+        const result = new Promise((resolve) => resolve(mystifly.oneWaySearch(searchFlightDto)));
+        return result;
+    }
+
+    async baggageDetails(routeIdDto:RouteIdsDto){    
+        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        const result = new Promise((resolve) => resolve(mystifly.baggageDetails(routeIdDto)));
+        return result;
+     }
+
+     
+     async cancellationPolicy(routeIdsDto:RouteIdsDto){
+
+        
+        
+     }
+
+     async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
         //const local = new Strategy(new Static(this.flightRepository));
+        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        const result = new Promise((resolve) => resolve(mystifly.roundTripSearch(searchFlightDto)));
+        return result;
+     }
+
+     async airRevalidate(routeIdDto,headers){
+        this.validateHeaders(headers);
+        const mystifly = new Strategy(new Mystifly(headers));
+        const result = new Promise((resolve) => resolve(mystifly.airRevalidate(routeIdDto)));
+        return result;
+     }
+
+     async validateHeaders(headers){
+
         let currency = headers.currency;
         let language=headers.language;
         if(typeof currency=='undefined' || currency==''){
@@ -74,100 +106,5 @@ export class FlightService {
         if(!languageDetails){
             throw new BadRequestException(`Invalid language code sent!`)
         }
-
-        
-        const mystifly = new Strategy(new Mystifly(headers));
-        const result = new Promise((resolve) => resolve(mystifly.oneWaySearch(searchFlightDto)));
-        return result;
-    }
-
-    async baggageDetails(routeIdsDto:RouteIdsDto){
-
-        const { routes } = routeIdsDto;
-
-        let baggageResult =  await getManager()
-            .createQueryBuilder(Baggage, "Baggage")
-            .leftJoinAndSelect("Baggage.route","route")
-            .leftJoinAndSelect("route.arrival","arrival")
-            .leftJoinAndSelect("route.departure","departure")
-            /* .select([
-                "Baggage.freeAllowance",
-                "Baggage.allowanceUnit",
-                "route.departureId",
-                "route.arrivalId"
-            ]) */
-            .where(`("Baggage"."route_id" in (:...routes)) and "Baggage"."status"=:status and "Baggage"."is_deleted"=:is_deleted`,{ routes, status:true, is_deleted:false})
-            .getMany();
-        
-        let baggageDetails=[];
-        if(baggageResult){
-
-            baggageDetails = baggageResult.map(baggage=>{
-
-                return {
-                    route_id       : baggage.id,
-                    arrival_id     : baggage.route.arrival.id,
-                    arrival_code   : baggage.route.arrival.code,
-                    departure_id   : baggage.route.departure.id,
-                    departure_code : baggage.route.departure.code,
-                    free_allowance : baggage.freeAllowance,
-                    allowance_unit : baggage.allowanceUnit,
-                }
-            })
-            return baggageDetails;
-        }
-        else{
-            throw new NotFoundException(`No baggage details found(s)`)
-        }
-        
-     }
-
-     
-     async cancellationPolicy(routeIdsDto:RouteIdsDto){
-
-        const { routes } = routeIdsDto;
-
-        let policyResult =  await getManager()
-            .createQueryBuilder(FlightRoute, "FlightRoute")
-            .leftJoinAndSelect("FlightRoute.arrival","arrival")
-            .leftJoinAndSelect("FlightRoute.departure","departure")
-            .select([
-                "FlightRoute.id",
-                "FlightRoute.isRefundable",
-                "arrival.id",
-                "arrival.code",
-                "departure.code",
-                "departure.code"
-            ])
-            .where(`("FlightRoute"."id" in (:...routes)) and "FlightRoute"."is_available"=:status and "FlightRoute"."is_deleted"=:is_deleted`,{ routes, status:true, is_deleted:false})
-            .getMany();
-        
-         let policyDetails=[];
-        if(policyResult){
-
-            policyDetails = policyResult.map(policy=>{
-
-                return {
-                    route_id       : policy.id,
-                    arrival_id     : policy.arrival.id,
-                    arrival_code   : policy.arrival.code,
-                    departure_id   : policy.departure.id,
-                    departure_code : policy.departure.code,
-                    is_refundable  : policy.isRefundable,
-                }
-            })
-            return policyDetails;
-        }
-        else{
-            throw new NotFoundException(`No cancellation policy found(s)`)
-        } 
-        
-     }
-
-     async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
-        //const local = new Strategy(new Static(this.flightRepository));
-        const mystifly = new Strategy(new Mystifly(this.flightRepository));
-        const result = new Promise((resolve) => resolve(mystifly.roundTripSearch(searchFlightDto)));
-        return result;
      }
 }

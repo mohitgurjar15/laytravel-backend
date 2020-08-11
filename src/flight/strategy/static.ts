@@ -135,7 +135,7 @@ export class Static implements StrategyAirline{
                     })
 
                     let total = (totalPrice.reduce((a, b) => a + b, 0));
-                    searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,6);
+                    //searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,6);
                     searchResult.push(searchItem)
                 }
                 
@@ -168,7 +168,7 @@ export class Static implements StrategyAirline{
                         })
         
                         let total = (totalPrice.reduce((a, b) => a + b, 0));
-                        searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,5);
+                        //searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,5);
                         searchItem.search_type='oneway';
                         searchItem.route_type='outbound';
                         if(searchItem.route_details[searchItem.route_details.length-1].arrival.id!=arrivalId)
@@ -342,7 +342,7 @@ export class Static implements StrategyAirline{
                     })
 
                     let total = (totalPrice.reduce((a, b) => a + b, 0));
-                    searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,6);
+                    //searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,6);
                     searchResult.push(searchItem)
                 }
                 
@@ -373,7 +373,7 @@ export class Static implements StrategyAirline{
                         })
         
                         let total = (totalPrice.reduce((a, b) => a + b, 0));
-                        searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,5);
+                        //searchItem.price = await PriceMarkup.applyMarkup(total,supplierId,5);
                         searchItem.search_type='roundtrip';
                         searchItem.route_type='outbound';
                         outboundResult[i]['departureDate']=departure_date; 
@@ -394,5 +394,13 @@ export class Static implements StrategyAirline{
 
             throw new NotFoundException(`No search result found.`)
         }
+    }
+
+    baggageDetails(){
+        
+    }
+
+    async airRevalidate(routeIdDto){
+        
     }
 } 
