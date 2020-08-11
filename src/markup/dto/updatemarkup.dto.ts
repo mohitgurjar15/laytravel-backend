@@ -15,14 +15,6 @@ export class UpdateMarkupDto{
     module_Id:number;
 
 
-    @IsNotEmpty({
-		message: `Please enter Supplier Id.&&&rate`,
-	})
-    @ApiProperty({
-        description:`Please enter Supplier Id`,
-        example:221
-    })
-    supplier_id:number;
 
     @IsNotEmpty({
         message : `Please select your User Type.&&&User_type`

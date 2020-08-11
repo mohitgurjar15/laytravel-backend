@@ -44,7 +44,7 @@ export class ModulesController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Patch("/:id")
-	async moduleChangeStatus(@Param("id") id: number,@GetUser() user: User,@Body(moduleStatusPipe) moduleStatusDto:moduleStatusDto):Promise<{ message : string}> {
+	async moduleChangeStatus(@Param("id") id: number,@GetUser() user: User,@Body() moduleStatusDto:moduleStatusDto):Promise<{ message : string}> {
 		
 		return await this.modulesService.moduleChangeStatus(id,moduleStatusDto,user);
 	}

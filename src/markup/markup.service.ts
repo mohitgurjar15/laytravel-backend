@@ -26,7 +26,6 @@ export class MarkupService {
 	): Promise<{ message: string }> {
 		const {
 			module_Id,
-			supplier_id,
 			user_type,
 			operator,
 			operand,
@@ -41,22 +40,21 @@ export class MarkupService {
 				`module id not exist with database.&&&module_id`
 			);
 
-		let supplierDetail = await getManager()
-			.createQueryBuilder(Supplier, "supplier")
-			.where(`id=:supplier_id `, {
-				supplier_id,
-			})
-			.getOne();
-		if (!supplierDetail)
-			throw new BadRequestException(
-				`supplier id not exist with database.&&&supplier_id`
-			);
+		// let supplierDetail = await getManager()
+		// 	.createQueryBuilder(Supplier, "supplier")
+		// 	.where(`id=:supplier_id `, {
+		// 		supplier_id,
+		// 	})
+		// 	.getOne();
+		// if (!supplierDetail)
+		// 	throw new BadRequestException(
+		// 		`supplier id not exist with database.&&&supplier_id`
+		// 	);
 		let markupDetail = await this.markupRepository.findOne({ id });
 
 		if (!markupDetail) throw new NotFoundException(`markup id not found`);
 
 		markupDetail.moduleId = module_Id;
-		markupDetail.supplierId = supplier_id;
 		markupDetail.userType = user_type;
 		markupDetail.operand = operand;
 		markupDetail.operator = operator;

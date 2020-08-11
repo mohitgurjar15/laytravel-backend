@@ -67,8 +67,8 @@ export class FaqService {
 		faq.updatedDate = new Date();
 		try {
 			await faq.save();
-			Activity.logActivity(adminId, "faq", ` new Faq created by the admin`);
-			return { message: "Faq careated" };
+			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`);
+			return { message: "Faq Careated successfully" };
 		} catch (error) {
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
@@ -95,7 +95,7 @@ export class FaqService {
 		try {
 			await faq.save();
 			Activity.logActivity(adminId, "faq", `Faq updated by the admin`);
-			return { message: "Faq Updated" };
+			return { message: "Faq Updated Successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -119,7 +119,7 @@ export class FaqService {
 			faq.isDeleted = true;
 			faq.save();
 			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`);
-			return { message: "Faq Deleted" };
+			return { message: "Faq Deleted Successfully" };
 		} catch (error) {
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
@@ -162,7 +162,7 @@ export class FaqService {
 			if (!faq) {
 				throw new NotFoundException(`Faq Id Not Found`);
 			}
-			if (faq.isDeleted == true || faq.status == false)
+			if (faq.isDeleted == true)
 			{
 				throw new NotFoundException(`Given Faq is Deleted`);
 			}

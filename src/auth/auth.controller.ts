@@ -218,7 +218,7 @@ export class AuthController {
 		@Req() req,
 		@GetUser() user: User,
 		@SiteUrl() siteUrl
-	): Promise<User> {
+	): Promise<any> {
 		
 		if (req.fileValidationError) {
 			throw new BadRequestException(`${req.fileValidationError}`);
