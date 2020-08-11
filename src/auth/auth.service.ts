@@ -5,7 +5,7 @@
  * Copyright (c) 2020 Oneclick
  * my variables are ${myvar1} and ${myvar2}
  */
-
+var fs = require(`fs`);
 import {
 	Injectable,
 	ConflictException,
@@ -49,6 +49,7 @@ import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
 import { isError } from "util";
+import { dirname } from "path";
 
 @Injectable()
 export class AuthService {
@@ -632,7 +633,7 @@ export class AuthService {
 		loginUser,
 		files,
 		siteUrl
-	): Promise<User> {
+	): Promise<any> {
 		try {
 			const userId = loginUser.userId;
 			const {
@@ -693,10 +694,24 @@ export class AuthService {
 			user.countryId = country_id;
 			user.stateId = state_id;
 			user.cityName = city_name;
+			var oldProfile = user.profilePic;
+			
 			if (typeof files.profile_pic != "undefined")
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
+			console.log(`${dirname}/assets/profile/${oldProfile}`);
+			if(oldProfile)
+			{
+				await fs.unlink(`../profile/${oldProfile}`, function (err) {
+					if (err) {
+						console.log(err);	
+					}
+					// if no error, file has been deleted successfully
+					console.log(`${oldProfile} image  deleted!`);
+				}); 
+			}
+			
 			Activity.logActivity(
 				user.userId,
 				`auth`,
@@ -711,7 +726,27 @@ export class AuthService {
 				Role.SUPPLIER,
 				Role.SUPPORT,
 			];
-			return this.userRepository.getUserDetails(userId, siteUrl, roleId);
+			
+			const data =  await this.userRepository.getUserDetails(userId, siteUrl, roleId);
+			const payload: JwtPayload = {
+				user_id: data.userId,
+				email:data.email,
+				username: data.firstName + " " + data.lastName,
+				firstName: data.firstName,
+				phone: data.phoneNo,
+				middleName: data.middleName,
+				lastName: data.lastName,
+				salt: data.salt,
+				
+				profilePic: data.profilePic
+					? `${siteUrl}/profile/${user.profilePic}`
+					: "",
+				roleId: data.roleId,
+			};
+			const accessToken = this.jwtService.sign(payload);
+			const token = { token: accessToken };
+			
+			return  { data:data , token};
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);

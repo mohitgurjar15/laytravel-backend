@@ -43,16 +43,15 @@ export class ModulesService {
                 id:id
 			});
             if (!moduleData) throw new NotFoundException(`No module found`);
-            console.log(statusName);
-            var statusName = status == 'true' ? true : false ;
-            var task = statusName ? 'Enable' : 'Disable';
-            moduleData.status = statusName;
+            
+          
+            moduleData.status = status;
             moduleData.updatedBy = adminId.userId;
             moduleData.updateDate = new Date()
 			moduleData.save();
 			
 			await getConnection().queryResultCache!.remove(['modules']);
-			return { message : `module ${moduleData.name} is ${task}`};
+			return { message : `Module ${moduleData.name} Status Changed  ${status} Successfully`};
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
