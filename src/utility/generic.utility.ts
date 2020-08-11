@@ -1,6 +1,7 @@
 
 import { getConnection } from "typeorm";
 import { Module } from "src/entity/module.entity";
+import { Currency } from "src/entity/currency.entity";
 
 export class  Generic{
 
@@ -14,5 +15,23 @@ export class  Generic{
             .cache(`${module_name}_module`,43200000)
             .getOne();
         return credentail;
+    }
+
+    static async getAmountTocurrency(code:string){
+        const currencyDetails = await getConnection()
+            .createQueryBuilder()
+            .select(["currency.code","currency.symbol","currency.liveRate"])
+            .from(Currency, "currency")
+            .where("currency.code = :code", { code })
+            .getOne();
+        return currencyDetails;
+    }
+
+    static convertAmountTocurrency(amount,rate=null){
+
+        if(rate){
+            return amount*rate;
+        }
+        return amount;
     }
 }

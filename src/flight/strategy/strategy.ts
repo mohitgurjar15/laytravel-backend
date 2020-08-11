@@ -19,4 +19,14 @@ export class Strategy{
         const data = await this.airline.roundTripSearch(params);
         return data;
     }
+
+    async baggageDetails(params){
+        const data = await this.airline.baggageDetails(params);
+        return data;
+    }
+
+    async airRevalidate(params){
+        const data = await this.airline.airRevalidate(params);
+        return data;
+    }
 }
