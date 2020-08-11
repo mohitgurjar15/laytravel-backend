@@ -41,7 +41,7 @@ export class FaqController {
 	@ApiOperation({ summary: "List Of Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "Faq Not Found" })
+	@ApiResponse({ status: 404, description: "Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getFaq(
 		@Query() paginationOption: ListFaqDto
@@ -55,7 +55,7 @@ export class FaqController {
 	@ApiOperation({ summary: "Create New Faq " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: " Faq Not Found" })
+	@ApiResponse({ status: 404, description: " Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async insertFaq(
@@ -71,7 +71,7 @@ export class FaqController {
 	@ApiOperation({ summary: "Update Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "Faq Not Found" })
+	@ApiResponse({ status: 404, description: "Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async updateFaq(
@@ -88,7 +88,7 @@ export class FaqController {
 	@ApiOperation({ summary: "Delete Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "Not Found" })
+	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async DeleteFaq(
@@ -104,7 +104,7 @@ export class FaqController {
 	@ApiOperation({ summary: "Change Faq Status" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 403, description: "Not Found" })
+	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async activeDeactiveFaq(

@@ -8,7 +8,7 @@ export class moduleStatusDto {
 	})
 	@ApiProperty({
 		description: `Enter status`,
-		example: `Enable/Disable`,
+		example: true,
 	})
-	status: moduleStatusEnum;
+	status: boolean;
 }
