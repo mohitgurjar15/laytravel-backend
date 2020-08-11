@@ -92,7 +92,6 @@ export class UserRepository extends Repository<User> {
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
-			delete data.status;
 		});
 		return { data: result, TotalReseult: total };
 	}

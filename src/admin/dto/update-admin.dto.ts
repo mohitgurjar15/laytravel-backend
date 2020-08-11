@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsEmail, MaxLength} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Gender } from 'src/enum/gender.enum';
 
 export class UpdateAdminDto{
 
@@ -23,6 +24,12 @@ export class UpdateAdminDto{
         example: 'Doe'
     })
     lastName: string;
+
+    @ApiProperty({
+        description: `Select Gender (M,F)`,
+        example: `M`
+    })
+    gender : Gender;
 
     @ApiPropertyOptional({
 		type: "string",

@@ -117,7 +117,7 @@ export class AdminService {
 		adminId: string
 	) {
 		try {
-			const { firstName, middleName, lastName, profile_pic } = updateAdminDto;
+			const { firstName, middleName, lastName, profile_pic,gender} = updateAdminDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
@@ -127,6 +127,7 @@ export class AdminService {
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
 			userData.updatedBy = adminId;
+			userData.gender = gender;
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
 			userData.updatedDate = new Date();
