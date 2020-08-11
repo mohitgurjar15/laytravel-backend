@@ -6,10 +6,12 @@ import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
-import { lang } from 'moment';
+import { GetUser } from 'src/auth/get-user.dacorator';
+import { User } from '@sentry/node';
 
 @ApiTags('Flight')
 @Controller('flight')
+@ApiBearerAuth()
 export class FlightController {
 
     constructor(
@@ -17,7 +19,6 @@ export class FlightController {
     ) { }
     
     @Get('/search-airport/:name')
-    //@CacheKey('custom_key')
     @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -26,7 +27,6 @@ export class FlightController {
     async searchAirport(
         @Param('name', MinCharPipe) name:String
         ){
-            //console.log(custom_key)
             return await this.flightService.searchAirport(name);
         }
         
@@ -40,18 +40,19 @@ export class FlightController {
     @HttpCode(200)
     @ApiHeader({
         name: 'currency',
-        description: 'Enter currency code',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
       })
     @ApiHeader({
     name: 'language',
-    description: 'Enter language code',
+    description: 'Enter language code(ex. en)',
     })
     async searchOneWayFlight(
        @Body() searchFlightDto:OneWaySearchFlightDto,
-       @Req() req
+       @Req() req,
+       @GetUser() user:User
     ){
-        //res.cookie('session', {"name":"Suresh Suthar123"});
-        //console.log(req.headers.currency)
+        console.log("user",user)
         return await this.flightService.searchOneWayFlight(searchFlightDto,req.headers);
 
     }
@@ -63,10 +64,10 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @HttpCode(200)
     async baggageDetails(
-       @Body() routeIdsDto:RouteIdsDto
+       @Body() routeIdDto:RouteIdsDto
     ){
         //console.log(baggageDetailsDto)
-        return await this.flightService.baggageDetails(routeIdsDto);
+        return await this.flightService.baggageDetails(routeIdDto);
     }
 
     @Post('/cancellation-policy')
@@ -92,5 +93,27 @@ export class FlightController {
        @Body() searchFlightDto:RoundtripSearchFlightDto
     ){
         return await this.flightService.searchRoundTripFlight(searchFlightDto);
+    }
+
+    @Post('/air-revalidate')
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    @ApiOperation({ summary: "AirRevalidate to get availability and updated price" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Flight is not available now' })
+    @HttpCode(200)
+    async airRevalidate(
+       @Body() routeIdDto:RouteIdsDto,
+       @Req() req
+    ){
+        return await this.flightService.airRevalidate(routeIdDto,req.headers);
     }
 }
