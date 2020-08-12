@@ -12,7 +12,7 @@ export class UpdateMarkupDto{
         description:`Please enter Module ID&&module`,
         example:1
     })
-    module_Id:number;
+    module_id:number;
 
 
 

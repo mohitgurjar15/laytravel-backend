@@ -29,12 +29,24 @@ export class MarkupRepository extends Repository<Markup>
 
 
     async listMarkup(): Promise<{ data: Markup[] }> {
-        const [result,total] = await this.findAndCount({
-            cache : {
-                id:'markup',
-                milliseconds:604800000
-            }
-        });
+        // const [result,total] = await this.findAndCount({
+        //     cache : {
+        //         id:'markup',
+        //         milliseconds:604800000
+        //     }
+        // });
+        const result = await getManager()
+			.createQueryBuilder(Markup, "markup")
+			.leftJoinAndSelect("markup.module", "module")
+			.select([
+                "markup.id",
+                "module.name",
+                "markup.userType",
+                "markup.operator",
+                "markup.operand",
+			])
+            .getMany()
+            
 
         if (!result[0]) {
             throw new NotFoundException(`No markup found.`)

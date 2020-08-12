@@ -25,7 +25,7 @@ export class MarkupService {
 		user: User
 	): Promise<{ message: string }> {
 		const {
-			module_Id,
+			module_id,
 			user_type,
 			operator,
 			operand,
@@ -33,7 +33,7 @@ export class MarkupService {
 
 		let moduleDetaile = await getManager()
 			.createQueryBuilder(Module, "module")
-			.where(`id=:module_Id`, { module_Id })
+			.where(`id=:module_Id`, { module_id })
 			.getOne();
 		if (!moduleDetaile)
 			throw new BadRequestException(
@@ -54,7 +54,7 @@ export class MarkupService {
 
 		if (!markupDetail) throw new NotFoundException(`markup id not found`);
 
-		markupDetail.moduleId = module_Id;
+		markupDetail.moduleId = module_id;
 		markupDetail.userType = user_type;
 		markupDetail.operand = operand;
 		markupDetail.operator = operator;
