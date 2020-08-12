@@ -16,6 +16,7 @@ export class ModuleRepository extends Repository<Module> {
 				milliseconds: 604800000,
 			},
 		});
+		
 		if (!result[0]) {
 			throw new NotFoundException(`No module found.`);
 		}
