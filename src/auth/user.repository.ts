@@ -81,7 +81,7 @@ export class UserRepository extends Repository<User> {
 			take: take,	
 		});
 
-		if (!result || total <= skip) {
+		if (!result.length || total <= skip) {
 			throw new NotFoundException(`No user found.`);
 		}
 		result.forEach(function(data) {

@@ -48,7 +48,7 @@ export class MarkupRepository extends Repository<Markup>
             .getMany()
             
 
-        if (!result[0]) {
+        if (!result.length) {
             throw new NotFoundException(`No markup found.`)
         }
         return { data: result};

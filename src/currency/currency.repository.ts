@@ -30,7 +30,7 @@ export class CurrencyRepository extends Repository<Currency>
                 milliseconds:46399000
             }
         });
-        if (!result) {
+        if (!result.length) {
             throw new NotFoundException(`No currency found.`)
         }
         return { data: result};

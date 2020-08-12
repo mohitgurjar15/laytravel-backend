@@ -26,7 +26,7 @@ export class EnquiryRepository extends Repository<Enquiry> {
             skip:skip,
             take:take
         });
-        if (!result) {
+        if (!result.length) {
             throw new NotFoundException(`No any Enquiry found.`)
         }
         return { data: result , TotalReseult: total};

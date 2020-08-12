@@ -17,7 +17,7 @@ export class ModuleRepository extends Repository<Module> {
 			},
 		});
 		
-		if (!result[0]) {
+		if (!result.length) {
 			throw new NotFoundException(`No module found.`);
 		}
 		return { data: result};
