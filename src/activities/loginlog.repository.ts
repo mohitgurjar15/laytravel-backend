@@ -57,7 +57,7 @@ export class LoginLogRepository extends Repository<LoginLog> {
 			.leftJoinAndSelect("log.user", "user")
 			.where(where)
 			.getCount();
-		if (!result) {
+		if (!result.length) {
 			throw new NotFoundException(`No Log found.`);
 		}
 		return { data: result, TotalReseult: total };

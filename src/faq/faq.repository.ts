@@ -26,7 +26,7 @@ export class FaqRepository extends Repository<Faq> {
             skip:skip,
             take:take
         });
-        if (!result) {
+        if (!result.length) {
             throw new NotFoundException(`No faq found.`)
         }
         return { data: result , TotalReseult: total};

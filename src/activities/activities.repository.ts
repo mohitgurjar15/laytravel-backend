@@ -66,7 +66,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 			.leftJoinAndSelect("log.user", "user")
 			.where(where)
 			.getCount();
-		if (!result) {
+		if (!result.length) {
 			throw new NotFoundException(`No Log found.`);
 		}
 		return { data: result, TotalReseult: total };

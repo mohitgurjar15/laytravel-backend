@@ -11,6 +11,7 @@ import { UpdateMarkupDto } from "./dto/updatemarkup.dto";
 import { getManager, getConnection } from "typeorm";
 import { Supplier } from "src/entity/supplier.entity";
 import { User } from "@sentry/node";
+import { Markup } from "src/entity/markup.entity";
 
 @Injectable()
 export class MarkupService {
@@ -24,12 +25,7 @@ export class MarkupService {
 		updateMarkupDto: UpdateMarkupDto,
 		user: User
 	): Promise<{ message: string }> {
-		const {
-			module_id,
-			user_type,
-			operator,
-			operand,
-		} = updateMarkupDto;
+		const { module_id, user_type, operator, operand } = updateMarkupDto;
 
 		let moduleDetaile = await getManager()
 			.createQueryBuilder(Module, "module")
@@ -61,8 +57,8 @@ export class MarkupService {
 		markupDetail.updatedDate = new Date();
 
 		try {
-            markupDetail.save();
-            await getConnection().queryResultCache!.remove(["markup"]);
+			markupDetail.save();
+			await getConnection().queryResultCache!.remove(["markup"]);
 			return { message: "markup Updated" };
 		} catch (error) {
 			if (
@@ -80,6 +76,39 @@ export class MarkupService {
 	async listMarkup(): Promise<{ data: any }> {
 		try {
 			return await this.markupRepository.listMarkup();
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No any markup Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${error.Message}`
+			);
+		}
+	}
+
+	async getMarkup(id) {
+		try {
+			const result = await getManager()
+				.createQueryBuilder(Markup, "markup")
+				.leftJoinAndSelect("markup.module", "module")
+				.select([
+					"markup.id",
+					"module.name",
+					"markup.userType",
+					"markup.operator",
+					"markup.operand",
+				])
+				.where(`("markup"."id"=:id )`,{ id})
+				.getOne();
+
+			if (!result) {
+				throw new NotFoundException(`No markup found.`);
+			}
+			return { data: result };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
