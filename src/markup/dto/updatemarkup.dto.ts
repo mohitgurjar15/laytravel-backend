@@ -4,18 +4,7 @@ import { Role } from "src/enum/role.enum";
 import { errorMessage } from "src/config/common.config";
 
 export class UpdateMarkupDto{
-
-    @IsNotEmpty({
-		message: `Please enter Module Id.&&&rate`,
-	})
-    @ApiProperty({
-        description:`Please enter Module ID&&module`,
-        example:1
-    })
-    module_id:number;
-
-
-
+    
     @IsNotEmpty({
         message : `Please select your User Type.&&&User_type`
     })

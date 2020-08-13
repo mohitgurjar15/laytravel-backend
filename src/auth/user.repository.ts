@@ -88,7 +88,6 @@ export class UserRepository extends Repository<User> {
 			data.profilePic = data.profilePic
 				? `${siteUrl}/profile/${data.profilePic}`
 				: "";
-			delete data.createdDate;
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;

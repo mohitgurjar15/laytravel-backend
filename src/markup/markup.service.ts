@@ -25,16 +25,16 @@ export class MarkupService {
 		updateMarkupDto: UpdateMarkupDto,
 		user: User
 	): Promise<{ message: string }> {
-		const { module_id, user_type, operator, operand } = updateMarkupDto;
+		const { user_type, operator, operand } = updateMarkupDto;
 
-		let moduleDetaile = await getManager()
-			.createQueryBuilder(Module, "module")
-			.where(`id=:module_Id`, { module_id })
-			.getOne();
-		if (!moduleDetaile)
-			throw new BadRequestException(
-				`module id not exist with database.&&&module_id`
-			);
+		// let moduleDetaile = await getManager()
+		// 	.createQueryBuilder(Module, "module")
+		// 	.where(`id=:module_Id`, { module_id })
+		// 	.getOne();
+		// if (!moduleDetaile)
+		// 	throw new BadRequestException(
+		// 		`module id not exist with database.&&&module_id`
+		// 	);
 
 		// let supplierDetail = await getManager()
 		// 	.createQueryBuilder(Supplier, "supplier")
@@ -50,7 +50,7 @@ export class MarkupService {
 
 		if (!markupDetail) throw new NotFoundException(`markup id not found`);
 
-		markupDetail.moduleId = module_id;
+		//markupDetail.moduleId = module_id;
 		markupDetail.userType = user_type;
 		markupDetail.operand = operand;
 		markupDetail.operator = operator;
