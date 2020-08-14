@@ -28,8 +28,7 @@ export class SocialLoginDto {
 
 	
 	@IsOptional()
-	//@
-	//@ValidateIf(o => o.account_type === 2 || o.account_type === 3)
+	@ValidateIf(o => o.account_type === 2)
 	@IsEmail(
 		{},
 		{
@@ -46,6 +45,7 @@ export class SocialLoginDto {
 	})
 	email: string;
 
+	
 	@ApiProperty({
 		description: `Account id return by social media account.&&&social_account_id`,
 		example: `ere45tytyu34fff`,

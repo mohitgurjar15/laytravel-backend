@@ -10,7 +10,7 @@ export class ModuleRepository extends Repository<Module> {
 		// where = `status = true`;
 
 		const [result, total] = await this.findAndCount({
-			select: ["id", "name", "status"],
+			select: ["id", "name", "status", "mode"],
 			cache: {
 				id: "modules",
 				milliseconds: 604800000,

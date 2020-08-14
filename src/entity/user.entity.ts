@@ -78,6 +78,12 @@ export class User extends BaseEntity {
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
 
+  @Column("boolean", { name: "is_verified", default: () => "false" })
+  isVerified: boolean;
+
+  @Column("integer", { name: "otp", nullable: true  })
+  otp: number;
+
   @Column("uuid", { name: "created_by", nullable: true })
   createdBy: string | null;
 
@@ -305,5 +311,9 @@ export class User extends BaseEntity {
   async validatePassword(password: string): Promise<boolean> {
 		const hash = await bcrypt.hash(password, this.salt);
 		return hash === this.password;
+  }
+  
+  async validateOtp(Otp: number): Promise<boolean> {
+		return Otp === this.otp;
 	}
 }

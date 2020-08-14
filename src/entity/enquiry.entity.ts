@@ -25,5 +25,5 @@ export class Enquiry extends BaseEntity {
   message: string;
 
   @Column("date", { name: "created_date" })
-  createdDate: string;
+  createdDate: Date;
 }

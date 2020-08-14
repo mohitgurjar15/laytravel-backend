@@ -146,6 +146,7 @@ export class UserRepository extends Repository<User> {
 			user.accountType = 1;
 			user.socialAccountId = "";
 			user.phoneNo = "";
+			user.isVerified = true;
 			user.profilePic = "";
 			user.timezone = "";
 			user.status = 1;

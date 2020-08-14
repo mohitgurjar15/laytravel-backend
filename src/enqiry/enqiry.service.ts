@@ -4,6 +4,9 @@ import { EnquiryRepository } from './enquiry.repository';
 import { EnquiryListDto } from './dto/enquiry-list.dto';
 import { Enquiry } from 'src/entity/enquiry.entity';
 import { errorMessage } from 'src/config/common.config';
+import { newEnquiryDto } from './dto/new-enquiry.dto';
+import { User } from 'src/entity/user.entity';
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class EnqiryService {
@@ -17,6 +20,37 @@ export class EnqiryService {
 	): Promise<{ data: Enquiry[]; TotalReseult: number }> {
 		try {
 			return await this.EnquiryRepository.listEnquiry(paginationOption);
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No Enquiry Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async newEnquiry(
+		newEnquiryDto: newEnquiryDto,
+		user : User
+	){
+		try {
+			const {subject , message , location} = newEnquiryDto
+			const enquiry = new Enquiry();
+			enquiry.id = uuidv4();
+			enquiry.email = user.email;
+			enquiry.phoneNo = user.phoneNo;
+			enquiry.location = location;
+			enquiry.userName = user.firstName + ' ' + user.lastName;
+			enquiry.subject = subject;
+			enquiry.message = message;
+			enquiry.createdDate = new Date;
+			await enquiry.save();
+			return { message : `Enquiry created successfully`};
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
