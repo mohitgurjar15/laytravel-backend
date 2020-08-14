@@ -29,4 +29,9 @@ export class Strategy{
         const data = await this.airline.airRevalidate(params);
         return data;
     }
+
+    async bookFlight(params1,params2){
+        const data = await this.airline.bookFlight(params1,params2);
+        return data;
+    }
 }
