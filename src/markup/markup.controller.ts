@@ -11,8 +11,8 @@ import { RolesGuard } from "src/guards/role.guard";
 import { Role } from "src/enum/role.enum";
 import { Roles } from "src/guards/role.decorator";
 import { UpdateMarkupDto } from "./dto/updatemarkup.dto";
-import { User } from "@sentry/node";
 import { GetUser } from "src/auth/get-user.dacorator";
+import { User } from "src/entity/user.entity";
 
 @ApiTags("Markup")
 @ApiBearerAuth()
@@ -56,7 +56,7 @@ export class MarkupController {
 	@Get(':id')
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "List markups" })
+	@ApiOperation({ summary: "Get  markup Detail" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({

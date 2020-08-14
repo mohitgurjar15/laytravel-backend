@@ -12,6 +12,7 @@ import { UpdateLangunageDto } from "./dto/update-language.dto";
 import { getConnection } from "typeorm";
 import { LanguageStatusDto } from "./dto/langugeEnableDisable.dto";
 import { User } from "@sentry/node";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class LangunageService {
@@ -79,7 +80,9 @@ export class LangunageService {
 			languageData.updatedDate = new Date();
 			languageData.save();
 			await getConnection().queryResultCache!.remove(["languages"]);
-			return { message: "Language is Updated" };
+			Activity.logActivity(adminId, "language", `${languageData.name} Languge is updated by admin`);
+        
+			return { message: "Language Updated Successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -109,6 +112,8 @@ export class LangunageService {
 			languageData.updatedDate = new Date();
 			languageData.save();
 			await getConnection().queryResultCache!.remove(["languages"]);
+			Activity.logActivity(adminId, "language", `${languageData.name} Languge is Deleted by admin`);
+        
 			return { message: "Language is Deleted" };
 		} catch (error) {
 			if (
@@ -141,7 +146,9 @@ export class LangunageService {
 			Data.updatedDate = new Date();
 			Data.save();
 			await getConnection().queryResultCache!.remove(["languages"]);
-			return { message: `Language ${Data.name} status Changed` };
+			Activity.logActivity(adminId.userId, "language", `${Data.name} Languge status changed by admin`);
+        
+			return { message: `Language ${Data.name} status Changed successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

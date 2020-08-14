@@ -13,20 +13,20 @@ import { User } from "./user.entity";
 
 //@Index("markup_pk", ["id"], { unique: true })
 @Index("markup_module_id", ["moduleId"], {})
-//@Index("markup_supplier_id", ["supplierId"], {})
+@Index("markup_supplier_id", ["supplierId"], {})
 @Entity("markup")
 export class Markup extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column("integer", { name: "module_id" , unique: true })
+  @Column("integer", { name: "module_id"})
   moduleId: number;
 
-  // @Column("integer", { name: "supplier_id" })
-  // supplierId: number;
+  @Column("integer", { name: "supplier_id" })
+  supplierId: number;
 
-  // @Column("integer", { name: "user_type" })
-  // userType: number;
+  @Column("integer", { name: "user_type" ,default : 6})
+  userType: number;
 
   @Column("character varying", { name: "operator", length: 5 })
   operator: string;

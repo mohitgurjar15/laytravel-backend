@@ -7,6 +7,8 @@ import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagg
 import { UpdateCmsDto } from './dto/update-cms.dto';
 import { CmsService } from './cms.service';
 import { Cms } from 'src/entity/cms.entity';
+import { GetUser } from 'src/auth/get-user.dacorator';
+import { User } from 'src/entity/user.entity';
 
 @ApiTags("CMS Page")
 @Controller('cms')
@@ -49,9 +51,10 @@ export class CmsController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Put()
 	async updateCms(
-	    @Body() updateCmsDto: UpdateCmsDto
+		@Body() updateCmsDto: UpdateCmsDto,
+		@GetUser() user:User
 	):Promise<Cms>{
-	    return await this.cmsService.updateCmsPage(updateCmsDto)
+	    return await this.cmsService.updateCmsPage(updateCmsDto,user)
     }
     
 }
