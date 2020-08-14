@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Delete, Param, Patch, Body } from '@nestjs/common';
+import { Controller, Get, UseGuards, Delete, Param, Patch, Body, Put } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ModulesService } from './modules.service';
 import { Module } from 'src/entity/module.entity';
@@ -10,6 +10,7 @@ import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
 import { moduleStatusPipe } from './pipes/module-status.pipes';
 import { moduleStatusDto } from './dto/moduleEnableDisable.dto';
+import { ModeTestLive } from './dto/modeTestLive.dto';
 
 
 @ApiTags("Modules")
@@ -47,5 +48,20 @@ export class ModulesController {
 	async moduleChangeStatus(@Param("id") id: number,@GetUser() user: User,@Body() moduleStatusDto:moduleStatusDto):Promise<{ message : string}> {
 		
 		return await this.modulesService.moduleChangeStatus(id,moduleStatusDto,user);
+	}
+
+
+
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN)	
+	@ApiOperation({ summary: "Change Module Mode Live/Test" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Put("change-mode/:id")
+	async changeMode(@Param("id") id: number,@GetUser() user: User,@Body() changeMode:ModeTestLive):Promise<{ message : string}> {
+		
+		return await this.modulesService.changeMode(id,changeMode,user);
 	}
 }

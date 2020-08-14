@@ -33,7 +33,7 @@ export class LanguageRepository extends Repository<Language>
         // const result = this.query(`select * from "language",(select count(*) from "language") as cnt`);
         // const total = result[0].cnt;
 
-        if (!result[0]) {
+        if (!result.length) {
             throw new NotFoundException(`No lenguage found.`)
         }
         return { data: result};

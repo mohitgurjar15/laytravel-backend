@@ -81,18 +81,16 @@ export class UserRepository extends Repository<User> {
 			take: take,	
 		});
 
-		if (!result || total <= skip) {
+		if (!result.length || total <= skip) {
 			throw new NotFoundException(`No user found.`);
 		}
 		result.forEach(function(data) {
 			data.profilePic = data.profilePic
 				? `${siteUrl}/profile/${data.profilePic}`
 				: "";
-			delete data.createdDate;
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
-			delete data.status;
 		});
 		return { data: result, TotalReseult: total };
 	}
@@ -148,6 +146,7 @@ export class UserRepository extends Repository<User> {
 			user.accountType = 1;
 			user.socialAccountId = "";
 			user.phoneNo = "";
+			user.isVerified = true;
 			user.profilePic = "";
 			user.timezone = "";
 			user.status = 1;

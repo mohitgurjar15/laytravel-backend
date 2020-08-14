@@ -111,6 +111,7 @@ export class UserService {
 		user.stateId = state_id;
 		user.cityName = city_name;
 		user.gender = gender;
+		user.isVerified = true;
 		user.createdBy = adminId;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();

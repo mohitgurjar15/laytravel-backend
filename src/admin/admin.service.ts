@@ -73,6 +73,7 @@ export class AdminService {
 		user.lastName = last_name;
 		user.salt = salt;
 		user.createdBy = adminId;
+		user.isVerified = true;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
@@ -117,7 +118,7 @@ export class AdminService {
 		adminId: string
 	) {
 		try {
-			const { firstName, middleName, lastName, profile_pic } = updateAdminDto;
+			const { firstName, middleName, lastName, profile_pic,gender} = updateAdminDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
@@ -127,6 +128,7 @@ export class AdminService {
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
 			userData.updatedBy = adminId;
+			userData.gender = gender;
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
 			userData.updatedDate = new Date();

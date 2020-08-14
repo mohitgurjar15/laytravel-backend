@@ -10,13 +10,14 @@ export class ModuleRepository extends Repository<Module> {
 		// where = `status = true`;
 
 		const [result, total] = await this.findAndCount({
-			select: ["id", "name", "status"],
+			select: ["id", "name", "status", "mode"],
 			cache: {
 				id: "modules",
 				milliseconds: 604800000,
 			},
 		});
-		if (!result[0]) {
+		
+		if (!result.length) {
 			throw new NotFoundException(`No module found.`);
 		}
 		return { data: result};
