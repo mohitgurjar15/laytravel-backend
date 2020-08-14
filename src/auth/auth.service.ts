@@ -59,6 +59,7 @@ import { OtpDto } from "./dto/otp.dto";
 import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
+import { exception } from "console";
 
 @Injectable()
 export class AuthService {
@@ -118,7 +119,7 @@ export class AuthService {
 		user.password = await this.hashPassword(password, salt);
 		user.gender = gender;
 		user.isVerified = false;
-		user.otp = Math.round(new Date().getTime() / 1000);
+		user.otp = Math.round(new Date().getTime() % 1000000);
 
 		if (signup_via == "web") user.registerVia = "web";
 		else {
@@ -205,7 +206,7 @@ export class AuthService {
 		if (user.isVerified)
 			throw new UnauthorizedException(`Your Email Id Already Verified`);
 		user.isVerified = false;
-		user.otp = Math.round(new Date().getTime() / 1000);
+		user.otp = Math.round(new Date().getTime() % 1000000);
 		try {
 			await user.save();
 			this.mailerService
@@ -236,10 +237,14 @@ export class AuthService {
 	}
 
 	async UpdateEmailId(updateEmailId: UpdateEmailId, userData: User) {
+		if(userData.email )
+		{
+			throw new ConflictException (`You have alredy added email id`)
+		}
 		const { newEmail } = updateEmailId;
 		const email = userData.email;
 		const user = await this.userRepository.findOne({
-			where: { email, isDeleted: false },
+			where: { userId:userData.userId, isDeleted: false },
 		});
 
 		if (!user)
@@ -260,8 +265,8 @@ export class AuthService {
 				`This email address is already registered with us. Please enter different email address .`
 			);
 		user.email = newEmail;		
-		user.isVerified = false;
-		user.otp = Math.round(new Date().getTime() / 1000);
+		//user.isVerified = false;
+		//user.otp = Math.round(new Date().getTime() / 1000);
 		try {
 			await user.save();
 			this.mailerService

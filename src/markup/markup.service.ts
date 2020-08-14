@@ -59,7 +59,7 @@ export class MarkupService {
 		try {
 			markupDetail.save();
 			await getConnection().queryResultCache!.remove(["markup"]);
-			return { message: "markup Updated" };
+			return { message: "markup Updated successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -98,7 +98,6 @@ export class MarkupService {
 				.select([
 					"markup.id",
 					"module.name",
-					"markup.userType",
 					"markup.operator",
 					"markup.operand",
 				])
