@@ -3,6 +3,8 @@ import { CmsRepository } from './cms.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateCmsDto } from './dto/update-cms.dto';
 import { Cms } from 'src/entity/cms.entity';
+import { User } from 'src/entity/user.entity';
+import { Activity } from 'src/utility/activity.utility';
 
 @Injectable()
 export class CmsService {
@@ -13,7 +15,7 @@ export class CmsService {
     ){
 
     }
-    async updateCmsPage(updateCmsDto:UpdateCmsDto):Promise<Cms>{
+    async updateCmsPage(updateCmsDto:UpdateCmsDto,user:User):Promise<Cms>{
 
         const {
             page_type,
@@ -37,6 +39,7 @@ export class CmsService {
         cmsPage.frContent=fr_content;
 
         await this.cmsRepository.update({ pageType:page_type},cmsPage);
+        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`);
         return cmsPage;
     }
 

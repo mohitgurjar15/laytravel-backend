@@ -11,7 +11,7 @@ export class MarkupRepository extends Repository<Markup>
             .createQueryBuilder(Markup, "markup")
             .innerJoinAndSelect("markup.module","module")
             .select([
-                	"markup.id","module.name","markup.operator","markup.operand"
+                	"markup.id","module.name","markup.userType","markup.operator","markup.operand"
             ]).getOne();
 			
 			if (!markupArray) {
@@ -39,6 +39,7 @@ export class MarkupRepository extends Repository<Markup>
 			.select([
                 "markup.id",
                 "module.name",
+                "markup.userType",
                 "markup.operator",
                 "markup.operand",
 			])

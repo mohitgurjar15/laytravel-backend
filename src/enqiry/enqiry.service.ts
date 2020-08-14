@@ -7,6 +7,7 @@ import { errorMessage } from 'src/config/common.config';
 import { newEnquiryDto } from './dto/new-enquiry.dto';
 import { User } from 'src/entity/user.entity';
 import { v4 as uuidv4 } from "uuid";
+import { Activity } from 'src/utility/activity.utility';
 
 @Injectable()
 export class EnqiryService {
@@ -50,6 +51,8 @@ export class EnqiryService {
 			enquiry.message = message;
 			enquiry.createdDate = new Date;
 			await enquiry.save();
+			Activity.logActivity(user.userId, "enquiry", `${user.email} is Added New Enquiry for ${enquiry.subject}`);
+        
 			return { message : `Enquiry created successfully`};
 		} catch (error) {
 			if (

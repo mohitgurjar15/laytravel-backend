@@ -83,6 +83,7 @@ export class ModulesService {
 			moduleData.updateDate = new Date();
 			await moduleData.save();
 
+			await getConnection().queryResultCache!.remove(["modules"]);
 			await getConnection().queryResultCache!.remove([`${moduleData.name}_module`]);
 			return {
 				message: `${moduleData.name} is set to ${mode ? 'live' : 'test'} mode successfully`,

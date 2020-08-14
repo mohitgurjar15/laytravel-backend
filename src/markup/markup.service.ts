@@ -10,8 +10,9 @@ import { MarkupRepository } from "./markup.repository";
 import { UpdateMarkupDto } from "./dto/updatemarkup.dto";
 import { getManager, getConnection } from "typeorm";
 import { Supplier } from "src/entity/supplier.entity";
-import { User } from "@sentry/node";
 import { Markup } from "src/entity/markup.entity";
+import { User } from "src/entity/user.entity";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class MarkupService {
@@ -55,11 +56,13 @@ export class MarkupService {
 		markupDetail.operand = operand;
 		markupDetail.operator = operator;
 		markupDetail.updatedDate = new Date();
-
+		
 		try {
 			markupDetail.save();
 			await getConnection().queryResultCache!.remove(["markup"]);
-			return { message: "markup Updated successfully" };
+			Activity.logActivity(user.userId, "markup", `Markup Updated by admin`);
+        
+			return { message: "Markup Updated Successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -98,6 +101,7 @@ export class MarkupService {
 				.select([
 					"markup.id",
 					"module.name",
+					"markup.userType",
 					"markup.operator",
 					"markup.operand",
 				])
