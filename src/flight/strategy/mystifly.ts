@@ -11,8 +11,6 @@ import { Route, RouteType } from "../model/route.model";
 import { Generic } from "src/utility/generic.utility";
 import { getManager } from "typeorm";
 import { Airport } from "src/entity/airport.entity";
-import { async } from "rxjs/internal/scheduler/async";
-import { GetUser } from "src/auth/get-user.dacorator";
 import { Instalment } from "src/utility/instalment.utility";
 const fs = require('fs').promises;
 
@@ -655,6 +653,99 @@ export class Mystifly implements StrategyAirline{
         }
 
     }
+
+    async bookFlight(bookFlightDto,traveles){
+
+        const { route_code } = bookFlightDto;
+        const mystiflyConfig = await this.getMystiflyCredential();
+        const sessionToken = await this.startSession();
+
+        let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:mys2="Mystifly.OnePoint.OnePointEntities">`;
+            requestBody += `<soapenv:Header/>`
+            requestBody += `<soapenv:Body>`
+            requestBody += `<mys:BookFlight>`
+            requestBody += `<mys:rq>`
+            requestBody += `<mys1:FareSourceCode>${route_code}</mys1:FareSourceCode>`
+            requestBody += `<mys1:SessionId>${sessionToken}</mys1:SessionId>`
+            requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
+            requestBody += `<mys1:TravelerInfo>`
+            requestBody += `<mys1:AirTravelers>`
+            requestBody += `<mys1:AirTraveler>`
+            requestBody += `<mys1:DateOfBirth>1989-04-01T00:00:00</mys1:DateOfBirth>`
+            requestBody += `<mys1:Gender>M</mys1:Gender>`
+            requestBody += `<mys1:PassengerName>`
+            requestBody += `<mys1:PassengerFirstName>Paul</mys1:PassengerFirstName>`
+            requestBody += `<mys1:PassengerLastName>Rodger</mys1:PassengerLastName>`
+            requestBody += `<mys1:PassengerTitle>MR</mys1:PassengerTitle>`
+            requestBody += `</mys1:PassengerName>`
+            requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
+            requestBody += `<mys1:Passport>`
+            requestBody += `<mys1:Country>UK</mys1:Country>`
+            requestBody += `<mys1:ExpiryDate>2022-06-04T00:00:00</mys1:ExpiryDate>`
+            requestBody += `<mys1:PassportNumber>PA3456789</mys1:PassportNumber>`
+            requestBody += `</mys1:Passport>`
+            requestBody += `</mys1:AirTraveler>`
+            requestBody += `<mys1:AirTraveler>`
+            requestBody += `<mys1:DateOfBirth>2010-04-01T00:00:00</mys1:DateOfBirth>`
+            requestBody += `<mys1:Gender>F</mys1:Gender>`
+            requestBody += `<mys1:PassengerName>`
+            requestBody += `<mys1:PassengerFirstName>Saddy</mys1:PassengerFirstName>`
+            requestBody += `<mys1:PassengerLastName>Rodger</mys1:PassengerLastName>`
+            requestBody += `<mys1:PassengerTitle>MISS</mys1:PassengerTitle>`
+            requestBody += `</mys1:PassengerName>`
+            requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
+            requestBody += `<mys1:Passport>`
+            requestBody += `<mys1:Country>UK</mys1:Country>`
+            requestBody += `<mys1:ExpiryDate>2022-06-04T00:00:00</mys1:ExpiryDate>`
+            requestBody += `<mys1:PassportNumber>CHD456789</mys1:PassportNumber>`
+            requestBody += `</mys1:Passport>`
+            requestBody += `</mys1:AirTraveler>`
+            requestBody += `<mys1:AirTraveler>`
+            requestBody += `<mys1:DateOfBirth>2015-11-01T00:00:00</mys1:DateOfBirth>`
+            requestBody += `<mys1:Gender>M</mys1:Gender>`
+            requestBody += `<mys1:PassengerName>`
+            requestBody += `<mys1:PassengerFirstName>Peter</mys1:PassengerFirstName>`
+            requestBody += `<mys1:PassengerLastName>Kin</mys1:PassengerLastName>`
+            requestBody += `<mys1:PassengerTitle>INF</mys1:PassengerTitle>`
+            requestBody += `</mys1:PassengerName>`
+            requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`
+            requestBody += `<mys1:Passport>`
+            requestBody += `<mys1:Country>UK</mys1:Country>`
+            requestBody += `<mys1:ExpiryDate>2022-06-04T00:00:00</mys1:ExpiryDate>`
+            requestBody += `<mys1:PassportNumber>INF456789</mys1:PassportNumber>`
+            requestBody += `</mys1:Passport>`
+            requestBody += `</mys1:AirTraveler>`
+            requestBody += `</mys1:AirTravelers>`
+            requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`
+            requestBody += `<mys1:CountryCode>44</mys1:CountryCode>`
+            requestBody += `<mys1:Email>peter@gmail.com</mys1:Email>`
+            requestBody += `<mys1:PhoneNumber>5467890</mys1:PhoneNumber>`
+            requestBody += `<mys1:PostCode>G1 1QN</mys1:PostCode>`
+            requestBody += `</mys1:TravelerInfo>`
+            requestBody += `</mys:rq>`
+            requestBody += `</mys:BookFlight>`
+            requestBody += `</soapenv:Body>`
+            requestBody += `</soapenv:Envelope>`
+
+        let airRevalidateResult =await Axios({
+            method: 'POST',
+            url: mystiflyConfig.url,
+            data: requestBody,
+            headers: {
+                'content-type':'text/xml',
+                'Accept-Encoding':'gzip',
+                'soapaction':"Mystifly.OnePoint/OnePoint/AirRevalidate",
+                'charset':'UTF-8',
+                'cache-control':'no-cache'
+            }
+        })
+        
+        airRevalidateResult = await xml2js.parseStringPromise(airRevalidateResult.data,{
+            normalizeTags :true,
+            ignoreAttrs:true
+        });
+    }
+
     getFlightClass(className){
 
         const flightClass={

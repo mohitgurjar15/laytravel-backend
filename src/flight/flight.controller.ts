@@ -8,6 +8,7 @@ import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
+import { BookFlightDto } from './dto/book-flight.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -57,6 +58,19 @@ export class FlightController {
 
     }
 
+    @Post('/search-roundtrip-flight')
+    @ApiOperation({ summary: "Round trip flight search" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async searchRoundTrip(
+       @Body() searchFlightDto:RoundtripSearchFlightDto
+    ){
+        return await this.flightService.searchRoundTripFlight(searchFlightDto);
+    }
+
     @Post('/baggage-details')
     @ApiOperation({ summary: "Flight baggage details" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -82,18 +96,7 @@ export class FlightController {
         return await this.flightService.cancellationPolicy(routeIdsDto);
     }
 
-    @Post('/search-roundtrip-flight')
-    @ApiOperation({ summary: "Round trip flight search" })
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Not Found' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async searchRoundTrip(
-       @Body() searchFlightDto:RoundtripSearchFlightDto
-    ){
-        return await this.flightService.searchRoundTripFlight(searchFlightDto);
-    }
+    
 
     @Post('/air-revalidate')
     @ApiHeader({
@@ -115,5 +118,27 @@ export class FlightController {
        @Req() req
     ){
         return await this.flightService.airRevalidate(routeIdDto,req.headers);
+    }
+
+    @Post('/book')
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    @ApiOperation({ summary: "AirRevalidate to get availability and updated price" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Flight is not available now' })
+    @HttpCode(200)
+    async bookFlight(
+       @Body() bookFlightDto:BookFlightDto,
+       @Req() req
+    ){
+        return await this.flightService.bookFlight(bookFlightDto,req.headers);
     }
 }
