@@ -25,7 +25,7 @@ export class MarkupService {
 		updateMarkupDto: UpdateMarkupDto,
 		user: User
 	): Promise<{ message: string }> {
-		const { user_type, operator, operand } = updateMarkupDto;
+		const {  operator, operand } = updateMarkupDto;
 
 		// let moduleDetaile = await getManager()
 		// 	.createQueryBuilder(Module, "module")
@@ -51,7 +51,7 @@ export class MarkupService {
 		if (!markupDetail) throw new NotFoundException(`markup id not found`);
 
 		//markupDetail.moduleId = module_id;
-		markupDetail.userType = user_type;
+		//markupDetail.userType = user_type;
 		markupDetail.operand = operand;
 		markupDetail.operator = operator;
 		markupDetail.updatedDate = new Date();

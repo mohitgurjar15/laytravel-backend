@@ -66,6 +66,7 @@ export class SupplierService {
 		user.zipCode = "";
 		user.lastName = last_name;
 		user.salt = salt;
+		user.isVerified = true;
 		user.createdBy = adminId;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();

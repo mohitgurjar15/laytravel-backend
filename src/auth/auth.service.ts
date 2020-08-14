@@ -14,6 +14,7 @@ import {
 	NotFoundException,
 	BadRequestException,
 	Req,
+	NotAcceptableException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -50,6 +51,14 @@ import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
 import { isError } from "util";
 import { dirname } from "path";
+import { VerifyEmail } from "./verify-email.interface";
+import { VerifyEmailIdTemplete } from "src/config/email_template/email-id-verify.html";
+import { link } from "fs";
+import { OtpDto } from "./dto/otp.dto";
+
+import { RagisterMail } from "src/config/email_template/register-mail.html";
+import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
+import { UpdateEmailId } from "./dto/update-email.dto";
 
 @Injectable()
 export class AuthService {
@@ -108,6 +117,8 @@ export class AuthService {
 		user.zipCode = "";
 		user.password = await this.hashPassword(password, salt);
 		user.gender = gender;
+		user.isVerified = false;
+		user.otp = Math.round(new Date().getTime() / 1000);
 
 		if (signup_via == "web") user.registerVia = "web";
 		else {
@@ -117,18 +128,29 @@ export class AuthService {
 		/*user.country = country;
         user.state = state;
         user.city = city;
-        user.address = address */
-
+		user.address = address */
 		try {
 			await user.save();
+			this.mailerService
+				.sendMail({
+					to: email,
+					from: "no-reply@laytrip.com",
+					subject: "Verify your account",
+					html: VerifyEmailIdTemplete({
+						username: first_name + " " + last_name,
+						otp: user.otp,
+					}),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
 
-		delete user.password;
-		delete user.salt;
-
-		let accessToken;
 		if (signup_via == "mobile") {
 			loginvia = device_type == 1 ? "android" : "ios";
 			let dateObj = new Date();
@@ -151,62 +173,122 @@ export class AuthService {
 			try {
 				// Save Latest entry
 				await device.save();
-
-				const payload: JwtPayload = {
-					user_id: user.userId,
-					firstName: user.firstName,
-					username: user.firstName + " " + user.lastName,
-					phone: user.phoneNo,
-					middleName: "",
-					profilePic: "",
-					lastName: user.lastName,
-					email,
-					salt: user.salt,
-					accessToken: newToken,
-					roleId: user.roleId,
-				};
-
-				accessToken = this.jwtService.sign(payload);
 			} catch (error) {
 				throw new InternalServerErrorException(
 					`Oops. Something went wrong. Please try again.`
 				);
 			}
-		} else {
-			loginvia = "web";
-			const payload: JwtPayload = {
-				user_id: user.userId,
-				email,
-				username: user.firstName + " " + user.lastName,
-				phone: user.phoneNo,
-				firstName: user.firstName,
-				middleName: user.middleName,
-				lastName: user.lastName,
-				salt: user.salt,
-				profilePic: user.profilePic,
-				roleId: user.roleId,
-			};
-			accessToken = this.jwtService.sign(payload);
 		}
-
-		let userDetails = Object.create(null);
-		userDetails.id = user.userId;
-		userDetails.email = user.email;
-		userDetails.first_name = user.firstName;
-		userDetails.middle_name = user.middleName;
-		userDetails.last_name = user.lastName;
-		userDetails.phone_no = user.phoneNo;
-		userDetails.profile_pic = user.profilePic;
-		userDetails.gender = user.gender;
-		userDetails.access_token = accessToken;
-
-		this.addLoginLog(user.userId, request, loginvia);
-		
-		return { user_details: userDetails };
+		return { message: `Otp send on your email id` };
 	}
 
 	hashPassword(password: string, salt: string): Promise<string> {
 		return bcrypt.hash(password, salt);
+	}
+
+	async resendOtp(reSendVerifyoOtpDto: ReSendVerifyoOtpDto) {
+		const { email } = reSendVerifyoOtpDto;
+		const user = await this.userRepository.findOne({
+			where: { email, isDeleted: false },
+		});
+
+		if (!user)
+			throw new NotFoundException(
+				`Email is not registered with us. Please check the email.&&&email`
+			);
+
+		if (user.status != 1)
+			throw new UnauthorizedException(
+				`Your account has been disabled. Please contact administrator person.`
+			);
+
+		if (user.isVerified)
+			throw new UnauthorizedException(`Your Email Id Already Verified`);
+		user.isVerified = false;
+		user.otp = Math.round(new Date().getTime() / 1000);
+		try {
+			await user.save();
+			this.mailerService
+				.sendMail({
+					to: email,
+					from: "no-reply@laytrip.com",
+					subject: "Verify your account",
+					html: VerifyEmailIdTemplete({
+						username: user.firstName + " " + user.lastName,
+						otp: user.otp,
+					}),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+		} catch (error) {
+			throw new InternalServerErrorException(error.sqlMessage);
+		}
+		Activity.logActivity(
+			user.userId,
+			`auth`,
+			` ${email} user is signup`
+		);
+		return { message: `Otp send on your email id` };
+	}
+
+	async UpdateEmailId(updateEmailId: UpdateEmailId, userData: User) {
+		const { newEmail } = updateEmailId;
+		const email = userData.email;
+		const user = await this.userRepository.findOne({
+			where: { email, isDeleted: false },
+		});
+
+		if (!user)
+			throw new NotFoundException(
+				`Email is not registered with us. Please check the email.&&&email`
+			);
+
+		if (user.status != 1)
+			throw new UnauthorizedException(
+				`Your account has been disabled. Please contact administrator person.`
+			);
+		const userExist = await this.userRepository.findOne({
+			email: newEmail,
+		});
+
+		if (userExist)
+			throw new ConflictException(
+				`This email address is already registered with us. Please enter different email address .`
+			);
+		user.email = newEmail;		
+		user.isVerified = false;
+		user.otp = Math.round(new Date().getTime() / 1000);
+		try {
+			await user.save();
+			this.mailerService
+				.sendMail({
+					to: newEmail,
+					from: "no-reply@laytrip.com",
+					subject: "Verify your account",
+					html: VerifyEmailIdTemplete({
+						username: user.firstName + " " + user.lastName,
+						otp: user.otp,
+					}),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+		} catch (error) {
+			throw new InternalServerErrorException(error.sqlMessage);
+		}
+		Activity.logActivity(
+			user.userId,
+			`auth`,
+			` user is update the Email id ${email} to ${newEmail} `
+		);
+		return { message: `Otp send on your email id` };
 	}
 
 	async validateUserPassword(
@@ -225,7 +307,11 @@ export class AuthService {
 				throw new UnauthorizedException(
 					`Your account has been disabled. Please contact administrator person.`
 				);
-
+			if (!user.isVerified) {
+				throw new NotAcceptableException(
+					`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				);
+			}
 			const payload: JwtPayload = {
 				user_id: user.userId,
 				email,
@@ -259,10 +345,12 @@ export class AuthService {
 				`Email is not registered with us. Please check the email.`
 			);
 		}
-		if(user.isDeleted == true || user.status == 0)
-		{
-			throw new NotFoundException(
-				`Given Email id is Deleted`
+		if (user.isDeleted == true || user.status == 0) {
+			throw new NotFoundException(`Given Email id is Deleted`);
+		}
+		if (!user.isVerified) {
+			throw new NotAcceptableException(
+				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
 			);
 		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);
@@ -347,6 +435,11 @@ export class AuthService {
 				`Email is not registered with us. Please check the email.&&&email`
 			);
 		}
+		if (!user.isVerified) {
+			throw new NotAcceptableException(
+				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+			);
+		}
 
 		const validToken = await this.forgetPasswordRepository.findOne({
 			where: { email: email, is_used: 0, token: tokenhash },
@@ -370,6 +463,109 @@ export class AuthService {
 		} else {
 			throw new BadRequestException(
 				`Token Can not be validate.&&&token&&&${errorMessage}`
+			);
+		}
+	}
+
+	async VerifyOtp(OtpDto: OtpDto, req) {
+		const { otp, email } = OtpDto;
+
+		const user = await this.userRepository.findOne({
+			where: { email: email, isDeleted: 0, status: 1 },
+		});
+
+		if (!user) {
+			throw new NotFoundException(
+				`Email is not registered with us. Please check the email.&&&email`
+			);
+		}
+		let accessToken;
+		let loginvia;
+		if (user.validateOtp(otp)) {
+			try {
+				user.isVerified = true;
+				await user.save();
+				if (user.registerVia == "android" || user.registerVia == "ios") {
+					loginvia = "mobile";
+					try {
+						const payload: JwtPayload = {
+							user_id: user.userId,
+							firstName: user.firstName,
+							username: user.firstName + " " + user.lastName,
+							phone: user.phoneNo,
+							middleName: "",
+							profilePic: "",
+							lastName: user.lastName,
+							email,
+							salt: user.salt,
+							//accessToken: newToken,
+							roleId: user.roleId,
+						};
+
+						accessToken = this.jwtService.sign(payload);
+					} catch (error) {
+						throw new InternalServerErrorException(
+							`Oops. Something went wrong. Please try again.`
+						);
+					}
+				} else {
+					loginvia = "web";
+					const payload: JwtPayload = {
+						user_id: user.userId,
+						email,
+						username: user.firstName + " " + user.lastName,
+						phone: user.phoneNo,
+						firstName: user.firstName,
+						middleName: user.middleName,
+						lastName: user.lastName,
+						salt: user.salt,
+						profilePic: user.profilePic,
+						roleId: user.roleId,
+					};
+					accessToken = this.jwtService.sign(payload);
+				}
+
+				let userDetails = Object.create(null);
+				userDetails.id = user.userId;
+				userDetails.email = user.email;
+				userDetails.first_name = user.firstName;
+				userDetails.middle_name = user.middleName;
+				userDetails.last_name = user.lastName;
+				userDetails.phone_no = user.phoneNo;
+				userDetails.profile_pic = user.profilePic;
+				userDetails.gender = user.gender;
+				userDetails.access_token = accessToken;
+
+				this.addLoginLog(user.userId, req, loginvia);
+				this.mailerService
+					.sendMail({
+						to: email,
+						from: "no-reply@laytrip.com",
+						subject: "Welcome on board",
+						html: RagisterMail({
+							username: user.firstName + " " + user.lastName,
+						}),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+					Activity.logActivity(
+						user.userId,
+						`auth`,
+						`${email} user is verify own account`
+					);
+				return { userDetails };
+			} catch (error) {
+				throw new InternalServerErrorException(
+					`${error.sqlMessage}&&& &&&` + errorMessage
+				);
+			}
+		} else {
+			throw new BadRequestException(
+				`Given Otp is wrong.&&&token&&&Given Otp is wrong.`
 			);
 		}
 	}
@@ -400,6 +596,11 @@ export class AuthService {
 				throw new UnauthorizedException(
 					`Your account has been disabled. Please contact administrator person.`
 				);
+			if (!user.isVerified) {
+				throw new NotAcceptableException(
+					`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				);
+			}
 
 			let dateObj = new Date();
 			let newToken = md5(dateObj);
@@ -505,7 +706,7 @@ export class AuthService {
 		if (email) {
 			conditions.push({ email: email });
 		}
-		
+
 		const userExist = await this.userRepository.findOne({
 			where: conditions,
 		});
@@ -531,6 +732,7 @@ export class AuthService {
 			user.middleName = "";
 			user.zipCode = "";
 			user.password = "";
+			user.isVerified = true;
 
 			try {
 				await user.save();
@@ -604,7 +806,7 @@ export class AuthService {
 			};
 			let loginvia = device_type == 1 ? "android" : "ios";
 			this.addLoginLog(user.userId, request, loginvia);
-			
+
 			return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
@@ -695,23 +897,22 @@ export class AuthService {
 			user.stateId = state_id;
 			user.cityName = city_name;
 			var oldProfile = user.profilePic;
-			
+
 			if (typeof files.profile_pic != "undefined")
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
 			console.log(`${dirname}/assets/profile/${oldProfile}`);
-			if(oldProfile)
-			{
-				await fs.unlink(`../profile/${oldProfile}`, function (err) {
+			if (oldProfile) {
+				await fs.unlink(`../profile/${oldProfile}`, function(err) {
 					if (err) {
-						console.log(err);	
+						console.log(err);
 					}
 					// if no error, file has been deleted successfully
 					console.log(`${oldProfile} image  deleted!`);
-				}); 
+				});
 			}
-			
+
 			Activity.logActivity(
 				user.userId,
 				`auth`,
@@ -726,27 +927,31 @@ export class AuthService {
 				Role.SUPPLIER,
 				Role.SUPPORT,
 			];
-			
-			const data =  await this.userRepository.getUserDetails(userId, siteUrl, roleId);
+
+			const data = await this.userRepository.getUserDetails(
+				userId,
+				siteUrl,
+				roleId
+			);
 			const payload: JwtPayload = {
 				user_id: data.userId,
-				email:data.email,
+				email: data.email,
 				username: data.firstName + " " + data.lastName,
 				firstName: data.firstName,
 				phone: data.phoneNo,
 				middleName: data.middleName,
 				lastName: data.lastName,
 				salt: data.salt,
-				
+
 				profilePic: data.profilePic
 					? `${siteUrl}/profile/${user.profilePic}`
 					: "",
 				roleId: data.roleId,
 			};
 			const accessToken = this.jwtService.sign(payload);
-			const token = accessToken ;
-			
-			return  { data:data , token:token};
+			const token = accessToken;
+
+			return { data: data, token: token };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -776,6 +981,11 @@ export class AuthService {
 			userId: userId,
 			isDeleted: false,
 		});
+		if (!user.isVerified) {
+			throw new NotAcceptableException(
+				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+			);
+		}
 
 		user.preferredLanguage = langugeId;
 		user.updatedDate = new Date();
@@ -802,8 +1012,6 @@ export class AuthService {
 		}
 	}
 
-
-
 	async prefferedCurrency(
 		preferedCurrencyDto: PrefferedCurrencyDto,
 		userId: string
@@ -814,7 +1022,11 @@ export class AuthService {
 			userId: userId,
 			isDeleted: false,
 		});
-
+		if (!user.isVerified) {
+			throw new NotAcceptableException(
+				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+			);
+		}
 		user.preferredCurrency = currencyId;
 		user.updatedDate = new Date();
 		try {
@@ -840,22 +1052,28 @@ export class AuthService {
 		}
 	}
 
-	async signInToOtherUser(signInOtherUserDto,siteUrl,parentUser){
+	async signInToOtherUser(signInOtherUserDto, siteUrl, parentUser) {
 		const { user_id } = signInOtherUserDto;
-		try{
+		try {
 			// inactive user also can login
 			let user = await this.userRepository.findOne({
-				userId:user_id,
-				isDeleted:false
+				userId: user_id,
+				isDeleted: false,
 			});
 
-			if(!user){
-				throw new UnauthorizedException(`Invalid user id! Please enter valid user id.`)
-			}
-			else{
+			if (!user) {
+				throw new UnauthorizedException(
+					`Invalid user id! Please enter valid user id.`
+				);
+			} else {
+				if (!user.isVerified) {
+					throw new NotAcceptableException(
+						`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+					);
+				}
 				const payload: JwtPayload = {
 					user_id: user.userId,
-					email:user.email,
+					email: user.email,
 					username: user.firstName + " " + user.lastName,
 					firstName: user.firstName,
 					phone: user.phoneNo,
@@ -866,24 +1084,21 @@ export class AuthService {
 						? `${siteUrl}/profile/${user.profilePic}`
 						: "",
 					roleId: user.roleId,
-					refrenceId:parentUser.userId
+					refrenceId: parentUser.userId,
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };
 				return token;
 			}
-		} 
-		catch (error) {
+		} catch (error) {
 			if (error instanceof UnauthorizedException) {
 				throw new UnauthorizedException(error.message);
 			}
 
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
-		);
-	}
-
-		
+			);
+		}
 	}
 
 	addLoginLog(userId, request, loginVia) {

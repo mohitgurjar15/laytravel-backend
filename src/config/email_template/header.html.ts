@@ -1,3 +1,5 @@
+import { BaseUrl } from "../base-url";
+
 export const EmailHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
@@ -149,7 +151,7 @@ export const EmailHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transit
 								<tr>
 									<td align="center" valign="top">
 										<a href="javascrip:void(0);" target="_blank">
-											<img src="Images/logo-white.png" alt="Laytrip" width="100%" height="auto" border="0" style="display: block; max-width: 180px; font-family: 'Open Sans', sans-serif;font-size: 18px; color: #fff; ">
+											<img src="${BaseUrl}/images/logo-white.svg" alt="Laytrip" width="100%" height="auto" border="0" style="display: block; max-width: 180px; font-family: 'Open Sans', sans-serif;font-size: 18px; color: #fff; ">
 										</a>
 									</td>
 								</tr>

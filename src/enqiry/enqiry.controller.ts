@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, HttpCode, Param } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, HttpCode, Param, Post, Body } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { EnquiryListDto } from './dto/enquiry-list.dto';
 import { Enquiry } from 'src/entity/enquiry.entity';
@@ -7,6 +7,9 @@ import { Role } from 'src/enum/role.enum';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/guards/role.decorator';
+import {newEnquiryDto} from './dto/new-enquiry.dto'
+import { GetUser } from 'src/auth/get-user.dacorator';
+import { User } from 'src/entity/user.entity';
 
 
 @ApiTags("Enquiry")
@@ -43,5 +46,22 @@ export class EnqiryController {
 	@HttpCode(200)
 	async getFaqDetail(@Param("id") id: string): Promise<Enquiry> {
 		return await this.enqiryService.getEnquiry(id);
+	}
+
+
+
+
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "Create New Enquiry" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Post()
+	async createEnquiry(
+		@Body() newEnquiryDto: newEnquiryDto,
+		@GetUser() user: User
+	): Promise<{ message: string }> {
+		return await this.enqiryService.newEnquiry(newEnquiryDto,user);
 	}
 }

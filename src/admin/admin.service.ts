@@ -73,6 +73,7 @@ export class AdminService {
 		user.lastName = last_name;
 		user.salt = salt;
 		user.createdBy = adminId;
+		user.isVerified = true;
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
