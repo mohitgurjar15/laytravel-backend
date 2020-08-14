@@ -403,4 +403,8 @@ export class Static implements StrategyAirline{
     async airRevalidate(routeIdDto){
         
     }
+
+    bookFlight(){
+        
+    }
 } 
