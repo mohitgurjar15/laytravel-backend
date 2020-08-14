@@ -10,10 +10,8 @@ export class MarkupRepository extends Repository<Markup>
         let markupArray =  await getManager()
             .createQueryBuilder(Markup, "markup")
             .innerJoinAndSelect("markup.module","module")
-            .innerJoinAndSelect("markup.supplier","supplier")
             .select([
-                	"markup.id","module.name","supplier.name",
-					"markup.userType","markup.operator","markup.operand"
+                	"markup.id","module.name","markup.operator","markup.operand"
             ]).getOne();
 			
 			if (!markupArray) {
@@ -41,7 +39,6 @@ export class MarkupRepository extends Repository<Markup>
 			.select([
                 "markup.id",
                 "module.name",
-                "markup.userType",
                 "markup.operator",
                 "markup.operand",
 			])

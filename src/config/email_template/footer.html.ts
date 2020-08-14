@@ -7,7 +7,7 @@ export const EmailFooter = `
                     <td align="center" style="padding: 15px;">
                         <table align="center" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 12px; line-height: 15px; color: #000000;">You received this email at <a href="mailto:abc@gmail.com" style="text-decoration: underline; color: #1943FF;">abc@gmail.com</a> because you signed up for Laytrip emails</td>
+                                <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 12px; line-height: 15px; color: #000000;">You received this email at <a href="mailto:no-reply@laytrip.com" style="text-decoration: underline; color: #1943FF;">no-reply@laytrip.com</a> because you signed up for Laytrip emails</td>
                             </tr>
                             <tr>
                                 <td align="center" valign="top" style="padding-top: 8px; font-family: 'Open Sans', sans-serif;font-size: 12px; line-height: 15px; color: #000000;">
