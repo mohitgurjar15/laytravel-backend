@@ -10,8 +10,9 @@ db:
     type: "postgres"
     port: 5432
     username: "postgres"
-    host: "localhost"
-    database: "laytravel"
+    host: "laytrip-dev.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
+    database: "laytrip"
+    password: "nOEbFEONMcWpZNPzdcQ1"
     synchronize: true
 
 jwt:
