@@ -1,4 +1,4 @@
-import { IsNotEmpty,  ValidationArguments, IsEnum, IsEmail, IsArray, ValidateNested, ValidateIf } from "class-validator";
+import { IsNotEmpty,  ValidationArguments, IsEnum, IsEmail, IsArray, ValidateNested, ValidateIf, IsOptional, IsInt, IsNumber } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 import { errorMessage } from "src/config/common.config";
@@ -126,24 +126,43 @@ export class BookFlightDto{
 	payment_type:string;
 
 	
-	@IsNotEmpty({
-		message: `Please enter net rate.&&&net_rate${errorMessage}`,
-	})
+	@IsNumber({},{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter net rate.&&&net_rate&&&${errorMessage}`;
+            } else {
+                return `Please enter net rate in decimal format.&&&net_rate&&&${errorMessage}`;
+            }
+        }
+    })
     @ApiProperty({
         description:`Net rate`,
         example:100.00
     })
 	net_rate:number;
 
-	@IsNotEmpty({
-		message: `Please enter selling price.&&&selling_price${errorMessage}`,
-	})
+	
+    @IsNumber({},{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter selling price.&&&selling_price&&&${errorMessage}`;
+            } else {
+                return `Please enter selling price in decimal format.&&&selling_price&&&${errorMessage}`;
+            }
+        }
+    })
     @ApiProperty({
         description:`Selling price`,
         example:105.00
     })
-	selling_price:number;
-	
+    selling_price:number;
+
+    @IsOptional()
+    @ApiProperty({
+        description:`Laycredit point to redeem`,
+        example:10
+    })
+    laycredit_points:number;
     
     @IsNotEmpty({
 		message: `Please enter route code.&&&route_code${errorMessage}`,

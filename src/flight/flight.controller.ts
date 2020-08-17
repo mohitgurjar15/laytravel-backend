@@ -139,6 +139,7 @@ export class FlightController {
        @Body() bookFlightDto:BookFlightDto,
        @Req() req
     ){
+        console.log(bookFlightDto)
         return await this.flightService.bookFlight(bookFlightDto,req.headers);
     }
 }

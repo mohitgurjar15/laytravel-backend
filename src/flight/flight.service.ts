@@ -66,14 +66,12 @@ export class FlightService {
         const mystifly = new Strategy(new Mystifly(this.flightRepository));
         const result = new Promise((resolve) => resolve(mystifly.baggageDetails(routeIdDto)));
         return result;
-     }
+    }
 
      
-     async cancellationPolicy(routeIdsDto:RouteIdsDto){
-
-        
-        
-     }
+    async cancellationPolicy(routeIdsDto:RouteIdsDto){
+    
+    }
 
      async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
         //const local = new Strategy(new Static(this.flightRepository));
@@ -104,9 +102,9 @@ export class FlightService {
         if(infant_count!=travelersDetails.infants.length)
             throw new BadRequestException(`Infants count is not match with search request`)
 
-        const mystifly = new Strategy(new Mystifly(headers));
+        /* const mystifly = new Strategy(new Mystifly(headers));
         const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));
-        return result;
+        return result; */
      }
 
      async validateHeaders(headers){
