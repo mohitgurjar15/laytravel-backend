@@ -6,7 +6,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm";
-import { FlightRoute } from "./flight-route.entity";
 
 //@Index("airport_pk", ["id"], { unique: true })
 @Entity("airport")
@@ -40,16 +39,4 @@ export class Airport extends BaseEntity {
 
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
-
-  @OneToMany(
-    () => FlightRoute,
-    flightRoute => flightRoute.arrival
-  )
-  flightRoutes: FlightRoute[];
-
-  @OneToMany(
-    () => FlightRoute,
-    flightRoute => flightRoute.departure
-  )
-  flightRoutes2: FlightRoute[];
 }

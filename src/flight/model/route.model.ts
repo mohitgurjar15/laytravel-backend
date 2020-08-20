@@ -17,6 +17,7 @@ export class Route{
     airline         : string;
     is_refundable   : boolean;
     start_price     : string;
+    selling_price   : string;
 }
 
 export class RouteType{

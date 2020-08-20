@@ -1,6 +1,6 @@
 import { StrategyAirline } from "./strategy.interface";
 import { OneWaySearchFlightDto } from "../dto/oneway-flight.dto";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, InternalServerErrorException } from "@nestjs/common";
 import { RoundtripSearchFlightDto } from "../dto/roundtrip-flight.dto";
 import Axios from 'axios';
 import * as xml2js from 'xml2js';
@@ -12,6 +12,10 @@ import { Generic } from "src/utility/generic.utility";
 import { getManager } from "typeorm";
 import { Airport } from "src/entity/airport.entity";
 import { Instalment } from "src/utility/instalment.utility";
+import { PriceMarkup } from "src/utility/markup.utility";
+import { Module } from "src/entity/module.entity";
+import { errorMessage } from "src/config/common.config";
+import { Markup } from "src/entity/markup.entity";
 const fs = require('fs').promises;
 
 export class Mystifly implements StrategyAirline{
@@ -94,7 +98,7 @@ export class Mystifly implements StrategyAirline{
         
     }
 
-    async oneWaySearch(searchFlightDto:OneWaySearchFlightDto)/* :Promise<Route[]> */{
+    async oneWaySearch(searchFlightDto:OneWaySearchFlightDto,user):Promise<Route[]> {
         
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
@@ -107,6 +111,20 @@ export class Mystifly implements StrategyAirline{
             child_count,
             infant_count
         } = searchFlightDto;
+
+        let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name:'flight' })
+            .getOne();
+
+        if(!module){
+            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+        }
+        const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
+        const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+        if(!markUpDetails){
+            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+        }
 
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`
@@ -193,7 +211,9 @@ export class Mystifly implements StrategyAirline{
             let route:Route;
             let routeType:RouteType;
             let flightSegments=[];
-            const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
+
+            
+
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
@@ -232,6 +252,7 @@ export class Mystifly implements StrategyAirline{
                 route.routes[0]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
+                route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
                 let instalmentDetails   = Instalment.weeklyInstalment(route.net_rate,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
                     route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
