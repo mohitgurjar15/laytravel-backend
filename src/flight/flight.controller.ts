@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, Res, Session } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
@@ -6,7 +6,7 @@ import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
-import { GetUser } from 'src/auth/get-user.dacorator';
+import { LogInUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
 import { BookFlightDto } from './dto/book-flight.dto';
 
@@ -33,6 +33,7 @@ export class FlightController {
         
         
     @Post('/search-oneway-flight')
+    @ApiBearerAuth()
     @ApiOperation({ summary: "Search One Way flight" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -51,11 +52,9 @@ export class FlightController {
     async searchOneWayFlight(
        @Body() searchFlightDto:OneWaySearchFlightDto,
        @Req() req,
-       @GetUser() user:User
+       @LogInUser() user,
     ){
-        console.log("user",user)
-        return await this.flightService.searchOneWayFlight(searchFlightDto,req.headers);
-
+        return await this.flightService.searchOneWayFlight(searchFlightDto,req.headers,user);
     }
 
     @Post('/search-roundtrip-flight')

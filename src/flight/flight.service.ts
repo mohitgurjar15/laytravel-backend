@@ -1,11 +1,8 @@
 import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Strategy } from './strategy/strategy';
-import { Static } from './strategy/static';
 import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FlightRepository } from './flight.repository';
 import { AirportRepository } from './airport.repository';
-import { SeatAllocationRepository } from './seat-allocation.repository';
 import { getManager, getConnection } from 'typeorm';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
@@ -15,30 +12,22 @@ import { Language } from 'src/entity/language.entity';
 import { BookFlightDto } from './dto/book-flight.dto';
 import { User } from 'src/entity/user.entity';
 import * as moment from 'moment';
+import { PaymentType } from 'src/enum/payment-type.enum';
 
 @Injectable()
 export class FlightService {
 
     constructor(
-        @InjectRepository(FlightRepository)
-        private flightRepository:FlightRepository,
 
         @InjectRepository(AirportRepository)
-        private airportRepository:AirportRepository,
-
-        @InjectRepository(SeatAllocationRepository)
-        private seatAllocationRepository:SeatAllocationRepository
+        private airportRepository:AirportRepository
     ){}
     
     async searchAirport(name:String){
 
         try{
             let result = await this.airportRepository.find({
-                where : `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
-                cache : {
-                    id:'flight_search',
-                    milliseconds:15000
-                }
+                where : `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`
             })
 
             if(!result.length)
@@ -54,16 +43,16 @@ export class FlightService {
         }
     }
 
-    async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto,headers){
+    async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto,headers,user){
 
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers));
-        const result = new Promise((resolve) => resolve(mystifly.oneWaySearch(searchFlightDto)));
+        const result = new Promise((resolve) => resolve(mystifly.oneWaySearch(searchFlightDto,user)));
         return result;
     }
 
     async baggageDetails(routeIdDto:RouteIdsDto){    
-        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        const mystifly = new Strategy(new Mystifly({}));
         const result = new Promise((resolve) => resolve(mystifly.baggageDetails(routeIdDto)));
         return result;
     }
@@ -75,7 +64,7 @@ export class FlightService {
 
      async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
         //const local = new Strategy(new Static(this.flightRepository));
-        const mystifly = new Strategy(new Mystifly(this.flightRepository));
+        const mystifly = new Strategy(new Mystifly({}));
         const result = new Promise((resolve) => resolve(mystifly.roundTripSearch(searchFlightDto)));
         return result;
      }
@@ -90,7 +79,9 @@ export class FlightService {
      async bookFlight(bookFlightDto:BookFlightDto,headers){
         await this.validateHeaders(headers);
 
-        let { travelers, adult_count, child_count,infant_count } = bookFlightDto;
+        let { 
+            travelers, payment_type, 
+            adult_count, child_count,infant_count } = bookFlightDto;
         let travelersDetails = await this.getTravelersInfo(travelers);
         
         if(adult_count!=travelersDetails.adults.length)
@@ -101,7 +92,10 @@ export class FlightService {
         
         if(infant_count!=travelersDetails.infants.length)
             throw new BadRequestException(`Infants count is not match with search request`)
+        
+        /* if(payment_type==PaymentType.INSTALMENT){
 
+        } */
         /* const mystifly = new Strategy(new Mystifly(headers));
         const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));
         return result; */

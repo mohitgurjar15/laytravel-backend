@@ -9,7 +9,7 @@ export class PriceMarkup{
      * @param supplierId  (Supplier ID)
      * @param userType (Free user , paid user or Guest user)
      */
-    static async applyMarkup(netRate,markupDetails){
+    static applyMarkup(netRate,markupDetails){
 
         let markupPrice;
         if(markupDetails){
@@ -39,6 +39,8 @@ export class PriceMarkup{
     }
 
     static async getMarkup(moduleId,userType=null){
+        
+        userType = userType==null ? 7 : userType;
         let markupDetails =  await getManager()
                             .createQueryBuilder(Markup, "markup")
                             .where("markup.module_id = :moduleId and markup.user_type=:userType", { moduleId,userType })
