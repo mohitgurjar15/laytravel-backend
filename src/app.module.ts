@@ -31,6 +31,7 @@ import { ActivitiesModule } from './activities/activities.module';
 import { FaqModule } from './faq/faq.module';
 import { EnqiryModule } from './enqiry/enqiry.module';
 import { CmsModule } from "./cms/cms.module";
+import { SubscriptionModule } from './subscription/subscription.module';
 
 
 @Module({
@@ -87,6 +88,7 @@ import { CmsModule } from "./cms/cms.module";
 		FaqModule,
 		EnqiryModule,
 		CmsModule,
+		SubscriptionModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

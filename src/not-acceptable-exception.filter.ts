@@ -8,6 +8,7 @@ export class NotAcceptableExceptionFilter implements ExceptionFilter {
 		const response = ctx.getResponse<Response>();
 		const request = ctx.getRequest<Request>();
 		const status = exception.getStatus();
+		console.log("exception----------------------------- here", exception.getResponse());
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 		response
 			.status(406)

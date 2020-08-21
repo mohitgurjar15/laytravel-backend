@@ -4,7 +4,9 @@ import { Gender } from 'src/enum/gender.enum';
 
 export class UpdateAdminDto{
 
-    @IsNotEmpty()
+    @IsNotEmpty({
+        message : `Please enter your first name.&&&first_name`
+    })
     
     @ApiProperty({
         description: 'Enter First Name',
@@ -18,7 +20,9 @@ export class UpdateAdminDto{
     })
     middleName: string;
 
-    @IsNotEmpty()
+    @IsNotEmpty({
+        message : `Please enter your last name.&&&first_name`
+    })
     @ApiProperty({
         description: 'Enter Last Name',
         example: 'Doe'

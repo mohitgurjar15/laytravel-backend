@@ -142,7 +142,7 @@ export class User extends BaseEntity {
   registerVia: string | null;
 
   @Column("date", { name: "next_subscription_date", nullable: true })
-  nextSubscriptionDate: string | null;
+  nextSubscriptionDate: Date | null;
 
   @Column("character varying", {
     name: "city_name",
