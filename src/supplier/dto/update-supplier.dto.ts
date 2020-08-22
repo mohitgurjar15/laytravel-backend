@@ -21,7 +21,9 @@ export class UpdateSupplierDto{
 	})
 	title: string;
 
-    @IsNotEmpty()
+    @IsNotEmpty({
+        message : `Please enter your first name.&&&first_name`
+    })
     @ApiProperty({
         description: 'Enter First Name',
         example: 'Jon'
@@ -34,7 +36,9 @@ export class UpdateSupplierDto{
     })
     middleName: string;
 
-    @IsNotEmpty()
+    @IsNotEmpty({
+        message : `Please enter your last name.&&&last_name`
+    })
     @ApiProperty({
         description: 'Enter Last Name',
         example: 'Doe'

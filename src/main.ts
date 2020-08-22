@@ -18,6 +18,7 @@ import { ForbiddenExceptionFilter } from "./forbidden-resources-exception.filter
 import * as path from "path";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { ValidationPipe } from "@nestjs/common";
+import { NotAcceptableExceptionFilter } from "./not-acceptable-exception.filter";
 
 async function bootstrap() {
 	const serverConfig = config.get("server");
@@ -41,6 +42,7 @@ async function bootstrap() {
 	app.useGlobalFilters(new UnauthorizedExceptionFilter());
 	app.useGlobalFilters(new InternalServerErrorExceptionFilter());
 	app.useGlobalFilters(new ForbiddenExceptionFilter());
+	app.useGlobalFilters(new NotAcceptableExceptionFilter());
 	app.useGlobalPipes(new ValidationPipe());
 
 	const options = new DocumentBuilder()

@@ -26,7 +26,7 @@ export class PlanSubscription extends BaseEntity {
   userId: string;
 
   @Column("date", { name: "subscription_date" })
-  subscriptionDate: string;
+  subscriptionDate: Date;
 
   @Column("integer", { name: "currency_id" })
   currencyId: number;

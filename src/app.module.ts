@@ -31,6 +31,9 @@ import { ActivitiesModule } from './activities/activities.module';
 import { FaqModule } from './faq/faq.module';
 import { EnqiryModule } from './enqiry/enqiry.module';
 import { CmsModule } from "./cms/cms.module";
+import { SubscriptionModule } from './subscription/subscription.module';
+import { RewordPointModule } from './reword-point/reword-point.module';
+import { CronJobsModule } from './cron-jobs/cron-jobs.module';
 
 
 @Module({
@@ -87,6 +90,9 @@ import { CmsModule } from "./cms/cms.module";
 		FaqModule,
 		EnqiryModule,
 		CmsModule,
+		SubscriptionModule,
+		RewordPointModule,
+		CronJobsModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
