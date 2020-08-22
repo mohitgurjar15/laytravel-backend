@@ -5,6 +5,7 @@ import { errorMessage } from "src/config/common.config";
 import { Type } from 'class-transformer';
 import { FlightJourney } from "src/enum/flight-journey.enum";
 import { PaymentType } from "src/enum/payment-type.enum";
+import { InstalmentType} from "src/enum/instalment-type.enum";
 
 export class BookFlightDto{
 	
@@ -163,6 +164,26 @@ export class BookFlightDto{
         example:10
     })
     laycredit_points:number;
+
+    @IsOptional({
+        message: (args: ValidationArguments) => {
+            if (typeof args.value != "undefined" && ![InstalmentType.WEEKLY,InstalmentType.BIWEEKLY,InstalmentType.MONTHLY].includes(args.value)) {
+                return `Please enter valid instalment type.&&&instalment_type&&&${errorMessage}`;
+            }
+        }
+    })
+    @ApiProperty({
+        description:`Instalment type`,
+        example:`weekly`
+    })
+    instalment_type:string;
+
+    @IsOptional()
+    @ApiProperty({
+        description:`Additional with payment with instalement`,
+        example:10
+    })
+    additional_amount:number;
     
     @IsNotEmpty({
 		message: `Please enter route code.&&&route_code${errorMessage}`,

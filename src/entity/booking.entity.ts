@@ -71,6 +71,9 @@ export class Booking extends BaseEntity {
   @Column("json", { name: "payment_info" })
   paymentInfo: object;
 
+  @Column("boolean", { name: "is_predictive", default: () => false})
+  isPredictive: boolean;
+
   @Column("numeric", {
     name: "payment_gateway_processing_fee",
     nullable: true,

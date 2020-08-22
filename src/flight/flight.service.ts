@@ -13,6 +13,12 @@ import { BookFlightDto } from './dto/book-flight.dto';
 import { User } from 'src/entity/user.entity';
 import * as moment from 'moment';
 import { PaymentType } from 'src/enum/payment-type.enum';
+import { Instalment } from 'src/utility/instalment.utility';
+import { InstalmentType } from 'src/enum/instalment-type.enum';
+import { Booking } from 'src/entity/booking.entity';
+import { v4 as uuidv4 } from "uuid";
+import { BookingStatus } from 'src/enum/booking-status.enum';
+import { BookingType } from 'src/enum/booking-type.enum';
 
 @Injectable()
 export class FlightService {
@@ -77,13 +83,18 @@ export class FlightService {
      }
 
      async bookFlight(bookFlightDto:BookFlightDto,headers){
-        await this.validateHeaders(headers);
+        let headerDetails = await this.validateHeaders(headers);
 
         let { 
-            travelers, payment_type, 
-            adult_count, child_count,infant_count } = bookFlightDto;
+            travelers, payment_type, instalment_type,
+            adult_count, child_count,infant_count, 
+            net_rate, selling_price, additional_amount,
+            departure_date
+        } = bookFlightDto;
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let travelersDetails = await this.getTravelersInfo(travelers);
-        
+        let currencyId = headerDetails.currency.id;
+
         if(adult_count!=travelersDetails.adults.length)
             throw new BadRequestException(`Adults count is not match with search request!`)
 
@@ -93,12 +104,74 @@ export class FlightService {
         if(infant_count!=travelersDetails.infants.length)
             throw new BadRequestException(`Infants count is not match with search request`)
         
-        /* if(payment_type==PaymentType.INSTALMENT){
+        if(payment_type==PaymentType.INSTALMENT){
+            let instalmentDetails;
+            if(!additional_amount){
 
-        } */
+            
+                //let layCreditAmount =  
+                //save entry for future booking
+                if(instalment_type==InstalmentType.WEEKLY){
+
+                    instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,additional_amount);
+                }
+
+                this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,instalmentDetails);
+            }
+        }
         /* const mystifly = new Strategy(new Mystifly(headers));
         const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));
         return result; */
+     }
+
+    async saveBooking(
+        bookFlightDto:BookFlightDto,currencyId,bookingDate,
+        bookingType,instalmentDetails=null
+    ){
+        
+        const {
+            selling_price, net_rate, journey_type,
+            departure_date, source_location, destination_location,
+            adult_count, child_count, infant_count,flight_class
+        } = bookFlightDto;
+
+        let booking= new Booking();
+        booking.id =uuidv4();
+        booking.moduleId=1;
+        booking.isPredictive=true;
+        booking.bookingType=bookingType;
+        booking.bookingStatus=BookingStatus.PENDING;
+        booking.currency=currencyId;
+        booking.totalAmount=selling_price.toString();
+        booking.netRate=net_rate.toString();
+        booking.markupAmount = (selling_price-net_rate).toString();
+        booking.bookingDate=bookingDate;
+        booking.locationInfo={
+            journey_type,
+            source_location,
+            destination_location
+        }
+
+        if(instalmentDetails){
+            booking.totalInstallments= instalmentDetails.instalment_date.length;
+            if(instalmentDetails.instalment_date.length>1){
+                booking.nextInstalmentDate=instalmentDetails.instalment_date[1].date;
+            }
+
+        }
+        let moduleInfo={
+            journey_type,
+            departure_date,
+            source_location,
+            destination_location,
+            adult_count,
+            child_count,
+            infant_count,
+            flight_class
+        }
+        booking.moduleInfo=moduleInfo;
+        await booking.save();
+
      }
 
      async validateHeaders(headers){
@@ -120,6 +193,9 @@ export class FlightService {
         let languageDetails = await getManager().createQueryBuilder(Language,"language").where(`"language"."iso_1_code"=:language and "language"."active"=true`,{language}).getOne();
         if(!languageDetails){
             throw new BadRequestException(`Invalid language code sent!`)
+        }
+        return {
+            currency,language
         }
      }
 
