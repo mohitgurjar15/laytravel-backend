@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Post, Body } from "@nestjs/common";
+import { Controller, Get, UseGuards, Post, Body, HttpCode } from "@nestjs/common";
 import {
 	ApiBearerAuth,
 	ApiTags,
@@ -32,6 +32,7 @@ export class SubscriptionController {
 	})
 	@ApiResponse({ status: 404, description: "Subscription plan not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
 	async planList(): Promise<{ data: Plan[] }> {
 		return await this.SubscriptionService.planList();
 	}
@@ -44,12 +45,31 @@ export class SubscriptionController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Post()
+	@HttpCode(200)
 	async subscribePlan(
 		@GetUser() user: User,
 		@Body() subscribePlan: SubscribePlan
 	): Promise<{ message: string }> {
 		return await this.SubscriptionService.subscribePlan(
 			subscribePlan,
+			user
+		);
+	}
+
+
+	@UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.PAID_USER)
+	@ApiOperation({ summary: "Get the subscribed plan detail" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Get('plan-detail')
+	async getPlanDetail(
+		@GetUser() user: User,
+	)
+	{
+		return await this.SubscriptionService.getPlanDetail(
 			user
 		);
 	}

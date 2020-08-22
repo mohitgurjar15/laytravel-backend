@@ -181,7 +181,7 @@ export class AuthController {
 		return result;
 	}
 
-	@Post("forget-password")
+	@Post("forgot-password")
 	@ApiOperation({ summary: "Forgot password of user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -189,7 +189,7 @@ export class AuthController {
 	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
-	async forgetPassword(
+	async forgotPassword(
 		@Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
 		@SiteUrl() siteUrl: string
 	) {
