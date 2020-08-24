@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { PlanSubscription } from "src/entity/plan-subscription.entity";
 import { getConnection, getManager } from "typeorm";
 import { UserRepository } from "src/auth/user.repository";
+import { updateLocale } from "moment";
 
 @Injectable()
 export class SubscriptionService {
@@ -48,7 +49,12 @@ export class SubscriptionService {
 	async subscribePlan(subscribePlan: SubscribePlan, user: User) {
 		const { planId, currencyId, amount, status, info } = subscribePlan;
 
-		console.log(subscribePlan);
+		//Card Authorize
+
+
+		//card capture
+
+		console.log(subscribePlan);		
 
 		const subscribe = new PlanSubscription();
 		subscribe.id = uuidv4();
