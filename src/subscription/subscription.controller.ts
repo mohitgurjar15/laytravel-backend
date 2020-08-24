@@ -52,7 +52,7 @@ export class SubscriptionController {
 	): Promise<{ message: string }> {
 		return await this.SubscriptionService.subscribePlan(
 			subscribePlan,
-			user
+			user.userId,user.userId
 		);
 	}
 

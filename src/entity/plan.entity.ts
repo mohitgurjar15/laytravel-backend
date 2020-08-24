@@ -23,7 +23,7 @@ export class Plan extends BaseEntity {
   description: string;
 
   @Column("numeric", { name: "amount", precision: 10, scale: 2 })
-  amount: string;
+  amount: number;
 
   @Column("integer", { name: "validity_days" })
   validityDays: number;

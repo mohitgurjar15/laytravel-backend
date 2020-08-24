@@ -486,6 +486,7 @@ export class AuthService {
 		}
 		let accessToken;
 		let loginvia;
+		console.log(user.validateOtp(otp));
 		if (user.validateOtp(otp)) {
 			try {
 				user.isVerified = true;

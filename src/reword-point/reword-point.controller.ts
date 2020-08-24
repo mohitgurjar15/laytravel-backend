@@ -14,7 +14,7 @@ import { GetUser } from 'src/auth/get-user.dacorator';
 
 @ApiTags("Laytrip Reword Point")
 @ApiBearerAuth()
-@Controller('reword-point')
+@Controller('laytrip-point')
 export class RewordPointController {
 
     constructor(private RewordPointService:RewordPointService) {}
@@ -22,7 +22,25 @@ export class RewordPointController {
 	@Get('earned/:id')
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)	
-	@ApiOperation({ summary: "List All Earned Laytrip Point" })
+	@ApiOperation({ summary: "List all earned laytrip point of user by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Rewords Are Not Available." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listEarnRewordByAdmin(
+        @Param("id") id: string,
+        @Query() paginationOption: ListEarnRewordDto
+	): Promise<{ data: LayCreditEarn[] ,TotalResult: number}> {
+		return await this.RewordPointService.listEarnReword(paginationOption,id);
+	}
+	
+	@Get('earned')
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "list all earned laytrip point by user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -32,9 +50,10 @@ export class RewordPointController {
 	@ApiResponse({ status: 404, description: "Rewords Are Not Available." })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listEarnReword(
-        @Param("id") id: string,
-        @Query() paginationOption: ListEarnRewordDto
+		@Query() paginationOption: ListEarnRewordDto,
+		@GetUser() user: User,
 	): Promise<{ data: LayCreditEarn[] ,TotalResult: number}> {
+		const id =user.userId
 		return await this.RewordPointService.listEarnReword(paginationOption,id);
     }
 	
@@ -42,7 +61,25 @@ export class RewordPointController {
 	@Get('redeemed/:id')
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)	
-	@ApiOperation({ summary: "List All Redeemed Laytrip Points" })
+	@ApiOperation({ summary: "List all redeemed laytrip points of user by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Rewords Are Not Available." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listRedeemRewordByAdmin(
+        @Param("id") id: string,
+        @Query() paginationOption: ListRedeemRewordDto
+	): Promise<{ data: LayCreditRedeem[] ,TotalResult: number}> {
+		return await this.RewordPointService.listRedeemReword(paginationOption,id);
+	}
+
+	@Get('redeemed')
+	@UseGuards(AuthGuard())	
+	@ApiOperation({ summary: "List all redeemed laytrip points by user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -59,9 +96,26 @@ export class RewordPointController {
 	}
 	
 
-	@Get('total-available-points')
+	@Get('total-available-points/:id')
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)	
+	@ApiOperation({ summary: "Get total available Laytrip Points of user by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Rewords Are Not Available." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async countOfRewordPointsbyAdmin(
+        @Param("id") id: string,
+	): Promise<{ Total_available_points : number }> {
+		return await this.RewordPointService.countOfRewordPoints(id);
+	}
+	
+	@Get('total-available-points')
+	@UseGuards(AuthGuard())	
 	@ApiOperation({ summary: "Get total available Laytrip Points" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -74,7 +128,7 @@ export class RewordPointController {
 	async countOfRewordPoints(
         @GetUser() user: User,
 	): Promise<{ Total_available_points : number }> {
-		return await this.RewordPointService.countOfRewordPoints(user);
+		return await this.RewordPointService.countOfRewordPoints(user.userId);
     }
     
 

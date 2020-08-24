@@ -29,7 +29,7 @@ export class Currency extends BaseEntity {
   symbol: string;
 
   @Column("numeric", { name: "live_rate", precision: 8, scale: 3 })
-  liveRate: string;
+  liveRate: number;
 
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;

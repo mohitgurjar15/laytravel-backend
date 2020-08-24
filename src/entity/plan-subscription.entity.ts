@@ -32,7 +32,7 @@ export class PlanSubscription extends BaseEntity {
   currencyId: number;
 
   @Column("numeric", { name: "amount", precision: 10, scale: 2 })
-  amount: string;
+  amount: number;
 
   @Column("integer", { name: "payment_status" })
   paymentStatus: number;
