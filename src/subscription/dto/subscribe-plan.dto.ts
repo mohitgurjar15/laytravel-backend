@@ -9,7 +9,7 @@ export class SubscribePlan{
 		description: `Enter plan id`,
 		example: '51fcf4bb-b53b-4c0e-a4f4-0e7c44f0cb10',
 	})
-    planId: string;
+    plan_id: string;
     
 
     @IsNotEmpty({
@@ -19,33 +19,16 @@ export class SubscribePlan{
 		description: `Enter currency id`,
 		example: 1,
 	})
-    currencyId: number;
-    
+	currency_id: number;
+	
 
-    @IsNotEmpty({
-		message: `Please enter amount`,
+	@IsNotEmpty({
+		message: `Your card detail is required`,
 	})
 	@ApiProperty({
-		description: `Enter amount`,
-		example: '500',
+		description: `Enter card token`,
+		example: "lX1S2piuQrbLORuusqXbRlE21jyomOkNCfAml_RWqBc",
 	})
-    amount: string;
+    card_token: string;
     
-    @IsNotEmpty({
-		message: `Please enter payment status`,
-	})
-	@ApiProperty({
-		description: `Enter payment status`,
-		example: 1,
-	})
-    status: number;
-    
-    @IsNotEmpty({
-		message: `Please enter payment info`,
-	})
-	@ApiProperty({
-		description: `Enter payment info`,
-		example: '{ sessionId:443344, statusCode:1 ,status: success}',
-	})
-	info: JSON;
 }

@@ -314,6 +314,6 @@ export class User extends BaseEntity {
   }
   
   async validateOtp(Otp: number): Promise<boolean> {
-		return Otp === this.otp;
+		return Otp == this.otp;
 	}
 }
