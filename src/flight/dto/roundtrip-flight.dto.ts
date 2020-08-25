@@ -9,7 +9,7 @@ export class RoundtripSearchFlightDto{
 	})
     @ApiProperty({
         description:`From Airport Location`,
-        example:`ADS`
+        example:`JAI`
     })
     source_location:string;
 
@@ -18,7 +18,7 @@ export class RoundtripSearchFlightDto{
 	})
     @ApiProperty({
         description:`To Airport Location`,
-        example:`CHI`
+        example:`DEL`
     })
 	destination_location:string;
 

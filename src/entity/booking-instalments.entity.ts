@@ -38,8 +38,8 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "supplier_id" })
   supplierId: number;
 
-  @Column("integer", { name: "instalment_type" })
-  instalmentType: number;
+  @Column("character varying", { name: "instalment_type", length: 30 })
+  instalmentType: string;
 
   @Column("date", { name: "instalment_date" })
   instalmentDate: string;
@@ -53,11 +53,11 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "instalment_status" })
   instalmentStatus: number;
 
-  @Column("integer", { name: "payment_gateway_id" })
-  paymentGatewayId: number;
+  @Column("integer", { name: "payment_gateway_id", nullable:true })
+  paymentGatewayId: number | null;
 
-  @Column("json", { name: "payment_info" })
-  paymentInfo: object;
+  @Column("json", { name: "payment_info", nullable:true })
+  paymentInfo: object | null;
 
   @Column("integer", { name: "payment_status" })
   paymentStatus: number;
@@ -71,8 +71,8 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "is_invoice_generated", default: () => "0" })
   isInvoiceGenerated: number;
 
-  @Column("text", { name: "comment" })
-  comment: string;
+  @Column("text", { name: "comment", nullable:true })
+  comment: string | null;
 
   @ManyToOne(
     () => Booking,

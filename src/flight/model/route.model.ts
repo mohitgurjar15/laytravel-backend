@@ -1,5 +1,15 @@
 import { Stop } from "./stop.model";
 
+export class FlightSearchResult{
+
+    items       : Route[];
+    price_range : PriceRange;
+    partial_payment_price_range:PriceRange;
+    stop_data  : any;
+    airline_list :any;
+    depature_time_slot:any;
+    arrival_time_slot:any;
+}
 export class Route{
 
     type            :  string;
@@ -18,10 +28,30 @@ export class Route{
     is_refundable   : boolean;
     start_price     : string;
     selling_price   : string;
+    airline_name    : string;
+    airline_logo    : string;
 }
 
 export class RouteType{
 
     type    :  string;
     stops   :  Stop[]
+}
+
+export class PriceRange{
+    min_price : string;
+    max_price : string;
+}
+
+export class StopData{
+
+    non_stop : StopDetails;
+    one_stop : StopDetails;
+    two_plus : StopDetails;
+}
+
+export class StopDetails{
+
+    count : number;
+    min_price : string;
 }

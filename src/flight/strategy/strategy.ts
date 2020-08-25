@@ -15,8 +15,8 @@ export class Strategy{
         return data;
     }
 
-    async roundTripSearch(params){
-        const data = await this.airline.roundTripSearch(params);
+    async roundTripSearch(param1,param2){
+        const data = await this.airline.roundTripSearch(param1,param2);
         return data;
     }
 
@@ -25,8 +25,8 @@ export class Strategy{
         return data;
     }
 
-    async airRevalidate(params){
-        const data = await this.airline.airRevalidate(params);
+    async airRevalidate(param1,param2){
+        const data = await this.airline.airRevalidate(param1,param2);
         return data;
     }
 
