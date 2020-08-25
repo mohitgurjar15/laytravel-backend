@@ -295,7 +295,10 @@ export class Mystifly implements StrategyAirline{
 
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
+
+            //Get Departure time slot
             flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time')
+            //Get Arrival time slot
             flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time')
             return flightSearchResult;
         }
@@ -657,7 +660,36 @@ export class Mystifly implements StrategyAirline{
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
                 routes.push(route);
             }
-            return routes;
+            //return routes;
+            let flightSearchResult= new FlightSearchResult();
+            flightSearchResult.items=routes;
+
+            //Get min & max selling price
+            let priceRange = new PriceRange();
+            let priceType = 'selling_price';
+            priceRange.min_price = this.getMinPrice(routes,priceType);
+            priceRange.max_price =this.getMaxPrice(routes,priceType);
+            flightSearchResult.price_range=priceRange;
+
+            //Get min & max partail payment price
+            let partialPaymentPriceRange = new PriceRange();
+            priceType='start_price';
+            partialPaymentPriceRange.min_price = this.getMinPrice(routes,priceType);
+            partialPaymentPriceRange.max_price =this.getMaxPrice(routes,priceType);
+            flightSearchResult.partial_payment_price_range=partialPaymentPriceRange;
+            //return flightSearchResult;
+
+            //Get Stops count and minprice
+            flightSearchResult.stop_data=this.getStopCounts(routes);
+
+            //Get airline and min price
+            flightSearchResult.airline_list = this.getAirlineCounts(routes)
+
+            //Get Departure time slot
+            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time')
+            //Get Arrival time slot
+            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time')
+            return flightSearchResult;
         }
         else{
 
