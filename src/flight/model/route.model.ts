@@ -6,6 +6,9 @@ export class FlightSearchResult{
     price_range : PriceRange;
     partial_payment_price_range:PriceRange;
     stop_data  : any;
+    airline_list :any;
+    depature_time_slot:any;
+    arrival_time_slot:any;
 }
 export class Route{
 

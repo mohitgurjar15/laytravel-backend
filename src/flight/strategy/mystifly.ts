@@ -291,45 +291,12 @@ export class Mystifly implements StrategyAirline{
             //return flightSearchResult;
 
             //Get Stops count and minprice
-            
-            let stopsData={
-                non_stop:{
-                   count:0,
-                   min_price:null
-                },
-                one_stop:{
-                    count:0,
-                   min_price:null
-                },
-                two_and_two_plus_stop:{
-                    count:0,
-                   min_price:null
-                }
-            };
-            routes.forEach(route=>{
-                if(route.stop_count==0){
-                    if(stopsData.non_stop.min_price==null || (stopsData.non_stop.min_price > route.selling_price)){
-                            stopsData.non_stop.min_price=route.selling_price;
-                    }
-                    stopsData.non_stop.count+=1;
-                }
+            flightSearchResult.stop_data=this.getStopCounts(routes);
 
-                if(route.stop_count==1){
-                    if(stopsData.one_stop.min_price==null || (stopsData.one_stop.min_price > route.selling_price)){
-                        stopsData.one_stop.min_price=route.selling_price;
-                    }
-                    stopsData.one_stop.count+=1;
-                }
-
-                if(route.stop_count>1){
-                    if(stopsData.two_and_two_plus_stop.min_price==null || (stopsData.two_and_two_plus_stop.min_price > route.selling_price)){
-                        stopsData.two_and_two_plus_stop.min_price=route.selling_price;
-                    }
-                    stopsData.two_and_two_plus_stop.count+=1;
-                }
-            })
-
-            flightSearchResult.stop_data=stopsData;
+            //Get airline and min price
+            flightSearchResult.airline_list = this.getAirlineCounts(routes)
+            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time')
+            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time')
             return flightSearchResult;
         }
         else{
@@ -345,6 +312,138 @@ export class Mystifly implements StrategyAirline{
 
     getMaxPrice(routes,priceType){
         return Math.max.apply(null, routes.map(item => item[priceType]))
+    }
+
+    getStopCounts(routes){
+        let stopsData={
+            non_stop:{
+               count:0,
+               min_price:null
+            },
+            one_stop:{
+                count:0,
+               min_price:null
+            },
+            two_and_two_plus_stop:{
+                count:0,
+               min_price:null
+            }
+        };
+        routes.forEach(route=>{
+            if(route.stop_count==0){
+                if(stopsData.non_stop.min_price==null || (stopsData.non_stop.min_price > route.selling_price)){
+                        stopsData.non_stop.min_price=route.selling_price;
+                }
+                stopsData.non_stop.count+=1;
+            }
+
+            if(route.stop_count==1){
+                if(stopsData.one_stop.min_price==null || (stopsData.one_stop.min_price > route.selling_price)){
+                    stopsData.one_stop.min_price=route.selling_price;
+                }
+                stopsData.one_stop.count+=1;
+            }
+
+            if(route.stop_count>1){
+                if(stopsData.two_and_two_plus_stop.min_price==null || (stopsData.two_and_two_plus_stop.min_price > route.selling_price)){
+                    stopsData.two_and_two_plus_stop.min_price=route.selling_price;
+                }
+                stopsData.two_and_two_plus_stop.count+=1;
+            }
+        })
+    }
+
+    getAirlineCounts(routes){
+        let airlineList=[];
+        let airlineData={};
+        routes.forEach(route=>{
+  	
+            airlineData={}
+            airlineData['airline_name']=route.airline_name;
+            airlineData['airline_code']=route.airline;
+            airlineData['selling_price']=route.selling_price;
+            airlineList.push(airlineData);
+              
+          })
+
+        const result = [...airlineList.reduce( (mp, o) => {
+            if (!mp.has(o.airline_code)) mp.set(o.airline_code, { ...o, count: 0 });
+            mp.get(o.airline_code).count++;
+            return mp;
+        }, new Map).values()];
+        return result;
+    }
+
+    getArrivalDepartureTimeSlot(routes,type){
+
+        let timeSlots={
+            
+            first_slot: {
+                min_price : 0,
+                count     : 0,
+                from_time : '00:00 am',
+                to_time   : '05:59 am'
+            },
+            second_slot: {
+                min_price : 0,
+                count     : 0,
+                from_time : '06:00 am',
+                to_time   : '11:59 am'
+            },
+            third_slot: {
+                min_price : 0,
+                count     : 0,
+                from_time : '12:00 pm',
+                to_time   : '05:59 pm'
+            },
+            fourth_slot: {
+                min_price : 0,
+                count     : 0,
+                from_time : '06:00 pm',
+                to_time   : '11:59 pm'
+            }
+        }
+        let sourceDate;
+        routes.forEach(route=>{
+            sourceDate =   moment(route[type],"HH:mm:a");
+            if(sourceDate.isBetween(
+                moment(timeSlots.first_slot.from_time, "HH:mm:a") , 
+                moment(timeSlots.first_slot.to_time, "HH:mm:a"))){
+                timeSlots.first_slot.count+=1;
+                if(timeSlots.first_slot.min_price==0 || (timeSlots.first_slot.min_price > route.selling_price)){
+                        timeSlots.first_slot.min_price=route.selling_price;
+                }
+            }
+
+            if(sourceDate.isBetween(
+                moment(timeSlots.second_slot.from_time, "HH:mm:a") , 
+                moment(timeSlots.second_slot.to_time, "HH:mm:a"))){
+                timeSlots.second_slot.count+=1;
+                if(timeSlots.second_slot.min_price==0 || (timeSlots.second_slot.min_price > route.selling_price)){
+                        timeSlots.second_slot.min_price=route.selling_price;
+                }
+            } 
+
+            if(sourceDate.isBetween(
+                moment(timeSlots.third_slot.from_time, "HH:mm:a") , 
+                moment(timeSlots.third_slot.to_time, "HH:mm:a"))){
+                timeSlots.third_slot.count+=1;
+                if(timeSlots.third_slot.min_price==0 || (timeSlots.third_slot.min_price > route.selling_price)){
+                        timeSlots.third_slot.min_price=route.selling_price;
+                }
+            } 
+
+            if(sourceDate.isBetween(
+                moment(timeSlots.fourth_slot.from_time, "HH:mm:a") , 
+                moment(timeSlots.fourth_slot.to_time, "HH:mm:a"))){
+                timeSlots.fourth_slot.count+=1;
+                if(timeSlots.fourth_slot.min_price==0 || (timeSlots.fourth_slot.min_price > route.selling_price)){
+                        timeSlots.fourth_slot.min_price=route.selling_price;
+                }
+            }             
+        })
+        return timeSlots;
+
     }
 
     async roundTripSearch(searchFlightDto:RoundtripSearchFlightDto,user){

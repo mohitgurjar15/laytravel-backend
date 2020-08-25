@@ -56,14 +56,14 @@ export class RewordPointService {
 		}
 	}
 
-	async countOfRewordPoints(user:User): Promise <{ Total_available_points : number }>
+	async countOfRewordPoints(userId:string): Promise <{ Total_available_points : number }>
 	{
 		try {
 			let [earnedReword] = await this.rewordPointEarnRepository
-			.query(`SELECT sum("points") FROM "lay_credit_earn" WHERE user_id = '${user.userId}' AND status = 1`);			
+			.query(`SELECT sum("points") FROM "lay_credit_earn" WHERE user_id = '${userId}' AND status = 1`);			
 
 			let [redeemReword] = await this.rewordPointRedeemRepository
-            .query(`SELECT sum("points") FROM "lay_credit_redeem" WHERE user_id = '${user.userId}' AND status = 1`)
+            .query(`SELECT sum("points") FROM "lay_credit_redeem" WHERE user_id = '${userId}' AND status = 1`)
 
 			const points = earnedReword.sum - redeemReword.sum;
 
