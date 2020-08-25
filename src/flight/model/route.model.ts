@@ -6,7 +6,7 @@ export class FlightSearchResult{
     price_range : PriceRange;
     partial_payment_price_range:PriceRange;
     stop_data  : any;
-    airline_list :any;
+    airline_list :AirlineDetails[];
     depature_time_slot:any;
     arrival_time_slot:any;
 }
@@ -48,6 +48,13 @@ export class StopData{
     non_stop : StopDetails;
     one_stop : StopDetails;
     two_plus : StopDetails;
+}
+
+export class AirlineDetails{
+    airline_name : string;
+    airline_code : string;
+    selling_price: number;
+    count        : number
 }
 
 export class StopDetails{
