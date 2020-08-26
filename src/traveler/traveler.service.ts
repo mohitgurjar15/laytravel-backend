@@ -15,6 +15,9 @@ import { User } from "src/entity/user.entity";
 import { v4 as uuidv4 } from "uuid";
 import { Role } from "src/enum/role.enum";
 import { Activity } from "src/utility/activity.utility";
+import { getManager } from "typeorm";
+import { Countries } from "src/entity/countries.entity";
+import { UpdateTravelerDto } from "./dto/update-traveler.dto";
 
 @Injectable()
 export class TravelerService {
@@ -42,6 +45,15 @@ export class TravelerService {
 			email,
 		} = saveTravelerDto;
 		try {
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_code`, { country_code })
+				.getOne();
+
+			if (!countryDetails)
+				throw new BadRequestException(
+					`Country code not exist with database.&&&country_id`
+				);
 			const user = new User();
 			user.userId = uuidv4();
 			user.accountType = 1;
@@ -53,15 +65,15 @@ export class TravelerService {
 			user.timezone = "";
 			user.status = 1;
 			user.gender = gender;
-			user.passportExpiry = passport_expiry;
-			user.passportNumber = passport_number;
+			user.passportExpiry = passport_expiry == "" ? null : passport_expiry;
+			user.passportNumber = passport_number == "" ? null : passport_number;
 			user.roleId = Role.TRAVELER_USER;
 			user.email = email;
 			user.firstName = first_name;
 			user.middleName = "";
 			user.zipCode = "";
 			user.lastName = last_name;
-			user.createdBy = parent_user_id;
+			user.createdBy = parent_user_id == "" ? null : parent_user_id;
 			user.isVerified = true;
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
@@ -82,8 +94,47 @@ export class TravelerService {
 				`Traveler ${user.email} is created by user ${createdBy}`
 			);
 
-            return this.userRepository.createtraveler(user);
-            
+			return this.userRepository.createtraveler(user);
+		} catch (error) {
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This parent user does not exist&&&email&&&This parent user not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+	}
+
+	async listTraveler(userId: string) {
+		try {
+			const [result, total] = await this.userRepository.findAndCount({
+				where: `created_by = '${userId}' AND user_id != '${userId}' AND is_deleted = false`,
+			});
+
+			if (!result.length) {
+				throw new NotFoundException(`No traveler found.`);
+			}
+			return { data: result, TotalReseult: total };
 		} catch (error) {
 			switch (error.response.statusCode) {
 				case 404:
@@ -107,4 +158,144 @@ export class TravelerService {
 			}
 		}
 	}
+
+	async getTraveler(userId: string):Promise<User> {
+		try {
+			return await this.userRepository.getUserData(userId);
+		} catch (error) {
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This traveler does not exist&&&email&&&This user traveler not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+    }
+    
+    async updateTraveler(updateTravelerDto:UpdateTravelerDto ,  userId:string , updateBy : string)
+    {
+        try {
+            const traveler = await this.userRepository.getUserData(userId);
+            
+            const {first_name,last_name,title,dob,gender,country_code,passport_expiry,passport_number} = updateTravelerDto
+
+            traveler.countryCode = country_code;
+			traveler.passportExpiry = passport_expiry == "" ? null : passport_expiry;
+			traveler.passportNumber = passport_number == "" ? null : passport_number;
+			traveler.firstName = first_name;
+			traveler.lastName = last_name;
+            traveler.isVerified = true;
+            traveler.title = title
+            traveler.dob = dob
+            traveler.gender = gender
+            traveler.updatedBy = updateBy
+			traveler.updatedDate = new Date();
+
+			await traveler.save();
+			
+			Activity.logActivity(
+				updateBy,
+				"traveler",
+				`Traveler ${traveler.email} is update by user ${updateBy}`
+			);
+
+            return traveler;
+		} catch (error) {
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+	}
+	
+
+
+	async deleteTraveler(userId:string , updateBy : string)
+    {
+        try {
+            const traveler = await this.userRepository.getUserData(userId);
+            traveler.isDeleted = true;
+            traveler.updatedBy = updateBy
+			traveler.updatedDate = new Date();
+
+			await traveler.save();
+			
+			Activity.logActivity(
+				updateBy,
+				"traveler",
+				`Traveler ${traveler.email} is deleted by user ${updateBy}`
+			);
+
+            return { message :`Traveler ${traveler.email} is deleted`};
+		} catch (error) {
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+    }
 }

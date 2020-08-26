@@ -372,7 +372,7 @@ export class AuthService {
 			`auth`,
 			` ${email} user is request to forget password using ${forgetPassToken} token`
 		);
-		const resetLink = `http://laytrip.oneclickitmarketing.co.in/reset-password?token=${forgetPassToken}`;
+		const resetLink = `https://staging.laytrip.com?token=${forgetPassToken}`;
 		this.mailerService
 			.sendMail({
 				to: email,

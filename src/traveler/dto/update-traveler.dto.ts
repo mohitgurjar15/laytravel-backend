@@ -5,17 +5,8 @@ import { errorMessage } from 'src/config/common.config';
 import { IsEqualTo } from 'src/auth/password.decorator';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
-export class SaveTravelerDto {
+export class UpdateTravelerDto{
 
-    @ApiPropertyOptional({
-		type: "string",
-		description: "parent user id",
-	})
-    @ApiProperty({
-        description: `Enter parent user id`,
-        example: `fb99b4c6-38ce-46bb-a084-d561a459605e`
-    })
-    parent_user_id: string;
     
     @IsEnum(['mr','ms','mrs'],{
         message : (args: ValidationArguments) => {
@@ -50,24 +41,6 @@ export class SaveTravelerDto {
         example: `Doe`
     })
     last_name: string;
-
-    @IsEmail(
-		{},
-		{
-			message: (args: ValidationArguments) => {
-				if (typeof args.value == "undefined" || args.value == "") {
-					return `Please enter travelers email address.&&&email`;
-				} else {
-					return `Please Enter valid email address.&&&email`;
-				}
-			},
-		},
-	)
-    @ApiProperty({
-        description: `Enter travelers Email Id`,
-        example: `jon.doe@gmail.com`
-    })
-    email: string;
 
     @IsValidDate('',{
         message: (args: ValidationArguments) => {
@@ -140,8 +113,6 @@ export class SaveTravelerDto {
         description: `Enter travelers passport expiry date`,
         example: `2030-07-20`
     })
-    passport_expiry: string;
-
-    
+    passport_expiry: string;   
 
 }
