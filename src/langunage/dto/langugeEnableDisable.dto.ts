@@ -1,6 +1,5 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { langugeStatusEnum } from "../language-status.enum";
 
 
 export class LanguageStatusDto {

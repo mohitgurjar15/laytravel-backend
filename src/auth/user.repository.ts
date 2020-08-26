@@ -3,21 +3,14 @@ import { User } from "../entity/user.entity";
 import {
 	BadRequestException,
 	NotFoundException,
-	NotAcceptableException,
 	InternalServerErrorException,
-	UnauthorizedException,
 	ConflictException,
 } from "@nestjs/common";
-import { UpdateUserDto } from "src/user/dto/update-user.dto";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { ListUserDto } from "src/user/dto/list-user.dto";
 import * as bcrypt from "bcrypt";
 import { errorMessage } from "src/config/common.config";
-import { SaveUserDto } from "src/user/dto/save-user.dto";
 import { v4 as uuidv4 } from "uuid";
-import { MailerService } from "@nestjs-modules/mailer";
-import { ProfilePicDto } from "./dto/profile-pic.dto";
-import { SiteUrl } from "src/decorator/site-url.decorator";
 import { Role } from "src/enum/role.enum";
 
 @EntityRepository(User)

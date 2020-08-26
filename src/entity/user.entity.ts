@@ -53,11 +53,11 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "email", length: 255 })
   email: string;
 
-  @Column("character varying", { name: "salt", length: 255 })
-  salt: string;
+  @Column("character varying", { name: "salt", length: 255, nullable:true })
+  salt: string|null;
 
-  @Column("character varying", { name: "password", length: 255 })
-  password: string;
+  @Column("character varying", { name: "password", length: 255, nullable:true })
+  password: string|null;
 
   @Column("character varying", { name: "phone_no", length: 20 })
   phoneNo: string;

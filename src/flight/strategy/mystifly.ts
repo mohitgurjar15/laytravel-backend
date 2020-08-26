@@ -15,7 +15,6 @@ import { Instalment } from "src/utility/instalment.utility";
 import { PriceMarkup } from "src/utility/markup.utility";
 import { Module } from "src/entity/module.entity";
 import { errorMessage } from "src/config/common.config";
-import { Markup } from "src/entity/markup.entity";
 import { airlines } from "../airline";
 const fs = require('fs').promises;
 

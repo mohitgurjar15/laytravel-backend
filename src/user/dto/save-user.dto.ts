@@ -6,14 +6,12 @@ import {
 	Matches,
 	ValidationArguments,
 	IsEnum,
-	ValidateIf,
-	IsOptional,
+	ValidateIf
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Gender } from "src/enum/gender.enum";
 import { errorMessage } from "src/config/common.config";
 import { IsEqualTo } from "src/auth/password.decorator";
-import { Role } from "src/entity/role.entity";
 
 export class SaveUserDto {
 	@IsEnum(["mr", "ms", "mrs"], {

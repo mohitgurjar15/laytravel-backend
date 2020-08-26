@@ -1,9 +1,5 @@
 import { PipeTransform, BadRequestException } from "@nestjs/common";
 import { statusEnum } from "../status.enum";
-
-
-
-
 export class statusPipe implements PipeTransform 
 {
     readonly allowedStatus = [

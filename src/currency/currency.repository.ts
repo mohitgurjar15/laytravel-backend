@@ -1,8 +1,6 @@
 import { EntityRepository, Repository } from "typeorm";
-import { Language } from "src/entity/language.entity";
 import { NotFoundException } from "@nestjs/common";
 import { Currency } from "src/entity/currency.entity";
-import { ListCurrencyDto } from "./dto/list-currency.dto";
 
 @EntityRepository(Currency)
 export class CurrencyRepository extends Repository<Currency>

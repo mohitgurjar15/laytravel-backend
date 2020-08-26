@@ -1,6 +1,5 @@
-import { IsNotEmpty, MinLength, MaxLength, Matches } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEqualTo } from "../password.decorator";
 
 export class OtpDto {
     @ApiProperty({

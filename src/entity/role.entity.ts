@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index } from "typeorm";
+import { BaseEntity, Column, Entity } from "typeorm";
 
 //@Index("role_pk", ["id"], { unique: true })
 @Entity("role")

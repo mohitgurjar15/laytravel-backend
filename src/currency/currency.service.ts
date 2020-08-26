@@ -5,11 +5,9 @@ import {
 } from "@nestjs/common";
 import { CurrencyRepository } from "./currency.repository";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ListCurrencyDto } from "./dto/list-currency.dto";
 import { Currency } from "src/entity/currency.entity";
 import { UpdateCurrencyDto } from "./dto/update-currency.dto";
 import { getConnection } from "typeorm";
-import { CreateLangunageDto } from "src/langunage/dto/create-langunage.dto";
 import { User } from "@sentry/node";
 import { CurrencyEnableDisableDto } from "./dto/currency-EnableDisable.dto";
 import { Activity } from "src/utility/activity.utility";

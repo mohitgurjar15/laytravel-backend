@@ -8,7 +8,6 @@ import { Role } from "src/enum/role.enum";
 import { Roles } from 'src/guards/role.decorator';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
-import { moduleStatusPipe } from './pipes/module-status.pipes';
 import { moduleStatusDto } from './dto/moduleEnableDisable.dto';
 import { ModeTestLive } from './dto/modeTestLive.dto';
 
