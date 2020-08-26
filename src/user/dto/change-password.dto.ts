@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail,MinLength,MaxLength,Matches} from 'class-validator'
+import { IsNotEmpty,MinLength,MaxLength,Matches} from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEqualTo } from 'src/auth/password.decorator';
 

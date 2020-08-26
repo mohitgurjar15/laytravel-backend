@@ -15,12 +15,9 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
 import { MailerService } from "@nestjs-modules/mailer";
-import { SaveUserDto } from "src/user/dto/save-user.dto";
 import * as config from "config";
-import { UpdateUserDto } from "src/user/dto/update-user.dto";
 const mailConfig = config.get("email");
 import { errorMessage } from "src/config/common.config";
-import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveAdminDto } from "./dto/save-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";

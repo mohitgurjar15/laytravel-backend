@@ -42,24 +42,19 @@ import * as md5 from "md5";
 import { In, getConnection, getManager } from "typeorm";
 import { LoginLog } from "src/entity/login-log.entity";
 import { Role } from "src/enum/role.enum";
-import { Currency } from "src/entity/currency.entity";
 import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
 import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
-import { isError } from "util";
 import { dirname } from "path";
-import { VerifyEmail } from "./verify-email.interface";
 import { VerifyEmailIdTemplete } from "src/config/email_template/email-id-verify.html";
-import { link } from "fs";
 import { OtpDto } from "./dto/otp.dto";
 
 import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
-import { exception } from "console";
 
 @Injectable()
 export class AuthService {

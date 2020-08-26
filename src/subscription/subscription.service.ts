@@ -5,7 +5,6 @@ import {
 	ConflictException,
 	UnauthorizedException,
 	BadRequestException,
-	ForbiddenException,
 	NotAcceptableException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -16,12 +15,10 @@ import { SubscribePlan } from "./dto/subscribe-plan.dto";
 import { User } from "src/entity/user.entity";
 import { v4 as uuidv4 } from "uuid";
 import { PlanSubscription } from "src/entity/plan-subscription.entity";
-import { getConnection, getManager } from "typeorm";
+import { getManager } from "typeorm";
 import { UserRepository } from "src/auth/user.repository";
 import { Role } from "src/enum/role.enum";
-import { PaymentType } from "src/enum/payment-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
-import { NotAcceptableExceptionFilter } from "src/not-acceptable-exception.filter";
 import * as config from "config";
 import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";

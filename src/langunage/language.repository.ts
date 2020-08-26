@@ -1,7 +1,6 @@
 import { EntityRepository, Repository } from "typeorm";
 import { Language } from "src/entity/language.entity";
-import { ListLangugeDto } from "./dto/list-languge.dto";
-import { NotFoundException, Delete } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 
 @EntityRepository(Language)
 export class LanguageRepository extends Repository<Language>

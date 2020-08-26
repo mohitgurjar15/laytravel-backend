@@ -1,4 +1,4 @@
-import { IsNotEmpty, maxLength, MaxLength, Max } from "class-validator";
+import { IsNotEmpty, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateCurrencyDto{
