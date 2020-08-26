@@ -12,7 +12,7 @@ import { LayCreditRedeem } from 'src/entity/lay-credit-redeem.entity';
 import { User } from 'src/entity/user.entity';
 import { GetUser } from 'src/auth/get-user.dacorator';
 
-@ApiTags("Laytrip Reword Point")
+@ApiTags("Laytrip Point")
 @ApiBearerAuth()
 @Controller('laytrip-point')
 export class RewordPointController {

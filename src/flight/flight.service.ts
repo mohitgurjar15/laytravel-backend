@@ -70,7 +70,10 @@ export class FlightService {
 
      
     async cancellationPolicy(routeIdsDto:RouteIdsDto){
-    
+        
+        const mystifly = new Strategy(new Mystifly({}));
+        const result = new Promise((resolve) => resolve(mystifly.cancellationPolicy(routeIdsDto)));
+        return result;
     }
 
      async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto,headers,user){
