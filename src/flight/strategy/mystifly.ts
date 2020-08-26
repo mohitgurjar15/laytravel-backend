@@ -605,6 +605,8 @@ export class Mystifly implements StrategyAirline{
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
                 route.routes[0]         = routeType;
+                route.departure_date    = stops[0].departure_date;
+                route.departure_time    = stops[0].departure_time;
                 stops=[];
                 inBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
@@ -649,8 +651,7 @@ export class Mystifly implements StrategyAirline{
                 route.stop_count        = stops.length-1;
                 route.departure_code    = source_location;
                 route.arrival_code      = destination_location;
-                route.departure_date    = stops[0].departure_date;
-                route.departure_time    = stops[0].departure_time;
+                
                 route.arrival_date      = stops[stops.length-1].arrival_date;
                 route.arrival_time      = stops[stops.length-1].arrival_time;
                 let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
@@ -938,6 +939,8 @@ export class Mystifly implements StrategyAirline{
                 route.routes[0]         = routeType;
                 route.departure_date    = stops[0].departure_date;
                 route.departure_time    = stops[0].departure_time;
+                route.departure_code    = stops[0].departure_code;
+                route.arrival_code      = stops[stops.length-1].arrival_code;
                 if(typeof flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]!='undefined'){
                     stops=[];
                     inBoundflightSegments.forEach(flightSegment => {
@@ -983,8 +986,7 @@ export class Mystifly implements StrategyAirline{
                     route.start_price   = '0';
                 }
                 route.stop_count        = stops.length-1;
-                //route.departure_code    = source_location;
-                //route.arrival_code      = destination_location;
+                
                 
                 route.arrival_date      = stops[stops.length-1].arrival_date;
                 route.arrival_time      = stops[stops.length-1].arrival_time;
