@@ -34,6 +34,7 @@ import { CmsModule } from "./cms/cms.module";
 import { SubscriptionModule } from './subscription/subscription.module';
 import { RewordPointModule } from './reword-point/reword-point.module';
 import { CronJobsModule } from './cron-jobs/cron-jobs.module';
+import { TravelerModule } from './traveler/traveler.module';
 
 
 @Module({
@@ -93,6 +94,7 @@ import { CronJobsModule } from './cron-jobs/cron-jobs.module';
 		SubscriptionModule,
 		RewordPointModule,
 		CronJobsModule,
+		TravelerModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

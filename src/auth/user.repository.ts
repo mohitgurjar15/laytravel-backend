@@ -110,6 +110,75 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
+	async createtraveler(user: User): Promise<User> {
+		const email = user.email;
+		const userExist = await this.findOne({
+			email,
+			isDeleted:false,
+		});
+		
+		if (userExist) {
+			userExist.createdBy = user.createdBy;
+			await user.save();
+			user = userExist;
+		} else {
+			await user.save();
+		}
+		let userDetail =  await getManager()
+            .createQueryBuilder(User, "user")
+            .leftJoinAndSelect("user.createdBy2","parentUser")
+            .select([
+                	"user.*","parentUser.*",
+            ])
+			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`,{ userId:user.userId,is_deleted:false})
+			.getOne();
+			
+			if (!userDetail) {
+				throw new NotFoundException(`No user found.`);
+			}
+
+			
+			let userdata:any={};
+			userdata.userId = userDetail.userId;
+			userdata.firstName = userDetail.firstName;
+			userdata.lastName = userDetail.lastName || "";
+			userdata.email = userDetail.email;
+			userdata.gender = userDetail.gender || "";
+			userdata.roleId = userDetail.roleId;
+			userdata.phoneNo = userDetail.phoneNo || "";
+			userdata.countryCode= userDetail.countryCode || "";
+			userdata.address= userDetail.address || "";
+			userdata.country= userDetail.country || {};
+			userdata.state= userDetail.state || {};
+			userdata.dob = userDetail.dob || "";
+			userdata.title= userDetail.title || "";
+			userdata.cityName= userDetail.cityName || "";
+			userdata.dob= userDetail.dob || "";
+			userdata.ziCode= userDetail.zipCode || "";
+			userdata.preferredCurrency= userDetail.preferredCurrency2 || {};
+			userdata.preferredLanguage= userDetail.preferredLanguage2 || {};
+			userdata.passportNumber= userDetail.passportNumber || "";
+			userdata.passportExpiry= userDetail.passportExpiry || "";
+			return userdata;
+	}
+
+	async getUserData(userId: string): Promise<User> {
+		const userdata = await this.findOne({
+			userId: userId,
+			isDeleted: false,
+		});
+
+		if (!userdata)
+			throw new NotFoundException(
+				`This user does not exist&&&email&&&This user does not exist`
+			);
+
+		if (userdata.status != 1)
+			throw new UnauthorizedException(
+				`Your account has been disabled. Please contact administrator person.`
+			);
+		return userdata;
+	}
 	/**
 	 * export user
 	 * @param roleId

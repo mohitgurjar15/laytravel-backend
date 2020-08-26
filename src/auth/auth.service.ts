@@ -120,7 +120,9 @@ export class AuthService {
 		user.gender = gender;
 		user.isVerified = false;
 		user.otp = Math.round(new Date().getTime() % 1000000);
-
+		if (user.otp < 100000) {
+			user.otp = user.otp + 900000;
+		}
 		if (signup_via == "web") user.registerVia = "web";
 		else {
 			if (device_type == 1) user.registerVia = "android";
@@ -228,23 +230,18 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` ${email} user is signup`
-		);
+		Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
 		return { message: `Otp send on your email id` };
 	}
 
 	async UpdateEmailId(updateEmailId: UpdateEmailId, userData: User) {
-		if(userData.email )
-		{
-			throw new ConflictException (`You have alredy added email id`)
+		if (userData.email) {
+			throw new ConflictException(`You have alredy added email id`);
 		}
 		const { newEmail } = updateEmailId;
 		const email = userData.email;
 		const user = await this.userRepository.findOne({
-			where: { userId:userData.userId, isDeleted: false },
+			where: { userId: userData.userId, isDeleted: false },
 		});
 
 		if (!user)
@@ -264,7 +261,7 @@ export class AuthService {
 			throw new ConflictException(
 				`This email address is already registered with us. Please enter different email address .`
 			);
-		user.email = newEmail;		
+		user.email = newEmail;
 		//user.isVerified = false;
 		//user.otp = Math.round(new Date().getTime() / 1000);
 		try {
@@ -558,11 +555,11 @@ export class AuthService {
 					.catch((err) => {
 						console.log("err", err);
 					});
-					Activity.logActivity(
-						user.userId,
-						`auth`,
-						`${email} user is verify own account`
-					);
+				Activity.logActivity(
+					user.userId,
+					`auth`,
+					`${email} user is verify own account`
+				);
 				return { userDetails };
 			} catch (error) {
 				throw new InternalServerErrorException(
