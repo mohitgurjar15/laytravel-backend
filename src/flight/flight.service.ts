@@ -24,6 +24,7 @@ import { Module } from 'src/entity/module.entity';
 import { errorMessage } from 'src/config/common.config';
 import { BookingInstalments } from 'src/entity/booking-instalments.entity';
 import { InstalmentStatus } from 'src/enum/instalment-status.enum';
+import { PaymentService } from 'src/payment/payment.service';
 
 @Injectable()
 export class FlightService {
@@ -31,7 +32,9 @@ export class FlightService {
     constructor(
 
         @InjectRepository(AirportRepository)
-        private airportRepository:AirportRepository
+        private airportRepository:AirportRepository,
+
+        private paymentService:PaymentService
     ){}
     
     async searchAirport(name:String){
@@ -48,7 +51,7 @@ export class FlightService {
         catch(error){
 
             if (typeof error.response!=='undefined' && error.response.statusCode == 404) {
-                throw new NotFoundException(`No Airport Found.`)
+                throw new NotFoundException(`No Airport Found.&&&name`)
             }
             throw new InternalServerErrorException(error.message)
         }
@@ -116,27 +119,48 @@ export class FlightService {
         
         const mystifly = new Strategy(new Mystifly(headers));
         const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
-        console.log(airRevalidateResult);
 
         if(payment_type==PaymentType.INSTALMENT){
             let instalmentDetails;
-            if(!additional_amount){
 
-                //let layCreditAmount =  
-                //save entry for future booking
-                if(instalment_type==InstalmentType.WEEKLY){
-                    instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,additional_amount);
-                }
-                if(instalment_type==InstalmentType.BIWEEKLY){
-                    instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate);
-                }
-                if(instalment_type==InstalmentType.MONTHLY){
-                    instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate);
-                }
+            let totalAdditionalAmount = additional_amount || 0;
 
-                this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
-
+            //let layCreditAmount =  
+            //save entry for future booking
+            if(instalment_type==InstalmentType.WEEKLY){
+                instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount);
             }
+            if(instalment_type==InstalmentType.BIWEEKLY){
+                instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate);
+            }
+            if(instalment_type==InstalmentType.MONTHLY){
+                instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate);
+            }
+
+            if(instalmentDetails.instalment_available){
+
+                let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
+                let authCardResult=await this.paymentService.authorizeCard('x','card_id',firstInstalemntAmount,'USD');
+                
+                if(authCardResult.status==true){
+                    let authCardToken = authCardResult.token;
+                    let captureCardresult =await this.paymentService.captureCard(authCardToken);
+                    if(captureCardresult.status==true){
+                        this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
+                    }
+                }
+                else{
+
+                    throw new BadRequestException(`Card authorization is failed&&&card_token&&&${errorMessage}`)
+                }
+                
+            }
+            else{
+
+                throw new BadRequestException(`Instalment option is not available for your search criteria`);
+            }
+
+            //this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
         }
         /* const mystifly = new Strategy(new Mystifly(headers));
         const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));

@@ -1,15 +1,12 @@
 import {
 	Injectable,
-	BadRequestException,
 	NotFoundException,
 	InternalServerErrorException,
 } from "@nestjs/common";
-import { Module } from "src/entity/module.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MarkupRepository } from "./markup.repository";
 import { UpdateMarkupDto } from "./dto/updatemarkup.dto";
 import { getManager, getConnection } from "typeorm";
-import { Supplier } from "src/entity/supplier.entity";
 import { Markup } from "src/entity/markup.entity";
 import { User } from "src/entity/user.entity";
 import { Activity } from "src/utility/activity.utility";

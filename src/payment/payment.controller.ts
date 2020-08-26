@@ -4,7 +4,6 @@ import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/guards/role.guard';
 
 
 @ApiTags("Payment")

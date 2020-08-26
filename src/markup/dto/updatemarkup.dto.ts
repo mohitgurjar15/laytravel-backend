@@ -1,7 +1,5 @@
-import { IsNotEmpty, IsEnum, ValidationArguments } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { Role } from "src/enum/role.enum";
-import { errorMessage } from "src/config/common.config";
 
 export class UpdateMarkupDto{
 

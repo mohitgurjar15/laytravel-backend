@@ -1,12 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, BadRequestException, ConflictException } from "@nestjs/common";
-import { Request, Response } from "express";
+import { ExceptionFilter, Catch, ArgumentsHost, ConflictException } from "@nestjs/common";
+import {  Response } from "express";
 
 @Catch(ConflictException)
 export class ConflictExcepionFilter implements ExceptionFilter {
 	catch(exception: ConflictException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
-		const request = ctx.getRequest<Request>();
 		const status = exception.getStatus();
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 		response

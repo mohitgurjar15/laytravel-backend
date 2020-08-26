@@ -37,11 +37,8 @@ import {
 } from "@nestjs/swagger";
 import { Roles } from "src/guards/role.decorator";
 import { GetUser } from "src/auth/get-user.dacorator";
-import { SaveUserDto } from "src/user/dto/save-user.dto";
 import { User } from "@sentry/node";
 import { Role } from "src/enum/role.enum";
-import { UpdateUserDto } from "src/user/dto/update-user.dto";
-import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveAdminDto } from "./dto/save-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ListAdminDto } from "./dto/list-admin.dto";
@@ -54,11 +51,9 @@ import {
 } from "../auth/file-validator";
 import { ProfilePicDto } from "../auth/dto/profile-pic.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
-import { statusPipe } from "src/user/pipes/status.pipes";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { ImportUserDto } from "src/user/dto/import-user.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
-import { Activity } from "src/utility/activity.utility";
 
 @Controller("admin")
 @ApiTags("Admin")

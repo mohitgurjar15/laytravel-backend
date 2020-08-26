@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, ValidationArguments } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
 

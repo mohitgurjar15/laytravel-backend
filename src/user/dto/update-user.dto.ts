@@ -1,7 +1,6 @@
-import { IsNotEmpty, IsEmail, MaxLength, MinLength, Matches, IsEnum, ValidationArguments} from 'class-validator'
+import { IsNotEmpty, IsEmail, IsEnum, ValidationArguments} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from 'src/config/common.config';
-import { IsEqualTo } from 'src/auth/password.decorator';
 import { Gender } from 'src/enum/gender.enum';
 
 export class UpdateUserDto{

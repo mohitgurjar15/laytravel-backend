@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, ValidationArguments } from "class-validator";
+import { IsEmail, ValidationArguments } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class ForgetPasswordDto {

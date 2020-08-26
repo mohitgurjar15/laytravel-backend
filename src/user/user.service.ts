@@ -1,7 +1,5 @@
 import {
 	Injectable,
-	ConflictException,
-	UnprocessableEntityException,
 	InternalServerErrorException,
 	NotFoundException,
 	ForbiddenException,
@@ -11,7 +9,6 @@ import { UserRepository } from "../auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { ChangePasswordDto } from "./dto/change-password.dto";
 import { ListUserDto } from "./dto/list-user.dto";
 import { User } from "src/entity/user.entity";
 import { SaveUserDto } from "./dto/save-user.dto";
@@ -21,7 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
-import { In, AdvancedConsoleLogger, getManager } from "typeorm";
+import { In, getManager } from "typeorm";
 import { ActiveDeactiveDto } from "./dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
 
