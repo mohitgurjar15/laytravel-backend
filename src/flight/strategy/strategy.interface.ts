@@ -4,9 +4,11 @@ export interface StrategyAirline{
 
     baggageDetails(params);
 
-    roundTripSearch(params);
+    roundTripSearch(params1,params2);
 
-    airRevalidate(params);
+    airRevalidate(params1,params2);
 
     bookFlight(params1,params2);
+
+    cancellationPolicy(param1);
 }

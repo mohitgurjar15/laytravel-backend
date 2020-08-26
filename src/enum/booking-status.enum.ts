@@ -1,5 +1,4 @@
-
-export enum PaymentStatus{
+export enum BookingStatus{
     'PENDING'=0,
     'CONFIRM'=1,
     'FAILED'=2,

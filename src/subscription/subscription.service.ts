@@ -104,7 +104,7 @@ export class SubscriptionService {
 			subscribe.planId = plan_id;
 			subscribe.currencyId = currency_id;
 			subscribe.amount = amount;
-			subscribe.paymentStatus = PaymentStatus.Success;
+			subscribe.paymentStatus = PaymentStatus.CONFIRM;
 			subscribe.paymentInfo = info;
 			subscribe.userId = userId;
 			subscribe.subscriptionDate = new Date();

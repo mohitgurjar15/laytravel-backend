@@ -34,7 +34,11 @@ import { CmsModule } from "./cms/cms.module";
 import { SubscriptionModule } from './subscription/subscription.module';
 import { RewordPointModule } from './reword-point/reword-point.module';
 import { CronJobsModule } from './cron-jobs/cron-jobs.module';
+<<<<<<< HEAD
 import { TravelerModule } from './traveler/traveler.module';
+=======
+import { PaymentModule } from './payment/payment.module';
+>>>>>>> 204ce12f960fbc8d2171bba935650508467ce505
 
 
 @Module({
@@ -94,7 +98,11 @@ import { TravelerModule } from './traveler/traveler.module';
 		SubscriptionModule,
 		RewordPointModule,
 		CronJobsModule,
+<<<<<<< HEAD
 		TravelerModule,
+=======
+		PaymentModule,
+>>>>>>> 204ce12f960fbc8d2171bba935650508467ce505
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

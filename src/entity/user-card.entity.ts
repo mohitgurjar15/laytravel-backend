@@ -21,8 +21,8 @@ export class UserCard extends BaseEntity {
   @Column("integer", { name: "payment_gateway_id", nullable: true })
   paymentGatewayId: number | null;
 
-  @Column("integer", { name: "card_type" })
-  cardType: number;
+  @Column("character varying", { name: "card_type", length: 100 })
+  cardType: string;
 
   @Column("character varying", { name: "card_holder_name", length: 255 })
   cardHolderName: string;
@@ -33,8 +33,8 @@ export class UserCard extends BaseEntity {
   @Column("character varying", { name: "card_token", length: 255 })
   cardToken: string;
 
-  @Column("json", { name: "card_meta_data" })
-  cardMetaData: object;
+  @Column("json", { name: "card_meta_data", nullable:true })
+  cardMetaData: object|null;
 
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
@@ -42,8 +42,8 @@ export class UserCard extends BaseEntity {
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
 
-  @Column("date", { name: "created_date" })
-  createdDate: string;
+  @Column("timestamp with time zone", { name: "created_date" })
+  createdDate: Date;
 
   @ManyToOne(
     () => PaymentGateway,

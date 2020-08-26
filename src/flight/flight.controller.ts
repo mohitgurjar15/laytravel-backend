@@ -9,6 +9,9 @@ import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 import { LogInUser } from 'src/auth/get-user.dacorator';
 import { User } from '@sentry/node';
 import { BookFlightDto } from './dto/book-flight.dto';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from 'src/guards/role.decorator';
+import { Role } from 'src/enum/role.enum';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -52,7 +55,7 @@ export class FlightController {
     async searchOneWayFlight(
        @Body() searchFlightDto:OneWaySearchFlightDto,
        @Req() req,
-       @LogInUser() user,
+       @LogInUser() user
     ){
         return await this.flightService.searchOneWayFlight(searchFlightDto,req.headers,user);
     }
@@ -63,11 +66,22 @@ export class FlightController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
     @HttpCode(200)
     async searchRoundTrip(
-       @Body() searchFlightDto:RoundtripSearchFlightDto
+       @Body() searchFlightDto:RoundtripSearchFlightDto,
+       @Req() req,
+       @LogInUser() user,
     ){
-        return await this.flightService.searchRoundTripFlight(searchFlightDto);
+        return await this.flightService.searchRoundTripFlight(searchFlightDto,req.headers,user);
     }
 
     @Post('/baggage-details')
@@ -77,7 +91,7 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @HttpCode(200)
     async baggageDetails(
-       @Body() routeIdDto:RouteIdsDto
+       @Body() routeIdDto:RouteIdsDto,
     ){
         //console.log(baggageDetailsDto)
         return await this.flightService.baggageDetails(routeIdDto);
@@ -114,9 +128,10 @@ export class FlightController {
     @HttpCode(200)
     async airRevalidate(
        @Body() routeIdDto:RouteIdsDto,
-       @Req() req
+       @Req() req,
+       @LogInUser() user,
     ){
-        return await this.flightService.airRevalidate(routeIdDto,req.headers);
+        return await this.flightService.airRevalidate(routeIdDto,req.headers,user);
     }
 
     @Post('/book')
@@ -134,11 +149,14 @@ export class FlightController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Flight is not available now' })
     @HttpCode(200)
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
     async bookFlight(
        @Body() bookFlightDto:BookFlightDto,
-       @Req() req
+       @Req() req,
+       @LogInUser() user
     ){
         console.log(bookFlightDto)
-        return await this.flightService.bookFlight(bookFlightDto,req.headers);
+        return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
     }
 }

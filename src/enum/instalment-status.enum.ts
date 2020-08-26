@@ -1,7 +1,8 @@
+export enum InstalmentStatus{
 
-export enum PaymentStatus{
     'PENDING'=0,
-    'CONFIRM'=1,
+    'PAID'=1,
     'FAILED'=2,
     'CANCELLED'=3
+    
 }

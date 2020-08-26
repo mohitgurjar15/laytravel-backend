@@ -26,10 +26,10 @@ export class Booking extends BaseEntity {
   @Column("uuid", { primary: true, name: "id" })
   id: string;
 
-  @Column("uuid", { name: "user_id", nullable: true })
+  @Column("uuid", { name: "user_id" })
   userId: string | null;
 
-  @Column("integer", { name: "module_id", nullable: true })
+  @Column("integer", { name: "module_id" })
   moduleId: number | null;
 
   @Column("integer", { name: "booking_type" })
@@ -38,7 +38,7 @@ export class Booking extends BaseEntity {
   @Column("integer", { name: "booking_status" })
   bookingStatus: number;
 
-  @Column("integer", { name: "currency", nullable: true })
+  @Column("integer", { name: "currency" })
   currency: number | null;
 
   @Column("numeric", { name: "total_amount", precision: 15, scale: 3 })
@@ -68,8 +68,11 @@ export class Booking extends BaseEntity {
   @Column("integer", { name: "payment_status" })
   paymentStatus: number;
 
-  @Column("json", { name: "payment_info" })
+  @Column("json", { name: "payment_info",nullable:true })
   paymentInfo: object;
+
+  @Column("boolean", { name: "is_predictive", default: () => false})
+  isPredictive: boolean;
 
   @Column("numeric", {
     name: "payment_gateway_processing_fee",

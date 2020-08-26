@@ -15,8 +15,8 @@ export class Strategy{
         return data;
     }
 
-    async roundTripSearch(params){
-        const data = await this.airline.roundTripSearch(params);
+    async roundTripSearch(param1,param2){
+        const data = await this.airline.roundTripSearch(param1,param2);
         return data;
     }
 
@@ -25,13 +25,18 @@ export class Strategy{
         return data;
     }
 
-    async airRevalidate(params){
-        const data = await this.airline.airRevalidate(params);
+    async airRevalidate(param1,param2){
+        const data = await this.airline.airRevalidate(param1,param2);
         return data;
     }
 
     async bookFlight(params1,params2){
         const data = await this.airline.bookFlight(params1,params2);
+        return data;
+    }
+
+    async cancellationPolicy(params1){
+        const data = await this.airline.cancellationPolicy(params1);
         return data;
     }
 }

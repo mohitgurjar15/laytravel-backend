@@ -13,6 +13,17 @@ import { BookFlightDto } from './dto/book-flight.dto';
 import { User } from 'src/entity/user.entity';
 import * as moment from 'moment';
 import { PaymentType } from 'src/enum/payment-type.enum';
+import { Instalment } from 'src/utility/instalment.utility';
+import { InstalmentType } from 'src/enum/instalment-type.enum';
+import { Booking } from 'src/entity/booking.entity';
+import { v4 as uuidv4 } from "uuid";
+import { BookingStatus } from 'src/enum/booking-status.enum';
+import { BookingType } from 'src/enum/booking-type.enum';
+import { PaymentStatus } from 'src/enum/payment-status.enum';
+import { Module } from 'src/entity/module.entity';
+import { errorMessage } from 'src/config/common.config';
+import { BookingInstalments } from 'src/entity/booking-instalments.entity';
+import { InstalmentStatus } from 'src/enum/instalment-status.enum';
 
 @Injectable()
 export class FlightService {
@@ -59,31 +70,41 @@ export class FlightService {
 
      
     async cancellationPolicy(routeIdsDto:RouteIdsDto){
-    
+        
+        const mystifly = new Strategy(new Mystifly({}));
+        const result = new Promise((resolve) => resolve(mystifly.cancellationPolicy(routeIdsDto)));
+        return result;
     }
 
-     async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto){
-        //const local = new Strategy(new Static(this.flightRepository));
-        const mystifly = new Strategy(new Mystifly({}));
-        const result = new Promise((resolve) => resolve(mystifly.roundTripSearch(searchFlightDto)));
-        return result;
-     }
-
-     async airRevalidate(routeIdDto,headers){
+     async searchRoundTripFlight(searchFlightDto:RoundtripSearchFlightDto,headers,user){
+        
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers));
-        const result = new Promise((resolve) => resolve(mystifly.airRevalidate(routeIdDto)));
+        const result = new Promise((resolve) => resolve(mystifly.roundTripSearch(searchFlightDto,user)));
         return result;
      }
 
-     async bookFlight(bookFlightDto:BookFlightDto,headers){
+     async airRevalidate(routeIdDto,headers,user){
         await this.validateHeaders(headers);
+        const mystifly = new Strategy(new Mystifly(headers));
+        const result = new Promise((resolve) => resolve(mystifly.airRevalidate(routeIdDto,user)));
+        return result;
+     }
+
+     async bookFlight(bookFlightDto:BookFlightDto,headers,user){
+        let headerDetails = await this.validateHeaders(headers);
 
         let { 
-            travelers, payment_type, 
-            adult_count, child_count,infant_count } = bookFlightDto;
+            travelers, payment_type, instalment_type,
+            adult_count, child_count,infant_count, 
+            selling_price, additional_amount,
+            departure_date, route_code
+        } = bookFlightDto;
+
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let travelersDetails = await this.getTravelersInfo(travelers);
-        
+        let currencyId = headerDetails.currency.id;
+        const userId = user.user_id;
         if(adult_count!=travelersDetails.adults.length)
             throw new BadRequestException(`Adults count is not match with search request!`)
 
@@ -93,12 +114,133 @@ export class FlightService {
         if(infant_count!=travelersDetails.infants.length)
             throw new BadRequestException(`Infants count is not match with search request`)
         
-        /* if(payment_type==PaymentType.INSTALMENT){
+        const mystifly = new Strategy(new Mystifly(headers));
+        const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
+        console.log(airRevalidateResult);
 
-        } */
+        if(payment_type==PaymentType.INSTALMENT){
+            let instalmentDetails;
+            if(!additional_amount){
+
+                //let layCreditAmount =  
+                //save entry for future booking
+                if(instalment_type==InstalmentType.WEEKLY){
+                    instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,additional_amount);
+                }
+                if(instalment_type==InstalmentType.BIWEEKLY){
+                    instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate);
+                }
+                if(instalment_type==InstalmentType.MONTHLY){
+                    instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate);
+                }
+
+                this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
+
+            }
+        }
         /* const mystifly = new Strategy(new Mystifly(headers));
         const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));
         return result; */
+     }
+
+    async saveBooking(
+        bookFlightDto:BookFlightDto,currencyId,bookingDate,
+        bookingType,userId,instalmentDetails=null
+    ){
+        const {
+            selling_price, net_rate, journey_type,
+            departure_date, source_location, destination_location,
+            adult_count, child_count, infant_count,flight_class,
+            instalment_type
+        } = bookFlightDto;
+
+        let moduleDetails = await getManager().createQueryBuilder(Module,"module").where(`"module"."name"=:name`,{name:'flight'}).getOne();
+        if(!moduleDetails){
+            throw new BadRequestException(`Please configure flight module in database&&&module_id&&&${errorMessage}`)
+        }
+
+        let booking= new Booking();
+        booking.id =uuidv4();
+        booking.moduleId=moduleDetails.id;
+        booking.isPredictive=true;
+        booking.bookingType=bookingType;
+        booking.bookingStatus=BookingStatus.PENDING;
+        booking.currency=currencyId;
+        booking.totalAmount=selling_price.toString();
+        booking.netRate=net_rate.toString();
+        booking.markupAmount = (selling_price-net_rate).toString();
+        booking.bookingDate=bookingDate;
+        booking.locationInfo={
+            journey_type,
+            source_location,
+            destination_location
+        }
+        
+        booking.userId=userId;
+
+        if(instalmentDetails){
+            booking.totalInstallments= instalmentDetails.instalment_date.length;
+            if(instalmentDetails.instalment_date.length>1){
+                booking.nextInstalmentDate=instalmentDetails.instalment_date[1].instalment_date;
+            }
+
+            booking.paymentStatus = PaymentStatus.PENDING;
+            booking.supplierBookingId="";
+        }
+        else{
+            //pass here mystifly booking id
+            booking.supplierBookingId="";
+        }
+        let moduleInfo={
+            journey_type,
+            departure_date,
+            source_location,
+            destination_location,
+            adult_count,
+            child_count,
+            infant_count,
+            flight_class
+        }
+        booking.moduleInfo=moduleInfo;
+        try{
+
+            let bookingDetails =  await booking.save();
+            if(instalmentDetails){
+                let bookingInstalments:BookingInstalments[] = [];
+                let bookingInstalment = new BookingInstalments();
+                let i=0;
+                for(let instalment of instalmentDetails.instalment_date){
+                    bookingInstalment.bookingId=bookingDetails.id;
+                    bookingInstalment.userId=userId;
+                    bookingInstalment.moduleId=moduleDetails.id;
+                    bookingInstalment.instalmentType=instalment_type;
+                    bookingInstalment.instalmentDate= instalment.instalment_date;
+                    bookingInstalment.currencyId=currencyId;
+                    bookingInstalment.amount = instalment.instalment_amount;
+                    bookingInstalment.instalmentStatus = (i==0)?InstalmentStatus.PAID:InstalmentStatus.PENDING;
+                    bookingInstalment.paymentStatus = (i==0)?PaymentStatus.CONFIRM : PaymentStatus.PENDING;
+                    bookingInstalment.supplierId=1;
+                    bookingInstalment.isPaymentProcessedToSupplier=0;
+                    bookingInstalment.isInvoiceGenerated=0;
+                    i++;
+                    bookingInstalments.push(bookingInstalment)
+                }
+    
+                console.log(bookingInstalments)
+                await getConnection()
+                    .createQueryBuilder()
+                    .insert()
+                    .into(BookingInstalments)
+                    .values(bookingInstalments)
+                    .execute();
+            }
+        }
+        catch(error){
+
+            console.log(error)
+        }
+        
+
      }
 
      async validateHeaders(headers){
@@ -120,6 +262,10 @@ export class FlightService {
         let languageDetails = await getManager().createQueryBuilder(Language,"language").where(`"language"."iso_1_code"=:language and "language"."active"=true`,{language}).getOne();
         if(!languageDetails){
             throw new BadRequestException(`Invalid language code sent!`)
+        }
+        return {
+            currency:currencyDetails,
+            language:languageDetails
         }
      }
 
