@@ -76,7 +76,7 @@ export class SubscriptionService {
 			const { plan_id, currency_id, card_token } = subscribePlan;
 
 			const todayDate = new Date();
-			const userdata = await this.getUserData(userId);
+			const userdata = await this.userRepository.getUserData(userId);
 
 			if (userdata.nextSubscriptionDate) {
 				var userNextSubscriptionDate = new Date(userdata.nextSubscriptionDate);
@@ -150,7 +150,7 @@ export class SubscriptionService {
 
 	async getPlanDetail(user: User) {
 		try {
-			const userdata = await this.getUserData(user.userId);
+			const userdata = await this.userRepository.getUserData(user.userId);
 
 			const todayDate = new Date();
 
@@ -268,7 +268,7 @@ export class SubscriptionService {
 		todayDate = todayDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
-		const userdata = await this.getUserData(userId);
+		const userdata = await this.userRepository.getUserData(userId);
 
 		const updateQuery = await this.userRepository.query(
 			`UPDATE "user" 
@@ -300,21 +300,4 @@ export class SubscriptionService {
 
 	async addLaytripPoint() {}
 
-	async getUserData(userId: string): Promise<User> {
-		const userdata = await this.userRepository.findOne({
-			userId: userId,
-			isDeleted: false,
-		});
-
-		if (!userdata)
-			throw new NotFoundException(
-				`This user does not exist&&&email&&&This user does not exist`
-			);
-
-		if (userdata.status != 1)
-			throw new UnauthorizedException(
-				`Your account has been disabled. Please contact administrator person.`
-			);
-		return userdata;
-	}
 }
