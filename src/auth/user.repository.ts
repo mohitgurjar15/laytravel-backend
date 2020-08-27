@@ -93,21 +93,15 @@ export class UserRepository extends Repository<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
 			email,
-			roleId:
-				In ([
-					Role.PAID_USER,
-					Role.SUPER_ADMIN,
-					Role.SUPPLIER,
-					Role.GUEST_USER,
-					Role.FREE_USER,
-					Role.ADMIN
-				]),
+			
 		});
+		console.log(userExist);
+		
 		if (userExist && userExist.roleId != Role.GUEST_USER) {
 			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address .`
+				`This email address is already registered with us. Please enter different email address.`
 			);
-		}else if (userExist.roleId == Role.GUEST_USER && user.roleId == Role.GUEST_USER) {
+		}else if (userExist && userExist.roleId == Role.GUEST_USER && user.roleId == Role.GUEST_USER) {
 			return userExist;
 		} else {
 			await user.save();

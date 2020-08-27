@@ -26,7 +26,7 @@ export class EnqiryService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No Enquiry Found.&&&id`);
+				throw new NotFoundException(`No enquiry found&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -59,7 +59,7 @@ export class EnqiryService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No Enquiry Found.&&&id`);
+				throw new NotFoundException(`No enquiry found&&&id`);
 			}
 
 			throw new InternalServerErrorException(

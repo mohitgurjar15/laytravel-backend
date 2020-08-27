@@ -27,7 +27,7 @@ export class CurrencyService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No Currency Found.&&&id`);
+				throw new NotFoundException(`No currency found&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -50,7 +50,7 @@ export class CurrencyService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No Currency Found.&&&id`);
+				throw new NotFoundException(`No currency found&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -70,20 +70,20 @@ export class CurrencyService {
 				id,
 				isDeleted: false,
 			});
-			if (!CurrencyData) throw new NotFoundException(`No Currency found`);
+			if (!CurrencyData) throw new NotFoundException(`No currency found`);
 			CurrencyData.liveRate = rate;
 			//CurrencyData.updatedBy = adminId;
 			CurrencyData.updatedDate = new Date();
 			CurrencyData.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId, "currency", `currency rate ${rate} changed by admin`);
-			return { message: "Currency is Updated" };
+			return { message: "Currency is updated" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No Currency Found.&&&id`);
+				throw new NotFoundException(`No currency found&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -111,13 +111,13 @@ export class CurrencyService {
 			Data.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId.id, "currency", `currency ${Data.code} status ${status} changed by admin`);
-			return { message: `Currency ${Data.code} Status Changed` };
+			return { message: `Currency ${Data.code} status changed` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No currency Found.&&&id`);
+				throw new NotFoundException(`No currency found&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -145,7 +145,7 @@ export class CurrencyService {
 	// 			typeof error.response !== "undefined" &&
 	// 			error.response.statusCode == 404
 	// 		) {
-	// 			throw new NotFoundException(`No Currency Found.&&&id`);
+	// 			throw new NotFoundException(`No currency found&&&id`);
 	// 		}
 
 	// 		throw new InternalServerErrorException(
@@ -170,13 +170,13 @@ export class CurrencyService {
 			CurrencyData.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId, "currency", `currency ${CurrencyData.code} Deleted by admin`);
-			return { message: "Currency is Deleted" };
+			return { message: "Currency is deleted" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No Currency Found.&&&id`);
+				throw new NotFoundException(`No currency found&&&id`);
 			}
 
 			throw new InternalServerErrorException(
