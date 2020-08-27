@@ -28,7 +28,6 @@ import { InsertFaqDto } from "./dto/insert-faq.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import { UpdateFaqDto } from "./dto/update-faq.dto";
-import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { ActiveDeactiveFaq } from "./dto/active-deactive-faq.dto";
 
 @ApiTags("FAQ")

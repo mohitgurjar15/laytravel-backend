@@ -2,5 +2,5 @@ projectKey=laytrip-api
 serverUrl=http://localhost:9000
 serverVersion=8.3.1.34397
 dashboardUrl=http://localhost:9000/dashboard?id=laytrip-api
-ceTaskId=AXQrOtgRhbtdaCT45qbH
-ceTaskUrl=http://localhost:9000/api/ce/task?id=AXQrOtgRhbtdaCT45qbH
+ceTaskId=AXQurXdJWkVEHtIsFDKS
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AXQurXdJWkVEHtIsFDKS

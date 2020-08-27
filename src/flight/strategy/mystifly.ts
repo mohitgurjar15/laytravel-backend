@@ -359,6 +359,7 @@ export class Mystifly implements StrategyAirline{
                 stopsData.two_and_two_plus_stop.count+=1;
             }
         })
+        return stopsData;
     }
 
     getAirlineCounts(routes){

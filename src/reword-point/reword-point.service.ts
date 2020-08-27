@@ -6,7 +6,6 @@ import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { ListEarnRewordDto } from './dto/list-earn-reword.dto';
 import { ListRedeemRewordDto } from './dto/list-redeem-reword.dto';
 import { LayCreditRedeem } from 'src/entity/lay-credit-redeem.entity';
-import { User } from 'src/entity/user.entity';
 
 @Injectable()
 export class RewordPointService {
