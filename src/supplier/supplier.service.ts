@@ -355,7 +355,7 @@ export class SupplierService {
 
 	async getSupplierData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return this.userRepository.getUserDetails(userId, siteUrl, [
+			return await this.userRepository.getUserDetails(userId, siteUrl, [
 				Role.SUPPLIER,
 			]);
 			// const user = await this.userRepository.findOne({

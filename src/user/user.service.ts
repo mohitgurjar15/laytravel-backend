@@ -227,7 +227,7 @@ export class UserService {
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
 		try {
 			const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
-			return this.userRepository.getUserDetails(userId, siteUrl, roles);
+			return await this.userRepository.getUserDetails(userId, siteUrl, roles);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}

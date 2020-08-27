@@ -1,4 +1,4 @@
-import { Module, CacheModule, CacheInterceptor } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { typeOrmConfig } from "./config/typeorm.config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";

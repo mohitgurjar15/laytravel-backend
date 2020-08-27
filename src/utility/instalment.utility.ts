@@ -11,7 +11,7 @@ export class Instalment{
 
         let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
-        console.log(lastInstalmentDate,dayDiffernce)
+        
         let instalmentsDates = [];
         let nextInstalmentsDate;
         let instalmentDatewithAmount=[];
