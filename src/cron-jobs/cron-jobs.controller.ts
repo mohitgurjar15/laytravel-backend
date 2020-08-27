@@ -1,7 +1,7 @@
-import { Controller, UseGuards, Get } from '@nestjs/common';
+import { Controller , Get } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+
 
 @ApiTags("Cron jobs")
 @Controller('cron-jobs')

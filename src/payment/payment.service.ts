@@ -58,4 +58,20 @@ export class PaymentService {
 
         return cardList;
     }
+
+    async authorizeCard(gatewayToken,card_id,amount,currency){
+
+        return {
+            status   : true,
+            token    : 'AUT675462'
+        }
+    }
+
+    async captureCard(authorizeToken){
+
+        return {
+            status   : true,
+            token    : 'CAP675462'
+        }
+    }
 }
