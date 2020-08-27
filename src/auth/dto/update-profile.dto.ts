@@ -2,6 +2,7 @@ import { IsNotEmpty, ValidationArguments, IsEnum } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from 'src/config/common.config';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
+import { Gender } from 'src/enum/gender.enum';
 
 export class UpdateProfileDto {
 
@@ -21,6 +22,24 @@ export class UpdateProfileDto {
     title : string;
 
     
+    @IsNotEmpty({
+        message : `Please select travelers gender.&&&gender`
+    })
+    @IsEnum(['M','F'],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please select your gender.&&&gender`;
+            } else {
+                return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`
+            }
+        }
+    })
+    
+    @ApiProperty({
+        description: `Select Gender (M,F)`,
+        example: `M`
+    })
+    gender : Gender;
 
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`
@@ -156,4 +175,26 @@ export class UpdateProfileDto {
         example: `2030-07-20`
     })
     passport_expiry: string;
+
+
+    @ApiPropertyOptional({
+		type: "string",
+		description: "languge id",
+	})    
+    @ApiProperty({
+        description:'Enter Language ID ',
+        example:'1'
+    })
+    language_id :number;
+
+
+    @ApiPropertyOptional({
+		type: "string",
+		description: "currency id",
+	})    
+    @ApiProperty({
+        description:'Enter currency ID ',
+        example:'1'
+    })
+    currency_id :number;
 }
