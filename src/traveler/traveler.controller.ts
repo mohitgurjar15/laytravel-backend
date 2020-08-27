@@ -5,20 +5,21 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { TravelerService } from './traveler.service';
 import { SaveTravelerDto } from './dto/save-traveler.dto';
 import { User } from 'src/entity/user.entity';
-import { GetUser } from 'src/auth/get-user.dacorator';
+import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { UpdateTravelerDto } from './dto/update-traveler.dto';
 
 @ApiTags("Travelers")
 @ApiBearerAuth()
-@UseGuards(AuthGuard())
+
 @Controller('traveler')
 export class TravelerController {
     constructor(private travelerService: TravelerService) {}
 
 
-    @Post()
+	@Post()
+	@UseGuards()
 	@ApiOperation({ summary: "Create new traveler by primary user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -31,14 +32,15 @@ export class TravelerController {
 	@HttpCode(200)
 	async createTraveler(
 		@Body() saveTravelerDto: SaveTravelerDto,
-		@GetUser() user: User,
+		@LogInUser() user,
 	) {
-		const createdBy = user.userId;
-		return await this.travelerService.createNewtraveller(saveTravelerDto, createdBy);
+		const parent_user_id = user.user_id;
+		console.log(user);
+		return await this.travelerService.createNewtraveller(saveTravelerDto, parent_user_id);
     }
     
     @Get('get-taveler/:id')
-	@ApiOperation({ summary: "Get traveler detail from the traveler id" })
+	@ApiOperation({ summary: "Get traveler detail from the traveler id from admin user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({

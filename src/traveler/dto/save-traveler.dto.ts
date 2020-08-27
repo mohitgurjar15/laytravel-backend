@@ -1,21 +1,20 @@
-import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
+import { IsNotEmpty, IsEmail, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
-import { IsEqualTo } from 'src/auth/password.decorator';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
 export class SaveTravelerDto {
 
-    @ApiPropertyOptional({
-		type: "string",
-		description: "parent user id",
-	})
-    @ApiProperty({
-        description: `Enter parent user id`,
-        example: `fb99b4c6-38ce-46bb-a084-d561a459605e`
-    })
-    parent_user_id: string;
+    // @ApiPropertyOptional({
+	// 	type: "string",
+	// 	description: "parent user id",
+	// })
+    // @ApiProperty({
+    //     description: `Enter parent user id`,
+    //     example: `fb99b4c6-38ce-46bb-a084-d561a459605e`
+    // })
+    // parent_user_id: string;
     
     @IsEnum(['mr','ms','mrs'],{
         message : (args: ValidationArguments) => {
@@ -110,7 +109,7 @@ export class SaveTravelerDto {
     })
     @ApiProperty({
         description: `Select country code`,
-        example: `+1`
+        example: `1`
     })
     country_code: string;
 

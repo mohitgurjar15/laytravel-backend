@@ -18,19 +18,23 @@ import { Activity } from "src/utility/activity.utility";
 import { getManager } from "typeorm";
 import { Countries } from "src/entity/countries.entity";
 import { UpdateTravelerDto } from "./dto/update-traveler.dto";
+import { JwtPayload } from "src/auth/jwt-payload.interface";
+import { JwtService } from "@nestjs/jwt";
+
+
 
 @Injectable()
 export class TravelerService {
 	constructor(
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
-
+		private jwtService: JwtService,
 		private readonly mailerService: MailerService
 	) {}
 
 	async createNewtraveller(
 		saveTravelerDto: SaveTravelerDto,
-		createdBy: string
+		parent_user_id: string
 	) {
 		const {
 			title,
@@ -40,11 +44,11 @@ export class TravelerService {
 			country_code,
 			passport_number,
 			passport_expiry,
-			parent_user_id,
 			gender,
 			email,
 		} = saveTravelerDto;
 		try {
+			console.log(parent_user_id)
 			let countryDetails = await getManager()
 				.createQueryBuilder(Countries, "country")
 				.where(`id=:country_code`, { country_code })
@@ -78,24 +82,46 @@ export class TravelerService {
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
 
-			if (parent_user_id) {
+			if (parent_user_id != undefined && parent_user_id != '') {
+				console.log(`hdfw`);
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
 					throw new ConflictException(
 						`Parents user email id and traveler email id both are same &&& email &&& Parents user email id and traveler email id both are same`
 					);
 				}
+				return this.userRepository.createtraveler(user);
 			} else {
 				user.roleId = Role.GUEST_USER;
+				const data = await this.userRepository.createUser(user);
+				const payload: JwtPayload = {
+					user_id: user.userId,
+					email: user.email,
+					username: user.firstName + " " + user.lastName,
+					firstName: user.firstName,
+					phone: user.phoneNo,
+					middleName: user.middleName,
+					lastName: user.lastName,
+					salt: '',
+	
+					profilePic:  "",
+					roleId: user.roleId,
+				};
+				const accessToken = this.jwtService.sign(payload);
+				
+				return { data: data, token: accessToken };
+				
 			}
-			Activity.logActivity(
-				createdBy,
-				"traveler",
-				`Traveler ${user.email} is created by user ${createdBy}`
-			);
-
-			return this.userRepository.createtraveler(user);
+			
+			
 		} catch (error) {
+			if(error.response.statusCode == undefined)
+			{
+				console.log(error)
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
 			switch (error.response.statusCode) {
 				case 404:
 					if (
@@ -128,7 +154,7 @@ export class TravelerService {
 	async listTraveler(userId: string) {
 		try {
 			const [result, total] = await this.userRepository.findAndCount({
-				where: `created_by = '${userId}' AND user_id != '${userId}' AND is_deleted = false`,
+				where: `created_by = '${userId}' AND user_id != '${userId}' AND is_deleted = false AND role_id = ${Role.TRAVELER_USER}`,
 			});
 
 			if (!result.length) {
@@ -136,6 +162,13 @@ export class TravelerService {
 			}
 			return { data: result, TotalReseult: total };
 		} catch (error) {
+			if(error.response.statusCode == undefined)
+			{
+				console.log(error)
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
 			switch (error.response.statusCode) {
 				case 404:
 					throw new NotFoundException(error.response.message);
@@ -161,8 +194,15 @@ export class TravelerService {
 
 	async getTraveler(userId: string):Promise<User> {
 		try {
-			return await this.userRepository.getUserData(userId);
+			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
+			if(error.response.statusCode == undefined)
+			{
+				console.log(error)
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
 			switch (error.response.statusCode) {
 				case 404:
 					if (
@@ -195,8 +235,9 @@ export class TravelerService {
     async updateTraveler(updateTravelerDto:UpdateTravelerDto ,  userId:string , updateBy : string)
     {
         try {
-            const traveler = await this.userRepository.getUserData(userId);
-            
+            const traveler = await this.userRepository.getTravelData(userId);
+			
+			
             const {first_name,last_name,title,dob,gender,country_code,passport_expiry,passport_number} = updateTravelerDto
 
             traveler.countryCode = country_code;
@@ -213,14 +254,15 @@ export class TravelerService {
 
 			await traveler.save();
 			
-			Activity.logActivity(
-				updateBy,
-				"traveler",
-				`Traveler ${traveler.email} is update by user ${updateBy}`
-			);
-
             return traveler;
 		} catch (error) {
+			if(error.response.statusCode == undefined)
+			{
+				console.log(error)
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
 			switch (error.response.statusCode) {
 				case 404:
 					if (
@@ -255,21 +297,22 @@ export class TravelerService {
 	async deleteTraveler(userId:string , updateBy : string)
     {
         try {
-            const traveler = await this.userRepository.getUserData(userId);
+            const traveler = await this.userRepository.getTravelData(userId);
             traveler.isDeleted = true;
             traveler.updatedBy = updateBy
 			traveler.updatedDate = new Date();
 
 			await traveler.save();
 			
-			Activity.logActivity(
-				updateBy,
-				"traveler",
-				`Traveler ${traveler.email} is deleted by user ${updateBy}`
-			);
-
             return { message :`Traveler ${traveler.email} is deleted`};
 		} catch (error) {
+			if(error.response.statusCode == undefined)
+			{
+				console.log(error)
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
 			switch (error.response.statusCode) {
 				case 404:
 					if (

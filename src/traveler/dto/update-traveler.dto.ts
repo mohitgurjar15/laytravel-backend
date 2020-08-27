@@ -83,7 +83,7 @@ export class UpdateTravelerDto{
     })
     @ApiProperty({
         description: `Select country code`,
-        example: `+1`
+        example: `1`
     })
     country_code: string;
 

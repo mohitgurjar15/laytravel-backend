@@ -19,10 +19,10 @@ export class UserRepository extends Repository<User> {
 	hashPassword(password: string, salt: string): Promise<string> {
 		return bcrypt.hash(password, salt);
 	}
-	
+
 	async changePassword(changePasswordDto: ChangePasswordDto, userId: string) {
 		const { old_password, password } = changePasswordDto;
-		
+
 		const user = await this.findOne({
 			where: { userId: userId, isDeleted: false },
 		});
@@ -70,9 +70,9 @@ export class UserRepository extends Repository<User> {
 		}
 		const [result, total] = await this.findAndCount({
 			where: where,
-			order: { createdDate : "DESC"},
+			order: { createdDate: "DESC" },
 			skip: skip,
-			take: take,	
+			take: take,
 		});
 
 		if (!result.length || total <= skip) {
@@ -93,11 +93,22 @@ export class UserRepository extends Repository<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
 			email,
+			roleId:
+				In ([
+					Role.PAID_USER,
+					Role.SUPER_ADMIN,
+					Role.SUPPLIER,
+					Role.GUEST_USER,
+					Role.FREE_USER,
+					Role.ADMIN
+				]),
 		});
-		if (userExist) {
+		if (userExist && userExist.roleId != Role.GUEST_USER) {
 			throw new ConflictException(
 				`This email address is already registered with us. Please enter different email address .`
 			);
+		}else if (userExist.roleId == Role.GUEST_USER && user.roleId == Role.GUEST_USER) {
+			return userExist;
 		} else {
 			await user.save();
 			return user;
@@ -108,32 +119,43 @@ export class UserRepository extends Repository<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
 			email,
-			isDeleted:false,
+			isDeleted: false,
+			roleId: Role.TRAVELER_USER,
+			createdBy: user.createdBy,
 		});
-		
 		if (userExist) {
-			userExist.createdBy = user.createdBy;
-			await userExist.save();
-			user = userExist;
+			throw new ConflictException(`This traveler email alredy exist.`);
 		} else {
 			await user.save();
 		}
-		let userDetail =  await getManager()
-            .createQueryBuilder(User, "user")
-            .leftJoinAndSelect("user.createdBy2","parentUser")
-			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`,{ userId:user.userId,is_deleted:false})
+		let userDetail = await getManager()
+			.createQueryBuilder(User, "user")
+			.leftJoinAndSelect("user.createdBy2", "parentUser")
+			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
+				userId: user.userId,
+				is_deleted: false,
+			})
 			.getOne();
-			
-			if (!userDetail) {
-				throw new NotFoundException(`No user found.`);
-			}
-			return userDetail;
+
+		if (!userDetail) {
+			throw new NotFoundException(`Traveler not crearted`);
+		}
+		return userDetail;
 	}
 
 	async getUserData(userId: string): Promise<User> {
 		const userdata = await this.findOne({
 			userId: userId,
 			isDeleted: false,
+			roleId:
+				In ([
+					Role.PAID_USER,
+					Role.SUPER_ADMIN,
+					Role.SUPPLIER,
+					Role.GUEST_USER,
+					Role.FREE_USER,
+					Role.ADMIN ])
+				,
 		});
 
 		if (!userdata)
@@ -144,6 +166,25 @@ export class UserRepository extends Repository<User> {
 		if (userdata.status != 1)
 			throw new UnauthorizedException(
 				`This account has been disabled. Please contact administrator person.`
+			);
+		return userdata;
+	}
+
+	async getTravelData(userId: string): Promise<User> {
+		const userdata = await this.findOne({
+			userId: userId,
+			isDeleted: false,
+			roleId: Role.TRAVELER_USER,
+		});
+
+		if (!userdata)
+			throw new NotFoundException(
+				`This traveler does not exist&&&email&&&This traveler does not exist`
+			);
+
+		if (userdata.status != 1)
+			throw new UnauthorizedException(
+				`This traveler has been disabled. Please contact administrator person.`
 			);
 		return userdata;
 	}
@@ -222,61 +263,86 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
-
-	async getUserDetails(userId:string, siteUrl:any,roles:Role[]=null){
-		
-		let userDetail =  await getManager()
-            .createQueryBuilder(User, "user")
-            .leftJoinAndSelect("user.state","state")
-            .leftJoinAndSelect("user.country","countries")
-            .leftJoinAndSelect("user.preferredCurrency2","currency")
-            .leftJoinAndSelect("user.preferredLanguage2","language")
-            .select([
-                	"user.userId","user.title","user.dob",
-					"user.firstName","user.lastName",
-					"user.email","user.profilePic","user.dob","user.gender","user.roleId",
-					"user.countryCode","user.phoneNo",
-					"user.cityName","user.address","user.zipCode",
-					"user.preferredCurrency2","user.preferredLanguage2",
-					"user.passportNumber","user.passportExpiry",
-					"language.id", "language.name","language.iso_1Code","language.iso_2Code",
-					"currency.id","currency.code","currency.country",
-					"countries.name","countries.iso2","countries.iso3","countries.id",
-					"state.id","state.name","state.iso2","state.country_id",
-            ])
-			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`,{ userId,is_deleted:false})
-			.andWhere(roles!=null ? (`"user"."role_id" in (:...roles) `):`1=1`,{roles})
+	async getUserDetails(userId: string, siteUrl: any, roles: Role[] = null) {
+		let userDetail = await getManager()
+			.createQueryBuilder(User, "user")
+			.leftJoinAndSelect("user.state", "state")
+			.leftJoinAndSelect("user.country", "countries")
+			.leftJoinAndSelect("user.preferredCurrency2", "currency")
+			.leftJoinAndSelect("user.preferredLanguage2", "language")
+			.select([
+				"user.userId",
+				"user.title",
+				"user.dob",
+				"user.firstName",
+				"user.lastName",
+				"user.email",
+				"user.profilePic",
+				"user.dob",
+				"user.gender",
+				"user.roleId",
+				"user.countryCode",
+				"user.phoneNo",
+				"user.cityName",
+				"user.address",
+				"user.zipCode",
+				"user.preferredCurrency2",
+				"user.preferredLanguage2",
+				"user.passportNumber",
+				"user.passportExpiry",
+				"language.id",
+				"language.name",
+				"language.iso_1Code",
+				"language.iso_2Code",
+				"currency.id",
+				"currency.code",
+				"currency.country",
+				"countries.name",
+				"countries.iso2",
+				"countries.iso3",
+				"countries.id",
+				"state.id",
+				"state.name",
+				"state.iso2",
+				"state.country_id",
+			])
+			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`, {
+				userId,
+				is_deleted: false,
+			})
+			.andWhere(roles != null ? `"user"."role_id" in (:...roles) ` : `1=1`, {
+				roles,
+			})
 			.getOne();
-			
-			if (!userDetail) {
-				throw new NotFoundException(`No user found.`);
-			}
 
-			
-			let user:any={};
-			user.userId = userDetail.userId;
-			user.firstName = userDetail.firstName;
-			user.lastName = userDetail.lastName || "";
-			user.email = userDetail.email;
-			user.gender = userDetail.gender || "";
-			user.roleId = userDetail.roleId;
-			user.phoneNo = userDetail.phoneNo || "";
-			user.countryCode= userDetail.countryCode || "";
-			user.address= userDetail.address || "";
-			user.country= userDetail.country || {};
-			user.state= userDetail.state || {};
-			user.dob = userDetail.dob || "";
-			user.title= userDetail.title || "";
-			user.cityName= userDetail.cityName || "";
-			user.dob= userDetail.dob || "";
-			user.ziCode= userDetail.zipCode || "";
-			user.preferredCurrency= userDetail.preferredCurrency2 || {};
-			user.preferredLanguage= userDetail.preferredLanguage2 || {};
-			user.passportNumber= userDetail.passportNumber || "";
-			user.passportExpiry= userDetail.passportExpiry || "";
-			user.profilePic = userDetail.profilePic
-				? `${siteUrl}/profile/${userDetail.profilePic}`
-				: "";
-			return user;
+		if (!userDetail) {
+			throw new NotFoundException(`No user found.`);
+		}
+
+		let user: any = {};
+		user.userId = userDetail.userId;
+		user.firstName = userDetail.firstName;
+		user.lastName = userDetail.lastName || "";
+		user.email = userDetail.email;
+		user.gender = userDetail.gender || "";
+		user.roleId = userDetail.roleId;
+		user.phoneNo = userDetail.phoneNo || "";
+		user.countryCode = userDetail.countryCode || "";
+		user.address = userDetail.address || "";
+		user.country = userDetail.country || {};
+		user.state = userDetail.state || {};
+		user.dob = userDetail.dob || "";
+		user.title = userDetail.title || "";
+		user.cityName = userDetail.cityName || "";
+		user.dob = userDetail.dob || "";
+		user.zipCode = userDetail.zipCode || "";
+		user.preferredCurrency = userDetail.preferredCurrency2 || {};
+		user.preferredLanguage = userDetail.preferredLanguage2 || {};
+		user.passportNumber = userDetail.passportNumber || "";
+		user.passportExpiry = userDetail.passportExpiry || "";
+		user.profilePic = userDetail.profilePic
+			? `${siteUrl}/profile/${userDetail.profilePic}`
+			: "";
+		return user;
 	}
 }
