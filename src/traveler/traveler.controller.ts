@@ -40,7 +40,7 @@ export class TravelerController {
     }
     
     @Get('get-taveler/:id')
-	@ApiOperation({ summary: "Get traveler detail from the traveler id from admin user" })
+	@ApiOperation({ summary: "Get traveler detail from the traveler id by admin user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({

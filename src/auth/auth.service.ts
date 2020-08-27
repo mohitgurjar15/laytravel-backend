@@ -90,7 +90,7 @@ export class AuthService {
 
 		if (userExist)
 			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address .`
+				`This email address is already registered with us. Please enter different email address.`
 			);
 
 		const user = new User();
@@ -202,7 +202,7 @@ export class AuthService {
 			);
 
 		if (user.isVerified)
-			throw new UnauthorizedException(`Your Email Id Already Verified`);
+			throw new UnauthorizedException(`Your email id already verified`);
 		user.isVerified = false;
 		user.otp = Math.round(new Date().getTime() % 1000000);
 		if (user.otp < 100000) {
@@ -258,7 +258,7 @@ export class AuthService {
 
 		if (userExist)
 			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address .`
+				`This email address is already registered with us. Please enter different email address.`
 			);
 		user.email = newEmail;
 		//user.isVerified = false;
@@ -310,7 +310,7 @@ export class AuthService {
 				);
 			if (!user.isVerified) {
 				throw new NotAcceptableException(
-					`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+					`Please verify your email id&&&email&&&Please verify your email id`
 				);
 			}
 			const payload: JwtPayload = {
@@ -351,7 +351,7 @@ export class AuthService {
 		}
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
-				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);
@@ -446,7 +446,7 @@ export class AuthService {
 		}
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
-				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
 
@@ -462,7 +462,7 @@ export class AuthService {
 			try {
 				await user.save();
 				await validToken.save();
-				const res = { message: `Your Password has been succesfully updated` };
+				const res = { message: `Your password has been succesfully updated` };
 				return res;
 			} catch (error) {
 				throw new InternalServerErrorException(
@@ -577,7 +577,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`Given Otp is wrong.&&&token&&&Given Otp is wrong.`
+				`Given otp is wrong.&&&token&&&Given otp is wrong.`
 			);
 		}
 	}
@@ -610,7 +610,7 @@ export class AuthService {
 				);
 			if (!user.isVerified) {
 				throw new NotAcceptableException(
-					`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+					`Please verify your email id&&&email&&&Please verify your email id`
 				);
 			}
 
@@ -1024,7 +1024,7 @@ export class AuthService {
 		});
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
-				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
 
@@ -1037,7 +1037,7 @@ export class AuthService {
 				`auth`,
 				`prefered Languge Updated By user ${user.email} `
 			);
-			return { message: "Prefered Languge Updated Successfully" };
+			return { message: "Prefered languge updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -1077,7 +1077,7 @@ export class AuthService {
 				`auth`,
 				`preffered Currency Updated By user ${user.email}`
 			);
-			return { message: "Prefered Currency Updated Successfully" };
+			return { message: "Prefered currency updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -1109,7 +1109,7 @@ export class AuthService {
 			} else {
 				if (!user.isVerified) {
 					throw new NotAcceptableException(
-						`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+						`Please verify your email id&&&email&&&Please verify your email id`
 					);
 				}
 				const payload: JwtPayload = {

@@ -14,7 +14,6 @@ import { SaveTravelerDto } from "./dto/save-traveler.dto";
 import { User } from "src/entity/user.entity";
 import { v4 as uuidv4 } from "uuid";
 import { Role } from "src/enum/role.enum";
-import { Activity } from "src/utility/activity.utility";
 import { getManager } from "typeorm";
 import { Countries } from "src/entity/countries.entity";
 import { UpdateTravelerDto } from "./dto/update-traveler.dto";
@@ -29,7 +28,6 @@ export class TravelerService {
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
 		private jwtService: JwtService,
-		private readonly mailerService: MailerService
 	) {}
 
 	async createNewtraveller(
@@ -115,9 +113,10 @@ export class TravelerService {
 			
 			
 		} catch (error) {
+			console.log(error)
 			if(error.response.statusCode == undefined)
 			{
-				console.log(error)
+				
 				throw new InternalServerErrorException(
 					`${error.message}&&&id&&&${error.Message}`
 				);
@@ -209,7 +208,7 @@ export class TravelerService {
 						error.response.message ==
 						"This user does not exist&&&email&&&This user does not exist"
 					) {
-						error.response.message = `This traveler does not exist&&&email&&&This user traveler not exist`;
+						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
 					}
 					throw new NotFoundException(error.response.message);
 				case 409:
