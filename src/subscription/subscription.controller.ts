@@ -5,7 +5,6 @@ import {
 	ApiOperation,
 	ApiResponse,
 } from "@nestjs/swagger";
-import { SubscriptionRepository } from "./subscription.repository";
 import { Plan } from "src/entity/plan.entity";
 import { SubscriptionService } from "./subscription.service";
 import { AuthGuard } from "@nestjs/passport";

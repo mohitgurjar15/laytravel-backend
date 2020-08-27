@@ -2,7 +2,6 @@ import {
 	Injectable,
 	NotFoundException,
 	InternalServerErrorException,
-	ConflictException,
 	BadRequestException,
 } from "@nestjs/common";
 import { FaqRepository } from "./faq.repository";

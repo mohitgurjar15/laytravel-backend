@@ -5,7 +5,6 @@ import {
 	ConflictException,
 	UnauthorizedException,
 	BadRequestException,
-	ForbiddenException,
 	NotAcceptableException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -16,12 +15,10 @@ import { SubscribePlan } from "./dto/subscribe-plan.dto";
 import { User } from "src/entity/user.entity";
 import { v4 as uuidv4 } from "uuid";
 import { PlanSubscription } from "src/entity/plan-subscription.entity";
-import { getConnection, getManager } from "typeorm";
+import { getManager } from "typeorm";
 import { UserRepository } from "src/auth/user.repository";
 import { Role } from "src/enum/role.enum";
-import { PaymentType } from "src/enum/payment-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
-import { NotAcceptableExceptionFilter } from "src/not-acceptable-exception.filter";
 import * as config from "config";
 import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -79,7 +76,7 @@ export class SubscriptionService {
 			const { plan_id, currency_id, card_token } = subscribePlan;
 
 			const todayDate = new Date();
-			const userdata = await this.getUserData(userId);
+			const userdata = await this.userRepository.getUserData(userId);
 
 			if (userdata.nextSubscriptionDate) {
 				var userNextSubscriptionDate = new Date(userdata.nextSubscriptionDate);
@@ -153,7 +150,7 @@ export class SubscriptionService {
 
 	async getPlanDetail(user: User) {
 		try {
-			const userdata = await this.getUserData(user.userId);
+			const userdata = await this.userRepository.getUserData(user.userId);
 
 			const todayDate = new Date();
 
@@ -271,7 +268,7 @@ export class SubscriptionService {
 		todayDate = todayDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
-		const userdata = await this.getUserData(userId);
+		const userdata = await this.userRepository.getUserData(userId);
 
 		const updateQuery = await this.userRepository.query(
 			`UPDATE "user" 
@@ -303,21 +300,4 @@ export class SubscriptionService {
 
 	async addLaytripPoint() {}
 
-	async getUserData(userId: string): Promise<User> {
-		const userdata = await this.userRepository.findOne({
-			userId: userId,
-			isDeleted: false,
-		});
-
-		if (!userdata)
-			throw new NotFoundException(
-				`This user does not exist&&&email&&&This user does not exist`
-			);
-
-		if (userdata.status != 1)
-			throw new UnauthorizedException(
-				`Your account has been disabled. Please contact administrator person.`
-			);
-		return userdata;
-	}
 }

@@ -2,7 +2,6 @@ import { EntityRepository, Repository, getManager } from "typeorm";
 import { ActivityLog } from "src/entity/activity-log.entity";
 import { ListActivityDto } from "./dto/list-activities.dto";
 import { NotFoundException } from "@nestjs/common";
-import { Activity } from "src/utility/activity.utility";
 
 @EntityRepository(ActivityLog)
 export class ActivitylogRepository extends Repository<ActivityLog> {

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, MaxLength, IsEnum, ValidationArguments} from 'class-validator'
+import { IsNotEmpty, IsEnum, ValidationArguments} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';

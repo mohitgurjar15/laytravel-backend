@@ -3,21 +3,15 @@ import { User } from "../entity/user.entity";
 import {
 	BadRequestException,
 	NotFoundException,
-	NotAcceptableException,
 	InternalServerErrorException,
-	UnauthorizedException,
 	ConflictException,
+	UnauthorizedException,
 } from "@nestjs/common";
-import { UpdateUserDto } from "src/user/dto/update-user.dto";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { ListUserDto } from "src/user/dto/list-user.dto";
 import * as bcrypt from "bcrypt";
 import { errorMessage } from "src/config/common.config";
-import { SaveUserDto } from "src/user/dto/save-user.dto";
 import { v4 as uuidv4 } from "uuid";
-import { MailerService } from "@nestjs-modules/mailer";
-import { ProfilePicDto } from "./dto/profile-pic.dto";
-import { SiteUrl } from "src/decorator/site-url.decorator";
 import { Role } from "src/enum/role.enum";
 
 @EntityRepository(User)
@@ -110,6 +104,49 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
+	async createtraveler(user: User): Promise<User> {
+		const email = user.email;
+		const userExist = await this.findOne({
+			email,
+			isDeleted:false,
+		});
+		
+		if (userExist) {
+			userExist.createdBy = user.createdBy;
+			await userExist.save();
+			user = userExist;
+		} else {
+			await user.save();
+		}
+		let userDetail =  await getManager()
+            .createQueryBuilder(User, "user")
+            .leftJoinAndSelect("user.createdBy2","parentUser")
+			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`,{ userId:user.userId,is_deleted:false})
+			.getOne();
+			
+			if (!userDetail) {
+				throw new NotFoundException(`No user found.`);
+			}
+			return userDetail;
+	}
+
+	async getUserData(userId: string): Promise<User> {
+		const userdata = await this.findOne({
+			userId: userId,
+			isDeleted: false,
+		});
+
+		if (!userdata)
+			throw new NotFoundException(
+				`This user does not exist&&&email&&&This user does not exist`
+			);
+
+		if (userdata.status != 1)
+			throw new UnauthorizedException(
+				`This account has been disabled. Please contact administrator person.`
+			);
+		return userdata;
+	}
 	/**
 	 * export user
 	 * @param roleId

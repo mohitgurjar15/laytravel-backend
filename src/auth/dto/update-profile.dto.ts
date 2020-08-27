@@ -1,6 +1,5 @@
-import { IsNotEmpty, ValidationArguments, IsEnum, IsOptional } from 'class-validator'
+import { IsNotEmpty, ValidationArguments, IsEnum } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
@@ -20,6 +19,8 @@ export class UpdateProfileDto {
         example: `mr`
     })
     title : string;
+
+    
 
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`

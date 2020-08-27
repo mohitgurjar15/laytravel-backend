@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, MaxLength} from 'class-validator'
+import { IsNotEmpty,  MaxLength} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateSupporterDto{

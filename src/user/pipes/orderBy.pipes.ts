@@ -1,9 +1,6 @@
 import { PipeTransform, BadRequestException } from "@nestjs/common";
 import { OrderByEnum } from "../orderby.enum";
 
-
-
-
 export class OrderByPipe implements PipeTransform 
 {
     readonly allowedStatus = [

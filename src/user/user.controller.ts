@@ -4,7 +4,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../entity/user.entity';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { ListUserDto } from './dto/list-user.dto';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { SaveUserDto } from './dto/save-user.dto';
@@ -16,9 +15,7 @@ import { diskStorage } from "multer";
 import { editFileName, imageFileFilter, csvFileFilter } from '../auth/file-validator';
 import { ProfilePicDto } from '../auth/dto/profile-pic.dto';
 import { SiteUrl } from 'src/decorator/site-url.decorator';
-import { pipe } from 'rxjs';
 import { ActiveDeactiveDto } from './dto/active-deactive-user.dto';
-import { statusPipe } from './pipes/status.pipes';
 import { ImportUserDto } from './dto/import-user.dto';
 import { csvFileDto } from './dto/csv-file.dto';
 

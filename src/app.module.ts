@@ -13,11 +13,8 @@ import {
 	I18nModule,
 	I18nJsonParser,
 	QueryResolver,
-	HeaderResolver,
 } from "nestjs-i18n";
 import * as path from "path";
-import * as redisStore from "cache-manager-redis-store";
-import { APP_INTERCEPTOR } from "@nestjs/core";
 import { GeneralModule } from "./general/general.module";
 import { SupplierModule } from "./supplier/supplier.module";
 import { SupportUserModule } from "./support-user/support-user.module";
@@ -34,6 +31,7 @@ import { CmsModule } from "./cms/cms.module";
 import { SubscriptionModule } from './subscription/subscription.module';
 import { RewordPointModule } from './reword-point/reword-point.module';
 import { CronJobsModule } from './cron-jobs/cron-jobs.module';
+import { TravelerModule } from './traveler/traveler.module';
 import { PaymentModule } from './payment/payment.module';
 
 
@@ -94,6 +92,7 @@ import { PaymentModule } from './payment/payment.module';
 		SubscriptionModule,
 		RewordPointModule,
 		CronJobsModule,
+		TravelerModule,
 		PaymentModule,
     /* CacheModule.register({
       store: redisStore,

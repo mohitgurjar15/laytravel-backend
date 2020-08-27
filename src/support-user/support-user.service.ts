@@ -7,12 +7,8 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
 import { MailerService } from "@nestjs-modules/mailer";
-import { SaveUserDto } from "src/user/dto/save-user.dto";
 import * as config from "config";
-
-import { UpdateUserDto } from "src/user/dto/update-user.dto";
 import { errorMessage } from "src/config/common.config";
-import { ListUserDto } from "src/user/dto/list-user.dto";
 import { SaveSupporterDto } from "./dto/save-supporter.dto";
 import { UpdateSupporterDto } from "./dto/update-supporter.dto";
 import { ListSupporterDto } from "./dto/list-suppoerter.dto";

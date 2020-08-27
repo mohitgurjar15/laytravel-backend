@@ -7,7 +7,6 @@ import { MinCharPipe } from './pipes/min-char.pipes';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
 import { LogInUser } from 'src/auth/get-user.dacorator';
-import { User } from '@sentry/node';
 import { BookFlightDto } from './dto/book-flight.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/guards/role.decorator';

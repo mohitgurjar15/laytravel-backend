@@ -6,5 +6,6 @@ export enum Role{
     SUPPLIER=4,
     PAID_USER=5,
     FREE_USER=6,
-    GUEST_USER=7
+    GUEST_USER=7,
+    TRAVELER_USER=8
 }

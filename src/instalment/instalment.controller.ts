@@ -1,5 +1,5 @@
 import { Controller, Post, Body, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { InstalmentService } from './instalment.service';
 import { InstalmentDto } from './dto/instalment.dto';
 import { InstalmentAvailabilityDto } from './dto/instalment-availability.dto';
