@@ -12,9 +12,7 @@ import { errorMessage } from "src/config/common.config";
 import { InsertFaqDto } from "./dto/insert-faq.dto";
 import { User } from "@sentry/node";
 import { Activity } from "src/utility/activity.utility";
-import { promises } from "dns";
 import { UpdateFaqDto } from "./dto/update-faq.dto";
-import { exception } from "console";
 import { ActiveDeactiveFaq } from "./dto/active-deactive-faq.dto";
 
 @Injectable()

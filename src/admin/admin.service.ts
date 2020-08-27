@@ -115,7 +115,7 @@ export class AdminService {
 		adminId: string
 	) {
 		try {
-			const { firstName, middleName, lastName, profile_pic,gender} = updateAdminDto;
+			const { firstName, middleName, lastName ,gender} = updateAdminDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
@@ -227,7 +227,7 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
+			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
 			// const user = await this.userRepository.findOne({
 			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
 			// });

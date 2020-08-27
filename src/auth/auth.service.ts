@@ -13,7 +13,6 @@ import {
 	UnauthorizedException,
 	NotFoundException,
 	BadRequestException,
-	Req,
 	NotAcceptableException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
@@ -822,7 +821,7 @@ export class AuthService {
 				Role.GUEST_USER,
 				Role.PAID_USER,
 			];
-			return this.userRepository.getUserDetails(userId, siteUrl, roleId);
+			return await this.userRepository.getUserDetails(userId, siteUrl, roleId);
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}
@@ -846,7 +845,6 @@ export class AuthService {
 				country_id,
 				state_id,
 				city_name,
-				profile_pic,
 				passport_number,
 				passport_expiry,
 				dob,
