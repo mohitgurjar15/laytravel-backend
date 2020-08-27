@@ -16,6 +16,7 @@ import { PriceMarkup } from "src/utility/markup.utility";
 import { Module } from "src/entity/module.entity";
 import { errorMessage } from "src/config/common.config";
 import { airlines } from "../airline";
+import { airports } from "../airports";
 const fs = require('fs').promises;
 
 export class Mystifly implements StrategyAirline{
@@ -219,10 +220,12 @@ export class Mystifly implements StrategyAirline{
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
                     stop.departure_date_time   = flightSegment['a:departuredatetime'][0];
+                    stop.departure_info        = typeof airports[stop.departure_code]!=='undefined'?airports[stop.departure_code]:{};
                     stop.arrival_code          = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
+                    stop.arrival_info          =  typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.duration              = flightSegment['a:journeyduration'][0];
@@ -256,12 +259,15 @@ export class Mystifly implements StrategyAirline{
                     route.start_price   = '0';
                 }
                 route.stop_count        = stops.length-1;
+                route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_code    = source_location;
                 route.arrival_code      = destination_location;
                 route.departure_date    = stops[0].departure_date;
                 route.departure_time    = stops[0].departure_time;
                 route.arrival_date      = stops[stops.length-1].arrival_date;
                 route.arrival_time      = stops[stops.length-1].arrival_time;
+                route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
+                route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
                 let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
                  
                 route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
@@ -572,17 +578,19 @@ export class Mystifly implements StrategyAirline{
                 route=new Route;
                 stops=[];
                 outBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
-                inBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]['a:flightsegments'][0]['a:flightsegment'];
+                inBoundflightSegments  = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]['a:flightsegments'][0]['a:flightsegment'];
                 outBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
                     stop.departure_date_time   = flightSegment['a:departuredatetime'][0];
+                    stop.departure_info        = typeof airports[stop.departure_code]!=='undefined'?airports[stop.departure_code]:{};
                     stop.arrival_code          = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
+                    stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.duration              = flightSegment['a:journeyduration'][0];
@@ -604,6 +612,7 @@ export class Mystifly implements StrategyAirline{
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
                 route.routes[0]         = routeType;
+                route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
                 route.departure_time    = stops[0].departure_time;
                 stops=[];
@@ -613,10 +622,12 @@ export class Mystifly implements StrategyAirline{
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
                     stop.departure_date_time   = flightSegment['a:departuredatetime'][0];
+                    stop.departure_info        = typeof airports[stop.departure_code]!=='undefined'?airports[stop.departure_code]:{};
                     stop.arrival_code          = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
+                    stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.duration              = flightSegment['a:journeyduration'][0];
@@ -650,7 +661,8 @@ export class Mystifly implements StrategyAirline{
                 route.stop_count        = stops.length-1;
                 route.departure_code    = source_location;
                 route.arrival_code      = destination_location;
-                
+                route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
+                route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
                 route.arrival_date      = stops[stops.length-1].arrival_date;
                 route.arrival_time      = stops[stops.length-1].arrival_time;
                 let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
@@ -936,6 +948,7 @@ export class Mystifly implements StrategyAirline{
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
                 route.routes[0]         = routeType;
+                route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
                 route.departure_time    = stops[0].departure_time;
                 route.departure_code    = stops[0].departure_code;
@@ -1099,7 +1112,6 @@ export class Mystifly implements StrategyAirline{
     async cancellationPolicy(routeIdDto){
         const { route_code } = routeIdDto;
         let fareRuleResult =await this.fareRule(route_code);
-        console.log(JSON.stringify(fareRuleResult))
         if(fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:success'][0]=='true'){
 
             let ruleDetails =fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:farerules'][0]['a:farerule'][0]['a:ruledetails'][0]['a:ruledetail'];
