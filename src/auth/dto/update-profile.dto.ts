@@ -20,6 +20,8 @@ export class UpdateProfileDto {
     })
     title : string;
 
+    
+
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`
     })
