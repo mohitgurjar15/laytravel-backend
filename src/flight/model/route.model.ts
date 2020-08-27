@@ -30,6 +30,9 @@ export class Route{
     selling_price   : string;
     airline_name    : string;
     airline_logo    : string;
+    is_passport_required:boolean;
+    departure_info  : {};
+    arrival_info  : {};
 }
 
 export class RouteType{

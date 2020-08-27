@@ -17,6 +17,9 @@ export class Stop{
     is_layover          : boolean;
     layover_duration    : string;
     layover_airport_name: string;
-    airline_name    : string;
-    airline_logo    : string;
+    airline_name        : string;
+    airline_logo        : string;
+    layover_city_name   : string;
+    departure_info   : {};
+    arrival_info     : {};
 }
