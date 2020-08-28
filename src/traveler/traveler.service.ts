@@ -81,7 +81,7 @@ export class TravelerService {
 			user.updatedDate = new Date();
 
 			if (parent_user_id != undefined && parent_user_id != '') {
-				console.log(`hdfw`);
+				
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
 					throw new ConflictException(
@@ -93,17 +93,17 @@ export class TravelerService {
 				user.roleId = Role.GUEST_USER;
 				const data = await this.userRepository.createUser(user);
 				const payload: JwtPayload = {
-					user_id: user.userId,
-					email: user.email,
-					username: user.firstName + " " + user.lastName,
-					firstName: user.firstName,
-					phone: user.phoneNo,
-					middleName: user.middleName,
-					lastName: user.lastName,
+					user_id: data.userId,
+					email: data.email,
+					username: data.firstName + " " + data.lastName,
+					firstName: data.firstName,
+					phone: data.phoneNo,
+					middleName: data.middleName,
+					lastName: data.lastName,
 					salt: '',
 	
 					profilePic:  "",
-					roleId: user.roleId,
+					roleId: data.roleId,
 				};
 				const accessToken = this.jwtService.sign(payload);
 				
