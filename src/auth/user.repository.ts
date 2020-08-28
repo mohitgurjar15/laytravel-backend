@@ -102,10 +102,11 @@ export class UserRepository extends Repository<User> {
 				`This email address is already registered with us. Please enter different email address.`
 			);
 		}else if (userExist && userExist.roleId == Role.GUEST_USER && user.roleId == Role.GUEST_USER) {
-			return userExist;
+			return this.getUserDetails(userExist.userId,'');
+			
 		} else {
 			await user.save();
-			return user;
+			return this.getUserDetails(user.userId,'');
 		}
 	}
 

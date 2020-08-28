@@ -1,4 +1,4 @@
-import { IsNotEmpty, ValidationArguments, IsEnum } from 'class-validator'
+import { IsNotEmpty, ValidationArguments, IsEnum, IsOptional, ValidateIf } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from 'src/config/common.config';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
@@ -22,19 +22,15 @@ export class UpdateProfileDto {
     title : string;
 
     
-    @IsNotEmpty({
-        message : `Please select travelers gender.&&&gender`
-    })
+    @IsOptional()
+	@ValidateIf(o => o.gender != '')
     @IsEnum(['M','F'],{
         message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please select your gender.&&&gender`;
-            } else {
+            if (typeof args.value != "undefined" || args.value != "") {
                 return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`
             }
         }
     })
-    
     @ApiProperty({
         description: `Select Gender (M,F)`,
         example: `M`
