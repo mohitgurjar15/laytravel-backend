@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException, HttpException } from '@nestjs/common';
 import { Strategy } from './strategy/strategy';
 import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,6 +25,9 @@ import { errorMessage } from 'src/config/common.config';
 import { BookingInstalments } from 'src/entity/booking-instalments.entity';
 import { InstalmentStatus } from 'src/enum/instalment-status.enum';
 import { PaymentService } from 'src/payment/payment.service';
+import { GenderTilte } from 'src/enum/gender-title.enum';
+import { FlightJourney } from 'src/enum/flight-journey.enum';
+import { DateTime } from 'src/utility/datetime.utility';
 
 @Injectable()
 export class FlightService {
@@ -98,14 +101,46 @@ export class FlightService {
         let headerDetails = await this.validateHeaders(headers);
 
         let { 
-            travelers, payment_type, instalment_type,
-            adult_count, child_count,infant_count, 
-            selling_price, additional_amount,
-            departure_date, route_code
+            travelers, payment_type, instalment_type, 
+            route_code, additional_amount
         } = bookFlightDto;
+
+        const mystifly = new Strategy(new Mystifly(headers));
+        const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
+        
+        let bookingRequestInfo:any={};
+        if(airRevalidateResult){
+            bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
+            bookingRequestInfo.child_count = typeof airRevalidateResult[0].child_count!='undefined'?airRevalidateResult[0].child_count:0;
+            bookingRequestInfo.infant_count = typeof airRevalidateResult[0].infant_count!='undefined'?airRevalidateResult[0].infant_count:0;
+            bookingRequestInfo.net_rate   = airRevalidateResult[0].net_rate;
+            bookingRequestInfo.selling_price   = airRevalidateResult[0].selling_price;
+            bookingRequestInfo.departure_date = DateTime.convertDateFormat(airRevalidateResult[0].departure_date,'DD/MM/YYYY','YYYY-MM-DD');
+            bookingRequestInfo.arrival_date = DateTime.convertDateFormat(airRevalidateResult[0].arrival_date,'DD/MM/YYYY','YYYY-MM-DD');
+            bookingRequestInfo.source_location = airRevalidateResult[0].departure_code;
+            bookingRequestInfo.destination_location  = airRevalidateResult[0].arrival_code;
+            bookingRequestInfo.flight_class = 'Economy';
+            bookingRequestInfo.instalment_type = instalment_type;
+            bookingRequestInfo.additional_amount =additional_amount;
+
+            if(airRevalidateResult[0].routes.length==1){
+
+                bookingRequestInfo.journey_type = FlightJourney.ONEWAY;
+            }
+            else{
+                bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
+            }
+        }
+        console.log(bookingRequestInfo)
+        let {   
+            selling_price, departure_date , adult_count,
+            child_count, infant_count
+        }=bookingRequestInfo;
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let travelersDetails = await this.getTravelersInfo(travelers);
+
+
         let currencyId = headerDetails.currency.id;
         const userId = user.user_id;
         if(adult_count!=travelersDetails.adults.length)
@@ -117,9 +152,6 @@ export class FlightService {
         if(infant_count!=travelersDetails.infants.length)
             throw new BadRequestException(`Infants count is not match with search request`)
         
-        const mystifly = new Strategy(new Mystifly(headers));
-        const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
-
         if(payment_type==PaymentType.INSTALMENT){
             let instalmentDetails;
 
@@ -140,42 +172,80 @@ export class FlightService {
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
-                let authCardResult=await this.paymentService.authorizeCard('x','card_id',firstInstalemntAmount,'USD');
+                let authCardResult=await this.paymentService.authorizeCard('gateway_id','card_id',firstInstalemntAmount,'USD');
                 
                 if(authCardResult.status==true){
                     let authCardToken = authCardResult.token;
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
                     if(captureCardresult.status==true){
-                        this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
+                        let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails,captureCardresult,null);
+                        return {
+                            laytrip_booking_id  : laytripBookingResult.id,
+                            booking_status      : 'pending',
+                            supplier_booking_id : '',
+                            success_message     : `Booking is in pending state!`,
+                            error_message       : ''
+                        }
+                    }
+                    else{
+                        throw new BadRequestException(`Card capture is failed&&&card_token&&&${errorMessage}`)
                     }
                 }
                 else{
-
                     throw new BadRequestException(`Card authorization is failed&&&card_token&&&${errorMessage}`)
                 }
-                
             }
             else{
 
                 throw new BadRequestException(`Instalment option is not available for your search criteria`);
             }
-
-            //this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
         }
-        /* const mystifly = new Strategy(new Mystifly(headers));
-        const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));
-        return result; */
+        else if(payment_type==PaymentType.NOINSTALMENT){
+
+            let authCardResult=await this.paymentService.authorizeCard('gateway_id','card_id',selling_price,'USD');
+            if(authCardResult.status==true){
+                let authCardToken = authCardResult.token;
+                let captureCardresult =await this.paymentService.captureCard(authCardToken);
+                if(captureCardresult.status==true){
+                    const mystifly = new Strategy(new Mystifly(headers));
+                    const bookingResult = await mystifly.bookFlight(bookFlightDto,travelersDetails);
+                    if(bookingResult.booking_status == 'success'){
+
+                        let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.NOINSTALMENT,userId,null,captureCardresult,bookingResult);
+                        //send email here
+                        bookingResult.laytrip_booking_id = laytripBookingResult.id;
+                        return bookingResult;
+                    }
+                    else{
+
+                        await this.paymentService.voidCard(captureCardresult.token)
+                        throw new HttpException({
+                            status  : 424,
+                            message : bookingResult.error_message,
+                          }, 424);
+                    }
+                    //return result; 
+                }
+                else{
+                    throw new BadRequestException(`Card capture is failed&&&card_token&&&${errorMessage}`)
+                }
+            }
+            else{
+                throw new BadRequestException(`Card authorization is failed&&&card_token&&&${errorMessage}`)
+            }
+        }
+        
      }
 
     async saveBooking(
-        bookFlightDto:BookFlightDto,currencyId,bookingDate,
-        bookingType,userId,instalmentDetails=null
+        bookFlightDto,currencyId,bookingDate,
+        bookingType,userId,instalmentDetails=null,captureCardresult=null,supplierBookingData
     ){
         const {
             selling_price, net_rate, journey_type,
             departure_date, source_location, destination_location,
             adult_count, child_count, infant_count,flight_class,
-            instalment_type
+            instalment_type, arrival_date
         } = bookFlightDto;
 
         let moduleDetails = await getManager().createQueryBuilder(Module,"module").where(`"module"."name"=:name`,{name:'flight'}).getOne();
@@ -186,9 +256,8 @@ export class FlightService {
         let booking= new Booking();
         booking.id =uuidv4();
         booking.moduleId=moduleDetails.id;
-        booking.isPredictive=true;
+        
         booking.bookingType=bookingType;
-        booking.bookingStatus=BookingStatus.PENDING;
         booking.currency=currencyId;
         booking.totalAmount=selling_price.toString();
         booking.netRate=net_rate.toString();
@@ -208,16 +277,24 @@ export class FlightService {
                 booking.nextInstalmentDate=instalmentDetails.instalment_date[1].instalment_date;
             }
 
+            booking.bookingStatus=BookingStatus.PENDING;
             booking.paymentStatus = PaymentStatus.PENDING;
             booking.supplierBookingId="";
+            booking.isPredictive=true;
         }
         else{
             //pass here mystifly booking id
+            //booking.supplierBookingId=supplierBookingData.booking_id;
             booking.supplierBookingId="";
+            booking.bookingStatus=BookingStatus.CONFIRM;
+            booking.paymentStatus = PaymentStatus.CONFIRM;
+            booking.isPredictive=false;
+            booking.totalInstallments=0;
         }
         let moduleInfo={
             journey_type,
             departure_date,
+            arrival_date,
             source_location,
             destination_location,
             adult_count,
@@ -250,7 +327,6 @@ export class FlightService {
                     bookingInstalments.push(bookingInstalment)
                 }
     
-                console.log(bookingInstalments)
                 await getConnection()
                     .createQueryBuilder()
                     .insert()
@@ -258,6 +334,7 @@ export class FlightService {
                     .values(bookingInstalments)
                     .execute();
             }
+            return bookingDetails;
         }
         catch(error){
 
@@ -344,6 +421,7 @@ export class FlightService {
                 if(traveler.country==null || (typeof traveler.country.iso2!=='undefined' && traveler.country.iso2==''))
                     throw new BadRequestException(`Country code is missing for traveler ${traveler.firstName}`)
                 
+                traveler.title = GenderTilte[traveler.title]
                 if(ageDiff < 2){
                     traveleDetails.infants.push(traveler)
                 }

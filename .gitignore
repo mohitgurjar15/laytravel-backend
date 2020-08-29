@@ -3,6 +3,8 @@
 /node_modules
 package-lock.json
 src/flight/mystifly-session.json
+.scannerwork/*
+sonar-project.properties
 # Logs
 logs
 *.log

@@ -143,7 +143,7 @@ export class FlightController {
     name: 'language',
     description: 'Enter language code(ex. en)',
     })
-    @ApiOperation({ summary: "AirRevalidate to get availability and updated price" })
+    @ApiOperation({ summary: "Book Flight" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Flight is not available now' })
