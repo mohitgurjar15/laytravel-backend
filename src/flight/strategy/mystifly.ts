@@ -1107,6 +1107,7 @@ export class Mystifly implements StrategyAirline{
             bookingResponse={
                 booking_status      : 'success',
                 supplier_booking_id : bookResultSegment['a:uniqueid'][0],
+                success_message     : `Booking is successfully is done!`,
                 error_message       : ''
             }
         }
@@ -1115,7 +1116,8 @@ export class Mystifly implements StrategyAirline{
             bookingResponse={
                 booking_status      : 'failed',
                 supplier_booking_id : '',
-                error_message       : 'Booking failed'
+                success_message     : ``,
+                error_message       : `Booking failed`
             }
         }
         console.log(JSON.stringify(bookResult));

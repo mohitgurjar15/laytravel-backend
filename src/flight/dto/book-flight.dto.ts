@@ -10,7 +10,7 @@ import { InstalmentType} from "src/enum/instalment-type.enum";
 export class BookFlightDto{
 	
 	
-	@IsEnum([FlightJourney.ONEWAY,FlightJourney.ROUNDTRIP,FlightJourney.MULTICITY],{
+	/* @IsEnum([FlightJourney.ONEWAY,FlightJourney.ROUNDTRIP,FlightJourney.MULTICITY],{
         message : (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "") {
                 return `Please enter journey type.&&&journey_type&&&${errorMessage}`;
@@ -109,25 +109,9 @@ export class BookFlightDto{
         description:`Total Number of child`,
         example:0
     })
-	infant_count:number;
-
-	@IsEnum([PaymentType.INSTALMENT,PaymentType.NOINSTALMENT,PaymentType.FULLPOINTS,PaymentType.PARTIALPOINTS],{
-        message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
-            } else {
-                return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS}').&&&journey_type&&&${errorMessage}`
-            }
-        }
-    })
-    @ApiProperty({
-        description:`Payment type`,
-        example:PaymentType.INSTALMENT
-    })
-	payment_type:string;
-
-	
-	@IsNumber({},{
+    infant_count:number;
+    
+    @IsNumber({},{
         message: (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "") {
                 return `Please enter net rate.&&&net_rate&&&${errorMessage}`;
@@ -156,7 +140,22 @@ export class BookFlightDto{
         description:`Selling price`,
         example:105.00
     })
-    selling_price:number;
+    selling_price:number; */
+
+	@IsEnum([PaymentType.INSTALMENT,PaymentType.NOINSTALMENT,PaymentType.FULLPOINTS,PaymentType.PARTIALPOINTS],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
+            } else {
+                return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS}').&&&journey_type&&&${errorMessage}`
+            }
+        }
+    })
+    @ApiProperty({
+        description:`Payment type`,
+        example:PaymentType.INSTALMENT
+    })
+	payment_type:string;
 
     @IsOptional()
     @ApiProperty({
