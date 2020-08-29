@@ -14,7 +14,7 @@ import { Airport } from "src/entity/airport.entity";
 import { Instalment } from "src/utility/instalment.utility";
 import { PriceMarkup } from "src/utility/markup.utility";
 import { Module } from "src/entity/module.entity";
-import { errorMessage } from "src/config/common.config";
+import { errorMessage, s3BucketUrl } from "src/config/common.config";
 import { airlines } from "../airline";
 import { airports } from "../airports";
 const fs = require('fs').promises;
@@ -155,7 +155,7 @@ export class Mystifly implements StrategyAirline{
         if(infant_count>0){
 
             requestBody += `<mys1:PassengerTypeQuantity>`
-            requestBody += `<mys1:Code>CHD</mys1:Code>`
+            requestBody += `<mys1:Code>INF</mys1:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
@@ -207,7 +207,7 @@ export class Mystifly implements StrategyAirline{
             let route:Route;
             let routeType:RouteType;
             let flightSegments=[];
-
+            let stopDuration;
             
 
             for(let i=0; i < flightRoutes.length; i++){
@@ -228,13 +228,14 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_info          =  typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
-                    stop.duration              = flightSegment['a:journeyduration'][0];
+                    stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
+                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                     stop.is_layover            = false;
                     stop.airline_name          = airlines[flightSegment['a:marketingairlinecode'][0]];
-                    stop.airline_logo          = '';
+                    stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -273,7 +274,7 @@ export class Mystifly implements StrategyAirline{
                 route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
-                route.airline_logo      = '';
+                route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
                 routes.push(route);
             }
@@ -522,7 +523,7 @@ export class Mystifly implements StrategyAirline{
         if(infant_count>0){
 
             requestBody += `<mys1:PassengerTypeQuantity>`
-            requestBody += `<mys1:Code>CHD</mys1:Code>`
+            requestBody += `<mys1:Code>INF</mys1:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
@@ -575,6 +576,7 @@ export class Mystifly implements StrategyAirline{
             let routeType:RouteType;
             let outBoundflightSegments=[];
             let inBoundflightSegments=[];
+            let stopDuration;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
@@ -594,8 +596,11 @@ export class Mystifly implements StrategyAirline{
                     stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
-                    stop.duration              = flightSegment['a:journeyduration'][0];
+                    stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
+                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
+                    stop.airline_name          = airlines[stop.airline];
+                    stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                     stop.is_layover            = false;
@@ -631,8 +636,11 @@ export class Mystifly implements StrategyAirline{
                     stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
-                    stop.duration              = flightSegment['a:journeyduration'][0];
+                    stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
+                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
+                    stop.airline_name          = airlines[stop.airline];
+                    stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                     stop.is_layover            = false;
@@ -670,6 +678,8 @@ export class Mystifly implements StrategyAirline{
                  
                 route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
                 route.airline           = stops[0].airline;
+                route.airline_name      = airlines[stops[0].airline];
+                route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
                 routes.push(route);
             }
@@ -829,75 +839,8 @@ export class Mystifly implements StrategyAirline{
             ignoreAttrs:true
         });
 
+        console.log(JSON.stringify(airRevalidateResult) )
         if(airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:success'][0]=="true"){
-
-            /* let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
-            let flightRoutes        = airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
-            let stop:Stop;
-            let stops:Stop[]=[];
-            let routes:Route[]=[];
-            let route:Route;
-            let routeType:RouteType;
-            let flightSegments=[];
-            const currencyDetails =await Generic.getAmountTocurrency(this.headers.currency);
-            const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
-            for(let i=0; i < flightRoutes.length; i++){
-                route=new Route;
-                stops=[];
-                flightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
-                flightSegments.forEach(flightSegment => {
-                    stop=new Stop();
-                    stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
-                    stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
-                    stop.departure_date_time   = flightSegment['a:departuredatetime'][0];
-                    stop.arrival_code          = flightSegment['a:arrivalairportlocationcode'][0];
-                    stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
-                    stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
-                    stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
-                    stop.flight_number         = flightSegment['a:flightnumber'][0];
-                    stop.duration              = flightSegment['a:journeyduration'][0];
-                    stop.airline               = flightSegment['a:marketingairlinecode'][0];
-                    stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
-                    stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
-                    stop.is_layover            = false;
-                    if(stops.length>0){
-
-                        stop.is_layover             =  true;
-                        let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
-                        stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
-                        stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
-                    }
-                    stops.push(stop)
-                });
-                routeType= new RouteType();
-                routeType.type          = 'outbound';
-                routeType.stops         = stops;
-                route.routes[0]         = routeType;
-                route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
-                route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
-                route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
-                let instalmentDetails   = Instalment.weeklyInstalment(route.net_rate,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
-                if(instalmentDetails.instalment_available){
-                    route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
-                }
-                else{
-                    route.start_price   = '0';
-                }
-                route.stop_count        = stops.length-1;
-                //route.departure_code    = source_location;
-                //route.arrival_code      = destination_location;
-                route.departure_date    = stops[0].departure_date;
-                route.departure_time    = stops[0].departure_time;
-                route.arrival_date      = stops[stops.length-1].arrival_date;
-                route.arrival_time      = stops[stops.length-1].arrival_time;
-                let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
-                 
-                route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
-                route.airline           = stops[0].airline;
-                route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
-                routes.push(route); */
 
 
             let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
@@ -909,6 +852,7 @@ export class Mystifly implements StrategyAirline{
             let routeType:RouteType;
             let outBoundflightSegments=[];
             let inBoundflightSegments=[];
+            let stopDuration;
             const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
@@ -930,11 +874,14 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
-                    stop.duration              = flightSegment['a:journeyduration'][0];
+                    stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
+                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                     stop.is_layover            = false;
+                    stop.airline_name          = airlines[stop.airline];
+                    stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -968,8 +915,11 @@ export class Mystifly implements StrategyAirline{
                         stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
                         stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                         stop.flight_number         = flightSegment['a:flightnumber'][0];
-                        stop.duration              = flightSegment['a:journeyduration'][0];
+                        stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
+                        stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                         stop.airline               = flightSegment['a:marketingairlinecode'][0];
+                        stop.airline_name          = airlines[stop.airline];
+                        stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                         stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                         stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                         stop.is_layover            = false;
@@ -1007,7 +957,27 @@ export class Mystifly implements StrategyAirline{
                  
                 route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
                 route.airline           = stops[0].airline;
+                route.airline_name      = airlines[stops[0].airline];
+                route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
+               
+
+                for(let intnery of  flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']){
+
+                    if(intnery['a:passengertypequantity'][0]['a:code']=='ADT'){
+                        route.adult_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                    if(intnery['a:passengertypequantity'][0]['a:code']=='CHD'){
+                        route.child_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                    if(intnery['a:passengertypequantity'][0]['a:code']=='INF'){
+                        route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                }
+
+                
+                
+
                 routes.push(route);
             }
             return routes;
@@ -1023,7 +993,7 @@ export class Mystifly implements StrategyAirline{
         const { route_code } = bookFlightDto;
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-
+        
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:mys2="Mystifly.OnePoint.OnePointEntities">`;
             requestBody += `<soapenv:Header/>`
             requestBody += `<soapenv:Body>`
@@ -1034,53 +1004,75 @@ export class Mystifly implements StrategyAirline{
             requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
             requestBody += `<mys1:TravelerInfo>`
             requestBody += `<mys1:AirTravelers>`
-            requestBody += `<mys1:AirTraveler>`
-            requestBody += `<mys1:DateOfBirth>1989-04-01T00:00:00</mys1:DateOfBirth>`
-            requestBody += `<mys1:Gender>M</mys1:Gender>`
-            requestBody += `<mys1:PassengerName>`
-            requestBody += `<mys1:PassengerFirstName>Paul</mys1:PassengerFirstName>`
-            requestBody += `<mys1:PassengerLastName>Rodger</mys1:PassengerLastName>`
-            requestBody += `<mys1:PassengerTitle>MR</mys1:PassengerTitle>`
-            requestBody += `</mys1:PassengerName>`
-            requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
-            requestBody += `<mys1:Passport>`
-            requestBody += `<mys1:Country>UK</mys1:Country>`
-            requestBody += `<mys1:ExpiryDate>2022-06-04T00:00:00</mys1:ExpiryDate>`
-            requestBody += `<mys1:PassportNumber>PA3456789</mys1:PassportNumber>`
-            requestBody += `</mys1:Passport>`
-            requestBody += `</mys1:AirTraveler>`
-            requestBody += `<mys1:AirTraveler>`
-            requestBody += `<mys1:DateOfBirth>2010-04-01T00:00:00</mys1:DateOfBirth>`
-            requestBody += `<mys1:Gender>F</mys1:Gender>`
-            requestBody += `<mys1:PassengerName>`
-            requestBody += `<mys1:PassengerFirstName>Saddy</mys1:PassengerFirstName>`
-            requestBody += `<mys1:PassengerLastName>Rodger</mys1:PassengerLastName>`
-            requestBody += `<mys1:PassengerTitle>MISS</mys1:PassengerTitle>`
-            requestBody += `</mys1:PassengerName>`
-            requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
-            requestBody += `<mys1:Passport>`
-            requestBody += `<mys1:Country>UK</mys1:Country>`
-            requestBody += `<mys1:ExpiryDate>2022-06-04T00:00:00</mys1:ExpiryDate>`
-            requestBody += `<mys1:PassportNumber>CHD456789</mys1:PassportNumber>`
-            requestBody += `</mys1:Passport>`
-            requestBody += `</mys1:AirTraveler>`
-            requestBody += `<mys1:AirTraveler>`
-            requestBody += `<mys1:DateOfBirth>2015-11-01T00:00:00</mys1:DateOfBirth>`
-            requestBody += `<mys1:Gender>M</mys1:Gender>`
-            requestBody += `<mys1:PassengerName>`
-            requestBody += `<mys1:PassengerFirstName>Peter</mys1:PassengerFirstName>`
-            requestBody += `<mys1:PassengerLastName>Kin</mys1:PassengerLastName>`
-            requestBody += `<mys1:PassengerTitle>INF</mys1:PassengerTitle>`
-            requestBody += `</mys1:PassengerName>`
-            requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`
-            requestBody += `<mys1:Passport>`
-            requestBody += `<mys1:Country>UK</mys1:Country>`
-            requestBody += `<mys1:ExpiryDate>2022-06-04T00:00:00</mys1:ExpiryDate>`
-            requestBody += `<mys1:PassportNumber>INF456789</mys1:PassportNumber>`
-            requestBody += `</mys1:Passport>`
-            requestBody += `</mys1:AirTraveler>`
+
+            if(traveles.adults.length){
+                
+                for(let i=0; i< traveles.adults.length; i++){
+                
+                    requestBody += `<mys1:AirTraveler>`
+                    requestBody += `<mys1:DateOfBirth>${traveles.adults[i].dob}T00:00:00</mys1:DateOfBirth>`
+                    requestBody += `<mys1:Gender>${traveles.adults[i].gender}</mys1:Gender>`
+                    requestBody += `<mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerFirstName>${traveles.adults[i].firstName}</mys1:PassengerFirstName>`
+                    requestBody += `<mys1:PassengerLastName>${traveles.adults[i].lastName}</mys1:PassengerLastName>`
+                    requestBody += `<mys1:PassengerTitle>${traveles.adults[i].title}</mys1:PassengerTitle>`
+                    requestBody += `</mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
+                    requestBody += `<mys1:Passport>`
+                    requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`
+                    requestBody += `<mys1:ExpiryDate>${traveles.adults[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                    requestBody += `<mys1:PassportNumber>${traveles.adults[i].passportNumber}</mys1:PassportNumber>`
+                    requestBody += `</mys1:Passport>`
+                    requestBody += `</mys1:AirTraveler>`
+                }
+            }
+
+            if(traveles.children.length){
+                
+                for(let i=0; i< traveles.children.length; i++){
+                
+                    requestBody += `<mys1:AirTraveler>`
+                    requestBody += `<mys1:DateOfBirth>${traveles.children[i].dob}T00:00:00</mys1:DateOfBirth>`
+                    requestBody += `<mys1:Gender>${traveles.children[i].gender}</mys1:Gender>`
+                    requestBody += `<mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerFirstName>${traveles.children[i].firstName}</mys1:PassengerFirstName>`
+                    requestBody += `<mys1:PassengerLastName>${traveles.children[i].lastName}</mys1:PassengerLastName>`
+                    requestBody += `<mys1:PassengerTitle>${traveles.children[i].title}</mys1:PassengerTitle>`
+                    requestBody += `</mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
+                    requestBody += `<mys1:Passport>`
+                    requestBody += `<mys1:Country>${traveles.children[i].country.iso2}</mys1:Country>`
+                    requestBody += `<mys1:ExpiryDate>${traveles.children[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                    requestBody += `<mys1:PassportNumber>${traveles.children[i].passportNumber}</mys1:PassportNumber>`
+                    requestBody += `</mys1:Passport>`
+                    requestBody += `</mys1:AirTraveler>`
+                }
+            }
+
+            if(traveles.infants.length){
+                
+                for(let i=0; i< traveles.infants.length; i++){
+                
+                    requestBody += `<mys1:AirTraveler>`
+                    requestBody += `<mys1:DateOfBirth>${traveles.infants[i].dob}T00:00:00</mys1:DateOfBirth>`
+                    requestBody += `<mys1:Gender>${traveles.infants[i].gender}</mys1:Gender>`
+                    requestBody += `<mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerFirstName>${traveles.infants[i].firstName}</mys1:PassengerFirstName>`
+                    requestBody += `<mys1:PassengerLastName>${traveles.infants[i].lastName}</mys1:PassengerLastName>`
+                    requestBody += `<mys1:PassengerTitle>${traveles.infants[i].title}</mys1:PassengerTitle>`
+                    requestBody += `</mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`
+                    requestBody += `<mys1:Passport>`
+                    requestBody += `<mys1:Country>${traveles.infants[i].country.iso2}</mys1:Country>`
+                    requestBody += `<mys1:ExpiryDate>${traveles.infants[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                    requestBody += `<mys1:PassportNumber>${traveles.infants[i].passportNumber}</mys1:PassportNumber>`
+                    requestBody += `</mys1:Passport>`
+                    requestBody += `</mys1:AirTraveler>`
+                }
+            }
+
             requestBody += `</mys1:AirTravelers>`
-            requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`
+            //requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`
             requestBody += `<mys1:CountryCode>44</mys1:CountryCode>`
             requestBody += `<mys1:Email>peter@gmail.com</mys1:Email>`
             requestBody += `<mys1:PhoneNumber>5467890</mys1:PhoneNumber>`
@@ -1090,24 +1082,44 @@ export class Mystifly implements StrategyAirline{
             requestBody += `</mys:BookFlight>`
             requestBody += `</soapenv:Body>`
             requestBody += `</soapenv:Envelope>`
-
-        let airRevalidateResult =await Axios({
+        
+        let bookResult =await Axios({
             method: 'POST',
             url: mystiflyConfig.url,
             data: requestBody,
             headers: {
                 'content-type':'text/xml',
                 'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/AirRevalidate",
+                'soapaction':"Mystifly.OnePoint/OnePoint/BookFlight",
                 'charset':'UTF-8',
                 'cache-control':'no-cache'
             }
         })
-        
-        airRevalidateResult = await xml2js.parseStringPromise(airRevalidateResult.data,{
+        bookResult = await xml2js.parseStringPromise(bookResult.data,{
             normalizeTags :true,
             ignoreAttrs:true
         });
+
+        let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
+        let bookingResponse;
+        if(bookResultSegment['a:success'][0]=='true'){
+
+            bookingResponse={
+                booking_status      : 'success',
+                supplier_booking_id : bookResultSegment['a:uniqueid'][0],
+                error_message       : ''
+            }
+        }
+        else{
+
+            bookingResponse={
+                booking_status      : 'failed',
+                supplier_booking_id : '',
+                error_message       : 'Booking failed'
+            }
+        }
+        console.log(JSON.stringify(bookResult));
+        return bookingResponse;
     }
 
     async cancellationPolicy(routeIdDto){

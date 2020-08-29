@@ -33,6 +33,9 @@ export class Route{
     is_passport_required:boolean;
     departure_info  : {};
     arrival_info  : {};
+    adult_count    : number;
+    child_count     : number;
+    infant_count    : number;
 }
 
 export class RouteType{
