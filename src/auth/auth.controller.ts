@@ -232,9 +232,10 @@ export class AuthController {
 	@HttpCode(200)
 	async verifyOtp(
 		@Body(ValidationPipe) otpDto: OtpDto,
-		@Req() req
+		@Req() req,
+		@SiteUrl() siteUrl: string,
 	) {
-		return this.authService.VerifyOtp(otpDto,req);
+		return this.authService.VerifyOtp(otpDto,req,siteUrl);
 	}
 
 

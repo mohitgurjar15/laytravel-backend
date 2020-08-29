@@ -11,6 +11,7 @@ import {
 	ForbiddenException,
 	NotFoundException,
 	InternalServerErrorException,
+	UnauthorizedException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
@@ -200,7 +201,7 @@ export class AdminService {
 			if (!user) throw new NotFoundException(`No user found`);
 
 			if (user.roleId == 1) {
-				throw new ForbiddenException(
+				throw new UnauthorizedException(
 					`You are not allowed to access this resource.`
 				);
 			} else {

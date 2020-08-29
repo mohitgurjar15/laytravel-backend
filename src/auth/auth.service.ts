@@ -54,6 +54,8 @@ import { OtpDto } from "./dto/otp.dto";
 import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
+import { Currency } from "src/entity/currency.entity";
+import { Language } from "src/entity/language.entity";
 
 @Injectable()
 export class AuthService {
@@ -88,7 +90,7 @@ export class AuthService {
 
 		if (userExist)
 			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address .`
+				`This email address is already registered with us. Please enter different email address.`
 			);
 
 		const user = new User();
@@ -115,7 +117,7 @@ export class AuthService {
 		user.isVerified = false;
 		user.otp = Math.round(new Date().getTime() % 1000000);
 		if (user.otp < 100000) {
-			user.otp = user.otp + 900000;
+			user.otp = user.otp + 800000;
 		}
 		if (signup_via == "web") user.registerVia = "web";
 		else {
@@ -200,9 +202,12 @@ export class AuthService {
 			);
 
 		if (user.isVerified)
-			throw new UnauthorizedException(`Your Email Id Already Verified`);
+			throw new UnauthorizedException(`Your email id already verified`);
 		user.isVerified = false;
 		user.otp = Math.round(new Date().getTime() % 1000000);
+		if (user.otp < 100000) {
+			user.otp = user.otp + 800000;
+		}
 		try {
 			await user.save();
 			this.mailerService
@@ -253,7 +258,7 @@ export class AuthService {
 
 		if (userExist)
 			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address .`
+				`This email address is already registered with us. Please enter different email address.`
 			);
 		user.email = newEmail;
 		//user.isVerified = false;
@@ -305,7 +310,7 @@ export class AuthService {
 				);
 			if (!user.isVerified) {
 				throw new NotAcceptableException(
-					`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+					`Please verify your email id&&&email&&&Please verify your email id`
 				);
 			}
 			const payload: JwtPayload = {
@@ -346,7 +351,7 @@ export class AuthService {
 		}
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
-				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);
@@ -366,7 +371,15 @@ export class AuthService {
 			`auth`,
 			` ${email} user is request to forget password using ${forgetPassToken} token`
 		);
-		const resetLink = `https://staging.laytrip.com?token=${forgetPassToken}`;
+		var resetLink = `https://staging.laytrip.com?token=${forgetPassToken}`;
+		if (
+			user.roleId == Role.ADMIN ||
+			user.roleId == Role.SUPER_ADMIN ||
+			user.roleId == Role.SUPPLIER
+		) {
+			resetLink = `https://app.staging.laytrip.com?token=${forgetPassToken}`;
+		}
+
 		this.mailerService
 			.sendMail({
 				to: email,
@@ -433,7 +446,7 @@ export class AuthService {
 		}
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
-				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
 
@@ -449,7 +462,7 @@ export class AuthService {
 			try {
 				await user.save();
 				await validToken.save();
-				const res = { message: `Your Password has been succesfully updated` };
+				const res = { message: `Your password has been succesfully updated` };
 				return res;
 			} catch (error) {
 				throw new InternalServerErrorException(
@@ -463,7 +476,7 @@ export class AuthService {
 		}
 	}
 
-	async VerifyOtp(OtpDto: OtpDto, req) {
+	async VerifyOtp(OtpDto: OtpDto, req, siteUrl: string) {
 		const { otp, email } = OtpDto;
 
 		const user = await this.userRepository.findOne({
@@ -478,7 +491,7 @@ export class AuthService {
 		let accessToken;
 		let loginvia;
 		console.log(user.validateOtp(otp));
-		if (user.validateOtp(otp)) {
+		if (user.otp == otp) {
 			try {
 				user.isVerified = true;
 				await user.save();
@@ -516,7 +529,9 @@ export class AuthService {
 						middleName: user.middleName,
 						lastName: user.lastName,
 						salt: user.salt,
-						profilePic: user.profilePic,
+						profilePic: user.profilePic
+							? `${siteUrl}/profile/${user.profilePic}`
+							: "",
 						roleId: user.roleId,
 					};
 					accessToken = this.jwtService.sign(payload);
@@ -562,7 +577,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`Given Otp is wrong.&&&token&&&Given Otp is wrong.`
+				`Given otp is wrong.&&&token&&&Given otp is wrong.`
 			);
 		}
 	}
@@ -595,7 +610,7 @@ export class AuthService {
 				);
 			if (!user.isVerified) {
 				throw new NotAcceptableException(
-					`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+					`Please verify your email id&&&email&&&Please verify your email id`
 				);
 			}
 
@@ -849,6 +864,9 @@ export class AuthService {
 				passport_expiry,
 				dob,
 				address,
+				gender,
+				language_id,
+				currency_id,
 			} = updateProfileDto;
 
 			let countryDetails = await getManager()
@@ -872,7 +890,29 @@ export class AuthService {
 				throw new BadRequestException(
 					`State id not exist with country id.&&&country_id`
 				);
+			if (currency_id) {
+				let currencyDetails = await getManager()
+					.createQueryBuilder(Currency, "Currency")
+					.where(`id=:currency_id`, { currency_id })
+					.getOne();
 
+				if (!currencyDetails)
+					throw new BadRequestException(
+						`Currency id not exist with database.&&&currency_id`
+					);
+			}
+
+			if (language_id) {
+				let languageDetails = await getManager()
+					.createQueryBuilder(Language, "Language")
+					.where(`id=:language_id`, { language_id })
+					.getOne();
+
+				if (!languageDetails)
+					throw new BadRequestException(
+						`Language id not exist with database.&&&language_id`
+					);
+			}
 			const user = new User();
 			user.title = title;
 			user.firstName = first_name;
@@ -882,7 +922,9 @@ export class AuthService {
 			user.phoneNo = phone_no;
 			user.dob = dob;
 			user.address = address;
-
+			user.gender = gender;
+			user.preferredCurrency = currency_id ? currency_id : null;
+			user.preferredLanguage = language_id ? language_id : null;
 			if (passport_expiry) {
 				user.passportExpiry = passport_expiry;
 			}
@@ -898,15 +940,18 @@ export class AuthService {
 				user.profilePic = files.profile_pic[0].filename;
 
 			await this.userRepository.update(userId, user);
-			console.log(`${dirname}/assets/profile/${oldProfile}`);
+
 			if (oldProfile) {
-				await fs.unlink(`../profile/${oldProfile}`, function(err) {
-					if (err) {
-						console.log(err);
+				await fs.unlink(
+					`/var/www/html/api-staging/assets/profile/${oldProfile}`,
+					function(err) {
+						if (err) {
+							console.log(err);
+						}
+						// if no error, file has been deleted successfully
+						console.log(`${oldProfile} image  deleted!`);
 					}
-					// if no error, file has been deleted successfully
-					console.log(`${oldProfile} image  deleted!`);
-				});
+				);
 			}
 
 			Activity.logActivity(
@@ -979,7 +1024,7 @@ export class AuthService {
 		});
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
-				`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
 
@@ -992,7 +1037,7 @@ export class AuthService {
 				`auth`,
 				`prefered Languge Updated By user ${user.email} `
 			);
-			return { message: "Prefered Languge Updated Successfully" };
+			return { message: "Prefered languge updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -1032,7 +1077,7 @@ export class AuthService {
 				`auth`,
 				`preffered Currency Updated By user ${user.email}`
 			);
-			return { message: "Prefered Currency Updated Successfully" };
+			return { message: "Prefered currency updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -1064,7 +1109,7 @@ export class AuthService {
 			} else {
 				if (!user.isVerified) {
 					throw new NotAcceptableException(
-						`Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+						`Please verify your email id&&&email&&&Please verify your email id`
 					);
 				}
 				const payload: JwtPayload = {

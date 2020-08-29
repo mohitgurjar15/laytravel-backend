@@ -83,7 +83,7 @@ export class SubscriptionService {
 
 				if (userNextSubscriptionDate > todayDate)
 					throw new ConflictException(
-						`You have alredy subscribed a plan&&&plan&&&You have alredy subscribed an plan`
+						`You have alredy subscribed a plan&&&plan&&&You have alredy subscribed a plan`
 					);
 			}
 
@@ -230,7 +230,7 @@ export class SubscriptionService {
 			.where(where)
 			.getOne();
 		if (!result) {
-			throw new NotFoundException(`Plan not founded&&&id&&&Plan not founded`);
+			throw new NotFoundException(`Plan not found&&&id&&&Plan not found`);
 		}
 		return result;
 	}
@@ -241,7 +241,7 @@ export class SubscriptionService {
 			.createQueryBuilder(PlanSubscription, "subscribe")
 			.leftJoinAndSelect("subscribe.plan", "plan")
 			.select([
-				"subscribe.id",
+				"subscribe.id" as 'subscription_id',
 				"subscribe.subscriptionDate",
 				"plan.id",
 				"plan.name",
