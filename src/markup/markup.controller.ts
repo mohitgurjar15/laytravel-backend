@@ -65,7 +65,7 @@ export class MarkupController {
 	})
 	@ApiResponse({ status: 404, description: "language not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listLanguge(@Param("id") id: number): Promise<{ data: any }> {
+	async getMarkup(@Param("id") id: number): Promise<{ data: any }> {
 		return await this.markupService.getMarkup(id);
 	}
 }

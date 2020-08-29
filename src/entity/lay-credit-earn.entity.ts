@@ -21,10 +21,10 @@ export class LayCreditEarn extends BaseEntity {
   userId: string;
 
   @Column("numeric", { name: "points", precision: 15, scale: 2 })
-  points: string;
+  points: number;
 
   @Column("date", { name: "earn_date" })
-  earnDate: string;
+  earnDate: Date;
 
   @Column("integer", { name: "status" })
   status: number;

@@ -23,6 +23,9 @@ import * as config from "config";
 import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";
 import { Activity } from "src/utility/activity.utility";
+import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
+import { RewordMode } from "src/enum/reword-mode.enum";
+import { RewordStatus } from "src/enum/reword-status.enum";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -77,7 +80,8 @@ export class SubscriptionService {
 
 			const todayDate = new Date();
 			const userdata = await this.userRepository.getUserData(userId);
-
+			const expiryPlanDate = userdata.nextSubscriptionDate;
+			
 			if (userdata.nextSubscriptionDate) {
 				var userNextSubscriptionDate = new Date(userdata.nextSubscriptionDate);
 
@@ -117,10 +121,14 @@ export class SubscriptionService {
 			await subscribe.save();
 			await userdata.save();
 			Activity.logActivity(
-				userdata.email,
+				userdata.userId,
 				"subscription",
 				`${userdata.email} is subscriped a ${planData.name} plan`
 			);
+			console.log(expiryPlanDate);
+			if (expiryPlanDate != null ) {
+				await this.addLaytripPoint(planData.amount, userdata.userId);
+			}
 			return {
 				message: `Your new plan subscribed successfully`,
 			};
@@ -241,7 +249,7 @@ export class SubscriptionService {
 			.createQueryBuilder(PlanSubscription, "subscribe")
 			.leftJoinAndSelect("subscribe.plan", "plan")
 			.select([
-				"subscribe.id" as 'subscription_id',
+				"subscribe.id" as "subscription_id",
 				"subscribe.subscriptionDate",
 				"plan.id",
 				"plan.name",
@@ -292,12 +300,21 @@ export class SubscriptionService {
 				console.log("err", err);
 			});
 		Activity.logActivity(
-			userdata.email,
+			userdata.userId,
 			"subscription",
 			`${userdata.email} is convert customer to free user because subscription plan not subscribed`
 		);
 	}
 
-	async addLaytripPoint() {}
-
+	async addLaytripPoint(amount: number, userId: string) {
+		const rewordEarn = new LayCreditEarn();
+		rewordEarn.userId = userId;
+		rewordEarn.points = amount;
+		rewordEarn.earnDate = new Date();
+		rewordEarn.creditMode = RewordMode.SUBSCRIPTION;
+		rewordEarn.description = `this laytrip points for subscribed a plan`;
+		rewordEarn.creditBy = userId;
+		rewordEarn.status = RewordStatus.AVAILABLE
+		await rewordEarn.save();
+	}
 }
