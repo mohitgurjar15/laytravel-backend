@@ -74,4 +74,12 @@ export class PaymentService {
             token    : 'CAP675462'
         }
     }
+
+    async voidCard(captureToken){
+
+        return {
+            status   : true,
+            token    : 'VOI675462'
+        }
+    }
 }

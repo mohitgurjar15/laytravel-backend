@@ -10,7 +10,7 @@ export class Stop{
     arrival_date_time   : string;
     eticket             : boolean;
     flight_number       : string;
-    duration            : number;
+    duration            : string;
     airline             : string;
     remaining_seat      : number;
     below_minimum_seat  : boolean;

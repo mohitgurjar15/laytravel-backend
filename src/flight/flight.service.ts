@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException, HttpException } from '@nestjs/common';
 import { Strategy } from './strategy/strategy';
 import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,6 +25,7 @@ import { errorMessage } from 'src/config/common.config';
 import { BookingInstalments } from 'src/entity/booking-instalments.entity';
 import { InstalmentStatus } from 'src/enum/instalment-status.enum';
 import { PaymentService } from 'src/payment/payment.service';
+import { GenderTilte } from 'src/enum/gender-title.enum';
 
 @Injectable()
 export class FlightService {
@@ -106,6 +107,7 @@ export class FlightService {
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let travelersDetails = await this.getTravelersInfo(travelers);
+
         let currencyId = headerDetails.currency.id;
         const userId = user.user_id;
         if(adult_count!=travelersDetails.adults.length)
@@ -120,6 +122,7 @@ export class FlightService {
         const mystifly = new Strategy(new Mystifly(headers));
         const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
 
+        console.log(JSON.stringify(airRevalidateResult));
         if(payment_type==PaymentType.INSTALMENT){
             let instalmentDetails;
 
@@ -140,17 +143,19 @@ export class FlightService {
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
-                let authCardResult=await this.paymentService.authorizeCard('x','card_id',firstInstalemntAmount,'USD');
+                let authCardResult=await this.paymentService.authorizeCard('gateway_id','card_id',firstInstalemntAmount,'USD');
                 
                 if(authCardResult.status==true){
                     let authCardToken = authCardResult.token;
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
                     if(captureCardresult.status==true){
-                        this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
+                        this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails,captureCardresult,null);
+                    }
+                    else{
+                        throw new BadRequestException(`Card capture is failed&&&card_token&&&${errorMessage}`)
                     }
                 }
                 else{
-
                     throw new BadRequestException(`Card authorization is failed&&&card_token&&&${errorMessage}`)
                 }
                 
@@ -162,14 +167,45 @@ export class FlightService {
 
             //this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails);
         }
-        /* const mystifly = new Strategy(new Mystifly(headers));
-        const result = new Promise((resolve) => resolve(mystifly.bookFlight(bookFlightDto,travelersDetails)));
-        return result; */
+        else if(payment_type==PaymentType.NOINSTALMENT){
+
+            let authCardResult=await this.paymentService.authorizeCard('gateway_id','card_id',selling_price,'USD');
+            if(authCardResult.status==true){
+                let authCardToken = authCardResult.token;
+                let captureCardresult =await this.paymentService.captureCard(authCardToken);
+                if(captureCardresult.status==true){
+                    const mystifly = new Strategy(new Mystifly(headers));
+                    const bookingResult = await mystifly.bookFlight(bookFlightDto,travelersDetails);
+                    if(bookingResult.booking_status == 'success'){
+
+                        await this.saveBooking(bookFlightDto,currencyId,bookingDate,BookingType.NOINSTALMENT,userId,null,captureCardresult,bookingResult);
+                        //send email here
+                        return bookingResult;
+                    }
+                    else{
+
+                        await this.paymentService.voidCard(captureCardresult.token)
+                        throw new HttpException({
+                            status  : 424,
+                            message : bookingResult.error_message,
+                          }, 424);
+                    }
+                    //return result; 
+                }
+                else{
+                    throw new BadRequestException(`Card capture is failed&&&card_token&&&${errorMessage}`)
+                }
+            }
+            else{
+                throw new BadRequestException(`Card authorization is failed&&&card_token&&&${errorMessage}`)
+            }
+        }
+        
      }
 
     async saveBooking(
         bookFlightDto:BookFlightDto,currencyId,bookingDate,
-        bookingType,userId,instalmentDetails=null
+        bookingType,userId,instalmentDetails=null,captureCardresult=null,supplierBookingData
     ){
         const {
             selling_price, net_rate, journey_type,
@@ -186,9 +222,8 @@ export class FlightService {
         let booking= new Booking();
         booking.id =uuidv4();
         booking.moduleId=moduleDetails.id;
-        booking.isPredictive=true;
+        
         booking.bookingType=bookingType;
-        booking.bookingStatus=BookingStatus.PENDING;
         booking.currency=currencyId;
         booking.totalAmount=selling_price.toString();
         booking.netRate=net_rate.toString();
@@ -208,12 +243,19 @@ export class FlightService {
                 booking.nextInstalmentDate=instalmentDetails.instalment_date[1].instalment_date;
             }
 
+            booking.bookingStatus=BookingStatus.PENDING;
             booking.paymentStatus = PaymentStatus.PENDING;
             booking.supplierBookingId="";
+            booking.isPredictive=true;
         }
         else{
             //pass here mystifly booking id
+            //booking.supplierBookingId=supplierBookingData.booking_id;
             booking.supplierBookingId="";
+            booking.bookingStatus=BookingStatus.CONFIRM;
+            booking.paymentStatus = PaymentStatus.CONFIRM;
+            booking.isPredictive=false;
+            booking.totalInstallments=0;
         }
         let moduleInfo={
             journey_type,
@@ -250,7 +292,6 @@ export class FlightService {
                     bookingInstalments.push(bookingInstalment)
                 }
     
-                console.log(bookingInstalments)
                 await getConnection()
                     .createQueryBuilder()
                     .insert()
@@ -344,6 +385,7 @@ export class FlightService {
                 if(traveler.country==null || (typeof traveler.country.iso2!=='undefined' && traveler.country.iso2==''))
                     throw new BadRequestException(`Country code is missing for traveler ${traveler.firstName}`)
                 
+                traveler.title = GenderTilte[traveler.title]
                 if(ageDiff < 2){
                     traveleDetails.infants.push(traveler)
                 }
