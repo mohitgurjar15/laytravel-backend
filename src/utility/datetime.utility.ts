@@ -1,5 +1,4 @@
 import * as moment from 'moment';
-
 export class DateTime{
 
     static convertSecondsToHourMinutesSeconds(seconds){
@@ -18,5 +17,14 @@ export class DateTime{
             seconds:remainigSecond
         }
 
+    }
+
+    /**
+     * Description: convert date format to new format
+     * @param date Description
+     */
+    static convertDateFormat(date,currentFormat,newFormat){
+
+       return  moment(date, currentFormat).format(newFormat)
     }
 }
