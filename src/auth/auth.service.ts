@@ -47,7 +47,6 @@ import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
-import { dirname } from "path";
 import { VerifyEmailIdTemplete } from "src/config/email_template/email-id-verify.html";
 import { OtpDto } from "./dto/otp.dto";
 

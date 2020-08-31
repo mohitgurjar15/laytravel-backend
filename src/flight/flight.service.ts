@@ -28,6 +28,7 @@ import { PaymentService } from 'src/payment/payment.service';
 import { GenderTilte } from 'src/enum/gender-title.enum';
 import { FlightJourney } from 'src/enum/flight-journey.enum';
 import { DateTime } from 'src/utility/datetime.utility';
+import { async } from 'rxjs/internal/scheduler/async';
 
 @Injectable()
 export class FlightService {
@@ -98,6 +99,7 @@ export class FlightService {
      }
 
      async bookFlight(bookFlightDto:BookFlightDto,headers,user){
+        await this.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
         let headerDetails = await this.validateHeaders(headers);
 
         let { 
@@ -438,5 +440,32 @@ export class FlightService {
             throw new BadRequestException(`Please enter valid traveler(s) id`)
         }
 
+     }
+
+     async sendBookingEmail($bookingId){
+        
+     }
+
+     async getBookingDetails(bookingId){
+        let bookingDetails =   await getManager()
+        .createQueryBuilder(Booking,"booking")
+        .leftJoinAndSelect("booking.bookingInstalments","bookingInstalments")
+        .leftJoinAndSelect("booking.currency2","currency")
+        /* .select([
+            "user.userId","user.title",
+            "user.firstName","user.lastName","user.email",
+            "user.countryCode","user.phoneNo","user.zipCode",
+            "user.gender","user.dob","user.passportNumber",
+            "user.passportExpiry",
+            "countries.name","countries.iso2","countries.iso3","countries.id",
+        ]) */
+        .where('"booking"."id"=:bookingId',{ bookingId})
+        .getMany();
+        console.log(bookingDetails)
+        
+        if(bookingDetails){
+            
+        }
+        return false;
      }
 }
