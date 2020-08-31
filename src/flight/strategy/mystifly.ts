@@ -17,6 +17,7 @@ import { Module } from "src/entity/module.entity";
 import { errorMessage, s3BucketUrl } from "src/config/common.config";
 import { airlines } from "../airline";
 import { airports } from "../airports";
+import { FareInfo } from "../model/fare.model";
 const fs = require('fs').promises;
 
 export class Mystifly implements StrategyAirline{
@@ -251,8 +252,9 @@ export class Mystifly implements StrategyAirline{
                 route.routes[0]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
+                route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
-                let instalmentDetails   = Instalment.weeklyInstalment(route.net_rate,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
+                let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
                     route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
                 }
@@ -270,7 +272,7 @@ export class Mystifly implements StrategyAirline{
                 route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
                 route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
                 let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
-                 
+                
                 route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
@@ -660,7 +662,8 @@ export class Mystifly implements StrategyAirline{
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.net_rate          = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0];
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
-                let instalmentDetails   = Instalment.weeklyInstalment(route.net_rate,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
+                route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
+                let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
                     route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
                 }
@@ -868,10 +871,12 @@ export class Mystifly implements StrategyAirline{
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
                     stop.departure_date_time   = flightSegment['a:departuredatetime'][0];
+                    stop.departure_info        = typeof airports[stop.departure_code]!=='undefined'?airports[stop.departure_code]:{};
                     stop.arrival_code          = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
+                    stop.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
@@ -900,7 +905,9 @@ export class Mystifly implements StrategyAirline{
                 route.departure_date    = stops[0].departure_date;
                 route.departure_time    = stops[0].departure_time;
                 route.departure_code    = stops[0].departure_code;
+                route.departure_info        = typeof airports[route.departure_code]!=='undefined'?airports[route.departure_code]:{};
                 route.arrival_code      = stops[stops.length-1].arrival_code;
+                route.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                 if(typeof flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]!='undefined'){
                     stops=[];
                     inBoundflightSegments.forEach(flightSegment => {
@@ -909,10 +916,12 @@ export class Mystifly implements StrategyAirline{
                         stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                         stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
                         stop.departure_date_time   = flightSegment['a:departuredatetime'][0];
+                        stop.departure_info        = typeof airports[stop.departure_code]!=='undefined'?airports[stop.departure_code]:{};
                         stop.arrival_code          = flightSegment['a:arrivalairportlocationcode'][0];
                         stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                         stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                         stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
+                        stop.arrival_info          = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                         stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                         stop.flight_number         = flightSegment['a:flightnumber'][0];
                         stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
@@ -941,7 +950,7 @@ export class Mystifly implements StrategyAirline{
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.net_rate          = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0];
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
-                let instalmentDetails   = Instalment.weeklyInstalment(route.net_rate,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
+                let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
                     route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
                 }
@@ -1161,5 +1170,33 @@ export class Mystifly implements StrategyAirline{
             'First':'F'
         }
         return flightClass[className];
+    }
+
+    getFareBreakDown(fares,markUpDetails){
+
+        let fareBreakDowns:FareInfo[]=[];
+        let fareInfo;
+        let totalFare=0;
+        let totalTraveler=0;
+        for(let fare of fares){
+            fareInfo=new FareInfo();
+
+            fareInfo.type = fare['a:passengertypequantity'][0]['a:code'][0];
+            fareInfo.quantity = fare['a:passengertypequantity'][0]['a:quantity'][0];
+            fareInfo.price =  PriceMarkup.applyMarkup(parseFloat(fare['a:passengerfare'][0]['a:totalfare'][0]['a:amount'][0])*parseInt(fareInfo.quantity),markUpDetails)
+            
+            fareBreakDowns.push(fareInfo)
+
+            totalFare+=parseFloat(fareInfo.price);
+            totalTraveler+=parseInt(fareInfo.quantity)
+        }
+        
+        fareBreakDowns.push({
+          type : 'total',
+          quantity : totalTraveler,
+          price : totalFare
+        })
+
+        return fareBreakDowns;
     }
 } 

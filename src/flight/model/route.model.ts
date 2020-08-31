@@ -1,4 +1,5 @@
 import { Stop } from "./stop.model";
+import { FareInfo } from "./fare.model";
 
 export class FlightSearchResult{
 
@@ -36,6 +37,7 @@ export class Route{
     adult_count    : number;
     child_count     : number;
     infant_count    : number;
+    fare_break_dwon : FareInfo[]
 }
 
 export class RouteType{
