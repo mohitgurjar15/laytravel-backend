@@ -153,17 +153,21 @@ export class UserRepository extends Repository<User> {
 
 	async createtraveler(user: User): Promise<User> {
 		const email = user.email;
-		const userExist = await this.findOne({
-			email,
-			isDeleted: false,
-			roleId: Role.TRAVELER_USER,
-			createdBy: user.createdBy,
-		});
-		if (userExist) {
-			throw new ConflictException(`This traveler email alredy exist.`);
-		} else {
-			await user.save();
+		if(email != "")
+		{
+			const userExist = await this.findOne({
+				email,
+				isDeleted: false,
+				roleId: Role.TRAVELER_USER,
+				createdBy: user.createdBy,
+			});
+			if (userExist) {
+				throw new ConflictException(`This traveler email alredy exist.`);
+			} 
 		}
+		
+			await user.save();
+		
 		let userDetail = await getManager()
 			.createQueryBuilder(User, "user")
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
