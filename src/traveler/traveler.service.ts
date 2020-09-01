@@ -207,11 +207,11 @@ export class TravelerService {
 				var birthDate = new Date(data.dob);
 				var age = today.getFullYear() - birthDate.getFullYear();
 				if (age <= 2) {
-					data.user_type = "Infant";
+					data.user_type = "infant";
 				} else if (age <= 12) {
-					data.user_type = "Child";
+					data.user_type = "child";
 				} else {
-					data.user_type = "Adult";
+					data.user_type = "adult";
 				}
 			});
 
