@@ -133,6 +133,8 @@ export class User extends BaseEntity {
   @Column("integer", { name: "preferred_currency", nullable: true })
   preferredCurrency: number | null;
 
+  user_type : string;
+
 
   @Column("character varying", {
     name: "register_via",
@@ -150,6 +152,8 @@ export class User extends BaseEntity {
     length: 255
   })
   cityName: string | null;
+
+  
 
   @Column("date", { name: "dob", nullable: true })
   dob: string | null;
@@ -236,6 +240,7 @@ export class User extends BaseEntity {
   )
   planSubscriptions: PlanSubscription[];
 
+  
   @OneToMany(
     () => Supplier,
     supplier => supplier.updatedBy2
@@ -315,5 +320,6 @@ export class User extends BaseEntity {
   
   async validateOtp(Otp: number): Promise<boolean> {
 		return Otp == this.otp;
-	}
+  }
+  
 }

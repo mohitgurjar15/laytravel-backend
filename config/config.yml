@@ -1,5 +1,0 @@
-environments:
-    static:
-        - dev  : ${development.yml}
-        - test : ${dev}
-        - prod : ${production.yml}

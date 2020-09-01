@@ -64,29 +64,70 @@ export class UserRepository extends Repository<User> {
 
 		let where;
 		if (keyword) {
-			where = `("is_deleted" = false) AND ("role_id" IN (${role})) AND (("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%'))`;
+			where = `("user"."is_deleted" = false) AND ("user"."role_id" IN (${role})) AND (("user"."first_name" ILIKE '%${keyword}%') or ("user"."middle_name" ILIKE '%${keyword}%') or ("user"."last_name" ILIKE '%${keyword}%') or ("user"."email" ILIKE '%${keyword}%'))`;
 		} else {
-			where = `("is_deleted" = false) AND("role_id" IN (${role}) ) and 1=1`;
+			where = `("user"."is_deleted" = false) AND("user"."role_id" IN (${role}) ) and 1=1`;
 		}
-		const [result, total] = await this.findAndCount({
-			where: where,
-			order: { createdDate: "DESC" },
-			skip: skip,
-			take: take,
-		});
+		const [result, count] = await getManager()
+				.createQueryBuilder(User, "user")
+				.leftJoinAndSelect("user.state", "state")
+				.leftJoinAndSelect("user.country", "countries")
+				.leftJoinAndSelect("user.preferredCurrency2", "currency")
+				.leftJoinAndSelect("user.preferredLanguage2", "language")
+				.select([
+					"user.userId",
+					"user.title",
+					"user.dob",
+					"user.firstName",
+					"user.lastName",
+					"user.email",
+					"user.profilePic",
+					"user.dob",
+					"user.gender",
+					"user.roleId",
+					"user.countryCode",
+					"user.phoneNo",
+					"user.cityName",
+					"user.address",
+					"user.zipCode",
+					"user.preferredCurrency2",
+					"user.preferredLanguage2",
+					"user.passportNumber",
+					"user.passportExpiry",
+					"language.id",
+					"language.name",
+					"language.iso_1Code",
+					"language.iso_2Code",
+					"currency.id",
+					"currency.code",
+					"currency.country",
+					"countries.name",
+					"countries.iso2",
+					"countries.iso3",
+					"countries.id",
+					"state.id",
+					"state.name",
+					"state.iso2",
+					"state.country_id",
+				])
+				// .addSelect(`CASE
+				// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
+				// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
+				// 	ELSE 'adult'
+				// END AS "user_type"`,)
+				.where(where)
+				.getManyAndCount();
 
-		if (!result.length || total <= skip) {
+		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No user found.`);
 		}
 		result.forEach(function(data) {
-			data.profilePic = data.profilePic
-				? `${siteUrl}/profile/${data.profilePic}`
-				: "";
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
+			
 		});
-		return { data: result, TotalReseult: total };
+		return { data: result, TotalReseult: count };
 	}
 
 	async createUser(user: User): Promise<User> {
