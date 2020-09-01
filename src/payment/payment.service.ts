@@ -6,6 +6,7 @@ import { errorMessage } from 'src/config/common.config';
 import { UserCard } from 'src/entity/user-card.entity';
 import { v4 as uuidv4 } from "uuid";
 import { User } from 'src/entity/user.entity';
+import Axios from 'axios';
 
 @Injectable()
 export class PaymentService {
@@ -61,10 +62,21 @@ export class PaymentService {
 
     async authorizeCard(gatewayToken,card_id,amount,currency){
 
-        return {
+        /* return {
             status   : true,
             token    : 'AUT675462'
-        }
+        } */
+        let url=`https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
+        let requestBody ={
+
+            "transaction": {
+              "payment_method_token": card_id,
+              "amount": amount,
+              "currency_code": "USD"
+            }
+          }
+        let authResult = await this.axiosRequest(url,requestBody);
+        return authResult;
     }
 
     async captureCard(authorizeToken){
@@ -81,5 +93,14 @@ export class PaymentService {
             status   : true,
             token    : 'VOI675462'
         }
+    }
+
+    async axiosRequest(url,requestBody,headers=null){
+
+        let sessionResult =await Axios({
+            method: 'POST',
+            url: url,
+            data: requestBody
+        })
     }
 }
