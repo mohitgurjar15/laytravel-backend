@@ -4,6 +4,7 @@ import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
+var today = new Date();
 export class SaveTravelerDto {
 
     // @ApiPropertyOptional({
@@ -50,6 +51,11 @@ export class SaveTravelerDto {
     })
     last_name: string;
 
+    @ApiPropertyOptional({
+		type: "string",
+		description: "Traveler email id",
+    })
+    @ValidateIf(o => (today.getFullYear() - new Date(o.dob).getFullYear()) >= 12 )
     @IsEmail(
 		{},
 		{

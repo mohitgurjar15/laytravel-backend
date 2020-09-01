@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, BadRequestException, NotAcceptableException, UnauthorizedException } from "@nestjs/common";
 import { BookingRepository } from "./booking.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -7,6 +7,7 @@ import { PaymentStatus } from "src/enum/payment-status.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
+import { ListBookingDto } from "./dto/list-booking.dto";
 
 @Injectable()
 export class BookingService {
@@ -92,4 +93,85 @@ export class BookingService {
 				console.log("err", err);
 			});
 	}
+
+	async listBooking(listBookingDto: ListBookingDto){
+		try {
+			return await this.bookingRepository.listBooking(listBookingDto);
+		} catch (error) {
+			console.log(error)
+			if (error.response.statusCode == undefined) {
+				console.log(error);
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+	}
+
+	async userBookingList(listBookingDto: ListBookingDto,userId:string){
+		try {
+			return await this.bookingRepository.listBooking(listBookingDto,userId);
+		} catch (error) {
+			console.log(error)
+			if (error.response.statusCode == undefined) {
+				console.log(error);
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+	}
+
 }
