@@ -33,6 +33,7 @@ import { RewordPointModule } from './reword-point/reword-point.module';
 import { CronJobsModule } from './cron-jobs/cron-jobs.module';
 import { TravelerModule } from './traveler/traveler.module';
 import { PaymentModule } from './payment/payment.module';
+import { BookingModule } from './booking/booking.module';
 
 
 @Module({
@@ -94,6 +95,7 @@ import { PaymentModule } from './payment/payment.module';
 		CronJobsModule,
 		TravelerModule,
 		PaymentModule,
+		BookingModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

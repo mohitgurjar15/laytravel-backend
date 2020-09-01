@@ -20,14 +20,12 @@ import { UpdateTravelerDto } from "./dto/update-traveler.dto";
 import { JwtPayload } from "src/auth/jwt-payload.interface";
 import { JwtService } from "@nestjs/jwt";
 
-
-
 @Injectable()
 export class TravelerService {
 	constructor(
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
-		private jwtService: JwtService,
+		private jwtService: JwtService
 	) {}
 
 	async createNewtraveller(
@@ -46,7 +44,7 @@ export class TravelerService {
 			email,
 		} = saveTravelerDto;
 		try {
-			console.log(parent_user_id)
+			console.log(parent_user_id);
 			let countryDetails = await getManager()
 				.createQueryBuilder(Countries, "country")
 				.where(`id=:country_code`, { country_code })
@@ -80,8 +78,7 @@ export class TravelerService {
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
 
-			if (parent_user_id != undefined && parent_user_id != '') {
-				
+			if (parent_user_id != undefined && parent_user_id != "") {
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
 					throw new ConflictException(
@@ -100,23 +97,18 @@ export class TravelerService {
 					phone: data.phoneNo,
 					middleName: data.middleName,
 					lastName: data.lastName,
-					salt: '',
-	
-					profilePic:  "",
+					salt: "",
+
+					profilePic: "",
 					roleId: data.roleId,
 				};
 				const accessToken = this.jwtService.sign(payload);
-				
+
 				return { data: data, token: accessToken };
-				
 			}
-			
-			
 		} catch (error) {
-			console.log(error)
-			if(error.response.statusCode == undefined)
-			{
-				
+			console.log(error);
+			if (error.response.statusCode == undefined) {
 				throw new InternalServerErrorException(
 					`${error.message}&&&id&&&${error.Message}`
 				);
@@ -152,18 +144,80 @@ export class TravelerService {
 
 	async listTraveler(userId: string) {
 		try {
-			const [result, total] = await this.userRepository.findAndCount({
-				where: `created_by = '${userId}' AND user_id != '${userId}' AND is_deleted = false AND role_id = ${Role.TRAVELER_USER}`,
-			});
+			const where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
+			const [result, count] = await getManager()
+				.createQueryBuilder(User, "user")
+				.leftJoinAndSelect("user.state", "state")
+				.leftJoinAndSelect("user.country", "countries")
+				.leftJoinAndSelect("user.preferredCurrency2", "currency")
+				.leftJoinAndSelect("user.preferredLanguage2", "language")
+				.select([
+					"user.userId",
+					"user.title",
+					"user.dob",
+					"user.firstName",
+					"user.lastName",
+					"user.email",
+					"user.profilePic",
+					"user.dob",
+					"user.gender",
+					"user.roleId",
+					"user.countryCode",
+					"user.phoneNo",
+					"user.cityName",
+					"user.address",
+					"user.zipCode",
+					"user.preferredCurrency2",
+					"user.preferredLanguage2",
+					"user.passportNumber",
+					"user.passportExpiry",
+					"language.id",
+					"language.name",
+					"language.iso_1Code",
+					"language.iso_2Code",
+					"currency.id",
+					"currency.code",
+					"currency.country",
+					"countries.name",
+					"countries.iso2",
+					"countries.iso3",
+					"countries.id",
+					"state.id",
+					"state.name",
+					"state.iso2",
+					"state.country_id",
+				])
+				// .addSelect(`CASE
+				// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
+				// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
+				// 	ELSE 'adult'
+				// END AS "user_type"`,)
+				.where(where)
+				.getManyAndCount();
 
 			if (!result.length) {
 				throw new NotFoundException(`No traveler found.`);
 			}
-			return { data: result, TotalReseult: total };
+			result.forEach(function(data) {
+				// delete data.updatedDate;
+				// delete data.salt;
+				// delete data.password;
+
+				var today = new Date();
+				var birthDate = new Date(data.dob);
+				var age = today.getFullYear() - birthDate.getFullYear();
+				if (age <= 2) {
+					data.user_type = "Infant";
+				} else if (age <= 12) {
+					data.user_type = "Child";
+				} else {
+					data.user_type = "Adult";
+				}
+			});
+
+			return { data: result, TotalReseult: count };
 		} catch (error) {
-			if(error.response.statusCode == undefined)
-			{
-				console.log(error)
+			if (error.response.statusCode == undefined) {
 				throw new InternalServerErrorException(
 					`${error.message}&&&id&&&${error.Message}`
 				);
@@ -191,13 +245,12 @@ export class TravelerService {
 		}
 	}
 
-	async getTraveler(userId: string):Promise<User> {
+	async getTraveler(userId: string): Promise<User> {
 		try {
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
-			if(error.response.statusCode == undefined)
-			{
-				console.log(error)
+			if (error.response.statusCode == undefined) {
+				console.log(error);
 				throw new InternalServerErrorException(
 					`${error.message}&&&id&&&${error.Message}`
 				);
@@ -229,35 +282,45 @@ export class TravelerService {
 					);
 			}
 		}
-    }
-    
-    async updateTraveler(updateTravelerDto:UpdateTravelerDto ,  userId:string , updateBy : string)
-    {
-        try {
-            const traveler = await this.userRepository.getTravelData(userId);
-			
-			
-            const {first_name,last_name,title,dob,gender,country_code,passport_expiry,passport_number} = updateTravelerDto
+	}
 
-            traveler.countryCode = country_code;
+	async updateTraveler(
+		updateTravelerDto: UpdateTravelerDto,
+		userId: string,
+		updateBy: string
+	) {
+		try {
+			const traveler = await this.userRepository.getTravelData(userId);
+
+			const {
+				first_name,
+				last_name,
+				title,
+				dob,
+				gender,
+				country_code,
+				passport_expiry,
+				passport_number,
+			} = updateTravelerDto;
+
+			traveler.countryCode = country_code;
 			traveler.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			traveler.passportNumber = passport_number == "" ? null : passport_number;
 			traveler.firstName = first_name;
 			traveler.lastName = last_name;
-            traveler.isVerified = true;
-            traveler.title = title
-            traveler.dob = dob
-            traveler.gender = gender
-            traveler.updatedBy = updateBy
+			traveler.isVerified = true;
+			traveler.title = title;
+			traveler.dob = dob;
+			traveler.gender = gender;
+			traveler.updatedBy = updateBy;
 			traveler.updatedDate = new Date();
 
 			await traveler.save();
-			
-            return traveler;
+
+			return traveler;
 		} catch (error) {
-			if(error.response.statusCode == undefined)
-			{
-				console.log(error)
+			if (error.response.statusCode == undefined) {
+				console.log(error);
 				throw new InternalServerErrorException(
 					`${error.message}&&&id&&&${error.Message}`
 				);
@@ -290,24 +353,20 @@ export class TravelerService {
 			}
 		}
 	}
-	
 
-
-	async deleteTraveler(userId:string , updateBy : string)
-    {
-        try {
-            const traveler = await this.userRepository.getTravelData(userId);
-            traveler.isDeleted = true;
-            traveler.updatedBy = updateBy
+	async deleteTraveler(userId: string, updateBy: string) {
+		try {
+			const traveler = await this.userRepository.getTravelData(userId);
+			traveler.isDeleted = true;
+			traveler.updatedBy = updateBy;
 			traveler.updatedDate = new Date();
 
 			await traveler.save();
-			
-            return { message :`Traveler ${traveler.email} is deleted`};
+
+			return { message: `Traveler ${traveler.email} is deleted` };
 		} catch (error) {
-			if(error.response.statusCode == undefined)
-			{
-				console.log(error)
+			if (error.response.statusCode == undefined) {
+				console.log(error);
 				throw new InternalServerErrorException(
 					`${error.message}&&&id&&&${error.Message}`
 				);
@@ -339,5 +398,5 @@ export class TravelerService {
 					);
 			}
 		}
-    }
+	}
 }

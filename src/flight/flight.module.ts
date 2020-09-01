@@ -5,13 +5,14 @@ import { AuthModule } from 'src/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AirportRepository } from './airport.repository';
 import { PaymentService } from 'src/payment/payment.service';
+import { BookingRepository } from 'src/booking/booking.repository';
 
 @Module({
   imports:[
     AuthModule,
     TypeOrmModule.forFeature(
       [
-        AirportRepository
+        AirportRepository,BookingRepository
       ]),
   ],
   controllers: [FlightController],

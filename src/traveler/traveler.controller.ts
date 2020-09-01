@@ -70,7 +70,7 @@ export class TravelerController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listTraveler(
 		@GetUser() user: User,
-	): Promise<{ data: User[]; TotalReseult: number }> {
+	){
 		return await this.travelerService.listTraveler(user.userId);
     }
     
@@ -89,7 +89,7 @@ export class TravelerController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listtraverUsingUserId(
 		@Param("id") userId: string,
-	): Promise<{ data: User[]; TotalReseult: number }> {
+	) {
 		return await this.travelerService.listTraveler(userId);
     }
     

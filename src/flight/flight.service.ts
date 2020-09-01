@@ -29,6 +29,10 @@ import { GenderTilte } from 'src/enum/gender-title.enum';
 import { FlightJourney } from 'src/enum/flight-journey.enum';
 import { DateTime } from 'src/utility/datetime.utility';
 import { async } from 'rxjs/internal/scheduler/async';
+import { BookingRepository } from 'src/booking/booking.repository';
+import { FlightBookingEmailParameterModel } from 'src/config/email_template/model/flight-booking-email-parameter.model';
+import { FlightBookingConfirmtionMail } from 'src/config/email_template/flight-booking-confirmation-mail.html';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class FlightService {
@@ -38,7 +42,11 @@ export class FlightService {
         @InjectRepository(AirportRepository)
         private airportRepository:AirportRepository,
 
-        private paymentService:PaymentService
+        @InjectRepository(BookingRepository)
+        private bookingRepository:BookingRepository,
+
+        private paymentService:PaymentService,
+        private readonly mailerService: MailerService
     ){}
     
     async searchAirport(name:String){
@@ -99,7 +107,7 @@ export class FlightService {
      }
 
      async bookFlight(bookFlightDto:BookFlightDto,headers,user){
-        await this.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
+        await this.bookingRepository.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
         let headerDetails = await this.validateHeaders(headers);
 
         let { 
@@ -442,30 +450,78 @@ export class FlightService {
 
      }
 
-     async sendBookingEmail($bookingId){
-        
+     async sendBookingEmail(bookingId){
+        const Data = await this.bookingRepository.getBookingDetails(bookingId);
+        const bookingData = Data[0];
+        var param = new FlightBookingEmailParameterModel();
+		const user = bookingData.user;
+		const moduleInfo = bookingData.moduleInfo;
+		const currency = bookingData.currency2;
+		const netPrice = bookingData.netRate;
+		param.user_name = `${user.firstName}  ${user.firstName}`;
+		param.date = moduleInfo.departure_date;
+		param.laytrip_points = bookingData.laytrip_points ? 0 : 0;
+		param.travelers = [`${user.firstName}  ${user.firstName}`];
+		param.airline = moduleInfo.airline ? moduleInfo.airline : "";
+		param.pnr_no = moduleInfo.pnr_no ? moduleInfo.pnr_no : "";
+		param.ticket_no = bookingData.id;
+		param.flight_name = moduleInfo.flight_name ? moduleInfo.flight_name : "";
+		param.class = moduleInfo.flight_class ? moduleInfo.flight_class : "";
+		param.rout = moduleInfo.flight_rout ? moduleInfo.flight_rout : "";
+		param.duration = moduleInfo.duration ? moduleInfo.duration : "";
+		param.cardholder_name = bookingData.cardholder_name
+			? bookingData.cardholder_name
+			: "";
+		param.visa_ending_in = user.passportExpiry ? user.passportExpiry : null;
+		param.amount = `${currency.symbol} ${bookingData.totalAmount} ${currency.code}`;
+		param.base_fare = `${currency.symbol} ${netPrice} ${currency.code}`;
+		param.tax = bookingData.tax
+			? `${currency.symbol}${bookingData.tax} ${currency.code}`
+			: "0";
+
+		var status = "";
+		if (bookingData.bookingStatus > 2) {
+			bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
+		} else {
+			bookingData.bookingStatus == 2 ? "Failed" : "Canceled";
+		}
+		param.status = status;
+		this.mailerService
+			.sendMail({
+				to: user.email,
+				from: "no-reply@laytrip.com",
+				subject: "Flight booking data",
+				html: FlightBookingConfirmtionMail(param),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
+
      }
 
-     async getBookingDetails(bookingId){
-        let bookingDetails =   await getManager()
-        .createQueryBuilder(Booking,"booking")
-        .leftJoinAndSelect("booking.bookingInstalments","bookingInstalments")
-        .leftJoinAndSelect("booking.currency2","currency")
-        /* .select([
-            "user.userId","user.title",
-            "user.firstName","user.lastName","user.email",
-            "user.countryCode","user.phoneNo","user.zipCode",
-            "user.gender","user.dob","user.passportNumber",
-            "user.passportExpiry",
-            "countries.name","countries.iso2","countries.iso3","countries.id",
-        ]) */
-        .where('"booking"."id"=:bookingId',{ bookingId})
-        .getMany();
-        console.log(bookingDetails)
+    //  async getBookingDetails(bookingId){
+    //     let bookingDetails =   await getManager()
+    //     .createQueryBuilder(Booking,"booking")
+    //     .leftJoinAndSelect("booking.bookingInstalments","bookingInstalments")
+    //     .leftJoinAndSelect("booking.currency2","currency")
+    //     /* .select([
+    //         "user.userId","user.title",
+    //         "user.firstName","user.lastName","user.email",
+    //         "user.countryCode","user.phoneNo","user.zipCode",
+    //         "user.gender","user.dob","user.passportNumber",
+    //         "user.passportExpiry",
+    //         "countries.name","countries.iso2","countries.iso3","countries.id",
+    //     ]) */
+    //     .where('"booking"."id"=:bookingId',{ bookingId})
+    //     .getMany();
+    //     console.log(bookingDetails)
         
-        if(bookingDetails){
+    //     if(bookingDetails){
             
-        }
-        return false;
-     }
+    //     }
+    //     return false;
+    //  }
 }

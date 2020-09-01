@@ -24,7 +24,7 @@ export class UpdateProfileDto {
     
     @IsOptional()
 	@ValidateIf(o => o.gender != '')
-    @IsEnum(['M','F'],{
+    @IsEnum(['M','F','N'],{
         message : (args: ValidationArguments) => {
             if (typeof args.value != "undefined" || args.value != "") {
                 return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`
