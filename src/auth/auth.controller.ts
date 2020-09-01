@@ -21,6 +21,7 @@ import {
 	Req,
 	BadRequestException,
 	Patch,
+	Query,
 } from "@nestjs/common";
 import { AuthCredentialDto } from "./dto/auth-credentials.dto";
 import { AuthService } from "./auth.service";
@@ -57,6 +58,8 @@ import { Roles } from "src/guards/role.decorator";
 import { OtpDto } from "./dto/otp.dto";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
+import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
+
 @ApiTags("Auth")
 @Controller("auth")
 @UseInterceptors(SentryInterceptor)
@@ -274,6 +277,21 @@ export class AuthController {
 	async logout(@Param("id") id: string): Promise<any> {
 		return this.authService.logout(id);
 	}
+
+	@ApiOperation({ summary: "Verify email id Of User" })
+	@Get("verify-email-id")
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 401, description: "Invalid otp ." })
+	@ApiResponse({ status: 404, description: "email id not found!" })
+	@ApiResponse({ status: 409, description: "your email id exist" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async verifyEmail(
+		@Query() checkEmailConflictDto: CheckEmailConflictDto,
+	) {
+		return await this.authService.checkEmailConflict(checkEmailConflictDto);
+	}
+
 
 	@Get("/profile")
 	@ApiOperation({ summary: "Get Profile Details" })

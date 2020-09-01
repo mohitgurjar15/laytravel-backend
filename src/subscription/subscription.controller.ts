@@ -37,7 +37,7 @@ export class SubscriptionController {
 	}
 
     @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
+    @Roles(Role.FREE_USER,Role.PAID_USER)
 	@ApiOperation({ summary: "Subscribe the plan" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

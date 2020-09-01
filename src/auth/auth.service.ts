@@ -55,6 +55,7 @@ import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
+import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 
 @Injectable()
 export class AuthService {
@@ -840,7 +841,18 @@ export class AuthService {
 			throw new InternalServerErrorException(errorMessage);
 		}
 	}
-
+	async checkEmailConflict(checkEmailConflictDto:CheckEmailConflictDto): Promise <{ is_available: boolean }>
+	{
+		const {email} = checkEmailConflictDto
+			const userExist = await this.userRepository.findOne({
+				email,
+			});
+			if (userExist && userExist.roleId != Role.GUEST_USER) {
+				return { is_available: true };
+			} else {
+				return { is_available: false };
+			}
+	}
 	async updateProfile(
 		updateProfileDto,
 		loginUser,
