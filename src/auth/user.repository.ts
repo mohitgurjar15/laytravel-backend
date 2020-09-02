@@ -171,6 +171,8 @@ export class UserRepository extends Repository<User> {
 		let userDetail = await getManager()
 			.createQueryBuilder(User, "user")
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
+			.leftJoinAndSelect("user.state", "state")
+			.leftJoinAndSelect("user.country", "countries")
 			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
 				userId: user.userId,
 				is_deleted: false,
@@ -221,11 +223,17 @@ export class UserRepository extends Repository<User> {
 	}
 
 	async getTravelData(userId: string): Promise<User> {
-		const userdata = await this.findOne({
-			userId: userId,
-			isDeleted: false,
-			roleId: Role.TRAVELER_USER,
-		});
+		const userdata = await getManager()
+			.createQueryBuilder(User, "user")
+			.leftJoinAndSelect("user.createdBy2", "parentUser")
+			.leftJoinAndSelect("user.state", "state")
+			.leftJoinAndSelect("user.country", "countries")
+			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
+				userId: userId,
+				is_deleted: false,
+				roleId: Role.TRAVELER_USER,
+			})
+			.getOne();
 
 		if (!userdata)
 			throw new NotFoundException(
