@@ -307,11 +307,11 @@ export class TravelerService {
 				passport_expiry,
 				passport_number,
 				phone_no,
-				country_id
+				country_id,
 			} = updateTravelerDto;
 			let countryDetails = await getManager()
 				.createQueryBuilder(Countries, "country")
-				.where(`id=:country_code`, { country_code })
+				.where(`id=:country_code`, { country_id })
 				.getOne();
 
 			if (!countryDetails)
