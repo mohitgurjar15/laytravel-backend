@@ -113,11 +113,12 @@ export class SaveTravelerDto {
 	})
 	gender: Gender;
 
+    @ValidateIf((o) => today.getFullYear() - new Date(o.dob).getFullYear() >= 12)
 	@IsNotEmpty({
-		message: `Please select country code.&&&country_code`,
+		message: `Please select phone country code.&&&country_code`,
 	})
 	@ApiProperty({
-		description: `Select country code`,
+		description: `Select phone country code`,
 		example: `1`,
 	})
 	country_code: string;
@@ -166,5 +167,15 @@ export class SaveTravelerDto {
 		description: `Enter travelers passport expiry date`,
 		example: `2030-07-20`,
 	})
-	passport_expiry: string;
+    passport_expiry: string;
+    
+    @IsNotEmpty({
+		message: `Please select country id.&&&country_code`,
+	})
+	@ApiProperty({
+		description: `Select country id`,
+		example: `1`,
+	})
+	country_id: number;
+
 }

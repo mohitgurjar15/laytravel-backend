@@ -42,7 +42,7 @@ export class TravelerService {
 			passport_expiry,
 			gender,
 			email,
-			phone_no
+			phone_no,country_id
 		} = saveTravelerDto;
 		try {
 			console.log(parent_user_id);
@@ -66,6 +66,7 @@ export class TravelerService {
 			user.timezone = "";
 			user.status = 1;
 			user.gender = gender;
+			user.countryId = country_id
 			user.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			user.passportNumber = passport_number == "" ? null : passport_number;
 			user.roleId = Role.TRAVELER_USER;
@@ -305,9 +306,18 @@ export class TravelerService {
 				country_code,
 				passport_expiry,
 				passport_number,
-				phone_no
+				phone_no,
+				country_id
 			} = updateTravelerDto;
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_code`, { country_code })
+				.getOne();
 
+			if (!countryDetails)
+				throw new BadRequestException(
+					`Country code not exist with database.&&&country_id`
+				);
 			traveler.countryCode = country_code;
 			traveler.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			traveler.passportNumber = passport_number == "" ? null : passport_number;
@@ -320,7 +330,7 @@ export class TravelerService {
 			traveler.updatedBy = updateBy;
 			traveler.phoneNo = phone_no == "" ? null : phone_no;
 			traveler.updatedDate = new Date();
-
+			traveler.countryId = country_id;
 			await traveler.save();
 
 			return traveler;
