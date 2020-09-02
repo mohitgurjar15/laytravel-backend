@@ -236,6 +236,17 @@ export class UserRepository extends Repository<User> {
 			throw new UnauthorizedException(
 				`This traveler has been disabled. Please contact administrator person.`
 			);
+		var today = new Date();
+		var birthDate = new Date(userdata.dob);
+		var age = today.getFullYear() - birthDate.getFullYear();
+
+		if (age <= 2) {
+			userdata.user_type = "infant";
+		} else if (age <= 12) {
+			userdata.user_type = "child";
+		} else {
+			userdata.user_type = "adult";
+		}
 		return userdata;
 	}
 	/**

@@ -78,14 +78,16 @@ export class UpdateTravelerDto{
     })
     gender : Gender;
 
-    @IsNotEmpty({
-        message : `Please select country code.&&&country_code`
-    })
-    @ApiProperty({
-        description: `Select country code`,
-        example: `1`
-    })
-    country_code: string;
+    @ValidateIf((o) => today.getFullYear() - new Date(o.dob).getFullYear() >= 12)
+	@IsNotEmpty({
+		message: `Please select phone country code.&&&country_code`,
+	})
+	@ApiProperty({
+		description: `Select phone country code`,
+		example: `+1`,
+	})
+	country_code: string;
+
 
     @ApiPropertyOptional({
 		type: "string",
@@ -132,5 +134,16 @@ export class UpdateTravelerDto{
 		example: `91919221212`,
 	})
     phone_no: string;
+
+
+    @IsNotEmpty({
+		message: `Please select country id.&&&country_code`,
+	})
+	@ApiProperty({
+		description: `Select country id`,
+		example: `1`,
+	})
+	country_id: number;
+
 
 }
