@@ -311,7 +311,7 @@ export class TravelerService {
 			} = updateTravelerDto;
 			let countryDetails = await getManager()
 				.createQueryBuilder(Countries, "country")
-				.where(`id=:country_code`, { country_id })
+				.where(`id=${ country_id }`)
 				.getOne();
 
 			if (!countryDetails)
