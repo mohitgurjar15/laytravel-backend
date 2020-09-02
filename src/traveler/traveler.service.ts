@@ -330,7 +330,7 @@ export class TravelerService {
 			traveler.updatedBy = updateBy;
 			traveler.phoneNo = phone_no == "" ? null : phone_no;
 			traveler.updatedDate = new Date();
-			traveler.countryId = country_id;
+			traveler.countryId = countryDetails.id;
 			await traveler.save();
 
 			return traveler;
