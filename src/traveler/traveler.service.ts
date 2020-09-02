@@ -42,6 +42,7 @@ export class TravelerService {
 			passport_expiry,
 			gender,
 			email,
+			phone_no
 		} = saveTravelerDto;
 		try {
 			console.log(parent_user_id);
@@ -77,7 +78,7 @@ export class TravelerService {
 			user.isVerified = true;
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
-
+			user.phoneNo = phone_no == "" ? null : phone_no;
 			if (parent_user_id != undefined && parent_user_id != "") {
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
@@ -88,6 +89,9 @@ export class TravelerService {
 				return this.userRepository.createtraveler(user);
 			} else {
 				user.roleId = Role.GUEST_USER;
+				if(user.email == ""){
+					throw new NotFoundException(`Please enter your email id &&&email&&&Please enter your email id`)
+				}
 				const data = await this.userRepository.createUser(user);
 				const payload: JwtPayload = {
 					user_id: data.userId,
@@ -301,6 +305,7 @@ export class TravelerService {
 				country_code,
 				passport_expiry,
 				passport_number,
+				phone_no
 			} = updateTravelerDto;
 
 			traveler.countryCode = country_code;
@@ -313,6 +318,7 @@ export class TravelerService {
 			traveler.dob = dob;
 			traveler.gender = gender;
 			traveler.updatedBy = updateBy;
+			traveler.phoneNo = phone_no == "" ? null : phone_no;
 			traveler.updatedDate = new Date();
 
 			await traveler.save();
