@@ -2,7 +2,7 @@ import * as moment from 'moment';
 
 export class Instalment{
 
-    static weeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount){
+    static weeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
         let instalmentData={'instalment_available':false,'instalment_date':[]}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         
@@ -34,7 +34,7 @@ export class Instalment{
             let amountPerInstalment = amount / instalmentsDates.length;
             let percentageAmount = (amount * 20 )/100;
         
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
         }
 
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -43,7 +43,7 @@ export class Instalment{
     
     }
     
-    static biWeeklyInstalment(amount,ckeckInDate,bookingDate){
+    static biWeeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
         let instalmentData={'instalment_available':false,'instalment_date':[]}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if(!isAvailable)
@@ -75,7 +75,7 @@ export class Instalment{
             let amountPerInstalment = amount / instalmentsDates.length;
             let percentageAmount = (amount * 20 )/100;
         
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
         }
         
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -83,7 +83,7 @@ export class Instalment{
         return instalmentData;
     }
     
-    static monthlyInstalment(amount,ckeckInDate,bookingDate){
+    static monthlyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
         let instalmentData={'instalment_available':false,'instalment_date':[]}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if(!isAvailable)
@@ -115,7 +115,7 @@ export class Instalment{
             let amountPerInstalment = amount / instalmentsDates.length;
             let percentageAmount = (amount * 20 )/100;
         
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
         }
         
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -124,38 +124,66 @@ export class Instalment{
     
     }
 
-    static calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount=null){
-
+    static calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount=null,customAmount=null,customInstalmentNo=null){
+        
         let instalmentDatewithAmount=[];
-        let firstInstalment
+        let firstInstalment;
+        let firstInstalmentTemp;
+        let remainingPerInstalmentAmount
         if(amountPerInstalment > percentageAmount){
             firstInstalment=amountPerInstalment;
+            firstInstalmentTemp=amountPerInstalment;
             if(additionalAmount){
                 firstInstalment = amountPerInstalment+additionalAmount;
             }
         }
         else{
-            firstInstalment = percentageAmount;
+            firstInstalment =firstInstalmentTemp= percentageAmount;
             if(additionalAmount){
                 firstInstalment = percentageAmount+additionalAmount;
             }
         }
-
-        let remainingInstalmentAmount = amount-firstInstalment;
-        let remainingPerInstalmentAmount = remainingInstalmentAmount/(instalmentsDates.length-1);
+  
+        if(customAmount && customAmount>firstInstalmentTemp){
+            firstInstalment=customAmount+additionalAmount;
+            remainingPerInstalmentAmount=customAmount;
+        }
+        else if(customInstalmentNo && customInstalmentNo < instalmentsDates.length){
+            instalmentsDates= instalmentsDates.slice(0, -(instalmentsDates.length-customInstalmentNo));
+            firstInstalment = (amount / instalmentsDates.length)+additionalAmount;
+            let remainingInstalmentAmount = amount-firstInstalment;
+            remainingPerInstalmentAmount = remainingInstalmentAmount/(instalmentsDates.length-1);
+        }
+        else{
+          let remainingInstalmentAmount = amount-firstInstalment;
+          remainingPerInstalmentAmount = remainingInstalmentAmount/(instalmentsDates.length-1);
+        }
         
         instalmentDatewithAmount.push({
             instalment_date:instalmentsDates[0],
             instalment_amount:firstInstalment
         })
-
+  
+        let instalment:any; 
+        let amountTemp=firstInstalment;
         for(let i=1; i < instalmentsDates.length; i++){
-            instalmentDatewithAmount.push({
-                instalment_date:instalmentsDates[i],
-                instalment_amount:remainingPerInstalmentAmount
-            })
+            instalment={};
+            instalment.instalment_date=instalmentsDates[i];
+            instalment.instalment_amount=remainingPerInstalmentAmount;
+            amountTemp+=remainingPerInstalmentAmount;
+  
+            if(amountTemp >= amount && customAmount){
+              instalment.instalment_amount=(amount-(amountTemp-remainingPerInstalmentAmount));
+              instalmentDatewithAmount.push(instalment)
+              break;
+            }
+            else{
+  
+              instalmentDatewithAmount.push(instalment)
+            }
+  
         }
-
+  
         return instalmentDatewithAmount;
     }
 

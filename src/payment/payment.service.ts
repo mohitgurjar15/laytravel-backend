@@ -76,7 +76,20 @@ export class PaymentService {
             }
           }
         let authResult = await this.axiosRequest(url,requestBody);
-        return authResult;
+        console.log(authResult);
+        if(authResult.transaction.succeeded){
+            return {
+                status       : true,
+                token        : authResult.transaction.token,
+                meta_data    : authResult,
+            }
+        }
+        else{
+            return {
+                status       : false,
+                meta_data    : authResult,
+            }
+        }
     }
 
     async captureCard(authorizeToken){
@@ -97,10 +110,11 @@ export class PaymentService {
 
     async axiosRequest(url,requestBody,headers=null){
 
-        let sessionResult =await Axios({
+        let result =await Axios({
             method: 'POST',
             url: url,
             data: requestBody
-        })
+        });
+        return result.data;
     }
 }
