@@ -19,6 +19,7 @@ import { Countries } from "src/entity/countries.entity";
 import { UpdateTravelerDto } from "./dto/update-traveler.dto";
 import { JwtPayload } from "src/auth/jwt-payload.interface";
 import { JwtService } from "@nestjs/jwt";
+import * as moment from 'moment';
 
 @Injectable()
 export class TravelerService {
@@ -79,7 +80,7 @@ export class TravelerService {
 			user.isVerified = true;
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
-			user.phoneNo = phone_no == "" ? null : phone_no;
+			user.phoneNo = phone_no == "" ? '' : phone_no;
 			if (parent_user_id != undefined && parent_user_id != "") {
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
@@ -207,10 +208,9 @@ export class TravelerService {
 				// delete data.updatedDate;
 				// delete data.salt;
 				// delete data.password;
-
-				var today = new Date();
 				var birthDate = new Date(data.dob);
-				var age = today.getFullYear() - birthDate.getFullYear();
+				var age = moment(new Date()).diff(moment(birthDate),'years');
+				
 				if (age <= 2) {
 					data.user_type = "infant";
 				} else if (age <= 12) {
@@ -328,7 +328,7 @@ export class TravelerService {
 			traveler.dob = dob;
 			traveler.gender = gender;
 			traveler.updatedBy = updateBy;
-			traveler.phoneNo = phone_no == "" ? null : phone_no;
+			traveler.phoneNo = phone_no == "" ? "" : phone_no;
 			traveler.updatedDate = new Date();
 			traveler.countryId = countryDetails.id;
 			await traveler.save();

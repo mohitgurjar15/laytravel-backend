@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
+import * as moment from 'moment';
 
 var today = new Date();
 export class UpdateTravelerDto{
@@ -78,7 +79,7 @@ export class UpdateTravelerDto{
     })
     gender : Gender;
 
-    @ValidateIf((o) => today.getFullYear() - new Date(o.dob).getFullYear() >= 12)
+    @ValidateIf((o) => moment(new Date()).diff(moment(o.dob),'years') >= 12)
 	@IsNotEmpty({
 		message: `Please select phone country code.&&&country_code`,
 	})
@@ -121,7 +122,7 @@ export class UpdateTravelerDto{
 		type: "string",
 		description: "Traveler phone no",
 	})
-	@ValidateIf((o) => today.getFullYear() - new Date(o.dob).getFullYear() >= 12)
+	@ValidateIf((o) => moment(new Date()).diff(moment(o.dob),'years') >= 12)
     @IsNotEmpty({
 		message: (args: ValidationArguments) => {
 			if (typeof args.value == "undefined" || args.value == "") {
@@ -144,6 +145,4 @@ export class UpdateTravelerDto{
 		example: `1`,
 	})
 	country_id: number;
-
-
 }
