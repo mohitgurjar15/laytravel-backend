@@ -13,6 +13,7 @@ import * as bcrypt from "bcrypt";
 import { errorMessage } from "src/config/common.config";
 import { v4 as uuidv4 } from "uuid";
 import { Role } from "src/enum/role.enum";
+import * as moment from 'moment';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -182,9 +183,8 @@ export class UserRepository extends Repository<User> {
 		if (!userDetail) {
 			throw new NotFoundException(`Traveler not crearted`);
 		}
-		var today = new Date();
 		var birthDate = new Date(userDetail.dob);
-		var age = today.getFullYear() - birthDate.getFullYear();
+		var age = moment(new Date()).diff(moment(birthDate),'years');
 
 		if (age <= 2) {
 			userDetail.user_type = "infant";
@@ -246,7 +246,7 @@ export class UserRepository extends Repository<User> {
 			);
 		var today = new Date();
 		var birthDate = new Date(userdata.dob);
-		var age = today.getFullYear() - birthDate.getFullYear();
+		var age = moment(new Date()).diff(moment(birthDate),'years');
 
 		if (age <= 2) {
 			userdata.user_type = "infant";
@@ -389,7 +389,7 @@ export class UserRepository extends Repository<User> {
 		}
 		var today = new Date();
 		var birthDate = new Date(userDetail.dob);
-		var age = today.getFullYear() - birthDate.getFullYear();
+		var age = moment(new Date()).diff(moment(birthDate),'years');
 
 		let user: any = {};
 		if (age <= 2) {
