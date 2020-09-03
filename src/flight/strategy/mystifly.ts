@@ -894,6 +894,8 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
+                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
@@ -939,6 +941,8 @@ export class Mystifly implements StrategyAirline{
                     routeType=new RouteType();
                     routeType.type          = 'inbound';
                     routeType.stops         = stops;
+                    let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                    routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                     route.routes[1]         = routeType;
                 }
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
@@ -963,7 +967,7 @@ export class Mystifly implements StrategyAirline{
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
-               
+                route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
 
                 for(let intnery of  flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']){
 

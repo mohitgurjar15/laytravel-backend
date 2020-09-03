@@ -43,7 +43,8 @@ export class Route{
 export class RouteType{
 
     type    :  string;
-    stops   :  Stop[]
+    stops   :  Stop[];
+    duration : string;
 }
 
 export class PriceRange{
