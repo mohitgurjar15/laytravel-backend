@@ -1,10 +1,10 @@
-import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
+import { IsNotEmpty,ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
-import { IsEqualTo } from 'src/auth/password.decorator';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
+var today = new Date();
 export class UpdateTravelerDto{
 
     
@@ -78,14 +78,16 @@ export class UpdateTravelerDto{
     })
     gender : Gender;
 
-    @IsNotEmpty({
-        message : `Please select country code.&&&country_code`
-    })
-    @ApiProperty({
-        description: `Select country code`,
-        example: `1`
-    })
-    country_code: string;
+    @ValidateIf((o) => today.getFullYear() - new Date(o.dob).getFullYear() >= 12)
+	@IsNotEmpty({
+		message: `Please select phone country code.&&&country_code`,
+	})
+	@ApiProperty({
+		description: `Select phone country code`,
+		example: `+1`,
+	})
+	country_code: string;
+
 
     @ApiPropertyOptional({
 		type: "string",
@@ -114,5 +116,34 @@ export class UpdateTravelerDto{
         example: `2030-07-20`
     })
     passport_expiry: string;   
+
+    @ApiPropertyOptional({
+		type: "string",
+		description: "Traveler phone no",
+	})
+	@ValidateIf((o) => today.getFullYear() - new Date(o.dob).getFullYear() >= 12)
+    @IsNotEmpty({
+		message: (args: ValidationArguments) => {
+			if (typeof args.value == "undefined" || args.value == "") {
+				return `Please enter phone no.&&&phon_no`;
+			}
+		}
+	})
+    @ApiProperty({
+		description: `Enter travelers phone no`,
+		example: `91919221212`,
+	})
+    phone_no: string;
+
+
+    @IsNotEmpty({
+		message: `Please select country id.&&&country_code`,
+	})
+	@ApiProperty({
+		description: `Select country id`,
+		example: `1`,
+	})
+	country_id: number;
+
 
 }

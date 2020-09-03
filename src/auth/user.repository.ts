@@ -64,68 +64,115 @@ export class UserRepository extends Repository<User> {
 
 		let where;
 		if (keyword) {
-			where = `("is_deleted" = false) AND ("role_id" IN (${role})) AND (("first_name" ILIKE '%${keyword}%') or ("middle_name" ILIKE '%${keyword}%') or ("last_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%'))`;
+			where = `("user"."is_deleted" = false) AND ("user"."role_id" IN (${role})) AND (("user"."first_name" ILIKE '%${keyword}%') or ("user"."middle_name" ILIKE '%${keyword}%') or ("user"."last_name" ILIKE '%${keyword}%') or ("user"."email" ILIKE '%${keyword}%'))`;
 		} else {
-			where = `("is_deleted" = false) AND("role_id" IN (${role}) ) and 1=1`;
+			where = `("user"."is_deleted" = false) AND("user"."role_id" IN (${role}) ) and 1=1`;
 		}
-		const [result, total] = await this.findAndCount({
-			where: where,
-			order: { createdDate: "DESC" },
-			skip: skip,
-			take: take,
-		});
+		const [result, count] = await getManager()
+			.createQueryBuilder(User, "user")
+			.leftJoinAndSelect("user.state", "state")
+			.leftJoinAndSelect("user.country", "countries")
+			.leftJoinAndSelect("user.preferredCurrency2", "currency")
+			.leftJoinAndSelect("user.preferredLanguage2", "language")
+			.select([
+				"user.userId",
+				"user.title",
+				"user.dob",
+				"user.firstName",
+				"user.lastName",
+				"user.email",
+				"user.profilePic",
+				"user.dob",
+				"user.gender",
+				"user.roleId",
+				"user.countryCode",
+				"user.phoneNo",
+				"user.cityName",
+				"user.address",
+				"user.zipCode",
+				"user.preferredCurrency2",
+				"user.preferredLanguage2",
+				"user.passportNumber",
+				"user.passportExpiry",
+				"language.id",
+				"language.name",
+				"language.iso_1Code",
+				"language.iso_2Code",
+				"currency.id",
+				"currency.code",
+				"currency.country",
+				"countries.name",
+				"countries.iso2",
+				"countries.iso3",
+				"countries.id",
+				"state.id",
+				"state.name",
+				"state.iso2",
+				"state.country_id",
+			])
+			// .addSelect(`CASE
+			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
+			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
+			// 	ELSE 'adult'
+			// END AS "user_type"`,)
+			.where(where)
+			.getManyAndCount();
 
-		if (!result.length || total <= skip) {
+		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No user found.`);
 		}
 		result.forEach(function(data) {
-			data.profilePic = data.profilePic
-				? `${siteUrl}/profile/${data.profilePic}`
-				: "";
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
 		});
-		return { data: result, TotalReseult: total };
+		return { data: result, TotalReseult: count };
 	}
 
 	async createUser(user: User): Promise<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
 			email,
-			
 		});
 		console.log(userExist);
-		
+
 		if (userExist && userExist.roleId != Role.GUEST_USER) {
 			throw new ConflictException(
 				`This email address is already registered with us. Please enter different email address.`
 			);
-		}else if (userExist && userExist.roleId == Role.GUEST_USER && user.roleId == Role.GUEST_USER) {
-			return this.getUserDetails(userExist.userId,'');
-			
+		} else if (
+			userExist &&
+			userExist.roleId == Role.GUEST_USER &&
+			user.roleId == Role.GUEST_USER
+		) {
+			return this.getUserDetails(userExist.userId, "");
 		} else {
 			await user.save();
-			return this.getUserDetails(user.userId,'');
+			return this.getUserDetails(user.userId, "");
 		}
 	}
 
 	async createtraveler(user: User): Promise<User> {
 		const email = user.email;
-		const userExist = await this.findOne({
-			email,
-			isDeleted: false,
-			roleId: Role.TRAVELER_USER,
-			createdBy: user.createdBy,
-		});
-		if (userExist) {
-			throw new ConflictException(`This traveler email alredy exist.`);
-		} else {
-			await user.save();
+		if (email != "") {
+			const userExist = await this.findOne({
+				email,
+				isDeleted: false,
+				roleId: Role.TRAVELER_USER,
+				createdBy: user.createdBy,
+			});
+			if (userExist) {
+				throw new ConflictException(`This traveler email alredy exist.`);
+			}
 		}
+
+		await user.save();
+
 		let userDetail = await getManager()
 			.createQueryBuilder(User, "user")
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
+			.leftJoinAndSelect("user.state", "state")
+			.leftJoinAndSelect("user.country", "countries")
 			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
 				userId: user.userId,
 				is_deleted: false,
@@ -135,6 +182,17 @@ export class UserRepository extends Repository<User> {
 		if (!userDetail) {
 			throw new NotFoundException(`Traveler not crearted`);
 		}
+		var today = new Date();
+		var birthDate = new Date(userDetail.dob);
+		var age = today.getFullYear() - birthDate.getFullYear();
+
+		if (age <= 2) {
+			userDetail.user_type = "infant";
+		} else if (age <= 12) {
+			userDetail.user_type = "child";
+		} else {
+			userDetail.user_type = "adult";
+		}
 		return userDetail;
 	}
 
@@ -142,15 +200,14 @@ export class UserRepository extends Repository<User> {
 		const userdata = await this.findOne({
 			userId: userId,
 			isDeleted: false,
-			roleId:
-				In ([
-					Role.PAID_USER,
-					Role.SUPER_ADMIN,
-					Role.SUPPLIER,
-					Role.GUEST_USER,
-					Role.FREE_USER,
-					Role.ADMIN ])
-				,
+			roleId: In([
+				Role.PAID_USER,
+				Role.SUPER_ADMIN,
+				Role.SUPPLIER,
+				Role.GUEST_USER,
+				Role.FREE_USER,
+				Role.ADMIN,
+			]),
 		});
 
 		if (!userdata)
@@ -166,11 +223,17 @@ export class UserRepository extends Repository<User> {
 	}
 
 	async getTravelData(userId: string): Promise<User> {
-		const userdata = await this.findOne({
-			userId: userId,
-			isDeleted: false,
-			roleId: Role.TRAVELER_USER,
-		});
+		const userdata = await getManager()
+			.createQueryBuilder(User, "user")
+			.leftJoinAndSelect("user.createdBy2", "parentUser")
+			.leftJoinAndSelect("user.state", "state")
+			.leftJoinAndSelect("user.country", "countries")
+			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
+				userId: userId,
+				is_deleted: false,
+				roleId: Role.TRAVELER_USER,
+			})
+			.getOne();
 
 		if (!userdata)
 			throw new NotFoundException(
@@ -181,6 +244,17 @@ export class UserRepository extends Repository<User> {
 			throw new UnauthorizedException(
 				`This traveler has been disabled. Please contact administrator person.`
 			);
+		var today = new Date();
+		var birthDate = new Date(userdata.dob);
+		var age = today.getFullYear() - birthDate.getFullYear();
+
+		if (age <= 2) {
+			userdata.user_type = "infant";
+		} else if (age <= 12) {
+			userdata.user_type = "child";
+		} else {
+			userdata.user_type = "adult";
+		}
 		return userdata;
 	}
 	/**
@@ -313,8 +387,18 @@ export class UserRepository extends Repository<User> {
 		if (!userDetail) {
 			throw new NotFoundException(`No user found.`);
 		}
+		var today = new Date();
+		var birthDate = new Date(userDetail.dob);
+		var age = today.getFullYear() - birthDate.getFullYear();
 
 		let user: any = {};
+		if (age <= 2) {
+			user.user_type = "infant";
+		} else if (age <= 12) {
+			user.user_type = "child";
+		} else {
+			user.user_type = "adult";
+		}
 		user.userId = userDetail.userId;
 		user.firstName = userDetail.firstName;
 		user.lastName = userDetail.lastName || "";

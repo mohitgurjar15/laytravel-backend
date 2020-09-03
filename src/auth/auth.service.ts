@@ -326,6 +326,8 @@ export class AuthService {
 					? `${siteUrl}/profile/${user.profilePic}`
 					: "",
 				roleId: user.roleId,
+				createdDate:user.createdDate,
+				
 			};
 			const accessToken = this.jwtService.sign(payload);
 			const token = { token: accessToken };
@@ -510,6 +512,7 @@ export class AuthService {
 							salt: user.salt,
 							//accessToken: newToken,
 							roleId: user.roleId,
+							createdDate:user.createdDate ,
 						};
 
 						accessToken = this.jwtService.sign(payload);
@@ -533,6 +536,7 @@ export class AuthService {
 							? `${siteUrl}/profile/${user.profilePic}`
 							: "",
 						roleId: user.roleId,
+						createdDate:user.createdDate ,
 					};
 					accessToken = this.jwtService.sign(payload);
 				}
@@ -649,6 +653,7 @@ export class AuthService {
 					salt: user.salt,
 					accessToken: newToken,
 					roleId: user.roleId,
+					createdDate:user.createdDate ,
 				};
 
 				const accessToken = this.jwtService.sign(payload);
@@ -800,6 +805,7 @@ export class AuthService {
 				salt: "",
 				accessToken: newToken,
 				roleId: userDetail.roleId,
+				createdDate:user.createdDate ,
 			};
 
 			const accessToken = this.jwtService.sign(payload);
@@ -814,6 +820,7 @@ export class AuthService {
 					email: userDetail.email || "",
 					profile_pic: "",
 					gender: userDetail.gender || "",
+					createdDate:userDetail.createdDate ,
 				},
 			};
 			let loginvia = device_type == 1 ? "android" : "ios";
@@ -994,6 +1001,7 @@ export class AuthService {
 				middleName: data.middleName,
 				lastName: data.lastName,
 				salt: data.salt,
+				createdDate:data.createdDate ,
 
 				profilePic: data.profilePic
 					? `${siteUrl}/profile/${user.profilePic}`
@@ -1137,6 +1145,7 @@ export class AuthService {
 						: "",
 					roleId: user.roleId,
 					refrenceId: parentUser.userId,
+					createdDate:user.createdDate ,
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };

@@ -11,4 +11,5 @@ export interface JwtPayload {
     accessToken?: string;
     roleId?:number;
     refrenceId?:string;
+    createdDate?:Date;
 }
