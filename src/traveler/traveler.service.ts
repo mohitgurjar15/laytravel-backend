@@ -295,8 +295,8 @@ export class TravelerService {
 		updateBy: string
 	) {
 		try {
-			const traveler = await this.userRepository.getTravelData(userId);
-
+			//const traveler = await this.userRepository.getTravelData(userId);
+			const traveler = await this.userRepository.findOne(userId)
 			const {
 				first_name,
 				last_name,
@@ -331,6 +331,7 @@ export class TravelerService {
 			traveler.phoneNo = phone_no == "" ? "" : phone_no;
 			traveler.updatedDate = new Date();
 			traveler.countryId = countryDetails.id;
+			console.log("countryDetails.id",traveler)
 			await traveler.save();
 
 			return traveler;
