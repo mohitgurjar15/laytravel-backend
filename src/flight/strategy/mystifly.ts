@@ -18,6 +18,7 @@ import { errorMessage, s3BucketUrl } from "src/config/common.config";
 import { airlines } from "../airline";
 import { airports } from "../airports";
 import { FareInfo } from "../model/fare.model";
+import { type } from "os";
 const fs = require('fs').promises;
 
 export class Mystifly implements StrategyAirline{
@@ -595,7 +596,7 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
-                    stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
+                    stop.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
@@ -730,28 +731,21 @@ export class Mystifly implements StrategyAirline{
         if(fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:success'][0]=='true'){
 
             let baggageResult =fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:baggageinfos'][0]['a:baggageinfo'];
+            //let airLineCode   =fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:farerules'][0]['a:farerule'][0]['a:airline'][0];
+            //console.log("details",JSON.stringify(fareRuleResult));
             let baggageInfos = [];
             let baggageInfo:any={};
             for(let baggage of baggageResult){
                 baggageInfo={};
                 baggageInfo.departure_code = baggage['a:departure'][0];
                 
-                let departureAirPort = await getManager()
-                .createQueryBuilder(Airport, "airport")
-                .where("airport.code = :code ", { code:baggage['a:departure'][0] })
-                .getOne();
-                
-                baggageInfo.departure_airport = departureAirPort.name;
+                baggageInfo.departure_airport = typeof airports[baggage['a:departure'][0]]!="undefined"?airports[baggage['a:departure'][0]].name:"";
 
-                let arrivalAirPort = await getManager()
-                .createQueryBuilder(Airport, "airport")
-                .where("airport.code = :code ", { code:baggage['a:arrival'][0] })
-                .getOne();
                 baggageInfo.arrival_code =baggage['a:arrival'][0];
-                baggageInfo.arrival_airport =arrivalAirPort.name;
+                baggageInfo.arrival_airport =typeof airports[baggage['a:arrival'][0]]!="undefined"?airports[baggage['a:arrival'][0]].name:'';
                 baggageInfo.baggage_capacity = baggage['a:baggage'][0];
                 baggageInfo.flight_number = baggage['a:flightno'][0];
-                
+                //baggageInfo.airline_name = airlines[airLineCode];
                 baggageInfos.push(baggageInfo);
             }
             return baggageInfos;
@@ -842,7 +836,7 @@ export class Mystifly implements StrategyAirline{
             ignoreAttrs:true
         });
 
-        console.log(JSON.stringify(airRevalidateResult) )
+        //console.log(JSON.stringify(airRevalidateResult) )
         if(airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:success'][0]=="true"){
 
 
@@ -900,6 +894,8 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
+                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
@@ -945,6 +941,8 @@ export class Mystifly implements StrategyAirline{
                     routeType=new RouteType();
                     routeType.type          = 'inbound';
                     routeType.stops         = stops;
+                    let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                    routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                     route.routes[1]         = routeType;
                 }
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
@@ -969,7 +967,7 @@ export class Mystifly implements StrategyAirline{
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
-               
+                route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
 
                 for(let intnery of  flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']){
 

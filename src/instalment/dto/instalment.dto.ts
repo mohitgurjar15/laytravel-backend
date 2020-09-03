@@ -61,14 +61,24 @@ export class InstalmentDto{
     })
     amount : number;
 
-    /* @IsNotEmpty({
-        message : `Please enter additional amount&&&additional_amount`
-    }) */
     @ApiPropertyOptional({
         description:`Additonal Amount`,
         example:10
     })
     additional_amount : number;
+
+
+    @ApiPropertyOptional({
+        description:`No of custom instalment`,
+        example:null
+    })
+    custom_instalment_no : number;
+
+    @ApiPropertyOptional({
+        description:`Custom Amount`,
+        example:3
+    })
+    custom_amount : number;
 
     
 

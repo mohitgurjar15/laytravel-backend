@@ -182,8 +182,8 @@ export class FlightService {
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
-                let authCardResult=await this.paymentService.authorizeCard('gateway_id','card_id',firstInstalemntAmount,'USD');
-                
+                let authCardResult=await this.paymentService.authorizeCard('Ci7r1e6ps7tApi7xZgWrN8deTGJ','D3Zd4sGs3tX00PGfIfLPzsK4Z70',firstInstalemntAmount,'USD');
+                console.log(authCardResult);
                 if(authCardResult.status==true){
                     let authCardToken = authCardResult.token;
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
