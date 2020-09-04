@@ -1136,18 +1136,15 @@ export class Mystifly implements StrategyAirline{
         const { route_code } = routeIdDto;
         let fareRuleResult =await this.fareRule(route_code);
         if(fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:success'][0]=='true'){
-
+            
             let ruleDetails =fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:farerules'][0]['a:farerule'][0]['a:ruledetails'][0]['a:ruledetail'];
-
-            if(!ruleDetails){
-
+            if(ruleDetails.length){
                 let cancellationPolicy = ruleDetails.filter(ruleDetail=>{
                     
                     if(ruleDetail['a:category'][0]=='PENALTIES'){
                         return ruleDetail['a:rules'][0]
                     }
                 })
-                
                 return {
                     cancellation_policy : cancellationPolicy[0]['a:rules'][0]
                 } 
