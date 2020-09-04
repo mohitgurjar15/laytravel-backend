@@ -955,6 +955,7 @@ export class Mystifly implements StrategyAirline{
                 else{
                     route.start_price   = '0';
                 }
+                route.instalment_details =instalmentDetails;
                 route.stop_count        = stops.length-1;
                 
                 

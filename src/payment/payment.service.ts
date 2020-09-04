@@ -62,10 +62,10 @@ export class PaymentService {
 
     async authorizeCard(gatewayToken,card_id,amount,currency){
 
-        /* return {
+        return {
             status   : true,
             token    : 'AUT675462'
-        } */
+        }
         let url=`https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
         let requestBody ={
 

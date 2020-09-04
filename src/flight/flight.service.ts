@@ -189,6 +189,7 @@ export class FlightService {
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
                     if(captureCardresult.status==true){
                         let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails,captureCardresult,null);
+                        this.sendBookingEmail(laytripBookingResult.id);
                         return {
                             laytrip_booking_id  : laytripBookingResult.id,
                             booking_status      : 'pending',
@@ -223,6 +224,7 @@ export class FlightService {
 
                         let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.NOINSTALMENT,userId,null,captureCardresult,bookingResult);
                         //send email here
+                        this.sendBookingEmail(laytripBookingResult.id);
                         bookingResult.laytrip_booking_id = laytripBookingResult.id;
                         return bookingResult;
                     }
@@ -488,9 +490,10 @@ export class FlightService {
 		param.status = status;
 		this.mailerService
 			.sendMail({
-				to: user.email,
+                to: user.email,
+                //to:'suresh@itoneclick.com',
 				from: "no-reply@laytrip.com",
-				subject: "Flight booking data",
+				subject: "Flight booking Confirmation",
 				html: FlightBookingConfirmtionMail(param),
 			})
 			.then((res) => {
@@ -502,26 +505,5 @@ export class FlightService {
 
      }
 
-    //  async getBookingDetails(bookingId){
-    //     let bookingDetails =   await getManager()
-    //     .createQueryBuilder(Booking,"booking")
-    //     .leftJoinAndSelect("booking.bookingInstalments","bookingInstalments")
-    //     .leftJoinAndSelect("booking.currency2","currency")
-    //     /* .select([
-    //         "user.userId","user.title",
-    //         "user.firstName","user.lastName","user.email",
-    //         "user.countryCode","user.phoneNo","user.zipCode",
-    //         "user.gender","user.dob","user.passportNumber",
-    //         "user.passportExpiry",
-    //         "countries.name","countries.iso2","countries.iso3","countries.id",
-    //     ]) */
-    //     .where('"booking"."id"=:bookingId',{ bookingId})
-    //     .getMany();
-    //     console.log(bookingDetails)
-        
-    //     if(bookingDetails){
-            
-    //     }
-    //     return false;
-    //  }
+    
 }

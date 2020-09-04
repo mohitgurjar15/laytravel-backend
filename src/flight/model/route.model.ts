@@ -33,11 +33,12 @@ export class Route{
     airline_logo    : string;
     is_passport_required:boolean;
     departure_info  : {};
-    arrival_info  : {};
-    adult_count    : number;
+    arrival_info    : {};
+    adult_count     : number;
     child_count     : number;
     infant_count    : number;
-    fare_break_dwon : FareInfo[]
+    fare_break_dwon : FareInfo[];
+    instalment_details :{}
 }
 
 export class RouteType{
