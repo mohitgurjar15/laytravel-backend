@@ -56,6 +56,7 @@ import { UpdateEmailId } from "./dto/update-email.dto";
 import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
+import { forgotPasswordMail } from "src/config/email_template/forgot-password-mail.html";
 
 @Injectable()
 export class AuthService {
@@ -356,43 +357,43 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
-		var unixTimestamp = Math.round(new Date().getTime() / 1000);
+		// var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
-		const tokenhash = crypto
-			.createHmac("sha256", unixTimestamp.toString())
-			.digest("hex");
+		// const tokenhash = crypto
+		// 	.createHmac("sha256", unixTimestamp.toString())
+		// 	.digest("hex");
 
-		const payload: forgetPass = {
-			email,
-			tokenhash,
-		};
+		// const payload: forgetPass = {
+		// 	email,
+		// 	tokenhash,
+		// };
 
-		const forgetPassToken = this.jwtService.sign(payload);
+		// const forgetPassToken = this.jwtService.sign(payload);
+		var otp = Math.round(new Date().getTime() % 1000000);
+		if (otp < 100000) {
+			otp = otp + 800000;
+		}
 		Activity.logActivity(
 			user.userId,
 			`auth`,
-			` ${email} user is request to forget password using ${forgetPassToken} token`
+			` ${email} user is request to forget password using ${otp} otp`
 		);
-		var resetLink = `https://staging.laytrip.com?token=${forgetPassToken}`;
-		if (
-			user.roleId == Role.ADMIN ||
-			user.roleId == Role.SUPER_ADMIN ||
-			user.roleId == Role.SUPPLIER
-		) {
-			resetLink = `https://app.staging.laytrip.com?token=${forgetPassToken}`;
-		}
+		// var resetLink = `https://staging.laytrip.com`;
+		// if (
+		// 	user.roleId == Role.ADMIN ||
+		// 	user.roleId == Role.SUPER_ADMIN ||
+		// 	user.roleId == Role.SUPPLIER
+		// ) {
+		// 	resetLink = `https://app.staging.laytrip.com`;
+		// }
 
 		this.mailerService
 			.sendMail({
 				to: email,
 				from: "no-reply@laytrip.com",
 				subject: "Forgot Password",
-				template: "forgotEmail.html",
-				context: {
-					// Data to be sent to template files.
-					username: user.firstName + " " + user.lastName,
-					link: resetLink,
-				},
+				html:forgotPasswordMail({username: user.firstName + " " + user.lastName,
+				otp:otp})
 			})
 			.then((res) => {
 				console.log("res", res);
@@ -403,7 +404,7 @@ export class AuthService {
 
 		const row = new forget_password();
 		row.email = email;
-		row.token = tokenhash;
+		row.otp = otp;
 		row.createTime = new Date();
 		row.updateTime = new Date();
 
@@ -414,33 +415,28 @@ export class AuthService {
 				`Oops. Something went wrong. Please try again.`
 			);
 		}
-		const token = { message: `Link sent to your email address successfully.` };
-		return token;
+		const msg = { message: `otp sent to your email address successfully.` };
+		return msg;
 	}
 
 	async updatePassword(
-		updatePasswordDto: UpdatePasswordDto,
 		newPasswordDto: NewPasswordDto
 	) {
-		const { token } = updatePasswordDto;
-		const { new_password } = newPasswordDto;
-		var decoded = jwt_decode(token);
-		const { email, tokenhash, iat } = decoded;
-		const unixTimestamp = Math.round(new Date().getTime() / 1000);
-		const time = unixTimestamp - iat;
-		if (time >= 900) {
-			throw new BadRequestException(
-				`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
-			);
-		}
+		//const { token } = updatePasswordDto;
+		const { email,otp,new_password } = newPasswordDto;
+		// var decoded = jwt_decode(token);
+		// const { email, tokenhash, iat } = decoded;
+		// const unixTimestamp = Math.round(new Date().getTime() / 1000);
+		// const time = unixTimestamp - iat;
+		// if (time >= 900) {
+		// 	throw new BadRequestException(
+		// 		`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
+		// 	);
+		// }
 		const user = await this.userRepository.findOne({
 			where: { email: email, isDeleted: 0, status: 1 },
 		});
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			`${user.email} is forget password using ${token} token`
-		);
+		
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.&&&email`
@@ -451,19 +447,24 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
+		Activity.logActivity(
+			user.userId,
+			`auth`,
+			`${user.email} is forget password using ${otp} otp`
+		);
 
-		const validToken = await this.forgetPasswordRepository.findOne({
-			where: { email: email, is_used: 0, token: tokenhash },
+		const validate = await this.forgetPasswordRepository.findOne({
+			where: { email: email, is_used: 0, otp: otp },
 		});
-		if (validToken && validToken.validateToken(tokenhash)) {
+		if (validate) {
 			const salt = await bcrypt.genSalt();
 			user.salt = salt;
 			user.password = await this.hashPassword(new_password, salt);
-			validToken.is_used = 1;
-			validToken.updateTime = new Date();
+			validate.is_used = 1;
+			validate.updateTime = new Date();
 			try {
 				await user.save();
-				await validToken.save();
+				await validate.save();
 				const res = { message: `Your password has been succesfully updated` };
 				return res;
 			} catch (error) {
@@ -473,7 +474,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`Token Can not be validate.&&&token&&&${errorMessage}`
+				`Otp Can not be validate.&&&token&&&${errorMessage}`
 			);
 		}
 	}

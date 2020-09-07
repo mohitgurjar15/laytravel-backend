@@ -117,6 +117,8 @@ export class UserRepository extends Repository<User> {
 			// 	ELSE 'adult'
 			// END AS "user_type"`,)
 			.where(where)
+			.offset(skip)
+			.limit(take)
 			.getManyAndCount();
 
 		if (!result.length || count <= skip) {
@@ -174,6 +176,45 @@ export class UserRepository extends Repository<User> {
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
 			.leftJoinAndSelect("user.state", "state")
 			.leftJoinAndSelect("user.country", "countries")
+			.select([
+				"user.userId",
+				"user.title",
+				"user.dob",
+				"user.firstName",
+				"user.lastName",
+				"user.email",
+				"user.profilePic",
+				"user.dob",
+				"user.gender",
+				"user.roleId",
+				"user.countryCode",
+				"user.phoneNo",
+				"user.cityName",
+				"user.address",
+				"user.zipCode",
+				"user.preferredCurrency2",
+				"user.preferredLanguage2",
+				"user.passportNumber",
+				"user.passportExpiry",
+				"countries.name",
+				"countries.iso2",
+				"countries.iso3",
+				"countries.id",
+				"state.id",
+				"state.name",
+				"state.iso2",
+				"state.country_id",
+				"parentUser.userId",
+				"parentUser.title",
+				"parentUser.dob",
+				"parentUser.firstName",
+				"parentUser.lastName",
+				"parentUser.email",
+				"parentUser.profilePic",
+				"parentUser.dob",
+				"parentUser.gender",
+				"parentUser.roleId",
+			])
 			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
 				userId: user.userId,
 				is_deleted: false,
@@ -228,6 +269,45 @@ export class UserRepository extends Repository<User> {
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
 			.leftJoinAndSelect("user.state", "state")
 			.leftJoinAndSelect("user.country", "countries")
+			.select([
+				"user.userId",
+				"user.title",
+				"user.dob",
+				"user.firstName",
+				"user.lastName",
+				"user.email",
+				"user.profilePic",
+				"user.dob",
+				"user.gender",
+				"user.roleId",
+				"user.countryCode",
+				"user.phoneNo",
+				"user.cityName",
+				"user.address",
+				"user.zipCode",
+				"user.preferredCurrency2",
+				"user.preferredLanguage2",
+				"user.passportNumber",
+				"user.passportExpiry",
+				"countries.name",
+				"countries.iso2",
+				"countries.iso3",
+				"countries.id",
+				"state.id",
+				"state.name",
+				"state.iso2",
+				"state.country_id",
+				"parentUser.userId",
+				"parentUser.title",
+				"parentUser.dob",
+				"parentUser.firstName",
+				"parentUser.lastName",
+				"parentUser.email",
+				"parentUser.profilePic",
+				"parentUser.dob",
+				"parentUser.gender",
+				"parentUser.roleId",
+			])
 			.where(`"user"."user_id"=:userId and "user"."is_deleted"=:is_deleted`, {
 				userId: userId,
 				is_deleted: false,
