@@ -10,7 +10,7 @@ export class forget_password extends BaseEntity {
     @Column("varchar", { name: "email", length: 255 })
     email: string;
 
-    @Column("varchar", { name: "token" })
+    @Column("varchar", { name: "token", nullable:true })
     token: string;
 
     @Column("timestamp with time zone", { name: "createTime" })
