@@ -49,7 +49,7 @@ export class TravelerService {
 			console.log(parent_user_id);
 			let countryDetails = await getManager()
 				.createQueryBuilder(Countries, "country")
-				.where(`id=:country_code`, { country_code })
+				.where(`id=:country_id`, { country_id })
 				.getOne();
 
 			if (!countryDetails)
@@ -331,7 +331,7 @@ export class TravelerService {
 			traveler.phoneNo = phone_no == "" ? "" : phone_no;
 			traveler.updatedDate = new Date();
 			traveler.countryId = countryDetails.id;
-			console.log("countryDetails.id",traveler)
+			//console.log("countryDetails.id",traveler)
 			await traveler.save();
 
 			return traveler;

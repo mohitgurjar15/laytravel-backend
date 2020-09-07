@@ -12,6 +12,8 @@ export class forget_password extends BaseEntity {
 
     @Column("varchar", { name: "token", nullable:true })
     token: string;
+    @Column("int", { name: "otp" })
+    otp: number;
 
     @Column("timestamp with time zone", { name: "createTime" })
     createTime: Date;
@@ -22,7 +24,7 @@ export class forget_password extends BaseEntity {
     @Column("int", { name: "is_used", default: () => "'0'" })
     is_used: number;
 
-    async validateToken(token: string): Promise<boolean> {
-        return token === this.token
+    async validateToken(otp: number): Promise<boolean> {
+        return otp == this.otp
     }
 }

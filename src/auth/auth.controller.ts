@@ -200,7 +200,7 @@ export class AuthController {
 	}
 	
 	@ApiOperation({ summary: "Reset password of user" })
-	@Post("reset-password/:token")
+	@Post("reset-password/")
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
@@ -214,10 +214,9 @@ export class AuthController {
 	
 	@HttpCode(200)
 	async updatePassword(
-		@Param(ValidationPipe) updatePasswordDto: UpdatePasswordDto,
 		@Body(ValidationPipe) newPasswordDto: NewPasswordDto
 	) {
-		return this.authService.updatePassword(updatePasswordDto, newPasswordDto);
+		return this.authService.updatePassword(newPasswordDto);
 	}
 	
 	@ApiOperation({ summary: "Verify Otp Of User" })

@@ -50,8 +50,8 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "social_account_id", length: 255 })
   socialAccountId: string;
 
-  @Column("character varying", { name: "email", length: 255, nullable:true })
-  email: string;
+  @Column("character varying", { name: "email", length: 255 , nullable:true })
+  email: string | null;
 
   @Column("character varying", { name: "salt", length: 255, nullable:true })
   salt: string|null;
