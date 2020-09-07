@@ -56,6 +56,7 @@ import { UpdateEmailId } from "./dto/update-email.dto";
 import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
+import { forgotPasswordMail } from "src/config/email_template/forgot-password-mail.html";
 
 @Injectable()
 export class AuthService {
@@ -387,12 +388,8 @@ export class AuthService {
 				to: email,
 				from: "no-reply@laytrip.com",
 				subject: "Forgot Password",
-				template: "forgotEmail.html",
-				context: {
-					// Data to be sent to template files.
-					username: user.firstName + " " + user.lastName,
-					link: resetLink,
-				},
+				html:forgotPasswordMail({username: user.firstName + " " + user.lastName,
+				link: resetLink})
 			})
 			.then((res) => {
 				console.log("res", res);
