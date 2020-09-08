@@ -1145,9 +1145,16 @@ export class Mystifly implements StrategyAirline{
                         return ruleDetail['a:rules'][0]
                     }
                 })
-                return {
-                    cancellation_policy : cancellationPolicy[0]['a:rules'][0]
-                } 
+                
+                if(cancellationPolicy.length){
+
+                    return {
+                        cancellation_policy : cancellationPolicy[0]['a:rules'][0]
+                    } 
+                }
+                else{
+                    throw new NotFoundException(`No cancellation policy is found.`)
+                }
             }
             else{
                 throw new NotFoundException(`No cancellation policy is found.`)

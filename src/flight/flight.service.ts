@@ -195,7 +195,8 @@ export class FlightService {
                             booking_status      : 'pending',
                             supplier_booking_id : '',
                             success_message     : `Booking is in pending state!`,
-                            error_message       : ''
+                            error_message       : '',
+                            booking_details     : await this.bookingRepository.getBookingDetails(laytripBookingResult.id)
                         }
                     }
                     else{
@@ -224,6 +225,7 @@ export class FlightService {
                     //send email here
                     this.sendBookingEmail(laytripBookingResult.id);
                     bookingResult.laytrip_booking_id = laytripBookingResult.id;
+                    bookingResult.booking_details    = await this.bookingRepository.getBookingDetails(laytripBookingResult.id)
                     return bookingResult;
                 }
                 else{
