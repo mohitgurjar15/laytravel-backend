@@ -108,9 +108,11 @@ export class TravelerService {
 					profilePic: "",
 					roleId: data.roleId,
 				};
-				const accessToken = this.jwtService.sign(payload);
+				var userdata:any = {};
+				userdata = data
+				userdata.token = this.jwtService.sign(payload);
 
-				return { data: data, token: accessToken };
+				return userdata;
 			}
 		} catch (error) {
 			console.log(error);
