@@ -174,7 +174,7 @@ export class UserRepository extends Repository<User> {
 		let userDetail = await getManager()
 			.createQueryBuilder(User, "user")
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
-			.leftJoinAndSelect("user.state", "state")
+			//.leftJoinAndSelect("user.state", "state")
 			.leftJoinAndSelect("user.country", "countries")
 			.select([
 				"user.userId",
@@ -189,9 +189,9 @@ export class UserRepository extends Repository<User> {
 				"user.roleId",
 				"user.countryCode",
 				"user.phoneNo",
-				"user.cityName",
-				"user.address",
-				"user.zipCode",
+				// "user.cityName",
+				// "user.address",
+				// "user.zipCode",
 				"user.preferredCurrency2",
 				"user.preferredLanguage2",
 				"user.passportNumber",
@@ -200,10 +200,10 @@ export class UserRepository extends Repository<User> {
 				"countries.iso2",
 				"countries.iso3",
 				"countries.id",
-				"state.id",
-				"state.name",
-				"state.iso2",
-				"state.country_id",
+				// "state.id",
+				// "state.name",
+				// "state.iso2",
+				// "state.country_id",
 				"parentUser.userId",
 				"parentUser.title",
 				"parentUser.dob",
@@ -225,11 +225,13 @@ export class UserRepository extends Repository<User> {
 			throw new NotFoundException(`Traveler not crearted`);
 		}
 		var birthDate = new Date(userDetail.dob);
+		console.log(`birthdate ${birthDate}`);
+		
 		var age = moment(new Date()).diff(moment(birthDate),'years');
-
+		console.log(`age ${age}`);
 		if (age <= 2) {
 			userDetail.user_type = "infant";
-		} else if (age <= 12) {
+		} else if (age < 12) {
 			userDetail.user_type = "child";
 		} else {
 			userDetail.user_type = "adult";
@@ -267,7 +269,7 @@ export class UserRepository extends Repository<User> {
 		const userdata = await getManager()
 			.createQueryBuilder(User, "user")
 			.leftJoinAndSelect("user.createdBy2", "parentUser")
-			.leftJoinAndSelect("user.state", "state")
+			//.leftJoinAndSelect("user.state", "state")
 			.leftJoinAndSelect("user.country", "countries")
 			.select([
 				"user.userId",
@@ -282,9 +284,9 @@ export class UserRepository extends Repository<User> {
 				"user.roleId",
 				"user.countryCode",
 				"user.phoneNo",
-				"user.cityName",
-				"user.address",
-				"user.zipCode",
+				// "user.cityName",
+				// "user.address",
+				// "user.zipCode",
 				"user.preferredCurrency2",
 				"user.preferredLanguage2",
 				"user.passportNumber",
@@ -293,10 +295,10 @@ export class UserRepository extends Repository<User> {
 				"countries.iso2",
 				"countries.iso3",
 				"countries.id",
-				"state.id",
-				"state.name",
-				"state.iso2",
-				"state.country_id",
+				// "state.id",
+				// "state.name",
+				// "state.iso2",
+				// "state.country_id",
 				"parentUser.userId",
 				"parentUser.title",
 				"parentUser.dob",
@@ -330,7 +332,7 @@ export class UserRepository extends Repository<User> {
 
 		if (age <= 2) {
 			userdata.user_type = "infant";
-		} else if (age <= 12) {
+		} else if (age < 12) {
 			userdata.user_type = "child";
 		} else {
 			userdata.user_type = "adult";
@@ -474,7 +476,7 @@ export class UserRepository extends Repository<User> {
 		let user: any = {};
 		if (age <= 2) {
 			user.user_type = "infant";
-		} else if (age <= 12) {
+		} else if (age < 12) {
 			user.user_type = "child";
 		} else {
 			user.user_type = "adult";
