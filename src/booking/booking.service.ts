@@ -26,7 +26,7 @@ export class BookingService {
 
 		if (!bookingData) {
 			throw new NotFoundException(
-				"Given booking id not exiest&&&booking_id&&&Given booking id not exiest"
+				"Given booking id not found&&&booking_id&&&Given booking id not found"
 			);
 		}
 		console.log(bookingData);

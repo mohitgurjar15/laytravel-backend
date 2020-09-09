@@ -54,7 +54,7 @@ export class BookingRepository extends Repository<Booking> {
 			.getManyAndCount();
 
 		if (!data.length) {
-			throw new NotFoundException(`No booking exiest&&&id&&&No booking exiest`);
+			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 		return { data: data, total_count: count };
 	}
@@ -95,7 +95,7 @@ export class BookingRepository extends Repository<Booking> {
 			.getOne();
 
 		if (!data) {
-			throw new NotFoundException(`No booking exiest&&&id&&&No booking exiest`);
+			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 		return data;
 	}
