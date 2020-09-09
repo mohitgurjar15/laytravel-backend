@@ -20,6 +20,7 @@ export class Stop{
     airline_name        : string;
     airline_logo        : string;
     layover_city_name   : string;
+    cabin_class         : string;
     departure_info   : {};
     arrival_info     : {};
 }

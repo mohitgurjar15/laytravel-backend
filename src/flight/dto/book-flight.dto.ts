@@ -147,7 +147,7 @@ export class BookFlightDto{
             if (typeof args.value == "undefined" || args.value == "") {
                 return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
             } else {
-                return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS}').&&&journey_type&&&${errorMessage}`
+                return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT}').&&&payment_type&&&${errorMessage}`
             }
         }
     })
@@ -163,6 +163,13 @@ export class BookFlightDto{
         example:10
     })
     laycredit_points:number;
+
+    @IsOptional()
+    @ApiProperty({
+        description:`Card token`,
+        example:`XXXXXX-XXXXX-XXXXXX`
+    })
+    card_token:string;
 
     @IsOptional({
         message: (args: ValidationArguments) => {

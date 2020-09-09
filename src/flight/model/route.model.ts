@@ -10,6 +10,9 @@ export class FlightSearchResult{
     airline_list :AirlineDetails[];
     depature_time_slot:any;
     arrival_time_slot:any;
+    inbound_depature_time_slot:any;
+    inbound_arrival_time_slot:any;
+
 }
 export class Route{
 
@@ -38,6 +41,7 @@ export class Route{
     child_count     : number;
     infant_count    : number;
     fare_break_dwon : FareInfo[];
+    cabin_class     : string;
     instalment_details :{}
 }
 

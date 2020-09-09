@@ -62,10 +62,11 @@ export class PaymentService {
 
     async authorizeCard(gatewayToken,card_id,amount,currency){
 
-        return {
+        /* return {
             status   : true,
             token    : 'AUT675462'
-        }
+        } */
+        console.log("gatewayToken,card_id",gatewayToken,card_id)
         let url=`https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
         let requestBody ={
 
@@ -77,7 +78,7 @@ export class PaymentService {
           }
         let authResult = await this.axiosRequest(url,requestBody);
         console.log(authResult);
-        if(authResult.transaction.succeeded){
+        if(authResult.transaction?.succeeded){
             return {
                 status       : true,
                 token        : authResult.transaction.token,
@@ -94,27 +95,74 @@ export class PaymentService {
 
     async captureCard(authorizeToken){
 
-        return {
+        /* return {
             status   : true,
             token    : 'CAP675462'
+        } */
+
+        let url=`https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
+        let requestBody={};
+        let captureRes = await this.axiosRequest(url,requestBody);
+        console.log(captureRes);
+        if(captureRes.transaction.succeeded){
+            return {
+                status       : true,
+                token        : captureRes.transaction.token,
+                meta_data    : captureRes,
+            }
+        }
+        else{
+            return {
+                status       : false,
+                meta_data    : captureRes,
+            }
         }
     }
 
     async voidCard(captureToken){
 
-        return {
+        /* return {
             status   : true,
             token    : 'VOI675462'
+        } */
+
+        let url=`https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
+        let requestBody={};
+        let voidRes = await this.axiosRequest(url,requestBody);
+        console.log(voidRes);
+        if(voidRes.transaction.succeeded){
+            return {
+                status       : true,
+                token        : voidRes.transaction.token,
+                meta_data    : voidRes,
+            }
+        }
+        else{
+            return {
+                status       : false,
+                meta_data    : voidRes,
+            }
         }
     }
 
     async axiosRequest(url,requestBody,headers=null){
 
-        let result =await Axios({
-            method: 'POST',
-            url: url,
-            data: requestBody
-        });
-        return result.data;
+        try{
+
+            let result =await Axios({
+                method: 'POST',
+                url: url,
+                data: requestBody,
+                headers: {
+                    'Accept':'application/json',
+                    'Authorization': 'Basic WU5FZFpGVHdCMXRSUjR6d3ZjTUlhVXhacTNnOnV3RkowRHRKTTdQRVluWHBaWGJ2ZjBGYUR6czY2cjY4T1B1OG51Zld4Q3FYWTJ6RmFFYUFNb1ZmSTN1M2JVQ2k='
+                }
+            });
+            //console.log("=========================",result)
+            return result.data;
+        }
+        catch(exception){
+            //console.log("exception",exception)
+        }
     }
 }

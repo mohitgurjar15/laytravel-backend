@@ -7,10 +7,9 @@ import * as xml2js from 'xml2js';
 import * as moment from 'moment';
 import { DateTime } from "src/utility/datetime.utility";
 import { Stop } from "../model/stop.model";
-import { Route, RouteType, FlightSearchResult, PriceRange, StopData } from "../model/route.model";
+import { Route, RouteType, FlightSearchResult, PriceRange } from "../model/route.model";
 import { Generic } from "src/utility/generic.utility";
 import { getManager } from "typeorm";
-import { Airport } from "src/entity/airport.entity";
 import { Instalment } from "src/utility/instalment.utility";
 import { PriceMarkup } from "src/utility/markup.utility";
 import { Module } from "src/entity/module.entity";
@@ -18,9 +17,12 @@ import { errorMessage, s3BucketUrl } from "src/config/common.config";
 import { airlines } from "../airline";
 import { airports } from "../airports";
 import { FareInfo } from "../model/fare.model";
-import { type } from "os";
 const fs = require('fs').promises;
-
+const flightClass={
+    'Economy':'Y',
+    'Business':'C',
+    'First':'F'
+}
 export class Mystifly implements StrategyAirline{
 
     private headers;
@@ -198,7 +200,6 @@ export class Mystifly implements StrategyAirline{
             normalizeTags :true,
             ignoreAttrs:true
         });
-        
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
             let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
@@ -230,6 +231,7 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_info          =  typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
+                    stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
                     stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
@@ -306,9 +308,9 @@ export class Mystifly implements StrategyAirline{
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
 
             //Get Departure time slot
-            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time')
+            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time',0)
             //Get Arrival time slot
-            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time')
+            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time',0)
             return flightSearchResult;
         }
         else{
@@ -387,8 +389,14 @@ export class Mystifly implements StrategyAirline{
         return result;
     }
 
-    getArrivalDepartureTimeSlot(routes,type){
-
+    /**
+     * 
+     * @param routes 
+     * @param type (departure_time, arrival_time)
+     * @param routeType (0=> Outbound 1=>Inbound) 
+     */
+    getArrivalDepartureTimeSlot(routes,type,routeType){
+        
         let timeSlots={
             
             first_slot: {
@@ -418,7 +426,12 @@ export class Mystifly implements StrategyAirline{
         }
         let sourceDate;
         routes.forEach(route=>{
-            sourceDate =   moment(route[type],"HH:mm:a");
+            if(type=='departure_time'){
+                sourceDate =   moment(route.routes[routeType].stops[0][type],"HH:mm:a");
+            }
+            else{
+                sourceDate =   moment(route.routes[routeType].stops[route.routes[0].stops.length-1][type],"HH:mm:a");
+            }
             if(sourceDate.isBetween(
                 moment(timeSlots.first_slot.from_time, "HH:mm:a") , 
                 moment(timeSlots.first_slot.to_time, "HH:mm:a"))){
@@ -599,6 +612,7 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
+                    stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
                     stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
@@ -639,6 +653,7 @@ export class Mystifly implements StrategyAirline{
                     stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
+                    stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
                     stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
@@ -712,10 +727,15 @@ export class Mystifly implements StrategyAirline{
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
 
-            //Get Departure time slot
-            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time')
-            //Get Arrival time slot
-            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time')
+            //Get outbound Departure time slot
+            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time',0)
+            //Get outbound Arrival time slot
+            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time',0)
+
+            //Get inbound Departure time slot
+            flightSearchResult.inbound_depature_time_slot = this.getArrivalDepartureTimeSlot(routes,'departure_time',1)
+            //Get inbound Arrival time slot
+            flightSearchResult.inbound_arrival_time_slot = this.getArrivalDepartureTimeSlot(routes,'arrival_time',1)
             return flightSearchResult;
         }
         else{
@@ -873,6 +893,7 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
+                    stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
                     stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
@@ -1145,9 +1166,16 @@ export class Mystifly implements StrategyAirline{
                         return ruleDetail['a:rules'][0]
                     }
                 })
-                return {
-                    cancellation_policy : cancellationPolicy[0]['a:rules'][0]
-                } 
+                
+                if(cancellationPolicy.length){
+
+                    return {
+                        cancellation_policy : cancellationPolicy[0]['a:rules'][0]
+                    } 
+                }
+                else{
+                    throw new NotFoundException(`No cancellation policy is found.`)
+                }
             }
             else{
                 throw new NotFoundException(`No cancellation policy is found.`)
@@ -1159,13 +1187,11 @@ export class Mystifly implements StrategyAirline{
     }
 
     getFlightClass(className){
-
-        const flightClass={
-            'Economy':'Y',
-            'Business':'C',
-            'First':'F'
-        }
         return flightClass[className];
+    }
+    
+    getKeyByValue(object, value) {
+        return Object.keys(object).find(key => object[key] === value);
     }
 
     getFareBreakDown(fares,markUpDetails){

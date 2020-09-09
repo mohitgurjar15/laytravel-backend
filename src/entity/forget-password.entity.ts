@@ -10,6 +10,8 @@ export class forget_password extends BaseEntity {
     @Column("varchar", { name: "email", length: 255 })
     email: string;
 
+    @Column("varchar", { name: "token", nullable:true })
+    token: string;
     @Column("int", { name: "otp" })
     otp: number;
 

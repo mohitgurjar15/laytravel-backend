@@ -107,7 +107,7 @@ export class FlightService {
      }
 
      async bookFlight(bookFlightDto:BookFlightDto,headers,user){
-        await this.bookingRepository.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
+        //await this.bookingRepository.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
         let headerDetails = await this.validateHeaders(headers);
 
         let { 
@@ -182,20 +182,21 @@ export class FlightService {
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
-                let authCardResult=await this.paymentService.authorizeCard('Ci7r1e6ps7tApi7xZgWrN8deTGJ','D3Zd4sGs3tX00PGfIfLPzsK4Z70',firstInstalemntAmount,'USD');
+                let authCardResult=await this.paymentService.authorizeCard('Ci7r1e6ps7tApi7xZgWrN8deTGJ','aNtkbIgloI2ECtICXtK8io6p3zW',Math.ceil(firstInstalemntAmount*100),'USD');
                 console.log(authCardResult);
                 if(authCardResult.status==true){
                     let authCardToken = authCardResult.token;
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
                     if(captureCardresult.status==true){
-                        let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.INSTALMENT,userId,instalmentDetails,captureCardresult,null);
+                        let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.INSTALMENT,userId,airRevalidateResult,instalmentDetails,captureCardresult,null);
                         this.sendBookingEmail(laytripBookingResult.id);
                         return {
                             laytrip_booking_id  : laytripBookingResult.id,
                             booking_status      : 'pending',
                             supplier_booking_id : '',
                             success_message     : `Booking is in pending state!`,
-                            error_message       : ''
+                            error_message       : '',
+                            booking_details     : await this.bookingRepository.getBookingDetails(laytripBookingResult.id)
                         }
                     }
                     else{
@@ -213,33 +214,27 @@ export class FlightService {
         }
         else if(payment_type==PaymentType.NOINSTALMENT){
 
-            let authCardResult=await this.paymentService.authorizeCard('gateway_id','card_id',selling_price,'USD');
+            let authCardResult=await this.paymentService.authorizeCard('UHf0cMrLXWjSLxdXqJLmKBoc53F','aNtkbIgloI2ECtICXtK8io6p3zW',Math.ceil(selling_price*100),'USD');
             if(authCardResult.status==true){
+                const mystifly = new Strategy(new Mystifly(headers));
+                const bookingResult = await mystifly.bookFlight(bookFlightDto,travelersDetails);
                 let authCardToken = authCardResult.token;
-                let captureCardresult =await this.paymentService.captureCard(authCardToken);
-                if(captureCardresult.status==true){
-                    const mystifly = new Strategy(new Mystifly(headers));
-                    const bookingResult = await mystifly.bookFlight(bookFlightDto,travelersDetails);
-                    if(bookingResult.booking_status == 'success'){
-
-                        let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.NOINSTALMENT,userId,null,captureCardresult,bookingResult);
-                        //send email here
-                        this.sendBookingEmail(laytripBookingResult.id);
-                        bookingResult.laytrip_booking_id = laytripBookingResult.id;
-                        return bookingResult;
-                    }
-                    else{
-
-                        await this.paymentService.voidCard(captureCardresult.token)
-                        throw new HttpException({
-                            status  : 424,
-                            message : bookingResult.error_message,
-                          }, 424);
-                    }
-                    //return result; 
+                if(bookingResult.booking_status == 'success'){
+                    let captureCardresult =await this.paymentService.captureCard(authCardToken);
+                    let laytripBookingResult = await this.saveBooking(bookingRequestInfo,currencyId,bookingDate,BookingType.NOINSTALMENT,userId,airRevalidateResult,null,captureCardresult,bookingResult);
+                    //send email here
+                    this.sendBookingEmail(laytripBookingResult.id);
+                    bookingResult.laytrip_booking_id = laytripBookingResult.id;
+                    bookingResult.booking_details    = await this.bookingRepository.getBookingDetails(laytripBookingResult.id)
+                    return bookingResult;
                 }
                 else{
-                    throw new BadRequestException(`Card capture is failed&&&card_token&&&${errorMessage}`)
+
+                    await this.paymentService.voidCard(authCardToken)
+                    throw new HttpException({
+                        status  : 424,
+                        message : bookingResult.error_message,
+                        }, 424);
                 }
             }
             else{
@@ -251,7 +246,7 @@ export class FlightService {
 
     async saveBooking(
         bookFlightDto,currencyId,bookingDate,
-        bookingType,userId,instalmentDetails=null,captureCardresult=null,supplierBookingData
+        bookingType,userId,airRevalidateResult,instalmentDetails=null,captureCardresult=null,supplierBookingData
     ){
         const {
             selling_price, net_rate, journey_type,
@@ -303,7 +298,7 @@ export class FlightService {
             booking.isPredictive=false;
             booking.totalInstallments=0;
         }
-        let moduleInfo={
+        /* let moduleInfo={
             journey_type,
             departure_date,
             arrival_date,
@@ -313,8 +308,8 @@ export class FlightService {
             child_count,
             infant_count,
             flight_class
-        }
-        booking.moduleInfo=moduleInfo;
+        } */
+        booking.moduleInfo=airRevalidateResult;
         try{
 
             let bookingDetails =  await booking.save();
