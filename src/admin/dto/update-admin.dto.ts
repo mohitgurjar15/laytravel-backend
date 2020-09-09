@@ -1,6 +1,7 @@
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsEnum, ValidationArguments } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
+import { errorMessage } from 'src/config/common.config';
 
 export class UpdateAdminDto{
 
@@ -29,12 +30,23 @@ export class UpdateAdminDto{
     })
     lastName: string;
 
+    @IsEnum(['M','F','N'],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
+                return `Please select your gender.&&&gender&&&Please select your gender.`
+            }
+            else{
+                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
+            }
+        }
+    })
     @ApiProperty({
         description: `Select Gender (M,F)`,
         example: `M`
     })
     gender : Gender;
 
+    
     @ApiPropertyOptional({
 		type: "string",
 		format: "binary",

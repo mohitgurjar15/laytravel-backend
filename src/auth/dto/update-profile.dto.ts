@@ -22,12 +22,13 @@ export class UpdateProfileDto {
     title : string;
 
     
-    @IsOptional()
-	@ValidateIf(o => o.gender != '')
     @IsEnum(['M','F','N'],{
         message : (args: ValidationArguments) => {
-            if (typeof args.value != "undefined" || args.value != "") {
-                return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`
+            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
+                return `Please select your gender.&&&gender&&&Please select your gender.`
+            }
+            else{
+                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
             }
         }
     })
