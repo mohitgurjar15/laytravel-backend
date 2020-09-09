@@ -156,7 +156,7 @@ export class SaveTravelerDto {
 		type: "string",
 		description: "Passport expiry date",
 	})
-	@ValidateIf((o) => o.passport_expiry != "")
+	@ValidateIf((o) => o.passport_expiry != "" &&  moment(new Date()).diff(moment(o.dob),'years') >= 12)
 	@IsValidDate("", {
 		message: (args: ValidationArguments) => {
 			if (typeof args.value != "undefined" || args.value != "") {

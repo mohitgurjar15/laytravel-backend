@@ -8,6 +8,7 @@ import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
+import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 
 @Injectable()
 export class BookingService {
@@ -19,7 +20,7 @@ export class BookingService {
 	) {}
 
 	async resendBookingEmail(bookingId: string): Promise<{ message: any }> {
-		const bookingData = await this.bookingRepository.getBookingDetails(
+		const bookingData = await this.bookingRepository.bookingDetail(
 			bookingId
 		);
 
@@ -29,7 +30,7 @@ export class BookingService {
 			);
 		}
 		console.log(bookingData);
-		const Data = bookingData[0];
+		const Data = bookingData;
 		switch (Data.moduleId) {
 			case ModulesName.HOTEL:
 				break;
@@ -48,7 +49,7 @@ export class BookingService {
 	async flightBookingEmailSend(bookingData) {
 		var param = new FlightBookingEmailParameterModel();
 		const user = bookingData.user;
-		const moduleInfo = bookingData.moduleInfo;
+		const moduleInfo = bookingData.moduleInfo[0];
 		const currency = bookingData.currency2;
 		const netPrice = bookingData.netRate;
 		param.user_name = `${user.firstName}  ${user.firstName}`;
@@ -79,6 +80,7 @@ export class BookingService {
 			bookingData.bookingStatus == 2 ? "Failed" : "Canceled";
 		}
 		param.status = status;
+		
 		this.mailerService
 			.sendMail({
 				to: user.email,
@@ -139,6 +141,46 @@ export class BookingService {
 			return await this.bookingRepository.listBooking(listBookingDto,userId);
 		} catch (error) {
 			console.log(error)
+			if (error.response.statusCode == undefined) {
+				console.log(error);
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
+			switch (error.response.statusCode) {
+				case 404:
+					if (
+						error.response.message ==
+						"This user does not exist&&&email&&&This user does not exist"
+					) {
+						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+					}
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+	}
+
+	async getBookingDetail(bookingId: string){
+		try {
+			return await this.bookingRepository.bookingDetail(bookingId);
+		} catch (error) {
+			
 			if (error.response.statusCode == undefined) {
 				console.log(error);
 				throw new InternalServerErrorException(
