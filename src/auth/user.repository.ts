@@ -322,10 +322,10 @@ export class UserRepository extends Repository<User> {
 				`This traveler does not exist&&&email&&&This traveler does not exist`
 			);
 
-		if (userdata.status != 1)
-			throw new UnauthorizedException(
-				`This traveler has been disabled. Please contact administrator person.`
-			);
+		// if (userdata.status != 1)
+		// 	throw new UnauthorizedException(
+		// 		`This traveler has been disabled. Please contact administrator person.`
+		// 	);
 		var today = new Date();
 		var birthDate = new Date(userdata.dob);
 		var age = moment(new Date()).diff(moment(birthDate),'years');

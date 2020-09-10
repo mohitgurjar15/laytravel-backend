@@ -80,6 +80,7 @@ export class TravelerService {
 			user.isVerified = true;
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
+			user.isDeleted = false;
 			user.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
 			if (parent_user_id != undefined && parent_user_id != "") {
 				const userData = await this.userRepository.getUserData(parent_user_id);
@@ -301,6 +302,10 @@ export class TravelerService {
 		try {
 			//const traveler = await this.userRepository.getTravelData(userId);
 			const traveler = await this.userRepository.findOne(userId)
+			if(!traveler)
+			{
+				throw new NotFoundException(`Traveler not found &&&id&&&Traveler not found`)
+			}
 			const {
 				first_name,
 				last_name,
@@ -335,10 +340,11 @@ export class TravelerService {
 			traveler.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
 			traveler.updatedDate = new Date();
 			traveler.countryId = countryDetails.id;
+			traveler.status = 1;
 			//console.log("countryDetails.id",traveler)
 			await traveler.save();
 
-			return traveler;
+			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
 			if (error.response.statusCode == undefined) {
 				console.log(error);
