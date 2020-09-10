@@ -25,7 +25,7 @@ export class BookingController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "Given booking id not exiest" })
+	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async resentEmailId(
 		@Param("id") bookingId: string
