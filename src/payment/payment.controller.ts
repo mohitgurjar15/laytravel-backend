@@ -4,6 +4,7 @@ import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { AuthGuard } from '@nestjs/passport';
+import { AddCardDto } from './dto/add-card.dto';
 
 
 @ApiTags("Payment")
@@ -45,5 +46,22 @@ export class PaymentController {
         @GetUser() user
     ){
         return await this.paymentService.getAllCards(user);
-    }
+	}
+	
+	@Post('add-card')
+	@ApiOperation({ summary: "Add Card" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async addCard(
+        @Body() dddCardDto:AddCardDto,
+        @GetUser() user
+    ){
+        return await this.paymentService.addCard(dddCardDto,user);
+	}
 }

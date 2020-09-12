@@ -634,6 +634,8 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
+                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
@@ -674,6 +676,8 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'inbound';
                 routeType.stops         = stops;
+                let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                 route.routes[1]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.net_rate          = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0];

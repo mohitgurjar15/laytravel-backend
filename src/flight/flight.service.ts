@@ -112,7 +112,7 @@ export class FlightService {
 
         let { 
             travelers, payment_type, instalment_type, 
-            route_code, additional_amount
+            route_code, additional_amount, custom_instalment_amount, custom_instalment_no
         } = bookFlightDto;
 
         const mystifly = new Strategy(new Mystifly(headers));
@@ -141,7 +141,6 @@ export class FlightService {
                 bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
             }
         }
-        console.log(bookingRequestInfo)
         let {   
             selling_price, departure_date , adult_count,
             child_count, infant_count
@@ -170,20 +169,19 @@ export class FlightService {
             //let layCreditAmount =  
             //save entry for future booking
             if(instalment_type==InstalmentType.WEEKLY){
-                instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount);
+                instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
             if(instalment_type==InstalmentType.BIWEEKLY){
-                instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate);
+                instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
             if(instalment_type==InstalmentType.MONTHLY){
-                instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate);
+                instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
 
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
                 let authCardResult=await this.paymentService.authorizeCard('Ci7r1e6ps7tApi7xZgWrN8deTGJ','aNtkbIgloI2ECtICXtK8io6p3zW',Math.ceil(firstInstalemntAmount*100),'USD');
-                console.log(authCardResult);
                 if(authCardResult.status==true){
                     let authCardToken = authCardResult.token;
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
