@@ -60,21 +60,19 @@ export class UpdateTravelerDto{
 
     
     
-    @IsNotEmpty({
-        message : `Please select travelers gender.&&&gender`
-    })
-    @IsEnum(['M','F'],{
+    
+    @IsEnum(['M','F','N'],{
         message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please select your gender.&&&gender`;
-            } else {
-                return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`
+            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
+                return `Please select your gender.&&&gender&&&Please select your gender.`
+            }
+            else{
+                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
             }
         }
     })
-    
     @ApiProperty({
-        description: `Select Gender (M,F)`,
+        description: `Select Gender (M,F,N)`,
         example: `M`
     })
     gender : Gender;
@@ -104,8 +102,8 @@ export class UpdateTravelerDto{
 		type: "string",
 		description: "Passport expiry date",
     })
-    @ValidateIf(o => o.passport_expiry != "")
-    @IsValidDate("",{
+    @ValidateIf((o) => o.passport_expiry != "" &&  moment(new Date()).diff(moment(o.dob),'years') >= 12)
+	@IsValidDate("",{
         message: (args: ValidationArguments) => {
             if (typeof args.value != "undefined" || args.value != "") {
                 return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;

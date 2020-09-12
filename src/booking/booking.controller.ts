@@ -25,7 +25,7 @@ export class BookingController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
-	@ApiResponse({ status: 404, description: "Given booking id not exiest" })
+	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async resentEmailId(
 		@Param("id") bookingId: string
@@ -70,4 +70,23 @@ export class BookingController {
 	) {
 		return await this.bookingService.userBookingList(paginationOption,user.userId);
 	}
+
+
+
+	@Get('booking-details/:id')	
+	@ApiOperation({ summary: "get booking detail" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async bookingDetail(
+		@Param("id") bookingId: string
+	) {
+		return await this.bookingService.getBookingDetail(bookingId);
+	}
+
 }

@@ -154,23 +154,22 @@ export class SaveUserDto {
 	})
 	city_name: string;
 
-	@IsNotEmpty({
-		message: `Please select your gender.&&&gender`,
-	})
-	@IsEnum(["M", "F"], {
-		message: (args: ValidationArguments) => {
-			if (typeof args.value == "undefined" || args.value == "") {
-				return `Please select your gender.&&&gender`;
-			} else {
-				return `Please select valid gender(M,F).&&&gender&&&${errorMessage}`;
-			}
-		},
-	})
-	@ApiProperty({
-		description: `Select Gender (M,F)`,
-		example: `M`,
-	})
-	gender: Gender;
+	
+	@IsEnum(['M','F','N'],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
+                return `Please select your gender.&&&gender&&&Please select your gender.`
+            }
+            else{
+                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
+            }
+        }
+    })
+    @ApiProperty({
+        description: `Select Gender (M,F,N)`,
+        example: `M`
+    })
+    gender : Gender;
 
 	@IsNotEmpty({
 		message: `Please select user Type&&&user_type&&&${errorMessage}`,
