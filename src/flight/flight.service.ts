@@ -318,6 +318,7 @@ export class FlightService {
                 let bookingInstalment = new BookingInstalments();
                 let i=0;
                 for(let instalment of instalmentDetails.instalment_date){
+                    bookingInstalment=new BookingInstalments();
                     bookingInstalment.bookingId=bookingDetails.id;
                     bookingInstalment.userId=userId;
                     bookingInstalment.moduleId=moduleDetails.id;
@@ -411,11 +412,11 @@ export class FlightService {
 
                 if(traveler.title==null || traveler.title=='')
                     throw new BadRequestException(`Title is missing for traveler ${traveler.firstName}`)
-                if(traveler.email==null || traveler.email=='')
+                if((traveler.email==null || traveler.email=='') && ageDiff>=12)
                     throw new BadRequestException(`Email is missing for traveler ${traveler.firstName}`)
-                if(traveler.countryCode==null || traveler.countryCode=='')
+                if((traveler.countryCode==null || traveler.countryCode=='') && ageDiff>=12)
                     throw new BadRequestException(`Country code is missing for traveler ${traveler.firstName}`)
-                if(traveler.phoneNo==null || traveler.phoneNo=='')
+                if((traveler.phoneNo==null || traveler.phoneNo=='') && ageDiff>=12)
                     throw new BadRequestException(`Phone number is missing for traveler ${traveler.firstName}`)
                 if(traveler.gender==null || traveler.gender=='')
                     throw new BadRequestException(`Gender is missing for traveler ${traveler.firstName}`)
@@ -432,10 +433,10 @@ export class FlightService {
                 if(ageDiff < 2){
                     traveleDetails.infants.push(traveler)
                 }
-                else if(ageDiff>2 && ageDiff<10){
+                else if(ageDiff>=2 && ageDiff<12){
                     traveleDetails.children.push(traveler)
                 }
-                else if(ageDiff>10){
+                else if(ageDiff>=12){
                     traveleDetails.adults.push(traveler)
                 }
             }
