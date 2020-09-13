@@ -86,7 +86,7 @@ export class PaymentService {
           }
         let cardResult = await this.axiosRequest(url,requestBody);
         console.log(cardResult)
-        if(cardResult.transaction.succeeded){
+        if(typeof cardResult!='undefined' && typeof cardResult.transaction!='undefined' && cardResult.transaction.succeeded){
             let paymentGateway = await getManager()
                 .createQueryBuilder(PaymentGateway, "paymentgateway")
                 .where("paymentgateway.gateway_name = :name ", { name:'spreedly' })

@@ -107,7 +107,6 @@ export class FlightService {
      }
 
      async bookFlight(bookFlightDto:BookFlightDto,headers,user){
-        //await this.bookingRepository.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
         let headerDetails = await this.validateHeaders(headers);
 
         let { 
@@ -117,7 +116,7 @@ export class FlightService {
 
         const mystifly = new Strategy(new Mystifly(headers));
         const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
-        
+        //console.log("airRevalidateResult",airRevalidateResult)
         let bookingRequestInfo:any={};
         if(airRevalidateResult){
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
