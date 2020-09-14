@@ -609,7 +609,7 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
-                    stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
+                    stop.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
