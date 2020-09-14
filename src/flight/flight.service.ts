@@ -107,17 +107,16 @@ export class FlightService {
      }
 
      async bookFlight(bookFlightDto:BookFlightDto,headers,user){
-        //await this.bookingRepository.getBookingDetails('c187687e-be1b-4513-b62b-781b9ac1cb5a');
         let headerDetails = await this.validateHeaders(headers);
 
         let { 
             travelers, payment_type, instalment_type, 
-            route_code, additional_amount
+            route_code, additional_amount, custom_instalment_amount, custom_instalment_no
         } = bookFlightDto;
 
         const mystifly = new Strategy(new Mystifly(headers));
         const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
-        
+        //console.log("airRevalidateResult",airRevalidateResult)
         let bookingRequestInfo:any={};
         if(airRevalidateResult){
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
@@ -141,7 +140,6 @@ export class FlightService {
                 bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
             }
         }
-        console.log(bookingRequestInfo)
         let {   
             selling_price, departure_date , adult_count,
             child_count, infant_count
@@ -170,20 +168,19 @@ export class FlightService {
             //let layCreditAmount =  
             //save entry for future booking
             if(instalment_type==InstalmentType.WEEKLY){
-                instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount);
+                instalmentDetails=Instalment.weeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
             if(instalment_type==InstalmentType.BIWEEKLY){
-                instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate);
+                instalmentDetails=Instalment.biWeeklyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
             if(instalment_type==InstalmentType.MONTHLY){
-                instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate);
+                instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
 
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
                 let authCardResult=await this.paymentService.authorizeCard('Ci7r1e6ps7tApi7xZgWrN8deTGJ','aNtkbIgloI2ECtICXtK8io6p3zW',Math.ceil(firstInstalemntAmount*100),'USD');
-                console.log(authCardResult);
                 if(authCardResult.status==true){
                     let authCardToken = authCardResult.token;
                     let captureCardresult =await this.paymentService.captureCard(authCardToken);
@@ -318,6 +315,7 @@ export class FlightService {
                 let bookingInstalment = new BookingInstalments();
                 let i=0;
                 for(let instalment of instalmentDetails.instalment_date){
+                    bookingInstalment=new BookingInstalments();
                     bookingInstalment.bookingId=bookingDetails.id;
                     bookingInstalment.userId=userId;
                     bookingInstalment.moduleId=moduleDetails.id;
@@ -411,11 +409,11 @@ export class FlightService {
 
                 if(traveler.title==null || traveler.title=='')
                     throw new BadRequestException(`Title is missing for traveler ${traveler.firstName}`)
-                if(traveler.email==null || traveler.email=='')
+                if((traveler.email==null || traveler.email=='') && ageDiff>=12)
                     throw new BadRequestException(`Email is missing for traveler ${traveler.firstName}`)
-                if(traveler.countryCode==null || traveler.countryCode=='')
+                if((traveler.countryCode==null || traveler.countryCode=='') && ageDiff>=12)
                     throw new BadRequestException(`Country code is missing for traveler ${traveler.firstName}`)
-                if(traveler.phoneNo==null || traveler.phoneNo=='')
+                if((traveler.phoneNo==null || traveler.phoneNo=='') && ageDiff>=12)
                     throw new BadRequestException(`Phone number is missing for traveler ${traveler.firstName}`)
                 if(traveler.gender==null || traveler.gender=='')
                     throw new BadRequestException(`Gender is missing for traveler ${traveler.firstName}`)
@@ -432,10 +430,10 @@ export class FlightService {
                 if(ageDiff < 2){
                     traveleDetails.infants.push(traveler)
                 }
-                else if(ageDiff>2 && ageDiff<10){
+                else if(ageDiff>=2 && ageDiff<12){
                     traveleDetails.children.push(traveler)
                 }
-                else if(ageDiff>10){
+                else if(ageDiff>=12){
                     traveleDetails.adults.push(traveler)
                 }
             }

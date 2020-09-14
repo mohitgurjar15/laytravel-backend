@@ -7,6 +7,7 @@ import { UserCard } from 'src/entity/user-card.entity';
 import { v4 as uuidv4 } from "uuid";
 import { User } from 'src/entity/user.entity';
 import Axios from 'axios';
+import { AddCardDto } from './dto/add-card.dto';
 
 @Injectable()
 export class PaymentService {
@@ -60,13 +61,71 @@ export class PaymentService {
         return cardList;
     }
 
+    async addCard(addCardDto:AddCardDto,user:User){
+        
+        const {
+
+            first_name, last_name ,card_number, card_cvv, expiry
+        } = addCardDto;
+
+        let expiryDate= expiry.split('/')
+        
+        let url=`https://core.spreedly.com/v1/payment_methods.json`;
+        let requestBody ={
+            "payment_method": {
+              "credit_card": {
+                "first_name": first_name,
+                "last_name": last_name,
+                "number": card_number,
+                "verification_value": card_cvv,
+                "month": expiryDate[0],
+                "year": expiryDate[1]
+              },
+              "retained":true
+            }
+          }
+        let cardResult = await this.axiosRequest(url,requestBody);
+        console.log(cardResult)
+        if(typeof cardResult!='undefined' && typeof cardResult.transaction!='undefined' && cardResult.transaction.succeeded){
+            let paymentGateway = await getManager()
+                .createQueryBuilder(PaymentGateway, "paymentgateway")
+                .where("paymentgateway.gateway_name = :name ", { name:'spreedly' })
+                .getOne();
+            if(!paymentGateway){
+                throw new BadRequestException(`Payment gateway is not configured in database&&&payment_gateway_id&&&${errorMessage}`)
+            }
+
+            let userCard = new UserCard();
+            userCard.id = uuidv4();
+            userCard.paymentGatewayId = paymentGateway.id;
+            userCard.userId  = user.userId;
+            userCard.cardHolderName = cardResult.transaction.payment_method.full_name;
+            userCard.cardDigits = cardResult.transaction.payment_method.last_four_digits;
+            userCard.cardToken = cardResult.transaction.payment_method.token;
+            userCard.cardType = cardResult.transaction.payment_method.card_type;
+            userCard.createdDate = new Date();
+
+            try{
+                return await userCard.save();
+            }
+            catch(exception){
+
+                throw new InternalServerErrorException(errorMessage)
+            }
+        }
+        else{
+            throw new BadRequestException(`Invalid card!`)
+        }
+
+        
+    }
+
     async authorizeCard(gatewayToken,card_id,amount,currency){
 
         /* return {
             status   : true,
             token    : 'AUT675462'
         } */
-        console.log("gatewayToken,card_id",gatewayToken,card_id)
         let url=`https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
         let requestBody ={
 

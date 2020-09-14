@@ -190,6 +190,20 @@ export class BookFlightDto{
         example:10
     })
     additional_amount:number;
+
+    @IsOptional()
+    @ApiProperty({
+        description:`Additional with payment with instalement`,
+        example:null
+    })
+    custom_instalment_amount:number | null;
+
+    @IsOptional()
+    @ApiProperty({
+        description:`Additional with payment with instalement`,
+        example:null
+    })
+    custom_instalment_no:number | null;
     
     @IsNotEmpty({
 		message: `Please enter route code.&&&route_code${errorMessage}`,

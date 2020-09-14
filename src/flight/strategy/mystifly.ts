@@ -2,8 +2,6 @@ import { StrategyAirline } from "./strategy.interface";
 import { OneWaySearchFlightDto } from "../dto/oneway-flight.dto";
 import { NotFoundException, InternalServerErrorException } from "@nestjs/common";
 import { RoundtripSearchFlightDto } from "../dto/roundtrip-flight.dto";
-import Axios from 'axios';
-import * as xml2js from 'xml2js';
 import * as moment from 'moment';
 import { DateTime } from "src/utility/datetime.utility";
 import { Stop } from "../model/stop.model";
@@ -17,6 +15,7 @@ import { errorMessage, s3BucketUrl } from "src/config/common.config";
 import { airlines } from "../airline";
 import { airports } from "../airports";
 import { FareInfo } from "../model/fare.model";
+import { HttpRequest } from "src/utility/http.utility";
 const fs = require('fs').promises;
 const flightClass={
     'Economy':'Y',
@@ -59,23 +58,9 @@ export class Mystifly implements StrategyAirline{
             </mys:CreateSession>
             </soapenv:Body>
         </soapenv:Envelope>`;
-        let sessionResult =await Axios({
-            method: 'POST',
-            url: mystiflyConfig.url,
-            data: requestBody,
-            headers: {
-                'content-type':'text/xml',
-                'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/CreateSession",
-                'charset':'UTF-8',
-                'cache-control':'no-cache'
-            }
-        })
 
-        sessionResult = await xml2js.parseStringPromise(sessionResult.data,{
-            normalizeTags :true,
-            ignoreAttrs:true
-        });
+        let sessionResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'CreateSession');
+        
         const sessionToken = sessionResult['s:envelope']['s:body'][0].createsessionresponse[0].createsessionresult[0]['a:sessionid'][0];
         await fs.writeFile("src/flight/mystifly-session.json", JSON.stringify({sessionToken, created_time:new Date()}))
         return sessionToken;
@@ -184,22 +169,7 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</mys:AirLowFareSearch>`
         requestBody += `</soapenv:Body>`
         requestBody += `</soapenv:Envelope>`
-        let searchResult =await Axios({
-            method: 'POST',
-            url: mystiflyConfig.url,
-            data: requestBody,
-            headers: {
-                'content-type':'text/xml',
-                'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/AirLowFareSearch",
-                'charset':'UTF-8',
-                'cache-control':'no-cache'
-            }
-        })
-        searchResult = await xml2js.parseStringPromise(searchResult.data,{
-            normalizeTags :true,
-            ignoreAttrs:true
-        });
+        let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirLowFareSearch');
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
             let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
@@ -430,7 +400,9 @@ export class Mystifly implements StrategyAirline{
                 sourceDate =   moment(route.routes[routeType].stops[0][type],"HH:mm:a");
             }
             else{
-                sourceDate =   moment(route.routes[routeType].stops[route.routes[0].stops.length-1][type],"HH:mm:a");
+                //console.log("---------------------------")
+                //console.log(JSON.stringify(route),route.routes[routeType].stops[route.routes[0].stops.length-1],type,routeType)
+                sourceDate =   moment(route.routes[routeType].stops[route.routes[routeType].stops.length-1][type],"HH:mm:a");
             }
             if(sourceDate.isBetween(
                 moment(timeSlots.first_slot.from_time, "HH:mm:a") , 
@@ -564,22 +536,7 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</mys:AirLowFareSearch>`
         requestBody += `</soapenv:Body>`
         requestBody += `</soapenv:Envelope>`
-        let searchResult =await Axios({
-            method: 'POST',
-            url: mystiflyConfig.url,
-            data: requestBody,
-            headers: {
-                'content-type':'text/xml',
-                'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/AirLowFareSearch",
-                'charset':'UTF-8',
-                'cache-control':'no-cache'
-            }
-        })
-        searchResult = await xml2js.parseStringPromise(searchResult.data,{
-            normalizeTags :true,
-            ignoreAttrs:true
-        });
+        let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirLowFareSearch');
         
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
@@ -634,6 +591,8 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
+                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
@@ -650,7 +609,7 @@ export class Mystifly implements StrategyAirline{
                     stop.arrival_date          = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
                     stop.arrival_time          = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
                     stop.arrival_date_time     = flightSegment['a:arrivaldatetime'][0];
-                    stop.departure_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
+                    stop.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                     stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
@@ -674,6 +633,8 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'inbound';
                 routeType.stops         = stops;
+                let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                 route.routes[1]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.net_rate          = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0];
@@ -792,23 +753,7 @@ export class Mystifly implements StrategyAirline{
                </mys:FareRules1_1>
             </soapenv:Body>
          </soapenv:Envelope>`;
-        let fareRuleResult =await Axios({
-            method: 'POST',
-            url: mystiflyConfig.url,
-            data: requestBody,
-            headers: {
-                'content-type':'text/xml',
-                'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/FareRules1_1",
-                'charset':'UTF-8',
-                'cache-control':'no-cache'
-            }
-        })
-        
-        fareRuleResult = await xml2js.parseStringPromise(fareRuleResult.data,{
-            normalizeTags :true,
-            ignoreAttrs:true
-        });
+        let fareRuleResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'FareRules1_1');
         return fareRuleResult;
     }
 
@@ -838,30 +783,14 @@ export class Mystifly implements StrategyAirline{
               </mys:AirRevalidate>
             </soapenv:Body>
             </soapenv:Envelope>`;
-        let airRevalidateResult =await Axios({
-            method: 'POST',
-            url: mystiflyConfig.url,
-            data: requestBody,
-            headers: {
-                'content-type':'text/xml',
-                'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/AirRevalidate",
-                'charset':'UTF-8',
-                'cache-control':'no-cache'
-            }
-        })
         
-        airRevalidateResult = await xml2js.parseStringPromise(airRevalidateResult.data,{
-            normalizeTags :true,
-            ignoreAttrs:true
-        });
-
-        //console.log(JSON.stringify(airRevalidateResult) )
+        let airRevalidateResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirRevalidate');
         if(airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:success'][0]=="true"){
 
 
             let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
             let flightRoutes        = airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
+            console.log(JSON.stringify(airRevalidateResult))
             let stop:Stop;
             let stops:Stop[]=[];
             let routes:Route[]=[];
@@ -871,6 +800,10 @@ export class Mystifly implements StrategyAirline{
             let inBoundflightSegments=[];
             let stopDuration;
             const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+            if(typeof flightRoutes!='object'){
+                throw new NotFoundException(`Flight is not available now`);
+            }   
+
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
@@ -1112,23 +1045,7 @@ export class Mystifly implements StrategyAirline{
             requestBody += `</soapenv:Body>`
             requestBody += `</soapenv:Envelope>`
         
-        let bookResult =await Axios({
-            method: 'POST',
-            url: mystiflyConfig.url,
-            data: requestBody,
-            headers: {
-                'content-type':'text/xml',
-                'Accept-Encoding':'gzip',
-                'soapaction':"Mystifly.OnePoint/OnePoint/BookFlight",
-                'charset':'UTF-8',
-                'cache-control':'no-cache'
-            }
-        })
-        bookResult = await xml2js.parseStringPromise(bookResult.data,{
-            normalizeTags :true,
-            ignoreAttrs:true
-        });
-
+        let bookResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'BookFlight');
         let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
         let bookingResponse;
         if(bookResultSegment['a:success'][0]=='true'){
