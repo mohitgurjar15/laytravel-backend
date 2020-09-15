@@ -216,7 +216,7 @@ export class TravelerService {
 				var age = moment(new Date()).diff(moment(birthDate),'years');
 				
 				
-				if (age <= 2) {
+				if (age < 2) {
 					data.user_type = "infant";
 				} else if (age < 12) {
 					data.user_type = "child";

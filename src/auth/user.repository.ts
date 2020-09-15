@@ -229,7 +229,7 @@ export class UserRepository extends Repository<User> {
 		
 		var age = moment(new Date()).diff(moment(birthDate),'years');
 		console.log(`age ${age}`);
-		if (age <= 2) {
+		if (age < 2) {
 			userDetail.user_type = "infant";
 		} else if (age < 12) {
 			userDetail.user_type = "child";
@@ -330,7 +330,7 @@ export class UserRepository extends Repository<User> {
 		var birthDate = new Date(userdata.dob);
 		var age = moment(new Date()).diff(moment(birthDate),'years');
 
-		if (age <= 2) {
+		if (age < 2) {
 			userdata.user_type = "infant";
 		} else if (age < 12) {
 			userdata.user_type = "child";
@@ -474,7 +474,7 @@ export class UserRepository extends Repository<User> {
 		var age = moment(new Date()).diff(moment(birthDate),'years');
 
 		let user: any = {};
-		if (age <= 2) {
+		if (age < 2) {
 			user.user_type = "infant";
 		} else if (age < 12) {
 			user.user_type = "child";
