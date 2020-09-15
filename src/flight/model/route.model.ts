@@ -7,6 +7,7 @@ export class FlightSearchResult{
     price_range : PriceRange;
     partial_payment_price_range:PriceRange;
     stop_data  : any;
+    inbound_stop_data  : any;
     airline_list :AirlineDetails[];
     depature_time_slot:any;
     arrival_time_slot:any;
@@ -21,6 +22,7 @@ export class Route{
     route_code      :  string;
     net_rate        :  string;
     stop_count      :  number;
+    inbound_stop_count :  number;
     departure_code  : string;
     arrival_code    : string;
     departure_date  : string;
