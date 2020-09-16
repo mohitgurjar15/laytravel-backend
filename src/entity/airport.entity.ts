@@ -37,4 +37,7 @@ export class Airport extends BaseEntity {
 
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
+
+  @Column("integer", { name: "parent_id",default: () => 0 })
+  parentId: number;
 }

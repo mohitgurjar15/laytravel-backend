@@ -33,6 +33,8 @@ import { BookingRepository } from 'src/booking/booking.repository';
 import { FlightBookingEmailParameterModel } from 'src/config/email_template/model/flight-booking-email-parameter.model';
 import { FlightBookingConfirmtionMail } from 'src/config/email_template/flight-booking-confirmation-mail.html';
 import { MailerService } from '@nestjs-modules/mailer';
+import { Airport } from 'src/entity/airport.entity';
+import { allAirpots } from './all-airports';
 
 @Injectable()
 export class FlightService {
@@ -68,6 +70,23 @@ export class FlightService {
             throw new InternalServerErrorException(error.message)
         }
     }
+
+    /* async mapChildParentAirport(name:String){
+
+        for(let airport of allAirpots){
+
+            await getConnection()
+            .createQueryBuilder()
+                .update(Airport)
+                .set({ 
+                    parentId : airport.id
+                })
+                .where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
+                .execute();
+        }
+        return true;
+    } */
+            
 
     async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto,headers,user){
 
