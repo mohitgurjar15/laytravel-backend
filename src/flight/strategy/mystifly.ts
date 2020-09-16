@@ -96,7 +96,7 @@ export class Mystifly implements StrategyAirline{
             child_count,
             infant_count
         } = searchFlightDto;
-
+        //console.log("mystiflyConfig",mystiflyConfig);
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name:'flight' })
@@ -272,7 +272,7 @@ export class Mystifly implements StrategyAirline{
             //return flightSearchResult;
 
             //Get Stops count and minprice
-            flightSearchResult.stop_data=this.getStopCounts(routes);
+            flightSearchResult.stop_data=this.getStopCounts(routes,'stop_count');
 
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
@@ -298,7 +298,7 @@ export class Mystifly implements StrategyAirline{
         return Math.max.apply(null, routes.map(item => item[priceType]))
     }
 
-    getStopCounts(routes){
+    getStopCounts(routes,type){
         let stopsData={
             non_stop:{
                count:0,
@@ -314,21 +314,21 @@ export class Mystifly implements StrategyAirline{
             }
         };
         routes.forEach(route=>{
-            if(route.stop_count==0){
+            if(route[type]==0){
                 if(stopsData.non_stop.min_price==null || (stopsData.non_stop.min_price > route.selling_price)){
                         stopsData.non_stop.min_price=route.selling_price;
                 }
                 stopsData.non_stop.count+=1;
             }
 
-            if(route.stop_count==1){
+            if(route[type]==1){
                 if(stopsData.one_stop.min_price==null || (stopsData.one_stop.min_price > route.selling_price)){
                     stopsData.one_stop.min_price=route.selling_price;
                 }
                 stopsData.one_stop.count+=1;
             }
 
-            if(route.stop_count>1){
+            if(route[type]>1){
                 if(stopsData.two_and_two_plus_stop.min_price==null || (stopsData.two_and_two_plus_stop.min_price > route.selling_price)){
                     stopsData.two_and_two_plus_stop.min_price=route.selling_price;
                 }
@@ -597,6 +597,7 @@ export class Mystifly implements StrategyAirline{
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
                 route.departure_time    = stops[0].departure_time;
+                route.stop_count = stops.length-1;
                 stops=[];
                 inBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
@@ -647,7 +648,7 @@ export class Mystifly implements StrategyAirline{
                 else{
                     route.start_price   = '0';
                 }
-                route.stop_count        = stops.length-1;
+                route.inbound_stop_count  = stops.length-1;
                 route.departure_code    = source_location;
                 route.arrival_code      = destination_location;
                 route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
@@ -683,7 +684,10 @@ export class Mystifly implements StrategyAirline{
             //return flightSearchResult;
 
             //Get Stops count and minprice
-            flightSearchResult.stop_data=this.getStopCounts(routes);
+            flightSearchResult.stop_data=this.getStopCounts(routes,'stop_count');
+
+            //Get Stops count and minprice
+            flightSearchResult.inbound_stop_data=this.getStopCounts(routes,'inbound_stop_count');
 
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
@@ -770,7 +774,7 @@ export class Mystifly implements StrategyAirline{
         }
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-
+        
         const requestBody = 
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
             <soapenv:Body>

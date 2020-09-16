@@ -31,6 +31,7 @@ export class FlightController {
         @Param('name', MinCharPipe) name:String
         ){
             return await this.flightService.searchAirport(name);
+            //return await this.flightService.mapChildParentAirport(name);
         }
         
         

@@ -28,11 +28,12 @@ import { PaymentService } from 'src/payment/payment.service';
 import { GenderTilte } from 'src/enum/gender-title.enum';
 import { FlightJourney } from 'src/enum/flight-journey.enum';
 import { DateTime } from 'src/utility/datetime.utility';
-import { async } from 'rxjs/internal/scheduler/async';
 import { BookingRepository } from 'src/booking/booking.repository';
 import { FlightBookingEmailParameterModel } from 'src/config/email_template/model/flight-booking-email-parameter.model';
 import { FlightBookingConfirmtionMail } from 'src/config/email_template/flight-booking-confirmation-mail.html';
 import { MailerService } from '@nestjs-modules/mailer';
+//import { Airport } from 'src/entity/airport.entity';
+//import { allAirpots } from './all-airports';
 
 @Injectable()
 export class FlightService {
@@ -55,7 +56,7 @@ export class FlightService {
             let result = await this.airportRepository.find({
                 where : `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`
             })
-
+            //result = this.getNestedChildren(result,0)
             if(!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`)
             return result;
@@ -68,6 +69,44 @@ export class FlightService {
             throw new InternalServerErrorException(error.message)
         }
     }
+
+    getNestedChildren(arr, parent) {
+
+        let out = []
+        for(let i in arr) {
+            arr[i].display_name=  `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`
+            if(arr[i].parentId == parent) {
+                let children = this.getNestedChildren(arr, arr[i].id)
+    
+                if(children.length) {
+                    arr[i].sub_airport = children
+                }
+                else{
+                    arr[i].sub_airport = []
+                }
+                arr[i].display_name=  `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`
+                out.push(arr[i])
+            }
+        }
+        return out
+    }
+
+    /* async mapChildParentAirport(name:String){
+
+        for(let airport of allAirpots){
+
+            await getConnection()
+            .createQueryBuilder()
+                .update(Airport)
+                .set({ 
+                    parentId : airport.id
+                })
+                .where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
+                .execute();
+        }
+        return true;
+    } */
+            
 
     async searchOneWayFlight(searchFlightDto:OneWaySearchFlightDto,headers,user){
 

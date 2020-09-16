@@ -5,7 +5,6 @@ import * as xml2js from 'xml2js';
 export class  HttpRequest{
 
     static async mystiflyRequest(url,requestBody,headerAction){
-
         try{
             let result =await Axios({
                 method: 'POST',
