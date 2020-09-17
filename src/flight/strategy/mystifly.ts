@@ -638,7 +638,7 @@ export class Mystifly implements StrategyAirline{
                 routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                 route.routes[1]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
-                route.net_rate          = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0];
+                route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
                 route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
                 let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
@@ -787,7 +787,7 @@ export class Mystifly implements StrategyAirline{
               </mys:AirRevalidate>
             </soapenv:Body>
             </soapenv:Envelope>`;
-        
+            const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
         let airRevalidateResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirRevalidate');
         if(airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:success'][0]=="true"){
 
@@ -904,7 +904,7 @@ export class Mystifly implements StrategyAirline{
                     route.routes[1]         = routeType;
                 }
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
-                route.net_rate          = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0];
+                route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
                 let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
