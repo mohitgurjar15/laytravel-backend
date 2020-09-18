@@ -155,7 +155,7 @@ export class FlightService {
 
         const mystifly = new Strategy(new Mystifly(headers));
         const airRevalidateResult =await mystifly.airRevalidate({route_code},user);
-        //console.log("airRevalidateResult",airRevalidateResult)
+        let isPassportRequired=false;
         let bookingRequestInfo:any={};
         if(airRevalidateResult){
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
@@ -170,7 +170,7 @@ export class FlightService {
             bookingRequestInfo.flight_class = 'Economy';
             bookingRequestInfo.instalment_type = instalment_type;
             bookingRequestInfo.additional_amount =additional_amount;
-
+            isPassportRequired=airRevalidateResult[0].is_passport_required;
             if(airRevalidateResult[0].routes.length==1){
 
                 bookingRequestInfo.journey_type = FlightJourney.ONEWAY;
@@ -185,7 +185,7 @@ export class FlightService {
         }=bookingRequestInfo;
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-        let travelersDetails = await this.getTravelersInfo(travelers);
+        let travelersDetails = await this.getTravelersInfo(travelers,isPassportRequired);
 
 
         let currencyId = headerDetails.currency.id;
@@ -414,7 +414,7 @@ export class FlightService {
         }
      }
 
-     async getTravelersInfo(travelers){
+     async getTravelersInfo(travelers,isPassportRequired=null){
 
         let travelerIds = travelers.map(traveler=>{
             return traveler.traveler_id;
@@ -458,9 +458,9 @@ export class FlightService {
                     throw new BadRequestException(`Gender is missing for traveler ${traveler.firstName}`)
                 if(traveler.dob==null || traveler.dob=='')
                     throw new BadRequestException(`Dob is missing for traveler ${traveler.firstName}`)
-                if(ageDiff>2 && (traveler.passportNumber==null || traveler.passportNumber==''))
+                if(ageDiff>2 && isPassportRequired && (traveler.passportNumber==null || traveler.passportNumber==''))
                     throw new BadRequestException(`Passport Number is missing for traveler ${traveler.firstName}`)
-                if(ageDiff>2 &&  (traveler.passportExpiry==null || traveler.passportExpiry==''))
+                if(ageDiff>2 && isPassportRequired && (traveler.passportExpiry==null || traveler.passportExpiry==''))
                     throw new BadRequestException(`Passport Expiry is missing for traveler ${traveler.firstName}`)
                 if(traveler.country==null || (typeof traveler.country.iso2!=='undefined' && traveler.country.iso2==''))
                     throw new BadRequestException(`Country code is missing for traveler ${traveler.firstName}`)

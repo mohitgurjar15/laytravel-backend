@@ -189,6 +189,7 @@ export class Mystifly implements StrategyAirline{
                 flightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 flightSegments.forEach(flightSegment => {
                     stop=new Stop();
+                    stopDuration="";
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
