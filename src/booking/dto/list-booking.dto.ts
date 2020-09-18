@@ -53,7 +53,7 @@ export class ListBookingDto {
 
     @ApiPropertyOptional({
         description:'Payment type',
-        example:"INSTALMENT"
+        example:1
     })
-    payment_type:string;
+    payment_type:number;
 }

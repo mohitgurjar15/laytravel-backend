@@ -50,6 +50,9 @@ export class Booking extends BaseEntity {
   @Column("numeric", { name: "markup_amount", precision: 15, scale: 3 })
   markupAmount: string;
 
+  @Column("numeric", { name: "usd_factor", precision: 15, scale: 3 ,default:1 })
+  usdFactor: string;
+
   @Column("date", { name: "booking_date" })
   bookingDate: string;
 
