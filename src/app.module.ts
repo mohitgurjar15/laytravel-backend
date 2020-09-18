@@ -34,6 +34,7 @@ import { CronJobsModule } from './cron-jobs/cron-jobs.module';
 import { TravelerModule } from './traveler/traveler.module';
 import { PaymentModule } from './payment/payment.module';
 import { BookingModule } from './booking/booking.module';
+import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 
 
 @Module({
@@ -96,6 +97,7 @@ import { BookingModule } from './booking/booking.module';
 		TravelerModule,
 		PaymentModule,
 		BookingModule,
+		AdminDashboardModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

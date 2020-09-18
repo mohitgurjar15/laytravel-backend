@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from "src/config/common.config";
-export class ListBookingDto {
+export class ListPaymentUserDto {
 
     @IsNotEmpty({
         message : `Please enter limit&&&limit&&&${errorMessage}`
@@ -22,38 +22,39 @@ export class ListBookingDto {
     page_no:number;
 
     @ApiPropertyOptional({
-        description:'search for date',
+        description:'search from start date',
         example:""
     })
     start_date: Date;
 
     @ApiPropertyOptional({
-        description:'search for date',
+        description:'search to end date',
         example:""
     })
     end_date: Date;
 
     @ApiPropertyOptional({
-        description:'Booking type search',
+        description:'Payment module type',
         example:1
     })
-    booking_type: number;
+    module_id: number;
 
     @ApiPropertyOptional({
-        description:'Customer name',
-        example:"steave"
-    })
-    customer_name: string;
-
-    @ApiPropertyOptional({
-        description:'Booking status',
+        description:'instalment status',
         example:0
     })
-    booking_status: number;
+    status: number;
 
     @ApiPropertyOptional({
-        description:'Payment type',
-        example:1
+        description:'instalment type',
+        example:"weekly"
     })
-    payment_type:number;
+    instalment_type:string;
+
+    @ApiPropertyOptional({
+        description:'Booking id',
+        example:""
+    })
+    booking_id:string;
+
 }

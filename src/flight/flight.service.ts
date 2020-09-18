@@ -296,6 +296,9 @@ export class FlightService {
             throw new BadRequestException(`Please configure flight module in database&&&module_id&&&${errorMessage}`)
         }
 
+        let currencyDetails = await getManager().createQueryBuilder(Currency,"currency").where(`"currency"."id"=:currencyId and "currency"."status"=true`,{currencyId}).getOne();
+        
+
         let booking= new Booking();
         booking.id =uuidv4();
         booking.moduleId=moduleDetails.id;
@@ -306,6 +309,7 @@ export class FlightService {
         booking.netRate=net_rate.toString();
         booking.markupAmount = (selling_price-net_rate).toString();
         booking.bookingDate=bookingDate;
+        booking.usdFactor = currencyDetails.liveRate.toString()
         booking.locationInfo={
             journey_type,
             source_location,
