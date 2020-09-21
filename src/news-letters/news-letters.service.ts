@@ -44,7 +44,7 @@ export class NewsLettersService {
 				.sendMail({
 					to: email,
 					from: "no-reply@laytrip.com",
-					subject: "You are subscribed us ",
+					subject: "Welcome to Laytrip",
 					html: subscribeForNewsUpdates(),
 				})
 				.then((res) => {
