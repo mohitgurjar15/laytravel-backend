@@ -38,7 +38,7 @@ import { MobileAuthCredentialDto } from "./dto/mobile-auth-credentials.dto";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { SocialLoginDto } from "./dto/social-login.dto";
 import * as md5 from "md5";
-import { In, getConnection, getManager } from "typeorm";
+import { In, getConnection, getManager, Like } from "typeorm";
 import { LoginLog } from "src/entity/login-log.entity";
 import { Role } from "src/enum/role.enum";
 import { Countries } from "src/entity/countries.entity";
@@ -57,6 +57,9 @@ import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 import { forgotPasswordMail } from "src/config/email_template/forgot-password-mail.html";
+import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
+import { NewsLetters } from "src/entity/news-letter.entity";
+import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 
 @Injectable()
 export class AuthService {
@@ -327,8 +330,7 @@ export class AuthService {
 					? `${siteUrl}/profile/${user.profilePic}`
 					: "",
 				roleId: user.roleId,
-				createdDate:user.createdDate,
-				
+				createdDate: user.createdDate,
 			};
 			const accessToken = this.jwtService.sign(payload);
 			const token = { token: accessToken };
@@ -343,7 +345,17 @@ export class AuthService {
 
 	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl) {
 		const { email } = forgetPasswordDto;
-		const user = await this.userRepository.findOne({ email });
+		var roles = [
+			Role.ADMIN,
+			Role.SUPER_ADMIN,
+			Role.SUPPLIER,
+			Role.FREE_USER,
+			Role.PAID_USER,
+		];
+		const user = await this.userRepository.findOne({
+			email,
+			roleId: In(roles),
+		});
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.`
@@ -392,8 +404,10 @@ export class AuthService {
 				to: email,
 				from: "no-reply@laytrip.com",
 				subject: "Forgot Password",
-				html:forgotPasswordMail({username: user.firstName + " " + user.lastName,
-				otp:otp})
+				html: forgotPasswordMail({
+					username: user.firstName + " " + user.lastName,
+					otp: otp,
+				}),
 			})
 			.then((res) => {
 				console.log("res", res);
@@ -419,11 +433,9 @@ export class AuthService {
 		return msg;
 	}
 
-	async updatePassword(
-		newPasswordDto: NewPasswordDto
-	) {
+	async updatePassword(newPasswordDto: NewPasswordDto) {
 		//const { token } = updatePasswordDto;
-		const { email,otp,new_password } = newPasswordDto;
+		const { email, otp, new_password } = newPasswordDto;
 		// var decoded = jwt_decode(token);
 		// const { email, tokenhash, iat } = decoded;
 		// const unixTimestamp = Math.round(new Date().getTime() / 1000);
@@ -433,10 +445,19 @@ export class AuthService {
 		// 		`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
 		// 	);
 		// }
+		var roles = [
+			Role.ADMIN,
+			Role.SUPER_ADMIN,
+			Role.SUPPLIER,
+			Role.FREE_USER,
+			Role.PAID_USER,
+		];
+		// const user = await this.userRepository.findOne({ email , roleId: In(roles) });
+
 		const user = await this.userRepository.findOne({
-			where: { email: email, isDeleted: 0, status: 1 },
+			where: { email: email, isDeleted: 0, status: 1, roleId: In(roles) },
 		});
-		
+
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.&&&email`
@@ -513,7 +534,7 @@ export class AuthService {
 							salt: user.salt,
 							//accessToken: newToken,
 							roleId: user.roleId,
-							createdDate:user.createdDate ,
+							createdDate: user.createdDate,
 						};
 
 						accessToken = this.jwtService.sign(payload);
@@ -537,7 +558,7 @@ export class AuthService {
 							? `${siteUrl}/profile/${user.profilePic}`
 							: "",
 						roleId: user.roleId,
-						createdDate:user.createdDate ,
+						createdDate: user.createdDate,
 					};
 					accessToken = this.jwtService.sign(payload);
 				}
@@ -654,7 +675,7 @@ export class AuthService {
 					salt: user.salt,
 					accessToken: newToken,
 					roleId: user.roleId,
-					createdDate:user.createdDate ,
+					createdDate: user.createdDate,
 				};
 
 				const accessToken = this.jwtService.sign(payload);
@@ -806,7 +827,7 @@ export class AuthService {
 				salt: "",
 				accessToken: newToken,
 				roleId: userDetail.roleId,
-				createdDate:user.createdDate ,
+				createdDate: user.createdDate,
 			};
 
 			const accessToken = this.jwtService.sign(payload);
@@ -821,7 +842,7 @@ export class AuthService {
 					email: userDetail.email || "",
 					profile_pic: "",
 					gender: userDetail.gender || "",
-					createdDate:userDetail.createdDate ,
+					createdDate: userDetail.createdDate,
 				},
 			};
 			let loginvia = device_type == 1 ? "android" : "ios";
@@ -849,17 +870,18 @@ export class AuthService {
 			throw new InternalServerErrorException(errorMessage);
 		}
 	}
-	async checkEmailConflict(checkEmailConflictDto:CheckEmailConflictDto): Promise <{ is_available: boolean }>
-	{
-		const {email} = checkEmailConflictDto
-			const userExist = await this.userRepository.findOne({
-				email,
-			});
-			if (userExist && userExist.roleId != Role.GUEST_USER) {
-				return { is_available: true };
-			} else {
-				return { is_available: false };
-			}
+	async checkEmailConflict(
+		checkEmailConflictDto: CheckEmailConflictDto
+	): Promise<{ is_available: boolean }> {
+		const { email } = checkEmailConflictDto;
+		const userExist = await this.userRepository.findOne({
+			email,
+		});
+		if (userExist && userExist.roleId != Role.GUEST_USER) {
+			return { is_available: true };
+		} else {
+			return { is_available: false };
+		}
 	}
 	async updateProfile(
 		updateProfileDto,
@@ -1002,7 +1024,7 @@ export class AuthService {
 				middleName: data.middleName,
 				lastName: data.lastName,
 				salt: data.salt,
-				createdDate:data.createdDate ,
+				createdDate: data.createdDate,
 
 				profilePic: data.profilePic
 					? `${siteUrl}/profile/${user.profilePic}`
@@ -1146,7 +1168,7 @@ export class AuthService {
 						: "",
 					roleId: user.roleId,
 					refrenceId: parentUser.userId,
-					createdDate:user.createdDate ,
+					createdDate: user.createdDate,
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };
@@ -1179,5 +1201,139 @@ export class AuthService {
 			.into(LoginLog)
 			.values(loginLog)
 			.execute();
+	}
+
+	async subscribeForNewsLetters(
+		subscribeForNewslatterDto: SubscribeForNewslatterDto
+	) {
+		try {
+			const { email } = subscribeForNewslatterDto;
+
+			let emailExiest = await getManager()
+				.createQueryBuilder(NewsLetters, "newsLetters")
+				.where(`email=:email AND is_subscribed = true`, { email })
+				.getOne();
+			if (emailExiest) {
+				throw new ConflictException(
+					`Given email id is alredy subscribed with us&&&email&&&Given email id is alredy subscribed with us`
+				);
+			}
+
+			const subscribeData = new NewsLetters();
+
+			subscribeData.email = email;
+			subscribeData.subscribeDate = new Date();
+			subscribeData.isSubscribed = true;
+
+			await subscribeData.save();
+			this.mailerService
+				.sendMail({
+					to: email,
+					from: "no-reply@laytrip.com",
+					subject: "You are subscribed us ",
+					html: subscribeForNewsUpdates(),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+			return { message: `Email id subscribed successfully` };
+		} catch (error) {
+			if (error.response.statusCode == undefined) {
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
+			switch (error.response.statusCode) {
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+	}
+
+	async unSubscribeForNewsLetters(
+		subscribeForNewslatterDto: SubscribeForNewslatterDto
+	) {
+		try {
+			const { email } = subscribeForNewslatterDto;
+
+			let subscribeData = await getManager()
+				.createQueryBuilder(NewsLetters, "newsLetters")
+				.where(`email=:email`, { email })
+				.getOne();
+			if (!subscribeData) {
+				throw new NotFoundException(
+					`Given email id not found&&&email&&&Given email id not found`
+				);
+			}
+
+			if(!subscribeData.isSubscribed)
+			{
+				throw new ConflictException(
+					`Given email id is alredy unsubscribed &&&email&&&Given email id is alredy unsubscribed `
+				);
+			}
+			subscribeData.isSubscribed = false;
+			subscribeData.unSubscribeDate = new Date();
+			await subscribeData.save();
+			// this.mailerService
+			// 	.sendMail({
+			// 		to: email,
+			// 		from: "no-reply@laytrip.com",
+			// 		subject: "You are subscribed us ",
+			// 		html: subscribeForNewsUpdates(),
+			// 	})
+			// 	.then((res) => {
+			// 		console.log("res", res);
+			// 	})
+			// 	.catch((err) => {
+			// 		console.log("err", err);
+			// 	});
+			return { message: `Email id unsubscribed successfully` };
+		} catch (error) {
+			if (error.response.statusCode == undefined) {
+				throw new InternalServerErrorException(
+					`${error.message}&&&id&&&${error.Message}`
+				);
+			}
+			switch (error.response.statusCode) {
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
 	}
 }
