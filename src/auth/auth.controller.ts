@@ -22,6 +22,7 @@ import {
 	BadRequestException,
 	Patch,
 	Query,
+	Delete,
 } from "@nestjs/common";
 import { AuthCredentialDto } from "./dto/auth-credentials.dto";
 import { AuthService } from "./auth.service";
@@ -59,6 +60,7 @@ import { OtpDto } from "./dto/otp.dto";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
+import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -161,7 +163,7 @@ export class AuthController {
 
 		return result;
 	}
-	
+
 	@Post(["social-login"])
 	@ApiOperation({ summary: "Social Media signup & login" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -170,7 +172,6 @@ export class AuthController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	
 	@ApiResponse({
 		status: 403,
 		description: "Forbidden, The user does not have access.",
@@ -198,7 +199,7 @@ export class AuthController {
 	) {
 		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl);
 	}
-	
+
 	@ApiOperation({ summary: "Reset password of user" })
 	@Post("reset-password/")
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -211,14 +212,11 @@ export class AuthController {
 		status: 403,
 		description: "Forbidden, The user does not have access.",
 	})
-	
 	@HttpCode(200)
-	async updatePassword(
-		@Body(ValidationPipe) newPasswordDto: NewPasswordDto
-	) {
+	async updatePassword(@Body(ValidationPipe) newPasswordDto: NewPasswordDto) {
 		return this.authService.updatePassword(newPasswordDto);
 	}
-	
+
 	@ApiOperation({ summary: "Verify Otp Of User" })
 	@Patch("verify-otp")
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -235,11 +233,10 @@ export class AuthController {
 	async verifyOtp(
 		@Body(ValidationPipe) otpDto: OtpDto,
 		@Req() req,
-		@SiteUrl() siteUrl: string,
+		@SiteUrl() siteUrl: string
 	) {
-		return this.authService.VerifyOtp(otpDto,req,siteUrl);
+		return this.authService.VerifyOtp(otpDto, req, siteUrl);
 	}
-
 
 	@ApiOperation({ summary: "Resend Otp for User" })
 	@Patch("resend-otp")
@@ -285,12 +282,9 @@ export class AuthController {
 	@ApiResponse({ status: 404, description: "email id not found!" })
 	@ApiResponse({ status: 409, description: "your email id exist" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async verifyEmail(
-		@Query() checkEmailConflictDto: CheckEmailConflictDto,
-	) {
+	async verifyEmail(@Query() checkEmailConflictDto: CheckEmailConflictDto) {
 		return await this.authService.checkEmailConflict(checkEmailConflictDto);
 	}
-
 
 	@Get("/profile")
 	@ApiOperation({ summary: "Get Profile Details" })
@@ -322,13 +316,9 @@ export class AuthController {
 	@HttpCode(200)
 	async updateEmailId(
 		@Body() updateEmailId: UpdateEmailId,
-		@GetUser() user: User,
+		@GetUser() user: User
 	): Promise<any> {
-		
-		return await this.authService.UpdateEmailId(
-			updateEmailId,
-			user
-		);
+		return await this.authService.UpdateEmailId(updateEmailId, user);
 	}
 
 	@Put("/profile")
@@ -462,4 +452,34 @@ export class AuthController {
 		);
 		return result;
 	}
+
+	@Post("subscribe-user-for-newsletters")
+	@ApiOperation({ summary: "subscribe email id for news updates" })
+	@HttpCode(200)
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({
+		status: 404,
+		description: "not found",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async subscribeForNewsLetters(@Body() subscribeForNewslatterDto:SubscribeForNewslatterDto): Promise<any> {
+		return await this.authService.subscribeForNewsLetters(subscribeForNewslatterDto);
+	}
+
+	@Delete("unsubscribe-from-newsletters")
+	@ApiOperation({ summary: "Unsubscribe email id from news updates" })
+	@HttpCode(200)
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({
+		status: 404,
+		description: "not found",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async unSubscribeForNewsLetters(@Body() subscribeForNewslatterDto:SubscribeForNewslatterDto): Promise<any> {
+		return await this.authService.unSubscribeForNewsLetters(subscribeForNewslatterDto);
+	}	
 }
