@@ -56,7 +56,7 @@ export class FlightService {
             let result = await this.airportRepository.find({
                 where : `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`
             })
-            //result = this.getNestedChildren(result,0)
+            result = this.getNestedChildren(result,0)
             if(!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`)
             return result;
