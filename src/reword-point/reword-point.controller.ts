@@ -110,7 +110,7 @@ export class RewordPointController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async countOfRewordPointsbyAdmin(
         @Param("id") id: string,
-	): Promise<{ Total_available_points : number }> {
+	): Promise<{ total_available_points : number }> {
 		return await this.RewordPointService.countOfRewordPoints(id);
 	}
 	
@@ -127,7 +127,7 @@ export class RewordPointController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async countOfRewordPoints(
         @GetUser() user: User,
-	): Promise<{ Total_available_points : number }> {
+	): Promise<{ total_available_points : number }> {
 		return await this.RewordPointService.countOfRewordPoints(user.userId);
     }
     
