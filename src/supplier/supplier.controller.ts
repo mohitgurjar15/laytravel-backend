@@ -106,7 +106,7 @@ export class SupplierController {
 	 * @param user_id
 	 */
 	@Put("/:id")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPLIER)
 	@ApiConsumes("multipart/form-data")
 	@ApiOperation({ summary: "Update supplier" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -189,7 +189,7 @@ export class SupplierController {
 	 * @param paginationOption
 	 */
 	@Get()
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPLIER)
 	@ApiOperation({ summary: "List supplier user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
