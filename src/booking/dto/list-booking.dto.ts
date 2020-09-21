@@ -56,4 +56,17 @@ export class ListBookingDto {
         example:1
     })
     payment_type:number;
+
+    @ApiPropertyOptional({
+        description:'booking id',
+        example:""
+    })
+    booking_id: string;
+
+    @ApiPropertyOptional({
+        description:'search with keyword',
+        example:""
+    })
+    search: string;
+
 }
