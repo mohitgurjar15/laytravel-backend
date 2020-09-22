@@ -3,6 +3,7 @@ import { Booking } from "src/entity/booking.entity";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { NotFoundException } from "@nestjs/common";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
+import { ListPaymentDto } from "./dto/list-payment.dto";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -98,5 +99,47 @@ export class BookingRepository extends Repository<Booking> {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 		return data;
+	}
+
+	async getPayments(user,listPaymentDto:ListPaymentDto){
+
+		const { page_no, limit, booking_id,payment_end_date,
+			booking_type,payment_start_date } = listPaymentDto;
+
+		const take = limit || 10;
+		const skip = (page_no - 1) * limit || 0;
+
+		let query =  getManager()
+		.createQueryBuilder(Booking, "booking")
+		.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+		.leftJoinAndSelect("booking.currency2", "currency")
+		.leftJoinAndSelect("booking.user", "User")
+		.leftJoinAndSelect("booking.module", "module")
+		.select([
+			"booking.id","booking.moduleId","booking.bookingStatus",
+			"booking.totalAmount","booking.bookingDate","booking.totalInstallments",
+			"booking.nextInstalmentDate","bookingInstalments.instalmentType",
+			"bookingInstalments.instalmentDate","bookingInstalments.amount","bookingInstalments.instalmentStatus",
+			"currency.code","currency.symbol","module.name"
+		])
+		.where(`"booking"."booking_type"=:bookingType and "booking"."user_id"=:userId`,{ bookingType:1, userId:user.userId })
+		.offset(skip)
+		.limit(take);
+
+		if(booking_id)
+			query=query.andWhere(`"booking"."id"=:booking_id`,{booking_id});
+		if(booking_type)
+			query=query.andWhere(`"booking"."module_id"=:booking_type`,{booking_type });
+		if(payment_start_date && payment_end_date){
+			query=query.andWhere(`"bookingInstalments"."instalment_date" >=:payment_start_date and "bookingInstalments"."instalment_date" <=:payment_end_date`,{payment_start_date,payment_end_date });
+		}
+		else if(payment_start_date){
+			query=query.andWhere(`"bookingInstalments"."instalment_date"=:payment_start_date`,{payment_start_date });
+		}
+		
+		
+		const [result, count] =await query.getManyAndCount();
+		
+		return { data: result, total_result: count };
 	}
 }

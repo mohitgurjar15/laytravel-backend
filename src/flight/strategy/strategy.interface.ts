@@ -11,4 +11,6 @@ export interface StrategyAirline{
     bookFlight(params1,params2);
 
     cancellationPolicy(param1);
+
+    ticketFlight(param1)
 }

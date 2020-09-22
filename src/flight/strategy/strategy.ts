@@ -39,4 +39,11 @@ export class Strategy{
         const data = await this.airline.cancellationPolicy(params1);
         return data;
     }
+
+    async ticketFlight(params1){
+        const data = await this.airline.ticketFlight(params1);
+        return data;
+    }
+
+    
 }

@@ -216,4 +216,25 @@ export class BookingService {
 		}
 	}
 
+	async getPaymentHistory(user,listPaymentDto){
+
+		let result =await this.bookingRepository.getPayments(user,listPaymentDto)
+		if(result.total_result==0){
+			throw new NotFoundException(`No payment history found!`);
+		}
+
+		let paidAmount=0;
+		for(let i in result.data){
+
+			for(let instalment of result.data[i].bookingInstalments){
+
+				if(instalment.instalmentStatus==1){
+
+					paidAmount+=parseFloat(instalment.amount);
+				}
+			}
+			result.data[i]['paidAmount']=paidAmount;
+		}
+		return result;
+	}
 }

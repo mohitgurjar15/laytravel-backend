@@ -1108,6 +1108,27 @@ export class Mystifly implements StrategyAirline{
         }
     }
 
+    async ticketFlight(bookingId){
+
+        const mystiflyConfig = await this.getMystiflyCredential();
+        const sessionToken = await this.startSession();
+        let requestBody='';
+        requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
+        requestBody +=`<soapenv:Header/>`;
+        requestBody +=`<soapenv:Body>`;
+        requestBody +=`<mys:TicketOrder>`;
+        requestBody +=`<mys:rq>`;
+        requestBody +=`<mys1:SessionId>${sessionToken}</mys1:SessionId>`;
+        requestBody +=`<mys1:Target>${mystiflyConfig.target}</mys1:Target>`;
+        requestBody +=`<mys1:UniqueID>${bookingId}</mys1:UniqueID>`;
+        requestBody +=`</mys:rq>`;
+        requestBody +=`</mys:TicketOrder>`;
+        requestBody +=`</soapenv:Body>`;
+        requestBody +=`</soapenv:Envelope>`;
+        let ticketResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'TicketOrder');
+        console.log("ticketResult",ticketResult)
+    }
+
     getFlightClass(className){
         return flightClass[className];
     }

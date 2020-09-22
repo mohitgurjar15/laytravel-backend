@@ -28,11 +28,11 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async searchAirport(
-        @Param('name', MinCharPipe) name:String
-        ){
-            return await this.flightService.searchAirport(name);
-            //return await this.flightService.mapChildParentAirport(name);
-        }
+    @Param('name', MinCharPipe) name:String
+    ){
+        return await this.flightService.searchAirport(name);
+        //return await this.flightService.mapChildParentAirport(name);
+    }
         
         
     @Post('/search-oneway-flight')
@@ -158,5 +158,18 @@ export class FlightController {
     ){
         console.log(bookFlightDto)
         return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
+    }
+
+    @Get('/ticket/:id')
+    @ApiOperation({ summary: "Ticket flight booking" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async ticketFlight(
+    @Param('id') id:String
+    ){
+        return await this.flightService.ticketFlight(id);
+        //return await this.flightService.mapChildParentAirport(name);
     }
 }

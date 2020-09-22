@@ -2,12 +2,12 @@ import { Controller, Get, UseGuards, Param, Query } from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
-import { RolesGuard } from "src/guards/role.guard";
 import { Roles } from "src/guards/role.decorator";
 import { Role } from "src/enum/role.enum";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
-import { User } from "src/entity/user.entity";
+import { User } from "@sentry/node";
+import {ListPaymentDto} from './dto/list-payment.dto'
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -87,6 +87,23 @@ export class BookingController {
 		@Param("id") bookingId: string
 	) {
 		return await this.bookingService.getBookingDetail(bookingId);
+	}
+
+	@Get('payment')	
+	@ApiOperation({ summary: "get booking detail" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getPaymentHistory(
+		@Query() listPaymentDto: ListPaymentDto,
+		@GetUser() user
+	) {
+		return await this.bookingService.getPaymentHistory(user,listPaymentDto);
 	}
 
 }
