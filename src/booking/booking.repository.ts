@@ -17,6 +17,8 @@ export class BookingRepository extends Repository<Booking> {
 			booking_type,
 			customer_name,
 			payment_type,
+			booking_id,
+			search
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -38,11 +40,20 @@ export class BookingRepository extends Repository<Booking> {
 		if (booking_type) {
 			where += `AND ("booking"."booking_type" = '${booking_type}')`;
 		}
+
+		if (booking_id) {
+			where += `AND ("booking"."id" = '${booking_id}')`;
+		}
+
 		// if (payment_type) {
 		// 	where += `("booking"."payment_type" = '${payment_type}') AND`;
 		// }
 		if (customer_name) {
-			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."email" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%')or("User"."email" ILIKE '%${customer_name}%'))`;
+			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
+		}
+
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
 		}
 		const [data, count] = await getManager()
 			.createQueryBuilder(Booking, "booking")
