@@ -88,10 +88,8 @@ export class BookingRepository extends Repository<Booking> {
 			.where('"booking"."id"=:bookingId', { bookingId })
 			.getOne();
 
-		if (bookingDetails) {
-			return bookingDetails;
-		}
-		return false;
+		
+		return bookingDetails;
 	}
 
 	async bookingDetail(bookingId:string) {
