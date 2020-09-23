@@ -221,7 +221,7 @@ export class FlightService {
             if(instalment_type==InstalmentType.MONTHLY){
                 instalmentDetails=Instalment.monthlyInstalment(selling_price,departure_date,bookingDate,totalAdditionalAmount,custom_instalment_amount,custom_instalment_no);
             }
-
+            
             if(instalmentDetails.instalment_available){
 
                 let firstInstalemntAmount = instalmentDetails.instalment_date[0].instalment_amount;
@@ -495,16 +495,16 @@ export class FlightService {
      }
 
      async sendBookingEmail(bookingId){
-        const Data = await this.bookingRepository.getBookingDetails(bookingId);
-        const bookingData = Data[0];
+        const data = await this.bookingRepository.getBookingDetails(bookingId);
+        const bookingData = data;
         var param = new FlightBookingEmailParameterModel();
 		const user = bookingData.user;
-		const moduleInfo = bookingData.moduleInfo;
+		const moduleInfo = bookingData.moduleInfo[0];
 		const currency = bookingData.currency2;
 		const netPrice = bookingData.netRate;
 		param.user_name = `${user.firstName}  ${user.firstName}`;
 		param.date = moduleInfo.departure_date;
-		param.laytrip_points = bookingData.laytrip_points ? 0 : 0;
+		//param.laytrip_points = bookingData.laytrip_points ? 0 : 0;
 		param.travelers = [`${user.firstName}  ${user.firstName}`];
 		param.airline = moduleInfo.airline ? moduleInfo.airline : "";
 		param.pnr_no = moduleInfo.pnr_no ? moduleInfo.pnr_no : "";
@@ -513,15 +513,15 @@ export class FlightService {
 		param.class = moduleInfo.flight_class ? moduleInfo.flight_class : "";
 		param.rout = moduleInfo.flight_rout ? moduleInfo.flight_rout : "";
 		param.duration = moduleInfo.duration ? moduleInfo.duration : "";
-		param.cardholder_name = bookingData.cardholder_name
+		/* param.cardholder_name = bookingData.cardholder_name
 			? bookingData.cardholder_name
-			: "";
+			: ""; */
 		param.visa_ending_in = user.passportExpiry ? user.passportExpiry : null;
 		param.amount = `${currency.symbol} ${bookingData.totalAmount} ${currency.code}`;
 		param.base_fare = `${currency.symbol} ${netPrice} ${currency.code}`;
-		param.tax = bookingData.tax
+		/* param.tax = bookingData.tax
 			? `${currency.symbol}${bookingData.tax} ${currency.code}`
-			: "0";
+			: "0"; */
 
 		var status = "";
 		if (bookingData.bookingStatus > 2) {
