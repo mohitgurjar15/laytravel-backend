@@ -13,6 +13,7 @@ import { User } from "./user.entity";
 import { Module } from "./module.entity";
 import { Supplier } from "./supplier.entity";
 import { BookingInstalments } from "./booking-instalments.entity";
+import { TravelerInfo } from "./traveler-info.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -134,4 +135,11 @@ export class Booking extends BaseEntity {
     bookingInstalments => bookingInstalments.booking
   )
   bookingInstalments: BookingInstalments[];
+
+
+  @OneToMany(
+		() => TravelerInfo,
+		(traveler) => traveler.bookingData
+	)
+	travelers: TravelerInfo[];
 }

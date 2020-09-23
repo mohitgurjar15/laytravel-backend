@@ -267,7 +267,7 @@ export class AdminService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-			var  statusWord = status == true ? 1 : 0 ;
+			var  statusWord = status === true? 1 : 0 ;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
