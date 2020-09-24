@@ -147,8 +147,8 @@ export class BookingRepository extends Repository<Booking> {
 		}
 		
 		
-		const [result, count] =await query.getManyAndCount();
-		
+		const result =await query.getMany();
+		const count = await query.getCount();
 		return { data: result, total_result: count };
 	}
 }
