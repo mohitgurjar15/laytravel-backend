@@ -1,4 +1,12 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, BadRequestException, NotAcceptableException, UnauthorizedException } from "@nestjs/common";
+import {
+	Injectable,
+	NotFoundException,
+	InternalServerErrorException,
+	ConflictException,
+	BadRequestException,
+	NotAcceptableException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { BookingRepository } from "./booking.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -9,6 +17,7 @@ import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
+import { errorMessage } from "src/config/common.config";
 
 @Injectable()
 export class BookingService {
@@ -20,9 +29,7 @@ export class BookingService {
 	) {}
 
 	async resendBookingEmail(bookingId: string): Promise<{ message: any }> {
-		const bookingData = await this.bookingRepository.bookingDetail(
-			bookingId
-		);
+		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 
 		if (!bookingData) {
 			throw new NotFoundException(
@@ -80,7 +87,7 @@ export class BookingService {
 			bookingData.bookingStatus == 2 ? "Failed" : "Canceled";
 		}
 		param.status = status;
-		
+
 		this.mailerService
 			.sendMail({
 				to: user.email,
@@ -96,144 +103,127 @@ export class BookingService {
 			});
 	}
 
-	async listBooking(listBookingDto: ListBookingDto){
+	async listBooking(listBookingDto: ListBookingDto) {
 		try {
 			return await this.bookingRepository.listBooking(listBookingDto);
 		} catch (error) {
-			console.log(error)
-			if (error.response.statusCode == undefined) {
-				console.log(error);
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			
+			if (typeof error.response !== "undefined") {
+				console.log('m');
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+				
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+			
 		}
 	}
 
-	async userBookingList(listBookingDto: ListBookingDto,userId:string){
+	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
-			return await this.bookingRepository.listBooking(listBookingDto,userId);
+			return await this.bookingRepository.listBooking(listBookingDto, userId);
 		} catch (error) {
-			console.log(error)
-			if (error.response.statusCode == undefined) {
-				console.log(error);
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
-	async getBookingDetail(bookingId: string){
+	async getBookingDetail(bookingId: string) {
 		try {
 			return await this.bookingRepository.bookingDetail(bookingId);
 		} catch (error) {
-			
-			if (error.response.statusCode == undefined) {
-				console.log(error);
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				console.log("m");
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
-	async getPaymentHistory(user,listPaymentDto){
-
-		let result =await this.bookingRepository.getPayments(user,listPaymentDto)
-		if(result.total_result==0){
+	async getPaymentHistory(user, listPaymentDto) {
+		let result = await this.bookingRepository.getPayments(user, listPaymentDto);
+		if (result.total_result == 0) {
 			throw new NotFoundException(`No payment history found!`);
 		}
 
-		let paidAmount=0;
-		for(let i in result.data){
-
-			for(let instalment of result.data[i].bookingInstalments){
-
-				if(instalment.instalmentStatus==1){
-
-					paidAmount+=parseFloat(instalment.amount);
+		let paidAmount = 0;
+		for (let i in result.data) {
+			for (let instalment of result.data[i].bookingInstalments) {
+				if (instalment.instalmentStatus == 1) {
+					paidAmount += parseFloat(instalment.amount);
 				}
 			}
-			result.data[i]['paidAmount']=paidAmount;
+			result.data[i]["paidAmount"] = paidAmount;
 		}
 		return result;
 	}

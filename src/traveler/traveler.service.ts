@@ -19,7 +19,8 @@ import { Countries } from "src/entity/countries.entity";
 import { UpdateTravelerDto } from "./dto/update-traveler.dto";
 import { JwtPayload } from "src/auth/jwt-payload.interface";
 import { JwtService } from "@nestjs/jwt";
-import * as moment from 'moment';
+import * as moment from "moment";
+import { errorMessage } from "src/config/common.config";
 
 @Injectable()
 export class TravelerService {
@@ -43,7 +44,8 @@ export class TravelerService {
 			passport_expiry,
 			gender,
 			email,
-			phone_no,country_id
+			phone_no,
+			country_id,
 		} = saveTravelerDto;
 		try {
 			let countryDetails = await getManager()
@@ -67,7 +69,7 @@ export class TravelerService {
 			user.timezone = "";
 			user.status = 1;
 			user.gender = gender;
-			user.countryId = country_id
+			user.countryId = country_id;
 			user.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			user.passportNumber = passport_number == "" ? null : passport_number;
 			user.roleId = Role.TRAVELER_USER;
@@ -92,8 +94,10 @@ export class TravelerService {
 				return this.userRepository.createtraveler(user);
 			} else {
 				user.roleId = Role.GUEST_USER;
-				if(user.email == ""){
-					throw new NotFoundException(`Please enter your email id &&&email&&&Please enter your email id`)
+				if (user.email == "") {
+					throw new NotFoundException(
+						`Please enter your email id &&&email&&&Please enter your email id`
+					);
 				}
 				const data = await this.userRepository.createUser(user);
 				const payload: JwtPayload = {
@@ -109,45 +113,45 @@ export class TravelerService {
 					profilePic: "",
 					roleId: data.roleId,
 				};
-				var userdata:any = {};
-				userdata = data
+				var userdata: any = {};
+				userdata = data;
 				userdata.token = this.jwtService.sign(payload);
 
 				return userdata;
 			}
 		} catch (error) {
-			console.log(error);
-			if (error.response.statusCode == undefined) {
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				console.log("m");
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This parent user does not exist&&&email&&&This parent user not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
@@ -212,10 +216,9 @@ export class TravelerService {
 				// delete data.salt;
 				// delete data.password;
 				var birthDate = new Date(data.dob);
-				
-				var age = moment(new Date()).diff(moment(birthDate),'years');
-				
-				
+
+				var age = moment(new Date()).diff(moment(birthDate), "years");
+
 				if (age < 2) {
 					data.user_type = "infant";
 				} else if (age < 12) {
@@ -227,31 +230,31 @@ export class TravelerService {
 
 			return { data: result, TotalReseult: count };
 		} catch (error) {
-			if (error.response.statusCode == undefined) {
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
@@ -259,38 +262,38 @@ export class TravelerService {
 		try {
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
-			if (error.response.statusCode == undefined) {
-				console.log(error);
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				console.log("m");
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
@@ -301,10 +304,11 @@ export class TravelerService {
 	) {
 		try {
 			//const traveler = await this.userRepository.getTravelData(userId);
-			const traveler = await this.userRepository.findOne(userId)
-			if(!traveler)
-			{
-				throw new NotFoundException(`Traveler not found &&&id&&&Traveler not found`)
+			const traveler = await this.userRepository.findOne(userId);
+			if (!traveler) {
+				throw new NotFoundException(
+					`Traveler not found &&&id&&&Traveler not found`
+				);
 			}
 			const {
 				first_name,
@@ -320,7 +324,7 @@ export class TravelerService {
 			} = updateTravelerDto;
 			let countryDetails = await getManager()
 				.createQueryBuilder(Countries, "country")
-				.where(`id=${ country_id }`)
+				.where(`id=${country_id}`)
 				.getOne();
 
 			if (!countryDetails)
@@ -346,38 +350,38 @@ export class TravelerService {
 
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
-			if (error.response.statusCode == undefined) {
-				console.log(error);
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				console.log("m");
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
@@ -392,38 +396,38 @@ export class TravelerService {
 
 			return { message: `Traveler ${traveler.email} is deleted` };
 		} catch (error) {
-			if (error.response.statusCode == undefined) {
-				console.log(error);
-				throw new InternalServerErrorException(
-					`${error.message}&&&id&&&${error.Message}`
-				);
+			if (typeof error.response !== "undefined") {
+				console.log("m");
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-			switch (error.response.statusCode) {
-				case 404:
-					if (
-						error.response.message ==
-						"This user does not exist&&&email&&&This user does not exist"
-					) {
-						error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-					}
-					throw new NotFoundException(error.response.message);
-				case 409:
-					throw new ConflictException(error.response.message);
-				case 422:
-					throw new BadRequestException(error.response.message);
-				case 500:
-					throw new InternalServerErrorException(error.response.message);
-				case 406:
-					throw new NotAcceptableException(error.response.message);
-				case 404:
-					throw new NotFoundException(error.response.message);
-				case 401:
-					throw new UnauthorizedException(error.response.message);
-				default:
-					throw new InternalServerErrorException(
-						`${error.message}&&&id&&&${error.Message}`
-					);
-			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 }

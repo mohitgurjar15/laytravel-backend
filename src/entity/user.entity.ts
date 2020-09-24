@@ -324,10 +324,10 @@ export class User extends BaseEntity {
 		return Otp == this.otp;
   }
 
-  @OneToOne(
-		() => TravelerInfo,
-		(traveler) => traveler.userData
-	)
-	traveler: TravelerInfo;
+  // @OneToOne(
+	// 	() => TravelerInfo,
+	// 	(traveler) => traveler.userData
+	// )
+	// traveler: TravelerInfo;
   
 }
