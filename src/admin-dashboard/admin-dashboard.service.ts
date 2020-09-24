@@ -160,11 +160,23 @@ export class AdminDashboardService {
 					AND (DATE(created_date) >= '${todayDate}')
 			`
 		);
+		
+		const totalCount = await getManager().query(
+			`SELECT
+				COUNT(DISTINCT("User"."user_id")) as "count" 
+				FROM "user" "User" 
+				where 
+					role_id In (${Role.FREE_USER},${Role.PAID_USER} )
+			`
+		);
+
 		var mcount = monthlyCount[0].count ? monthlyCount[0].count : 0;
 		var wcount = weeklyCount[0].count ? weeklyCount[0].count : 0;
+		var tcount = totalCount[0].count ? totalCount[0].count : 0 ; 
 		return {
 			current_month_Count:mcount,
-			current_week_count:wcount
+			current_week_count:wcount,
+			total_count : tcount
 		}
 	}
 }
