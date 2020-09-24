@@ -75,10 +75,6 @@ export class AdminDashboardService {
 
 		const { moduleId, startDate, toDate } = filterOption;
 		var where = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) `;
-		if (moduleId) {
-			where += `AND ("booking"."module_id" = '${moduleId}')`;
-		}
-
 		if (startDate) {
 			where += `AND (DATE(created_date) >= '${startDate}') `;
 		} else {
