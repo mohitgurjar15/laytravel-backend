@@ -59,9 +59,9 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
-			//.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
-			.leftJoinAndSelect("traveler.userData", "User")
+			.leftJoinAndSelect("traveler.userData", "userData")
 			.where(where)
 			.limit(take)
 			.offset(skip)
@@ -78,9 +78,9 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
-			//.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
-			.leftJoinAndSelect("traveler.userData", "User")
+			.leftJoinAndSelect("traveler.userData", "userData")
 			/* .select([
             "user.userId","user.title",
             "user.firstName","user.lastName","user.email",
