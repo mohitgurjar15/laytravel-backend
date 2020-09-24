@@ -283,7 +283,10 @@ export class PaymentService {
 		return this.listPayment(where, limit, page_no);
 	}
 
-	async listPaymentForUser(listPaymentUserDto: ListPaymentUserDto,user_id : string = '') {
+	async listPaymentForUser(
+		listPaymentUserDto: ListPaymentUserDto,
+		user_id: string = ""
+	) {
 		const {
 			limit,
 			page_no,
@@ -323,7 +326,7 @@ export class PaymentService {
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 
-		const [data, count] = await getManager()
+		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
@@ -356,9 +359,10 @@ export class PaymentService {
 			// ])
 			.where(where)
 			.limit(take)
-			.offset(skip)
-			.getManyAndCount();
+			.offset(skip);
 
+		const data = await query.getMany();
+		const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(
 				`Payment record not found&&&id&&&Payment record not found`

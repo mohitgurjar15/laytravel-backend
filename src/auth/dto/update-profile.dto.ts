@@ -57,7 +57,7 @@ export class UpdateProfileDto {
     last_name: string;
 
     @IsNotEmpty({
-        message : `Please select country code.&&&country_code`
+        message : `Please enter your phone country code.&&&phone numberPlease enter your phone country code.`
     })
     @ApiProperty({
         description: `Select country code`,
@@ -66,17 +66,17 @@ export class UpdateProfileDto {
     country_code: string;
 
     @IsNotEmpty({
-        message : `Please enter your contact number.&&&phone_no`
-    })
-    @ApiProperty({
+        message : `Please enter your phone number.&&&phone number&&&Please enter your phone number.`
+    })@ApiProperty({
         description: `Enter phone number`,
         example: `8452456712`
     })
     phone_no: string;
 
-    @IsNotEmpty({
-        message : `Please enter your address.&&&address`
-    })
+    @ApiPropertyOptional({
+		type: "string",
+		description: "address",
+	})    
     @ApiProperty({
         description: `Enter Your address`,
         example: `12 street, las vegas`
@@ -84,39 +84,60 @@ export class UpdateProfileDto {
     address: string;
 
     
-    @IsNotEmpty({
-        message : `Please enter your zipcode.&&&zip_code`
-    })
+    @ApiPropertyOptional({
+		type: "string",
+		description: "zip code",
+	})    
     @ApiProperty({
         description: `Enter your zipcode`,
         example: `H7623`
     })
     zip_code: string;
 
-    @IsNotEmpty({
-        message : `Please select your country.&&&country_id`
-    })
+    @ApiPropertyOptional({
+		type: "string",
+		description: "country id",
+	})    
+    // @ValidateIf((o) =>  o.state_id  != undefined || o.state_id != "")
+    // @IsNotEmpty({
+	// 	message: (args: ValidationArguments) => {
+	// 		if (typeof args.value == "undefined" || args.value == "") {
+	// 			return `Please enter country code.&&&country&&&Please enter country code`;
+	// 		}
+	// 	}
+	// })
     @ApiProperty({
         description: `Enter your country id`,
         example: 233
     })
     country_id: number;
 
-    @IsNotEmpty({
-        message : `Please select your state.&&&state_id`
+    
+    @ApiPropertyOptional({
+		type: "string",
+		description: "state id",
     })
+    // @ValidateIf((o) =>  o.country_id  != undefined || o.country_id != "")
+    // @IsNotEmpty({
+	// 	message: (args: ValidationArguments) => {
+	// 		if (typeof args.value == "undefined" || args.value == "") {
+	// 			return `Please enter state code.&&&country&&&Please enter state code`;
+	// 		}
+	// 	}
+	// })    
     @ApiProperty({
         description: `Enter your state id`,
         example: 1452
     })
     state_id: number;
 
-    @IsNotEmpty({
-        message : `Please enter your city name.&&&city_name`
-    })
+    @ApiPropertyOptional({
+		type: "string",
+		description: "city name",
+	})    
     @ApiProperty({
         description: `Enter your city name`,
-        example: `Las vegas`
+        example: ``
     })
     city_name: string;
 
@@ -157,16 +178,16 @@ export class UpdateProfileDto {
     @ApiPropertyOptional({
 		type: "string",
 		description: "Passport expiry date",
-	})
-    @IsValidDate('',{
-        message: (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please enter passport expiry date.&&&passport_expiry`;
-            } else {
-                return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
-            }
-        },
     })
+    // @IsValidDate('',{
+    //     message: (args: ValidationArguments) => {
+    //         if (typeof args.value == "undefined" || args.value == "") {
+    //             return `Please enter passport expiry date.&&&passport_expiry`;
+    //         } else {
+    //             return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
+    //         }
+    //     },
+    // })
     @ApiProperty({
         description: `Enter your passport expiry date`,
         example: `2030-07-20`

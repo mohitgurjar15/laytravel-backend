@@ -18,7 +18,7 @@ export class BookingRepository extends Repository<Booking> {
 			customer_name,
 			payment_type,
 			booking_id,
-			search
+			search,
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -42,7 +42,7 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (booking_id) {
-			where += `AND ("booking"."id" = '${booking_id}')`;
+			where += `AND ("booking"."id" =  '${booking_id}')`;
 		}
 
 		// if (payment_type) {
@@ -55,16 +55,18 @@ export class BookingRepository extends Repository<Booking> {
 		if (search) {
 			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
 		}
-		const [data, count] = await getManager()
+		const query = await getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.travelers", "traveler")
+			.leftJoinAndSelect("traveler.userData", "userData")
 			.where(where)
 			.limit(take)
 			.offset(skip)
-			.getManyAndCount();
-
+		const data = await query.getMany();
+		const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
@@ -77,6 +79,8 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.travelers", "traveler")
+			.leftJoinAndSelect("traveler.userData", "userData")
 			/* .select([
             "user.userId","user.title",
             "user.firstName","user.lastName","user.email",
@@ -88,11 +92,10 @@ export class BookingRepository extends Repository<Booking> {
 			.where('"booking"."id"=:bookingId', { bookingId })
 			.getOne();
 
-		
 		return bookingDetails;
 	}
 
-	async bookingDetail(bookingId:string) {
+	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;
 
 		const where = `"booking"."id" = '${bookingId}'`;
@@ -110,45 +113,70 @@ export class BookingRepository extends Repository<Booking> {
 		return data;
 	}
 
-	async getPayments(user,listPaymentDto:ListPaymentDto){
-
-		const { page_no, limit, booking_id,payment_end_date,
-			booking_type,payment_start_date } = listPaymentDto;
+	async getPayments(user, listPaymentDto: ListPaymentDto) {
+		const {
+			page_no,
+			limit,
+			booking_id,
+			payment_end_date,
+			booking_type,
+			payment_start_date,
+		} = listPaymentDto;
 
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 
-		let query =  getManager()
-		.createQueryBuilder(Booking, "booking")
-		.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
-		.leftJoinAndSelect("booking.currency2", "currency")
-		.leftJoinAndSelect("booking.user", "User")
-		.leftJoinAndSelect("booking.module", "module")
-		.select([
-			"booking.id","booking.moduleId","booking.bookingStatus",
-			"booking.totalAmount","booking.bookingDate","booking.totalInstallments",
-			"booking.nextInstalmentDate","bookingInstalments.instalmentType",
-			"bookingInstalments.instalmentDate","bookingInstalments.amount","bookingInstalments.instalmentStatus",
-			"currency.code","currency.symbol","module.name"
-		])
-		.where(`"booking"."booking_type"=:bookingType and "booking"."user_id"=:userId`,{ bookingType:1, userId:user.userId })
-		.offset(skip)
-		.limit(take);
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.module", "module")
+			// .leftJoinAndSelect("booking.travelers", "traveler")
+			// .leftJoinAndSelect("traveler.userData", "User")
+			.select([
+				"booking.id",
+				"booking.moduleId",
+				"booking.bookingStatus",
+				"booking.totalAmount",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.nextInstalmentDate",
+				"bookingInstalments.instalmentType",
+				"bookingInstalments.instalmentDate",
+				"bookingInstalments.amount",
+				"bookingInstalments.instalmentStatus",
+				"currency.code",
+				"currency.symbol",
+				"module.name",
+			])
+			.where(
+				`"booking"."booking_type"=:bookingType and "booking"."user_id"=:userId`,
+				{ bookingType: 1, userId: user.userId }
+			)
+			.offset(skip)
+			.limit(take);
 
-		if(booking_id)
-			query=query.andWhere(`"booking"."id"=:booking_id`,{booking_id});
-		if(booking_type)
-			query=query.andWhere(`"booking"."module_id"=:booking_type`,{booking_type });
-		if(payment_start_date && payment_end_date){
-			query=query.andWhere(`"bookingInstalments"."instalment_date" >=:payment_start_date and "bookingInstalments"."instalment_date" <=:payment_end_date`,{payment_start_date,payment_end_date });
+		if (booking_id)
+			query = query.andWhere(`"booking"."id"=:booking_id`, { booking_id });
+		if (booking_type)
+			query = query.andWhere(`"booking"."module_id"=:booking_type`, {
+				booking_type,
+			});
+		if (payment_start_date && payment_end_date) {
+			query = query.andWhere(
+				`"bookingInstalments"."instalment_date" >=:payment_start_date and "bookingInstalments"."instalment_date" <=:payment_end_date`,
+				{ payment_start_date, payment_end_date }
+			);
+		} else if (payment_start_date) {
+			query = query.andWhere(
+				`"bookingInstalments"."instalment_date"=:payment_start_date`,
+				{ payment_start_date }
+			);
 		}
-		else if(payment_start_date){
-			query=query.andWhere(`"bookingInstalments"."instalment_date"=:payment_start_date`,{payment_start_date });
-		}
-		
-		
-		const [result, count] =await query.getManyAndCount();
-		
+
+		const result = await query.getMany();
+		const count = await query.getCount();
 		return { data: result, total_result: count };
 	}
 }

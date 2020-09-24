@@ -910,27 +910,36 @@ export class AuthService {
 				currency_id,
 			} = updateProfileDto;
 
-			let countryDetails = await getManager()
-				.createQueryBuilder(Countries, "country")
-				.where(`id=:country_id`, { country_id })
-				.getOne();
+			if (country_id) {
+				let countryDetails = await getManager()
+					.createQueryBuilder(Countries, "country")
+					.where(`id=:country_id`, { country_id })
+					.getOne();
 
-			if (!countryDetails)
-				throw new BadRequestException(
-					`Country id not exist with database.&&&country_id`
-				);
+				if (!countryDetails)
+					throw new BadRequestException(
+						`Country id not exist with database.&&&country_id`
+					);
+			}
 
-			let stateDetails = await getManager()
-				.createQueryBuilder(States, "states")
-				.where(`id=:state_id and country_id=:country_id`, {
-					state_id,
-					country_id,
-				})
-				.getOne();
-			if (!stateDetails)
-				throw new BadRequestException(
-					`State id not exist with country id.&&&country_id`
-				);
+			if (state_id) {
+				if(!country_id)
+				{
+					throw new BadRequestException(`Please enter country code&&&country&&&Please enter country code`)
+				}
+				let stateDetails = await getManager()
+					.createQueryBuilder(States, "states")
+					.where(`id=:state_id and country_id=:country_id`, {
+						state_id,
+						country_id,
+					})
+					.getOne();
+				if (!stateDetails)
+					throw new BadRequestException(
+						`State id not exist with country id.&&&country_id`
+					);
+			}
+
 			if (currency_id) {
 				let currencyDetails = await getManager()
 					.createQueryBuilder(Currency, "Currency")
@@ -959,22 +968,26 @@ export class AuthService {
 			user.firstName = first_name;
 			user.lastName = last_name;
 			user.zipCode = zip_code;
-			user.countryCode = country_code;
+			if (country_code) user.countryCode = country_code;
+
+			if (address) user.address = address;
+
 			user.phoneNo = phone_no;
 			user.dob = dob;
-			user.address = address;
+
 			user.gender = gender;
 			user.preferredCurrency = currency_id ? currency_id : null;
 			user.preferredLanguage = language_id ? language_id : null;
-			if (passport_expiry) {
-				user.passportExpiry = passport_expiry;
-			}
-			if (passport_number) {
-				user.passportNumber = passport_number;
-			}
-			user.countryId = country_id;
-			user.stateId = state_id;
-			user.cityName = city_name;
+			if (passport_expiry) user.passportExpiry = passport_expiry;
+
+			if (passport_number) user.passportNumber = passport_number;
+
+			if (country_id) user.countryId = country_id;
+
+			if (state_id) user.stateId = state_id;
+
+			if (city_name) user.cityName = city_name;
+
 			var oldProfile = user.profilePic;
 
 			if (typeof files.profile_pic != "undefined")
@@ -989,8 +1002,11 @@ export class AuthService {
 						if (err) {
 							console.log(err);
 						}
+						else
+						{
+							console.log(`${oldProfile} image  deleted!`);
+						}
 						// if no error, file has been deleted successfully
-						console.log(`${oldProfile} image  deleted!`);
 					}
 				);
 			}
@@ -1202,6 +1218,4 @@ export class AuthService {
 			.values(loginLog)
 			.execute();
 	}
-
-	
 }
