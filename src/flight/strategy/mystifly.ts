@@ -96,7 +96,6 @@ export class Mystifly implements StrategyAirline{
             child_count,
             infant_count
         } = searchFlightDto;
-        //console.log("mystiflyConfig",mystiflyConfig);
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name:'flight' })
@@ -170,6 +169,7 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</soapenv:Body>`
         requestBody += `</soapenv:Envelope>`
         let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirLowFareSearch');
+        
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
             let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
@@ -181,13 +181,14 @@ export class Mystifly implements StrategyAirline{
             let routeType:RouteType;
             let flightSegments=[];
             let stopDuration;
-            
+            let otherSegments=[]
 
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
                 flightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
-                flightSegments.forEach(flightSegment => {
+                otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
+                flightSegments.forEach((flightSegment,j) => {
                     stop=new Stop();
                     stopDuration="";
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
@@ -211,6 +212,9 @@ export class Mystifly implements StrategyAirline{
                     stop.is_layover            = false;
                     stop.airline_name          = airlines[flightSegment['a:marketingairlinecode'][0]];
                     stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    stop.cabin_baggage         = otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j];
+                    stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
+                    stop.meal                  = flightSegment['a:mealcode'][0];
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -551,11 +555,15 @@ export class Mystifly implements StrategyAirline{
             let outBoundflightSegments=[];
             let inBoundflightSegments=[];
             let stopDuration;
+            let otherSegments=[];
+            let j;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
+                j=0;
                 outBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 inBoundflightSegments  = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]['a:flightsegments'][0]['a:flightsegment'];
+                otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
                 outBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
@@ -579,6 +587,9 @@ export class Mystifly implements StrategyAirline{
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                     stop.is_layover            = false;
+                    stop.cabin_baggage         = otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j];
+                    stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
+                    stop.meal                  = flightSegment['a:mealcode'][0];
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -587,6 +598,7 @@ export class Mystifly implements StrategyAirline{
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
                     stops.push(stop)
+                    j++;
                 });
 
                 routeType=new RouteType();
@@ -623,6 +635,9 @@ export class Mystifly implements StrategyAirline{
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                     stop.is_layover            = false;
+                    stop.cabin_baggage         = otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j];
+                    stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
+                    stop.meal                  = flightSegment['a:mealcode'][0];
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -631,6 +646,7 @@ export class Mystifly implements StrategyAirline{
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
                     stops.push(stop)
+                    j++;
                 });
                 routeType=new RouteType();
                 routeType.type          = 'inbound';
