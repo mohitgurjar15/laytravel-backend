@@ -76,6 +76,7 @@ export class UserRepository extends Repository<User> {
 			.leftJoinAndSelect("user.preferredCurrency2", "currency")
 			.leftJoinAndSelect("user.preferredLanguage2", "language")
 			.select([
+				"user.status",
 				"user.userId",
 				"user.title",
 				"user.dob",

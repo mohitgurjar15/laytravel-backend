@@ -5,7 +5,8 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToMany
+  OneToMany,
+  OneToOne
 } from "typeorm";
 import * as bcrypt from "bcrypt";
 
@@ -25,6 +26,7 @@ import { UserCard } from "./user-card.entity";
 import { UserDeviceDetail } from "./user-device-detail.entity";
 import { Markup } from "./markup.entity";
 import { Currency } from "./currency.entity";
+import { TravelerInfo } from "./traveler-info.entity";
 
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
@@ -321,5 +323,11 @@ export class User extends BaseEntity {
   async validateOtp(Otp: number): Promise<boolean> {
 		return Otp == this.otp;
   }
+
+  @OneToOne(
+		() => TravelerInfo,
+		(traveler) => traveler.userData
+	)
+	traveler: TravelerInfo;
   
 }
