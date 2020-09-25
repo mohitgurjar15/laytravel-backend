@@ -16,9 +16,15 @@ import { AddCardDto } from "./dto/add-card.dto";
 import { ListPaymentAdminDto } from "./dto/list-payment-admin.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
+import { BookingRepository } from "src/booking/booking.repository";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class PaymentService {
+	constructor(
+		@InjectRepository(BookingRepository)
+		private bookingRepository: BookingRepository,
+	) {}
 	async saveCard(saveCardDto: SaveCardDto, user: User) {
 		const {
 			card_holder_name,
@@ -280,7 +286,7 @@ export class PaymentService {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
 
-		return this.listPayment(where, limit, page_no);
+		return this.bookingRepository.listPayment(where, limit, page_no);
 	}
 
 	async listPaymentForUser(
@@ -319,55 +325,55 @@ export class PaymentService {
 		if (instalment_type) {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
-		return this.listPayment(where, limit, page_no);
+		return this.bookingRepository.listPayment(where, limit, page_no);
 	}
 
-	async listPayment(where: string, limit: number, page_no: number) {
-		const take = limit || 10;
-		const skip = (page_no - 1) * limit || 0;
+	// async listPayment(where: string, limit: number, page_no: number) {
+	// 	const take = limit || 10;
+	// 	const skip = (page_no - 1) * limit || 0;
 
-		let query = getManager()
-			.createQueryBuilder(BookingInstalments, "BookingInstalments")
-			.leftJoinAndSelect("BookingInstalments.booking", "booking")
-			.leftJoinAndSelect("BookingInstalments.currency", "currency")
-			.leftJoinAndSelect("BookingInstalments.user", "User")
-			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			.leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-			.leftJoinAndSelect(
-				"BookingInstalments.failedPaymentAttempts",
-				"failedPaymentAttempts"
-			)
-			// .select([
-			// 	"User.userId",
-			// 	"User.title",
-			// 	"User.dob",
-			// 	"User.firstName",
-			// 	"User.lastName",
-			// 	"User.email",
-			// 	"booking",
+	// 	let query = getManager()
+	// 		.createQueryBuilder(BookingInstalments, "BookingInstalments")
+	// 		.leftJoinAndSelect("BookingInstalments.booking", "booking")
+	// 		.leftJoinAndSelect("BookingInstalments.currency", "currency")
+	// 		.leftJoinAndSelect("BookingInstalments.user", "User")
+	// 		.leftJoinAndSelect("BookingInstalments.module", "moduleData")
+	// 		.leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+	// 		.leftJoinAndSelect(
+	// 			"BookingInstalments.failedPaymentAttempts",
+	// 			"failedPaymentAttempts"
+	// 		)
+	// 		// .select([
+	// 		// 	"User.userId",
+	// 		// 	"User.title",
+	// 		// 	"User.dob",
+	// 		// 	"User.firstName",
+	// 		// 	"User.lastName",
+	// 		// 	"User.email",
+	// 		// 	"booking",
 
-			// 	"moduleData.id",
-			// 	"moduleData.name",
-			// 	"supplier.id",
-			// 	"supplier.name",
-			// 	"failedPaymentAttempts",
-			// 	"currency.id",
-			// 	"currency.country",
-			// 	"currency.code",
-			// 	"currency.symbol",
-			// 	"currency.liveRate",
-			// ])
-			.where(where)
-			.limit(take)
-			.offset(skip);
+	// 		// 	"moduleData.id",
+	// 		// 	"moduleData.name",
+	// 		// 	"supplier.id",
+	// 		// 	"supplier.name",
+	// 		// 	"failedPaymentAttempts",
+	// 		// 	"currency.id",
+	// 		// 	"currency.country",
+	// 		// 	"currency.code",
+	// 		// 	"currency.symbol",
+	// 		// 	"currency.liveRate",
+	// 		// ])
+	// 		.where(where)
+	// 		.limit(take)
+	// 		.offset(skip);
 
-		const data = await query.getMany();
-		const count = await query.getCount();
-		if (!data.length) {
-			throw new NotFoundException(
-				`Payment record not found&&&id&&&Payment record not found`
-			);
-		}
-		return { data: data, total_count: count };
-	}
+	// 	const data = await query.getMany();
+	// 	const count = await query.getCount();
+	// 	if (!data.length) {
+	// 		throw new NotFoundException(
+	// 			`Payment record not found&&&id&&&Payment record not found`
+	// 		);
+	// 	}
+	// 	return { data: data, total_count: count };
+	// }
 }

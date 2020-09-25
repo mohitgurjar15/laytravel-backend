@@ -4,6 +4,7 @@ import { ListBookingDto } from "./dto/list-booking.dto";
 import { NotFoundException } from "@nestjs/common";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { ListPaymentDto } from "./dto/list-payment.dto";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -63,10 +64,10 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
 			.where(where)
-			.limit(take)
+			.take(take)
 			.offset(skip)
-		const data = await query.getMany();
-		const count = await query.getCount();
+		const [data,count] = await query.getManyAndCount();
+		//const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
@@ -155,7 +156,7 @@ export class BookingRepository extends Repository<Booking> {
 				{ bookingType: 1, userId: user.userId }
 			)
 			.offset(skip)
-			.limit(take);
+			.take(take);
 
 		if (booking_id)
 			query = query.andWhere(`"booking"."id"=:booking_id`, { booking_id });
@@ -175,8 +176,55 @@ export class BookingRepository extends Repository<Booking> {
 			);
 		}
 
-		const result = await query.getMany();
-		const count = await query.getCount();
+		const [result,count] = await query.getManyAndCount();
+		//const count = await query.getCount();
 		return { data: result, total_result: count };
+	}
+
+
+	async listPayment(where: string, limit: number, page_no: number) {
+		const take = limit || 10;
+		const skip = (page_no - 1) * limit || 0;
+
+		let query = getManager()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("BookingInstalments.currency", "currency")
+			.leftJoinAndSelect("BookingInstalments.user", "User")
+			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
+			.leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+			.leftJoinAndSelect(
+				"BookingInstalments.failedPaymentAttempts",
+				"failedPaymentAttempts"
+			)
+			// .select([
+			// 	"booking.id",
+			// 	"booking.moduleId",
+			// 	"booking.bookingStatus",
+			// 	"booking.totalAmount",
+			// 	"booking.bookingDate",
+			// 	"booking.totalInstallments",
+			// 	"booking.nextInstalmentDate",
+			// 	"bookingInstalments.instalmentType",
+			// 	"bookingInstalments.instalmentDate",
+			// 	"bookingInstalments.amount",
+			// 	"bookingInstalments.instalmentStatus",
+			// 	"currency.code",
+			// 	"currency.symbol",
+			// 	"moduleData.name",
+			// ])
+			
+			.where(where)
+			.take(take)
+			.offset(skip);
+
+		const [data,count] = await query.getManyAndCount();
+		// const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(
+				`Payment record not found&&&id&&&Payment record not found`
+			);
+		}
+		return { data: data, total_count: count };
 	}
 }
