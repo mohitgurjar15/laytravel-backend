@@ -119,7 +119,7 @@ export class UserRepository extends Repository<User> {
 			// END AS "user_type"`,)
 			.where(where)
 			.offset(skip)
-			.limit(take)
+			.take(take)
 			.getManyAndCount();
 
 		if (!result.length || count <= skip) {

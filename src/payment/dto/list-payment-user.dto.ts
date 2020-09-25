@@ -35,19 +35,19 @@ export class ListPaymentUserDto {
 
     @ApiPropertyOptional({
         description:'Payment module type',
-        example:1
+        example:''
     })
     module_id: number;
 
     @ApiPropertyOptional({
         description:'instalment status',
-        example:0
+        example:''
     })
     status: number;
 
     @ApiPropertyOptional({
         description:'instalment type',
-        example:"weekly"
+        example:""
     })
     instalment_type:string;
 
