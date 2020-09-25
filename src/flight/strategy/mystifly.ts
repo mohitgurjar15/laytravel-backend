@@ -182,13 +182,15 @@ export class Mystifly implements StrategyAirline{
             let flightSegments=[];
             let stopDuration;
             let otherSegments=[]
-
+            let totalDuration;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
+                totalDuration=0;
                 flightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
                 flightSegments.forEach((flightSegment,j) => {
+                    totalDuration +=flightSegment['a:journeyduration'][0]*60;
                     stop=new Stop();
                     stopDuration="";
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
@@ -219,6 +221,7 @@ export class Mystifly implements StrategyAirline{
 
                         stop.is_layover             =  true;
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
+                        totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                         stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
@@ -249,9 +252,8 @@ export class Mystifly implements StrategyAirline{
                 route.arrival_time      = stops[stops.length-1].arrival_time;
                 route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
                 route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
-                let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
-                
-                route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
+                let duration           = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                route.total_duration    = `${duration.hours} h ${duration.minutes} m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
@@ -557,7 +559,9 @@ export class Mystifly implements StrategyAirline{
             let stopDuration;
             let otherSegments=[];
             let j;
+            let totalDuration;
             for(let i=0; i < flightRoutes.length; i++){
+                totalDuration=0;
                 route=new Route;
                 stops=[];
                 j=0;
@@ -566,6 +570,7 @@ export class Mystifly implements StrategyAirline{
                 otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
                 outBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
+                    totalDuration += flightSegment['a:journeyduration'][0]*60;
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
@@ -594,6 +599,7 @@ export class Mystifly implements StrategyAirline{
 
                         stop.is_layover             =  true;
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
+                        totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                         stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
@@ -604,7 +610,7 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
-                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                 routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
@@ -612,8 +618,10 @@ export class Mystifly implements StrategyAirline{
                 route.departure_time    = stops[0].departure_time;
                 route.stop_count = stops.length-1;
                 stops=[];
+                totalDuration=0;
                 inBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
+                    totalDuration              +=flightSegment['a:journeyduration'][0]*60;
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
@@ -644,6 +652,7 @@ export class Mystifly implements StrategyAirline{
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
                         stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
+                        totalDuration +=moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                     }
                     stops.push(stop)
                     j++;
@@ -651,7 +660,7 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'inbound';
                 routeType.stops         = stops;
-                let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                 routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                 route.routes[1]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
@@ -672,9 +681,9 @@ export class Mystifly implements StrategyAirline{
                 route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
                 route.arrival_date      = stops[stops.length-1].arrival_date;
                 route.arrival_time      = stops[stops.length-1].arrival_time;
-                let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                let duartion       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                  
-                route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
+                route.total_duration    = `${duartion.hours} h ${duartion.minutes} m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
@@ -811,7 +820,6 @@ export class Mystifly implements StrategyAirline{
 
             let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
             let flightRoutes        = airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
-            console.log(JSON.stringify(airRevalidateResult))
             let stop:Stop;
             let stops:Stop[]=[];
             let routes:Route[]=[];
@@ -825,9 +833,11 @@ export class Mystifly implements StrategyAirline{
                 throw new NotFoundException(`Flight is not available now`);
             }   
 
+            let totalDuration;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
+                totalDuration=0;
                 outBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 
                 if(typeof flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]!='undefined')
@@ -835,6 +845,7 @@ export class Mystifly implements StrategyAirline{
 
                 outBoundflightSegments.forEach(flightSegment => {
                     stop=new Stop();
+                    totalDuration += flightSegment['a:journeyduration'][0]*60;
                     stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
@@ -862,6 +873,7 @@ export class Mystifly implements StrategyAirline{
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
                         stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
+                        totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                     }
                     stops.push(stop)
                 });
@@ -869,7 +881,7 @@ export class Mystifly implements StrategyAirline{
                 routeType=new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
-                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                 routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
@@ -881,8 +893,10 @@ export class Mystifly implements StrategyAirline{
                 route.arrival_info        = typeof airports[stop.arrival_code]!=='undefined'?airports[stop.arrival_code]:{};
                 if(typeof flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]!='undefined'){
                     stops=[];
+                    totalDuration=0;
                     inBoundflightSegments.forEach(flightSegment => {
                         stop=new Stop();
+                        totalDuration += flightSegment['a:journeyduration'][0]*60;
                         stop.departure_code        = flightSegment['a:departureairportlocationcode'][0];
                         stop.departure_date        = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
                         stop.departure_time        = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
@@ -909,6 +923,7 @@ export class Mystifly implements StrategyAirline{
                             let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
                             stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                             stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
+                            totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                         }
                         stops.push(stop)
                     });
@@ -916,7 +931,7 @@ export class Mystifly implements StrategyAirline{
                     routeType=new RouteType();
                     routeType.type          = 'inbound';
                     routeType.stops         = stops;
-                    let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                    let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                     routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                     route.routes[1]         = routeType;
                 }
@@ -936,7 +951,7 @@ export class Mystifly implements StrategyAirline{
                 
                 route.arrival_date      = stops[stops.length-1].arrival_date;
                 route.arrival_time      = stops[stops.length-1].arrival_time;
-                let totalDuration       = DateTime.convertSecondsToHourMinutesSeconds(moment( stops[stops.length-1].arrival_date_time).diff(stops[0].departure_date_time,'seconds'));
+                let duration       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                  
                 route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
                 route.airline           = stops[0].airline;
