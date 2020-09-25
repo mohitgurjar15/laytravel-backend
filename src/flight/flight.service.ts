@@ -578,7 +578,7 @@ export class FlightService {
 		const userData = await getManager()
 			.createQueryBuilder(User, "user")
 			.select("user.roleId", "user.userId")
-			.where(`"user"."user_id" = ${userId} AND "user"."is_deleted" = false `)
+			.where(`"user"."user_id" =:user_id AND "user"."is_deleted" = false `,{user_id:userId})
 			.getOne();
 
 		var primaryTraveler = new TravelerInfo();
