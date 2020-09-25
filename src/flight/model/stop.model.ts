@@ -16,6 +16,9 @@ export class Stop{
     below_minimum_seat  : boolean;
     is_layover          : boolean;
     layover_duration    : string;
+    meal                : string;
+    cabin_baggage       : string;
+    checkin_baggage     : string;
     layover_airport_name: string;
     airline_name        : string;
     airline_logo        : string;
