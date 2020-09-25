@@ -12,7 +12,6 @@ import { UpdateTravelerDto } from './dto/update-traveler.dto';
 
 @ApiTags("Travelers")
 @ApiBearerAuth()
-
 @Controller('traveler')
 export class TravelerController {
     constructor(private travelerService: TravelerService) {}
@@ -115,7 +114,8 @@ export class TravelerController {
     }
 
 
-    @Delete('/:id')
+	@Delete('/:id')
+	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "Delete traveler" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

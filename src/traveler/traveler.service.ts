@@ -397,7 +397,6 @@ export class TravelerService {
 			return { message: `Traveler ${traveler.email} is deleted` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
-				console.log("m");
 				switch (error.response.statusCode) {
 					case 404:
 						if (
