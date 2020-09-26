@@ -311,7 +311,7 @@ export class FlightService {
 
 				let authCardResult = await this.paymentService.authorizeCard(
 					"Ci7r1e6ps7tApi7xZgWrN8deTGJ",
-					card_token,
+					"aNtkbIgloI2ECtICXtK8io6p3zW",
 					Math.ceil(firstInstalemntAmount * 100),
 					"USD"
 				);
@@ -372,7 +372,7 @@ export class FlightService {
 				console.log("Partail or full payment")
 				let authCardResult = await this.paymentService.authorizeCard(
 					"UHf0cMrLXWjSLxdXqJLmKBoc53F",
-					card_token,
+					"aNtkbIgloI2ECtICXtK8io6p3zW",
 					Math.ceil(sellingPrice * 100),
 					"USD"
 				);

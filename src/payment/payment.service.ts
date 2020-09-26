@@ -151,7 +151,7 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody);
-		if (authResult.transaction?.succeeded) {
+		if (typeof authResult.transaction!='undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
 				token: authResult.transaction.token,
@@ -170,7 +170,7 @@ export class PaymentService {
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
 		let captureRes = await this.axiosRequest(url, requestBody);
-		if (captureRes.transaction.succeeded) {
+		if (typeof captureRes.transaction!='undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
 				token: captureRes.transaction.token,
@@ -189,7 +189,7 @@ export class PaymentService {
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
 		let voidRes = await this.axiosRequest(url, requestBody);
-		if (voidRes.transaction.succeeded) {
+		if (typeof voidRes.transaction!='undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
 				token: voidRes.transaction.token,
