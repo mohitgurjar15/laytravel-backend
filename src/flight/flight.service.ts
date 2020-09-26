@@ -40,6 +40,7 @@ import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-b
 import { MailerService } from "@nestjs-modules/mailer";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { Role } from "src/enum/role.enum";
+import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
 //import { Airport } from 'src/entity/airport.entity';
 //import { allAirpots } from './all-airports';
 
@@ -183,6 +184,8 @@ export class FlightService {
 			additional_amount,
 			custom_instalment_amount,
 			custom_instalment_no,
+			laycredit_points,
+			card_token
 		} = bookFlightDto;
 
 		const mystifly = new Strategy(new Mystifly(headers));
@@ -227,6 +230,7 @@ export class FlightService {
 			} else {
 				bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
 			}
+			bookingRequestInfo.laycredit_points = laycredit_points;
 		}
 		let {
 			selling_price,
@@ -263,8 +267,9 @@ export class FlightService {
 			let instalmentDetails;
 
 			let totalAdditionalAmount = additional_amount || 0;
-
-			//let layCreditAmount =
+			if(laycredit_points>0){
+				totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
+			}
 			//save entry for future booking
 			if (instalment_type == InstalmentType.WEEKLY) {
 				instalmentDetails = Instalment.weeklyInstalment(
@@ -300,9 +305,13 @@ export class FlightService {
 			if (instalmentDetails.instalment_available) {
 				let firstInstalemntAmount =
 					instalmentDetails.instalment_date[0].instalment_amount;
+				if(laycredit_points>0){
+					firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
+				}
+
 				let authCardResult = await this.paymentService.authorizeCard(
 					"Ci7r1e6ps7tApi7xZgWrN8deTGJ",
-					"aNtkbIgloI2ECtICXtK8io6p3zW",
+					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
 					"USD"
 				);
@@ -351,23 +360,79 @@ export class FlightService {
 				);
 			}
 		} else if (payment_type == PaymentType.NOINSTALMENT) {
-			let authCardResult = await this.paymentService.authorizeCard(
-				"UHf0cMrLXWjSLxdXqJLmKBoc53F",
-				"aNtkbIgloI2ECtICXtK8io6p3zW",
-				Math.ceil(selling_price * 100),
-				"USD"
-			);
-			if (authCardResult.status == true) {
+
+			let sellingPrice = selling_price;
+			if(laycredit_points>0){
+				sellingPrice = selling_price - laycredit_points
+			}
+			
+			console.log("Selling Price:",sellingPrice)
+			if(sellingPrice>0){
+
+				console.log("Partail or full payment")
+				let authCardResult = await this.paymentService.authorizeCard(
+					"UHf0cMrLXWjSLxdXqJLmKBoc53F",
+					card_token,
+					Math.ceil(sellingPrice * 100),
+					"USD"
+				);
+				if (authCardResult.status == true) {
+	
+					const mystifly = new Strategy(new Mystifly(headers));
+					const bookingResult = await mystifly.bookFlight(
+						bookFlightDto,
+						travelersDetails
+					);
+					let authCardToken = authCardResult.token;
+					if (bookingResult.booking_status == "success") {
+						let captureCardresult = await this.paymentService.captureCard(
+							authCardToken
+						);
+						let laytripBookingResult = await this.saveBooking(
+							bookingRequestInfo,
+							currencyId,
+							bookingDate,
+							BookingType.NOINSTALMENT,
+							userId,
+							airRevalidateResult,
+							null,
+							captureCardresult,
+							bookingResult,
+							travelers
+						);
+						//send email here
+						this.sendBookingEmail(laytripBookingResult.id);
+						bookingResult.laytrip_booking_id = laytripBookingResult.id;
+						bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+							laytripBookingResult.id
+						);
+						return bookingResult;
+					} else {
+						await this.paymentService.voidCard(authCardToken);
+						throw new HttpException(
+							{
+								status: 424,
+								message: bookingResult.error_message,
+							},
+							424
+						);
+					}
+				} else {
+					throw new BadRequestException(
+						`Card authorization is failed&&&card_token&&&${errorMessage}`
+					);
+				}
+			}
+			else{
+				//for full laycredit rdeem
+				console.log("Full laycredit points")
 				const mystifly = new Strategy(new Mystifly(headers));
 				const bookingResult = await mystifly.bookFlight(
 					bookFlightDto,
 					travelersDetails
 				);
-				let authCardToken = authCardResult.token;
 				if (bookingResult.booking_status == "success") {
-					let captureCardresult = await this.paymentService.captureCard(
-						authCardToken
-					);
+					
 					let laytripBookingResult = await this.saveBooking(
 						bookingRequestInfo,
 						currencyId,
@@ -376,7 +441,7 @@ export class FlightService {
 						userId,
 						airRevalidateResult,
 						null,
-						captureCardresult,
+						null,
 						bookingResult,
 						travelers
 					);
@@ -388,7 +453,6 @@ export class FlightService {
 					);
 					return bookingResult;
 				} else {
-					await this.paymentService.voidCard(authCardToken);
 					throw new HttpException(
 						{
 							status: 424,
@@ -397,11 +461,9 @@ export class FlightService {
 						424
 					);
 				}
-			} else {
-				throw new BadRequestException(
-					`Card authorization is failed&&&card_token&&&${errorMessage}`
-				);
 			}
+
+			
 		}
 	}
 
@@ -430,6 +492,7 @@ export class FlightService {
 			flight_class,
 			instalment_type,
 			arrival_date,
+			laycredit_points
 		} = bookFlightDto;
 
 		let moduleDetails = await getManager()
@@ -460,6 +523,7 @@ export class FlightService {
 		booking.markupAmount = (selling_price - net_rate).toString();
 		booking.bookingDate = bookingDate;
 		booking.usdFactor = currencyDetails.liveRate.toString();
+		booking.layCredit = laycredit_points || 0;
 		booking.locationInfo = {
 			journey_type,
 			source_location,
@@ -468,6 +532,19 @@ export class FlightService {
 
 		booking.userId = userId;
 
+		if(laycredit_points>0){
+
+			const layCreditReedem = new LayCreditRedeem();
+			layCreditReedem.userId = userId;
+			layCreditReedem.points = laycredit_points;
+			layCreditReedem.redeemDate = moment().format('YYYY-MM-DD');
+			layCreditReedem.status=1;
+			layCreditReedem.redeemMode='auto';
+			layCreditReedem.description='';
+			layCreditReedem.redeemBy=userId;
+			await layCreditReedem.save();
+		}
+			
 		if (instalmentDetails) {
 			booking.totalInstallments = instalmentDetails.instalment_date.length;
 			if (instalmentDetails.instalment_date.length > 1) {
@@ -481,24 +558,13 @@ export class FlightService {
 			booking.isPredictive = true;
 		} else {
 			//pass here mystifly booking id
-			//booking.supplierBookingId=supplierBookingData.booking_id;
-			booking.supplierBookingId = "";
+			booking.supplierBookingId=supplierBookingData.booking_id;
+			//booking.supplierBookingId = "";
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
 			booking.isPredictive = false;
 			booking.totalInstallments = 0;
 		}
-		/* let moduleInfo={
-            journey_type,
-            departure_date,
-            arrival_date,
-            source_location,
-            destination_location,
-            adult_count,
-            child_count,
-            infant_count,
-            flight_class
-        } */
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();

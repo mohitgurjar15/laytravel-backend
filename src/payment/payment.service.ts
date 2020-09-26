@@ -141,10 +141,7 @@ export class PaymentService {
 	}
 
 	async authorizeCard(gatewayToken, card_id, amount, currency) {
-		/* return {
-            status   : true,
-            token    : 'AUT675462'
-        } */
+
 		let url = `https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
 		let requestBody = {
 			transaction: {
@@ -154,7 +151,6 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody);
-		console.log(authResult);
 		if (authResult.transaction?.succeeded) {
 			return {
 				status: true,
@@ -170,15 +166,10 @@ export class PaymentService {
 	}
 
 	async captureCard(authorizeToken) {
-		/* return {
-            status   : true,
-            token    : 'CAP675462'
-        } */
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
 		let captureRes = await this.axiosRequest(url, requestBody);
-		console.log(captureRes);
 		if (captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -194,15 +185,10 @@ export class PaymentService {
 	}
 
 	async voidCard(captureToken) {
-		/* return {
-            status   : true,
-            token    : 'VOI675462'
-        } */
 
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
 		let voidRes = await this.axiosRequest(url, requestBody);
-		console.log(voidRes);
 		if (voidRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -328,52 +314,5 @@ export class PaymentService {
 		return this.bookingRepository.listPayment(where, limit, page_no);
 	}
 
-	// async listPayment(where: string, limit: number, page_no: number) {
-	// 	const take = limit || 10;
-	// 	const skip = (page_no - 1) * limit || 0;
-
-	// 	let query = getManager()
-	// 		.createQueryBuilder(BookingInstalments, "BookingInstalments")
-	// 		.leftJoinAndSelect("BookingInstalments.booking", "booking")
-	// 		.leftJoinAndSelect("BookingInstalments.currency", "currency")
-	// 		.leftJoinAndSelect("BookingInstalments.user", "User")
-	// 		.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-	// 		.leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-	// 		.leftJoinAndSelect(
-	// 			"BookingInstalments.failedPaymentAttempts",
-	// 			"failedPaymentAttempts"
-	// 		)
-	// 		// .select([
-	// 		// 	"User.userId",
-	// 		// 	"User.title",
-	// 		// 	"User.dob",
-	// 		// 	"User.firstName",
-	// 		// 	"User.lastName",
-	// 		// 	"User.email",
-	// 		// 	"booking",
-
-	// 		// 	"moduleData.id",
-	// 		// 	"moduleData.name",
-	// 		// 	"supplier.id",
-	// 		// 	"supplier.name",
-	// 		// 	"failedPaymentAttempts",
-	// 		// 	"currency.id",
-	// 		// 	"currency.country",
-	// 		// 	"currency.code",
-	// 		// 	"currency.symbol",
-	// 		// 	"currency.liveRate",
-	// 		// ])
-	// 		.where(where)
-	// 		.limit(take)
-	// 		.offset(skip);
-
-	// 	const data = await query.getMany();
-	// 	const count = await query.getCount();
-	// 	if (!data.length) {
-	// 		throw new NotFoundException(
-	// 			`Payment record not found&&&id&&&Payment record not found`
-	// 		);
-	// 	}
-	// 	return { data: data, total_count: count };
-	// }
+	
 }
