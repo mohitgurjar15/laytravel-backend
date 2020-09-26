@@ -178,20 +178,19 @@ export class UpdateProfileDto {
     @ApiPropertyOptional({
 		type: "string",
 		description: "Passport expiry date",
-    })
-    // @IsValidDate('',{
-    //     message: (args: ValidationArguments) => {
-    //         if (typeof args.value == "undefined" || args.value == "") {
-    //             return `Please enter passport expiry date.&&&passport_expiry`;
-    //         } else {
-    //             return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
-    //         }
-    //     },
-    // })
-    @ApiProperty({
-        description: `Enter your passport expiry date`,
-        example: `2030-07-20`
-    })
+	})
+	@ValidateIf((o) => o.passport_expiry)
+	@IsValidDate("", {
+		message: (args: ValidationArguments) => {
+			if (typeof args.value != "undefined" || args.value != "") {
+				return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
+			}
+		},
+	})
+	@ApiProperty({
+		description: `Enter travelers passport expiry date`,
+		example: `2030-07-20`,
+	})
     passport_expiry: string;
 
 
