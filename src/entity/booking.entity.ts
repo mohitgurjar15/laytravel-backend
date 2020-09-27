@@ -78,6 +78,9 @@ export class Booking extends BaseEntity {
   @Column("boolean", { name: "is_predictive", default: () => false})
   isPredictive: boolean;
 
+  @Column("numeric", { name: "lay_credit", precision: 15, scale: 3, nullable:true })
+  layCredit: string | null;
+
   @Column("numeric", {
     name: "payment_gateway_processing_fee",
     nullable: true,
