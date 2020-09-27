@@ -154,14 +154,14 @@ export class SaveTravelerDto {
 		type: "string",
 		description: "Passport expiry date",
 	})
-	@ValidateIf((o) => o.passport_expiry)
-	@IsValidDate("", {
-		message: (args: ValidationArguments) => {
-			if (typeof args.value != "undefined" || args.value != "") {
-				return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
-			}
-		},
-	})
+	// @ValidateIf((o) => o.passport_expiry)
+	// @IsValidDate("", {
+	// 	message: (args: ValidationArguments) => {
+	// 		if (typeof args.value != "undefined" || args.value != "") {
+	// 			return `Please enter valid passport expiry date format(YYYY-MM-DD)&&&passport_expiry`;
+	// 		}
+	// 	},
+	// })
 	@ApiProperty({
 		description: `Enter travelers passport expiry date`,
 		example: `2030-07-20`,
