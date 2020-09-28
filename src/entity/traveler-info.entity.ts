@@ -39,6 +39,6 @@ export class TravelerInfo extends BaseEntity {
 		() => Booking,
 		(booking) => booking.travelers
 	)
-	@JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
+	// @JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
 	bookingData: Booking;
 }
