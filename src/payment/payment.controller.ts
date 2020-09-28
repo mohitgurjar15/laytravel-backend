@@ -75,40 +75,40 @@ export class PaymentController {
 
 
 
-	@Get('payment-installment-list')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "Payment List For Admin" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "Payment not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listPaymentForAdmin(
-		@Query() paginationOption: ListPaymentAdminDto,
+	// @Get('payment-installment-list')
+	// @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	// @ApiOperation({ summary: "Payment List For Admin" })
+	// @ApiResponse({ status: 200, description: "Api success" })
+	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	// @ApiResponse({
+	// 	status: 403,
+	// 	description: "You are not allowed to access this resource.",
+	// })
+	// @ApiResponse({ status: 404, description: "Payment not found!" })
+	// @ApiResponse({ status: 500, description: "Internal server error!" })
+	// async listPaymentForAdmin(
+	// 	@Query() paginationOption: ListPaymentAdminDto,
 		
-	) {
-		return await this.paymentService.listPaymentForAdmin(paginationOption);
-	}
+	// ) {
+	// 	return await this.paymentService.listPaymentForAdmin(paginationOption);
+	// }
 
 
 
-	@Get('payment-installment-list-of-user')
-	@ApiOperation({ summary: "Payment list for user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "Payment not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listPaymentForUser(
-		@Query() paginationOption: ListPaymentUserDto,
-		@GetUser() user : User
-	) {
-		return await this.paymentService.listPaymentForUser(paginationOption,user.userId);
-	}
+	// @Get('payment-installment-list-of-user')
+	// @ApiOperation({ summary: "Payment list for user" })
+	// @ApiResponse({ status: 200, description: "Api success" })
+	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	// @ApiResponse({
+	// 	status: 403,
+	// 	description: "You are not allowed to access this resource.",
+	// })
+	// @ApiResponse({ status: 404, description: "Payment not found!" })
+	// @ApiResponse({ status: 500, description: "Internal server error!" })
+	// async listPaymentForUser(
+	// 	@Query() paginationOption: ListPaymentUserDto,
+	// 	@GetUser() user : User
+	// ) {
+	// 	return await this.paymentService.listPaymentForUser(paginationOption,user.userId);
+	// }
 }
