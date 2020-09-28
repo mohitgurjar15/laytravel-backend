@@ -62,7 +62,7 @@ export class FlightService {
 			let result = await this.airportRepository.find({
 				where: `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
 			});
-			//result = this.getNestedChildren(result,0)
+			result = this.getNestedChildren(result,0)
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
 			return result;
@@ -245,6 +245,7 @@ export class FlightService {
 			travelers,
 			isPassportRequired
 		);
+		console.log("travelersDetails",travelersDetails)
 
 		let currencyId = headerDetails.currency.id;
 		const userId = user.user_id;
@@ -366,10 +367,8 @@ export class FlightService {
 				sellingPrice = selling_price - laycredit_points
 			}
 			
-			console.log("Selling Price:",sellingPrice)
 			if(sellingPrice>0){
 
-				console.log("Partail or full payment")
 				let authCardResult = await this.paymentService.authorizeCard(
 					"UHf0cMrLXWjSLxdXqJLmKBoc53F",
 					"aNtkbIgloI2ECtICXtK8io6p3zW",
@@ -425,7 +424,6 @@ export class FlightService {
 			}
 			else{
 				//for full laycredit rdeem
-				console.log("Full laycredit points")
 				const mystifly = new Strategy(new Mystifly(headers));
 				const bookingResult = await mystifly.bookFlight(
 					bookFlightDto,
