@@ -311,8 +311,8 @@ export class FlightService {
 				}
 
 				let authCardResult = await this.paymentService.authorizeCard(
-					"Ci7r1e6ps7tApi7xZgWrN8deTGJ",
-					"aNtkbIgloI2ECtICXtK8io6p3zW",
+					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
+					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
 					"USD"
 				);
@@ -370,8 +370,8 @@ export class FlightService {
 			if(sellingPrice>0){
 
 				let authCardResult = await this.paymentService.authorizeCard(
-					"UHf0cMrLXWjSLxdXqJLmKBoc53F",
-					"aNtkbIgloI2ECtICXtK8io6p3zW",
+					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
+					card_token,
 					Math.ceil(sellingPrice * 100),
 					"USD"
 				);
