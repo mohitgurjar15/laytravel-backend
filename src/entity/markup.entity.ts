@@ -28,6 +28,9 @@ export class Markup extends BaseEntity {
   @Column("integer", { name: "user_type" ,default : 6})
   userType: number;
 
+  @Column("character varying", { name: "booking_type", length: 20, nullable:true })
+  bookingType: string;
+
   @Column("character varying", { name: "operator", length: 5 })
   operator: string;
 

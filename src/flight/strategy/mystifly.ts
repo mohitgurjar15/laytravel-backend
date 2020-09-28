@@ -22,6 +22,15 @@ const flightClass={
     'Business':'C',
     'First':'F'
 }
+
+const mealCodes={
+    'B':'Breakfast', 'K':'Continental Breakfast','L':'Lunch',
+    'D':'Dinner','S':'Snack or Brunch','O':'Cold Meal',
+    'H':'Hot Meal','M':'Meal (Non-specific)','R':'Refreshment',
+    'C':'Alcoholic Beverage Complementary','F':'Food For Purchase',
+    'P':'Alcoholic Beverage Purchase','Y':'Duty Free Sales Available',
+    'N':'No Meal Service','V':'Refreshment For Purchase','G':'Food And Beverage For Purchase'
+}
 export class Mystifly implements StrategyAirline{
 
     private headers;
@@ -216,7 +225,7 @@ export class Mystifly implements StrategyAirline{
                     stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     stop.cabin_baggage         = otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j];
                     stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
-                    stop.meal                  = flightSegment['a:mealcode'][0];
+                    stop.meal                  = this.getMealCode(flightSegment['a:mealcode'][0]);
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -594,7 +603,7 @@ export class Mystifly implements StrategyAirline{
                     stop.is_layover            = false;
                     stop.cabin_baggage         = otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j];
                     stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
-                    stop.meal                  = flightSegment['a:mealcode'][0];
+                    stop.meal                  = this.getMealCode(flightSegment['a:mealcode'][0]);
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -645,7 +654,7 @@ export class Mystifly implements StrategyAirline{
                     stop.is_layover            = false;
                     stop.cabin_baggage         = otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j];
                     stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
-                    stop.meal                  = flightSegment['a:mealcode'][0];
+                    stop.meal                  = this.getMealCode(flightSegment['a:mealcode'][0]);
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -1194,5 +1203,10 @@ export class Mystifly implements StrategyAirline{
         })
 
         return fareBreakDowns;
+    }
+
+    getMealCode(code){
+
+        return mealCodes[code] || '';
     }
 } 
