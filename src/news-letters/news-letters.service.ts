@@ -13,10 +13,19 @@ import { getManager } from "typeorm";
 import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import { errorMessage } from "src/config/common.config";
+import { ListSubscribeUsersDto } from "./dto/list-subscribe-users.dto";
+import { NewsLettersRepository } from "./news-letters.repository";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class NewsLettersService {
-	constructor(private readonly mailerService: MailerService) {}
+	
+
+	constructor(
+		@InjectRepository(NewsLettersRepository)
+		private newsLettersRepository: NewsLettersRepository,
+		private readonly mailerService: MailerService
+	) {}
 
 	async subscribeForNewsLetters(
 		subscribeForNewslatterDto: SubscribeForNewslatterDto
@@ -132,7 +141,7 @@ export class NewsLettersService {
 			return { message: `Email id unsubscribed successfully` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
-				console.log("m");
+			
 				switch (error.response.statusCode) {
 					case 404:
 						if (
@@ -141,6 +150,42 @@ export class NewsLettersService {
 						) {
 							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
 						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+
+	async listSubscriber(
+		paginationOption: ListSubscribeUsersDto
+	) {
+		try {
+			return await this.newsLettersRepository.listSubscriber(paginationOption);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+			
+				switch (error.response.statusCode) {
+					case 404:
 						throw new NotFoundException(error.response.message);
 					case 409:
 						throw new ConflictException(error.response.message);
