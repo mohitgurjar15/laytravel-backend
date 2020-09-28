@@ -151,6 +151,7 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody);
+		console.log(authResult)
 		if (typeof authResult.transaction!='undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
@@ -212,7 +213,7 @@ export class PaymentService {
 				headers: {
 					Accept: "application/json",
 					Authorization:
-						"Basic WU5FZFpGVHdCMXRSUjR6d3ZjTUlhVXhacTNnOnV3RkowRHRKTTdQRVluWHBaWGJ2ZjBGYUR6czY2cjY4T1B1OG51Zld4Q3FYWTJ6RmFFYUFNb1ZmSTN1M2JVQ2k=",
+						"Basic OUtHTXZSVGNHZmJRa2FIUVUwZlBscjJqblE4OmlPZGFRQTJiRzNiNFVDUmtha3dGS3dlNTBmb29ZSnAxdmtLdWxtZ01rTnU4YTc0NWhWSEo0WWlVZDlSdUptdm8=",
 				},
 			});
 			//console.log("=========================",result)
