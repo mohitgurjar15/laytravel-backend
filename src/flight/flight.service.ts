@@ -311,7 +311,7 @@ export class FlightService {
 				}
 
 				let authCardResult = await this.paymentService.authorizeCard(
-					"KCTxI0QlFVmH96jc6MTQBNv5VOE",
+					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
 					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
 					"USD"
@@ -370,7 +370,7 @@ export class FlightService {
 			if(sellingPrice>0){
 
 				let authCardResult = await this.paymentService.authorizeCard(
-					"KCTxI0QlFVmH96jc6MTQBNv5VOE",
+					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
 					card_token,
 					Math.ceil(sellingPrice * 100),
 					"USD"
