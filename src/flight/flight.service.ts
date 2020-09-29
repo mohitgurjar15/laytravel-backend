@@ -245,7 +245,6 @@ export class FlightService {
 			travelers,
 			isPassportRequired
 		);
-		console.log("travelersDetails",travelersDetails)
 
 		let currencyId = headerDetails.currency.id;
 		const userId = user.user_id;
@@ -542,7 +541,7 @@ export class FlightService {
 			layCreditReedem.redeemBy=userId;
 			await layCreditReedem.save();
 		}
-			
+		
 		if (instalmentDetails) {
 			booking.totalInstallments = instalmentDetails.instalment_date.length;
 			if (instalmentDetails.instalment_date.length > 1) {
@@ -556,7 +555,7 @@ export class FlightService {
 			booking.isPredictive = true;
 		} else {
 			//pass here mystifly booking id
-			booking.supplierBookingId=supplierBookingData.booking_id;
+			booking.supplierBookingId=supplierBookingData.supplier_booking_id;
 			//booking.supplierBookingId = "";
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;

@@ -109,11 +109,18 @@ export class Mystifly implements StrategyAirline{
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name:'flight' })
             .getOne();
+        let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
 
         if(!module){
             throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
         }
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
+
+        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
+        /* let bookingType='no-'
+        if(isInstalmentAvaible && (user.roleId==5 || user.roleId==6)){
+
+        } */
         const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
         if(!markUpDetails){
             throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
@@ -178,10 +185,9 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</soapenv:Body>`
         requestBody += `</soapenv:Envelope>`
         let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirLowFareSearch');
-        
+        console.log(JSON.stringify(searchResult))
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
-            let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
             let flightRoutes = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
             let stop:Stop;
             let stops:Stop[]=[];
@@ -241,6 +247,7 @@ export class Mystifly implements StrategyAirline{
                 routeType.stops         = stops;
                 route.routes[0]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
+                route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
                 route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
@@ -416,8 +423,7 @@ export class Mystifly implements StrategyAirline{
                 sourceDate =   moment(route.routes[routeType].stops[0][type],"HH:mm:a");
             }
             else{
-                //console.log("---------------------------")
-                //console.log(JSON.stringify(route),route.routes[routeType].stops[route.routes[0].stops.length-1],type,routeType)
+               
                 sourceDate =   moment(route.routes[routeType].stops[route.routes[routeType].stops.length-1][type],"HH:mm:a");
             }
             if(sourceDate.isBetween(
@@ -673,6 +679,7 @@ export class Mystifly implements StrategyAirline{
                 routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                 route.routes[1]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
+                route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
                 route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
@@ -751,8 +758,7 @@ export class Mystifly implements StrategyAirline{
         if(fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:success'][0]=='true'){
 
             let baggageResult =fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:baggageinfos'][0]['a:baggageinfo'];
-            //let airLineCode   =fareRuleResult['s:envelope']['s:body'][0].farerules1_1response[0].farerules1_1result[0]['a:farerules'][0]['a:farerule'][0]['a:airline'][0];
-            //console.log("details",JSON.stringify(fareRuleResult));
+            
             let baggageInfos = [];
             let baggageInfo:any={};
             for(let baggage of baggageResult){
@@ -945,6 +951,7 @@ export class Mystifly implements StrategyAirline{
                     route.routes[1]         = routeType;
                 }
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
+                route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
                 route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
                 let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
@@ -1166,7 +1173,12 @@ export class Mystifly implements StrategyAirline{
         requestBody +=`</soapenv:Body>`;
         requestBody +=`</soapenv:Envelope>`;
         let ticketResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'TicketOrder');
-        console.log("ticketResult",ticketResult)
+        //console.log("ticketResult",JSON.stringify(ticketResult))
+        ticketResult = ticketResult['s:envelope']['s:body'][0]['ticketorderresponse'][0]['ticketorderresult'][0];
+        return {
+            status : ticketResult['a:success'][0],
+            error  : ticketResult['a:errors']
+        }
     }
 
     getFlightClass(className){
