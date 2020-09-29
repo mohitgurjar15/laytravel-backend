@@ -236,12 +236,10 @@ export class PaymentService {
 						"Basic OUtHTXZSVGNHZmJRa2FIUVUwZlBscjJqblE4OmlPZGFRQTJiRzNiNFVDUmtha3dGS3dlNTBmb29ZSnAxdmtLdWxtZ01rTnU4YTc0NWhWSEo0WWlVZDlSdUptdm8=",
 				},
 			});
-			//console.log("=========================",result)
 			return result.data;
 		} catch (exception) {
 			
 			throw new InternalServerErrorException(`${exception.message}&&&card&&&${errorMessage}`)
-			//console.log("exception",exception.message)
 		}
 	}
 	
