@@ -6,6 +6,10 @@ import { Role } from "src/enum/role.enum";
 import { Activity } from "src/utility/activity.utility";
 import * as config from "config";
 import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
+import { FlightService } from "src/flight/flight.service";
+import { getConnection, getManager } from "typeorm";
+import { Booking } from "src/entity/booking.entity";
+import { BookingRepository } from "src/booking/booking.repository";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -14,7 +18,12 @@ export class CronJobsService {
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
 
+		@InjectRepository(BookingRepository)
+		private bookingRepository: BookingRepository,
+
+		private flightService: FlightService,
 		private readonly mailerService: MailerService
+
 	) {}
 
 	async convertCustomer() {
@@ -64,5 +73,51 @@ export class CronJobsService {
 		} catch (error) {
 			console.log(error);
 		}
+	}
+
+
+
+	async checkPandingFlights()
+	{
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.select([
+				"booking.supplierBookingId",
+				"booking.id"
+			])
+			.where(
+				`"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
+			)
+
+			const result = await query.getMany();
+
+			var total = 0;
+			
+			for (let index = 0; index < result.length; index++) {
+				const element = result[index];
+				
+				// console.log(element.supplierBookingId);
+
+				var responce:any = await this.flightService.ticketFlight(element.supplierBookingId);
+
+				// var booking =  await this.bookingRepository.findOne({id:element.id});
+				if(responce.status == true)
+				{
+					var queryData = await getConnection()
+					.createQueryBuilder()
+					.update(Booking)
+					.set({ isTicketd : true})
+					.where("id = :id", { id: element.id })
+					.execute();
+
+					// queryData.affected ? console.log(`${element.id} is updated`) : 
+					// booking.isTicketd = true;
+					// await booking.save()
+
+					total  = total + queryData.affected;
+				}
+			}
+
+		return { message : `${total} bookings are updated`}	
 	}
 }

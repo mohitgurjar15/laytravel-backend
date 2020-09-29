@@ -132,8 +132,8 @@ export class BookingService {
 				}
 				
 			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
 			);
 			
 		}
@@ -171,8 +171,8 @@ export class BookingService {
 						);
 				}
 			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
 			);
 		}
 	}
@@ -204,8 +204,8 @@ export class BookingService {
 						);
 				}
 			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
 			);
 		}
 	}

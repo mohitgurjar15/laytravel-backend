@@ -16,6 +16,6 @@ import { BookingRepository } from 'src/booking/booking.repository';
       ]),
   ],
   controllers: [FlightController],
-  providers: [FlightService, PaymentService]
+  providers: [FlightService, PaymentService],
 })
 export class FlightModule {}
