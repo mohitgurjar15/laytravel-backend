@@ -81,6 +81,12 @@ export class Booking extends BaseEntity {
   @Column("numeric", { name: "lay_credit", precision: 15, scale: 3, nullable:true })
   layCredit: string | null;
 
+  @Column("character varying", { name: "fare_type", length: 20, nullable:true })
+  fareType: string|null;
+
+  @Column("boolean", { name: "is_ticketd", default: () => false})
+  isTicketd: boolean;
+
   @Column("numeric", {
     name: "payment_gateway_processing_fee",
     nullable: true,

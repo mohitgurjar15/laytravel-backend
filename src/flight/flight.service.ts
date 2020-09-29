@@ -231,6 +231,7 @@ export class FlightService {
 				bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
 			}
 			bookingRequestInfo.laycredit_points = laycredit_points;
+			bookingRequestInfo.fare_type=airRevalidateResult[0].fare_type;
 		}
 		let {
 			selling_price,
@@ -480,16 +481,11 @@ export class FlightService {
 			selling_price,
 			net_rate,
 			journey_type,
-			departure_date,
 			source_location,
 			destination_location,
-			adult_count,
-			child_count,
-			infant_count,
-			flight_class,
 			instalment_type,
-			arrival_date,
-			laycredit_points
+			laycredit_points,
+			fare_type
 		} = bookFlightDto;
 
 		let moduleDetails = await getManager()
@@ -526,6 +522,8 @@ export class FlightService {
 			source_location,
 			destination_location,
 		};
+		booking.fareType=fare_type;
+		booking.isTicketd = fare_type=='LCC'?true:false;
 
 		booking.userId = userId;
 
