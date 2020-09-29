@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Query, Param, Put } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
@@ -70,45 +70,21 @@ export class PaymentController {
         return await this.paymentService.addCard(dddCardDto,user);
 	}
 
+	@Put('retain-card/:card_token')
+	@ApiOperation({ summary: "Retain card for future use" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async retainCard(
+        @Param('card_token') card_token:string
+    ){
+		console.log("card_token",card_token)
+        return await this.paymentService.retainCard(card_token);
+	}
 
-
-
-
-
-	// @Get('payment-installment-list')
-	// @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	// @ApiOperation({ summary: "Payment List For Admin" })
-	// @ApiResponse({ status: 200, description: "Api success" })
-	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	// @ApiResponse({
-	// 	status: 403,
-	// 	description: "You are not allowed to access this resource.",
-	// })
-	// @ApiResponse({ status: 404, description: "Payment not found!" })
-	// @ApiResponse({ status: 500, description: "Internal server error!" })
-	// async listPaymentForAdmin(
-	// 	@Query() paginationOption: ListPaymentAdminDto,
-		
-	// ) {
-	// 	return await this.paymentService.listPaymentForAdmin(paginationOption);
-	// }
-
-
-
-	// @Get('payment-installment-list-of-user')
-	// @ApiOperation({ summary: "Payment list for user" })
-	// @ApiResponse({ status: 200, description: "Api success" })
-	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	// @ApiResponse({
-	// 	status: 403,
-	// 	description: "You are not allowed to access this resource.",
-	// })
-	// @ApiResponse({ status: 404, description: "Payment not found!" })
-	// @ApiResponse({ status: 500, description: "Internal server error!" })
-	// async listPaymentForUser(
-	// 	@Query() paginationOption: ListPaymentUserDto,
-	// 	@GetUser() user : User
-	// ) {
-	// 	return await this.paymentService.listPaymentForUser(paginationOption,user.userId);
-	// }
 }

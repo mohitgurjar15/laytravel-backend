@@ -43,6 +43,8 @@ export class PaymentService {
 			);
 		}
 
+		this.retainCard(card_token);
+
 		let userCard = new UserCard();
 		userCard.id = uuidv4();
 		userCard.paymentGatewayId = paymentGateway.id;
@@ -204,10 +206,28 @@ export class PaymentService {
 		}
 	}
 
-	async axiosRequest(url, requestBody, headers = null) {
+	async retainCard(cardToken){
+		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
+		let requestBody = {};
+		let retainRes = await this.axiosRequest(url, requestBody,null,'PUT');
+		if (typeof retainRes!='undefined' && retainRes.transaction.succeeded) {
+			return {
+				success : true
+			};
+		} else {
+			return{
+				success : false
+			}
+		}
+	}
+
+	async axiosRequest(url, requestBody, headers = null, method=null) {
+
+		method = method || 'POST';
+		console.log("method",method)
 		try {
 			let result = await Axios({
-				method: "POST",
+				method: method,
 				url: url,
 				data: requestBody,
 				headers: {
@@ -219,101 +239,10 @@ export class PaymentService {
 			//console.log("=========================",result)
 			return result.data;
 		} catch (exception) {
-			//console.log("exception",exception)
+			
+			throw new InternalServerErrorException(`${exception.message}&&&card&&&${errorMessage}`)
+			//console.log("exception",exception.message)
 		}
 	}
-
-	/*
-	 * Created on Tue Sep 15 2020
-	 *
-	 * @Auther:- Parth Virani
-	 * Copyright (c) 2020 Oneclick
-	 * my variables are ${myvar1} and ${myvar2}
-	 */
-
-	// async listPaymentForAdmin(listPaymentAdminDto: ListPaymentAdminDto) {
-	// 	const {
-	// 		limit,
-	// 		page_no,
-	// 		module_id,
-	// 		supplier,
-	// 		status,
-	// 		start_date,
-	// 		end_date,
-	// 		instalment_type,
-	// 		user_id,
-	// 		booking_id,
-	// 	} = listPaymentAdminDto;
-
-	// 	let where;
-	// 	where = `1=1 `;
-	// 	if (user_id) {
-	// 		where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
-	// 	}
-
-	// 	if (booking_id) {
-	// 		where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
-	// 	}
-	// 	if (start_date) {
-	// 		where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
-	// 	}
-	// 	if (end_date) {
-	// 		where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
-	// 	}
-	// 	if (status) {
-	// 		where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
-	// 	}
-	// 	if (module_id) {
-	// 		where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
-	// 	}
-	// 	if (supplier) {
-	// 		where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
-	// 	}
-	// 	if (instalment_type) {
-	// 		where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
-	// 	}
-
-	// 	return this.bookingRepository.listPayment(where, limit, page_no);
-	// }
-
-	// async listPaymentForUser(
-	// 	listPaymentUserDto: ListPaymentUserDto,
-	// 	user_id: string = ""
-	// ) {
-	// 	const {
-	// 		limit,
-	// 		page_no,
-	// 		module_id,
-	// 		status,
-	// 		start_date,
-	// 		end_date,
-	// 		instalment_type,
-	// 		booking_id,
-	// 	} = listPaymentUserDto;
-
-	// 	let where;
-	// 	where = `("BookingInstalments"."user_id" = '${user_id}')`;
-
-	// 	if (booking_id) {
-	// 		where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
-	// 	}
-	// 	if (start_date) {
-	// 		where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
-	// 	}
-	// 	if (end_date) {
-	// 		where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
-	// 	}
-	// 	if (status) {
-	// 		where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
-	// 	}
-	// 	if (module_id) {
-	// 		where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
-	// 	}
-	// 	if (instalment_type) {
-	// 		where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
-	// 	}
-	// 	return this.bookingRepository.listPayment(where, limit, page_no);
-	// }
-
 	
 }
