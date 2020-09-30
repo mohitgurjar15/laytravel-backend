@@ -7,19 +7,16 @@ import {ListSubscribeUsersDto} from "./dto/list-subscribe-users.dto";
 export class NewsLettersRepository extends Repository<NewsLetters> {
 
     async listSubscriber(paginationOption:ListSubscribeUsersDto): Promise<{ data: NewsLetters[] ,TotalReseult: number}> {
-        const { page_no, search, limit,status } = paginationOption;
+        const { page_no, search, limit } = paginationOption;
 
         const take = limit || 10
         const skip = (page_no-1) * limit || 0
         const keyword = search || ''
-        const statusWord  =  status ? status : true;
-        let where;
+        //const statusWord  =  status ? status : true;
+        let where = `1=1`;
         
         if(keyword){
-             where =`("is_subscribed" = ${statusWord}) AND ("email" ILIKE '%${keyword}%')`
-        }
-        else{
-             where = `"is_subscribed" = ${statusWord}`
+             where =` "email" ILIKE '%${keyword}%'`
         }
         const [result, total] = await this.findAndCount({
             where:where,

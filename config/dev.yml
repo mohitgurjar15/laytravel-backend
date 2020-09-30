@@ -1,2 +1,11 @@
 server:
   port: 4000
+
+db:
+    type: "postgres"
+    port: 5432
+    username: "postgres"
+    host: "laytrip-dev.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
+    database: "laytrip"
+    password: "nOEbFEONMcWpZNPzdcQ1"
+    synchronize: false

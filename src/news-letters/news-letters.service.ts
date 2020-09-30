@@ -35,21 +35,19 @@ export class NewsLettersService {
 
 			let emailExiest = await getManager()
 				.createQueryBuilder(NewsLetters, "newsLetters")
-				.where(`email=:email AND is_subscribed = true`, { email })
+				.where(`email=:email`, { email })
 				.getOne();
+				
 			if (emailExiest) {
-				throw new ConflictException(
-					`Given email id is alredy subscribed with us&&&email&&&Given email id is alredy subscribed with us`
-				);
+				emailExiest.isSubscribed = true;
+				await emailExiest.save();	
+			}else{
+				const subscribeData = new NewsLetters();
+				subscribeData.email = email;
+				subscribeData.subscribeDate = new Date();
+				subscribeData.isSubscribed = true;
+				await subscribeData.save();
 			}
-
-			const subscribeData = new NewsLetters();
-
-			subscribeData.email = email;
-			subscribeData.subscribeDate = new Date();
-			subscribeData.isSubscribed = true;
-
-			await subscribeData.save();
 			this.mailerService
 				.sendMail({
 					to: email,

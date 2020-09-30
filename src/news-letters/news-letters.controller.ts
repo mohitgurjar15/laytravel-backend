@@ -5,6 +5,9 @@ import { NewsLettersService } from './news-letters.service';
 import { SubscribeForNewslatterDto } from './dto/subscribe-for-newslatter.dto';
 import { ListSubscribeUsersDto } from './dto/list-subscribe-users.dto';
 import { NewsLetters } from 'src/entity/news-letter.entity';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from 'src/guards/role.decorator';
+import { Role } from 'src/enum/role.enum';
 
 @Controller('news-letters')
 @ApiTags("News Letters")
@@ -45,10 +48,17 @@ export class NewsLettersController {
 
 
 	@Get()
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
+	@Roles(Role.ADMIN,Role.SUPER_ADMIN)
 	@ApiOperation({ summary: "List Of subscribers" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getSubscribers(
 		@Query() paginationOption: ListSubscribeUsersDto

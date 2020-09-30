@@ -60,7 +60,7 @@ async function bootstrap() {
 
 	const port = process.env.PORT || serverConfig.port;
 	app.useStaticAssets(path.join(__dirname, "/../assets"));
-
+	console.log(process.env.PORT)
 	await app.init();
 	
 	http.createServer(server).listen(port);

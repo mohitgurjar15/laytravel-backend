@@ -4,13 +4,17 @@ import { CronJobsService } from './cron-jobs.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/user.repository';
 import { AuthModule } from 'src/auth/auth.module';
+import { FlightService } from 'src/flight/flight.service';
+import { PaymentService } from 'src/payment/payment.service';
+import { BookingRepository } from 'src/booking/booking.repository';
+import { AirportRepository } from 'src/flight/airport.repository';
 
 @Module({
   imports:[
-    TypeOrmModule.forFeature([UserRepository]),
+    TypeOrmModule.forFeature([UserRepository,AirportRepository,BookingRepository]),
     AuthModule
   ],
   controllers: [CronJobsController],
-  providers: [CronJobsService]
+  providers: [CronJobsService,FlightService,PaymentService,BookingRepository]
 })
 export class CronJobsModule {}

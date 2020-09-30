@@ -16,4 +16,7 @@ export class NewsLetters extends BaseEntity {
 
   @Column("date", { name: "unsubscribe_date" ,nullable : true,default: () => null })
   unSubscribeDate: Date;
+
+  // @Column("date", { name: "updated_date" ,nullable : true,default: () => null })
+  // updatedDate: Date;
 }

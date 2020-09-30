@@ -13,7 +13,7 @@ db:
     host: "laytrip-dev.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
     database: "laytrip"
     password: "nOEbFEONMcWpZNPzdcQ1"
-    synchronize: true
+    synchronize: false
 
 jwt:
     secret: 'topSecret51'

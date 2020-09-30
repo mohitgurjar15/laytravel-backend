@@ -27,9 +27,9 @@ export class ListSubscribeUsersDto {
     })
     search: string;
 
-    @ApiPropertyOptional({
-        description:'status',
-        example:""
-    })
-    status: boolean;
+    // @ApiPropertyOptional({
+    //     description:'status',
+    //     example:""
+    // })
+    // status: boolean;
 }
