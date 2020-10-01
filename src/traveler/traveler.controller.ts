@@ -38,7 +38,7 @@ export class TravelerController {
 		return await this.travelerService.createNewtraveller(saveTravelerDto, parent_user_id);
     }
     
-	@Get('get-taveler/:id')
+	@Get('get-tavelers/:id')
 	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "Get traveler detail from the traveler id" })
 	@ApiResponse({ status: 200, description: "Api success" })

@@ -11,13 +11,9 @@ import { BookingRepository } from "./booking.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
 import { FlightBookingEmailParameterModel } from "src/config/email_template/model/flight-booking-email-parameter.model";
-import { PaymentStatus } from "src/enum/payment-status.enum";
-import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
-import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
-import { errorMessage } from "src/config/common.config";
 
 @Injectable()
 export class BookingService {

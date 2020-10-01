@@ -52,6 +52,12 @@ export class ListBookingDto {
     booking_status: number;
 
     @ApiPropertyOptional({
+        description:'module id',
+        example:''
+    })
+    module_id: number;
+
+    @ApiPropertyOptional({
         description:'Payment type',
         example:1
     })

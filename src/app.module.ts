@@ -36,6 +36,7 @@ import { PaymentModule } from './payment/payment.module';
 import { BookingModule } from './booking/booking.module';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { NewsLettersModule } from './news-letters/news-letters.module';
+import { BookingFeedbackModule } from './booking-feedback/booking-feedback.module';
 
 
 @Module({
@@ -100,6 +101,7 @@ import { NewsLettersModule } from './news-letters/news-letters.module';
 		BookingModule,
 		AdminDashboardModule,
 		NewsLettersModule,
+		BookingFeedbackModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

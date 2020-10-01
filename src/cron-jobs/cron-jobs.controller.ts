@@ -23,7 +23,7 @@ export class CronJobsController {
 		return await this.cronJobsService.convertCustomer();
 	}
 
-	@Put('update-panding-flight-booking')
+	@Put('update-pending-flight-booking')
 	@ApiOperation({ summary: "change status of the booking fare type is GDS " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

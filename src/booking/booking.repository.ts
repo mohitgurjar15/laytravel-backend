@@ -20,6 +20,7 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
+			module_id
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -28,6 +29,9 @@ export class BookingRepository extends Repository<Booking> {
 		where = `1=1 `;
 		if (userId) {
 			where += `AND ("booking"."user_id" = '${userId}')`;
+		}
+		if (module_id) {
+			where += `AND ("booking"."module_id" = '${module_id}')`;
 		}
 		if (start_date) {
 			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
