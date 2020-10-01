@@ -28,11 +28,11 @@ export class TravelerInfo extends BaseEntity {
 	@Column("character varying", { name: "role_id" })
 	roleId: number;
 
-	@OneToOne(
+	@ManyToOne(
 		() => User,
 		(user) => user.userId
 	)
-	@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
+	//@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
 	userData: User;
 
 	@ManyToOne(

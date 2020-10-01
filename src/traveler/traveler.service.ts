@@ -394,7 +394,7 @@ export class TravelerService {
 
 			await traveler.save();
 
-			return { message: `Traveler ${traveler.email} is deleted` };
+			return { message: `Traveler is deleted successfully` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
