@@ -38,7 +38,7 @@ export class TravelerController {
 		return await this.travelerService.createNewtraveller(saveTravelerDto, parent_user_id);
     }
     
-	@Get('get-tavelers/:id')
+	@Get('get-traveler/:id')
 	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "Get traveler detail from the traveler id" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -56,7 +56,7 @@ export class TravelerController {
     }
 
 
-	@Get('list-tavelers')
+	@Get('list-traveler')
 	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "List all traveler of the user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -76,7 +76,7 @@ export class TravelerController {
 	@UseGuards(RolesGuard)
 	@UseGuards(AuthGuard())
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-    @Get('list-tavelers/:id')
+    @Get('list-traveler/:id')
 	@ApiOperation({ summary: "List all traveler from the user id by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
