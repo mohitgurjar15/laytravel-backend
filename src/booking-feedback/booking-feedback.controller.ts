@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
@@ -10,6 +10,7 @@ import { AddBookingFeedback } from './dto/add-booking-feedback.dto';
 import { listFeedbackForAdminDto } from './dto/list-feedback-admin.dto';
 import { listFeedbackForUserDto } from './dto/list-feedback-user.dto';
 
+@ApiTags("Booking Feedback")
 @Controller('booking-feedback')
 @ApiBearerAuth()
 @UseGuards(AuthGuard(),UseGuards)
