@@ -22,13 +22,4 @@ export class listFeedbackForUserDto {
     })
     page_no:number;
 
-    
-    @IsNotEmpty({
-        message : `Please enter property id&&&page&&&${errorMessage}`
-    })
-    @ApiProperty({
-        description:'enter property id',
-        example:''
-    })
-    property_id:string;
 }

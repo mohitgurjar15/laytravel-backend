@@ -17,7 +17,7 @@ export class BookingFeedbackService {
 
     async addNewFeedback(addBookingFeedback:AddBookingFeedback,user:User)
     {
-        const {booking_id,rate,message,property_id} = addBookingFeedback;
+        const {booking_id,rating,message} = addBookingFeedback;
 
         // const feedbackExiest = this.bookingFeedbackRepositery.findOne(
         //     {bookingId,userId:user.userId}
@@ -27,11 +27,11 @@ export class BookingFeedbackService {
 
         feedback.bookingId = booking_id;
         feedback.userId = user.userId;
-        feedback.rate = rate;
+        feedback.rating = rating;
         feedback.message = message;
         feedback.createdDate = new Date();
 		feedback.isDeleted = false;
-		feedback.propertyId = property_id;
+		
 
 	    await feedback.save();
 
@@ -43,9 +43,9 @@ export class BookingFeedbackService {
 	
 	async listFeedbacksForUser(listFeedbackForUserDto:listFeedbackForUserDto)
 	{
-		const {limit,page_no,property_id} = listFeedbackForUserDto;
+		const {limit,page_no} = listFeedbackForUserDto;
 
-		const where = `feedback.property_id = ${property_id} AND feedback.is_deleted = true`;
+		const where = `feedback.is_deleted = true`;
 
 		return await this.bookingFeedbackRepositery.listFeedback(where,limit,page_no);
 	}
@@ -53,13 +53,13 @@ export class BookingFeedbackService {
 
 	async listFeedbacksForAdmin(listFeedbackForAdminDto:listFeedbackForAdminDto)
 	{
-		const {limit,page_no,property_id,search} = listFeedbackForAdminDto;
+		const {limit,page_no,search,rating} = listFeedbackForAdminDto;
 
 		var where = `1=1`;
 
-		if(property_id)
+		if(rating)
 		{
-			where += `AND (feedback.property_id = ${property_id})`;
+			where += `AND (feedback.rating = ${rating})`;
 		}
 
 		if(search)
