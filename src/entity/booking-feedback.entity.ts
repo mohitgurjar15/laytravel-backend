@@ -4,7 +4,7 @@ import { User } from "./user.entity";
 
 @Index("booking_id_idx", ["bookingId"], {})
 @Index("user_id_idx", ["userId"], {})
-@Index("property_id_idx", ["propertyId"], {})
+// @Index("property_id_idx", ["propertyId"], {})
 
 
 @Entity("booking_feedback")
@@ -18,11 +18,11 @@ export class BookingFeedback extends BaseEntity {
   @Column("character varying", { name: "user_id" })
   userId: string;
 
-  @Column("character varying", { name: "property_id" })
-  propertyId: string;
+  // @Column("character varying", { name: "property_id" })
+  // propertyId: string;
 
-  @Column("integer", { name: "rate" })
-  rate: number;
+  @Column("integer", { name: "rating" })
+  rating: number;
 
   @Column("text", { name: "message" })
   message: string;

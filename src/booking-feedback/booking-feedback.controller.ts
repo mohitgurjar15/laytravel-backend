@@ -20,7 +20,7 @@ export class BookingFeedbackController {
 
 
 
-    @Get('list-feedback-for-admin')
+    @Get('list-for-admin')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Booking feedback listing by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -39,7 +39,7 @@ export class BookingFeedbackController {
 	}
 
 
-	@Get('list-feedback-for-user')
+	@Get('list')
 	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)	
 	@ApiOperation({ summary: "Booking listing by user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -57,7 +57,7 @@ export class BookingFeedbackController {
     }
     
 
-    @Post("add-feedback")
+    @Post()
 	@ApiOperation({ summary: "Add new feedback" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

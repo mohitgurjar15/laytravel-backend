@@ -22,17 +22,15 @@ export class listFeedbackForAdminDto {
     })
     page_no:number;
 
-    
-    @ApiPropertyOptional({
-        description:'enter property id',
-        example:''
-    })
-    property_id:string;
-
-
     @ApiPropertyOptional({
         description:'enter search',
         example:''
     })
     search:string;
+
+    @ApiPropertyOptional({
+        description:'enter rating',
+        example:''
+    })
+    rating:number;
 }

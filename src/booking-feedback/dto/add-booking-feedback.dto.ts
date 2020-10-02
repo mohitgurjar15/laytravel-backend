@@ -11,15 +11,7 @@ export class AddBookingFeedback {
     })
     booking_id:string;
 
-    @IsNotEmpty({
-        message : `Please enter property id&&&id&&&Please enter property id`
-    })
-    @ApiProperty({
-        description:'property id',
-        example:''
-    })
-    property_id:string;
-
+    
     @IsNotEmpty({
         message : `Please enter rate&&&rate&&&Please enter rate`
     })
@@ -29,7 +21,7 @@ export class AddBookingFeedback {
         description:'rating',
         example:1
     })
-    rate:number;
+    rating:number;
 
     @IsNotEmpty({
         message : `Please enter message&&&message&&&Please enter message`
