@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { EntityRepository, getManager, Repository } from 'typeorm';
 import { BookingFeedback } from '../entity/booking-feedback.entity'
 
@@ -18,10 +19,13 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
             .take(take)
             .offset(skip)
 		const [data, count] = await query.getManyAndCount();
-		
+        
+        if (!data.length) {
+            throw new NotFoundException(`No feedback found.`)
+        }
 		const individualCount = await getManager().query(`select count(id) as count , rating from booking_feedback group by rating`)
-		const average_count = await getManager().query(`select  ROUND(AVG(rating)) from booking_feedback `)
-        return { data: data, total_count: count , individual_count : individualCount[0] , average_count:average_count[0]};
+		const average_count = await getManager().query(`select  ROUND(AVG(rating)) as rating from booking_feedback `)
+        return { data: data, total_count: count , individual_count : individualCount , average_count:average_count[0]};
     }
 
 }
