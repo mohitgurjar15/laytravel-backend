@@ -61,8 +61,9 @@ export class FlightService {
 		try {
 			let result = await this.airportRepository.find({
 				where: `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
+				order : { parentId : 'ASC' }
 			});
-			result = this.getNestedChildren(result,0)
+			result = this.sortAirport(result)
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
 			return result;
@@ -77,6 +78,22 @@ export class FlightService {
 		}
 	}
 
+	sortAirport(airports){
+		let result=[];
+		for(let airport of airports){
+	
+		  let find = result.findIndex(x=>x.id===airport.parentId);
+		  
+		  if(find>-1){
+		  	result.splice(find+1,0,airport)
+		  }
+		  else{
+		  	result.push(airport)
+		  }
+		}
+
+		return result;
+	}
 	getNestedChildren(arr, parent) {
 		let out = [];
 		for (let i in arr) {
@@ -125,6 +142,15 @@ export class FlightService {
 		const mystifly = new Strategy(new Mystifly(headers));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.oneWaySearch(searchFlightDto, user))
+		);
+		return result;
+	}
+
+	 async searchOneWayZipFlight(searchFlightDto,headers,user){
+		await this.validateHeaders(headers);
+		const mystifly = new Strategy(new Mystifly(headers));
+		const result = new Promise((resolve) =>
+			resolve(mystifly.oneWaySearchZip(searchFlightDto, user))
 		);
 		return result;
 	}

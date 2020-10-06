@@ -313,6 +313,80 @@ export class Mystifly implements StrategyAirline{
        
     }
 
+    async oneWaySearchZip(searchFlightDto:OneWaySearchFlightDto,user)/* :Promise<FlightSearchResult> */ {
+        
+        const mystiflyConfig = await this.getMystiflyCredential();
+        const sessionToken = await this.startSession();
+        const {
+            source_location,
+            destination_location,
+            departure_date,
+            flight_class,
+            adult_count,
+            child_count,
+            infant_count
+        } = searchFlightDto;
+        let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name:'flight' })
+            .getOne();
+        let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
+
+        if(!module){
+            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+        }
+        const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
+
+        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
+        
+        const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+        if(!markUpDetails){
+            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+        }
+
+        let requestBody=`                         
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
+    xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <tem:AirLowFareSearch>
+            <tem:rq>
+                <mys:IsRefundable>false</mys:IsRefundable>
+                <mys:IsResidentFare>false</mys:IsResidentFare>
+                <mys:NearByAirports>false</mys:NearByAirports>
+                <mys:OriginDestinationInformations>
+                    <mys1:OriginDestinationInformation>
+                        <mys1:DepartureDateTime>2021-01-29T00:00:00</mys1:DepartureDateTime>
+                        <mys1:DestinationLocationCode>LHR</mys1:DestinationLocationCode>
+                        <mys1:OriginLocationCode>DXB</mys1:OriginLocationCode>
+                    </mys1:OriginDestinationInformation>
+                </mys:OriginDestinationInformations>
+                <mys:PassengerTypeQuantities>
+                    <mys1:PassengerTypeQuantity>
+                        <mys1:Code>ADT</mys1:Code>
+                        <mys1:Quantity>5</mys1:Quantity>
+                    </mys1:PassengerTypeQuantity>
+                </mys:PassengerTypeQuantities>
+                <mys:PricingSourceType>All</mys:PricingSourceType>
+                <mys:RequestOptions>Fifty</mys:RequestOptions>
+                <mys:ResponseFormat>XML</mys:ResponseFormat>
+                <mys:SessionId>5A14E536-B141-4A44-821C-06E74CDAEBE5-1847</mys:SessionId>
+                <mys:Target>Test</mys:Target>
+                <mys:TravelPreferences>
+                    <mys1:AirTripType>OneWay</mys1:AirTripType>
+                    <mys1:CabinPreference>Y</mys1:CabinPreference>
+                    <mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>
+                </mys:TravelPreferences>
+            </tem:rq>
+        </tem:AirLowFareSearch>
+    </soapenv:Body>
+</soapenv:Envelope>`;
+        let searchResult = await HttpRequest.mystiflyRequestZip('http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc',requestBody,'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
+        console.log(JSON.stringify(searchResult))
+        
+       
+    }
+
     getMinPrice(routes,priceType){
         return Math.min.apply(null, routes.map(item => item[priceType]))
     }
