@@ -11,7 +11,7 @@ import { UpdatePredictionMarkupDto } from './dto/update-prediction-markup.dto';
 import { PredictionFactorMarkupService } from './prediction-factor-markup.service';
 
 @Controller('prediction-factor-markup')
-@ApiTags("prediction Factor Markup")
+@ApiTags("Prediction Factor Markup")
 @ApiBearerAuth()
 
 export class PredictionFactorMarkupController {
