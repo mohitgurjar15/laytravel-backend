@@ -7,11 +7,11 @@ import {
   } from "typeorm";
 
   //@Index("markup_pk", ["id"], { unique: true })
-  @Index("markupPercentage_idx", ["markupPercentage"], {})
-  @Index("maxRatePercentage_idx", ["maxRatePercentage"], {})
-  @Index("minRatePercentage_idx", ["minRatePercentage"], {})
-  @Entity("preduction_factor_markup")
-  export class PreductionFactorMarkup extends BaseEntity {
+  @Index("markupPercentage_idx2", ["markupPercentage"], {})
+  @Index("maxRatePercentage_idx2", ["maxRatePercentage"], {})
+  @Index("minRatePercentage_idx2", ["minRatePercentage"], {})
+  @Entity("prediction_factor_markup")
+  export class PredictionFactorMarkup extends BaseEntity {
     
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
