@@ -60,7 +60,7 @@ export class UserRepository extends Repository<User> {
 		const { page_no, search, limit } = paginationOption;
 
 		const take = limit || 10;
-		const skip = (page_no - 1) * limit || 0;
+		const skip = (page_no - 1) * take || 0;
 		const keyword = search || "";
 
 		let where;
@@ -119,8 +119,9 @@ export class UserRepository extends Repository<User> {
 			// END AS "user_type"`,)
 			.where(where)
 			.offset(skip)
-			.take(take)
+			.limit(take)
 			.getManyAndCount();
+		
 
 		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No user found.`);
