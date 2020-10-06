@@ -1,10 +1,10 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
-export class UpdatePreductionMarkupDto{
+export class UpdatePredictionMarkupDto{
 
     @IsNotEmpty({
-		message: `Please enter markup percentage.&&&markup&&&Please enter markup percentage`,
+		message: `Please enter prediction markup percentage.&&&markup&&&Please enter prediction markup percentage`,
 	})
     @ApiProperty({
         description:`Please enter markup percentage`,
