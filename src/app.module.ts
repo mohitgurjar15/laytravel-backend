@@ -37,6 +37,7 @@ import { BookingModule } from './booking/booking.module';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { NewsLettersModule } from './news-letters/news-letters.module';
 import { BookingFeedbackModule } from './booking-feedback/booking-feedback.module';
+import { PreductionFactorMarkupModule } from './preduction-factor-markup/preduction-factor-markup.module';
 
 
 @Module({
@@ -102,6 +103,7 @@ import { BookingFeedbackModule } from './booking-feedback/booking-feedback.modul
 		AdminDashboardModule,
 		NewsLettersModule,
 		BookingFeedbackModule,
+		PreductionFactorMarkupModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
