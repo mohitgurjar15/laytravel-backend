@@ -15,6 +15,12 @@ export class Strategy{
         return data;
     }
 
+    async oneWaySearchZip(param1,param2){
+
+        const data = await this.airline.oneWaySearchZip(param1,param2);
+        return data;
+    }
+
     async roundTripSearch(param1,param2){
         const data = await this.airline.roundTripSearch(param1,param2);
         return data;

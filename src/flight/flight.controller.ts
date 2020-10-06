@@ -172,4 +172,29 @@ export class FlightController {
         return await this.flightService.ticketFlight(id);
         //return await this.flightService.mapChildParentAirport(name);
     }
+
+    @Post('/search-oneway-zip-flight')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Search One Way flight" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    async searchOneWayFlightZip(
+       @Body() searchFlightDto:OneWaySearchFlightDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.searchOneWayZipFlight(searchFlightDto,req.headers,user);
+    }
 }
