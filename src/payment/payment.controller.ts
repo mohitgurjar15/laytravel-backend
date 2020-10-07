@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Query, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Query, Param, Put, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
@@ -29,6 +29,7 @@ export class PaymentController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
+	@HttpCode(200)
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async saveCard(
         @Body() saveCardDto:SaveCardDto,
