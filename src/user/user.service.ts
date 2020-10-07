@@ -37,7 +37,7 @@ export class UserService {
 		public userRepository: UserRepository,
 
 		public readonly mailerService: MailerService
-	) {}
+	) { }
 
 	async create(
 		saveUserDto: SaveUserDto,
@@ -246,12 +246,12 @@ export class UserService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-			var  statusWord = status  == true ? 1 : 0 ;
+			var statusWord = status == true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			
+
 			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`);
 			return { message: `user status changed` };
 		} catch (error) {
@@ -267,6 +267,8 @@ export class UserService {
 			);
 		}
 	}
+
+	
 	async weeklyRagisterUser(): Promise<any> {
 		try {
 			var date = new Date();
@@ -294,9 +296,9 @@ export class UserService {
 			todayDate = todayDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-				console.log(mondayDate);
-				console.log(mondayDate);
-				
+			console.log(mondayDate);
+			console.log(mondayDate);
+
 			const result = await this.userRepository.query(
 				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`
 			);

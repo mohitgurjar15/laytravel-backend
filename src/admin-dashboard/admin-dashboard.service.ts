@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { getManager } from "typeorm";
 import { Booking } from "src/entity/booking.entity";
 import { DashboardFilterDto } from "./dto/dashboard-filter.dto";
 import { Role } from "src/enum/role.enum";
+import { errorMessage } from "src/config/common.config";
+
 
 @Injectable()
 export class AdminDashboardService {
@@ -156,7 +158,7 @@ export class AdminDashboardService {
 					AND (DATE(created_date) >= '${todayDate}')
 			`
 		);
-		
+
 		const totalCount = await getManager().query(
 			`SELECT
 				COUNT(DISTINCT("User"."user_id")) as "count" 
@@ -168,11 +170,92 @@ export class AdminDashboardService {
 
 		var mcount = monthlyCount[0].count ? monthlyCount[0].count : 0;
 		var wcount = weeklyCount[0].count ? weeklyCount[0].count : 0;
-		var tcount = totalCount[0].count ? totalCount[0].count : 0 ; 
+		var tcount = totalCount[0].count ? totalCount[0].count : 0;
 		return {
-			current_month_Count:mcount,
-			current_week_count:wcount,
-			total_count : tcount
+			current_month_Count: mcount,
+			current_week_count: wcount,
+			total_count: tcount
 		}
+	}
+
+
+	async userCountOnCountry() {
+		// let userCount = await getManager()
+		// 	.createQueryBuilder(User, "user")
+		// 	//.leftJoinAndSelect("user.createdBy2", "parentUser")
+		// 	//.leftJoinAndSelect("user.state", "state")
+		// 	.leftJoinAndSelect("user.country", "countries")
+		// 	.select([
+		// 		"count(user.userId)",
+		// 		// "user.country_id",
+		// 		"countries.name",
+
+		// 	])
+		// 	.groupBy("countries_id")
+		// 	.getMany();
+
+		try {
+			const result = await getManager().query(
+				`SELECT "countries"."name" AS "countries_name", "countries"."id" AS "countries_id", COUNT(DISTINCT("user"."user_id")) as "user_count" FROM "user" "user" LEFT JOIN "countries" "countries" ON "countries"."id"="user"."country_id" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) AND "country_id" > 0  GROUP BY countries_id`
+			);
+			return result;
+		}
+		catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+
+
+	async laytripCreditStates(filterOption: DashboardFilterDto) {
+		const { moduleId, startDate, toDate } = filterOption
+		try {
+			var earned_where = `status = 1`;
+			var redeem_where = `status = 1`
+			// if (moduleId) {
+			// 	earned_where += `AND `
+			// }
+
+			if (startDate) {
+				earned_where += `AND (DATE(earn_date) >= '${startDate}')`;
+				redeem_where += `AND (DATE(redeem_date) >= '${startDate}')`;
+			}
+
+			if (toDate) {
+				earned_where += `AND (DATE(earn_date) <= '${toDate}')`;
+				redeem_where += `AND (DATE(redeem_date) <= '${toDate}')`;
+			}
+			let [earnedReword] = await getManager()
+				.query(`SELECT sum("points") FROM "lay_credit_earn" WHERE ${earned_where}  `);
+
+			let [redeemReword] = await getManager()
+				.query(`SELECT sum("points") FROM "lay_credit_redeem" WHERE ${redeem_where}`)
+
+			//const points = earnedReword.sum - redeemReword.sum;
+
+			return { total_earned_points : earnedReword.sum ||  0 , total_redeem_points : redeemReword.sum || 0}
+		}
+		catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+
 	}
 }

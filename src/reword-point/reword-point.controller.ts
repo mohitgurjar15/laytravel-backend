@@ -89,10 +89,10 @@ export class RewordPointController {
 	@ApiResponse({ status: 404, description: "Rewords Are Not Available." })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listRedeemReword(
-        @Param("id") id: string,
-        @Query() paginationOption: ListRedeemRewordDto
+		@Query() paginationOption: ListRedeemRewordDto,
+		@GetUser() user: User,
 	): Promise<{ data: LayCreditRedeem[] ,TotalResult: number}> {
-		return await this.RewordPointService.listRedeemReword(paginationOption,id);
+		return await this.RewordPointService.listRedeemReword(paginationOption,user.userId);
 	}
 	
 

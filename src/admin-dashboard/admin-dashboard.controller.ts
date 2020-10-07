@@ -33,7 +33,21 @@ export class AdminDashboardController {
 		return await this.adminDashboardService.TotalRevanue(filterOption);
 	}
 
-
+	@Get('laytrip-user-location')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Count of the users based on locations" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async countryBasedCount(
+	): Promise<any>{
+		return await this.adminDashboardService.userCountOnCountry();
+	}
 
 	@Get("member-static-graph")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
@@ -54,6 +68,25 @@ export class AdminDashboardController {
 		return await this.adminDashboardService.memberStaticsForGraph(filterOption);
 	}
 
+
+	@Get("laytrip-credit-states")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({
+		summary: "Total laytrip credit states ",
+	})
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async laytripCreditStates(
+        @Query() filterOption : DashboardFilterDto
+    ) {
+		return await this.adminDashboardService.laytripCreditStates(filterOption);
+	}
 
 	@Get("weekly-monthly-member-statics")
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
