@@ -36,22 +36,24 @@ export class EnqiryService {
 	}
 
 	async newEnquiry(
-		newEnquiryDto: newEnquiryDto,
-		user : User
+		newEnquiryDto: newEnquiryDto
 	){
 		try {
-			const {subject , message , location} = newEnquiryDto
+			const { message ,name,email,country_code,phone_no} = newEnquiryDto
 			const enquiry = new Enquiry();
 			enquiry.id = uuidv4();
-			enquiry.email = user.email;
-			enquiry.phoneNo = user.phoneNo;
-			enquiry.location = location;
-			enquiry.userName = user.firstName + ' ' + user.lastName;
-			enquiry.subject = subject;
+			enquiry.email = email;
+			if(phone_no)
+			enquiry.phoneNo = phone_no;
+
+			if(country_code)
+			enquiry.countryCode = country_code;
+			
+			enquiry.userName = name;
 			enquiry.message = message;
 			enquiry.createdDate = new Date;
 			await enquiry.save();
-			Activity.logActivity(user.userId, "enquiry", `${user.email} is Added New Enquiry for ${enquiry.subject}`);
+			//Activity.logActivity(user.userId, "enquiry", `${email} is Added New Enquiry`);
         
 			return { message : `Enquiry created successfully`};
 		} catch (error) {

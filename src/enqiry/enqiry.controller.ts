@@ -7,22 +7,22 @@ import { Role } from 'src/enum/role.enum';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/guards/role.decorator';
-import {newEnquiryDto} from './dto/new-enquiry.dto'
+import { newEnquiryDto } from './dto/new-enquiry.dto'
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from 'src/entity/user.entity';
 
 
 @ApiTags("Enquiry")
-@ApiBearerAuth()
 @Controller('enqiry')
 export class EnqiryController {
 
-    constructor(private enqiryService: EnqiryService) {}
+	constructor(private enqiryService: EnqiryService) { }
 
 	@Get()
-    @UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
-    @ApiOperation({ summary: "List of Enquiry" })
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
+	@ApiOperation({ summary: "List of Enquiry" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Not Found" })
@@ -31,13 +31,14 @@ export class EnqiryController {
 		@Query() paginationOption: EnquiryListDto
 	): Promise<{ data: Enquiry[]; TotalReseult: number }> {
 		return await this.enqiryService.listEnquiry(paginationOption);
-    }
+	}
 
 
 
-    @Get("/:id")
+	@Get("/:id")
+	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
 	@ApiOperation({ summary: "get Enquiry Data using id " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -51,7 +52,6 @@ export class EnqiryController {
 
 
 
-	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "Create New Enquiry" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -59,9 +59,8 @@ export class EnqiryController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Post()
 	async createEnquiry(
-		@Body() newEnquiryDto: newEnquiryDto,
-		@GetUser() user: User
+		@Body() newEnquiryDto: newEnquiryDto
 	): Promise<{ message: string }> {
-		return await this.enqiryService.newEnquiry(newEnquiryDto,user);
+		return await this.enqiryService.newEnquiry(newEnquiryDto);
 	}
 }

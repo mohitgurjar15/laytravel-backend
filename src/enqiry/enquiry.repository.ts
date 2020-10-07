@@ -15,7 +15,7 @@ export class EnquiryRepository extends Repository<Enquiry> {
         
         let where;
         if(keyword){
-             where =`("user_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%') or ("phone_no" ILIKE '%${keyword}%')or ("location" ILIKE '%${keyword}%') or ("subject" ILIKE '%${keyword}%') or ("message" ILIKE '%${keyword}%')`
+             where =`("user_name" ILIKE '%${keyword}%') or ("email" ILIKE '%${keyword}%') or ("phone_no" ILIKE '%${keyword}%') or  ("message" ILIKE '%${keyword}%')`
         }
         else{
              where = `1=1`
