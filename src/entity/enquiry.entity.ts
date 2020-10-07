@@ -12,14 +12,18 @@ export class Enquiry extends BaseEntity {
   @Column("character varying", { name: "email", length: 500 })
   email: string;
 
-  @Column("character varying", { name: "phone_no", length: 20 })
+  @Column("character varying", { name: "phone_no", length: 20 ,nullable:true})
   phoneNo: string;
 
-  @Column("text", { name: "location" })
-  location: string;
 
-  @Column("text", { name: "subject" })
-  subject: string;
+  @Column("character varying", { name: "country_code", length: 10 ,nullable:true})
+  countryCode: string;
+
+  // @Column("text", { name: "location" })
+  // location: string;
+
+  // @Column("text", { name: "subject" })
+  // subject: string;
 
   @Column("text", { name: "message" })
   message: string;
