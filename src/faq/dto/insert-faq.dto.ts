@@ -4,13 +4,13 @@ import { ApiProperty } from '@nestjs/swagger';
 export class InsertFaqDto {
 
     @IsNotEmpty({
-        message : `Please enter category&&&category`
+        message : `Please enter category id&&&category`
     })
     @ApiProperty({
-        description: `Enter category`,
-        example: `facility`
+        description: `Enter category id`,
+        example: `1`
     })
-    category: string;
+    categoryId: number;
 
     @IsNotEmpty({
         message : `Please enter question.&&&question`

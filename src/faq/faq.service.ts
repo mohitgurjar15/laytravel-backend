@@ -45,10 +45,10 @@ export class FaqService {
 		InsertFaqDto: InsertFaqDto,
 		user: User
 	): Promise<{ message: string }> {
-		const { category, question, answer } = InsertFaqDto;
+		const { categoryId, question, answer } = InsertFaqDto;
 		const adminId = user.id;
 		const checkfaq = await this.FaqRepository.count({
-			category: category,
+			categoryId: categoryId,
 			question: question,
 		});
 		if (checkfaq) {
@@ -57,7 +57,7 @@ export class FaqService {
 
 		const faq = new Faq();
 
-		faq.category = category;
+		faq.categoryId = categoryId;
 		faq.question = question;
 		faq.answer = answer;
 		faq.createdDate = new Date();
@@ -78,14 +78,14 @@ export class FaqService {
 		updateFaqDto: UpdateFaqDto,
 		user: User
 	): Promise<{ message: string }> {
-		const { category, question, answer } = updateFaqDto;
+		const { categoryId, question, answer } = updateFaqDto;
 		const adminId = user.id;
 
 		const faq = await this.FaqRepository.findOne({ id });
 		if (!faq) {
 			throw new NotFoundException(`Faq Id Not Found`);
 		}
-		faq.category = category;
+		faq.categoryId = categoryId;
 		faq.question = question;
 		faq.answer = answer;
 		faq.updatedDate = new Date();
