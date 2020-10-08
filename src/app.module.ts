@@ -38,6 +38,7 @@ import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { NewsLettersModule } from './news-letters/news-letters.module';
 import { BookingFeedbackModule } from './booking-feedback/booking-feedback.module';
 import { PredictionFactorMarkupModule } from './prediction-factor-markup/prediction-factor-markup.module';
+import { FaqCategoryModule } from './faq-category/faq-category.module';
 
 
 @Module({
@@ -104,6 +105,7 @@ import { PredictionFactorMarkupModule } from './prediction-factor-markup/predict
 		NewsLettersModule,
 		BookingFeedbackModule,
 		PredictionFactorMarkupModule,
+		FaqCategoryModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
