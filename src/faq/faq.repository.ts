@@ -34,7 +34,7 @@ export class FaqRepository extends Repository<Faq> {
             .where(where)
             .take(take)
             .offset(skip)
-            //.orderBy(`"faq_created_date"`, 'DESC')
+            .orderBy(`faq.id`, 'DESC')
         const [result, total] = await query.getManyAndCount();
         if (!result.length) {
             throw new NotFoundException(`No faq found.`)
