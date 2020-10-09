@@ -66,7 +66,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
-			.leftJoinAndSelect("traveler.userData", "travelers")
+			.leftJoinAndSelect("traveler.userData", "userData")
 			// .select(["booking.id",
 			// 	"booking.userId",
 			// 	"booking.moduleId",
@@ -105,16 +105,16 @@ export class BookingRepository extends Repository<Booking> {
 			// 	"currency.code",
 			// 	"currency.symbol",
 			// 	"currency.liveRate",
-			// 	"travelers.firstName",
-			// 	"travelers.lastName",
-			// 	"travelers.email",
-			// 	"travelers.phoneNo",
-			// 	"travelers.profilePic",
-			// 	"travelers.roleId"])
+			// 	"userData.firstName",
+			// 	"userData.lastName",
+			// 	"userData.email",
+			// 	"userData.phoneNo",
+			// 	"userData.profilePic",
+			// 	"userData.roleId"])
 			.where(where)
 			.take(take)
 			.offset(skip)
-			//.orderBy(`"booking"."booking_date"`, 'DESC')
+			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		if (!data.length) {
