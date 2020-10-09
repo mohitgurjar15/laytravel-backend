@@ -118,6 +118,12 @@ export class FaqService {
 			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`);
 			return { message: "Faq Deleted Successfully" };
 		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`${error.message} &&& id &&& ${error.message}`);
+			}
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
 			);
