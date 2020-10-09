@@ -15,17 +15,15 @@ export class LoginLogRepository extends Repository<LoginLog> {
 		const keyword = search || "";
 
 		let where;
-		where = `1=1 AND`;
+		where = `1=1 `;
 		if (searchDate) {
-			where += `(DATE("log"."login_date") = '${searchDate}') AND`;
+			where += `AND (DATE("log"."login_date") = '${searchDate}') `;
 		}
 		if (userId) {
-			where += `("log"."user_id" = '${userId}') AND`;
+			where += `AND ("log"."user_id" = '${userId}') `;
 		}
 		if (keyword) {
-			where += `(("log"."ip_address" ILIKE '${keyword}') or ("log"."login_agent" ILIKE '%${keyword}%') or("user"."first_name" ILIKE '%${keyword}%')or("user"."email" ILIKE '%${keyword}%')or("user"."last_name" ILIKE '%${keyword}%'))`;
-		} else {
-			where += ` 1=1`;
+			where += `AND (("log"."ip_address" ILIKE '${keyword}') or ("log"."login_agent" ILIKE '%${keyword}%') or("user"."first_name" ILIKE '%${keyword}%')or("user"."email" ILIKE '%${keyword}%')or("user"."last_name" ILIKE '%${keyword}%'))`;
 		}
 		// const [result, total] = await this.findAndCount({
 		// 	select:['user',],
