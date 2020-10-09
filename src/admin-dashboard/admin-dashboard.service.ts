@@ -16,7 +16,7 @@ export class AdminDashboardService {
 		}
 
 		if (startDate) {
-			where += `AND (DATE("booking".booking_date) >= 's${startDate}') `;
+			where += `AND (DATE("booking".booking_date) >= '${startDate}') `;
 		}
 
 		if (toDate) {
