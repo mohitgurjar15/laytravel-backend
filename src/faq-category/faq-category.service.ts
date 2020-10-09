@@ -19,8 +19,10 @@ export class FaqCategoryService {
     async addFaqCategory(addFaqCategoryDto: AddFaqCategoryDto) {
         try {
             const { name } = addFaqCategoryDto;
-            const alredyExiest = this.faqCategoryRepository.count({name:name,isDeleted:false})
+            const alredyExiest = await this.faqCategoryRepository.count({name:name,isDeleted:false})
 
+            console.log(alredyExiest);
+            
             if(alredyExiest)
             {
                 throw new ConflictException(`Given faq category alredy exiest`)
