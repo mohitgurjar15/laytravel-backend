@@ -17,6 +17,9 @@ import { airports } from "../airports";
 import { FareInfo } from "../model/fare.model";
 import { HttpRequest } from "src/utility/http.utility";
 const fs = require('fs').promises;
+import * as zlib from 'zlib';
+import * as md5 from 'md5';
+
 const flightClass={
     'Economy':'Y',
     'Business':'C',
@@ -185,7 +188,7 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</soapenv:Body>`
         requestBody += `</soapenv:Envelope>`
         let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirLowFareSearch');
-        console.log(JSON.stringify(searchResult))
+        //console.log(JSON.stringify(searchResult))
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
             let flightRoutes = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
@@ -198,10 +201,12 @@ export class Mystifly implements StrategyAirline{
             let stopDuration;
             let otherSegments=[]
             let totalDuration;
+            let uniqueCode;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
                 totalDuration=0;
+                uniqueCode='';
                 flightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
                 flightSegments.forEach((flightSegment,j) => {
@@ -240,6 +245,9 @@ export class Mystifly implements StrategyAirline{
                         stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
+                    uniqueCode += stop.departure_time;
+                    uniqueCode += stop.arrival_time;
+                    uniqueCode += stop.flight_number;
                     stops.push(stop)
                 });
                 routeType= new RouteType();
@@ -274,6 +282,7 @@ export class Mystifly implements StrategyAirline{
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
+                route.unique_code       = md5(uniqueCode)
                 routes.push(route);
             }
             let flightSearchResult= new FlightSearchResult();
@@ -313,7 +322,7 @@ export class Mystifly implements StrategyAirline{
        
     }
 
-    async oneWaySearchZip(searchFlightDto:OneWaySearchFlightDto,user)/* :Promise<FlightSearchResult> */ {
+    async oneWaySearchZip(searchFlightDto:OneWaySearchFlightDto,user){
         
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
@@ -344,7 +353,65 @@ export class Mystifly implements StrategyAirline{
             throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
         }
 
-        let requestBody=`                         
+        let requestBody=`<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
+    xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`
+        requestBody += `<soapenv:Header/>`;
+        requestBody += `<soapenv:Body>`;
+        requestBody += `<tem:AirLowFareSearch>`;
+        requestBody += `<tem:rq>`;
+        requestBody += `<mys:IsRefundable>false</mys:IsRefundable>`;
+        requestBody += `<mys:IsResidentFare>false</mys:IsResidentFare>`;
+        requestBody += `<mys:NearByAirports>false</mys:NearByAirports>`;
+        requestBody += `<mys:OriginDestinationInformations>`;
+        requestBody += `<mys1:OriginDestinationInformation>`;
+        requestBody += `<mys1:DepartureDateTime>${departure_date}T00:00:00</mys1:DepartureDateTime>`;
+        requestBody += `<mys1:DestinationLocationCode>${destination_location}</mys1:DestinationLocationCode>`;
+        requestBody += `<mys1:OriginLocationCode>${source_location}</mys1:OriginLocationCode>`;
+        requestBody += `</mys1:OriginDestinationInformation>`;
+        requestBody += `</mys:OriginDestinationInformations>`;
+        requestBody += `<mys:PassengerTypeQuantities>`;
+
+        if(adult_count>0){
+
+            requestBody += `<mys1:PassengerTypeQuantity>`
+            requestBody += `<mys1:Code>ADT</mys1:Code>`
+            requestBody += `<mys1:Quantity>${adult_count}</mys1:Quantity>`
+            requestBody += `</mys1:PassengerTypeQuantity>`
+        }
+
+        if(child_count>0){
+
+            requestBody += `<mys1:PassengerTypeQuantity>`
+            requestBody += `<mys1:Code>CHD</mys1:Code>`
+            requestBody += `<mys1:Quantity>${child_count}</mys1:Quantity>`
+            requestBody += `</mys1:PassengerTypeQuantity>`
+        }
+
+        if(infant_count>0){
+
+            requestBody += `<mys1:PassengerTypeQuantity>`
+            requestBody += `<mys1:Code>INF</mys:Code>`
+            requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
+            requestBody += `</mys1:PassengerTypeQuantity>`
+        }
+
+
+        requestBody += `</mys:PassengerTypeQuantities>`;
+        requestBody += `<mys:PricingSourceType>All</mys:PricingSourceType>`;
+        requestBody += `<mys:RequestOptions>Fifty</mys:RequestOptions>`;
+        requestBody += `<mys:ResponseFormat>XML</mys:ResponseFormat>`;
+        requestBody += `<mys:SessionId>${sessionToken}</mys:SessionId>`;
+        requestBody += `<mys:Target>${mystiflyConfig.target}</mys:Target>`;
+        requestBody += `<mys:TravelPreferences>`;
+        requestBody += `<mys1:AirTripType>OneWay</mys1:AirTripType>`;
+        requestBody += `<mys1:CabinPreference>${this.getFlightClass(flight_class)}</mys1:CabinPreference>`;
+        requestBody += `<mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>`;
+        requestBody += `</mys:TravelPreferences>`;
+        requestBody += `</tem:rq>`;
+        requestBody += `</tem:AirLowFareSearch>`;
+        requestBody += `</soapenv:Body>`;
+        requestBody += `</soapenv:Envelope>`;
+       /* requestBody=`                         
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
     xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
     <soapenv:Header/>
@@ -380,10 +447,21 @@ export class Mystifly implements StrategyAirline{
             </tem:rq>
         </tem:AirLowFareSearch>
     </soapenv:Body>
-</soapenv:Envelope>`;
+</soapenv:Envelope>`;*/
+console.log(requestBody)
         let searchResult = await HttpRequest.mystiflyRequestZip('http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc',requestBody,'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
-        console.log(JSON.stringify(searchResult))
-        
+        //console.log(JSON.stringify(searchResult))
+        let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
+        console.log(compressedResult)
+        let buffer =  Buffer.from(compressedResult, 'base64');
+        zlib.unzip(buffer, function(err, buffer) {
+          if (!err) {
+            console.log(buffer.toString());
+          }
+        });
+        /*let result = await zlib.unzip(buffer,{})
+        console.log(result.toString())*/
+
        
     }
 

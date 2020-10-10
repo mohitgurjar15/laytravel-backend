@@ -45,7 +45,8 @@ export class Route{
     fare_break_dwon : FareInfo[];
     cabin_class     : string;
     fare_type       : string;
-    instalment_details :{}
+    instalment_details :{};
+    unique_code     :string;
 }
 
 export class RouteType{
