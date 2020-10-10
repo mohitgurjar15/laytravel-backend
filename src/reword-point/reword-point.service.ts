@@ -55,7 +55,7 @@ export class RewordPointService {
 		}
 	}
 
-	async countOfRewordPoints(userId:string): Promise <{ total_available_points : number }>
+	async countOfRewordPoints(userId:string)
 	{
 		try {
 			let [earnedReword] = await this.rewordPointEarnRepository
@@ -66,7 +66,7 @@ export class RewordPointService {
 
 			const points = earnedReword.sum - redeemReword.sum;
 
-			return { total_available_points : points }
+			return { total_available_points : points , total_earned_points : earnedReword.sum || 0 ,total_redeem_points : redeemReword.sum || 0}
 			 
 		} catch (error) {
 			if (

@@ -1,12 +1,12 @@
 import { NotFoundException } from "@nestjs/common";
-import { PreductionFactorMarkup } from "src/entity/preduction-factor-markup.entity";
+import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 import { EntityRepository, getManager, Repository } from "typeorm";
 
-@EntityRepository(PreductionFactorMarkup)
-export class PreductionFactorMarkupRepository extends Repository<PreductionFactorMarkup>
+@EntityRepository(PredictionFactorMarkup)
+export class PredictionFactorMarkupRepository extends Repository<PredictionFactorMarkup>
 {
     
-    async listFactorMarkup(): Promise<{ data: PreductionFactorMarkup }> {
+    async listFactorMarkup(): Promise<{ data: PredictionFactorMarkup }> {
         // const [result,total] = await this.findAndCount({
         //     cache : {
         //         id:'markup',
@@ -14,12 +14,12 @@ export class PreductionFactorMarkupRepository extends Repository<PreductionFacto
         //     }
         // });
         const result = await getManager()
-			.createQueryBuilder(PreductionFactorMarkup, "markup")
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
             .getOne()
             
 
         if (!result) {
-            throw new NotFoundException(`No preduction markup found.`)
+            throw new NotFoundException(`No prediction markup found.`)
         }
         return { data: result};
     }

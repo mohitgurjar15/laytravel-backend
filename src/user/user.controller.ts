@@ -207,6 +207,8 @@ export class UserController {
 		return await this.userService.weeklyRagisterUser();
 	}
 
+	
+
 	@Get('report/counts')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "get-counts Of all user" })

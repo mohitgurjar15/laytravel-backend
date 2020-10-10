@@ -3,25 +3,25 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entity/user.entity';
 import { Activity } from 'src/utility/activity.utility';
 import { getConnection } from 'typeorm';
-import { UpdatePreductionMarkupDto } from './dto/update-preduction-markup.dto';
-import { PreductionFactorMarkupRepository } from './preduction-factor-markup.repository';
+import { UpdatePredictionMarkupDto } from './dto/update-prediction-markup.dto';
+import { PredictionFactorMarkupRepository } from './prediction-factor-markup.repository';
 
 @Injectable()
-export class PreductionFactorMarkupService {
+export class PredictionFactorMarkupService {
     constructor(
-        @InjectRepository(PreductionFactorMarkupRepository)
-        private PreductionFactorMarkupRepository: PreductionFactorMarkupRepository
+        @InjectRepository(PredictionFactorMarkupRepository)
+        private predictionFactorMarkupRepository: PredictionFactorMarkupRepository
     ) { }
 
     async listFactorMarkup(): Promise<{ data: any }> {
         try {
-            return await this.PreductionFactorMarkupRepository.listFactorMarkup();
+            return await this.predictionFactorMarkupRepository.listFactorMarkup();
         } catch (error) {
             if (
                 typeof error.response !== "undefined" &&
                 error.response.statusCode == 404
             ) {
-                throw new NotFoundException(`No any markup Found.&&&id`);
+                throw new NotFoundException(`No preduction markup Found.&&&id`);
             }
 
             throw new InternalServerErrorException(
@@ -31,12 +31,12 @@ export class PreductionFactorMarkupService {
     }
 
 
-    async updatePreductionMarkup(
+    async updatepredictionMarkup(
 
-        updatePreductionMarkupDto: UpdatePreductionMarkupDto,
+        updatePredictionMarkupDto: UpdatePredictionMarkupDto,
 		user:User
     ): Promise<{ message: string }> {
-        const { markup_percentage ,max_rate_percentage,min_rate_percentage } = updatePreductionMarkupDto;
+        const { markup_percentage ,max_rate_percentage,min_rate_percentage } = updatePredictionMarkupDto;
 
         // let moduleDetaile = await getManager()
         // 	.createQueryBuilder(Module, "module")
@@ -57,7 +57,7 @@ export class PreductionFactorMarkupService {
         // 	throw new BadRequestException(
         // 		`supplier id not exist with database.&&&supplier_id`
         // 	);
-        let markupDetail = await this.PreductionFactorMarkupRepository.findOne();
+        let markupDetail = await this.predictionFactorMarkupRepository.findOne();
 
         if (!markupDetail) throw new NotFoundException(`Predaction markup not found`);
 
@@ -71,9 +71,9 @@ export class PreductionFactorMarkupService {
         try {
             markupDetail.save();
             // await getConnection().queryResultCache!.remove(["markup"]);
-            Activity.logActivity(user.userId, "Preduction factor markup", `Preduction Markup Updated by admin`);
+            Activity.logActivity(user.userId, "prediction factor markup", `prediction Markup Updated by admin`);
 
-            return { message: "Preduction Markup Updated Successfully" };
+            return { message: "Prediction Markup Updated Successfully" };
         } catch (error) {
             if (
                 typeof error.response !== "undefined" &&

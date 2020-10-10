@@ -17,22 +17,19 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 		const keyword = search || "";
 
 		let where;
-		where = `1=1 AND`
+		where = `1=1 `
         if(searchDate)
         {
-            where += `(DATE("created_date") = '${searchDate}') AND`;
+            where += `AND (DATE("log"."created_date") = '${searchDate}') `;
 		}
 		if(userId)
         {
-            where += `("user_id" = '${userId}') AND`;
+            where += `AND ("log"."user_id" = '${userId}')`;
         }
 		if (keyword) {
-			where += `(("module_name" ILIKE '%${keyword}%') or ("activity_name" ILIKE '%${keyword}%'))`;
+			where += `AND (("log"."module_name" ILIKE '%${keyword}%') or ("log"."activity_name" ILIKE '%${keyword}%'))`;
 		}
-		else
-		{
-			where += ` 1=1`
-		}
+		
 		// const [result, total] = await this.findAndCount({
 		// 	where: where,
 		// 	skip: skip,

@@ -60,17 +60,62 @@ export class BookingRepository extends Repository<Booking> {
 		if (search) {
 			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
 		}
-		const query = await getManager()
+		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
+			// .select(["booking.id",
+			// 	"booking.userId",
+			// 	"booking.moduleId",
+			// 	"booking.bookingType",
+			// 	"booking.bookingStatus",
+			// 	"booking.currency",
+			// 	"booking.totalAmount",
+			// 	"booking.netRate",
+			// 	"booking.markupAmount",
+			// 	"booking.usdFactor",
+			// 	"booking.bookingDate",
+			// 	"booking.totalInstallments",
+			// 	"booking.locationInfo",
+			// 	"booking.moduleInfo",
+			// 	"booking.paymentGatewayId",
+			// 	"booking.paymentStatus",
+			// 	"booking.paymentInfo",
+			// 	"booking.isPredictive",
+			// 	"booking.layCredit",
+			// 	"booking.fareType",
+			// 	"booking.isTicketd",
+			// 	"booking.paymentGatewayProcessingFee",
+			// 	"booking.supplierId",
+			// 	"booking.nextInstalmentDate",
+			// 	"booking.supplierBookingId",
+			// 	// "bookingInstalments.instalment_date",
+			// 	// "bookingInstalments.instalment_amount",
+			// 	"User.firstName",
+			// 	"User.lastName",
+			// 	"User.email",
+			// 	"User.phoneNo",
+			// 	"User.profilePic",
+			// 	"User.roleId",
+			// 	"currency.id",
+			// 	"currency.country",
+			// 	"currency.code",
+			// 	"currency.symbol",
+			// 	"currency.liveRate",
+			// 	"userData.firstName",
+			// 	"userData.lastName",
+			// 	"userData.email",
+			// 	"userData.phoneNo",
+			// 	"userData.profilePic",
+			// 	"userData.roleId"])
 			.where(where)
 			.take(take)
 			.offset(skip)
-		const [data,count] = await query.getManyAndCount();
+			.orderBy(`booking.bookingDate`, 'DESC')
+		const [data, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
@@ -87,13 +132,13 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
 			/* .select([
-            "user.userId","user.title",
-            "user.firstName","user.lastName","user.email",
-            "user.countryCode","user.phoneNo","user.zipCode",
-            "user.gender","user.dob","user.passportNumber",
-            "user.passportExpiry",
-            "countries.name","countries.iso2","countries.iso3","countries.id",
-        ]) */
+			"user.userId","user.title",
+			"user.firstName","user.lastName","user.email",
+			"user.countryCode","user.phoneNo","user.zipCode",
+			"user.gender","user.dob","user.passportNumber",
+			"user.passportExpiry",
+			"countries.name","countries.iso2","countries.iso3","countries.id",
+		]) */
 			.where('"booking"."id"=:bookingId', { bookingId })
 			.getOne();
 
@@ -180,7 +225,7 @@ export class BookingRepository extends Repository<Booking> {
 			);
 		}
 
-		const [result,count] = await query.getManyAndCount();
+		const [result, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		return { data: result, total_result: count };
 	}
@@ -217,12 +262,12 @@ export class BookingRepository extends Repository<Booking> {
 			// 	"currency.symbol",
 			// 	"moduleData.name",
 			// ])
-			
+
 			.where(where)
 			.take(take)
 			.offset(skip);
 
-		const [data,count] = await query.getManyAndCount();
+		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(

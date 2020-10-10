@@ -16,7 +16,7 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
             .leftJoinAndSelect("feedback.user", "user")
             .select(["feedback.id", "feedback.bookingId", "booking.bookingDate", "feedback.rating", "feedback.message", "module.name", "module.id", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
             .where(where)
-            .take(take)
+            .limit(take)
             .offset(skip)
         const [data, count] = await query.getManyAndCount();
 

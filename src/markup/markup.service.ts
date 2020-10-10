@@ -16,14 +16,14 @@ export class MarkupService {
 	constructor(
 		@InjectRepository(MarkupRepository)
 		private markupRepository: MarkupRepository
-	) {}
+	) { }
 
 	async updateMarkup(
 		id: number,
 		updateMarkupDto: UpdateMarkupDto,
 		user: User
 	): Promise<{ message: string }> {
-		const {  operator, operand } = updateMarkupDto;
+		const { operator, operand } = updateMarkupDto;
 
 		// let moduleDetaile = await getManager()
 		// 	.createQueryBuilder(Module, "module")
@@ -53,12 +53,12 @@ export class MarkupService {
 		markupDetail.operand = operand;
 		markupDetail.operator = operator;
 		markupDetail.updatedDate = new Date();
-		
+
 		try {
 			markupDetail.save();
 			await getConnection().queryResultCache!.remove(["markup"]);
 			Activity.logActivity(user.userId, "markup", `Markup Updated by admin`);
-        
+
 			return { message: "Markup Updated Successfully" };
 		} catch (error) {
 			if (
@@ -101,8 +101,9 @@ export class MarkupService {
 					"markup.userType",
 					"markup.operator",
 					"markup.operand",
+					"markup.bookingType"
 				])
-				.where(`("markup"."id"=:id )`,{ id})
+				.where(`("markup"."id"=:id )`, { id })
 				.getOne();
 
 			if (!result) {
