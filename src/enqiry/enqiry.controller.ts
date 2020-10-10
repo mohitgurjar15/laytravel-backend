@@ -58,6 +58,8 @@ export class EnqiryController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Post()
+	@HttpCode(200)
+	
 	async createEnquiry(
 		@Body() newEnquiryDto: newEnquiryDto
 	): Promise<{ message: string }> {
