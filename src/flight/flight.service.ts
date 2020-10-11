@@ -57,13 +57,22 @@ export class FlightService {
 		private readonly mailerService: MailerService
 	) {}
 
-	async searchAirport(name: String) {
+	/**
+	 * 
+	 * @param name 
+	 * @param type [mobile, web]
+	 */
+	async searchAirport(name: String, type:string) {
 		try {
 			let result = await this.airportRepository.find({
 				where: `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
 				order : { parentId : 'ASC' }
 			});
-			result = this.sortAirport(result)
+			if(type=='web')
+				result = this.sortAirport(result)
+			else
+				result = this.getNestedChildren(result,0)
+				
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
 			return result;
