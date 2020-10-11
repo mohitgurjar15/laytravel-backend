@@ -30,7 +30,20 @@ export class FlightController {
     async searchAirport(
     @Param('name', MinCharPipe) name:String
     ){
-        return await this.flightService.searchAirport(name);
+        return await this.flightService.searchAirport(name,'web');
+        //return await this.flightService.mapChildParentAirport(name);
+    }
+
+    @Get('/mobile/search-airport/:name')
+    @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async searchMobileAirport(
+    @Param('name', MinCharPipe) name:String
+    ){
+        return await this.flightService.searchAirport(name,'mobile');
         //return await this.flightService.mapChildParentAirport(name);
     }
 
