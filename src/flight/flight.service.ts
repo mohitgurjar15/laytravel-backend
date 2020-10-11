@@ -55,13 +55,13 @@ export class FlightService {
 
 		private paymentService: PaymentService,
 		private readonly mailerService: MailerService
-	) {}
+	) { }
 
 	async searchAirport(name: String) {
 		try {
 			let result = await this.airportRepository.find({
 				where: `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
-				order : { parentId : 'ASC' }
+				order: { parentId: 'ASC' }
 			});
 			result = this.sortAirport(result)
 			if (!result.length)
@@ -78,18 +78,18 @@ export class FlightService {
 		}
 	}
 
-	sortAirport(airports){
-		let result=[];
-		for(let airport of airports){
-	
-		  let find = result.findIndex(x=>x.id===airport.parentId);
-		  
-		  if(find>-1){
-		  	result.splice(find+1,0,airport)
-		  }
-		  else{
-		  	result.push(airport)
-		  }
+	sortAirport(airports) {
+		let result = [];
+		for (let airport of airports) {
+
+			let find = result.findIndex(x => x.id === airport.parentId);
+
+			if (find > -1) {
+				result.splice(find + 1, 0, airport)
+			}
+			else {
+				result.push(airport)
+			}
 		}
 
 		return result;
@@ -119,19 +119,19 @@ export class FlightService {
 
 	/* async mapChildParentAirport(name:String){
 
-        for(let airport of allAirpots){
+		for(let airport of allAirpots){
 
-            await getConnection()
-            .createQueryBuilder()
-                .update(Airport)
-                .set({ 
-                    parentId : airport.id
-                })
-                .where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
-                .execute();
-        }
-        return true;
-    } */
+			await getConnection()
+			.createQueryBuilder()
+				.update(Airport)
+				.set({ 
+					parentId : airport.id
+				})
+				.where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
+				.execute();
+		}
+		return true;
+	} */
 
 	async searchOneWayFlight(
 		searchFlightDto: OneWaySearchFlightDto,
@@ -146,13 +146,101 @@ export class FlightService {
 		return result;
 	}
 
-	 async searchOneWayZipFlight(searchFlightDto,headers,user){
+	async searchOneWayZipFlight(searchFlightDto, headers, user) {
 		await this.validateHeaders(headers);
 		const mystifly = new Strategy(new Mystifly(headers));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.oneWaySearchZip(searchFlightDto, user))
 		);
 		return result;
+	}
+
+
+
+
+	async preductBookingDate(serchFlightDto: OneWaySearchFlightDto, headers,user:User) {
+		await this.validateHeaders(headers);
+
+		const mystifly = new Strategy(new Mystifly(headers));
+
+		// const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
+
+		// const depatureDate = new Date(departure_date);
+
+		// const currentDate = new Date();
+
+		// const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate)
+
+		// console.log(dayDiffrence);
+
+		// var weeklylastdate = new Date();
+		// console.log(Math.floor(dayDiffrence / 7));
+
+		// var result = [];
+
+		// for (let index = 0; index <= Math.floor(dayDiffrence / 7); index++) {
+
+		// 	var date = weeklylastdate.toISOString().split('T')[0];
+		// 	date = date
+		// 		.replace(/T/, " ") // replace T with a space
+		// 		.replace(/\..+/, "");
+		// 	console.log(date)
+		// 	let dto = {
+		// 		"source_location": source_location,
+		// 		"destination_location": destination_location,
+		// 		"departure_date": date,
+		// 		"flight_class": flight_class,
+		// 		"adult_count": adult_count,
+		// 		"child_count": child_count,
+		// 		"infant_count": infant_count
+		// 	}
+		// 	result[index]  = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+		// 	weeklylastdate.setDate(weeklylastdate.getDate() + 7);
+		// }
+
+		//const response = await Promise.all(result);
+		//return response;
+	}
+
+
+	async preductDate(searchFlightDto, headers, user) {
+		await this.validateHeaders(headers);
+		//calculates dates for getting booking date
+		let dto1 = {
+			"source_location": "DXB",
+			"destination_location": "SYD",
+			"departure_date": "2020-11-19",
+			"flight_class": "Economy",
+			"adult_count": 1,
+			"child_count": 0,
+			"infant_count": 0
+		}
+	
+		let dto2 = {
+			"source_location": "DXB",
+			"destination_location": "SYD",
+			"departure_date": "2020-11-07",
+			"flight_class": "Economy",
+			"adult_count": 1,
+			"child_count": 0,
+			"infant_count": 0
+		}
+	
+		var result = [];
+		
+			const mystifly = new Strategy(new Mystifly(headers));
+		const result1 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto1, user)));
+		const result2 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto2, user)));
+		result.push(result1,result2);
+	
+		const response = await Promise.all(result);
+		
+		return response;
+	}
+
+	async getDifferenceInDays(date1, date2) {
+		const diffInMs = Math.abs(date2 - date1);
+		return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 	}
 
 	async baggageDetails(routeIdDto: RouteIdsDto) {
@@ -257,7 +345,7 @@ export class FlightService {
 				bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
 			}
 			bookingRequestInfo.laycredit_points = laycredit_points;
-			bookingRequestInfo.fare_type=airRevalidateResult[0].fare_type;
+			bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
 		}
 		let {
 			selling_price,
@@ -294,7 +382,7 @@ export class FlightService {
 			let instalmentDetails;
 
 			let totalAdditionalAmount = additional_amount || 0;
-			if(laycredit_points>0){
+			if (laycredit_points > 0) {
 				totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
 			}
 			//save entry for future booking
@@ -332,7 +420,7 @@ export class FlightService {
 			if (instalmentDetails.instalment_available) {
 				let firstInstalemntAmount =
 					instalmentDetails.instalment_date[0].instalment_amount;
-				if(laycredit_points>0){
+				if (laycredit_points > 0) {
 					firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
 				}
 
@@ -389,11 +477,11 @@ export class FlightService {
 		} else if (payment_type == PaymentType.NOINSTALMENT) {
 
 			let sellingPrice = selling_price;
-			if(laycredit_points>0){
+			if (laycredit_points > 0) {
 				sellingPrice = selling_price - laycredit_points
 			}
-			
-			if(sellingPrice>0){
+
+			if (sellingPrice > 0) {
 
 				let authCardResult = await this.paymentService.authorizeCard(
 					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
@@ -402,7 +490,7 @@ export class FlightService {
 					"USD"
 				);
 				if (authCardResult.status == true) {
-	
+
 					const mystifly = new Strategy(new Mystifly(headers));
 					const bookingResult = await mystifly.bookFlight(
 						bookFlightDto,
@@ -448,7 +536,7 @@ export class FlightService {
 					);
 				}
 			}
-			else{
+			else {
 				//for full laycredit rdeem
 				const mystifly = new Strategy(new Mystifly(headers));
 				const bookingResult = await mystifly.bookFlight(
@@ -456,7 +544,7 @@ export class FlightService {
 					travelersDetails
 				);
 				if (bookingResult.booking_status == "success") {
-					
+
 					let laytripBookingResult = await this.saveBooking(
 						bookingRequestInfo,
 						currencyId,
@@ -487,7 +575,7 @@ export class FlightService {
 				}
 			}
 
-			
+
 		}
 	}
 
@@ -548,24 +636,24 @@ export class FlightService {
 			source_location,
 			destination_location,
 		};
-		booking.fareType=fare_type;
-		booking.isTicketd = fare_type=='LCC'?true:false;
+		booking.fareType = fare_type;
+		booking.isTicketd = fare_type == 'LCC' ? true : false;
 
 		booking.userId = userId;
 
-		if(laycredit_points>0){
+		if (laycredit_points > 0) {
 
 			const layCreditReedem = new LayCreditRedeem();
 			layCreditReedem.userId = userId;
 			layCreditReedem.points = laycredit_points;
 			layCreditReedem.redeemDate = moment().format('YYYY-MM-DD');
-			layCreditReedem.status=1;
-			layCreditReedem.redeemMode='auto';
-			layCreditReedem.description='';
-			layCreditReedem.redeemBy=userId;
+			layCreditReedem.status = 1;
+			layCreditReedem.redeemMode = 'auto';
+			layCreditReedem.description = '';
+			layCreditReedem.redeemBy = userId;
 			await layCreditReedem.save();
 		}
-		
+
 		if (instalmentDetails) {
 			booking.totalInstallments = instalmentDetails.instalment_date.length;
 			if (instalmentDetails.instalment_date.length > 1) {
@@ -579,7 +667,7 @@ export class FlightService {
 			booking.isPredictive = true;
 		} else {
 			//pass here mystifly booking id
-			booking.supplierBookingId=supplierBookingData.supplier_booking_id;
+			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
 			//booking.supplierBookingId = "";
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
@@ -665,7 +753,7 @@ export class FlightService {
 		const userData = await getManager()
 			.createQueryBuilder(User, "user")
 			.select(["user.roleId", "user.userId"])
-			.where(`"user"."user_id" =:user_id AND "user"."is_deleted" = false `,{user_id:userId})
+			.where(`"user"."user_id" =:user_id AND "user"."is_deleted" = false `, { user_id: userId })
 			.getOne();
 
 		var primaryTraveler = new TravelerInfo();

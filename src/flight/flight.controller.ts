@@ -33,6 +33,8 @@ export class FlightController {
         return await this.flightService.searchAirport(name);
         //return await this.flightService.mapChildParentAirport(name);
     }
+
+    
         
         
     @Post('/search-oneway-flight')
@@ -196,5 +198,31 @@ export class FlightController {
        @LogInUser() user
     ){
         return await this.flightService.searchOneWayZipFlight(searchFlightDto,req.headers,user);
+    }
+
+
+    @Post('/predicted-booking-date')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It preduct a date for this day system have done a booking  " })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    async predictedBookingDate(
+       @Body() searchFlightDto:OneWaySearchFlightDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.preductDate(searchFlightDto,req.headers,user);
     }
 }
