@@ -449,25 +449,31 @@ export class Mystifly implements StrategyAirline {
          </tem:AirLowFareSearch>
      </soapenv:Body>
  </soapenv:Envelope>`;*/
-        console.log(requestBody)
+        //console.log(requestBody)
         let searchResult = await HttpRequest.mystiflyRequestZip('http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc', requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
-        console.log(compressedResult)
+        //console.log(compressedResult)
         let buffer = Buffer.from(compressedResult, 'base64');
-        
+
         const unCompressedData = await new Promise((resolve) => {
-            zlib.unzip(buffer, (err, buffer) => {  
+            zlib.unzip(buffer, (err, buffer) => {
                 resolve(buffer.toString());
             });
         });
 
-        let xmlData:any = await Generic.xmlToJson(unCompressedData)
+        let jsonData: any = await Generic.xmlToJson(unCompressedData)
 
-        console.log(xmlData)
+        //console.log(jsonData)
 
-        if (xmlData.airlowfaresearchresponse[0].airlowfaresearchresult[0]['success'][0] == "true") {
 
-            let flightRoutes = xmlData.airlowfaresearchresponse[0].airlowfaresearchresult[0]['priceditineraries'][0]['priceditinerary'];
+        //return jsonData;
+        console.log(jsonData.airlowfaresearchgziprs.success[0]);
+
+        if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
+
+
+
+            let flightRoutes = jsonData.airlowfaresearchgziprs.priceditineraries[0].priceditinerary;
             let stop: Stop;
             let stops: Stop[] = [];
             let routes: Route[] = [];
@@ -485,14 +491,18 @@ export class Mystifly implements StrategyAirline {
                 uniqueCode = '';
                 flightSegments = flightRoutes[i]['origindestinationoptions'][0]['origindestinationoption'][0]['flightsegments'][0]['flightsegment'];
                 otherSegments = flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'][0];
+
                 flightSegments.forEach((flightSegment, j) => {
                     totalDuration += flightSegment['journeyduration'][0] * 60;
+
                     stop = new Stop();
                     stopDuration = "";
                     stop.departure_code = flightSegment['departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['departuredatetime'][0]).format("DD/MM/YYYY")
                     stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("hh:mm A")
                     stop.departure_date_time = flightSegment['departuredatetime'][0];
+
+
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['arrivaldatetime'][0]).format("DD/MM/YYYY")
@@ -500,6 +510,8 @@ export class Mystifly implements StrategyAirline {
                     stop.arrival_date_time = flightSegment['arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['eticket'][0] == 'true' ? true : false;
+
+
                     stop.flight_number = flightSegment['flightnumber'][0];
                     stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['cabinclasscode'][0]);
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['journeyduration'][0] * 60);
@@ -507,14 +519,25 @@ export class Mystifly implements StrategyAirline {
                     stop.airline = flightSegment['marketingairlinecode'][0];
                     stop.remaining_seat = parseInt(flightSegment['seatsremaining'][0]['number'][0]);
                     stop.below_minimum_seat = flightSegment['seatsremaining'][0]['belowminimum'][0] == 'true' ? true : false;
+
+
                     stop.is_layover = false;
                     stop.airline_name = airlines[flightSegment['marketingairlinecode'][0]];
+
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
-                    stop.cabin_baggage = otherSegments['cabinbaggageinfo'][0]['cabinbaggage'][j];
-                    stop.checkin_baggage = otherSegments['baggageinfo'][0]['baggage'][j];
+
+
+
+                    stop.cabin_baggage = otherSegments['cabinbaggageinfo'][0]['string'][j];
+
+
+                    stop.checkin_baggage = otherSegments['baggageinfo'][0]['string'][j];
+
                     stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
+
+
                     if (stops.length > 0) {
-        
+
                         stop.is_layover = true;
                         let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds'));
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds');
@@ -526,15 +549,22 @@ export class Mystifly implements StrategyAirline {
                     uniqueCode += stop.flight_number;
                     stops.push(stop)
                 });
+
+
                 routeType = new RouteType();
                 routeType.type = 'outbound';
                 routeType.stops = stops;
                 route.routes[0] = routeType;
                 route.route_code = flightRoutes[i]['airitinerarypricinginfo'][0]['faresourcecode'][0];
+
                 route.fare_type = flightRoutes[i]['airitinerarypricinginfo'][0]['faretype'][0] == 'WebFare' ? 'LCC' : 'GDS';
                 route.net_rate = Generic.convertAmountTocurrency(flightRoutes[i]['airitinerarypricinginfo'][0]['itintotalfare'][0]['totalfare'][0]['amount'][0], currencyDetails.liveRate);
-                route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
+
+                route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
+                
                 route.selling_price = PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
+
+
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
@@ -563,14 +593,14 @@ export class Mystifly implements StrategyAirline {
             }
             let flightSearchResult = new FlightSearchResult();
             flightSearchResult.items = routes;
-        
+
             //Get min & max selling price
             let priceRange = new PriceRange();
             let priceType = 'selling_price';
             priceRange.min_price = this.getMinPrice(routes, priceType);
             priceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.price_range = priceRange;
-        
+
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
             priceType = 'start_price';
@@ -578,24 +608,24 @@ export class Mystifly implements StrategyAirline {
             partialPaymentPriceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
             //return flightSearchResult;
-        
+
             //Get Stops count and minprice
             flightSearchResult.stop_data = this.getStopCounts(routes, 'stop_count');
-        
+
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
-        
+
             //Get Departure time slot
             flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes, 'departure_time', 0)
             //Get Arrival time slot
             flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes, 'arrival_time', 0)
-            return flightSearchResult;    
+            return flightSearchResult;
         }
         else {
-        
-            throw new NotFoundException(`No flight founds`)
+
+            return {   message : "flight not found"}
         }
-        //
+
 
         //    const variable = promisify(zlib.unzip(buffer, function(err, buffer) {
         //       if (!err) {
@@ -1497,6 +1527,37 @@ export class Mystifly implements StrategyAirline {
             fareInfo.type = fare['a:passengertypequantity'][0]['a:code'][0];
             fareInfo.quantity = fare['a:passengertypequantity'][0]['a:quantity'][0];
             fareInfo.price = PriceMarkup.applyMarkup(parseFloat(fare['a:passengerfare'][0]['a:totalfare'][0]['a:amount'][0]) * parseInt(fareInfo.quantity), markUpDetails)
+
+            fareBreakDowns.push(fareInfo)
+
+            totalFare += parseFloat(fareInfo.price);
+            totalTraveler += parseInt(fareInfo.quantity)
+        }
+
+        fareBreakDowns.push({
+            type: 'total',
+            quantity: totalTraveler,
+            price: totalFare
+        })
+
+        return fareBreakDowns;
+    }
+
+    getFareBreakDownForGzip(fares, markUpDetails) {
+
+        let fareBreakDowns: FareInfo[] = [];
+        let fareInfo;
+        let totalFare = 0;
+        let totalTraveler = 0;
+        for (let fare of fares) {
+            fareInfo = new FareInfo();
+            fareInfo.type = fare['passengertypequantity'][0]['code'][0];
+            
+            
+            fareInfo.quantity = fare['passengertypequantity'][0]['quantity'][0];
+            // console.log(fare['passengerfare'][0]['totalfare'][0]['amount'][0],fareInfo.quantity);
+            
+            fareInfo.price = PriceMarkup.applyMarkup(parseFloat(fare['passengerfare'][0]['totalfare'][0]['amount'][0]) * parseInt(fareInfo.quantity), markUpDetails)
 
             fareBreakDowns.push(fareInfo)
 

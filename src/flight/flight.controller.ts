@@ -11,6 +11,7 @@ import { BookFlightDto } from './dto/book-flight.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
+import { PreductBookingDateDto } from './dto/preduct-booking-date.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -232,10 +233,10 @@ export class FlightController {
     description: 'Enter language code(ex. en)',
     })
     async predictedBookingDate(
-       @Body() searchFlightDto:OneWaySearchFlightDto,
+       @Body() searchFlightDto:PreductBookingDateDto,
        @Req() req,
        @LogInUser() user
     ){
-        return await this.flightService.preductDate(searchFlightDto,req.headers,user);
+        return await this.flightService.preductBookingDate(searchFlightDto,req.headers,user);
     }
 }

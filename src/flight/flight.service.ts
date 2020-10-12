@@ -41,6 +41,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { Role } from "src/enum/role.enum";
 import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
+import { PreductBookingDateDto } from "./dto/preduct-booking-date.dto";
 //import { Airport } from 'src/entity/airport.entity';
 //import { allAirpots } from './all-airports';
 
@@ -62,17 +63,17 @@ export class FlightService {
 	 * @param name 
 	 * @param type [mobile, web]
 	 */
-	async searchAirport(name: String, type:string) {
+	async searchAirport(name: String, type: string) {
 		try {
 			let result = await this.airportRepository.find({
 				where: `("code" ILIKE '%${name}%' or "name" ILIKE '%${name}%' or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
 				order: { parentId: 'ASC' }
 			});
-			if(type=='web')
+			if (type == 'web')
 				result = this.sortAirport(result)
 			else
-				result = this.getNestedChildren(result,0)
-				
+				result = this.getNestedChildren(result, 0)
+
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
 			return result;
@@ -167,53 +168,98 @@ export class FlightService {
 
 
 
-	async preductBookingDate(serchFlightDto: OneWaySearchFlightDto, headers,user:User) {
+	async preductBookingDate(serchFlightDto: PreductBookingDateDto, headers, user: User) {
 		await this.validateHeaders(headers);
 
 		const mystifly = new Strategy(new Mystifly(headers));
 
-		// const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
+		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count, unique_token } = serchFlightDto;
 
-		// const depatureDate = new Date(departure_date);
+		const depatureDate = new Date(departure_date);
 
-		// const currentDate = new Date();
+		const currentDate = new Date();
 
-		// const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate)
+		const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate)
 
-		// console.log(dayDiffrence);
+		console.log(dayDiffrence);
 
-		// var weeklylastdate = new Date();
-		// console.log(Math.floor(dayDiffrence / 7));
+		var weeklylastdate = depatureDate;
+		console.log(Math.floor(dayDiffrence / 7));
 
-		// var result = [];
+		var result = [];
 
-		// for (let index = 0; index <= Math.floor(dayDiffrence / 7); index++) {
+		for (let index = 0; index <= Math.floor(dayDiffrence / 7); index++) {
 
-		// 	var date = weeklylastdate.toISOString().split('T')[0];
-		// 	date = date
-		// 		.replace(/T/, " ") // replace T with a space
-		// 		.replace(/\..+/, "");
-		// 	console.log(date)
-		// 	let dto = {
-		// 		"source_location": source_location,
-		// 		"destination_location": destination_location,
-		// 		"departure_date": date,
-		// 		"flight_class": flight_class,
-		// 		"adult_count": adult_count,
-		// 		"child_count": child_count,
-		// 		"infant_count": infant_count
-		// 	}
-		// 	result[index]  = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
-		// 	weeklylastdate.setDate(weeklylastdate.getDate() + 7);
-		// }
+			var date = weeklylastdate.toISOString().split('T')[0];
+			date = date
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			console.log(date)
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": date,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			weeklylastdate.setDate(weeklylastdate.getDate() - 7);
+		}
 
-		//const response = await Promise.all(result);
-		//return response;
+		const response = await Promise.all(result);
+
+		var lowestPriceIndex = 0;
+		var lowestprice = 0
+		let returnResponce = [];
+		var key = 0;
+		for await (const data of response) {
+			for await (const flightData of data.items) {
+				if (unique_token == flightData.unique_code) {
+					var is_booking_avaible = false;
+					if (key == 0) {
+						lowestPriceIndex = key
+						lowestprice = flightData.net_rate;
+						is_booking_avaible = true;
+					}
+					else if (lowestprice > flightData.net_rate) {
+						returnResponce[lowestPriceIndex].is_booking_avaible = false
+						lowestPriceIndex = key
+						lowestprice = flightData.net_rate;
+						is_booking_avaible = true
+					}
+					else if(lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date){
+
+						returnResponce[lowestPriceIndex].is_booking_avaible = false
+						lowestPriceIndex = key
+						lowestprice = flightData.net_rate;
+						is_booking_avaible = true
+					}
+
+					var output = {
+						date: flightData.departure_date,
+						price: flightData.net_rate,
+						is_booking_avaible:is_booking_avaible
+					}
+
+					returnResponce.push(output)
+					key++;
+
+				}
+				console.log(flightData.unique_code);
+				console.log(flightData.net_rate);
+				console.log(flightData.departure_date);
+			}
+		}
+
+		return returnResponce;
 	}
 
 
-	async preductDate(searchFlightDto, headers, user) {
+	async preductDate(searchFlightDto: PreductBookingDateDto, headers, user) {
 		await this.validateHeaders(headers);
+		const { unique_token } = searchFlightDto
 		//calculates dates for getting booking date
 		let dto1 = {
 			"source_location": "DXB",
@@ -224,7 +270,7 @@ export class FlightService {
 			"child_count": 0,
 			"infant_count": 0
 		}
-	
+
 		let dto2 = {
 			"source_location": "DXB",
 			"destination_location": "SYD",
@@ -234,17 +280,50 @@ export class FlightService {
 			"child_count": 0,
 			"infant_count": 0
 		}
-	
+
 		var result = [];
-		
-			const mystifly = new Strategy(new Mystifly(headers));
+
+		const mystifly = new Strategy(new Mystifly(headers));
 		const result1 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto1, user)));
-		const result2 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto2, user)));
-		result.push(result1,result2);
-	
+		//const result2 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto2, user)));
+		result.push(result1);
+
 		const response = await Promise.all(result);
-		
-		return response;
+
+		var lowestPriceIndex = 0;
+		var lowestprice = 0
+		let returnResponce = [];
+		var key = 0;
+		for await (const data of response) {
+			for await (const flightData of data.items) {
+				if (unique_token == flightData.unique_code) {
+					var is_booking_avaible = false;
+					if (key == 0) {
+						lowestPriceIndex = key
+						lowestprice = flightData.net_rate;
+						is_booking_avaible = true;
+					}
+					else if (lowestprice > flightData.net_rate) {
+						returnResponce[lowestPriceIndex].is_booking_avaible = false
+						lowestPriceIndex = key
+						lowestprice = flightData.net_rate;
+						is_booking_avaible = true
+					}
+
+					returnResponce.push({
+						date: flightData.departure_date,
+						price: flightData.net_rate,
+						is_booking_avaible
+					})
+					console.log(flightData.unique_code);
+					console.log(flightData.net_rate);
+					console.log(flightData.departure_date);
+				}
+
+			}
+		}
+
+		return returnResponce;
 	}
 
 	async getDifferenceInDays(date1, date2) {
