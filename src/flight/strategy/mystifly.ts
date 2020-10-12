@@ -95,6 +95,35 @@ export class Mystifly implements StrategyAirline{
         }
     }
 
+    async getMarkupDetails(departure_date,bookingDate,user,module){
+        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
+        
+        let markUpDetails;
+        let secondaryMarkUpDetails;
+        if(!user.roleId || user.roleId==7 ){
+            
+            markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
+        }
+        else if(isInstalmentAvaible && (user.roleId==5 || user.roleId==6)){
+            
+            markUpDetails            = await PriceMarkup.getMarkup(module.id,user.roleId,'instalment');
+            secondaryMarkUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
+        }
+        else{
+            markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
+        }
+        
+        if(!markUpDetails){
+            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+        }
+        else{
+            return {
+                markUpDetails,
+                secondaryMarkUpDetails
+            }
+        }
+    }
+
     async oneWaySearch(searchFlightDto:OneWaySearchFlightDto,user)/* :Promise<FlightSearchResult> */ {
         
         const mystiflyConfig = await this.getMystiflyCredential();
@@ -119,15 +148,9 @@ export class Mystifly implements StrategyAirline{
         }
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
 
-        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
-        /* let bookingType='no-'
-        if(isInstalmentAvaible && (user.roleId==5 || user.roleId==6)){
-
-        } */
-        const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
-        if(!markUpDetails){
-            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
-        }
+        let markup = await this.getMarkupDetails(departure_date,bookingDate,user,module)
+        let markUpDetails = markup.markUpDetails;
+        let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`
@@ -258,13 +281,19 @@ export class Mystifly implements StrategyAirline{
                 route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
                 route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
-                route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
+                route.selling_price     = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,markUpDetails))
                 let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
                     route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
                 }
                 else{
                     route.start_price   = '0';
+                }
+                if(Object.keys(secondaryMarkUpDetails).length){
+                    route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,secondaryMarkUpDetails))
+                }
+                else{
+                    route.secondary_selling_price = 0;
                 }
                 route.stop_count        = stops.length-1;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
@@ -641,8 +670,12 @@ console.log(requestBody)
         if(!module){
             throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
         }
+        let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
-        const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+        //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+        let markup = await this.getMarkupDetails(departure_date,bookingDate,user,module)
+        let markUpDetails = markup.markUpDetails;
+        let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
         if(!markUpDetails){
             throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
         }
@@ -714,7 +747,7 @@ console.log(requestBody)
         
         if(searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0]=="true") {
             
-            let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
+            
             let flightRoutes = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
             let stop:Stop;
             let stops:Stop[]=[];
@@ -833,7 +866,7 @@ console.log(requestBody)
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
-                route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
+                route.selling_price     = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,markUpDetails))
                 route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
                 let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
@@ -842,6 +875,14 @@ console.log(requestBody)
                 else{
                     route.start_price   = '0';
                 }
+
+                if(Object.keys(secondaryMarkUpDetails).length){
+                    route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,secondaryMarkUpDetails))
+                }
+                else{
+                    route.secondary_selling_price = 0;
+                }
+
                 route.inbound_stop_count  = stops.length-1;
                 route.departure_code    = source_location;
                 route.arrival_code      = destination_location;
@@ -995,7 +1036,7 @@ console.log(requestBody)
             let outBoundflightSegments=[];
             let inBoundflightSegments=[];
             let stopDuration;
-            const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+            
             if(typeof flightRoutes!='object'){
                 throw new NotFoundException(`Flight is not available now`);
             }   
@@ -1102,16 +1143,30 @@ console.log(requestBody)
                     routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
                     route.routes[1]         = routeType;
                 }
+
+                let markup = await this.getMarkupDetails(moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,user,module)
+                let markUpDetails = markup.markUpDetails;
+                let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
+                if(!markUpDetails){
+                    throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+                }
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
                 route.net_rate          = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0],currencyDetails.liveRate);
-                route.selling_price     = PriceMarkup.applyMarkup(route.net_rate,markUpDetails)
+                route.selling_price     = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,markUpDetails))
                 let instalmentDetails   = Instalment.weeklyInstalment(route.selling_price,moment(stops[0].departure_date,'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,0);
                 if(instalmentDetails.instalment_available){
                     route.start_price   = instalmentDetails.instalment_date[0].instalment_amount;
                 }
                 else{
                     route.start_price   = '0';
+                }
+
+                if(Object.keys(secondaryMarkUpDetails).length){
+                    route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,secondaryMarkUpDetails))
+                }
+                else{
+                    route.secondary_selling_price = 0;
                 }
                 route.instalment_details =instalmentDetails;
                 route.stop_count        = stops.length-1;

@@ -34,4 +34,9 @@ export class  Generic{
         }
         return amount;
     }
+
+    static formatPriceDecimal(price){
+
+        return Number(price.toFixed(2))
+    }
 }
