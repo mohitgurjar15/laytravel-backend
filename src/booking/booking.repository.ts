@@ -241,32 +241,70 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			.leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-			.leftJoinAndSelect(
-				"BookingInstalments.failedPaymentAttempts",
-				"failedPaymentAttempts"
-			)
-			// .select([
-			// 	"booking.id",
-			// 	"booking.moduleId",
-			// 	"booking.bookingStatus",
-			// 	"booking.totalAmount",
-			// 	"booking.bookingDate",
-			// 	"booking.totalInstallments",
-			// 	"booking.nextInstalmentDate",
-			// 	"bookingInstalments.instalmentType",
-			// 	"bookingInstalments.instalmentDate",
-			// 	"bookingInstalments.amount",
-			// 	"bookingInstalments.instalmentStatus",
-			// 	"currency.code",
-			// 	"currency.symbol",
-			// 	"moduleData.name",
-			// ])
+			// .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+			// .leftJoinAndSelect(
+			// 	"BookingInstalments.failedPaymentAttempts",
+			// 	"failedPaymentAttempts"
+			// )
+			.select([
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.moduleId",
+				"BookingInstalments.supplierId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"BookingInstalments.paymentGatewayId",
+				"BookingInstalments.paymentInfo",
+				"BookingInstalments.paymentStatus",
+				"BookingInstalments.isPaymentProcessedToSupplier",
+				"BookingInstalments.isInvoiceGenerated",
+				"BookingInstalments.comment",
+				"booking.id",
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.currency",
+				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.locationInfo",
+				"booking.moduleInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
+				"booking.nextInstalmentDate",
+				"booking.supplierBookingId",
+				"currency.id",
+				"currency.code",
+				"currency.symbol",
+				"currency.liveRate",
+				"User.userId",
+				"User.firstName",
+				"User.lastName",
+				"User.socialAccountId",
+				"User.email",
+				"User.phoneNo",
+				"User.roleId",
+				"moduleData.name",
+
+			])
 
 			.where(where)
 			.take(take)
-			.offset(skip);
-
+			.skip(skip)
+			.orderBy("BookingInstalments.id",'DESC')
 		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
 		if (!data.length) {
