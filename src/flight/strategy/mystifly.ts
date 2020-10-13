@@ -561,7 +561,7 @@ export class Mystifly implements StrategyAirline {
                 route.net_rate = Generic.convertAmountTocurrency(flightRoutes[i]['airitinerarypricinginfo'][0]['itintotalfare'][0]['totalfare'][0]['amount'][0], currencyDetails.liveRate);
 
                 route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
-                
+
                 route.selling_price = PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
 
 
@@ -623,7 +623,7 @@ export class Mystifly implements StrategyAirline {
         }
         else {
 
-            return {   message : "flight not found"}
+            return { message: "flight not found" }
         }
 
 
@@ -817,9 +817,7 @@ export class Mystifly implements StrategyAirline {
         }
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
         const markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId);
-        if (!markUpDetails) {
-            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
-        }
+
 
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`
@@ -1552,11 +1550,11 @@ export class Mystifly implements StrategyAirline {
         for (let fare of fares) {
             fareInfo = new FareInfo();
             fareInfo.type = fare['passengertypequantity'][0]['code'][0];
-            
-            
+
+
             fareInfo.quantity = fare['passengertypequantity'][0]['quantity'][0];
             // console.log(fare['passengerfare'][0]['totalfare'][0]['amount'][0],fareInfo.quantity);
-            
+
             fareInfo.price = PriceMarkup.applyMarkup(parseFloat(fare['passengerfare'][0]['totalfare'][0]['amount'][0]) * parseInt(fareInfo.quantity), markUpDetails)
 
             fareBreakDowns.push(fareInfo)
@@ -1578,4 +1576,13 @@ export class Mystifly implements StrategyAirline {
 
         return mealCodes[code] || '';
     }
+
+    // async getmarkupDetail(moduleId, roleId) {
+    //     const markUpDetails = await PriceMarkup.getMarkup(moduleId, roleId);
+
+    //     if (!markUpDetails) {
+    //         throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+    //     }
+    //     return markUpDetails;
+    // }
 } 

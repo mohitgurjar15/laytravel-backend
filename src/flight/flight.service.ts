@@ -206,51 +206,55 @@ export class FlightService {
 			}
 			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			weeklylastdate.setDate(weeklylastdate.getDate() - 7);
+			console.log(new Date());
+
 		}
 
 		const response = await Promise.all(result);
-
+		console.log(new Date());
 		var lowestPriceIndex = 0;
 		var lowestprice = 0
 		let returnResponce = [];
 		var key = 0;
 		for await (const data of response) {
-			for await (const flightData of data.items) {
-				if (unique_token == flightData.unique_code) {
-					var is_booking_avaible = false;
-					if (key == 0) {
-						lowestPriceIndex = key
-						lowestprice = flightData.net_rate;
-						is_booking_avaible = true;
+			if (!data.message) {
+				for await (const flightData of data.items) {
+					if (unique_token == flightData.unique_code) {
+						var is_booking_avaible = false;
+						if (key == 0) {
+							lowestPriceIndex = key
+							lowestprice = flightData.net_rate;
+							is_booking_avaible = true;
+						}
+						else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+	
+							returnResponce[lowestPriceIndex].is_booking_avaible = false
+							lowestPriceIndex = key
+							lowestprice = flightData.net_rate;
+							is_booking_avaible = true
+						} else if (lowestprice > flightData.net_rate) {
+							returnResponce[lowestPriceIndex].is_booking_avaible = false
+							lowestPriceIndex = key
+							lowestprice = flightData.net_rate;
+							is_booking_avaible = true
+						}
+	
+						var output = {
+							date: flightData.departure_date,
+							price: flightData.net_rate,
+							is_booking_avaible: is_booking_avaible
+						}
+	
+						returnResponce.push(output)
+						key++;
+	
 					}
-					else if (lowestprice > flightData.net_rate) {
-						returnResponce[lowestPriceIndex].is_booking_avaible = false
-						lowestPriceIndex = key
-						lowestprice = flightData.net_rate;
-						is_booking_avaible = true
-					}
-					else if(lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date){
-
-						returnResponce[lowestPriceIndex].is_booking_avaible = false
-						lowestPriceIndex = key
-						lowestprice = flightData.net_rate;
-						is_booking_avaible = true
-					}
-
-					var output = {
-						date: flightData.departure_date,
-						price: flightData.net_rate,
-						is_booking_avaible:is_booking_avaible
-					}
-
-					returnResponce.push(output)
-					key++;
-
-				}
-				console.log(flightData.unique_code);
-				console.log(flightData.net_rate);
-				console.log(flightData.departure_date);
+					// console.log(flightData.unique_code);
+					// console.log(flightData.net_rate);
+					// console.log(flightData.departure_date);
+				}	
 			}
+			
 		}
 
 		return returnResponce;
