@@ -113,8 +113,8 @@ export class BookingRepository extends Repository<Booking> {
 			// 	"userData.roleId"])
 			.where(where)
 			.take(take)
-			.offset(skip)
-			//.orderBy(`booking.bookingDate`, 'DESC')
+			.skip(skip)
+			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		if (!data.length) {
