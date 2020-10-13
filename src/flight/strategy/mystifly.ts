@@ -289,7 +289,7 @@ export class Mystifly implements StrategyAirline{
                 else{
                     route.start_price   = '0';
                 }
-                if(Object.keys(secondaryMarkUpDetails).length){
+                if(typeof secondaryMarkUpDetails!='undefined' && Object.keys(secondaryMarkUpDetails).length){
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,secondaryMarkUpDetails))
                 }
                 else{
@@ -760,11 +760,13 @@ console.log(requestBody)
             let otherSegments=[];
             let j;
             let totalDuration;
+            let uniqueCode;
             for(let i=0; i < flightRoutes.length; i++){
                 totalDuration=0;
                 route=new Route;
                 stops=[];
                 j=0;
+                uniqueCode='';
                 outBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 inBoundflightSegments  = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]['a:flightsegments'][0]['a:flightsegment'];
                 otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
@@ -803,6 +805,9 @@ console.log(requestBody)
                         stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
+                    uniqueCode += stop.departure_time;
+                    uniqueCode += stop.arrival_time;
+                    uniqueCode += stop.flight_number;
                     stops.push(stop)
                     j++;
                 });
@@ -854,6 +859,9 @@ console.log(requestBody)
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                         totalDuration +=moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                     }
+                    uniqueCode += stop.departure_time;
+                    uniqueCode += stop.arrival_time;
+                    uniqueCode += stop.flight_number;
                     stops.push(stop)
                     j++;
                 });
@@ -876,7 +884,7 @@ console.log(requestBody)
                     route.start_price   = '0';
                 }
 
-                if(Object.keys(secondaryMarkUpDetails).length){
+                if(typeof secondaryMarkUpDetails!='undefined' && Object.keys(secondaryMarkUpDetails).length){
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,secondaryMarkUpDetails))
                 }
                 else{
@@ -897,6 +905,7 @@ console.log(requestBody)
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
+                route.unique_code       = md5(uniqueCode)
                 routes.push(route);
             }
             //return routes;
@@ -1042,10 +1051,12 @@ console.log(requestBody)
             }   
 
             let totalDuration;
+            let uniqueCode;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
                 totalDuration=0;
+                uniqueCode='';
                 outBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
                 
                 if(typeof flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]!='undefined')
@@ -1083,6 +1094,9 @@ console.log(requestBody)
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                     }
+                    uniqueCode += stop.departure_time;
+                    uniqueCode += stop.arrival_time;
+                    uniqueCode += stop.flight_number;
                     stops.push(stop)
                 });
 
@@ -1133,6 +1147,9 @@ console.log(requestBody)
                             stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                             totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                         }
+                        uniqueCode += stop.departure_time;
+                        uniqueCode += stop.arrival_time;
+                        uniqueCode += stop.flight_number;
                         stops.push(stop)
                     });
 
@@ -1162,7 +1179,7 @@ console.log(requestBody)
                     route.start_price   = '0';
                 }
 
-                if(Object.keys(secondaryMarkUpDetails).length){
+                if(typeof secondaryMarkUpDetails!='undefined' && Object.keys(secondaryMarkUpDetails).length){
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,secondaryMarkUpDetails))
                 }
                 else{
@@ -1182,7 +1199,7 @@ console.log(requestBody)
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable     = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0]=='Yes'?true:false;
                 route.fare_break_dwon = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'],markUpDetails);
-
+                route.unique_code       = md5(uniqueCode)
                 for(let intnery of  flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']){
 
                     if(intnery['a:passengertypequantity'][0]['a:code']=='ADT'){
@@ -1406,7 +1423,7 @@ console.log(requestBody)
             fareInfo=new FareInfo();
 
             fareInfo.type = fare['a:passengertypequantity'][0]['a:code'][0];
-            fareInfo.quantity = fare['a:passengertypequantity'][0]['a:quantity'][0];
+            fareInfo.quantity = Number(fare['a:passengertypequantity'][0]['a:quantity'][0]);
             fareInfo.price =  PriceMarkup.applyMarkup(parseFloat(fare['a:passengerfare'][0]['a:totalfare'][0]['a:amount'][0])*parseInt(fareInfo.quantity),markUpDetails)
             
             fareBreakDowns.push(fareInfo)
@@ -1417,7 +1434,7 @@ console.log(requestBody)
         
         fareBreakDowns.push({
           type : 'total',
-          quantity : totalTraveler,
+          quantity : Number(totalTraveler),
           price : totalFare
         })
 
