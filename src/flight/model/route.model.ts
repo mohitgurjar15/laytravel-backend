@@ -17,36 +17,37 @@ export class FlightSearchResult{
 }
 export class Route{
 
-    type            :  string;
-    routes          :  RouteType[]=[];
-    route_code      :  string;
-    net_rate        :  string;
-    stop_count      :  number;
-    inbound_stop_count :  number;
-    departure_code  : string;
-    arrival_code    : string;
-    departure_date  : string;
-    departure_time  : string;
-    arrival_date    : string;
-    arrival_time    : string;
-    total_duration  : string;
-    airline         : string;
-    is_refundable   : boolean;
-    start_price     : string;
-    selling_price   : string;
-    airline_name    : string;
-    airline_logo    : string;
-    is_passport_required:boolean;
-    departure_info  : {};
-    arrival_info    : {};
-    adult_count     : number;
-    child_count     : number;
-    infant_count    : number;
-    fare_break_dwon : FareInfo[];
-    cabin_class     : string;
-    fare_type       : string;
-    instalment_details :{};
-    unique_code     :string;
+    type                    :  string;
+    routes                  :  RouteType[]=[];
+    route_code              :  string;
+    net_rate                :  string;
+    stop_count              :  number;
+    inbound_stop_count      :  number;
+    departure_code          : string;
+    arrival_code            : string;
+    departure_date          : string;
+    departure_time          : string;
+    arrival_date            : string;
+    arrival_time            : string;
+    total_duration          : string;
+    airline                 : string;
+    is_refundable           : boolean;
+    start_price             : string;
+    selling_price           : number;
+    secondary_selling_price : number;
+    airline_name            : string;
+    airline_logo            : string;
+    is_passport_required    :boolean;
+    departure_info          : {};
+    arrival_info            : {};
+    adult_count             : number;
+    child_count             : number;
+    infant_count            : number;
+    fare_break_dwon         : FareInfo[];
+    cabin_class             : string;
+    fare_type               : string;
+    instalment_details      :{};
+    unique_code             :string;
 }
 
 export class RouteType{

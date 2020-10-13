@@ -1,4 +1,5 @@
 import * as moment from 'moment';
+import { Generic } from './generic.utility';
 
 export class Instalment{
 
@@ -131,7 +132,7 @@ export class Instalment{
         let firstInstalmentTemp;
         let remainingPerInstalmentAmount
         if(amountPerInstalment > percentageAmount){
-            firstInstalment=amountPerInstalment;
+            firstInstalment= amountPerInstalment;
             firstInstalmentTemp=amountPerInstalment;
             if(additionalAmount){
                 firstInstalment = amountPerInstalment+additionalAmount;
@@ -161,7 +162,7 @@ export class Instalment{
         
         instalmentDatewithAmount.push({
             instalment_date:instalmentsDates[0],
-            instalment_amount:firstInstalment
+            instalment_amount:Generic.formatPriceDecimal(firstInstalment)
         })
   
         let instalment:any; 
@@ -169,7 +170,7 @@ export class Instalment{
         for(let i=1; i < instalmentsDates.length; i++){
             instalment={};
             instalment.instalment_date=instalmentsDates[i];
-            instalment.instalment_amount=remainingPerInstalmentAmount;
+            instalment.instalment_amount=Generic.formatPriceDecimal(remainingPerInstalmentAmount);
             amountTemp+=remainingPerInstalmentAmount;
   
             if(amountTemp >= amount && customAmount){
