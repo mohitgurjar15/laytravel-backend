@@ -113,7 +113,7 @@ export class User extends BaseEntity {
   @Column("character varying", {
     name: "country_code",
     nullable: true,
-    length: 10
+    length: 30
   })
   countryCode: string | null;
 
