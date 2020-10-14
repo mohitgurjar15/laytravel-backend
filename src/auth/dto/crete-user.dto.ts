@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
+import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf, min, Length } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEqualTo } from "../password.decorator";
 import { Gender } from 'src/enum/gender.enum';
@@ -24,6 +24,7 @@ export class CreateUserDto {
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`
     })
+    @Length(3, 20)
     @ApiProperty({
         description: `Enter First Name`,
         example: `Jon`
@@ -33,6 +34,7 @@ export class CreateUserDto {
     @IsNotEmpty({
         message : `Please enter your last name.&&&last_name`
     })
+    @Length(3, 20)
     @ApiProperty({
         description: `Enter Last Name`,
         example: `Doe`

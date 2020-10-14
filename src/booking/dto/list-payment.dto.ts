@@ -53,4 +53,11 @@ export class ListPaymentDto {
         example:'2021-03-22'
     })
     payment_end_date: string;
+
+
+    @ApiPropertyOptional({
+        description:'instalment type',
+        example:"weekly"
+    })
+    instalment_type:string;
 }
