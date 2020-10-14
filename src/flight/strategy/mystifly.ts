@@ -1257,11 +1257,13 @@ console.log(requestBody)
                     requestBody += `<mys1:PassengerTitle>${traveles.adults[i].title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
+                    if(traveles.adults[i].passportExpiry && traveles.adults[i].passportNumber){
                     requestBody += `<mys1:Passport>`
                     requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`
                     requestBody += `<mys1:ExpiryDate>${traveles.adults[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
                     requestBody += `<mys1:PassportNumber>${traveles.adults[i].passportNumber}</mys1:PassportNumber>`
                     requestBody += `</mys1:Passport>`
+                    }
                     requestBody += `</mys1:AirTraveler>`
                 }
             }
@@ -1279,11 +1281,15 @@ console.log(requestBody)
                     requestBody += `<mys1:PassengerTitle>${traveles.children[i].title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
-                    requestBody += `<mys1:Passport>`
-                    requestBody += `<mys1:Country>${traveles.children[i].country.iso2}</mys1:Country>`
-                    requestBody += `<mys1:ExpiryDate>${traveles.children[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
-                    requestBody += `<mys1:PassportNumber>${traveles.children[i].passportNumber}</mys1:PassportNumber>`
-                    requestBody += `</mys1:Passport>`
+
+                    if(traveles.children[i].passportExpiry && traveles.children[i].passportNumber){
+
+                        requestBody += `<mys1:Passport>`
+                        requestBody += `<mys1:Country>${traveles.children[i].country.iso2}</mys1:Country>`
+                        requestBody += `<mys1:ExpiryDate>${traveles.children[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                        requestBody += `<mys1:PassportNumber>${traveles.children[i].passportNumber}</mys1:PassportNumber>`
+                        requestBody += `</mys1:Passport>`
+                    }
                     requestBody += `</mys1:AirTraveler>`
                 }
             }
