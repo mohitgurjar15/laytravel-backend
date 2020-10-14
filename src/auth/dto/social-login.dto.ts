@@ -16,10 +16,7 @@ export class SocialLoginDto {
 	})
 	account_type : number
 
-	@ValidateIf(o => o.account_type === 1 || o.account_type === 2)
-	@IsNotEmpty({
-		message : `Please enter your user name.&&&name`
-	})
+	
 	@ApiProperty({
 		description: `User Name`,
 		example: `Jon Doe`,

@@ -70,6 +70,12 @@ export class ListBookingDto {
     booking_id: string;
 
     @ApiPropertyOptional({
+        description:'supplier id',
+        example:""
+    })
+    supplier_id: number;
+
+    @ApiPropertyOptional({
         description:'search with keyword',
         example:""
     })
