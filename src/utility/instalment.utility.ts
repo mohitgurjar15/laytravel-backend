@@ -145,8 +145,8 @@ export class Instalment{
             }
         }
   
-        if(customAmount && customAmount>firstInstalmentTemp){
-            firstInstalment=customAmount+additionalAmount;
+        if(customAmount){
+            //firstInstalment=customAmount+additionalAmount;
             remainingPerInstalmentAmount=customAmount;
         }
         else if(customInstalmentNo && customInstalmentNo < instalmentsDates.length){

@@ -151,6 +151,7 @@ export class Mystifly implements StrategyAirline{
         let markup = await this.getMarkupDetails(departure_date,bookingDate,user,module)
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
+        console.log(markUpDetails,secondaryMarkUpDetails)
 
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`
@@ -250,7 +251,7 @@ export class Mystifly implements StrategyAirline{
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
-                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`
+                    stop.duration              = `${stopDuration.hours}h ${stopDuration.minutes}m`
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
@@ -265,7 +266,7 @@ export class Mystifly implements StrategyAirline{
                         stop.is_layover             =  true;
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
-                        stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_duration       =  `${layOverduration.hours}h ${layOverduration.minutes}m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
                     uniqueCode += stop.departure_time;
@@ -306,7 +307,7 @@ export class Mystifly implements StrategyAirline{
                 route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
                 route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
                 let duration           = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
-                route.total_duration    = `${duration.hours} h ${duration.minutes} m`;
+                route.total_duration    = `${duration.hours}h ${duration.minutes}m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
@@ -787,7 +788,7 @@ console.log(requestBody)
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
-                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
+                    stop.duration              = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
                     stop.airline_name          = airlines[stop.airline];
                     stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
@@ -802,7 +803,7 @@ console.log(requestBody)
                         stop.is_layover             =  true;
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
-                        stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_duration       =  `${layOverduration.hours}h ${layOverduration.minutes}m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                     }
                     uniqueCode += stop.departure_time;
@@ -816,7 +817,7 @@ console.log(requestBody)
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
                 let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
-                routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
+                routeType.duration      = `${outBoundDuration.hours}h ${outBoundDuration.minutes}m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
@@ -841,7 +842,7 @@ console.log(requestBody)
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
-                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
+                    stop.duration              = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
                     stop.airline_name          = airlines[stop.airline];
                     stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
@@ -855,7 +856,7 @@ console.log(requestBody)
 
                         stop.is_layover             =  true;
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
-                        stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_duration       =  `${layOverduration.hours}h ${layOverduration.minutes}m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                         totalDuration +=moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                     }
@@ -869,7 +870,7 @@ console.log(requestBody)
                 routeType.type          = 'inbound';
                 routeType.stops         = stops;
                 let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
-                routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
+                routeType.duration      = `${inBoundDuration.hours}h ${inBoundDuration.minutes}m`;
                 route.routes[1]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
@@ -900,7 +901,7 @@ console.log(requestBody)
                 route.arrival_time      = stops[stops.length-1].arrival_time;
                 let duartion       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                  
-                route.total_duration    = `${duartion.hours} h ${duartion.minutes} m`;
+                route.total_duration    = `${duartion.hours}h ${duartion.minutes}m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
@@ -1079,7 +1080,7 @@ console.log(requestBody)
                     stop.flight_number         = flightSegment['a:flightnumber'][0];
                     stop.cabin_class           = this.getKeyByValue(flightClass,flightSegment['a:cabinclasscode'][0]);
                     stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
-                    stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
+                    stop.duration              = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                     stop.airline               = flightSegment['a:marketingairlinecode'][0];
                     stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
@@ -1090,7 +1091,7 @@ console.log(requestBody)
 
                         stop.is_layover             =  true;
                         let layOverduration         =  DateTime.convertSecondsToHourMinutesSeconds( moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds'));
-                        stop.layover_duration       =  `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_duration       =  `${layOverduration.hours}h ${layOverduration.minutes}m`
                         stop.layover_airport_name   =  flightSegment['a:departureairportlocationcode'][0];
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length-1].arrival_date_time,'seconds');
                     }
@@ -1104,7 +1105,7 @@ console.log(requestBody)
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
                 let outBoundDuration    = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
-                routeType.duration      = `${outBoundDuration.hours} h ${outBoundDuration.minutes} m`;
+                routeType.duration      = `${outBoundDuration.hours}h ${outBoundDuration.minutes}m`;
                 route.routes[0]         = routeType;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0]=="true"?true:false;
                 route.departure_date    = stops[0].departure_date;
@@ -1132,7 +1133,7 @@ console.log(requestBody)
                         stop.eticket               = flightSegment['a:eticket'][0]=='true'?true:false;
                         stop.flight_number         = flightSegment['a:flightnumber'][0];
                         stopDuration               = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0]*60);
-                        stop.duration              = `${stopDuration.hours} h ${stopDuration.minutes} m`;
+                        stop.duration              = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                         stop.airline               = flightSegment['a:marketingairlinecode'][0];
                         stop.airline_name          = airlines[stop.airline];
                         stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
@@ -1157,7 +1158,7 @@ console.log(requestBody)
                     routeType.type          = 'inbound';
                     routeType.stops         = stops;
                     let inBoundDuration       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
-                    routeType.duration      = `${inBoundDuration.hours} h ${inBoundDuration.minutes} m`;
+                    routeType.duration      = `${inBoundDuration.hours}h ${inBoundDuration.minutes}m`;
                     route.routes[1]         = routeType;
                 }
 
@@ -1193,7 +1194,7 @@ console.log(requestBody)
                 route.arrival_time      = stops[stops.length-1].arrival_time;
                 let duration       = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
                  
-                route.total_duration    = `${totalDuration.hours} h ${totalDuration.minutes} m`;
+                route.total_duration    = `${totalDuration.hours}h ${totalDuration.minutes}m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
                 route.airline_logo      = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
@@ -1256,11 +1257,13 @@ console.log(requestBody)
                     requestBody += `<mys1:PassengerTitle>${traveles.adults[i].title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
+                    if(traveles.adults[i].passportExpiry && traveles.adults[i].passportNumber){
                     requestBody += `<mys1:Passport>`
                     requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`
                     requestBody += `<mys1:ExpiryDate>${traveles.adults[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
                     requestBody += `<mys1:PassportNumber>${traveles.adults[i].passportNumber}</mys1:PassportNumber>`
                     requestBody += `</mys1:Passport>`
+                    }
                     requestBody += `</mys1:AirTraveler>`
                 }
             }
@@ -1278,11 +1281,15 @@ console.log(requestBody)
                     requestBody += `<mys1:PassengerTitle>${traveles.children[i].title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
-                    requestBody += `<mys1:Passport>`
-                    requestBody += `<mys1:Country>${traveles.children[i].country.iso2}</mys1:Country>`
-                    requestBody += `<mys1:ExpiryDate>${traveles.children[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
-                    requestBody += `<mys1:PassportNumber>${traveles.children[i].passportNumber}</mys1:PassportNumber>`
-                    requestBody += `</mys1:Passport>`
+
+                    if(traveles.children[i].passportExpiry && traveles.children[i].passportNumber){
+
+                        requestBody += `<mys1:Passport>`
+                        requestBody += `<mys1:Country>${traveles.children[i].country.iso2}</mys1:Country>`
+                        requestBody += `<mys1:ExpiryDate>${traveles.children[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                        requestBody += `<mys1:PassportNumber>${traveles.children[i].passportNumber}</mys1:PassportNumber>`
+                        requestBody += `</mys1:Passport>`
+                    }
                     requestBody += `</mys1:AirTraveler>`
                 }
             }
