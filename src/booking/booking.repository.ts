@@ -72,8 +72,10 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
-			.leftJoinAndSelect("userData.state", "state")
-			.leftJoinAndSelect("userData.country", "countries")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			// .leftJoinAndSelect("userData.state", "state")
+			// .leftJoinAndSelect("userData.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
 			// .select(["booking.id",
 			// 	"booking.userId",
@@ -184,8 +186,8 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
-			.leftJoinAndSelect("userData.state", "state")
-			.leftJoinAndSelect("userData.country", "countries")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
 			.where(where)
 			.getOne();
