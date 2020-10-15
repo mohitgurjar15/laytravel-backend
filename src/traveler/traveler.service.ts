@@ -88,7 +88,7 @@ export class TravelerService {
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
 					throw new ConflictException(
-						`Parents user email id and traveler email id both are same &&& email &&& Parents user email id and traveler email id both are same`
+						`This email address is already registered with us. Please enter different email address.&&& email &&& Parents user email id and traveler email id both are same`
 					);
 				}
 				return this.userRepository.createtraveler(user);
