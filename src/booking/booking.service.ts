@@ -22,7 +22,7 @@ export class BookingService {
 		private bookingRepository: BookingRepository,
 
 		private readonly mailerService: MailerService
-	) {}
+	) { }
 
 	async resendBookingEmail(bookingId: string): Promise<{ message: any }> {
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
@@ -101,9 +101,35 @@ export class BookingService {
 
 	async listBooking(listBookingDto: ListBookingDto) {
 		try {
-			return await this.bookingRepository.listBooking(listBookingDto);
+			let result = await this.bookingRepository.listBooking(listBookingDto);
+
+			let paidAmount = 0;
+			let remainAmount = 0;
+
+			//console.log(result);
+
+			for (let i in result.data) {
+				for (let instalment of result.data[i].bookingInstalments) {
+					if (instalment.instalmentStatus == 1) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+					}
+				}
+				result.data[i]["paidAmount"] = paidAmount;
+				result.data[i]["remainAmount"] = remainAmount;
+				delete result.data[i].user.updatedDate;
+				delete result.data[i].user.salt;
+				delete result.data[i].user.password;
+				for (let j in result.data[i].travelers) {
+					delete result.data[i].travelers[j].userData.updatedDate;
+					delete result.data[i].travelers[j].userData.salt;
+					delete result.data[i].travelers[j].userData.password;
+				}
+			}
+			return result;
 		} catch (error) {
-			
+
 			if (typeof error.response !== "undefined") {
 				console.log('m');
 				switch (error.response.statusCode) {
@@ -126,12 +152,12 @@ export class BookingService {
 							`${error.message}&&&id&&&${error.Message}`
 						);
 				}
-				
+
 			}
 			throw new NotFoundException(
 				`${error.message}&&&id&&&${error.message}`
 			);
-			
+
 		}
 	}
 
@@ -175,7 +201,33 @@ export class BookingService {
 
 	async getBookingDetail(bookingId: string) {
 		try {
-			return await this.bookingRepository.bookingDetail(bookingId);
+			let result =  await this.bookingRepository.bookingDetail(bookingId);
+
+			let paidAmount = 0;
+			let remainAmount = 0;
+
+			//console.log(result);
+
+			
+				for (let instalment of result.bookingInstalments) {
+					if (instalment.instalmentStatus == 1) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+					}
+				}
+				result["paidAmount"] = paidAmount;
+				result["remainAmount"] = remainAmount;
+				delete result.user.updatedDate;
+				delete result.user.salt;
+				delete result.user.password;
+				for (let j in result.travelers) {
+					delete result.travelers[j].userData.updatedDate;
+					delete result.travelers[j].userData.salt;
+					delete result.travelers[j].userData.password;
+				}
+			
+			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");

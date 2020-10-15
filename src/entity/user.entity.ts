@@ -40,10 +40,10 @@ export class User extends BaseEntity {
   @Column("uuid", { primary: true, name: "user_id" })
   userId: string;
 
-  @Column("character varying", { name: "first_name", length: 255 })
+  @Column("character varying", { name: "first_name", length: 255 , nullable:true})
   firstName: string;
 
-  @Column("character varying", { name: "last_name", length: 255 })
+  @Column("character varying", { name: "last_name", length: 255 , nullable:true})
   lastName: string;
 
   @Column("integer", { name: "account_type" })
@@ -113,7 +113,7 @@ export class User extends BaseEntity {
   @Column("character varying", {
     name: "country_code",
     nullable: true,
-    length: 10
+    length: 30
   })
   countryCode: string | null;
 
@@ -326,7 +326,9 @@ export class User extends BaseEntity {
 
   @OneToMany(
 		() => TravelerInfo,
-		(traveler) => traveler.userData
+		traveler => traveler.userData
 	)
 	traveler: TravelerInfo[];  
+
+  
 }

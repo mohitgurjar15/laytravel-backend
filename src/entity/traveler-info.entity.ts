@@ -30,14 +30,14 @@ export class TravelerInfo extends BaseEntity {
 
 	@ManyToOne(
 		() => User,
-		(user) => user.userId
+		User => User.traveler
 	)
 	@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
 	userData: User;
 
 	@ManyToOne(
 		() => Booking,
-		(booking) => booking.travelers
+		booking => booking.travelers
 	)
 	@JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
 	bookingData: Booking;

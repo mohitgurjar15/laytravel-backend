@@ -23,13 +23,18 @@ export class AdminDashboardService {
 			where += `AND (DATE("booking".booking_date) >= '${toDate}') `;
 		}
 		var data = await getManager().query(`
-                SELECT count(id) as total_booking,
+                SELECT count(id) as confirm_booking,
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
                 SUM( markup_amount * usd_factor) as total_profit
                 from booking where ${where}
             `);
 
+
+			var totalBookings = await getManager().query(`
+                SELECT count(id) as total_booking
+                from booking 
+            `);
 		// var subdata = await getManager()
 		// .query(`
 		//     SELECT booking_status as status_code ,
@@ -54,6 +59,7 @@ export class AdminDashboardService {
 			data[0].total_cost = 0;
 			data[0].total_profit = 0;
 		}
+		data[0]['total_booking'] = totalBookings[0].total_booking
 
 		return data[0];
 	}
