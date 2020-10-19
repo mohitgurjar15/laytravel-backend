@@ -268,7 +268,7 @@ export class UserService {
 		}
 	}
 
-	
+
 	async weeklyRagisterUser(): Promise<any> {
 		try {
 			var date = new Date();
@@ -450,31 +450,34 @@ export class UserService {
 							.catch((err) => {
 								console.log("err", err);
 							});
-						} else {
-							row.error_message = "Email id alredy available";
-							unsuccessRecord.push(row);
-						}
 					} else {
-						if(row.first_name == "")
-						row.error_message = "First name required";
-	
-						if(row.email_id == "")
-						row.error_message = "Email id required";
-	
-						if(!isEmail(row.email_id))
-						row.error_message = "Please enter valid email id";
-	
-						if(row.password == "")
-						row.error_message = "Password is required";
-	
-						if(row.type == "")
-						row.error_message = "user type required";
-	
-						if(parseInt(row.type) != 2)
-						row.error_message = "Add valid user type";
-	
+						row.error_message = "Email id alredy available";
 						unsuccessRecord.push(row);
 					}
+				} else {
+					var error_message = '';
+					if (row.first_name == "")
+						error_message += "First name required";
+
+					if (row.email_id == "")
+						error_message += "Email id required";
+
+					if (!isEmail(row.email_id))
+						error_message += "Please enter valid email id";
+
+					if (row.password == "")
+						error_message += "Password is required";
+
+					if (row.type == "")
+						error_message += "user type required";
+
+					if (parseInt(row.type) >= 5 &&
+						parseInt(row.type) <= 7)
+						error_message += "Add valid user type";
+
+					row.error_message = error_message;
+					unsuccessRecord.push(row);
+				}
 			}
 		}
 		Activity.logActivity(userId, "user", `admin import the  ${count}  users`);
