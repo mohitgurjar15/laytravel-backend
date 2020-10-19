@@ -292,18 +292,37 @@ export class SupplierService {
 							.catch((err) => {
 								console.log("err", err);
 							});
+						} else {
+							row.error_message = "Email id alredy available";
+							unsuccessRecord.push(row);
+						}
 					} else {
+						if(row.first_name == "")
+						row.error_message = "First name required";
+	
+						if(row.email_id == "")
+						row.error_message = "Email id required";
+	
+						if(!isEmail(row.email_id))
+						row.error_message = "Please enter valid email id";
+	
+						if(row.password == "")
+						row.error_message = "Password is required";
+	
+						if(row.type == "")
+						row.error_message = "user type required";
+	
+						if(parseInt(row.type) != 2)
+						row.error_message = "Add valid user type";
+	
 						unsuccessRecord.push(row);
 					}
-				} else {
-					unsuccessRecord.push(row);
-				}
 			}
 		}
 		Activity.logActivity(
 			userId,
 			"supplier-user",
-			`admin ipport  ${count} supplier user`
+			`admin impport  ${count} supplier user`
 		);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
