@@ -20,7 +20,7 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id
+			module_id, supplier_id
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -33,6 +33,11 @@ export class BookingRepository extends Repository<Booking> {
 		if (module_id) {
 			where += `AND ("booking"."module_id" = '${module_id}')`;
 		}
+
+		if (supplier_id) {
+			where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+		}
+
 		if (start_date) {
 			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
 		}
@@ -62,11 +67,16 @@ export class BookingRepository extends Repository<Booking> {
 		}
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			// .leftJoinAndSelect("userData.state", "state")
+			// .leftJoinAndSelect("userData.country", "countries")
+			.leftJoinAndSelect("booking.supplier", "supplier")
 			// .select(["booking.id",
 			// 	"booking.userId",
 			// 	"booking.moduleId",
@@ -92,29 +102,49 @@ export class BookingRepository extends Repository<Booking> {
 			// 	"booking.supplierId",
 			// 	"booking.nextInstalmentDate",
 			// 	"booking.supplierBookingId",
+			// 	"instalments.id",
+			// 	"instalments.instalmentType",
+			// 	"instalments.instalmentDate",
+			// 	"instalments.currencyId",
+			// 	"instalments.amount",
+			// 	"instalments.instalmentStatus",
+			// 	"instalments.paymentGatewayId",
+			// 	"instalments.paymentInfo",
+			// 	"instalments.paymentStatus",
 			// 	// "bookingInstalments.instalment_date",
 			// 	// "bookingInstalments.instalment_amount",
-			// 	"User.firstName",
-			// 	"User.lastName",
-			// 	"User.email",
-			// 	"User.phoneNo",
-			// 	"User.profilePic",
-			// 	"User.roleId",
+			// 	// "User.firstName",
+			// 	// "User.lastName",
+			// 	// "User.email",
+			// 	// "User.phoneNo",
+			// 	// "User.profilePic",
+			// 	// "User.roleId",
 			// 	"currency.id",
 			// 	"currency.country",
 			// 	"currency.code",
 			// 	"currency.symbol",
 			// 	"currency.liveRate",
-			// 	"userData.firstName",
+			// 	"User.firstName",
 			// 	"userData.lastName",
 			// 	"userData.email",
 			// 	"userData.phoneNo",
 			// 	"userData.profilePic",
-			// 	"userData.roleId"])
+			// 	"userData.roleId",
+			// 	"supplier.id",
+			// 	"supplier.name",
+			// 	"countries.name",
+			// 	"countries.iso2",
+			// 	"countries.iso3",
+			// 	"countries.id",
+			// 	"state.id",
+			// 	"state.name",
+			// 	"state.iso2",
+			// ])
+
 			.where(where)
 			.take(take)
-			.offset(skip)
-			//.orderBy(`booking.bookingDate`, 'DESC')
+			.skip(skip)
+			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		if (!data.length) {
@@ -151,9 +181,14 @@ export class BookingRepository extends Repository<Booking> {
 		const where = `"booking"."id" = '${bookingId}'`;
 		const data = await getManager()
 			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.travelers", "traveler")
+			.leftJoinAndSelect("traveler.userData", "userData")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			.leftJoinAndSelect("booking.supplier", "supplier")
 			.where(where)
 			.getOne();
 
@@ -171,6 +206,7 @@ export class BookingRepository extends Repository<Booking> {
 			payment_end_date,
 			booking_type,
 			payment_start_date,
+			instalment_type
 		} = listPaymentDto;
 
 		const take = limit || 10;
@@ -225,6 +261,10 @@ export class BookingRepository extends Repository<Booking> {
 			);
 		}
 
+		if (instalment_type) {
+			query = query.andWhere(`"BookingInstalments"."instalment_type" =:instalment_type`, { instalment_type });
+		}
+
 		const [result, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		return { data: result, total_result: count };
@@ -241,32 +281,70 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			.leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-			.leftJoinAndSelect(
-				"BookingInstalments.failedPaymentAttempts",
-				"failedPaymentAttempts"
-			)
-			// .select([
-			// 	"booking.id",
-			// 	"booking.moduleId",
-			// 	"booking.bookingStatus",
-			// 	"booking.totalAmount",
-			// 	"booking.bookingDate",
-			// 	"booking.totalInstallments",
-			// 	"booking.nextInstalmentDate",
-			// 	"bookingInstalments.instalmentType",
-			// 	"bookingInstalments.instalmentDate",
-			// 	"bookingInstalments.amount",
-			// 	"bookingInstalments.instalmentStatus",
-			// 	"currency.code",
-			// 	"currency.symbol",
-			// 	"moduleData.name",
-			// ])
+			// .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+			// .leftJoinAndSelect(
+			// 	"BookingInstalments.failedPaymentAttempts",
+			// 	"failedPaymentAttempts"
+			// )
+			.select([
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.moduleId",
+				"BookingInstalments.supplierId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"BookingInstalments.paymentGatewayId",
+				"BookingInstalments.paymentInfo",
+				"BookingInstalments.paymentStatus",
+				"BookingInstalments.isPaymentProcessedToSupplier",
+				"BookingInstalments.isInvoiceGenerated",
+				"BookingInstalments.comment",
+				"booking.id",
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.currency",
+				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.locationInfo",
+				"booking.moduleInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
+				"booking.nextInstalmentDate",
+				"booking.supplierBookingId",
+				"currency.id",
+				"currency.code",
+				"currency.symbol",
+				"currency.liveRate",
+				"User.userId",
+				"User.firstName",
+				"User.lastName",
+				"User.socialAccountId",
+				"User.email",
+				"User.phoneNo",
+				"User.roleId",
+				"moduleData.name",
+
+			])
 
 			.where(where)
 			.take(take)
-			.offset(skip);
-
+			.skip(skip)
+			.orderBy("BookingInstalments.id", 'DESC')
 		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
 		if (!data.length) {

@@ -36,7 +36,6 @@ import {
 } from "@nestjs/swagger";
 import { CreateUserDto } from "./dto/crete-user.dto";
 import { ForgetPasswordDto } from "./dto/forget-paasword.dto";
-import { UpdatePasswordDto } from "./dto/update-password.dto";
 import { SentryInterceptor } from "src/sentry/sentry";
 import { NewPasswordDto } from "./dto/new-password.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";

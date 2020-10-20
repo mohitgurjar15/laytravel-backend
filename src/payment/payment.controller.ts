@@ -10,6 +10,7 @@ import { Role } from 'src/enum/role.enum';
 import { ListPaymentAdminDto } from './dto/list-payment-admin.dto';
 import { User } from 'src/entity/user.entity';
 import { ListPaymentUserDto } from './dto/list-payment-user.dto';
+import { ListPaymentDto } from 'src/booking/dto/list-payment.dto';
 
 
 @ApiTags("Payment")
@@ -87,5 +88,44 @@ export class PaymentController {
 		console.log("card_token",card_token)
         return await this.paymentService.retainCard(card_token);
 	}
+
+
+	@Get('installment-list')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Payment List For Admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listPaymentForAdmin(
+		@Query() paginationOption: ListPaymentAdminDto,
+		
+	) {
+		return await this.paymentService.listPaymentForAdmin(paginationOption);
+	}
+
+
+
+	@Get('installment-list-of-user')
+	@ApiOperation({ summary: "Payment list for user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listPaymentForUser(
+		@Query() paginationOption: ListPaymentUserDto,
+		@GetUser() user : User
+	) {
+		return await this.paymentService.listPaymentForUser(paginationOption,user.userId);
+	}
+
 
 }

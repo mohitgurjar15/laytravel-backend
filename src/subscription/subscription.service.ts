@@ -224,7 +224,7 @@ export class SubscriptionService {
 
 	async getPlan(planId: string, currency_id: number) {
 		const where = `"plan"."id" = '${planId}'`;
-		const result = await getManager()
+		const result:any  = await getManager()
 			.createQueryBuilder(Plan, "plan")
 			.leftJoinAndSelect("plan.currency", "currency")
 			.select([
@@ -233,13 +233,14 @@ export class SubscriptionService {
 				"plan.description",
 				"plan.validityDays",
 				"plan.amount",
-				"currency.liveRate",
+				"currency.liveRate",				
 			])
 			.where(where)
 			.getOne();
 		if (!result) {
 			throw new NotFoundException(`Plan not found&&&id&&&Plan not found`);
 		}
+		result.payble_amount =  result.amount * result.currency.liveRate
 		return result;
 	}
 

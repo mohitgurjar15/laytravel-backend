@@ -285,6 +285,8 @@ export class FlightService {
 
 		var result = [];
 
+		var resultIndex  = 0;
+
 		for (let index = 0; index <= 6; index++) {
 
 			var nextdate = nextWeekDates.toISOString().split('T')[0];
@@ -301,9 +303,10 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
-
+			resultIndex ++;
+  
 
 		}
 
@@ -326,8 +329,9 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			previousWeekDates.setDate(previousWeekDates.getDate() - 1);
+			resultIndex++;
 		}
 
 		const response = await Promise.all(result);
@@ -1022,7 +1026,7 @@ export class FlightService {
 			children: [],
 			infants: [],
 		};
-
+		
 		if (travelersResult.length > 0) {
 			for (let traveler of travelersResult) {
 				let ageDiff = moment(new Date()).diff(moment(traveler.dob), "years");
@@ -1072,6 +1076,14 @@ export class FlightService {
 				)
 					throw new BadRequestException(
 						`Passport Expiry is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportExpiry && moment(moment()).isAfter(traveler.passportExpiry))
+				)
+					throw new BadRequestException(
+						`Passport Expiry date is expired for traveler ${traveler.firstName}`
 					);
 				if (
 					traveler.country == null ||

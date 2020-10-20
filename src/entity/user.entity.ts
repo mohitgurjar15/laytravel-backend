@@ -40,10 +40,10 @@ export class User extends BaseEntity {
   @Column("uuid", { primary: true, name: "user_id" })
   userId: string;
 
-  @Column("character varying", { name: "first_name", length: 255 })
+  @Column("character varying", { name: "first_name", length: 255 , nullable:true})
   firstName: string;
 
-  @Column("character varying", { name: "last_name", length: 255 })
+  @Column("character varying", { name: "last_name", length: 255 , nullable:true})
   lastName: string;
 
   @Column("integer", { name: "account_type" })
@@ -95,7 +95,7 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "middle_name", length: 255 })
   middleName: string;
 
-  @Column("character varying", { name: "zip_code", length: 20 })
+  @Column("character varying", { name: "zip_code", length: 20 ,nullable :true})
   zipCode: string;
 
   @Column("timestamp with time zone", { name: "created_date" })
@@ -113,7 +113,7 @@ export class User extends BaseEntity {
   @Column("character varying", {
     name: "country_code",
     nullable: true,
-    length: 10
+    length: 30
   })
   countryCode: string | null;
 
@@ -324,10 +324,11 @@ export class User extends BaseEntity {
 		return Otp == this.otp;
   }
 
-  // @OneToOne(
-	// 	() => TravelerInfo,
-	// 	(traveler) => traveler.userData
-	// )
-	// traveler: TravelerInfo;
+  @OneToMany(
+		() => TravelerInfo,
+		traveler => traveler.userData
+	)
+	traveler: TravelerInfo[];  
+
   
 }

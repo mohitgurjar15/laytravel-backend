@@ -93,9 +93,25 @@ export class AuthService {
 		});
 
 		if (userExist)
-			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address.`
-			);
+		{
+			if (userExist.status != 1)
+			{
+				throw new UnauthorizedException(
+					`Your account has been disabled. Please contact administrator person.`
+				);
+			}else if(userExist.isDeleted == true){
+				throw new UnauthorizedException(
+					`Your account has been deleted. Please contact administrator person.`
+				);
+			}else{
+				throw new ConflictException(
+					`This email address is already registered with us. Please enter different email address.`
+				);
+			}
+				
+
+		}
+			
 
 		const user = new User();
 		const salt = await bcrypt.genSalt();
@@ -749,7 +765,19 @@ export class AuthService {
 		const userExist = await this.userRepository.findOne({
 			where: conditions,
 		});
-
+		if (userExist)
+		{
+			if (userExist.status != 1)
+			{
+				throw new UnauthorizedException(
+					`Your account has been disabled. Please contact administrator person.`
+				);
+			}else if(userExist.isDeleted == true){
+				throw new UnauthorizedException(
+					`Your account has been deleted. Please contact administrator person.`
+				);
+			}
+		}
 		const user = new User();
 		user.email = email || "";
 		user.firstName = name || "";
