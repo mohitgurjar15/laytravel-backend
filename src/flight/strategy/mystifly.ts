@@ -352,8 +352,8 @@ export class Mystifly implements StrategyAirline{
        
     }
 
-    async oneWaySearchZip(searchFlightDto:OneWaySearchFlightDto,user){
-        
+    async oneWaySearchZip(searchFlightDto: OneWaySearchFlightDto, user) {
+
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
         const {
@@ -367,23 +367,23 @@ export class Mystifly implements StrategyAirline{
         } = searchFlightDto;
         let module = await getManager()
             .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name:'flight' })
+            .where("module.name = :name", { name: 'flight' })
             .getOne();
-        let bookingDate         = moment(new Date()).format("YYYY-MM-DD");
-
-        if(!module){
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+    
+        if (!module) {
             throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
         }
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
-
-        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
-        
-        const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
-        if(!markUpDetails){
+    
+        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date, bookingDate);
+    
+        const markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId);
+        if (!markUpDetails) {
             throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
         }
-
-        let requestBody=`<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
+    
+        let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
     xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`
         requestBody += `<soapenv:Header/>`;
         requestBody += `<soapenv:Body>`;
@@ -400,32 +400,32 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</mys1:OriginDestinationInformation>`;
         requestBody += `</mys:OriginDestinationInformations>`;
         requestBody += `<mys:PassengerTypeQuantities>`;
-
-        if(adult_count>0){
-
+    
+        if (adult_count > 0) {
+    
             requestBody += `<mys1:PassengerTypeQuantity>`
             requestBody += `<mys1:Code>ADT</mys1:Code>`
             requestBody += `<mys1:Quantity>${adult_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
-
-        if(child_count>0){
-
+    
+        if (child_count > 0) {
+    
             requestBody += `<mys1:PassengerTypeQuantity>`
             requestBody += `<mys1:Code>CHD</mys1:Code>`
             requestBody += `<mys1:Quantity>${child_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
-
-        if(infant_count>0){
-
+    
+        if (infant_count > 0) {
+    
             requestBody += `<mys1:PassengerTypeQuantity>`
             requestBody += `<mys1:Code>INF</mys:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
-
-
+    
+    
         requestBody += `</mys:PassengerTypeQuantities>`;
         requestBody += `<mys:PricingSourceType>All</mys:PricingSourceType>`;
         requestBody += `<mys:RequestOptions>Fifty</mys:RequestOptions>`;
@@ -441,58 +441,231 @@ export class Mystifly implements StrategyAirline{
         requestBody += `</tem:AirLowFareSearch>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-       /* requestBody=`                         
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
-    xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-    <soapenv:Header/>
-    <soapenv:Body>
-        <tem:AirLowFareSearch>
-            <tem:rq>
-                <mys:IsRefundable>false</mys:IsRefundable>
-                <mys:IsResidentFare>false</mys:IsResidentFare>
-                <mys:NearByAirports>false</mys:NearByAirports>
-                <mys:OriginDestinationInformations>
-                    <mys1:OriginDestinationInformation>
-                        <mys1:DepartureDateTime>2021-01-29T00:00:00</mys1:DepartureDateTime>
-                        <mys1:DestinationLocationCode>LHR</mys1:DestinationLocationCode>
-                        <mys1:OriginLocationCode>DXB</mys1:OriginLocationCode>
-                    </mys1:OriginDestinationInformation>
-                </mys:OriginDestinationInformations>
-                <mys:PassengerTypeQuantities>
-                    <mys1:PassengerTypeQuantity>
-                        <mys1:Code>ADT</mys1:Code>
-                        <mys1:Quantity>5</mys1:Quantity>
-                    </mys1:PassengerTypeQuantity>
-                </mys:PassengerTypeQuantities>
-                <mys:PricingSourceType>All</mys:PricingSourceType>
-                <mys:RequestOptions>Fifty</mys:RequestOptions>
-                <mys:ResponseFormat>XML</mys:ResponseFormat>
-                <mys:SessionId>5A14E536-B141-4A44-821C-06E74CDAEBE5-1847</mys:SessionId>
-                <mys:Target>Test</mys:Target>
-                <mys:TravelPreferences>
-                    <mys1:AirTripType>OneWay</mys1:AirTripType>
-                    <mys1:CabinPreference>Y</mys1:CabinPreference>
-                    <mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>
-                </mys:TravelPreferences>
-            </tem:rq>
-        </tem:AirLowFareSearch>
-    </soapenv:Body>
-</soapenv:Envelope>`;*/
-console.log(requestBody)
-        let searchResult = await HttpRequest.mystiflyRequestZip('http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc',requestBody,'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
-        //console.log(JSON.stringify(searchResult))
+        /* requestBody=`                         
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
+     xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+     <soapenv:Header/>
+     <soapenv:Body>
+         <tem:AirLowFareSearch>
+             <tem:rq>
+                 <mys:IsRefundable>false</mys:IsRefundable>
+                 <mys:IsResidentFare>false</mys:IsResidentFare>
+                 <mys:NearByAirports>false</mys:NearByAirports>
+                 <mys:OriginDestinationInformations>
+                     <mys1:OriginDestinationInformation>
+                         <mys1:DepartureDateTime>2021-01-29T00:00:00</mys1:DepartureDateTime>
+                         <mys1:DestinationLocationCode>LHR</mys1:DestinationLocationCode>
+                         <mys1:OriginLocationCode>DXB</mys1:OriginLocationCode>
+                     </mys1:OriginDestinationInformation>
+                 </mys:OriginDestinationInformations>
+                 <mys:PassengerTypeQuantities>
+                     <mys1:PassengerTypeQuantity>
+                         <mys1:Code>ADT</mys1:Code>
+                         <mys1:Quantity>5</mys1:Quantity>
+                     </mys1:PassengerTypeQuantity>
+                 </mys:PassengerTypeQuantities>
+                 <mys:PricingSourceType>All</mys:PricingSourceType>
+                 <mys:RequestOptions>Fifty</mys:RequestOptions>
+                 <mys:ResponseFormat>XML</mys:ResponseFormat>
+                 <mys:SessionId>5A14E536-B141-4A44-821C-06E74CDAEBE5-1847</mys:SessionId>
+                 <mys:Target>Test</mys:Target>
+                 <mys:TravelPreferences>
+                     <mys1:AirTripType>OneWay</mys1:AirTripType>
+                     <mys1:CabinPreference>Y</mys1:CabinPreference>
+                     <mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>
+                 </mys:TravelPreferences>
+             </tem:rq>
+         </tem:AirLowFareSearch>
+     </soapenv:Body>
+    </soapenv:Envelope>`;*/
+        //console.log(requestBody)
+        let searchResult = await HttpRequest.mystiflyRequestZip('http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc', requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
-        console.log(compressedResult)
-        let buffer =  Buffer.from(compressedResult, 'base64');
-        zlib.unzip(buffer, function(err, buffer) {
-          if (!err) {
-            console.log(buffer.toString());
-          }
+        //console.log(compressedResult)
+        let buffer = Buffer.from(compressedResult, 'base64');
+    
+        const unCompressedData = await new Promise((resolve) => {
+            zlib.unzip(buffer, (err, buffer) => {
+                resolve(buffer.toString());
+            });
         });
+    
+        let jsonData: any = await Generic.xmlToJson(unCompressedData)
+    
+        //console.log(jsonData)
+    
+    
+        //return jsonData;
+        console.log(jsonData.airlowfaresearchgziprs.success[0]);
+    
+        if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
+    
+    
+    
+            let flightRoutes = jsonData.airlowfaresearchgziprs.priceditineraries[0].priceditinerary;
+            let stop: Stop;
+            let stops: Stop[] = [];
+            let routes: Route[] = [];
+            let route: Route;
+            let routeType: RouteType;
+            let flightSegments = [];
+            let stopDuration;
+            let otherSegments = []
+            let totalDuration;
+            let uniqueCode;
+            for (let i = 0; i < flightRoutes.length; i++) {
+                route = new Route;
+                stops = [];
+                totalDuration = 0;
+                uniqueCode = '';
+                flightSegments = flightRoutes[i]['origindestinationoptions'][0]['origindestinationoption'][0]['flightsegments'][0]['flightsegment'];
+                otherSegments = flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'][0];
+    
+                flightSegments.forEach((flightSegment, j) => {
+                    totalDuration += flightSegment['journeyduration'][0] * 60;
+    
+                    stop = new Stop();
+                    stopDuration = "";
+                    stop.departure_code = flightSegment['departureairportlocationcode'][0];
+                    stop.departure_date = moment(flightSegment['departuredatetime'][0]).format("DD/MM/YYYY")
+                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_date_time = flightSegment['departuredatetime'][0];
+    
+    
+                    stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
+                    stop.arrival_code = flightSegment['arrivalairportlocationcode'][0];
+                    stop.arrival_date = moment(flightSegment['arrivaldatetime'][0]).format("DD/MM/YYYY")
+                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_date_time = flightSegment['arrivaldatetime'][0];
+                    stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
+                    stop.eticket = flightSegment['eticket'][0] == 'true' ? true : false;
+    
+    
+                    stop.flight_number = flightSegment['flightnumber'][0];
+                    stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['cabinclasscode'][0]);
+                    stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['journeyduration'][0] * 60);
+                    stop.duration = `${stopDuration.hours} h ${stopDuration.minutes} m`
+                    stop.airline = flightSegment['marketingairlinecode'][0];
+                    stop.remaining_seat = parseInt(flightSegment['seatsremaining'][0]['number'][0]);
+                    stop.below_minimum_seat = flightSegment['seatsremaining'][0]['belowminimum'][0] == 'true' ? true : false;
+    
+    
+                    stop.is_layover = false;
+                    stop.airline_name = airlines[flightSegment['marketingairlinecode'][0]];
+    
+                    stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+    
+    
+    
+                    stop.cabin_baggage = otherSegments['cabinbaggageinfo'][0]['string'][j];
+    
+    
+                    stop.checkin_baggage = otherSegments['baggageinfo'][0]['string'][j];
+    
+                    stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
+    
+    
+                    if (stops.length > 0) {
+    
+                        stop.is_layover = true;
+                        let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds'));
+                        totalDuration += moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds');
+                        stop.layover_duration = `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_airport_name = flightSegment['departureairportlocationcode'][0];
+                    }
+                    uniqueCode += stop.departure_time;
+                    uniqueCode += stop.arrival_time;
+                    uniqueCode += stop.flight_number;
+                    stops.push(stop)
+                });
+    
+    
+                routeType = new RouteType();
+                routeType.type = 'outbound';
+                routeType.stops = stops;
+                route.routes[0] = routeType;
+                route.route_code = flightRoutes[i]['airitinerarypricinginfo'][0]['faresourcecode'][0];
+    
+                route.fare_type = flightRoutes[i]['airitinerarypricinginfo'][0]['faretype'][0] == 'WebFare' ? 'LCC' : 'GDS';
+                route.net_rate = Generic.convertAmountTocurrency(flightRoutes[i]['airitinerarypricinginfo'][0]['itintotalfare'][0]['totalfare'][0]['amount'][0], currencyDetails.liveRate);
+    
+                route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
+    
+                route.selling_price = PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
+    
+    
+                let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                if (instalmentDetails.instalment_available) {
+                    route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                }
+                else {
+                    route.start_price = '0';
+                }
+                route.stop_count = stops.length - 1;
+                route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
+                route.departure_code = source_location;
+                route.arrival_code = destination_location;
+                route.departure_date = stops[0].departure_date;
+                route.departure_time = stops[0].departure_time;
+                route.arrival_date = stops[stops.length - 1].arrival_date;
+                route.arrival_time = stops[stops.length - 1].arrival_time;
+                route.departure_info = typeof airports[source_location] !== 'undefined' ? airports[source_location] : {};
+                route.arrival_info = typeof airports[destination_location] !== 'undefined' ? airports[destination_location] : {};
+                let duration = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                route.total_duration = `${duration.hours} h ${duration.minutes} m`;
+                route.airline = stops[0].airline;
+                route.airline_name = airlines[stops[0].airline];
+                route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
+                route.is_refundable = flightRoutes[i]['airitinerarypricinginfo'][0]['isrefundable'][0] == 'Yes' ? true : false;
+                route.unique_code = md5(uniqueCode)
+                routes.push(route);
+            }
+            let flightSearchResult = new FlightSearchResult();
+            flightSearchResult.items = routes;
+    
+            //Get min & max selling price
+            let priceRange = new PriceRange();
+            let priceType = 'selling_price';
+            priceRange.min_price = this.getMinPrice(routes, priceType);
+            priceRange.max_price = this.getMaxPrice(routes, priceType);
+            flightSearchResult.price_range = priceRange;
+    
+            //Get min & max partail payment price
+            let partialPaymentPriceRange = new PriceRange();
+            priceType = 'start_price';
+            partialPaymentPriceRange.min_price = this.getMinPrice(routes, priceType);
+            partialPaymentPriceRange.max_price = this.getMaxPrice(routes, priceType);
+            flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
+            //return flightSearchResult;
+    
+            //Get Stops count and minprice
+            flightSearchResult.stop_data = this.getStopCounts(routes, 'stop_count');
+    
+            //Get airline and min price
+            flightSearchResult.airline_list = this.getAirlineCounts(routes)
+    
+            //Get Departure time slot
+            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes, 'departure_time', 0)
+            //Get Arrival time slot
+            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes, 'arrival_time', 0)
+            return flightSearchResult;
+        }
+        else {
+    
+            return { message: "flight not found" }
+        }
+    
+    
+        //    const variable = promisify(zlib.unzip(buffer, function(err, buffer) {
+        //       if (!err) {
+        //         console.log(buffer.toString());
+        //       }
+        //     }))
+        //return buffer.toString();
         /*let result = await zlib.unzip(buffer,{})
         console.log(result.toString())*/
-
-       
+        //(err,)
+    
     }
 
     getMinPrice(routes,priceType){
@@ -1451,5 +1624,35 @@ console.log(requestBody)
     getMealCode(code){
 
         return mealCodes[code] || '';
+    }
+    getFareBreakDownForGzip(fares, markUpDetails) {
+
+        let fareBreakDowns: FareInfo[] = [];
+        let fareInfo;
+        let totalFare = 0;
+        let totalTraveler = 0;
+        for (let fare of fares) {
+            fareInfo = new FareInfo();
+            fareInfo.type = fare['passengertypequantity'][0]['code'][0];
+    
+    
+            fareInfo.quantity = fare['passengertypequantity'][0]['quantity'][0];
+            // console.log(fare['passengerfare'][0]['totalfare'][0]['amount'][0],fareInfo.quantity);
+    
+            fareInfo.price = PriceMarkup.applyMarkup(parseFloat(fare['passengerfare'][0]['totalfare'][0]['amount'][0]) * parseInt(fareInfo.quantity), markUpDetails)
+    
+            fareBreakDowns.push(fareInfo)
+    
+            totalFare += parseFloat(fareInfo.price);
+            totalTraveler += parseInt(fareInfo.quantity)
+        }
+    
+        fareBreakDowns.push({
+            type: 'total',
+            quantity: totalTraveler,
+            price: totalFare
+        })
+    
+        return fareBreakDowns;
     }
 } 

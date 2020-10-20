@@ -2,6 +2,7 @@
 import { getConnection } from "typeorm";
 import { Module } from "src/entity/module.entity";
 import { Currency } from "src/entity/currency.entity";
+import * as xml2js from 'xml2js';
 
 export class  Generic{
 
@@ -35,6 +36,15 @@ export class  Generic{
         return amount;
     }
 
+    static async xmlToJson(xmlData)
+    {
+        const result = await xml2js.parseStringPromise(xmlData,{
+            normalizeTags :true,
+            ignoreAttrs:true
+        });
+        return result
+    }
+    
     static formatPriceDecimal(price){
 
         console.log(typeof price,price,"--------------")

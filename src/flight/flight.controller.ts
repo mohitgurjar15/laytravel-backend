@@ -11,6 +11,7 @@ import { BookFlightDto } from './dto/book-flight.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
+import { PreductBookingDateDto } from './dto/preduct-booking-date.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -46,6 +47,8 @@ export class FlightController {
         return await this.flightService.searchAirport(name,'mobile');
         //return await this.flightService.mapChildParentAirport(name);
     }
+
+    
         
         
     @Post('/search-oneway-flight')
@@ -209,5 +212,56 @@ export class FlightController {
        @LogInUser() user
     ){
         return await this.flightService.searchOneWayZipFlight(searchFlightDto,req.headers,user);
+    }
+
+
+    @Post('/predicted-booking-date')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It preduct a date for this day system have done a booking  " })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    async predictedBookingDate(
+       @Body() searchFlightDto:PreductBookingDateDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.preductBookingDate(searchFlightDto,req.headers,user);
+    }
+
+    @Post('/flexible-day-rate')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It a return flight rate for flexible day" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    async flexibleDayRate(
+       @Body() searchFlightDto:OneWaySearchFlightDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.flexibleDateRate(searchFlightDto,req.headers,user);
     }
 }
