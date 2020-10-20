@@ -2,7 +2,7 @@ import {
 	Injectable,
 	NotFoundException,
 	InternalServerErrorException,
-	BadRequestException,
+	BadRequestException, ConflictException, NotAcceptableException, UnauthorizedException
 } from "@nestjs/common";
 import { FaqRepository } from "./faq.repository";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -28,13 +28,28 @@ export class FaqService {
 		try {
 			return await this.FaqRepository.listFaq(paginationOption);
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No faq Found.&&&id`);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
 			);
@@ -67,6 +82,28 @@ export class FaqService {
 			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`);
 			return { message: "Faq Careated successfully" };
 		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
 			);
@@ -94,11 +131,27 @@ export class FaqService {
 			Activity.logActivity(adminId, "faq", `Faq updated by the admin`);
 			return { message: "Faq Updated Successfully" };
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No Faq Found.&&&id`);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
@@ -118,11 +171,27 @@ export class FaqService {
 			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`);
 			return { message: "Faq Deleted Successfully" };
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`${error.message} &&& id &&& ${error.message}`);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
@@ -147,11 +216,27 @@ export class FaqService {
 			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`);
 			return { message: "Faq Status Changed" };
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No Faq Found.&&&id`);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
@@ -171,11 +256,27 @@ export class FaqService {
 			}
 			return faq;
 		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No Faq Found.&&&id`);
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
