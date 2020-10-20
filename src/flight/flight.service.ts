@@ -279,7 +279,7 @@ export class FlightService {
 
 		var nextWeekDates = depatureDate;
 
-		nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+		// nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 
 		//console.log(Math.floor(dayDiffrence / 7));
 
@@ -287,7 +287,33 @@ export class FlightService {
 
 		var resultIndex  = 0;
 
-		for (let index = 0; index <= 6; index++) {
+
+		var count = dayDiffrence <= 7 ? dayDiffrence : 7;
+
+
+		previousWeekDates.setDate(previousWeekDates.getDate() - count);
+		
+		for (let index = 0; index < count; index++) {
+			var predate = previousWeekDates.toISOString().split('T')[0];
+			predate = predate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			console.log(predate)
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": predate,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+			resultIndex++;
+		}
+
+		for (let index = 0; index <= 7; index++) {
 
 			var nextdate = nextWeekDates.toISOString().split('T')[0];
 			nextdate = nextdate
@@ -306,33 +332,8 @@ export class FlightService {
 			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 			resultIndex ++;
-  
-
 		}
 
-		var count = dayDiffrence <= 7 ? dayDiffrence : 7;
-
-
-		previousWeekDates.setDate(previousWeekDates.getDate() - 1);
-		for (let index = 0; index < count; index++) {
-			var predate = previousWeekDates.toISOString().split('T')[0];
-			predate = predate
-				.replace(/T/, " ") // replace T with a space
-				.replace(/\..+/, "");
-			console.log(predate)
-			let dto = {
-				"source_location": source_location,
-				"destination_location": destination_location,
-				"departure_date": predate,
-				"flight_class": flight_class,
-				"adult_count": adult_count,
-				"child_count": child_count,
-				"infant_count": infant_count
-			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
-			previousWeekDates.setDate(previousWeekDates.getDate() - 1);
-			resultIndex++;
-		}
 
 		const response = await Promise.all(result);
 
@@ -350,8 +351,7 @@ export class FlightService {
 						netRate = flightData.net_rate;
 						lowestprice= flightData.selling_price
 						unique_code = flightData.unique_code;
-						date = new Date (flightData.departure_date)
-						
+						date = new Date (flightData.departure_date)	
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
