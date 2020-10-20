@@ -211,7 +211,7 @@ export class FlightService {
 		}
 
 		const response = await Promise.all(result);
-		console.log(new Date());
+
 		var lowestPriceIndex = 0;
 		var lowestprice = 0
 		let returnResponce = [];
@@ -226,109 +226,228 @@ export class FlightService {
 							lowestprice = flightData.net_rate;
 							is_booking_avaible = true;
 						}
-						else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
-	
-							returnResponce[lowestPriceIndex].is_booking_avaible = false
-							lowestPriceIndex = key
-							lowestprice = flightData.net_rate;
-							is_booking_avaible = true
-						} else if (lowestprice > flightData.net_rate) {
+						// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+						// 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+						// 	lowestPriceIndex = key
+						// 	lowestprice = flightData.net_rate;
+						// 	is_booking_avaible = true
+						// }
+						else if (lowestprice > flightData.net_rate) {
 							returnResponce[lowestPriceIndex].is_booking_avaible = false
 							lowestPriceIndex = key
 							lowestprice = flightData.net_rate;
 							is_booking_avaible = true
 						}
-	
+
 						var output = {
 							date: flightData.departure_date,
 							price: flightData.net_rate,
 							is_booking_avaible: is_booking_avaible
 						}
-	
+
 						returnResponce.push(output)
 						key++;
-	
+
 					}
 					// console.log(flightData.unique_code);
 					// console.log(flightData.net_rate);
 					// console.log(flightData.departure_date);
-				}	
+				}
 			}
-			
+
 		}
 
 		return returnResponce;
 	}
 
-
-	async preductDate(searchFlightDto: PreductBookingDateDto, headers, user) {
+	async flexibleDateRate(serchFlightDto: OneWaySearchFlightDto, headers, user: User) {
 		await this.validateHeaders(headers);
-		const { unique_token } = searchFlightDto
-		//calculates dates for getting booking date
-		let dto1 = {
-			"source_location": "DXB",
-			"destination_location": "SYD",
-			"departure_date": "2020-11-19",
-			"flight_class": "Economy",
-			"adult_count": 1,
-			"child_count": 0,
-			"infant_count": 0
-		}
 
-		let dto2 = {
-			"source_location": "DXB",
-			"destination_location": "SYD",
-			"departure_date": "2020-11-07",
-			"flight_class": "Economy",
-			"adult_count": 1,
-			"child_count": 0,
-			"infant_count": 0
-		}
+		const mystifly = new Strategy(new Mystifly(headers));
+
+		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
+
+		const depatureDate = new Date(departure_date);
+		const depatureDate2 = new Date(departure_date);
+		const currentDate = new Date();
+
+		const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate) + 1
+
+		console.log(dayDiffrence);
+		var previousWeekDates = depatureDate2;
+
+		var nextWeekDates = depatureDate;
+
+		nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+
+		//console.log(Math.floor(dayDiffrence / 7));
 
 		var result = [];
 
-		const mystifly = new Strategy(new Mystifly(headers));
-		const result1 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto1, user)));
-		//const result2 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto2, user)));
-		result.push(result1);
+		for (let index = 0; index <= 6; index++) {
+
+			var nextdate = nextWeekDates.toISOString().split('T')[0];
+			nextdate = nextdate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			console.log(nextdate)
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": nextdate,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+
+
+		}
+
+		var count = dayDiffrence <= 7 ? dayDiffrence : 7;
+
+
+		previousWeekDates.setDate(previousWeekDates.getDate() - 1);
+		for (let index = 0; index < count; index++) {
+			var predate = previousWeekDates.toISOString().split('T')[0];
+			predate = predate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			console.log(predate)
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": predate,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			previousWeekDates.setDate(previousWeekDates.getDate() - 1);
+		}
 
 		const response = await Promise.all(result);
 
-		var lowestPriceIndex = 0;
-		var lowestprice = 0
 		let returnResponce = [];
-		var key = 0;
 		for await (const data of response) {
-			for await (const flightData of data.items) {
-				if (unique_token == flightData.unique_code) {
+			if (!data.message) {
+				var unique_code = '';
+				var lowestprice = 0;
+				var netRate = 0;
+				var key = 0;
+				var date = '';
+				for await (const flightData of data.items) {
 					var is_booking_avaible = false;
 					if (key == 0) {
-						lowestPriceIndex = key
-						lowestprice = flightData.net_rate;
-						is_booking_avaible = true;
+						netRate = flightData.net_rate;
+						lowestprice= flightData.selling_price
+						unique_code = flightData.unique_code;
+						date = flightData.departure_date
 					}
-					else if (lowestprice > flightData.net_rate) {
-						returnResponce[lowestPriceIndex].is_booking_avaible = false
-						lowestPriceIndex = key
-						lowestprice = flightData.net_rate;
-						is_booking_avaible = true
-					}
+					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
-					returnResponce.push({
-						date: flightData.departure_date,
-						price: flightData.net_rate,
-						is_booking_avaible
-					})
-					console.log(flightData.unique_code);
-					console.log(flightData.net_rate);
-					console.log(flightData.departure_date);
+					// 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+					// 	lowestPriceIndex = key
+					// 	lowestprice = flightData.net_rate;
+					// 	is_booking_avaible = true
+					// }
+					else if (lowestprice > flightData.net_rate) {
+						netRate = flightData.net_rate;
+						lowestprice= flightData.selling_price
+						unique_code = flightData.unique_code;
+						date = flightData.departure_date
+					}
+					key++;
+				}
+				var output = {
+					date: date,
+					net_rate : netRate,
+					price: lowestprice,
+					unique_code: unique_code
 				}
 
+				returnResponce.push(output)
+				// console.log(flightData.unique_code);
+				// console.log(flightData.net_rate);
+				// console.log(flightData.departure_date);
 			}
 		}
-
 		return returnResponce;
 	}
+
+
+	// async preductDate(searchFlightDto: PreductBookingDateDto, headers, user) {
+	// 	await this.validateHeaders(headers);
+	// 	const { unique_token } = searchFlightDto
+	// 	//calculates dates for getting booking date
+	// 	let dto1 = {
+	// 		"source_location": "DXB",
+	// 		"destination_location": "SYD",
+	// 		"departure_date": "2020-11-19",
+	// 		"flight_class": "Economy",
+	// 		"adult_count": 1,
+	// 		"child_count": 0,
+	// 		"infant_count": 0
+	// 	}
+
+	// 	let dto2 = {
+	// 		"source_location": "DXB",
+	// 		"destination_location": "SYD",
+	// 		"departure_date": "2020-11-07",
+	// 		"flight_class": "Economy",
+	// 		"adult_count": 1,
+	// 		"child_count": 0,
+	// 		"infant_count": 0
+	// 	}
+
+	// 	var result = [];
+
+	// 	const mystifly = new Strategy(new Mystifly(headers));
+	// 	const result1 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto1, user)));
+	// 	//const result2 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto2, user)));
+	// 	result.push(result1);
+
+	// 	const response = await Promise.all(result);
+
+	// 	var lowestPriceIndex = 0;
+	// 	var lowestprice = 0
+	// 	let returnResponce = [];
+	// 	var key = 0;
+	// 	for await (const data of response) {
+	// 		for await (const flightData of data.items) {
+	// 			if (unique_token == flightData.unique_code) {
+	// 				var is_booking_avaible = false;
+	// 				if (key == 0) {
+	// 					lowestPriceIndex = key
+	// 					lowestprice = flightData.net_rate;
+	// 					is_booking_avaible = true;
+	// 				}
+	// 				else if (lowestprice > flightData.net_rate) {
+	// 					returnResponce[lowestPriceIndex].is_booking_avaible = false
+	// 					lowestPriceIndex = key
+	// 					lowestprice = flightData.net_rate;
+	// 					is_booking_avaible = true
+	// 				}
+
+	// 				returnResponce.push({
+	// 					date: flightData.departure_date,
+	// 					price: flightData.net_rate,
+	// 					is_booking_avaible
+	// 				})
+	// 				console.log(flightData.unique_code);
+	// 				console.log(flightData.net_rate);
+	// 				console.log(flightData.departure_date);
+	// 			}
+
+	// 		}
+	// 	}
+
+	// 	return returnResponce;
+	// }
 
 	async getDifferenceInDays(date1, date2) {
 		const diffInMs = Math.abs(date2 - date1);

@@ -239,4 +239,29 @@ export class FlightController {
     ){
         return await this.flightService.preductBookingDate(searchFlightDto,req.headers,user);
     }
+
+    @Post('/flexible-day-rate')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It a return flight rate for flexible day" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    async flexibleDayRate(
+       @Body() searchFlightDto:OneWaySearchFlightDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.flexibleDateRate(searchFlightDto,req.headers,user);
+    }
 }
