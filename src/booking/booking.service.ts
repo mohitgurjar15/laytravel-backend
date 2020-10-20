@@ -14,6 +14,7 @@ import { FlightBookingEmailParameterModel } from "src/config/email_template/mode
 import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
+import * as moment from 'moment';
 
 @Injectable()
 export class BookingService {
@@ -125,6 +126,18 @@ export class BookingService {
 					delete result.data[i].travelers[j].userData.updatedDate;
 					delete result.data[i].travelers[j].userData.salt;
 					delete result.data[i].travelers[j].userData.password;
+
+					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+
+					if (age < 2) {
+						result.data[i].travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.data[i].travelers[j].userData.user_type = "child";
+					} else {
+						result.data[i].travelers[j].userData.user_type = "adult";
+					}
 				}
 			}
 			return result;
@@ -201,32 +214,44 @@ export class BookingService {
 
 	async getBookingDetail(bookingId: string) {
 		try {
-			let result =  await this.bookingRepository.bookingDetail(bookingId);
+			let result = await this.bookingRepository.bookingDetail(bookingId);
 
 			let paidAmount = 0;
 			let remainAmount = 0;
 
 			//console.log(result);
 
-			
-				for (let instalment of result.bookingInstalments) {
-					if (instalment.instalmentStatus == 1) {
-						paidAmount += parseFloat(instalment.amount);
+
+			for (let instalment of result.bookingInstalments) {
+				if (instalment.instalmentStatus == 1) {
+					paidAmount += parseFloat(instalment.amount);
+				} else {
+					remainAmount += parseFloat(instalment.amount);
+				}
+			}
+			result["paidAmount"] = paidAmount;
+			result["remainAmount"] = remainAmount;
+			delete result.user.updatedDate;
+			delete result.user.salt;
+			delete result.user.password;
+			for (let j in result.travelers) {
+				delete result.travelers[j].userData.updatedDate;
+				delete result.travelers[j].userData.salt;
+				delete result.travelers[j].userData.password;
+
+				var birthDate = new Date(result.travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+
+					if (age < 2) {
+						result.travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.travelers[j].userData.user_type = "child";
 					} else {
-						remainAmount += parseFloat(instalment.amount);
+						result.travelers[j].userData.user_type = "adult";
 					}
-				}
-				result["paidAmount"] = paidAmount;
-				result["remainAmount"] = remainAmount;
-				delete result.user.updatedDate;
-				delete result.user.salt;
-				delete result.user.password;
-				for (let j in result.travelers) {
-					delete result.travelers[j].userData.updatedDate;
-					delete result.travelers[j].userData.salt;
-					delete result.travelers[j].userData.password;
-				}
-			
+			}
+
 			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {

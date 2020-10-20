@@ -95,7 +95,7 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "middle_name", length: 255 })
   middleName: string;
 
-  @Column("character varying", { name: "zip_code", length: 20 })
+  @Column("character varying", { name: "zip_code", length: 20 ,nullable :true})
   zipCode: string;
 
   @Column("timestamp with time zone", { name: "created_date" })
