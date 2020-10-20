@@ -64,7 +64,7 @@ export class GeneralService {
 
         let ip = await publicIp.v4();
         let geo = geoip.lookup(ip);
-        console.log(geo)
+          
         if(ip && Object.keys(geo).length){
 
             if(geo.country!=''){
@@ -78,11 +78,11 @@ export class GeneralService {
                 .where("countries.flag = :flag and countries.iso2=:iso2", { flag: 1, iso2:geo.country })
                 .getOne();
                 query = query.andWhere(`("airport"."country"=:country or "airport"."country"=:country_code)`, { country : country.name, country_code:country.iso3 });
-                let state={}
+                let state:any={}
                 if(geo.region!=''){
                     state = await getManager()
                     .createQueryBuilder(States, "states")
-                    .where("states.flag = :flag and states.iso2=:iso2 and country_code=:country_code", { flag: 1, iso2: geo.region,country_code:geo.country})
+                    .where("states.flag = :flag and states.iso2=:iso2 and states.country_code=:country_code", { flag: 1, iso2: geo.region,country_code:geo.country})
                     .getOne();
 
                 }
@@ -91,10 +91,12 @@ export class GeneralService {
                 if(geo.city!=''){
                     city = await getManager()
                     .createQueryBuilder(Cities, "cities")
-                    .where("cities.flag = :flag and cities.state_code=:state_code and name=:name", { flag: 1, state_code: geo.region,name:geo.city})
+                    .where("cities.flag = :flag and cities.state_code=:state_code and cities.name=:name", { flag: 1, state_code: geo.region,name:geo.city})
                     .getOne();
 
-                    query = query.andWhere(`"airport"."city"=:city`, { city : city.name });
+                    console.log(city);
+                    if(typeof city!='undefined')
+                        query = query.andWhere(`"airport"."city"=:city`, { city : city.name });
                 }
 
                 let airport = await query.getOne();
@@ -102,10 +104,10 @@ export class GeneralService {
                 return {
                     ip,
                     timezone: geo.timezone,
-                    country,
-                    state,
-                    city,
-                    airport
+                    'country':country || {},
+                    'state':state || {},
+                    'city':city || {},
+                    'airport':airport || {}
                 }
             }
         }
