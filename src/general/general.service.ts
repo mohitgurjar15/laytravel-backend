@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {getManager} from "typeorm";
+import {getConnection, getManager} from "typeorm";
 import { Countries } from 'src/entity/countries.entity';
 import { States } from 'src/entity/states.entity';
+import * as geoip from 'geoip-lite';
+import * as publicIp from 'public-ip'
+import { Cities } from 'src/entity/cities.entity';
+import { Airport } from 'src/entity/airport.entity';
 
 @Injectable()
 export class GeneralService {
@@ -54,5 +58,59 @@ export class GeneralService {
             return state;
         else
             throw new NotFoundException(`No state found&&&id`)
+    }
+
+    async getUserLocation(){
+
+        let ip = await publicIp.v4();
+        let geo = geoip.lookup(ip);
+        console.log(geo)
+        if(ip && Object.keys(geo).length){
+
+            if(geo.country!=''){
+
+                let query = getManager()
+                .createQueryBuilder(Airport, "airport");
+                
+                let country = await getManager()
+                .createQueryBuilder(Countries, "countries")
+                //.select(['"id"','"name"','"iso3"','"iso2"','"phonecode"','"currency"','"flag'])
+                .where("countries.flag = :flag and countries.iso2=:iso2", { flag: 1, iso2:geo.country })
+                .getOne();
+                query = query.andWhere(`("airport"."country"=:country or "airport"."country"=:country_code)`, { country : country.name, country_code:country.iso3 });
+                let state={}
+                if(geo.region!=''){
+                    state = await getManager()
+                    .createQueryBuilder(States, "states")
+                    .where("states.flag = :flag and states.iso2=:iso2 and country_code=:country_code", { flag: 1, iso2: geo.region,country_code:geo.country})
+                    .getOne();
+
+                }
+
+                let city:any={}
+                if(geo.city!=''){
+                    city = await getManager()
+                    .createQueryBuilder(Cities, "cities")
+                    .where("cities.flag = :flag and cities.state_code=:state_code and name=:name", { flag: 1, state_code: geo.region,name:geo.city})
+                    .getOne();
+
+                    query = query.andWhere(`"airport"."city"=:city`, { city : city.name });
+                }
+
+                let airport = await query.getOne();
+                
+                return {
+                    ip,
+                    timezone: geo.timezone,
+                    country,
+                    state,
+                    city,
+                    airport
+                }
+            }
+        }
+        else{
+            throw new NotFoundException(`No location found`)
+        }
     }
 }

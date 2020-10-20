@@ -59,4 +59,15 @@ export class GeneralController {
        return await this.generalService.getStateDetails(id);
     }
     
+    @ApiOperation({ summary: "User Location" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not found!' })
+    @ApiResponse({ status: 500, description: 'Internal server error!' })
+    @Get('location')
+    async getUserLocation(
+        
+    ){
+       return await this.generalService.getUserLocation();
+    }
 }
