@@ -60,12 +60,11 @@ export class GeneralService {
             throw new NotFoundException(`No state found&&&id`)
     }
 
-    async getUserLocation(){
+    async getUserLocation(req){
 
-        let ip = await publicIp.v4();
+        let ip = req.ip;
         let geo = geoip.lookup(ip);
-          
-        if(ip && Object.keys(geo).length){
+        if(typeof geo!='undefined' && geo!=null && Object.keys(geo).length){
 
             if(geo.country!=''){
 
