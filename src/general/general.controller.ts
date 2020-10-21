@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GeneralService } from './general.service';
 
@@ -66,8 +66,8 @@ export class GeneralController {
     @ApiResponse({ status: 500, description: 'Internal server error!' })
     @Get('location')
     async getUserLocation(
-        
+        @Req() req
     ){
-       return await this.generalService.getUserLocation();
+       return await this.generalService.getUserLocation(req);
     }
 }
