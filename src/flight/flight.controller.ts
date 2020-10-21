@@ -12,6 +12,7 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
 import { PreductBookingDateDto } from './dto/preduct-booking-date.dto';
+import { FullCalenderRateDto } from './dto/full-calender-date-rate.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -263,5 +264,31 @@ export class FlightController {
        @LogInUser() user
     ){
         return await this.flightService.flexibleDateRate(searchFlightDto,req.headers,user);
+    }
+
+
+    @Post('/calender-day-rate')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It a return flight rate between given start date to end date" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    async callenderDayRates(
+       @Body() searchFlightDto:FullCalenderRateDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.fullcalenderRate(searchFlightDto,req.headers,user);
     }
 }

@@ -42,6 +42,7 @@ import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { Role } from "src/enum/role.enum";
 import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
 import { PreductBookingDateDto } from "./dto/preduct-booking-date.dto";
+import { FullCalenderRateDto } from "./dto/full-calender-date-rate.dto";
 //import { Airport } from 'src/entity/airport.entity';
 //import { allAirpots } from './all-airports';
 
@@ -345,6 +346,102 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date ;
+				for await (const flightData of data.items) {
+					
+					if (key == 0) {
+						netRate = flightData.net_rate;
+						lowestprice= flightData.selling_price
+						unique_code = flightData.unique_code;
+						date = flightData.departure_date	
+					}
+					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+					// 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+					// 	lowestPriceIndex = key
+					// 	lowestprice = flightData.net_rate;
+					// 	is_booking_avaible = true
+					// }
+					else if (netRate > flightData.net_rate) {
+						netRate = flightData.net_rate;
+						lowestprice= flightData.selling_price
+						unique_code = flightData.unique_code;
+						date = flightData.departure_date
+					}
+					key++;
+				}
+				var output = {
+					date: date,
+					net_rate : netRate,
+					price: lowestprice,
+					unique_code: unique_code
+				}
+
+				returnResponce.push(output)
+				// console.log(flightData.unique_code);
+				// console.log(flightData.net_rate);
+				// console.log(flightData.departure_date);
+			}
+		}
+		return returnResponce;
+	}
+
+
+	async fullcalenderRate(serchFlightDto: FullCalenderRateDto, headers, user: User) {
+		await this.validateHeaders(headers);
+
+		const mystifly = new Strategy(new Mystifly(headers));
+
+		const { source_location, destination_location, start_date,end_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
+
+		const startDate = new Date(start_date);
+		const endDate = new Date(end_date);
+		const currentDate = new Date();
+
+		const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
+
+		// nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+
+		console.log(dayDiffrence);
+
+		var result = [];
+
+		var resultIndex  = 0;
+
+
+		
+		
+		for (let index = 0; index <= dayDiffrence; index++) {
+			var date = startDate.toISOString().split('T')[0];
+			date = date
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			console.log(date)
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": date,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			startDate.setDate(startDate.getDate() + 1);
+			resultIndex++;
+		}
+
+		
+
+		const response = await Promise.all(result);
+
+		let returnResponce = [];
+		for await (const data of response) {
+			if (!data.message) {
+				var unique_code = '';
+				var lowestprice = 0;
+				var netRate = 0;
+				var key = 0;
+				var date = '';
 				for await (const flightData of data.items) {
 					
 					if (key == 0) {
