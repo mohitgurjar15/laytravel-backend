@@ -378,7 +378,10 @@ export class Mystifly implements StrategyAirline{
     
         let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date, bookingDate);
     
-        const markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId);
+        //const markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId);
+        let markup = await this.getMarkupDetails(departure_date,bookingDate,user,module)
+        let markUpDetails = markup.markUpDetails;
+        //let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
         if (!markUpDetails) {
             throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
         }

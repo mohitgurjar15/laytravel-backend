@@ -176,7 +176,41 @@ export class BookingService {
 
 	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
-			return await this.bookingRepository.listBooking(listBookingDto, userId);
+			let result = await this.bookingRepository.listBooking(listBookingDto, userId);
+			let paidAmount = 0;
+			let remainAmount = 0;
+			//console.log(result);
+
+			for (let i in result.data) {
+				for (let instalment of result.data[i].bookingInstalments) {
+					if (instalment.instalmentStatus == 1) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+					}
+				}
+				result.data[i]["paidAmount"] = paidAmount;
+				result.data[i]["remainAmount"] = remainAmount;
+				delete result.data[i].user.updatedDate;
+				delete result.data[i].user.salt;
+				delete result.data[i].user.password;
+				for (let j in result.data[i].travelers) {
+					delete result.data[i].travelers[j].userData.updatedDate;
+					delete result.data[i].travelers[j].userData.salt;
+					delete result.data[i].travelers[j].userData.password;
+
+					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+					if (age < 2) {
+						result.data[i].travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.data[i].travelers[j].userData.user_type = "child";
+					} else {
+						result.data[i].travelers[j].userData.user_type = "adult";
+					}
+				}
+			}
+			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -240,16 +274,16 @@ export class BookingService {
 				delete result.travelers[j].userData.password;
 
 				var birthDate = new Date(result.travelers[j].userData.dob);
-					var age = moment(new Date()).diff(moment(birthDate), 'years');
+				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
-					if (age < 2) {
-						result.travelers[j].userData.user_type = "infant";
-					} else if (age < 12) {
-						result.travelers[j].userData.user_type = "child";
-					} else {
-						result.travelers[j].userData.user_type = "adult";
-					}
+				if (age < 2) {
+					result.travelers[j].userData.user_type = "infant";
+				} else if (age < 12) {
+					result.travelers[j].userData.user_type = "child";
+				} else {
+					result.travelers[j].userData.user_type = "adult";
+				}
 			}
 
 			return result;
