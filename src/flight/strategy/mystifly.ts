@@ -591,7 +591,8 @@ export class Mystifly implements StrategyAirline{
     
                 route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
     
-                route.selling_price = PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
+                route.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate,markUpDetails))
+                
     
     
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);

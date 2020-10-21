@@ -111,6 +111,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
+				"user.createdDate"
 			])
 			// .addSelect(`CASE
 			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'

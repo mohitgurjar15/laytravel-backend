@@ -346,12 +346,12 @@ export class FlightService {
 				var key = 0;
 				var date ;
 				for await (const flightData of data.items) {
-					var is_booking_avaible = false;
+					
 					if (key == 0) {
 						netRate = flightData.net_rate;
 						lowestprice= flightData.selling_price
 						unique_code = flightData.unique_code;
-						date = new Date (flightData.departure_date)	
+						date = flightData.departure_date	
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -360,7 +360,7 @@ export class FlightService {
 					// 	lowestprice = flightData.net_rate;
 					// 	is_booking_avaible = true
 					// }
-					else if (lowestprice > flightData.net_rate) {
+					else if (netRate > flightData.net_rate) {
 						netRate = flightData.net_rate;
 						lowestprice= flightData.selling_price
 						unique_code = flightData.unique_code;
