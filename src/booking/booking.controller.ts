@@ -8,6 +8,7 @@ import { ListBookingDto } from "./dto/list-booking.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import {ListPaymentDto} from './dto/list-payment.dto'
+import { ListPaymentAdminDto } from "src/payment/dto/list-payment-admin.dto";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -104,6 +105,24 @@ export class BookingController {
 		@GetUser() user
 	) {
 		return await this.bookingService.getPaymentHistory(user,listPaymentDto);
+	}
+
+	@Get('installment-list')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Payment List For Admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listPaymentForAdmin(
+		@Query() paginationOption: ListPaymentAdminDto,
+		
+	) {
+		return await this.bookingService.listPaymentForAdmin(paginationOption);
 	}
 
 }
