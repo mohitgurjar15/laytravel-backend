@@ -15,6 +15,7 @@ import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import * as moment from 'moment';
+import { ListPaymentAdminDto } from "src/payment/dto/list-payment-admin.dto";
 
 @Injectable()
 export class BookingService {
@@ -333,5 +334,50 @@ export class BookingService {
 			result.data[i]["paidAmount"] = paidAmount;
 		}
 		return result;
+	}
+
+	async listPaymentForAdmin(listPaymentAdminDto: ListPaymentAdminDto) {
+		const {
+			limit,
+			page_no,
+			module_id,
+			supplier,
+			status,
+			start_date,
+			end_date,
+			instalment_type,
+			user_id,
+			booking_id,
+		} = listPaymentAdminDto;
+
+		let where;
+		where = `1=1 `;
+		if (user_id) {
+			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
+		}
+		if (start_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+		}
+		if (end_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+		}
+		if (status) {
+			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+		}
+		if (module_id) {
+			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+		}
+		if (supplier) {
+			where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
+		}
+		if (instalment_type) {
+			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+		}
+
+		return this.bookingRepository.listPayment(where, limit, page_no);
 	}
 }
