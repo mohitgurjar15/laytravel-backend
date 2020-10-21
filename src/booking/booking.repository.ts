@@ -240,7 +240,7 @@ export class BookingRepository extends Repository<Booking> {
 				`"booking"."booking_type"=:bookingType and "booking"."user_id"=:userId`,
 				{ bookingType: 1, userId: user.userId }
 			)
-			.offset(skip)
+			.skip(skip)
 			.take(take);
 
 		if (booking_id)
@@ -278,6 +278,7 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "installment")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
@@ -303,7 +304,13 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.comment",
-				"booking.id",
+				"installment.id",
+				"installment.instalmentDate",
+				"installment.currencyId",
+				"installment.amount",
+				"installment.instalmentStatus",
+				"installment.paymentInfo",
+				"installment.paymentStatus",
 				"booking.bookingType",
 				"booking.bookingStatus",
 				"booking.currency",
@@ -338,7 +345,6 @@ export class BookingRepository extends Repository<Booking> {
 				"User.phoneNo",
 				"User.roleId",
 				"moduleData.name",
-
 			])
 
 			.where(where)
