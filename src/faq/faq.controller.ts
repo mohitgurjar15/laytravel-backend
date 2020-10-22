@@ -29,15 +29,18 @@ import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import { UpdateFaqDto } from "./dto/update-faq.dto";
 import { ActiveDeactiveFaq } from "./dto/active-deactive-faq.dto";
+import { FaqCategory } from "src/entity/faq-category.entity";
 
 @ApiTags("FAQ")
 @ApiBearerAuth()
 @Controller("faq")
 export class FaqController {
-	constructor(private faqService: FaqService) {}
+	constructor(private faqService: FaqService) { }
 
-	@Get()
-	@ApiOperation({ summary: "List Of Faq" })
+	@Get('list-by-admin')
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "List Of Faq for admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 404, description: "Faq Not Found" })
@@ -48,9 +51,21 @@ export class FaqController {
 		return await this.faqService.listFaq(paginationOption);
 	}
 
+
+	@Get()
+	@ApiOperation({ summary: "List Of Faq for user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Faq Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFaqforUser(
+	): Promise<{ data: FaqCategory[]; TotalReseult: number }> {
+		return await this.faqService.listFaqForUser();
+	}
+
 	@Post()
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Create New Faq " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -66,7 +81,7 @@ export class FaqController {
 
 	@Put("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Update Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -83,7 +98,7 @@ export class FaqController {
 
 	@Delete("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Delete Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -99,7 +114,7 @@ export class FaqController {
 
 	@Patch("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Change Faq Status" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -116,7 +131,7 @@ export class FaqController {
 
 	@Get("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "Get Faq By Id" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
