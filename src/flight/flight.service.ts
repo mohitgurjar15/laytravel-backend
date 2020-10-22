@@ -361,7 +361,7 @@ export class FlightService {
 					// 	lowestprice = flightData.net_rate;
 					// 	is_booking_avaible = true
 					// }
-					else if (netRate > flightData.net_rate) {
+					else if (lowestprice > flightData.selling_price) {
 						netRate = flightData.net_rate;
 						lowestprice= flightData.selling_price
 						unique_code = flightData.unique_code;
@@ -457,7 +457,7 @@ export class FlightService {
 					// 	lowestprice = flightData.net_rate;
 					// 	is_booking_avaible = true
 					// }
-					else if (netRate > flightData.net_rate) {
+					else if (lowestprice > flightData.selling_price) {
 						netRate = flightData.net_rate;
 						lowestprice= flightData.selling_price
 						unique_code = flightData.unique_code;

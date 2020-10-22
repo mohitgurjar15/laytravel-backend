@@ -70,7 +70,7 @@ export class AuthService {
 		private readonly mailerService: MailerService,
 		@InjectRepository(ForgetPassWordRepository)
 		private forgetPasswordRepository: ForgetPassWordRepository
-	) {}
+	) { }
 
 	async signUp(createUser: CreateUserDto, request) {
 		const {
@@ -92,26 +92,24 @@ export class AuthService {
 			email: email,
 		});
 
-		if (userExist)
-		{
-			if (userExist.status != 1)
-			{
+		if (userExist) {
+			if (userExist.status != 1) {
 				throw new UnauthorizedException(
 					`Your account has been disabled. Please contact administrator person.`
 				);
-			}else if(userExist.isDeleted == true){
+			} else if (userExist.isDeleted == true) {
 				throw new UnauthorizedException(
 					`Your account has been deleted. Please contact administrator person.`
 				);
-			}else{
+			} else {
 				throw new ConflictException(
 					`This email address is already registered with us. Please enter different email address.`
 				);
 			}
-				
+
 
 		}
-			
+
 
 		const user = new User();
 		const salt = await bcrypt.genSalt();
@@ -145,8 +143,8 @@ export class AuthService {
 			else user.registerVia = "ios";
 		}
 		/*user.country = country;
-        user.state = state;
-        user.city = city;
+		user.state = state;
+		user.city = city;
 		user.address = address */
 		try {
 			await user.save();
@@ -765,14 +763,12 @@ export class AuthService {
 		const userExist = await this.userRepository.findOne({
 			where: conditions,
 		});
-		if (userExist)
-		{
-			if (userExist.status != 1)
-			{
+		if (userExist) {
+			if (userExist.status != 1) {
 				throw new UnauthorizedException(
 					`Your account has been disabled. Please contact administrator person.`
 				);
-			}else if(userExist.isDeleted == true){
+			} else if (userExist.isDeleted == true) {
 				throw new UnauthorizedException(
 					`Your account has been deleted. Please contact administrator person.`
 				);
@@ -951,8 +947,7 @@ export class AuthService {
 			}
 
 			if (state_id) {
-				if(!country_id)
-				{
+				if (!country_id) {
 					throw new BadRequestException(`Please enter country code&&&country&&&Please enter country code`)
 				}
 				let stateDetails = await getManager()
@@ -1026,12 +1021,11 @@ export class AuthService {
 			if (oldProfile) {
 				await fs.unlink(
 					`/var/www/html/api-staging/assets/profile/${oldProfile}`,
-					function(err) {
+					function (err) {
 						if (err) {
 							console.log(err);
 						}
-						else
-						{
+						else {
 							console.log(`${oldProfile} image  deleted!`);
 						}
 						// if no error, file has been deleted successfully
@@ -1184,8 +1178,7 @@ export class AuthService {
 		try {
 			// inactive user also can login
 			let user = await this.userRepository.findOne({
-				userId: user_id,
-				isDeleted: false,
+				userId: user_id
 			});
 
 			if (!user) {
@@ -1193,11 +1186,20 @@ export class AuthService {
 					`Invalid user id! Please enter valid user id.`
 				);
 			} else {
-				if (!user.isVerified) {
-					throw new NotAcceptableException(
-						`Please verify your email id&&&email&&&Please verify your email id`
+				if (user.status != 1) {
+					throw new UnauthorizedException(
+						`Your account has been disabled. Please contact administrator person.`
 					);
-				}
+				} else if (user.isDeleted == true) {
+					throw new UnauthorizedException(
+						`Your account has been deleted. Please contact administrator person.`
+					);
+				} else
+					if (!user.isVerified) {
+						throw new NotAcceptableException(
+							`Please verify your email id&&&email&&&Please verify your email id`
+						);
+					}
 				const payload: JwtPayload = {
 					user_id: user.userId,
 					email: user.email,

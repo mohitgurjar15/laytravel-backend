@@ -208,41 +208,82 @@ export class BookingRepository extends Repository<Booking> {
 			payment_start_date,
 			instalment_type
 		} = listPaymentDto;
-
+	
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
-
+	
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+			.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
-			.leftJoinAndSelect("booking.module", "module")
-			// .leftJoinAndSelect("booking.travelers", "traveler")
-			// .leftJoinAndSelect("traveler.userData", "User")
+			.leftJoinAndSelect("booking.module", "moduleData")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			// .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+			.leftJoinAndSelect(
+				"BookingInstalments.failedPaymentAttempts",
+				"failedPaymentAttempts"
+			)
 			.select([
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.moduleId",
+				"BookingInstalments.supplierId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"BookingInstalments.paymentGatewayId",
+				"BookingInstalments.paymentInfo",
+				"BookingInstalments.paymentStatus",
+				"BookingInstalments.isPaymentProcessedToSupplier",
+				"BookingInstalments.isInvoiceGenerated",	
+				"BookingInstalments.comment",
 				"booking.id",
-				"booking.moduleId",
+				"booking.bookingType",
 				"booking.bookingStatus",
+				"booking.currency",
 				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
 				"booking.bookingDate",
 				"booking.totalInstallments",
+				"booking.locationInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
 				"booking.nextInstalmentDate",
-				"bookingInstalments.instalmentType",
-				"bookingInstalments.instalmentDate",
-				"bookingInstalments.amount",
-				"bookingInstalments.instalmentStatus",
+				"booking.supplierBookingId",
+				"currency.id",
 				"currency.code",
 				"currency.symbol",
-				"module.name",
+				"currency.liveRate",
+				"User.userId",
+				"User.firstName",
+				"User.lastName",
+				"User.socialAccountId",
+				"User.email",
+				"User.phoneNo",
+				"User.roleId",
+				"moduleData.name",
+				"failedPaymentAttempts.id",
+				"failedPaymentAttempts.instalmentId",
+				"failedPaymentAttempts.date",
 			])
-			.where(
-				`"booking"."booking_type"=:bookingType and "booking"."user_id"=:userId`,
-				{ bookingType: 1, userId: user.userId }
-			)
-			.offset(skip)
-			.take(take);
-
+			.take(take)
+			.skip(skip)
+			//.orderBy("BookingInstalments.id", 'DESC')
+	
 		if (booking_id)
 			query = query.andWhere(`"booking"."id"=:booking_id`, { booking_id });
 		if (booking_type)
@@ -251,20 +292,20 @@ export class BookingRepository extends Repository<Booking> {
 			});
 		if (payment_start_date && payment_end_date) {
 			query = query.andWhere(
-				`"bookingInstalments"."instalment_date" >=:payment_start_date and "bookingInstalments"."instalment_date" <=:payment_end_date`,
+				`"BookingInstalments"."instalment_date" >=:payment_start_date and "BookingInstalments"."instalment_date" <=:payment_end_date`,
 				{ payment_start_date, payment_end_date }
 			);
 		} else if (payment_start_date) {
 			query = query.andWhere(
-				`"bookingInstalments"."instalment_date"=:payment_start_date`,
+				`"BookingInstalments"."instalment_date"=:payment_start_date`,
 				{ payment_start_date }
 			);
 		}
-
+	
 		if (instalment_type) {
 			query = query.andWhere(`"BookingInstalments"."instalment_type" =:instalment_type`, { instalment_type });
 		}
-
+	
 		const [result, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		return { data: result, total_result: count };
@@ -278,6 +319,7 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "installment")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
@@ -303,7 +345,13 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.comment",
-				"booking.id",
+				"installment.id",
+				"installment.instalmentDate",
+				"installment.currencyId",
+				"installment.amount",
+				"installment.instalmentStatus",
+				"installment.paymentInfo",
+				"installment.paymentStatus",
 				"booking.bookingType",
 				"booking.bookingStatus",
 				"booking.currency",
@@ -338,7 +386,6 @@ export class BookingRepository extends Repository<Booking> {
 				"User.phoneNo",
 				"User.roleId",
 				"moduleData.name",
-
 			])
 
 			.where(where)

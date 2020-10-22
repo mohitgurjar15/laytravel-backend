@@ -15,6 +15,7 @@ import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import * as moment from 'moment';
+import { ListPaymentAdminDto } from "src/payment/dto/list-payment-admin.dto";
 
 @Injectable()
 export class BookingService {
@@ -176,7 +177,41 @@ export class BookingService {
 
 	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
-			return await this.bookingRepository.listBooking(listBookingDto, userId);
+			let result = await this.bookingRepository.listBooking(listBookingDto, userId);
+			let paidAmount = 0;
+			let remainAmount = 0;
+			//console.log(result);
+
+			for (let i in result.data) {
+				for (let instalment of result.data[i].bookingInstalments) {
+					if (instalment.instalmentStatus == 1) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+					}
+				}
+				result.data[i]["paidAmount"] = paidAmount;
+				result.data[i]["remainAmount"] = remainAmount;
+				delete result.data[i].user.updatedDate;
+				delete result.data[i].user.salt;
+				delete result.data[i].user.password;
+				for (let j in result.data[i].travelers) {
+					delete result.data[i].travelers[j].userData.updatedDate;
+					delete result.data[i].travelers[j].userData.salt;
+					delete result.data[i].travelers[j].userData.password;
+
+					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+					if (age < 2) {
+						result.data[i].travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.data[i].travelers[j].userData.user_type = "child";
+					} else {
+						result.data[i].travelers[j].userData.user_type = "adult";
+					}
+				}
+			}
+			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -240,16 +275,16 @@ export class BookingService {
 				delete result.travelers[j].userData.password;
 
 				var birthDate = new Date(result.travelers[j].userData.dob);
-					var age = moment(new Date()).diff(moment(birthDate), 'years');
+				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
-					if (age < 2) {
-						result.travelers[j].userData.user_type = "infant";
-					} else if (age < 12) {
-						result.travelers[j].userData.user_type = "child";
-					} else {
-						result.travelers[j].userData.user_type = "adult";
-					}
+				if (age < 2) {
+					result.travelers[j].userData.user_type = "infant";
+				} else if (age < 12) {
+					result.travelers[j].userData.user_type = "child";
+				} else {
+					result.travelers[j].userData.user_type = "adult";
+				}
 			}
 
 			return result;
@@ -299,5 +334,50 @@ export class BookingService {
 			result.data[i]["paidAmount"] = paidAmount;
 		}
 		return result;
+	}
+
+	async listPaymentForAdmin(listPaymentAdminDto: ListPaymentAdminDto) {
+		const {
+			limit,
+			page_no,
+			module_id,
+			supplier,
+			status,
+			start_date,
+			end_date,
+			instalment_type,
+			user_id,
+			booking_id,
+		} = listPaymentAdminDto;
+
+		let where;
+		where = `1=1 `;
+		if (user_id) {
+			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
+		}
+		if (start_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+		}
+		if (end_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+		}
+		if (status) {
+			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+		}
+		if (module_id) {
+			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+		}
+		if (supplier) {
+			where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
+		}
+		if (instalment_type) {
+			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+		}
+
+		return this.bookingRepository.listPayment(where, limit, page_no);
 	}
 }
