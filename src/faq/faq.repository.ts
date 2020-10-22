@@ -26,7 +26,7 @@ export class FaqRepository extends Repository<Faq> {
             .leftJoinAndSelect("faq.category_id", "category")
             .where(where)
             .take(take)
-            .offset(skip)
+            .skip(skip)
             .orderBy(`faq.id`, 'DESC')
         const [result, total] = await query.getManyAndCount();
         if (!result.length) {
