@@ -14,6 +14,7 @@ import { User } from "@sentry/node";
 import { Activity } from "src/utility/activity.utility";
 import { UpdateFaqDto } from "./dto/update-faq.dto";
 import { ActiveDeactiveFaq } from "./dto/active-deactive-faq.dto";
+import { FaqCategory } from "src/entity/faq-category.entity";
 
 @Injectable()
 export class FaqService {
@@ -27,6 +28,38 @@ export class FaqService {
 	): Promise<{ data: Faq[]; TotalReseult: number }> {
 		try {
 			return await this.FaqRepository.listFaq(paginationOption);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async listFaqForUser(): Promise<{ data: FaqCategory[]; TotalReseult: number }> {
+		try {
+			return await this.FaqRepository.listFaqforUser();
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
