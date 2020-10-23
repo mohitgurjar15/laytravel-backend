@@ -46,8 +46,6 @@ export class  Generic{
     }
     
     static formatPriceDecimal(price){
-
-        console.log(typeof price,price,"--------------")
         return Number(price.toFixed(2))
     }
 }
