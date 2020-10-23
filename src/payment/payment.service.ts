@@ -35,7 +35,7 @@ export class PaymentService {
 
 		let paymentGateway = await getManager()
 			.createQueryBuilder(PaymentGateway, "paymentgateway")
-			.where("paymentgateway.gateway_name = :name ", { name: "spreedly" })
+			.where("paymentgateway.gateway_name = :name ", { name: "stripe" })
 			.getOne();
 		if (!paymentGateway) {
 			throw new BadRequestException(
@@ -113,7 +113,7 @@ export class PaymentService {
 		) {
 			let paymentGateway = await getManager()
 				.createQueryBuilder(PaymentGateway, "paymentgateway")
-				.where("paymentgateway.gateway_name = :name ", { name: "spreedly" })
+				.where("paymentgateway.gateway_name = :name ", { name: "stripe" })
 				.getOne();
 			if (!paymentGateway) {
 				throw new BadRequestException(
