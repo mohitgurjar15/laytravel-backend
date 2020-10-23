@@ -5,6 +5,7 @@ import { NotFoundException } from "@nestjs/common";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { User } from "src/entity/user.entity";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -198,7 +199,7 @@ export class BookingRepository extends Repository<Booking> {
 		return data;
 	}
 
-	async getPayments(user, listPaymentDto: ListPaymentDto) {
+	async getPayments(user: User, listPaymentDto: ListPaymentDto) {
 		const {
 			page_no,
 			limit,
@@ -206,12 +207,13 @@ export class BookingRepository extends Repository<Booking> {
 			payment_end_date,
 			booking_type,
 			payment_start_date,
-			instalment_type
+			instalment_type,
+			module_id
 		} = listPaymentDto;
-	
+
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
-	
+
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
@@ -240,7 +242,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.paymentInfo",
 				"BookingInstalments.paymentStatus",
 				"BookingInstalments.isPaymentProcessedToSupplier",
-				"BookingInstalments.isInvoiceGenerated",	
+				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.comment",
 				"booking.id",
 				"booking.bookingType",
@@ -282,13 +284,19 @@ export class BookingRepository extends Repository<Booking> {
 			])
 			.take(take)
 			.skip(skip)
-			//.orderBy("BookingInstalments.id", 'DESC')
-	
+			.where(`"User"."user_id" =:userId`, { userId: user.userId })
+		//.orderBy("BookingInstalments.id", 'DESC')
+
 		if (booking_id)
 			query = query.andWhere(`"booking"."id"=:booking_id`, { booking_id });
 		if (booking_type)
-			query = query.andWhere(`"booking"."module_id"=:booking_type`, {
+			query = query.andWhere(`"booking"."booking_type"=:booking_type`, {
 				booking_type,
+			});
+
+		if (module_id)
+			query = query.andWhere(`"booking"."module_id"=:module_id`, {
+				module_id,
 			});
 		if (payment_start_date && payment_end_date) {
 			query = query.andWhere(
@@ -301,11 +309,11 @@ export class BookingRepository extends Repository<Booking> {
 				{ payment_start_date }
 			);
 		}
-	
+
 		if (instalment_type) {
 			query = query.andWhere(`"BookingInstalments"."instalment_type" =:instalment_type`, { instalment_type });
 		}
-	
+
 		const [result, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		return { data: result, total_result: count };

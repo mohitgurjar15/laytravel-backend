@@ -2,6 +2,7 @@ import { Faq } from "src/entity/faq.entity";
 import { EntityRepository, getManager, Repository } from "typeorm";
 import { ListFaqDto } from "./dto/list-faq.dto";
 import { NotFoundException } from "@nestjs/common";
+import { FaqCategory } from "src/entity/faq-category.entity";
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
@@ -20,20 +21,12 @@ export class FaqRepository extends Repository<Faq> {
         else {
             where = `"faq"."is_deleted" = false`
         }
-        // const [result, total] = await this.findAndCount({
-        //     where:where,
-        //     order: { createdDate : "DESC"},
-        //     skip:skip,
-        //     take:take
-        // });
-
-
         const query = getManager()
             .createQueryBuilder(Faq, "faq")
             .leftJoinAndSelect("faq.category_id", "category")
             .where(where)
             .take(take)
-            .offset(skip)
+            .skip(skip)
             .orderBy(`faq.id`, 'DESC')
         const [result, total] = await query.getManyAndCount();
         if (!result.length) {
@@ -42,4 +35,21 @@ export class FaqRepository extends Repository<Faq> {
         return { data: result, TotalReseult: total };
     }
 
+
+    async listFaqforUser(): Promise<{ data: FaqCategory[], TotalReseult: number }> {
+        
+        let where = `"category"."is_deleted" = false AND "faq"."is_deleted" = false`
+        
+        const query = getManager()
+            .createQueryBuilder(FaqCategory, "category")
+            .leftJoinAndSelect("category.faqs", "faq")
+            .select (["category.id","category.name","faq.id","faq.question","faq.answer"])
+            .orderBy(`category.id`, 'ASC')
+            .where(where)
+        const [result, total] = await query.getManyAndCount();
+        if (!result.length) {
+            throw new NotFoundException(`No faq found.`)
+        }
+        return { data: result, TotalReseult: total };
+    }
 }

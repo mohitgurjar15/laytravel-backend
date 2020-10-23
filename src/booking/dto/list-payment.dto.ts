@@ -28,6 +28,13 @@ export class ListPaymentDto {
     })
     booking_id: string;
 
+
+    @ApiPropertyOptional({
+        description:'module id',
+        example:"937a3d28-efbb-4a3f-a117-f11b8a6e8f2e"
+    })
+    module_id: string;
+
     @ApiPropertyOptional({
         description:'Booking type',
         example:1
