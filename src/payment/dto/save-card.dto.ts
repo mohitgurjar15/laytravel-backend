@@ -5,7 +5,7 @@ import { errorMessage } from "src/config/common.config";
 export class SaveCardDto{
 
     @IsNotEmpty({
-		message: `Please enter your card type.&&&card_type&&&${errorMessage}`,
+		message: `Please enter your card type.&&&card_type&&&Please enter your card type.`,
 	})
     @ApiProperty({
         description:`Card type`,
@@ -14,7 +14,7 @@ export class SaveCardDto{
     card_type:string;
 
     @IsNotEmpty({
-		message: `Please enter card holder name.&&&card_holder_name&&&${errorMessage}`,
+		message: `Please enter card holder name.&&&card_holder_name&&&Please enter card holder name.`,
 	})
     @ApiProperty({
         description:`Card holder name`,
@@ -23,7 +23,7 @@ export class SaveCardDto{
     card_holder_name:string;
 
     @IsNotEmpty({
-		message: `Please enter card token.&&&card_token&&&${errorMessage}`,
+		message: `Please enter card token.&&&card_token&&&Please enter card token.`,
 	})
     @ApiProperty({
         description:`Card token`,
@@ -32,10 +32,10 @@ export class SaveCardDto{
     card_token:string;
 
     @IsNotEmpty({
-		message: `Please enter card last (4 or 6) digit.&&&card_last_digit&&&${errorMessage}`,
+		message: `Please enter card last (4 or 6) digit.&&&card_last_digit&&&Please enter card last (4 or 6) digit.`,
 	})
     @ApiProperty({
-        description:`Card token`,
+        description:`Card last digit`,
         example:`xxxxxxxxxxxxx`
     })
     card_last_digit:string;

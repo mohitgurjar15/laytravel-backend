@@ -112,7 +112,7 @@ export class LangunageService {
 			await getConnection().queryResultCache!.remove(["languages"]);
 			Activity.logActivity(adminId, "language", `${languageData.name} Languge is Deleted by admin`);
         
-			return { message: "Language is Deleted" };
+			return { message: "Language Deleted successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -146,7 +146,7 @@ export class LangunageService {
 			await getConnection().queryResultCache!.remove(["languages"]);
 			Activity.logActivity(adminId.userId, "language", `${Data.name} Languge status changed by admin`);
         
-			return { message: `Language ${Data.name} status Changed successfully` };
+			return { message: `${Data.name} Language  status Changed successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

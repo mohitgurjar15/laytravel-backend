@@ -1,4 +1,4 @@
-import { IsNotEmpty,ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
+import { IsNotEmpty,ValidationArguments, IsEnum, ValidateIf, NotContains } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
@@ -28,6 +28,7 @@ export class UpdateTravelerDto{
     @IsNotEmpty({
         message : `Please enter travelers first name.&&&first_name`
     })
+    @NotContains(' ',{message : `First name does not contain whitespace `})
     @ApiProperty({
         description: `Enter First Name`,
         example: `Jon`
@@ -37,6 +38,7 @@ export class UpdateTravelerDto{
     @IsNotEmpty({
         message : `Please enter travelers last name.&&&last_name`
     })
+    @NotContains(' ',{message : `Last name does not contain whitespace `})
     @ApiProperty({
         description: `Enter Last Name`,
         example: `Doe`

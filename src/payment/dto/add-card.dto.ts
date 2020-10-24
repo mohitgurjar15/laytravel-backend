@@ -5,7 +5,7 @@ import { errorMessage } from "src/config/common.config";
 export class AddCardDto{
 
     @IsNotEmpty({
-		message: `Please enter your card number.&&&card_number&&&${errorMessage}`,
+		message: `Please enter your card number.&&&card_number&&&Please enter your card number.`,
 	})
     @ApiProperty({
         description:`Card Number`,
@@ -14,7 +14,7 @@ export class AddCardDto{
     card_number:string;
 
     @IsNotEmpty({
-		message: `Please enter card holder name.&&&first_name&&&${errorMessage}`,
+		message: `Please enter card holder name.&&&first_name&&&Please enter card holder name.`,
 	})
     @ApiProperty({
         description:`Card holder name`,
@@ -23,7 +23,7 @@ export class AddCardDto{
     first_name:string;
 
     @IsNotEmpty({
-		message: `Please enter card holder name.&&&last_name&&&${errorMessage}`,
+		message: `Please enter card holder name.&&&last_name&&&Please enter card holder name.`,
 	})
     @ApiProperty({
         description:`Card holder name`,
@@ -32,7 +32,7 @@ export class AddCardDto{
     last_name:string;
 
     @IsNotEmpty({
-		message: `Please enter card cvv.&&&card_cvv&&&${errorMessage}`,
+		message: `Please enter card cvv.&&&card_cvv&&&Please enter card cvv.`,
 	})
     @ApiProperty({
         description:`Card CVV`,
@@ -41,7 +41,7 @@ export class AddCardDto{
     card_cvv:string;
 
     @IsNotEmpty({
-		message: `Please enter card expiry.&&&expiry&&&${errorMessage}`,
+		message: `Please enter card expiry.&&&expiry&&&Please enter card expiry.`,
 	})
     @ApiProperty({
         description:`Card expiry`,

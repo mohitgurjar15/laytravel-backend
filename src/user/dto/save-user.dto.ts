@@ -6,12 +6,14 @@ import {
 	Matches,
 	ValidationArguments,
 	IsEnum,
-	ValidateIf
+	ValidateIf,
+	NotContains
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Gender } from "src/enum/gender.enum";
 import { errorMessage } from "src/config/common.config";
 import { IsEqualTo } from "src/auth/password.decorator";
+import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
 export class SaveUserDto {
 	@IsEnum(["mr", "ms", "mrs"], {
@@ -32,6 +34,7 @@ export class SaveUserDto {
 	@IsNotEmpty({
 		message: `Please enter your first name.&&&first_name`,
 	})
+	@NotContains(' ',{message : `First name does not contain whitespace `})
 	@ApiProperty({
 		description: `Enter First Name`,
 		example: `Jon`,
@@ -41,6 +44,7 @@ export class SaveUserDto {
 	@IsNotEmpty({
 		message: `Please enter your last name.&&&last_name`,
 	})
+	@NotContains(' ',{message : `Last name does not contain whitespace `})
 	@ApiProperty({
 		description: `Enter Last Name`,
 		example: `Doe`,
@@ -80,6 +84,21 @@ export class SaveUserDto {
 		message: `Your password must be 8 characters long, should contain at least 1 uppercase, 1 lowercase, 1 numeric or special character.&&&password`,
 	})
 	password: string;
+
+	@IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter date of birth.&&&dob`;
+            } else {
+                return `Please enter valid date of birth format(YYYY-MM-DD)&&&dob`;
+            }
+        },
+    })
+    @ApiProperty({
+        description: `Enter your dob`,
+        example: `1995-06-22`
+    })
+    dob: string;
 
 	@ApiProperty({
 		description: `Enter confirm password`,
