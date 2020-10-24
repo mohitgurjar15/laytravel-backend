@@ -3,6 +3,7 @@ import { getConnection } from "typeorm";
 import { Module } from "src/entity/module.entity";
 import { Currency } from "src/entity/currency.entity";
 import * as xml2js from 'xml2js';
+import { PaymentGateway } from "src/entity/payment-gateway.entity";
 
 export class  Generic{
 
@@ -49,5 +50,20 @@ export class  Generic{
 
         console.log(typeof price,price,"--------------")
         return Number(price.toFixed(2))
+    }
+
+    static async getPaymentCredential(){
+        const gatewayName = 'stripe'
+        const credentail = await getConnection()
+            .createQueryBuilder()
+            .select(["gateway.gatewayName","gateway.paymentMode"])
+            .addSelect(`CASE
+                        WHEN "gateway"."payment_mode" = '0'  THEN "gateway"."test_credentials"
+                        WHEN "gateway"."payment_mode" = '1'  THEN "gateway"."live_credentials"
+                    END`, "credentials")
+            .from(PaymentGateway, "gateway")
+            .where("gateway.gateway_name = :gatewayName", { gatewayName })
+            .getRawOne();
+        return credentail;
     }
 }

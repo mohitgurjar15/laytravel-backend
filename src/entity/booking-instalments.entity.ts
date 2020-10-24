@@ -41,6 +41,9 @@ export class BookingInstalments extends BaseEntity {
   @Column("character varying", { name: "instalment_type", length: 30 })
   instalmentType: string;
 
+  @Column("character varying", { name: "transaction_token", length: 255 , nullable :true})
+  transactionToken: string;
+
   @Column("date", { name: "instalment_date" })
   instalmentDate: string;
 

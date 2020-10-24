@@ -165,26 +165,35 @@ export class UserService {
 			} = updateUserDto;
 			const userId = UserId;
 
-			let countryDetails = await getManager()
-				.createQueryBuilder(Countries, "country")
-				.where(`id=:country_id`, { country_id })
-				.getOne();
-			if (!countryDetails)
-				throw new BadRequestException(
-					`Country id not exist with database.&&&country_id`
-				);
+			if (country_id) {
+				let countryDetails = await getManager()
+					.createQueryBuilder(Countries, "country")
+					.where(`id=:country_id`, { country_id })
+					.getOne();
 
-			let stateDetails = await getManager()
-				.createQueryBuilder(States, "states")
-				.where(`id=:state_id and country_id=:country_id`, {
-					state_id,
-					country_id,
-				})
-				.getOne();
-			if (!stateDetails)
-				throw new BadRequestException(
-					`State id not exist with country id.&&&country_id`
-				);
+				if (!countryDetails)
+					throw new BadRequestException(
+						`Country id not exist with database.&&&country_id`
+					);
+			}
+
+			if (state_id) {
+				if (!country_id) {
+					throw new BadRequestException(`Please enter country code&&&country&&&Please enter country code`)
+				}
+				let stateDetails = await getManager()
+					.createQueryBuilder(States, "states")
+					.where(`id=:state_id and country_id=:country_id`, {
+						state_id,
+						country_id,
+					})
+					.getOne();
+				if (!stateDetails)
+					throw new BadRequestException(
+						`State id not exist with country id.&&&country_id`
+					);
+			}
+
 
 			const userData = await this.userRepository.findOne({
 				where: {
@@ -352,7 +361,7 @@ export class UserService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No user Found.&&&id`);
+				throw new NotFoundException(`No Data Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

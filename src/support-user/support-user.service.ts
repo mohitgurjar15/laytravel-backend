@@ -149,7 +149,7 @@ export class SupportUserService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No user Found.&&&id`);
+				throw new NotFoundException(`No data Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

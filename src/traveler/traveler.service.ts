@@ -209,7 +209,7 @@ export class TravelerService {
 				.getManyAndCount();
 
 			if (!result.length) {
-				throw new NotFoundException(`No traveler found.`);
+				throw new NotFoundException(`No data found.`);
 			}
 			result.forEach(function(data) {
 				// delete data.updatedDate;

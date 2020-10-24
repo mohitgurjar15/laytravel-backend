@@ -27,6 +27,7 @@ import { UserDeviceDetail } from "./user-device-detail.entity";
 import { Markup } from "./markup.entity";
 import { Currency } from "./currency.entity";
 import { TravelerInfo } from "./traveler-info.entity";
+import { OtherPayments } from "./other-payment.entity";
 
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
@@ -187,6 +188,12 @@ export class User extends BaseEntity {
     bookingInstalments => bookingInstalments.user
   )
   bookingInstalments: BookingInstalments[];
+
+  @OneToMany(
+    () => OtherPayments,
+    otherPayments => otherPayments.user
+  )
+  otherPayments: OtherPayments[];
 
   @OneToMany(
     () => Language,

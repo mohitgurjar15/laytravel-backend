@@ -6,10 +6,10 @@ import { BookingRepository } from 'src/booking/booking.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports:[
-    TypeOrmModule.forFeature([BookingRepository]),AuthModule
+  imports: [
+    AuthModule
   ],
   controllers: [PaymentController],
   providers: [PaymentService]
 })
-export class PaymentModule {}
+export class PaymentModule { }
