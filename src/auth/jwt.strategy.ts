@@ -1,7 +1,7 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, ExtractJwt } from 'passport-jwt'
 import { UserRepository } from "./user.repository";
-import { UnauthorizedException } from "@nestjs/common";
+import { NotAcceptableException, UnauthorizedException } from "@nestjs/common";
 import { User } from "../entity/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtPayload } from "./jwt-payload.interface";
@@ -30,6 +30,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         const user = await this.userRepository.findOne({ userId: user_id, status: 1 })
         if (!user)
             throw new UnauthorizedException();
+
+        if (user.status != 1) {
+            throw new UnauthorizedException(
+                `Your account has been disabled. Please contact administrator person.`
+            );
+        }
+        if (user.isDeleted == true) {
+            throw new UnauthorizedException(
+                `Your account has been deleted. Please contact administrator person.`
+            );
+        }
+
+        if (!user.isVerified) {
+            throw new NotAcceptableException(
+                `Please verify your email id&&&email&&&Please verify your email id`
+            );
+        }
+
         if (accessToken) {
             const userDevice = await getConnection()
                 .createQueryBuilder(UserDeviceDetail, "device")
