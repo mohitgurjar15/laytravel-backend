@@ -277,6 +277,8 @@ export class Mystifly implements StrategyAirline{
                 routeType= new RouteType();
                 routeType.type          = 'outbound';
                 routeType.stops         = stops;
+                let duration            = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                routeType.duration      = `${duration.hours}h ${duration.minutes}m`;
                 route.routes[0]         = routeType;
                 route.route_code        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faresourcecode'][0];
                 route.fare_type        = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0]=='WebFare' ? 'LCC' : 'GDS';
@@ -306,7 +308,7 @@ export class Mystifly implements StrategyAirline{
                 route.arrival_time      = stops[stops.length-1].arrival_time;
                 route.departure_info    = typeof airports[source_location]!=='undefined'?airports[source_location]:{};
                 route.arrival_info      = typeof airports[destination_location]!=='undefined'?airports[destination_location]:{};
-                let duration           = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                
                 route.total_duration    = `${duration.hours}h ${duration.minutes}m`;
                 route.airline           = stops[0].airline;
                 route.airline_name      = airlines[stops[0].airline];
