@@ -1210,6 +1210,7 @@ export class Mystifly implements StrategyAirline{
             </soapenv:Envelope>`;
             const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
         let airRevalidateResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'AirRevalidate');
+        console.log(JSON.stringify(airRevalidateResult))
         if(airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:success'][0]=="true"){
 
 
