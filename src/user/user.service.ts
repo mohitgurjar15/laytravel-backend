@@ -59,7 +59,7 @@ export class UserService {
 			prefer_language,
 			state_id,
 			city_name,
-			gender,
+			gender,dob
 		} = saveUserDto;
 
 		let countryDetails = await getManager()
@@ -102,6 +102,7 @@ export class UserService {
 		user.title = title;
 		user.countryCode = country_code;
 		user.phoneNo = phone_no;
+		user.dob = dob
 		user.countryId = country_id;
 		user.preferredLanguage = prefer_language;
 		user.address = address;
@@ -161,6 +162,7 @@ export class UserService {
 				state_id,
 				city_name,
 				gender,
+				dob,
 				prefer_language
 			} = updateUserDto;
 			const userId = UserId;
@@ -221,6 +223,7 @@ export class UserService {
 			userData.cityName = city_name;
 			userData.gender = gender;
 			userData.updatedBy = adminId;
+			userData.dob = dob
 			userData.updatedDate = new Date();
 
 			await userData.save();

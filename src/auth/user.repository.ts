@@ -35,7 +35,7 @@ export class UserRepository extends Repository<User> {
 			user.updatedBy = user.userId;
 		} else {
 			throw new BadRequestException(
-				`Your old password doesn't match.&&&old_pasword`
+				`Your current password doesn't match.&&&old_pasword`
 			);
 		}
 

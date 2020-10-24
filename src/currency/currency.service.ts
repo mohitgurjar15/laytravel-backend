@@ -77,7 +77,7 @@ export class CurrencyService {
 			CurrencyData.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId, "currency", `currency rate ${rate} changed by admin`);
-			return { message: "Currency is updated" };
+			return { message: "Currency updated successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -111,7 +111,7 @@ export class CurrencyService {
 			Data.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId.id, "currency", `currency ${Data.code} status ${status} changed by admin`);
-			return { message: `Currency ${Data.code} status changed` };
+			return { message: `${Data.code} Currency  status changed successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -170,7 +170,7 @@ export class CurrencyService {
 			CurrencyData.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId, "currency", `currency ${CurrencyData.code} Deleted by admin`);
-			return { message: "Currency is deleted" };
+			return { message: "Currency deleted successfully" };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

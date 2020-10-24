@@ -1,7 +1,8 @@
-import { IsNotEmpty, IsEmail, IsEnum, ValidationArguments} from 'class-validator'
+import { IsNotEmpty, IsEmail, IsEnum, ValidationArguments, NotContains} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from 'src/config/common.config';
 import { Gender } from 'src/enum/gender.enum';
+import { IsValidDate } from 'src/decorator/is-valid-date.decorator';
 
 export class UpdateUserDto{
 
@@ -23,6 +24,7 @@ export class UpdateUserDto{
     @IsNotEmpty({
         message : `Please enter your first name.&&&first_name`
     })
+    @NotContains(' ',{message : `First name does not contain whitespace `})
     @ApiProperty({
         description: `Enter First Name`,
         example: `Jon`
@@ -32,6 +34,7 @@ export class UpdateUserDto{
     @IsNotEmpty({
         message : `Please enter your last name.&&&last_name`
     })
+    @NotContains(' ',{message : `Last name does not contain whitespace `})
     @ApiProperty({
         description: `Enter Last Name`,
         example: `Doe`
@@ -125,6 +128,20 @@ export class UpdateUserDto{
 	})
 	prefer_language: number;
 
+    @IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter date of birth.&&&dob`;
+            } else {
+                return `Please enter valid date of birth format(YYYY-MM-DD)&&&dob`;
+            }
+        },
+    })
+    @ApiProperty({
+        description: `Enter your dob`,
+        example: `1995-06-22`
+    })
+    dob: string;
 
     
     @IsEnum(['M','F','N'],{
