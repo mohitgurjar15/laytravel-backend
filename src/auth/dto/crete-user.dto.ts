@@ -21,20 +21,14 @@ export class CreateUserDto {
     })
     signup_via: string;
 
-    @IsNotEmpty({
-        message : `Please enter your first name.&&&first_name`
-    })
-    @Length(3, 20)
+    
     @ApiProperty({
         description: `Enter First Name`,
         example: `Jon`
     })
     first_name: string;
 
-    @IsNotEmpty({
-        message : `Please enter your last name.&&&last_name`
-    })
-    @Length(3, 20)
+    
     @ApiProperty({
         description: `Enter Last Name`,
         example: `Doe`
@@ -83,22 +77,7 @@ export class CreateUserDto {
 	})
     confirm_password: string;
     
-    @IsEnum(['M','F','N'],{
-        message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
-                return `Please select your gender.&&&gender&&&Please select your gender.`
-            }
-            else{
-                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
-            }
-        }
-    })
-    @ApiProperty({
-        description: `Select Gender (M,F,N)`,
-        example: `M`
-    })
-    gender : Gender;
-
+    
     @ValidateIf(o => o.signup_via === 'mobile')
     @IsNotEmpty({ message: `Please enter your device type.&&&device_type&&&${errorMessage}` })
 	@ApiProperty({

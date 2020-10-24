@@ -78,7 +78,6 @@ export class AuthService {
 			last_name,
 			email,
 			password,
-			gender,
 			signup_via,
 			device_type,
 			device_token,
@@ -116,8 +115,8 @@ export class AuthService {
 		user.userId = uuidv4();
 		user.accountType = 1;
 		user.email = email;
-		user.firstName = first_name;
-		user.lastName = last_name;
+		user.firstName = first_name ? first_name : '';
+		user.lastName = last_name ? last_name : '';
 		user.gender = "";
 		user.salt = salt;
 		user.createdDate = new Date();
@@ -131,7 +130,6 @@ export class AuthService {
 		user.middleName = "";
 		user.zipCode = "";
 		user.password = await this.hashPassword(password, salt);
-		user.gender = gender;
 		user.isVerified = false;
 		user.otp = Math.round(new Date().getTime() % 1000000);
 		if (user.otp < 100000) {
