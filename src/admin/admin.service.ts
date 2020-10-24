@@ -117,6 +117,7 @@ export class AdminService {
 	) {
 		try {
 			const { firstName, middleName, lastName ,gender} = updateAdminDto;
+
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
@@ -172,7 +173,7 @@ export class AdminService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No admin Found.&&&id`);
+				throw new NotFoundException(`No data Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

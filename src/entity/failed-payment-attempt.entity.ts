@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm";
 import { BookingInstalments } from "./booking-instalments.entity";
+import { OtherPayments } from "./other-payment.entity";
 
 //@Index("failed_payment_attempt_pk", ["id"], { unique: true })
 @Index("failed_payment_attempt_instalment_id", ["instalmentId"], {})
@@ -17,10 +18,13 @@ export class FailedPaymentAttempt extends BaseEntity {
   id: number;
 
   @Column("bigint", { name: "instalment_id" })
-  instalmentId: string;
+  instalmentId: number;
 
   @Column("date", { name: "date" })
-  date: string;
+  date: Date;
+
+  @Column("json", { name: "payment_info", nullable:true })
+  paymentInfo: object | null;
 
   @ManyToOne(
     () => BookingInstalments,
@@ -28,4 +32,12 @@ export class FailedPaymentAttempt extends BaseEntity {
   )
   @JoinColumn([{ name: "instalment_id", referencedColumnName: "id" }])
   instalment: BookingInstalments;
+
+
+  // @ManyToOne(
+  //   () => OtherPayments,
+  //   otherPayments => otherPayments.failedPaymentAttempts
+  // )
+  // @JoinColumn([{ name: "instalment_id", referencedColumnName: "id" }])
+  // otherPayments: OtherPayments;
 }

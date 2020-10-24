@@ -49,6 +49,7 @@ export class LoginLogRepository extends Repository<LoginLog> {
 			.where(where)
 			.skip(skip)
 			.take(take)
+			.orderBy("log.id","DESC")
 			.getMany();
 		var total = await getManager()
 			.createQueryBuilder(LoginLog, "log")

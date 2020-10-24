@@ -286,14 +286,14 @@ export class FlightService {
 
 		var result = [];
 
-		var resultIndex  = 0;
+		var resultIndex = 0;
 
 
 		var count = dayDiffrence <= 7 ? dayDiffrence : 7;
 
 
 		previousWeekDates.setDate(previousWeekDates.getDate() - count);
-		
+
 		for (let index = 0; index < count; index++) {
 			var predate = previousWeekDates.toISOString().split('T')[0];
 			predate = predate
@@ -332,7 +332,7 @@ export class FlightService {
 			}
 			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
-			resultIndex ++;
+			resultIndex++;
 		}
 
 
@@ -345,14 +345,14 @@ export class FlightService {
 				var lowestprice = 0;
 				var netRate = 0;
 				var key = 0;
-				var date ;
+				var date;
 				for await (const flightData of data.items) {
-					
+
 					if (key == 0) {
 						netRate = flightData.net_rate;
-						lowestprice= flightData.selling_price
+						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
-						date = flightData.departure_date	
+						date = flightData.departure_date
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -363,7 +363,7 @@ export class FlightService {
 					// }
 					else if (lowestprice > flightData.selling_price) {
 						netRate = flightData.net_rate;
-						lowestprice= flightData.selling_price
+						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 					}
@@ -371,7 +371,7 @@ export class FlightService {
 				}
 				var output = {
 					date: date,
-					net_rate : netRate,
+					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code
 				}
@@ -391,7 +391,7 @@ export class FlightService {
 
 		const mystifly = new Strategy(new Mystifly(headers));
 
-		const { source_location, destination_location, start_date,end_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
+		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
 
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
@@ -405,11 +405,11 @@ export class FlightService {
 
 		var result = [];
 
-		var resultIndex  = 0;
+		var resultIndex = 0;
 
 
-		
-		
+
+
 		for (let index = 0; index <= dayDiffrence; index++) {
 			var date = startDate.toISOString().split('T')[0];
 			date = date
@@ -430,7 +430,7 @@ export class FlightService {
 			resultIndex++;
 		}
 
-		
+
 
 		const response = await Promise.all(result);
 
@@ -443,12 +443,12 @@ export class FlightService {
 				var key = 0;
 				var date = '';
 				for await (const flightData of data.items) {
-					
+
 					if (key == 0) {
 						netRate = flightData.net_rate;
-						lowestprice= flightData.selling_price
+						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
-						date = flightData.departure_date	
+						date = flightData.departure_date
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -459,7 +459,7 @@ export class FlightService {
 					// }
 					else if (lowestprice > flightData.selling_price) {
 						netRate = flightData.net_rate;
-						lowestprice= flightData.selling_price
+						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 					}
@@ -467,7 +467,7 @@ export class FlightService {
 				}
 				var output = {
 					date: date,
-					net_rate : netRate,
+					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code
 				}
@@ -738,7 +738,6 @@ export class FlightService {
 				}
 
 				let authCardResult = await this.paymentService.authorizeCard(
-					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
 					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
 					"USD"
@@ -797,7 +796,6 @@ export class FlightService {
 			if (sellingPrice > 0) {
 
 				let authCardResult = await this.paymentService.authorizeCard(
-					"IATVj8ha4pTQtjTTHrJgqHtMtJn",
 					card_token,
 					Math.ceil(sellingPrice * 100),
 					"USD"
@@ -902,7 +900,7 @@ export class FlightService {
 		instalmentDetails = null,
 		captureCardresult = null,
 		supplierBookingData,
-		travelers
+		travelers,
 	) {
 		const {
 			selling_price,
@@ -912,7 +910,7 @@ export class FlightService {
 			destination_location,
 			instalment_type,
 			laycredit_points,
-			fare_type
+			fare_type, card_token
 		} = bookFlightDto;
 
 		let moduleDetails = await getManager()
@@ -985,6 +983,7 @@ export class FlightService {
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
 			booking.isPredictive = false;
+			booking.cardToken = card_token;
 			booking.totalInstallments = 0;
 		}
 		booking.moduleInfo = airRevalidateResult;
@@ -1006,6 +1005,8 @@ export class FlightService {
 					bookingInstalment.amount = instalment.instalment_amount;
 					bookingInstalment.instalmentStatus =
 						i == 0 ? InstalmentStatus.PAID : InstalmentStatus.PENDING;
+					bookingInstalment.transactionToken =
+						i == 0 ? captureCardresult.token : null;
 					bookingInstalment.paymentStatus =
 						i == 0 ? PaymentStatus.CONFIRM : PaymentStatus.PENDING;
 					bookingInstalment.supplierId = 1;
@@ -1124,7 +1125,7 @@ export class FlightService {
 			children: [],
 			infants: [],
 		};
-		
+
 		if (travelersResult.length > 0) {
 			for (let traveler of travelersResult) {
 				let ageDiff = moment(new Date()).diff(moment(traveler.dob), "years");

@@ -13,18 +13,17 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "src/entity/user.entity";
 import Axios from "axios";
 import { AddCardDto } from "./dto/add-card.dto";
-import { ListPaymentAdminDto } from "./dto/list-payment-admin.dto";
-import { BookingInstalments } from "src/entity/booking-instalments.entity";
-import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
-import { BookingRepository } from "src/booking/booking.repository";
-import { InjectRepository } from "@nestjs/typeorm";
+import { CreteTransactionDto } from "./dto/create-transaction.dto";
+import { Generic } from "src/utility/generic.utility";
+import { OtherPayments } from "src/entity/other-payment.entity";
+
 
 @Injectable()
 export class PaymentService {
 	constructor(
-		@InjectRepository(BookingRepository)
-		private bookingRepository: BookingRepository,
-	) {}
+		// @InjectRepository(BookingRepository)
+		// private bookingRepository: BookingRepository,
+	) { }
 	async saveCard(saveCardDto: SaveCardDto, user: User) {
 		const {
 			card_holder_name,
@@ -90,6 +89,15 @@ export class PaymentService {
 
 		let expiryDate = expiry.split("/");
 
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
+
 		let url = `https://core.spreedly.com/v1/payment_methods.json`;
 		let requestBody = {
 			payment_method: {
@@ -104,7 +112,7 @@ export class PaymentService {
 				retained: true,
 			},
 		};
-		let cardResult = await this.axiosRequest(url, requestBody);
+		let cardResult = await this.axiosRequest(url, requestBody, headers);
 		console.log(cardResult);
 		if (
 			typeof cardResult != "undefined" &&
@@ -142,19 +150,30 @@ export class PaymentService {
 		}
 	}
 
-	async authorizeCard(gatewayToken, card_id, amount, currency) {
+	async authorizeCard(card_id, amount, currency_code) {
+
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const gatewayToken = GatewayCredantial.credentials.token;
+		const authorization = GatewayCredantial.credentials.authorization;
+		const transactionMode = GatewayCredantial.gateway_payment_mode;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
 
 		let url = `https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
 		let requestBody = {
 			transaction: {
 				payment_method_token: card_id,
 				amount: amount,
-				currency_code: "USD",
+				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody);
+		let authResult = await this.axiosRequest(url, requestBody, headers);
 		console.log(authResult)
-		if (typeof authResult.transaction!='undefined' && authResult.transaction.succeeded) {
+		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
 				token: authResult.transaction.token,
@@ -169,11 +188,19 @@ export class PaymentService {
 	}
 
 	async captureCard(authorizeToken) {
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody);
-		if (typeof captureRes.transaction!='undefined' && captureRes.transaction.succeeded) {
+		let captureRes = await this.axiosRequest(url, requestBody, headers);
+		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
 				token: captureRes.transaction.token,
@@ -188,11 +215,18 @@ export class PaymentService {
 	}
 
 	async voidCard(captureToken) {
+		const GatewayCredantial = await Generic.getPaymentCredential()
 
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
-		let voidRes = await this.axiosRequest(url, requestBody);
-		if (typeof voidRes.transaction!='undefined' && voidRes.transaction.succeeded) {
+		let voidRes = await this.axiosRequest(url, requestBody, headers);
+		if (typeof voidRes.transaction != 'undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
 				token: voidRes.transaction.token,
@@ -206,81 +240,158 @@ export class PaymentService {
 		}
 	}
 
-	async retainCard(cardToken){
+	async retainCard(cardToken) {
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
+
 		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
 		let requestBody = {};
-		let retainRes = await this.axiosRequest(url, requestBody,null,'PUT');
-		if (typeof retainRes!='undefined' && retainRes.transaction.succeeded) {
+		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT');
+		if (typeof retainRes != 'undefined' && retainRes.transaction.succeeded) {
 			return {
-				success : true
+				success: true
 			};
 		} else {
-			return{
-				success : false
+			return {
+				success: false
 			}
 		}
 	}
 
-	async axiosRequest(url, requestBody, headers = null, method=null) {
+	async axiosRequest(url, requestBody, headers, method = null) {
 
 		method = method || 'POST';
-		console.log("method",method)
+		console.log("method", method)
 		try {
 			let result = await Axios({
 				method: method,
 				url: url,
 				data: requestBody,
-				headers: {
-					Accept: "application/json",
-					Authorization:
-						"Basic OUtHTXZSVGNHZmJRa2FIUVUwZlBscjJqblE4OmlPZGFRQTJiRzNiNFVDUmtha3dGS3dlNTBmb29ZSnAxdmtLdWxtZ01rTnU4YTc0NWhWSEo0WWlVZDlSdUptdm8=",
-				},
+				headers: headers,
 			});
 			return result.data;
 		} catch (exception) {
-			
 			throw new InternalServerErrorException(`${exception.message}&&&card&&&${errorMessage}`)
 		}
 	}
 
-	async listPaymentForUser(
-		listPaymentUserDto: ListPaymentUserDto,
-		user_id: string = ""
-	) {
-		const {
-			limit,
-			page_no,
-			module_id,
-			status,
-			start_date,
-			end_date,
-			instalment_type,
-			booking_id,
-		} = listPaymentUserDto;
+	async getPayment(card_token, amount, currency_code) {
+		const GatewayCredantial = await Generic.getPaymentCredential()
 
-		let where;
-		where = `("BookingInstalments"."user_id" = '${user_id}')`;
+		const gatewayToken = GatewayCredantial.credentials.token;
+		const authorization = GatewayCredantial.credentials.authorization;
+		const transactionMode = GatewayCredantial.gateway_payment_mode;
 
-		if (booking_id) {
-			where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
 		}
-		if (start_date) {
-			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+
+		let url = `https://core.spreedly.com/v1/gateways/${gatewayToken}/purchase.json`;
+		let requestBody = {
+			transaction: {
+				payment_method_token: card_token,
+				amount: amount,
+				currency_code: currency_code,
+			},
+		};
+		let authResult = await this.axiosRequest(url, requestBody, headers);
+		console.log(authResult)
+		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
+			return {
+				status: true,
+				token: authResult.transaction.token,
+				meta_data: authResult,
+			};
+		} else {
+			return {
+				status: false,
+				meta_data: authResult,
+			};
 		}
-		if (end_date) {
-			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
-		}
-		if (status) {
-			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
-		}
-		if (module_id) {
-			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
-		}
-		if (instalment_type) {
-			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
-		}
-		return this.bookingRepository.listPayment(where, limit, page_no);
+
+
 	}
+
+
+	async createTransaction(creteTransactionDto: CreteTransactionDto, createdBy: string) {
+		const {
+			bookingId,
+			userId,
+			card_token,
+			currencyId,
+			amount,
+			paidFor,
+			note } = creteTransactionDto;
+
+		const result = await this.getPayment(card_token, amount, "USD")
+
+		
+		const transaction = new OtherPayments;
+
+		transaction.bookingId = bookingId;
+		transaction.userId = userId;
+		transaction.currencyId = currencyId;
+		transaction.amount = amount;
+		transaction.paidFor = paidFor
+		transaction.comment = note
+		transaction.transactionId = result.token
+		transaction.paymentInfo = result.meta_data
+		transaction.paymentStatus = result.status
+		transaction.createdBy = createdBy
+		transaction.createdDate = new Date()
+
+		const transactionId = await transaction.save();
+
+		return transactionId;
+	}
+
+
+
+	// async listPaymentForUser(
+	// 	listPaymentUserDto: ListPaymentUserDto,
+	// 	user_id: string = ""
+	// ) {
+	// 	const {
+	// 		limit,
+	// 		page_no,
+	// 		module_id,
+	// 		status,
+	// 		start_date,
+	// 		end_date,
+	// 		instalment_type,
+	// 		booking_id,
+	// 	} = listPaymentUserDto;
+
+	// 	let where;
+	// 	where = `("BookingInstalments"."user_id" = '${user_id}')`;
+
+	// 	if (booking_id) {
+	// 		where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
+	// 	}
+	// 	if (start_date) {
+	// 		where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+	// 	}
+	// 	if (end_date) {
+	// 		where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+	// 	}
+	// 	if (status) {
+	// 		where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+	// 	}
+	// 	if (module_id) {
+	// 		where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+	// 	}
+	// 	if (instalment_type) {
+	// 		where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+	// 	}
+	// 	return this.bookingRepository.listPayment(where, limit, page_no);
+	// }
 
 
 }

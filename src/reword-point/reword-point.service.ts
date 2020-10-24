@@ -1,3 +1,10 @@
+/**
+ * @author Parth Virani
+ * @email parthvirani@itoneclick.com
+ * @create date 2020-10-23 13:06:34
+ * @modify date 2020-10-23 13:06:34
+ * @desc :- service for manage a Laytrip reword point 
+ */
 import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException, ConflictException, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
 import { RewordPointRedeemRepository } from './roword-point-redeem.repository';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +18,8 @@ import { User } from 'src/entity/user.entity';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { PaymentService } from "src/payment/payment.service";
 import { errorMessage } from 'src/config/common.config';
+import { CreteTransactionDto } from "src/payment/dto/create-transaction.dto";
+import { PaidFor } from 'src/enum/paid-for.enum';
 
 @Injectable()
 export class RewordPointService {
@@ -90,10 +99,22 @@ export class RewordPointService {
 	async addLaytripPoint(addLaytripPoint: AddLaytripPoint, user: User) {
 		try {
 			const { card_token, points } = addLaytripPoint;
-			const payment = await this.getPayment(card_token, points)
 
-			if (payment == true) {
+			const createTransaction = {
+				"bookingId": null,
+				"userId": user.userId,
+				"card_token": card_token,
+				"currencyId": 1,
+				"amount": points,
+				"paidFor": PaidFor.RewordPoint,
+				"note": ""
+			}
+			const payment = await this.paymentService.createTransaction(createTransaction, user.userId)
+
+			if (payment.paymentStatus == true) {
+
 				const reword = new LayCreditEarn();
+				reword.transactionId = payment.id; 
 				reword.points = points;
 				reword.userId = user.userId;
 				reword.status = RewordStatus.AVAILABLE;
@@ -106,7 +127,11 @@ export class RewordPointService {
 					message: `${points} Laytrip point added succefully`
 				}
 			}
-		}catch (error) {
+			else {
+				throw new InternalServerErrorException(
+					`Transaction cancelled ! if amount is debited then please contact administration`)
+			}
+		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
 					case 404:
@@ -135,29 +160,5 @@ export class RewordPointService {
 		}
 	}
 
-	async getPayment(card_token, amount) {
-		let authCardResult = await this.paymentService.authorizeCard(
-			"IATVj8ha4pTQtjTTHrJgqHtMtJn",
-			card_token,
-			amount,
-			"USD"
-		);
-		if (authCardResult.status == true) {
-			let authCardToken = authCardResult.token;
-			let captureCardresult = await this.paymentService.captureCard(
-				authCardToken
-			);
-			if (captureCardresult.status == true) {
-				return true;
-			} else {
-				throw new BadRequestException(
-					`Card capture is failed&&&card_token&&&${errorMessage}`
-				);
-			}
-		} else {
-			throw new BadRequestException(
-				`Card authorization is failed&&&card_token&&&${errorMessage}`
-			);
-		}
-	}
+
 }

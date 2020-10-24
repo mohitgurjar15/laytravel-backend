@@ -11,6 +11,8 @@ import { ListPaymentAdminDto } from './dto/list-payment-admin.dto';
 import { User } from 'src/entity/user.entity';
 import { ListPaymentUserDto } from './dto/list-payment-user.dto';
 import { ListPaymentDto } from 'src/booking/dto/list-payment.dto';
+import { CreteTransactionDto } from './dto/create-transaction.dto';
+import { RolesGuard } from 'src/guards/role.guard';
 
 
 @ApiTags("Payment")
@@ -87,6 +89,26 @@ export class PaymentController {
     ){
 		console.log("card_token",card_token)
         return await this.paymentService.retainCard(card_token);
+	}
+
+
+	@Post('get-payment')
+	@UseGuards( RolesGuard)
+	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
+	@ApiOperation({ summary: "Get a payment from the user by admin " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getPayment(
+        @Body() creteTransactionDto:CreteTransactionDto,
+        @GetUser() user : User
+    ){
+        return await this.paymentService.createTransaction(creteTransactionDto,user.userId);
 	}
 
 

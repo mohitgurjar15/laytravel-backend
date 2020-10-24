@@ -65,37 +65,37 @@ export class UserRepository extends Repository<User> {
 
 		let where;
 		if (keyword) {
-			where = `("user"."is_deleted" = false) AND ("user"."role_id" IN (${role})) AND (("user"."first_name" ILIKE '%${keyword}%') or ("user"."middle_name" ILIKE '%${keyword}%') or ("user"."last_name" ILIKE '%${keyword}%') or ("user"."email" ILIKE '%${keyword}%'))`;
+			where = `("User"."is_deleted" = false) AND ("User"."role_id" IN (${role})) AND (("User"."first_name" ILIKE '%${keyword}%') or ("User"."middle_name" ILIKE '%${keyword}%') or ("User"."last_name" ILIKE '%${keyword}%') or ("User"."email" ILIKE '%${keyword}%'))`;
 		} else {
-			where = `("user"."is_deleted" = false) AND("user"."role_id" IN (${role}) ) and 1=1`;
+			where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role}) ) and 1=1`;
 		}
 		const [result, count] = await getManager()
-			.createQueryBuilder(User, "user")
-			.leftJoinAndSelect("user.state", "state")
-			.leftJoinAndSelect("user.country", "countries")
-			.leftJoinAndSelect("user.preferredCurrency2", "currency")
-			.leftJoinAndSelect("user.preferredLanguage2", "language")
+			.createQueryBuilder(User, "User")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			.leftJoinAndSelect("User.preferredCurrency2", "currency")
+			.leftJoinAndSelect("User.preferredLanguage2", "language")
 			.select([
-				"user.status",
-				"user.userId",
-				"user.title",
-				"user.dob",
-				"user.firstName",
-				"user.lastName",
-				"user.email",
-				"user.profilePic",
-				"user.dob",
-				"user.gender",
-				"user.roleId",
-				"user.countryCode",
-				"user.phoneNo",
-				"user.cityName",
-				"user.address",
-				"user.zipCode",
-				"user.preferredCurrency2",
-				"user.preferredLanguage2",
-				"user.passportNumber",
-				"user.passportExpiry",
+				"User.status",
+				"User.userId",
+				"User.title",
+				"User.dob",
+				"User.firstName",
+				"User.lastName",
+				"User.email",
+				"User.profilePic",
+				"User.dob",
+				"User.gender",
+				"User.roleId",
+				"User.countryCode",
+				"User.phoneNo",
+				"User.cityName",
+				"User.address",
+				"User.zipCode",
+				"User.preferredCurrency2",
+				"User.preferredLanguage2",
+				"User.passportNumber",
+				"User.passportExpiry",
 				"language.id",
 				"language.name",
 				"language.iso_1Code",
@@ -111,7 +111,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
-				"user.createdDate"
+				"User.createdDate"
 			])
 			// .addSelect(`CASE
 			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
@@ -119,13 +119,14 @@ export class UserRepository extends Repository<User> {
 			// 	ELSE 'adult'
 			// END AS "user_type"`,)
 			.where(where)
-			.offset(skip)
-			.limit(take)
+			.skip(skip)
+			.take(take)
+			.orderBy("User.createdDate" , "DESC")
 			.getManyAndCount();
 		
 
 		if (!result.length || count <= skip) {
-			throw new NotFoundException(`No user found.`);
+			throw new NotFoundException(`No data found.`);
 		}
 		result.forEach(function(data) {
 			delete data.updatedDate;

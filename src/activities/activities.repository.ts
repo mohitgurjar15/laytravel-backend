@@ -56,6 +56,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 			.where(where)
 			.skip(skip)
 			.take(take)
+			.orderBy("log.id","DESC")
 			.getMany();
 		var total = await getManager()
 			.createQueryBuilder(ActivityLog, "log")

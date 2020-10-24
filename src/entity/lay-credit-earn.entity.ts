@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn
 } from "typeorm";
+import { OtherPayments } from "./other-payment.entity";
 import { User } from "./user.entity";
 
 @Index("lay_credit_earn_credit_by", ["creditBy"], {})
@@ -28,6 +29,9 @@ export class LayCreditEarn extends BaseEntity {
 
   @Column("integer", { name: "status" })
   status: number;
+
+  @Column("integer", { name: "transaction_id" ,nullable : true})
+  transactionId: number;
 
   @Column("character varying", { name: "credit_mode", length: 20 })
   creditMode: string;
@@ -51,4 +55,11 @@ export class LayCreditEarn extends BaseEntity {
   )
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
+
+  @ManyToOne(
+    () => OtherPayments,
+    otherPayments => otherPayments.id
+  )
+  @JoinColumn([{ name: "transaction_id", referencedColumnName: "id" }])
+  payments: OtherPayments;
 }

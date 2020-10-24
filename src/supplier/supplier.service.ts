@@ -181,7 +181,7 @@ export class SupplierService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No supplier Found.&&&id`);
+				throw new NotFoundException(`No data Found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

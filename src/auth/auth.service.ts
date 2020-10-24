@@ -1065,14 +1065,16 @@ export class AuthService {
 				createdDate: data.createdDate,
 
 				profilePic: data.profilePic
-					? `${siteUrl}/profile/${user.profilePic}`
+					? data.profilePic
 					: "",
 				roleId: data.roleId,
 			};
+			console.log(payload);
+			
 			const accessToken = this.jwtService.sign(payload);
 			const token = accessToken;
 
-			return { data: data, token: token };
+			return { data: data, token: token , message : `Your profile has been updated successfully`};
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
