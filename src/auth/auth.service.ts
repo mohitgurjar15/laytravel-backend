@@ -329,6 +329,8 @@ export class AuthService {
 					`Please verify your email id&&&email&&&Please verify your email id`
 				);
 			}
+
+			
 			const payload: JwtPayload = {
 				user_id: user.userId,
 				email,

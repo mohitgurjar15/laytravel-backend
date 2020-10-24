@@ -30,14 +30,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         const user = await this.userRepository.findOne({ userId: user_id, status: 1 })
         if (!user)
             throw new UnauthorizedException();
+        if (accessToken) {
+            const userDevice = await getConnection()
+                .createQueryBuilder(UserDeviceDetail, "device")
+                .where(`user_id=:user_id AND  access_token=:accessToken`, { user_id, accessToken })
+                .getOne();
 
-        const userDevice = await getConnection()
-            .createQueryBuilder(UserDeviceDetail, "device")
-            .where(`user_id=:user_id AND  access_token=:accessToken`, { user_id, accessToken })
-            .getOne();
-
-        if (!userDevice) throw new UnauthorizedException();
-        
+            if (!userDevice) throw new UnauthorizedException();
+        }
         return user;
     }
 }
