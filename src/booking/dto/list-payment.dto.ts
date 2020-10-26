@@ -31,9 +31,9 @@ export class ListPaymentDto {
 
     @ApiPropertyOptional({
         description:'module id',
-        example:"937a3d28-efbb-4a3f-a117-f11b8a6e8f2e"
+        example:"1"
     })
-    module_id: string;
+    module_id: number;
 
     @ApiPropertyOptional({
         description:'Booking type',

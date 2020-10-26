@@ -417,6 +417,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: "no-reply@laytrip.com",
+				sender:"laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
 					username: user.firstName + " " + user.lastName,
