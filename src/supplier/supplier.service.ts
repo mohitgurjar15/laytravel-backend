@@ -44,7 +44,7 @@ export class SupplierService {
 		adminId: string,
 		siteUrl
 	): Promise<User> {
-		const { email, password, first_name, last_name, gender } = saveUserDto;
+		const { email, password, first_name, last_name, gender , title  } = saveUserDto;
 		const salt = await bcrypt.genSalt();
 		const user = new User();
 		user.userId = uuidv4();
@@ -55,6 +55,7 @@ export class SupplierService {
 			user.profilePic = files.profile_pic[0].filename;
 		user.timezone = "";
 		user.status = 1;
+		user.title = title;
 		user.roleId = Role.SUPPLIER;
 		user.email = email;
 		user.gender = gender;
