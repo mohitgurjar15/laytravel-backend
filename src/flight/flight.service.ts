@@ -1270,7 +1270,9 @@ export class FlightService {
 
 			var paymentDetail = bookingData.bookingInstalments ;
 			var installmentDetail = [];
+			var EmailSubject = '';
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
+				EmailSubject = "Flight Booking Details";
 				for await (const installment of paymentDetail) {
 					installmentDetail.push({
 						amount: bookingData.currency2.symbol + installment.amount,
@@ -1280,6 +1282,7 @@ export class FlightService {
 				}
 			}
 			else{
+				EmailSubject = "Flight Booking Confirmation"
 				installmentDetail.push({
 					amount: bookingData.currency2.symbol + bookingData.totalAmount,
 					date: await this.formatDate(bookingData.bookingDate),
@@ -1323,7 +1326,7 @@ export class FlightService {
 				.sendMail({
 					to: user.email,
 					from: mailConfig.from,
-					subject: "Flight Booking Details",
+					subject: EmailSubject,
 					html: await FlightBookingConfirmtionMail(param),
 				})
 				.then((res) => {

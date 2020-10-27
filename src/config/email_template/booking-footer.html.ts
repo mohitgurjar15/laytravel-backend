@@ -1,3 +1,5 @@
+import { BaseUrl } from "../base-url";
+
 export const EmailFooter = `<!-- footer section -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background:#f2f2f2;" class="full-wrap">
     <tr>
@@ -10,37 +12,37 @@ export const EmailFooter = `<!-- footer section -->
                   <tr>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="Images/instagram.png" alt="instagram" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}/images/instagram.png" alt="instagram" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="Images/facebook.png" alt="facebook" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #ffffff; " />
+                        <img src="${BaseUrl}/images/facebook.png" alt="facebook" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="Images/twitter.png" alt="twitter" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}/images/twitter.png" alt="twitter" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="Images/linkedin.png" alt="linkedin" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}/images/linkedin.png" alt="linkedin" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="Images/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}images/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="Images/link.png" alt="link" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}/images/link.png" alt="link" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                   </tr>
