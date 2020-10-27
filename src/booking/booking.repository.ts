@@ -242,7 +242,8 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.paymentStatus",
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
-				"BookingInstalments.comment",
+				"BookingInstalments.comment","BookingInstalments.transactionToken",
+				
 				"booking.id",
 				"booking.moduleId",
 				"booking.bookingType",
@@ -353,6 +354,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.paymentStatus",
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
+				"BookingInstalments.transactionToken",
 				"BookingInstalments.comment",
 				"installment.id",
 				"installment.instalmentDate",

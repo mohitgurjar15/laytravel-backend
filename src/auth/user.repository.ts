@@ -145,7 +145,7 @@ export class UserRepository extends Repository<User> {
 
 		if (userExist && userExist.roleId != Role.GUEST_USER) {
 			throw new ConflictException(
-				`This email address is already registered with us. Please enter different email address.`
+				`This email address is already exists. Please enter different email address.`
 			);
 		} else if (
 			userExist &&

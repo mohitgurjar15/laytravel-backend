@@ -332,7 +332,7 @@ export class AuthService {
 				);
 			}
 
-			
+
 			const payload: JwtPayload = {
 				user_id: user.userId,
 				email,
@@ -419,7 +419,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				sender:"laytrip",
+				sender: "laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
 					username: user.firstName + " " + user.lastName,
@@ -994,9 +994,9 @@ export class AuthService {
 			user.firstName = first_name;
 			user.lastName = last_name;
 			user.zipCode = zip_code;
-			if (country_code) user.countryCode = country_code;
+			user.countryCode = country_code ? country_code : null;
 
-			if (address) user.address = address;
+			user.address = address ? address : null;
 
 			user.phoneNo = phone_no;
 			user.dob = dob;
@@ -1004,20 +1004,26 @@ export class AuthService {
 			user.gender = gender;
 			user.preferredCurrency = currency_id ? currency_id : null;
 			user.preferredLanguage = language_id ? language_id : null;
-			if (passport_expiry) user.passportExpiry = passport_expiry;
 
-			if (passport_number) user.passportNumber = passport_number;
+			user.passportExpiry = passport_expiry ? passport_expiry : null;
 
-			if (country_id) user.countryId = country_id;
+			user.passportNumber = passport_number ? passport_number : null;
 
-			if (state_id) user.stateId = state_id;
+			user.countryId = country_id ? country_id : null;
 
-			if (city_name) user.cityName = city_name;
+			user.stateId = state_id ? state_id : null;
+
+			user.cityName = city_name ? city_name : null;
 
 			var oldProfile = user.profilePic;
 
-			if (typeof files.profile_pic != "undefined")
+			if (typeof files.profile_pic != "undefined") {
 				user.profilePic = files.profile_pic[0].filename;
+			}
+			else {
+				user.profilePic = null
+			}
+
 
 			await this.userRepository.update(userId, user);
 
@@ -1037,7 +1043,7 @@ export class AuthService {
 			}
 
 			Activity.logActivity(
-				user.userId,
+				userId,
 				`auth`,
 				`user ${user.email} is update profile`
 			);
@@ -1073,11 +1079,11 @@ export class AuthService {
 				roleId: data.roleId,
 			};
 			console.log(payload);
-			
+
 			const accessToken = this.jwtService.sign(payload);
 			const token = accessToken;
 
-			return { data: data, token: token , message : `Your profile has been updated successfully`};
+			return { data: data, token: token, message: `Your profile has been updated successfully` };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);

@@ -16,10 +16,10 @@ export class FaqRepository extends Repository<Faq> {
 
         let where;
         if (keyword) {
-            where = `"faq"."is_deleted" = false AND (("faq"."category" ILIKE '%${keyword}%') or ("faq"."question" ILIKE '%${keyword}%') or ("faq"."answer" ILIKE '%${keyword}%'))`
+            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false AND(("category"."name" ILIKE '%${keyword}%') or ("faq"."question" ILIKE '%${keyword}%') or ("faq"."answer" ILIKE '%${keyword}%'))`
         }
         else {
-            where = `"faq"."is_deleted" = false`
+            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false`
         }
         const query = getManager()
             .createQueryBuilder(Faq, "faq")
