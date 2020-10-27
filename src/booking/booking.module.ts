@@ -8,6 +8,6 @@ import { AuthModule } from 'src/auth/auth.module';
 @Module({
   imports: [TypeOrmModule.forFeature([BookingRepository]), AuthModule],
   controllers: [BookingController],
-  providers: [BookingService]
+  providers: [BookingService],
 })
 export class BookingModule {}

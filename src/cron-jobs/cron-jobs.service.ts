@@ -5,6 +5,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { Role } from "src/enum/role.enum";
 import { Activity } from "src/utility/activity.utility";
 import * as config from "config";
+const mailConfig = config.get("email");
 import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
 import { FlightService } from "src/flight/flight.service";
 import { getConnection, getManager } from "typeorm";
@@ -15,7 +16,7 @@ import { BookingType } from "src/enum/booking-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { PaymentService } from "src/payment/payment.service";
 import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
-const mailConfig = config.get("email");
+
 
 @Injectable()
 export class CronJobsService {

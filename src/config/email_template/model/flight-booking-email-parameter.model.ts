@@ -1,22 +1,53 @@
-export class FlightBookingEmailParameterModel{
+export class FlightBookingEmailParameterModel {
+    user_name: string;
+    flightData: flightData[];
+    orderId: string;
+    paymentDetail: paymentDetail[]
+    travelers: traveler[];
+    // pnr_no: string;
+}
 
-    user_name:string ;
-    date : Date ;	
-    cost:number;
-    reservation_no :string;
-    travelers:string[];
-    airline:string;
-    pnr_no:string;
-    ticket_no:string; 
-    flight_name:string;
-    class:string;
-    rout:string;
-    duration:string;
-    cardholder_name:string;
-    laytrip_points:number;
-    visa_ending_in:any; 
-    amount:string;
-    base_fare:string; 
-    tax:string;
-    status:string;
+class flightData {
+    rout: string;
+    status: string;
+    droups: droups[];
+}
+
+class droups {
+    airline: string;
+    flight: string;
+    depature: depature;
+    arrival: arrival;
+}
+
+class paymentDetail {
+    amount: string;
+    date: string;
+    status: string;
+}
+
+class traveler {
+    name: string;
+    email: string;
+    type: string
+}
+
+class depature {
+    code: string;
+    name: string;
+    city: string;
+    country: string;
+    date: string;
+    flight: string;
+    time:string;
+}
+
+class arrival {
+    code: string;
+    name: string;
+    city: string;
+    country: string;
+    date: string;
+    flight: string;
+    time:string;
 }

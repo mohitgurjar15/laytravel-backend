@@ -187,7 +187,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
-			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("User.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
 			.where(where)

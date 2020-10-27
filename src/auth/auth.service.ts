@@ -60,6 +60,8 @@ import { forgotPasswordMail } from "src/config/email_template/forgot-password-ma
 import { SubscribeForNewslatterDto } from "../news-letters/dto/subscribe-for-newslatter.dto";
 import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
+import * as config from "config";
+const mailConfig = config.get("email");
 
 @Injectable()
 export class AuthService {
@@ -149,7 +151,7 @@ export class AuthService {
 			this.mailerService
 				.sendMail({
 					to: email,
-					from: "no-reply@laytrip.com",
+					from: mailConfig.from,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: first_name + " " + last_name,
@@ -229,7 +231,7 @@ export class AuthService {
 			this.mailerService
 				.sendMail({
 					to: email,
-					from: "no-reply@laytrip.com",
+					from: mailConfig.from,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -284,7 +286,7 @@ export class AuthService {
 			this.mailerService
 				.sendMail({
 					to: newEmail,
-					from: "no-reply@laytrip.com",
+					from: mailConfig.from,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -416,7 +418,7 @@ export class AuthService {
 		this.mailerService
 			.sendMail({
 				to: email,
-				from: "no-reply@laytrip.com",
+				from: mailConfig.from,
 				sender:"laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
@@ -593,7 +595,7 @@ export class AuthService {
 				this.mailerService
 					.sendMail({
 						to: email,
-						from: "no-reply@laytrip.com",
+						from: mailConfig.from,
 						subject: "Welcome on board",
 						html: RagisterMail({
 							username: user.firstName + " " + user.lastName,
