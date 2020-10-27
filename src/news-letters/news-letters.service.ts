@@ -16,6 +16,8 @@ import { errorMessage } from "src/config/common.config";
 import { ListSubscribeUsersDto } from "./dto/list-subscribe-users.dto";
 import { NewsLettersRepository } from "./news-letters.repository";
 import { InjectRepository } from "@nestjs/typeorm";
+import * as config from "config";
+const mailConfig = config.get("email");
 
 @Injectable()
 export class NewsLettersService {
@@ -51,7 +53,7 @@ export class NewsLettersService {
 			this.mailerService
 				.sendMail({
 					to: email,
-					from: "no-reply@laytrip.com",
+					from: mailConfig.from,
 					subject: "Welcome to Laytrip",
 					html: subscribeForNewsUpdates(),
 				})

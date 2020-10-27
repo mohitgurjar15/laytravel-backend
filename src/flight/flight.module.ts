@@ -6,13 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AirportRepository } from './airport.repository';
 import { PaymentService } from 'src/payment/payment.service';
 import { BookingRepository } from 'src/booking/booking.repository';
+import { BookingService } from 'src/booking/booking.service';
+import { UserRepository } from 'src/auth/user.repository';
+import { CronJobsService } from 'src/cron-jobs/cron-jobs.service';
 
 @Module({
   imports:[
     AuthModule,
     TypeOrmModule.forFeature(
       [
-        AirportRepository,BookingRepository
+      AirportRepository,BookingRepository
       ]),
   ],
   controllers: [FlightController],
