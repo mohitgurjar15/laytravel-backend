@@ -639,22 +639,18 @@ export class FlightService {
 			bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
 			if(payment_type == PaymentType.INSTALMENT){
 				bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
-				console.log("One",bookingRequestInfo.selling_price)
 			}
 			else{
 				
 				if(typeof airRevalidateResult[0].secondary_selling_price!='undefined' && airRevalidateResult[0].secondary_selling_price>0){
 
 					bookingRequestInfo.selling_price = airRevalidateResult[0].secondary_selling_price;
-					console.log("two",bookingRequestInfo.selling_price)
 				}
 				else{
 					bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
-					console.log("three",bookingRequestInfo.selling_price)
 				}
 			}
 
-			console.log(airRevalidateResult)
 			bookingRequestInfo.departure_date = DateTime.convertDateFormat(
 				airRevalidateResult[0].departure_date,
 				"DD/MM/YYYY",
@@ -688,7 +684,6 @@ export class FlightService {
 			child_count,
 			infant_count,
 		} = bookingRequestInfo;
-		console.log("Selling P",selling_price)
 		let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 		let travelersDetails = await this.getTravelersInfo(
 			travelers,
