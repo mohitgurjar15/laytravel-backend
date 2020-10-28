@@ -16,6 +16,8 @@ import { BookingType } from "src/enum/booking-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { PaymentService } from "src/payment/payment.service";
 import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
+import { missedPaymentInstallmentMail } from "src/config/email_template/missed-payment-installment-mail.html";
+import { PaymentInstallmentMail } from "src/config/email_template/payment-installment-mail.html";
 
 
 @Injectable()
@@ -187,7 +189,7 @@ export class CronJobsService {
 			console.log('currencyCode', currencyCode)
 			console.log('cardToken', cardToken)
 
-			let transaction = await this.paymentService.getPayment(cardToken, amount, cardToken)
+			let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
 			instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.FAILED
 			instalment.paymentInfo = transaction.meta_data;
@@ -202,7 +204,31 @@ export class CronJobsService {
 				faildTransaction.date = new Date();
 
 				await faildTransaction.save()
-				
+				let param = {
+					message : transaction.meta_data.transaction.response.message,
+					cardHolderName:transaction.meta_data.transaction.payment_method.full_name,
+					cardNo:transaction.meta_data.transaction.payment_method.number,
+					orderId : instalment.bookingId,
+					amount:amount,
+				}
+				this.mailerService
+					.sendMail({
+						to: instalment.user.email,
+						from: mailConfig.from,
+						subject: `Payment Failed Notification`,
+						html: missedPaymentInstallmentMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+				Activity.logActivity(
+					"1c17cd17-9432-40c8-a256-10db77b95bca",
+					"cron",
+					`${instalment.id} Payment Failed by Cron`
+				);
 			}
 			await instalment.save()
 
@@ -216,6 +242,34 @@ export class CronJobsService {
 				currency_code : currencyCode,
 				card_token : cardToken
 			}
+
+			let param = {
+				date:instalment.instalmentDate,
+				userName:instalment.user.firstName + ' ' + instalment.user.lastName,
+				cardHolderName:transaction.meta_data.transaction.payment_method.full_name,
+				cardNo:transaction.meta_data.transaction.payment_method.number,
+				orderId : instalment.bookingId,
+				amount:amount,
+			}
+
+			this.mailerService
+					.sendMail({
+						to: instalment.user.email,
+						from: mailConfig.from,
+						subject: `Installment Payment Successed`,
+						html: PaymentInstallmentMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+				Activity.logActivity(
+					"1c17cd17-9432-40c8-a256-10db77b95bca",
+					"cron",
+					`${instalment.id} Payment successed by Cron`
+				);			
 
 			paidInstallment.push(transactionData)			
 		}

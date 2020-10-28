@@ -241,10 +241,10 @@ export async function FlightBookingConfirmtionMail(
   if (param.flightData[0].status != "Confirm") {
     ExstraDetail += `<tr>
               <td align="left" valign="top" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: red;padding: 10px 0 10px; text-align: left;"><span style="font-weight: 700;">*Ticket ${param.flightData[0].status}</span></td>
-            </tr>
-              <tr>
-                <td style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: red;padding: 10px 10px 0; text-align: left; " valign="top" align="left">* We will send you a separate email within 3-24 hours, once the ticket is confirmed. If you are travelling within 24 hrs, please contact us immediately.</td>
-              </tr>`
+            </tr>`
+              // <tr>
+              //   <td style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: red;padding: 10px 10px 0; text-align: left; " valign="top" align="left">* We will send you a separate email within 3-24 hours, once the ticket is confirmed. If you are travelling within 24 hrs, please contact us immediately.</td>
+              // </tr>
   }
   else {
     ExstraDetail += `<tr>
