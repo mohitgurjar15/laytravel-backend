@@ -7,7 +7,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AddCardDto } from './dto/add-card.dto';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
-import { ListPaymentAdminDto } from './dto/list-payment-admin.dto';
+import { ListPaymentAdminDto } from '../booking/dto/list-payment-admin.dto';
 import { User } from 'src/entity/user.entity';
 import { ListPaymentUserDto } from './dto/list-payment-user.dto';
 import { ListPaymentDto } from 'src/booking/dto/list-payment.dto';

@@ -15,7 +15,7 @@ import { ModulesName } from "src/enum/module.enum";
 import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import * as moment from 'moment';
-import { ListPaymentAdminDto } from "src/payment/dto/list-payment-admin.dto";
+import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import * as config from "config";
 import { Booking } from "src/entity/booking.entity";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
@@ -439,6 +439,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
+			search
 		} = listPaymentAdminDto;
 
 		let where;
@@ -468,7 +469,10 @@ export class BookingService {
 		if (instalment_type) {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
-
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+		
+		}
 		return this.bookingRepository.listPayment(where, limit, page_no);
 	}
 	async formatDate(date) {

@@ -69,4 +69,10 @@ export class ListPaymentAdminDto {
     })
     booking_id:string;
 
+    @ApiPropertyOptional({
+        description:'search keyword',
+        example:""
+    })
+    search:string;
+
 }

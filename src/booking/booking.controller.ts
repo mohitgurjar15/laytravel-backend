@@ -8,7 +8,7 @@ import { ListBookingDto } from "./dto/list-booking.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import {ListPaymentDto} from './dto/list-payment.dto'
-import { ListPaymentAdminDto } from "src/payment/dto/list-payment-admin.dto";
+import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 
 @ApiTags("Booking")
 @ApiBearerAuth()

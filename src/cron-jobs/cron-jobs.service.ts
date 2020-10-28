@@ -202,7 +202,7 @@ export class CronJobsService {
 				faildTransaction.date = new Date();
 
 				await faildTransaction.save()
-
+				
 			}
 			await instalment.save()
 
@@ -216,6 +216,7 @@ export class CronJobsService {
 				currency_code : currencyCode,
 				card_token : cardToken
 			}
+
 			paidInstallment.push(transactionData)			
 		}
 		return { data: paidInstallment };
