@@ -79,16 +79,17 @@ export class Mystifly implements StrategyAirline{
     }
     async startSession(){
         try{
-            let sessionDetails = await fs.readFile("src/flight/mystifly-session.json","binary");
-            sessionDetails = JSON.parse(sessionDetails);
-            let currentTime = new Date();
-            let diff = moment(currentTime).diff(sessionDetails.created_time,'seconds')
-            if(diff>1200){
-               return await this.createSession();
-            }
-            else{
-                return sessionDetails.sessionToken;
-            }
+            // let sessionDetails = await fs.readFile("src/flight/mystifly-session.json","binary");
+            // sessionDetails = JSON.parse(sessionDetails);
+            // let currentTime = new Date();
+            // let diff = moment(currentTime).diff(sessionDetails.created_time,'seconds')
+            // if(diff>1200){
+            //    return await this.createSession();
+            // }
+            // else{
+            //     return sessionDetails.sessionToken;
+            // }
+            return "55140297-9561-4b4b-b812-beb0dc143c25"
         }
         catch(e){
            return await this.createSession();
