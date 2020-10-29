@@ -506,7 +506,7 @@ export class Mystifly implements StrategyAirline{
         //console.log(jsonData)
     
     
-        return jsonData;
+        // return jsonData;
         console.log(jsonData.airlowfaresearchgziprs.success[0]);
     
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
