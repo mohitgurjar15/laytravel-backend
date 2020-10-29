@@ -55,6 +55,7 @@ export class Mystifly implements StrategyAirline{
     async createSession(){
 
         const mystiflyConfig =await this.getMystiflyCredential();
+        console.log(mystiflyConfig);
         
         const requestBody = 
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
@@ -84,11 +85,14 @@ export class Mystifly implements StrategyAirline{
             let currentTime = new Date();
             let diff = moment(currentTime).diff(sessionDetails.created_time,'seconds')
             if(diff>1200){
+                console.log('create New Session');
+                
                return await this.createSession();
             }
             else{
                 return sessionDetails.sessionToken;
             }
+            //return "55140297-9561-4b4b-b812-beb0dc143c25"
         }
         catch(e){
            return await this.createSession();
@@ -358,6 +362,8 @@ export class Mystifly implements StrategyAirline{
 
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
+        console.log(sessionToken);
+        
         const {
             source_location,
             destination_location,
@@ -500,7 +506,7 @@ export class Mystifly implements StrategyAirline{
         //console.log(jsonData)
     
     
-        //return jsonData;
+        return jsonData;
         console.log(jsonData.airlowfaresearchgziprs.success[0]);
     
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
