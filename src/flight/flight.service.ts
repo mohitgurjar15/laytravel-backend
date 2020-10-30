@@ -1142,19 +1142,19 @@ export class FlightService {
 	}
 
 	async saveTravelers(bookingId, userId, travelers: any) {
-		const userData = await getManager()
-			.createQueryBuilder(User, "user")
-			.select(["user.roleId", "user.userId"])
-			.where(`"user"."user_id" =:user_id AND "user"."is_deleted" = false `, { user_id: userId })
-			.getOne();
+		// const userData = await getManager()
+		// 	.createQueryBuilder(User, "user")
+		// 	.select(["user.roleId", "user.userId"])
+		// 	.where(`"user"."user_id" =:user_id AND "user"."is_deleted" = false `, { user_id: userId })
+		// 	.getOne();
 
-		var primaryTraveler = new TravelerInfo();
+		// var primaryTraveler = new TravelerInfo();
 
-		primaryTraveler.bookingId = bookingId;
-		primaryTraveler.userId = userId;
-		primaryTraveler.roleId = userData.roleId;
+		// primaryTraveler.bookingId = bookingId;
+		// primaryTraveler.userId = userId;
+		// primaryTraveler.roleId = userData.roleId;
 
-		primaryTraveler.save();
+		// primaryTraveler.save();
 
 		for await (var traveler of travelers) {
 			if (typeof traveler.traveler_id) {
