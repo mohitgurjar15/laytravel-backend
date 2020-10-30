@@ -48,6 +48,9 @@ import { FullCalenderRateDto } from "./dto/full-calender-date-rate.dto";
 import * as config from "config";
 import { BookingService } from "src/booking/booking.service";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
+import { PriceMarkup } from "src/utility/markup.utility";
+import { NetRateDto } from "./dto/net-rate.dto";
+import { Generic } from "src/utility/generic.utility";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -147,6 +150,65 @@ export class FlightService {
 		}
 		return true;
 	} */
+
+	async getSellingPrice(netRateDto:NetRateDto,user){
+
+		const {
+			departure_date,
+			net_rate
+		} = netRateDto;
+
+		let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name:'flight' })
+            .getOne();
+
+		const bookingDate = moment().format("YYYY-MM-DD");
+		let result = await this.getMarkupDetails(departure_date,bookingDate,user,module);
+		console.log(result)
+		let sellingPrice = PriceMarkup.applyMarkup(net_rate,result.markUpDetails);
+		let secondarySellingPrice = PriceMarkup.applyMarkup(net_rate,result.secondaryMarkUpDetails) || 0;
+
+		sellingPrice = Generic.formatPriceDecimal(sellingPrice);
+		secondarySellingPrice = Generic.formatPriceDecimal(secondarySellingPrice);
+
+		let response=[];
+		response[0]={
+			net_rate : net_rate,
+			selling_price : sellingPrice,
+			secondary_selling_price : secondarySellingPrice
+		}
+		return response;
+	}
+
+	async getMarkupDetails(departure_date,bookingDate,user,module){
+        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
+        
+        let markUpDetails;
+        let secondaryMarkUpDetails;
+        if(!user.roleId || user.roleId==7 ){
+            
+            markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
+        }
+        else if(isInstalmentAvaible && (user.roleId==5 || user.roleId==6)){
+            
+            markUpDetails            = await PriceMarkup.getMarkup(module.id,user.roleId,'instalment');
+            secondaryMarkUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
+        }
+        else{
+            markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
+        }
+        
+        if(!markUpDetails){
+            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+        }
+        else{
+            return {
+                markUpDetails,
+                secondaryMarkUpDetails
+            }
+        }
+    }
 
 	async searchOneWayFlight(
 		searchFlightDto: OneWaySearchFlightDto,
