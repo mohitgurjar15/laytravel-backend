@@ -40,6 +40,7 @@ import { BookingFeedbackModule } from './booking-feedback/booking-feedback.modul
 import { PredictionFactorMarkupModule } from './prediction-factor-markup/prediction-factor-markup.module';
 import { FaqCategoryModule } from './faq-category/faq-category.module';
 import { AppVersionModule } from './app-version/app-version.module';
+import { MarketingModule } from './marketing/marketing.module';
 
 
 @Module({
@@ -108,6 +109,7 @@ import { AppVersionModule } from './app-version/app-version.module';
 		PredictionFactorMarkupModule,
 		FaqCategoryModule,
 		AppVersionModule,
+		MarketingModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

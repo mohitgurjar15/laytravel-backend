@@ -21,6 +21,7 @@ import { Booking } from "src/entity/booking.entity";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { BookingType } from "src/enum/booking-type.enum";
+import { exit } from "process";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -473,7 +474,25 @@ export class BookingService {
 			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
 		
 		}
-		return this.bookingRepository.listPayment(where, limit, page_no);
+		const {data , total_count} = await this.bookingRepository.listPayment(where, limit, page_no);
+		const result :any = data; 
+		for await (const instalment of result) {
+			let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
+			
+			for (let index = 0; index < infoDate.length; index++) {
+				const element = infoDate[index];
+				
+				if(element.instalment_date == instalment.instalmentDate)
+				{
+					instalment.installmentNo = index+1;
+					exit;
+				}
+			}	
+		}
+		
+		return {
+			data:result , total_count : total_count
+		};
 	}
 	async formatDate(date) {
 		var d = new Date(date),
