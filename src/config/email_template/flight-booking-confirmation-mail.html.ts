@@ -24,7 +24,7 @@ export async function FlightBookingConfirmtionMail(
                     <td align="center" valine="top" style="padding: 10px 15px 30px; background: #ffffff;"><table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                         <tbody>
                           <tr>
-                            <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000;padding: 20px 0; text-align: left;"> Mr<span style="font-weight: 700;"> ${param.user_name}</span>has shared an itinerany with you, which shows all the details of the flight booking on <a href="#" style="color: #1943FF;">laytrip.com</a></td>
+                            <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000;padding: 20px 0; text-align: left;"> Hello <span style="font-weight: 700;"> ${param.user_name}</span></td>
                           </tr>`;
 
   var inventry = `<tr>
