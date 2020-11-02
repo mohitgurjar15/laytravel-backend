@@ -9,20 +9,20 @@ var today = new Date();
 export class UpdateTravelerDto{
 
     
-    @IsEnum(['mr','ms','mrs'],{
-        message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please select travelers title.&&&gender`;
-            } else {
-                return `Please select valid title('mr','ms','mrs').&&&title&&&${errorMessage}`
-            }
-        }
-    })
-    @ApiProperty({
-        description: `Select Title ('mr','ms','mrs')`,
-        example: `mr`
-    })
-    title : string;
+    // @IsEnum(['mr','ms','mrs'],{
+    //     message : (args: ValidationArguments) => {
+    //         if (typeof args.value == "undefined" || args.value == "") {
+    //             return `Please select travelers title.&&&gender`;
+    //         } else {
+    //             return `Please select valid title('mr','ms','mrs').&&&title&&&${errorMessage}`
+    //         }
+    //     }
+    // })
+    // @ApiProperty({
+    //     description: `Select Title ('mr','ms','mrs')`,
+    //     example: `mr`
+    // })
+    // title : string;
 
 
     @IsNotEmpty({

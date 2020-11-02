@@ -30,7 +30,7 @@ export class MarketingGameRewordMarkup extends BaseEntity {
     @Column("date", { name: "created_date" })
     createdDate: Date;
 
-    @Column("date", { name: "updated_date" })
+    @Column("date", { name: "updated_date"  , nullable :true})
     updatedDate: Date;
 
     @Column("boolean", { name: "status", default: () => "false" })

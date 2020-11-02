@@ -21,6 +21,7 @@ import { JwtPayload } from "src/auth/jwt-payload.interface";
 import { JwtService } from "@nestjs/jwt";
 import * as moment from "moment";
 import { errorMessage } from "src/config/common.config";
+import { Gender } from "src/enum/gender.enum";
 
 @Injectable()
 export class TravelerService {
@@ -35,7 +36,7 @@ export class TravelerService {
 		parent_user_id: string
 	) {
 		const {
-			title,
+			
 			first_name,
 			last_name,
 			dob,
@@ -63,7 +64,7 @@ export class TravelerService {
 			user.accountType = 1;
 			user.socialAccountId = "";
 			user.phoneNo = "";
-			user.title = title;
+			user.title = gender == Gender.M ? 'mr' : 'ms';
 			user.dob = dob;
 			user.countryCode = country_code;
 			user.timezone = "";
@@ -313,7 +314,7 @@ export class TravelerService {
 			const {
 				first_name,
 				last_name,
-				title,
+				
 				dob,
 				gender,
 				country_code,
@@ -337,7 +338,7 @@ export class TravelerService {
 			traveler.firstName = first_name;
 			traveler.lastName = last_name;
 			traveler.isVerified = true;
-			traveler.title = title;
+			traveler.title = gender == Gender.M ? 'mr' : 'ms';
 			traveler.dob = dob;
 			traveler.gender = gender;
 			traveler.updatedBy = updateBy;

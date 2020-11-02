@@ -30,16 +30,16 @@ export class MarketingUserData extends BaseEntity {
     @Column("character varying", { name: "last_name", length: 255, nullable: true })
     lastName: string;
 
-    @Column("character varying", { name: "social_account_id", length: 255 })
+    @Column("character varying", { name: "social_account_id", length: 255 , nullable: true})
     socialAccountId: string;
 
     @Column("character varying", { name: "email", length: 255, nullable: true })
     email: string | null;
 
-    @Column("character varying", { name: "phone_no", length: 20 })
+    @Column("character varying", { name: "phone_no", length: 20, nullable: true })
     phoneNo: string;
 
-    @Column("integer", { name: "device_type" })
+    @Column("integer", { name: "device_type" , nullable: true })
     deviceType: number;
 
     @Column("character varying", {
