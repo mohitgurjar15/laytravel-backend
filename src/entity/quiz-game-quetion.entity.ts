@@ -9,20 +9,22 @@ import {
     PrimaryGeneratedColumn
 } from "typeorm";
 import { MarketingGameRewordMarkup } from "./marketing-game-reword-markup.entity";
+import { MarketingGame } from "./marketing-game.entity";
+import { QuizGameAnswer } from "./quiz-game-answer.entity";
 
 
 //@Index("markup_pk", ["id"], { unique: true })
-@Index("gameName_idx", ["gameName"], {})
-@Entity("marketing_game")
-export class MarketingGame extends BaseEntity {
+//@Index("gameName_idx", ["gameName"], {})
+@Entity("quiz_game_quetion")
+export class QuizGameQuetion extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
-    @Column("character varying", { name: "game_name", length: 20, nullable: true })
-    gameName: string;
+    @Column("integer", { name: "game_id" })
+    gameId: number;
 
-    @Column("integer", { name: "game_available_after" })
-    gameAvailableAfter: number;
+    @Column("character varying", { name: "quetion", length: 255, nullable: false })
+    quetion: string;
 
     @Column("date", { name: "created_date" })
     createdDate: Date;
@@ -36,10 +38,17 @@ export class MarketingGame extends BaseEntity {
     @Column("boolean", { name: "is_deleted", default: () => "false" })
     isDeleted: boolean;
 
-    @OneToMany(
-        () => MarketingGameRewordMarkup,
-        marketingGameRewordMarkup => marketingGameRewordMarkup.game
+    @ManyToOne(
+        () => MarketingGame,
+        marketingGame => marketingGame.id
     )
-    marketingGameRewordMarkups: MarketingGameRewordMarkup[];
+    @JoinColumn([{ name: "game_id", referencedColumnName: "id" }])
+    game: MarketingGame;
+
+    @OneToMany(
+        () => QuizGameAnswer,
+        quizGameAnswer => quizGameAnswer.quetion
+    )
+    option: QuizGameAnswer[];
 }
 

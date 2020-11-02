@@ -49,7 +49,5 @@ export class MarketingUserActivity extends BaseEntity {
     )
     @JoinColumn([{ name: "user_id", referencedColumnName: "id" }])
     marketingUserData: MarketingGame;
-
-
 }
 
