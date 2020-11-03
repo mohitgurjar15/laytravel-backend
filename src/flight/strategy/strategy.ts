@@ -36,8 +36,8 @@ export class Strategy{
         return data;
     }
 
-    async bookFlight(params1,params2){
-        const data = await this.airline.bookFlight(params1,params2);
+    async bookFlight(params1,params2,param3){
+        const data = await this.airline.bookFlight(params1,params2,param3);
         return data;
     }
 

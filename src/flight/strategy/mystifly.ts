@@ -1414,7 +1414,7 @@ export class Mystifly implements StrategyAirline{
 
     }
 
-    async bookFlight(bookFlightDto,traveles){
+    async bookFlight(bookFlightDto,traveles,isPassportRequired){
 
         const { route_code } = bookFlightDto;
         const mystiflyConfig = await this.getMystiflyCredential();
@@ -1431,25 +1431,28 @@ export class Mystifly implements StrategyAirline{
             requestBody += `<mys1:TravelerInfo>`
             requestBody += `<mys1:AirTravelers>`
 
+            let title;
             if(traveles.adults.length){
                 
                 for(let i=0; i< traveles.adults.length; i++){
-                
+                    title='';
                     requestBody += `<mys1:AirTraveler>`
                     requestBody += `<mys1:DateOfBirth>${traveles.adults[i].dob}T00:00:00</mys1:DateOfBirth>`
                     requestBody += `<mys1:Gender>${traveles.adults[i].gender}</mys1:Gender>`
                     requestBody += `<mys1:PassengerName>`
                     requestBody += `<mys1:PassengerFirstName>${traveles.adults[i].firstName}</mys1:PassengerFirstName>`
                     requestBody += `<mys1:PassengerLastName>${traveles.adults[i].lastName}</mys1:PassengerLastName>`
-                    requestBody += `<mys1:PassengerTitle>`+traveles.adults[i].gender=='M'?'Mr':'Miss'+`</mys1:PassengerTitle>`
+                    title = traveles.adults[i].gender=='M'?'MR':'MS';
+                    requestBody += `<mys1:PassengerTitle>${title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerNationality>${traveles.adults[i].country.iso2}</mys1:PassengerNationality>`;
                     requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
-                    if(traveles.adults[i].passportExpiry && traveles.adults[i].passportNumber){
-                    requestBody += `<mys1:Passport>`
-                    requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`
-                    requestBody += `<mys1:ExpiryDate>${traveles.adults[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
-                    requestBody += `<mys1:PassportNumber>${traveles.adults[i].passportNumber}</mys1:PassportNumber>`
-                    requestBody += `</mys1:Passport>`
+                    if(isPassportRequired){
+                        requestBody += `<mys1:Passport>`
+                        requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`
+                        requestBody += `<mys1:ExpiryDate>${traveles.adults[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                        requestBody += `<mys1:PassportNumber>${traveles.adults[i].passportNumber}</mys1:PassportNumber>`
+                        requestBody += `</mys1:Passport>`
                     }
                     requestBody += `</mys1:AirTraveler>`
                 }
@@ -1458,18 +1461,20 @@ export class Mystifly implements StrategyAirline{
             if(traveles.children.length){
                 
                 for(let i=0; i< traveles.children.length; i++){
-                
+                    title='';
                     requestBody += `<mys1:AirTraveler>`
                     requestBody += `<mys1:DateOfBirth>${traveles.children[i].dob}T00:00:00</mys1:DateOfBirth>`
                     requestBody += `<mys1:Gender>${traveles.children[i].gender}</mys1:Gender>`
                     requestBody += `<mys1:PassengerName>`
                     requestBody += `<mys1:PassengerFirstName>${traveles.children[i].firstName}</mys1:PassengerFirstName>`
                     requestBody += `<mys1:PassengerLastName>${traveles.children[i].lastName}</mys1:PassengerLastName>`
-                    requestBody += `<mys1:PassengerTitle>`+traveles.children[i].gender=='M'?'Mr':'Miss'+`</mys1:PassengerTitle>`
+                    title = traveles.children[i].gender=='M'?'MR':'MS';
+                    requestBody += `<mys1:PassengerTitle>${title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerNationality>${traveles.children[i].country.iso2}</mys1:PassengerNationality>`;
                     requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
 
-                    if(traveles.children[i].passportExpiry && traveles.children[i].passportNumber){
+                    if(isPassportRequired){
 
                         requestBody += `<mys1:Passport>`
                         requestBody += `<mys1:Country>${traveles.children[i].country.iso2}</mys1:Country>`
@@ -1484,27 +1489,32 @@ export class Mystifly implements StrategyAirline{
             if(traveles.infants.length){
                 
                 for(let i=0; i< traveles.infants.length; i++){
-                
+                    title='';
                     requestBody += `<mys1:AirTraveler>`
                     requestBody += `<mys1:DateOfBirth>${traveles.infants[i].dob}T00:00:00</mys1:DateOfBirth>`
                     requestBody += `<mys1:Gender>${traveles.infants[i].gender}</mys1:Gender>`
                     requestBody += `<mys1:PassengerName>`
                     requestBody += `<mys1:PassengerFirstName>${traveles.infants[i].firstName}</mys1:PassengerFirstName>`
                     requestBody += `<mys1:PassengerLastName>${traveles.infants[i].lastName}</mys1:PassengerLastName>`
-                    requestBody += `<mys1:PassengerTitle>`+traveles.infants[i].gender=='M'?'Mr':'Miss'+`</mys1:PassengerTitle>`
+                    title = traveles.infants[i].gender=='M'?'MR':'MS';
+                    requestBody += `<mys1:PassengerTitle>${title}</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
+                    requestBody += `<mys1:PassengerNationality>${traveles.infants[i].country.iso2}</mys1:PassengerNationality>`;
                     requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`
-                    requestBody += `<mys1:Passport>`
-                    requestBody += `<mys1:Country>${traveles.infants[i].country.iso2}</mys1:Country>`
-                    requestBody += `<mys1:ExpiryDate>${traveles.infants[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
-                    requestBody += `<mys1:PassportNumber>${traveles.infants[i].passportNumber}</mys1:PassportNumber>`
-                    requestBody += `</mys1:Passport>`
+                    /* if(traveles.infants[i].passportExpiry && traveles.infants[i].passportNumber){
+
+                        requestBody += `<mys1:Passport>`
+                        requestBody += `<mys1:Country>${traveles.infants[i].country.iso2}</mys1:Country>`
+                        requestBody += `<mys1:ExpiryDate>${traveles.infants[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
+                        requestBody += `<mys1:PassportNumber>${traveles.infants[i].passportNumber}</mys1:PassportNumber>`
+                        requestBody += `</mys1:Passport>`
+                    } */
                     requestBody += `</mys1:AirTraveler>`
                 }
             }
 
             requestBody += `</mys1:AirTravelers>`
-            //requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`
+            requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`
             requestBody += `<mys1:CountryCode>44</mys1:CountryCode>`
             requestBody += `<mys1:Email>peter@gmail.com</mys1:Email>`
             requestBody += `<mys1:PhoneNumber>5467890</mys1:PhoneNumber>`
@@ -1515,6 +1525,8 @@ export class Mystifly implements StrategyAirline{
             requestBody += `</soapenv:Body>`
             requestBody += `</soapenv:Envelope>`
         
+        console.log("======================")
+        console.log(requestBody)
         let bookResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'BookFlight');
         let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
         let bookingResponse;

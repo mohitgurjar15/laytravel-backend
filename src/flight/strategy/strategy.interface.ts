@@ -10,7 +10,7 @@ export interface StrategyAirline{
 
     airRevalidate(params1,params2);
 
-    bookFlight(params1,params2);
+    bookFlight(params1,params2,param3);
 
     cancellationPolicy(param1);
 

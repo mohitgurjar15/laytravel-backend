@@ -165,7 +165,6 @@ export class FlightService {
 
 		const bookingDate = moment().format("YYYY-MM-DD");
 		let result = await this.getMarkupDetails(departure_date,bookingDate,user,module);
-		console.log(result)
 		let sellingPrice = PriceMarkup.applyMarkup(net_rate,result.markUpDetails);
 		let secondarySellingPrice = PriceMarkup.applyMarkup(net_rate,result.secondaryMarkUpDetails) || 0;
 
@@ -248,10 +247,7 @@ export class FlightService {
 
 		const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate)
 
-		console.log(dayDiffrence);
-
 		var weeklylastdate = depatureDate;
-		console.log(Math.floor(dayDiffrence / 7));
 
 		var result = [];
 
@@ -261,7 +257,6 @@ export class FlightService {
 			date = date
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			console.log(date)
 			let dto = {
 				"source_location": source_location,
 				"destination_location": destination_location,
@@ -273,7 +268,6 @@ export class FlightService {
 			}
 			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			weeklylastdate.setDate(weeklylastdate.getDate() - 7);
-			console.log(new Date());
 
 		}
 
@@ -341,7 +335,6 @@ export class FlightService {
 
 		const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate) + 1
 
-		console.log(dayDiffrence);
 		var previousWeekDates = depatureDate2;
 
 		var nextWeekDates = depatureDate;
@@ -881,9 +874,11 @@ export class FlightService {
 				if (authCardResult.status == true) {
 
 					const mystifly = new Strategy(new Mystifly(headers));
+					console.log("isPassportRequired",isPassportRequired, typeof isPassportRequired)
 					const bookingResult = await mystifly.bookFlight(
 						bookFlightDto,
-						travelersDetails
+						travelersDetails,
+						isPassportRequired
 					);
 					let authCardToken = authCardResult.token;
 					if (bookingResult.booking_status == "success") {
@@ -930,7 +925,8 @@ export class FlightService {
 				const mystifly = new Strategy(new Mystifly(headers));
 				const bookingResult = await mystifly.bookFlight(
 					bookFlightDto,
-					travelersDetails
+					travelersDetails,
+					isPassportRequired
 				);
 				if (bookingResult.booking_status == "success") {
 
