@@ -10,6 +10,7 @@ import { User } from "@sentry/node";
 import { getConnection } from "typeorm";
 import { moduleStatusDto } from "./dto/moduleEnableDisable.dto";
 import { ModeTestLive } from "./dto/modeTestLive.dto";
+var fs = require(`fs`);
 
 @Injectable()
 export class ModulesService {
@@ -85,6 +86,22 @@ export class ModulesService {
 
 			await getConnection().queryResultCache!.remove(["modules"]);
 			await getConnection().queryResultCache!.remove([`${moduleData.name}_module`]);
+			if(moduleData.name == 'flight')
+			{
+				await fs.unlink(
+					`src/flight/mystifly-session.json`,
+					function (err) {
+						if (err) {
+							console.log(err);
+						}
+						else {
+							console.log(`file deleted!`);
+						}
+						// if no error, file has been deleted successfully
+					}
+				);
+				
+			}
 			return {
 				message: `${moduleData.name} is set to ${mode ? 'live' : 'test'} mode successfully`,
 			};

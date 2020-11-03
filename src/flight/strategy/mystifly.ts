@@ -47,8 +47,10 @@ export class Mystifly implements StrategyAirline{
 
         const config = await Generic.getCredential('flight');
         let mystiflyConfig= JSON.parse(config.testCredential)
+        mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
         if(config.mode){
             mystiflyConfig = JSON.parse(config.liveCredential);
+            mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
         }
         return mystiflyConfig;
     }
@@ -490,7 +492,9 @@ export class Mystifly implements StrategyAirline{
      </soapenv:Body>
     </soapenv:Envelope>`;*/
         //console.log(requestBody)
-        let searchResult = await HttpRequest.mystiflyRequestZip('http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc', requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
+        console.log(mystiflyConfig.zipSearchUrl);
+        
+        let searchResult = await HttpRequest.mystiflyRequestZip(mystiflyConfig.zipSearchUrl, requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
         //console.log(compressedResult)
         let buffer = Buffer.from(compressedResult, 'base64');
