@@ -1,12 +1,14 @@
-import { IsNotEmpty,  ValidationArguments } from "class-validator";
+import { IsEnum, IsNotEmpty,  MaxLength,   ValidationArguments } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
-
+import { errorMessage } from "src/config/common.config";
+import { flightClass } from '../strategy/mystifly'
 export class OneWaySearchFlightDto{
     
     @IsNotEmpty({
 		message: `Please enter source location.&&&source_location`,
-	})
+    })
+    @MaxLength(3,{message:'Departure code should not be more then 3 characters'})
     @ApiProperty({
         description:`From Airport Location`,
         example:`JAI`
@@ -15,7 +17,8 @@ export class OneWaySearchFlightDto{
 
     @IsNotEmpty({
 		message: `Please enter destination location.&&&destination_location`,
-	})
+    })
+    @MaxLength(3,{message:'Arrival code should not be more then 3 characters'})
     @ApiProperty({
         description:`To Airport Location`,
         example:`DEL`
@@ -38,11 +41,19 @@ export class OneWaySearchFlightDto{
     })
     departure_date : string;
 
-	@IsNotEmpty({
-		message: `Please enter flight class.&&&departure_date`,
-	})
+	
+    @IsEnum(['Economy', 'Business', 'First','Premium'],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
+                return `Please enter flight class.&&&flight_class`
+            }
+            else{
+                return `Please enter valid flight class(Y=Economy, C=Business, F=First and S=Premium).&&&flight_class&&&${errorMessage}`
+            }
+        }
+    })
     @ApiProperty({
-        description:`Flight class (Economy, Business, First)`,
+        description:`Flight class (Economy, Business, First,Premium)`,
         example:`Economy`
     })
 	flight_class:string;

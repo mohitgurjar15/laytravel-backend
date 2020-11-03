@@ -1208,10 +1208,10 @@ export class FlightService {
 			for (let traveler of travelersResult) {
 				let ageDiff = moment(new Date()).diff(moment(traveler.dob), "years");
 
-				if (traveler.title == null || traveler.title == "")
+				/* if (traveler.title == null || traveler.title == "")
 					throw new BadRequestException(
 						`Title is missing for traveler ${traveler.firstName}`
-					);
+					); */
 				if ((traveler.email == null || traveler.email == "") && ageDiff >= 12)
 					throw new BadRequestException(
 						`Email is missing for traveler ${traveler.firstName}`
