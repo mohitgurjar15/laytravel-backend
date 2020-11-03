@@ -27,7 +27,7 @@ export class  HttpRequest{
             return result;
         }
         catch(error){
-            console.log(error.message)
+            console.log("===================",error.message)
             throw new RequestTimeoutException(`Connection time out`)
         }
         

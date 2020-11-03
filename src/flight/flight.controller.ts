@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
@@ -14,6 +14,7 @@ import { Role } from 'src/enum/role.enum';
 import { PreductBookingDateDto } from './dto/preduct-booking-date.dto';
 import { FullCalenderRateDto } from './dto/full-calender-date-rate.dto';
 import { NetRateDto } from './dto/net-rate.dto';
+import * as moment from 'moment';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -75,6 +76,11 @@ export class FlightController {
        @Req() req,
        @LogInUser() user
     ){
+        if(moment(searchFlightDto.departure_date).isBefore(moment().format("YYYY-MM-DD")))
+             throw new BadRequestException(`Please enter departure date today or future date.&&&departure_date`)
+        
+        if(moment(searchFlightDto.departure_date).isAfter(moment().add(365,"days").format("YYYY-MM-DD")))
+             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
         return await this.flightService.searchOneWayFlight(searchFlightDto,req.headers,user);
     }
 
@@ -99,6 +105,11 @@ export class FlightController {
        @Req() req,
        @LogInUser() user,
     ){
+        if(moment(searchFlightDto.departure_date).isBefore(moment().format("YYYY-MM-DD")))
+             throw new BadRequestException(`Please enter departure date today or future date.&&&departure_date`)
+        
+        if(moment(searchFlightDto.departure_date).isAfter(moment().add(365,"days").format("YYYY-MM-DD")))
+             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
         return await this.flightService.searchRoundTripFlight(searchFlightDto,req.headers,user);
     }
 

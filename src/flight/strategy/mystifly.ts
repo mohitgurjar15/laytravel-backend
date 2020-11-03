@@ -20,10 +20,11 @@ const fs = require('fs').promises;
 import * as zlib from 'zlib';
 import * as md5 from 'md5';
 
-const flightClass={
+export const flightClass={
     'Economy':'Y',
     'Business':'C',
-    'First':'F'
+    'First':'F',
+    'Premium':'S'
 }
 
 const mealCodes={
@@ -197,7 +198,7 @@ export class Mystifly implements StrategyAirline{
 
         requestBody += `</mys1:PassengerTypeQuantities>`
         requestBody += `<mys1:PricingSourceType>All</mys1:PricingSourceType>`
-        requestBody += `<mys1:RequestOptions>Fifty</mys1:RequestOptions>`
+        requestBody += `<mys1:RequestOptions>TwoHundred</mys1:RequestOptions>`
         requestBody += `<mys1:SessionId>${sessionToken}</mys1:SessionId>`
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
         requestBody += `<mys1:TravelPreferences>`
@@ -1440,7 +1441,7 @@ export class Mystifly implements StrategyAirline{
                     requestBody += `<mys1:PassengerName>`
                     requestBody += `<mys1:PassengerFirstName>${traveles.adults[i].firstName}</mys1:PassengerFirstName>`
                     requestBody += `<mys1:PassengerLastName>${traveles.adults[i].lastName}</mys1:PassengerLastName>`
-                    requestBody += `<mys1:PassengerTitle>${traveles.adults[i].title}</mys1:PassengerTitle>`
+                    requestBody += `<mys1:PassengerTitle>`+traveles.adults[i].gender=='M'?'Mr':'Miss'+`</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`
                     if(traveles.adults[i].passportExpiry && traveles.adults[i].passportNumber){
@@ -1464,7 +1465,7 @@ export class Mystifly implements StrategyAirline{
                     requestBody += `<mys1:PassengerName>`
                     requestBody += `<mys1:PassengerFirstName>${traveles.children[i].firstName}</mys1:PassengerFirstName>`
                     requestBody += `<mys1:PassengerLastName>${traveles.children[i].lastName}</mys1:PassengerLastName>`
-                    requestBody += `<mys1:PassengerTitle>${traveles.children[i].title}</mys1:PassengerTitle>`
+                    requestBody += `<mys1:PassengerTitle>`+traveles.children[i].gender=='M'?'Mr':'Miss'+`</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>CHD</mys1:PassengerType>`
 
@@ -1490,7 +1491,7 @@ export class Mystifly implements StrategyAirline{
                     requestBody += `<mys1:PassengerName>`
                     requestBody += `<mys1:PassengerFirstName>${traveles.infants[i].firstName}</mys1:PassengerFirstName>`
                     requestBody += `<mys1:PassengerLastName>${traveles.infants[i].lastName}</mys1:PassengerLastName>`
-                    requestBody += `<mys1:PassengerTitle>${traveles.infants[i].title}</mys1:PassengerTitle>`
+                    requestBody += `<mys1:PassengerTitle>`+traveles.infants[i].gender=='M'?'Mr':'Miss'+`</mys1:PassengerTitle>`
                     requestBody += `</mys1:PassengerName>`
                     requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`
                     requestBody += `<mys1:Passport>`
