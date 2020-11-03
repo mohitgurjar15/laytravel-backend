@@ -437,7 +437,7 @@ export class Mystifly implements StrategyAirline{
     
         requestBody += `</mys:PassengerTypeQuantities>`;
         requestBody += `<mys:PricingSourceType>All</mys:PricingSourceType>`;
-        requestBody += `<mys:RequestOptions>Fifty</mys:RequestOptions>`;
+        requestBody += `<mys:RequestOptions>TwoHundred</mys:RequestOptions>`;
         requestBody += `<mys:ResponseFormat>XML</mys:ResponseFormat>`;
         requestBody += `<mys:SessionId>${sessionToken}</mys:SessionId>`;
         requestBody += `<mys:Target>${mystiflyConfig.target}</mys:Target>`;
@@ -909,7 +909,7 @@ export class Mystifly implements StrategyAirline{
 
         requestBody += `</mys1:PassengerTypeQuantities>`
         requestBody += `<mys1:PricingSourceType>All</mys1:PricingSourceType>`
-        requestBody += `<mys1:RequestOptions>Fifty</mys1:RequestOptions>`
+        requestBody += `<mys1:RequestOptions>TwoHundred</mys1:RequestOptions>`
         requestBody += `<mys1:SessionId>${sessionToken}</mys1:SessionId>`
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
         requestBody += `<mys1:TravelPreferences>`
