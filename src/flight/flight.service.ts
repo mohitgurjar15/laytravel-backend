@@ -341,8 +341,6 @@ export class FlightService {
 
 		// nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 
-		//console.log(Math.floor(dayDiffrence / 7));
-
 		var result = [];
 
 		var resultIndex = 0;
@@ -358,7 +356,6 @@ export class FlightService {
 			predate = predate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			console.log(predate)
 			let dto = {
 				"source_location": source_location,
 				"destination_location": destination_location,
@@ -379,7 +376,6 @@ export class FlightService {
 			nextdate = nextdate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			console.log(nextdate)
 			let dto = {
 				"source_location": source_location,
 				"destination_location": destination_location,
@@ -460,8 +456,6 @@ export class FlightService {
 
 		// nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 
-		console.log(dayDiffrence);
-
 		var result = [];
 
 		var resultIndex = 0;
@@ -474,7 +468,6 @@ export class FlightService {
 			date = date
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			console.log(date)
 			let dto = {
 				"source_location": source_location,
 				"destination_location": destination_location,
@@ -874,7 +867,6 @@ export class FlightService {
 				if (authCardResult.status == true) {
 
 					const mystifly = new Strategy(new Mystifly(headers));
-					console.log("isPassportRequired",isPassportRequired, typeof isPassportRequired)
 					const bookingResult = await mystifly.bookFlight(
 						bookFlightDto,
 						travelersDetails,
@@ -1318,7 +1310,6 @@ export class FlightService {
 						flight: flight, depature: depature, arrival: arrival, airline: stop.airline_name
 					})
 				}
-				console.log();
 				flightData.push({
 					rout: rout,
 					status: status,
@@ -1375,9 +1366,6 @@ export class FlightService {
 			param.orderId = bookingData.id;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
-
-
-			console.log(param);
 			// console.log(param.flightData);
 
 			this.mailerService
