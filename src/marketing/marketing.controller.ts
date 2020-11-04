@@ -12,7 +12,7 @@ import { CreateMarketingUserDto } from './dto/new-marketing-user.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { MarketingService } from './marketing.service';
-import { AddQuetionDto } from './dto/add-quotation-answer.dto';
+import { AddQuetionDto } from './dto/add-question-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 
