@@ -58,7 +58,6 @@ export class Mystifly implements StrategyAirline{
     async createSession(){
 
         const mystiflyConfig =await this.getMystiflyCredential();
-        
         const requestBody = 
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
             <soapenv:Header/>
@@ -132,6 +131,7 @@ export class Mystifly implements StrategyAirline{
     async oneWaySearch(searchFlightDto:OneWaySearchFlightDto,user)/* :Promise<FlightSearchResult> */ {
         
         const mystiflyConfig = await this.getMystiflyCredential();
+
         const sessionToken = await this.startSession();
         const {
             source_location,
@@ -1236,13 +1236,15 @@ export class Mystifly implements StrategyAirline{
 
             let totalDuration;
             let uniqueCode;
+            let otherSegments;
             for(let i=0; i < flightRoutes.length; i++){
                 route=new Route;
                 stops=[];
                 totalDuration=0;
                 uniqueCode='';
+                let j=0;
                 outBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][0]['a:flightsegments'][0]['a:flightsegment'];
-                
+                otherSegments = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'][0];
                 if(typeof flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]!='undefined')
                     inBoundflightSegments = flightRoutes[i]['a:origindestinationoptions'][0]['a:origindestinationoption'][1]['a:flightsegments'][0]['a:flightsegment'];
 
@@ -1270,6 +1272,7 @@ export class Mystifly implements StrategyAirline{
                     stop.is_layover            = false;
                     stop.airline_name          = airlines[stop.airline];
                     stop.airline_logo          = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
                     if(stops.length>0){
 
                         stop.is_layover             =  true;
@@ -1281,7 +1284,8 @@ export class Mystifly implements StrategyAirline{
                     uniqueCode += stop.departure_time;
                     uniqueCode += stop.arrival_time;
                     uniqueCode += stop.flight_number;
-                    stops.push(stop)
+                    stops.push(stop);
+                    j++;
                 });
 
                 routeType=new RouteType();
@@ -1323,6 +1327,7 @@ export class Mystifly implements StrategyAirline{
                         stop.remaining_seat        = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                         stop.below_minimum_seat    = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0]=='true'?true:false;
                         stop.is_layover            = false;
+                        stop.checkin_baggage       = otherSegments['a:baggageinfo'][0]['a:baggage'][j];
                         if(stops.length>0){
 
                             stop.is_layover             =  true;
@@ -1334,7 +1339,8 @@ export class Mystifly implements StrategyAirline{
                         uniqueCode += stop.departure_time;
                         uniqueCode += stop.arrival_time;
                         uniqueCode += stop.flight_number;
-                        stops.push(stop)
+                        stops.push(stop);
+                        j++;
                     });
 
                     routeType=new RouteType();
