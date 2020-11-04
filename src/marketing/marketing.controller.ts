@@ -12,7 +12,7 @@ import { CreateMarketingUserDto } from './dto/new-marketing-user.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { MarketingService } from './marketing.service';
-import { AddQuetionDto } from './dto/add-quetion-answer.dto';
+import { AddQuetionDto } from './dto/add-quotation-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 
@@ -187,7 +187,7 @@ export class MarketingController {
 
 	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
-	@ApiOperation({ summary: "add new quetion for the quiz game" })
+	@ApiOperation({ summary: "add new question for the quiz game" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })

@@ -15,7 +15,7 @@ import { Role } from 'src/enum/role.enum';
 import { getManager } from 'typeorm';
 import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.dto';
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
-import { AddQuetionDto } from './dto/add-quetion-answer.dto';
+import { AddQuetionDto } from './dto/add-quotation-answer.dto';
 import { addRewordMarkupDto } from './dto/add-reword-markup.dto';
 import { AddWheelDto } from './dto/wheel-result.dto';
 import { CreateGameDto } from './dto/new-game.dto';
@@ -293,7 +293,7 @@ export class MarketingService {
 
     async addQuetionAnswer(addQuetionDto: AddQuetionDto) {
         const {
-            quetion,  options
+            quotation,  options
         } = addQuetionDto
 
         let game = await getManager()
@@ -327,7 +327,7 @@ export class MarketingService {
 
         const quetionData = new QuizGameQuetion;
         quetionData.gameId = game.id;
-        quetionData.quetion = quetion;
+        quetionData.quetion = quotation;
         quetionData.createdDate = new Date();
         quetionData.status = true;
         quetionData.isDeleted = false;

@@ -12,7 +12,7 @@ export class AddQuetionDto{
         example: ``
 
     })
-    quetion :string;
+    quotation :string;
 
     @IsArray()
     @ValidateNested({ each: true })
