@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { errorMessage } from 'src/config/common.config';
 import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { MarketingGameRewordMarkup } from 'src/entity/marketing-game-reword-markup.entity';
@@ -29,607 +29,1152 @@ import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 export class MarketingService {
 
     async addGame(createGameDto: CreateGameDto) {
-        const { game_name, available_after } = createGameDto
+        try {
+            const { game_name, available_after } = createGameDto
 
-        const newGame = new MarketingGame();
+            const newGame = new MarketingGame();
 
-        newGame.gameName = game_name;
-        newGame.gameAvailableAfter = available_after,
-            newGame.createdDate = new Date();
-        newGame.status = true;
-        newGame.isDeleted = false;
+            newGame.gameName = game_name;
+            newGame.gameAvailableAfter = available_after,
+                newGame.createdDate = new Date();
+            newGame.status = true;
+            newGame.isDeleted = false;
 
-        await newGame.save()
-        return {
-            message: `Game created succefully`
+            await newGame.save()
+            return {
+                message: `Game created succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async listGame() {
-        let [data, count] = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false ")
-            .getManyAndCount();
-        if (!data.length) {
-            throw new NotFoundException(`Games not found`)
-        }
+        try {
+            let [data, count] = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false ")
+                .getManyAndCount();
+            if (!data.length) {
+                throw new NotFoundException(`Games not found`)
+            }
 
-        return {
-            data: data, count: count
+            return {
+                data: data, count: count
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async updateGame(id: number, updateGameDto: UpdateGameDto) {
-        const { available_after } = updateGameDto
+        try {
+            const { available_after } = updateGameDto
 
 
 
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.id =:id", { id })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false AND game.id =:id", { id })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
-        //game.gameName = game_name;
-        game.gameAvailableAfter = available_after,
-            game.updatedDate = new Date();
+            //game.gameName = game_name;
+            game.gameAvailableAfter = available_after,
+                game.updatedDate = new Date();
 
-        await game.save()
-        return {
-            message: `Game Updated succefully`
+            await game.save()
+            return {
+                message: `Game Updated succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async deleteGame(id: number) {
+        try {
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false AND game.id =:id", { id })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.id =:id", { id })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            game.isDeleted = true;
+            game.updatedDate = new Date();
 
-        game.isDeleted = true;
-        game.updatedDate = new Date();
+            await game.save()
+            return {
+                message: `Game deleted succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        await game.save()
-        return {
-            message: `Game deleted succefully`
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
 
     async activeInactiveGame(id: number, activeInactivedto: ActiveInactiveGameDto) {
+        try {
+            const { status } = activeInactivedto
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false AND game.id =:id", { id })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
-        const { status } = activeInactivedto
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.id =:id", { id })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            game.status = status;
+            game.updatedDate = new Date();
 
-        game.status = status;
-        game.updatedDate = new Date();
+            await game.save()
+            return {
+                message: `Game status changed succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        await game.save()
-        return {
-            message: `Game status changed succefully`
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
-    async getGameData(id: number) {
-        let result = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .leftJoinAndSelect("game.marketingGameRewordMarkups", "markup")
-            .where(`game.is_deleted = false AND game.id =:id`, { id })
-            .getOne();
-        if (!result) {
-            throw new NotFoundException('Game id not found')
-        }
-        return result;
 
+    async getGameData(id: number) {
+        try {
+            let result = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .leftJoinAndSelect("game.marketingGameRewordMarkups", "markup")
+                .where(`game.is_deleted = false AND game.id =:id`, { id })
+                .getOne();
+            if (!result) {
+                throw new NotFoundException('Game id not found')
+            }
+            return result;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async addRewordMarkup(createNewMarkup: addRewordMarkupDto) {
-        const { game_id, answer_value, reword_point } = createNewMarkup
+        try {
+            const { game_id, answer_value, reword_point } = createNewMarkup
 
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.id =:id", { id: game_id })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false AND game.id =:id", { id: game_id })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
 
-        const markup = new MarketingGameRewordMarkup();
+            const markup = new MarketingGameRewordMarkup();
 
-        markup.gameId = game_id;
-        markup.answerValue = answer_value;
-        markup.rewordPoint = reword_point;
-        markup.createdDate = new Date();
-        markup.status = true;
-        markup.isDeleted = false;
+            markup.gameId = game_id;
+            markup.answerValue = answer_value;
+            markup.rewordPoint = reword_point;
+            markup.createdDate = new Date();
+            markup.status = true;
+            markup.isDeleted = false;
 
-        await markup.save()
-        return {
-            message: `Game markup added succefully`
+            await markup.save()
+            return {
+                message: `Game markup added succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async UpateRewordMarkup(id: number, updateRewordMarkupDto: UpdateRewordMarkupDto) {
-        const { reword_point } = updateRewordMarkupDto
+        try {
+            const { reword_point } = updateRewordMarkupDto
 
-        let markup = await getManager()
-            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-            .where("markup.is_deleted = false AND markup.id =:id", { id })
-            .getOne();
-        if (!markup) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            let markup = await getManager()
+                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+                .where("markup.is_deleted = false AND markup.id =:id", { id })
+                .getOne();
+            if (!markup) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
-        markup.rewordPoint = reword_point;
-        markup.updatedDate = new Date();
+            markup.rewordPoint = reword_point;
+            markup.updatedDate = new Date();
 
-        await markup.save()
-        return {
-            message: `Game markup Updated succefully`
+            await markup.save()
+            return {
+                message: `Game markup Updated succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async deleteGameMarkup(id: number) {
+        try {
+            let markup = await getManager()
+                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+                .where("markup.is_deleted = false AND markup.id =:id", { id })
+                .getOne();
+            if (!markup) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
-        let markup = await getManager()
-            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-            .where("markup.is_deleted = false AND markup.id =:id", { id })
-            .getOne();
-        if (!markup) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            markup.isDeleted = true;
+            markup.updatedDate = new Date();
 
-        markup.isDeleted = true;
-        markup.updatedDate = new Date();
+            await markup.save()
+            return {
+                message: `Game markup deleted succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        await markup.save()
-        return {
-            message: `Game markup deleted succefully`
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async activeInactiveGameMarkup(id: number, activeInactivedto: ActiveInactiveGameMarkupDto) {
+        try {
+            const { status } = activeInactivedto
+            let markup = await getManager()
+                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+                .where("markup.is_deleted = false AND markup.id =:id", { id })
+                .getOne();
+            if (!markup) {
+                throw new NotFoundException(`Given game id not found`)
+            }
 
-        const { status } = activeInactivedto
-        let markup = await getManager()
-            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-            .where("markup.is_deleted = false AND markup.id =:id", { id })
-            .getOne();
-        if (!markup) {
-            throw new NotFoundException(`Given game id not found`)
-        }
+            markup.status = status;
+            markup.updatedDate = new Date();
 
-        markup.status = status;
-        markup.updatedDate = new Date();
+            await markup.save()
+            return {
+                message: `Game markup status changed succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        await markup.save()
-        return {
-            message: `Game markup status changed succefully`
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async marketingUser(userDto: CreateMarketingUserDto) {
-        const {
-            signup_via, device_model, device_type, ip_address, app_version, os_version
-        } = userDto
+        try {
+            const {
+                signup_via, device_model, device_type, ip_address, app_version, os_version
+            } = userDto
 
-        let user = await getManager()
-            .createQueryBuilder(MarketingUserData, "markup")
-            .where(`markup.ip_address =:ip_address`, { ip_address })
-            .getOne();
+            let user = await getManager()
+                .createQueryBuilder(MarketingUserData, "markup")
+                .where(`markup.ip_address =:ip_address`, { ip_address })
+                .getOne();
 
-        if (!user) {
-            let userData = new MarketingUserData()
-            userData.deviceType = device_type || null
-            userData.deviceModel = device_model || null
-            userData.ipAddress = ip_address
-            userData.appVersion = app_version || null
-            userData.osVersion = os_version || null
-            user = await userData.save();
-        }
-        var tDate = new Date();
-
-        // var todayDate = tDate.toISOString();
-        // todayDate = todayDate
-        //     .replace(/T/, " ") // replace T with a space
-        //     .replace(/\..+/, "");
-
-        let allgame = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.status = true")
-            .getMany();
-        var gamePlayed = []
-        if (allgame.length) {
-            for await (const game of allgame) {
-                var periodTime = new Date();
-                periodTime.setTime(tDate.getTime() - (game.gameAvailableAfter * 60 * 60 * 1000));
-                console.log(periodTime);
-                var date = periodTime.toISOString()
-                date = date
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-
-                const activity = await getManager()
-                    .createQueryBuilder(MarketingUserActivity, "activity")
-                    .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
-                    .getOne();
-                var gameAvailable = {
-                    gameId: game.id,
-                    gameName: game.gameName,
-                    available: true
-                }
-                let check = true;
-                if (user.userId) {
-                    check = await this.checkUserAlredyPlayedOrNot(user.userId, game.id)
-                }
-
-
-                if (activity || !check) {
-                    gameAvailable['available'] = false
-                    if (!check) {
-                        gameAvailable['message'] = `You played this game in other device`
-                    }
-                }
-                gamePlayed.push(gameAvailable)
+            if (!user) {
+                let userData = new MarketingUserData()
+                userData.deviceType = device_type || null
+                userData.deviceModel = device_model || null
+                userData.ipAddress = ip_address
+                userData.appVersion = app_version || null
+                userData.osVersion = os_version || null
+                user = await userData.save();
             }
+            var tDate = new Date();
+
+            // var todayDate = tDate.toISOString();
+            // todayDate = todayDate
+            //     .replace(/T/, " ") // replace T with a space
+            //     .replace(/\..+/, "");
+
+            let allgame = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false AND game.status = true")
+                .getMany();
+            var gamePlayed = []
+            if (allgame.length) {
+                for await (const game of allgame) {
+                    var periodTime = new Date();
+                    periodTime.setTime(tDate.getTime() - (game.gameAvailableAfter * 60 * 60 * 1000));
+                    console.log(periodTime);
+                    var date = periodTime.toISOString()
+                    date = date
+                        .replace(/T/, " ") // replace T with a space
+                        .replace(/\..+/, "");
+
+                    const activity = await getManager()
+                        .createQueryBuilder(MarketingUserActivity, "activity")
+                        .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
+                        .getOne();
+                    var gameAvailable = {
+                        gameId: game.id,
+                        gameName: game.gameName,
+                        available: true
+                    }
+                    let check = true;
+                    if (user.userId) {
+                        check = await this.checkUserAlredyPlayedOrNot(user.userId, game.id)
+                    }
+
+
+                    if (activity || !check) {
+                        gameAvailable['available'] = false
+                        if (!check) {
+                            gameAvailable['message'] = `You played this game in other device`
+                        }
+                    }
+                    gamePlayed.push(gameAvailable)
+                }
+            }
+            let data: any = user;
+            data['gameData'] = gamePlayed
+            return data;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
-        let data: any = user;
-        data['gameData'] = gamePlayed
-        return data;
     }
 
     async addQuetionAnswer(addQuetionDto: AddQuetionDto) {
-        const {
-            quotation,  options
-        } = addQuetionDto
+        try {
+            const {
+                quotation, options
+            } = addQuetionDto
 
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where(`game.is_deleted = false AND game.game_name =:name`, { name: `Quiz` })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Quiz game not avilable`)
-        }
-
-        if (options.length > 4) {
-            throw new BadRequestException(`Only 4 option avilable for a quetion`)
-        }
-        else if (options.length < 4) {
-            throw new BadRequestException(`Minimum 4 option required for a quetion`)
-        }
-
-        var answer = 0;
-        for await (const option of options) {
-            if (option.is_right == true) {
-                answer = answer + 1;
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where(`game.is_deleted = false AND game.game_name =:name`, { name: `Quiz` })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Quiz game not avilable`)
             }
+
+            if (options.length > 4) {
+                throw new BadRequestException(`Only 4 option avilable for a quetion`)
+            }
+            else if (options.length < 4) {
+                throw new BadRequestException(`Minimum 4 option required for a quetion`)
+            }
+
+            var answer = 0;
+            for await (const option of options) {
+                if (option.is_right == true) {
+                    answer = answer + 1;
+                }
+            }
+
+            if (answer = 0) {
+                throw new BadRequestException(`please enter right answer`)
+            }
+            else if (answer > 1) {
+                throw new BadRequestException(`Only one option select for right answer`)
+            }
+
+            const quetionData = new QuizGameQuetion;
+            quetionData.gameId = game.id;
+            quetionData.quetion = quotation;
+            quetionData.createdDate = new Date();
+            quetionData.status = true;
+            quetionData.isDeleted = false;
+
+            const savedQuetion = await quetionData.save();
+
+            for await (const option of options) {
+                var q = new QuizGameAnswer;
+                q.quetionId = savedQuetion.id;
+                q.answer = option.option;
+                q.isRight = option.is_right
+                q.createdDate = new Date();
+
+                await q.save();
+            }
+
+            let result = await getManager()
+                .createQueryBuilder(QuizGameQuetion, "quetion")
+                .leftJoinAndSelect("quetion.option", "option")
+                .leftJoinAndSelect("quetion.game", "game")
+                .select(["quetion.id",
+                    "quetion.quetion",
+                    "quetion.status",
+                    "quetion.is_deleted",
+                    "option.id",
+                    "option.answer",
+                    "option.isRight",
+                    "game.id",
+                    "game.gameName"])
+                .where(`quetion.id =:id`, { id: savedQuetion.id })
+                .getOne();
+
+            return result;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
-
-        if (answer = 0) {
-            throw new BadRequestException(`please enter right answer`)
-        }
-        else if (answer > 1) {
-            throw new BadRequestException(`Only one option select for right answer`)
-        }
-
-        const quetionData = new QuizGameQuetion;
-        quetionData.gameId = game.id;
-        quetionData.quetion = quotation;
-        quetionData.createdDate = new Date();
-        quetionData.status = true;
-        quetionData.isDeleted = false;
-
-        const savedQuetion = await quetionData.save();
-
-        for await (const option of options) {
-            var q = new QuizGameAnswer;
-            q.quetionId = savedQuetion.id;
-            q.answer = option.option;
-            q.isRight = option.is_right
-            q.createdDate = new Date();
-
-            await q.save();
-        }
-
-        let result = await getManager()
-            .createQueryBuilder(QuizGameQuetion, "quetion")
-            .leftJoinAndSelect("quetion.option", "option")
-            .leftJoinAndSelect("quetion.game", "game")
-            .select(["quetion.id",
-                "quetion.quetion",
-                "quetion.status",
-                "quetion.is_deleted",
-                "option.id",
-                "option.answer",
-                "option.isRight",
-                "game.id",
-                "game.gameName"])
-            .where(`quetion.id =:id`, { id: savedQuetion.id })
-            .getOne();
-
-        return result;
     }
 
     async getQuetionForUser() {
-        let [result, count] = await getManager()
-            .createQueryBuilder(QuizGameQuetion, "quetion")
-            .leftJoinAndSelect("quetion.option", "option")
-            .leftJoinAndSelect("quetion.game", "game")
-            .select(["quetion.id",
-                "quetion.quetion",
-                "quetion.status",
-                "quetion.is_deleted",
-                "option.id",
-                "option.answer",
-                "game.id",
-                "game.gameName"])
-            .where(`quetion.is_deleted = false AND quetion.status = true`)
-            .getManyAndCount();
-        return { result, count };
+        try {
+            let [result, count] = await getManager()
+                .createQueryBuilder(QuizGameQuetion, "quetion")
+                .leftJoinAndSelect("quetion.option", "option")
+                .leftJoinAndSelect("quetion.game", "game")
+                .select(["quetion.id",
+                    "quetion.quetion",
+                    "quetion.status",
+                    "quetion.is_deleted",
+                    "option.id",
+                    "option.answer",
+                    "game.id",
+                    "game.gameName"])
+                .where(`quetion.is_deleted = false AND quetion.status = true`)
+                .getManyAndCount();
+            return { result, count };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async getQuetionForAdmin() {
-        let [result, count] = await getManager()
-            .createQueryBuilder(QuizGameQuetion, "quetion")
-            .leftJoinAndSelect("quetion.option", "option")
-            .leftJoinAndSelect("quetion.game", "game")
-            .select(["quetion.id",
-                "quetion.quetion",
-                "quetion.status",
-                "quetion.is_deleted",
-                "option.id",
-                "option.answer",
-                "option.isRight",
-                "game.id",
-                "game.gameName"])
-            .where(`quetion.is_deleted = false`)
-            .getManyAndCount();
-        return { result, count };
+        try {
+            let [result, count] = await getManager()
+                .createQueryBuilder(QuizGameQuetion, "quetion")
+                .leftJoinAndSelect("quetion.option", "option")
+                .leftJoinAndSelect("quetion.game", "game")
+                .select(["quetion.id",
+                    "quetion.quetion",
+                    "quetion.status",
+                    "quetion.is_deleted",
+                    "option.id",
+                    "option.answer",
+                    "option.isRight",
+                    "game.id",
+                    "game.gameName"])
+                .where(`quetion.is_deleted = false`)
+                .getManyAndCount();
+            return { result, count };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
 
     async deleteQuetion(id: number) {
+        try {
+            let quetion = await getManager()
+                .createQueryBuilder(QuizGameQuetion, "quetion")
+                .where("quetion.is_deleted = false AND quetion.id =:id", { id })
+                .getOne();
+            if (!quetion) {
+                throw new NotFoundException(`Given quetion id not found`)
+            }
 
-        let quetion = await getManager()
-            .createQueryBuilder(QuizGameQuetion, "quetion")
-            .where("quetion.is_deleted = false AND quetion.id =:id", { id })
-            .getOne();
-        if (!quetion) {
-            throw new NotFoundException(`Given quetion id not found`)
-        }
+            quetion.isDeleted = true;
+            quetion.updatedDate = new Date();
 
-        quetion.isDeleted = true;
-        quetion.updatedDate = new Date();
+            await quetion.save()
+            return {
+                message: `Quiz quetion deleted succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        await quetion.save()
-        return {
-            message: `Quiz quetion deleted succefully`
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async changeStatus(id: number, statusDto: ActiveInactiveGameDto) {
+        try {
+            let quetion = await getManager()
+                .createQueryBuilder(QuizGameQuetion, "quetion")
+                .where("quetion.is_deleted = false AND quetion.id =:id", { id })
+                .getOne();
+            if (!quetion) {
+                throw new NotFoundException(`Given quetion id not found`)
+            }
+            const { status } = statusDto
+            quetion.status = status;
+            quetion.updatedDate = new Date();
 
-        let quetion = await getManager()
-            .createQueryBuilder(QuizGameQuetion, "quetion")
-            .where("quetion.is_deleted = false AND quetion.id =:id", { id })
-            .getOne();
-        if (!quetion) {
-            throw new NotFoundException(`Given quetion id not found`)
-        }
-        const { status } = statusDto
-        quetion.status = status;
-        quetion.updatedDate = new Date();
+            await quetion.save()
+            return {
+                message: `Quiz quetion status changed succefully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        await quetion.save()
-        return {
-            message: `Quiz quetion status changed succefully`
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async quizResult(quizResult: QuizResultDto) {
-        const { user_id, first_name, last_name, email, quiz_answer } = quizResult
+        try {
+            const { user_id, first_name, last_name, email, quiz_answer } = quizResult
 
-        let user = await getManager()
-            .createQueryBuilder(MarketingUserData, "user")
-            .where(`user.id =:user_id`, { user_id })
-            .getOne();
-        var existingUserId = null;
-        if (!user.userId) {
-            let existingUser = await getManager()
-                .createQueryBuilder(User, "user")
-                .where(`email =:email AND is_deleted = false`, { email })
-                .andWhere(`"user"."role_id" in (:...roles) `, {
-                    roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
-                })
+            let user = await getManager()
+                .createQueryBuilder(MarketingUserData, "user")
+                .where(`user.id =:user_id`, { user_id })
                 .getOne();
+            var existingUserId = null;
+            if (!user.userId) {
+                let existingUser = await getManager()
+                    .createQueryBuilder(User, "user")
+                    .where(`email =:email AND is_deleted = false`, { email })
+                    .andWhere(`"user"."role_id" in (:...roles) `, {
+                        roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
+                    })
+                    .getOne();
 
-            if (existingUser) {
-                existingUserId = existingUser.userId
+                if (existingUser) {
+                    existingUserId = existingUser.userId
+                }
             }
-        }
-        else {
-            existingUserId = user.userId
-        }
-        var rightAnswer = 0;
-        for await (const quizAnswer of quiz_answer) {
-            let option = await getManager()
-                .createQueryBuilder(QuizGameAnswer, "quizAnswer")
-                .where(`quetion_id = ${quizAnswer.quetion_id} AND id = ${quizAnswer.option_id} AND is_right = true`)
+            else {
+                existingUserId = user.userId
+            }
+            var rightAnswer = 0;
+            for await (const quizAnswer of quiz_answer) {
+                let option = await getManager()
+                    .createQueryBuilder(QuizGameAnswer, "quizAnswer")
+                    .where(`quetion_id = ${quizAnswer.quetion_id} AND id = ${quizAnswer.option_id} AND is_right = true`)
+                    .getOne();
+
+                if (option) {
+                    rightAnswer = rightAnswer + 1
+                }
+            }
+
+            if (!user.email) {
+                user.firstName = first_name || null
+                user.lastName = last_name || null
+                user.email = email
+                user.userId = existingUserId;
+                await user.save()
+            }
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where(`game_name = 'Quiz' AND is_deleted = false`)
                 .getOne();
-
-            if (option) {
-                rightAnswer = rightAnswer + 1
+            if (!game) {
+                throw new InternalServerErrorException(`Game not found  &&&game&&&${errorMessage}`)
             }
-        }
 
-        if (!user.email) {
-            user.firstName = first_name || null
-            user.lastName = last_name || null
-            user.email = email
-            user.userId = existingUserId;
-            await user.save()
-        }
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where(`game_name = 'Quiz' AND is_deleted = false`)
-            .getOne();
-        if (!game) {
-            throw new InternalServerErrorException(`Game not found  &&&game&&&${errorMessage}`)
-        }
+            const check = await this.checkUserAlredyPlayedOrNot(existingUserId, game.id)
 
-        const check = await this.checkUserAlredyPlayedOrNot(existingUserId, game.id)
+            if (!check) {
+                throw new ConflictException(`You alredy play a game on your ${user.deviceModel} device`)
+            }
+            let markup = await getManager()
+                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+                .where(`game_id = ${game.id} AND answer_value = '${rightAnswer}' AND status = true AND is_deleted = false`)
+                .getOne();
+            console.log(rightAnswer);
+            var rewordPoint = 0;
+            if (markup) {
+                rewordPoint = markup.rewordPoint;
+            }
 
-        if (!check) {
-            throw new ConflictException(`You alredy play a game on your ${user.deviceModel} device`)
-        }
-        let markup = await getManager()
-            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-            .where(`game_id = ${game.id} AND answer_value = '${rightAnswer}' AND status = true AND is_deleted = false`)
-            .getOne();
-        console.log(rightAnswer);
-        var rewordPoint = 0;
-        if (markup) {
-            rewordPoint = markup.rewordPoint;
-        }
+            const activity = new MarketingUserActivity;
+            activity.userId = user.id
+            activity.gameId = game.id
+            activity.reword = rewordPoint;
+            activity.addToWallet = existingUserId ? true : false
+            activity.createdDate = new Date();
+            var point = null;
+            if (existingUserId && rewordPoint > 0) {
+                const laytripPoint = new LayCreditEarn
+                laytripPoint.userId = existingUserId;
+                laytripPoint.points = rewordPoint;
+                laytripPoint.earnDate = new Date();
+                laytripPoint.creditMode = RewordMode.QUIZGAME;
+                laytripPoint.status = RewordStatus.AVAILABLE;
+                laytripPoint.creditBy = existingUserId;
+                laytripPoint.description = `User played a game`
+                point = await laytripPoint.save();
 
-        const activity = new MarketingUserActivity;
-        activity.userId = user.id
-        activity.gameId = game.id
-        activity.reword = rewordPoint;
-        activity.addToWallet = existingUserId ? true : false
-        activity.createdDate = new Date();
-        var point = null;
-        if (existingUserId && rewordPoint > 0) {
-            const laytripPoint = new LayCreditEarn
-            laytripPoint.userId = existingUserId;
-            laytripPoint.points = rewordPoint;
-            laytripPoint.earnDate = new Date();
-            laytripPoint.creditMode = RewordMode.QUIZGAME;
-            laytripPoint.status = RewordStatus.AVAILABLE;
-            laytripPoint.creditBy = existingUserId;
-            laytripPoint.description = `User played a game`
-            point = await laytripPoint.save();
+            }
+            if (!point) {
+                activity.addToWallet = false
+            }
+            const replay: any = await activity.save();
+            replay['marketingUser'] = user;
+            replay['rightAnswer'] = rightAnswer;
+            replay['mainUserId'] = existingUserId;
 
-        }
-        if (!point) {
-            activity.addToWallet = false
-        }
-        const replay: any = await activity.save();
-        replay['marketingUser'] = user;
-        replay['rightAnswer'] = rightAnswer;
-        replay['mainUserId'] = existingUserId;
+            return replay;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
 
-        return replay;
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async updateMarketingUser(updateMarketingUserDto: UpdateMarketingUserDto) {
-        const { user_id, first_name, last_name, email } = updateMarketingUserDto
+        try {
+            const { user_id, first_name, last_name, email } = updateMarketingUserDto
 
-        let user = await getManager()
-            .createQueryBuilder(MarketingUserData, "user")
-            .where(`user.id =:user_id`, { user_id })
-            .getOne();
-        var existingUserId = null;
-        if (!user.userId) {
-            let existingUser = await getManager()
-                .createQueryBuilder(User, "user")
-                .where(`email =:email AND is_deleted = false`, { email })
-                .andWhere(`"user"."role_id" in (:...roles) `, {
-                    roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
-                })
+            let user = await getManager()
+                .createQueryBuilder(MarketingUserData, "user")
+                .where(`user.id =:user_id`, { user_id })
                 .getOne();
+            var existingUserId = null;
+            if (!user.userId) {
+                let existingUser = await getManager()
+                    .createQueryBuilder(User, "user")
+                    .where(`email =:email AND is_deleted = false`, { email })
+                    .andWhere(`"user"."role_id" in (:...roles) `, {
+                        roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
+                    })
+                    .getOne();
 
-            if (existingUser) {
-                existingUserId = existingUser.userId
-            }
-        }
-        else {
-            existingUserId = user.userId
-        }
-
-
-        if (!user.email) {
-            user.firstName = first_name || null
-            user.lastName = last_name || null
-            user.email = email
-            user.userId = existingUserId;
-            await user.save()
-        }
-
-        if (existingUserId) {
-            const allActivity = await getManager()
-                .createQueryBuilder(MarketingUserActivity, "activity")
-                .where(`user_id = ${user.id} AND added_to_wallet = false`)
-                .getMany();
-            if (allActivity.length) {
-                for await (const activity of allActivity) {
-                    activity.addToWallet = existingUserId ? true : false
-                    var point = null;
-                    if (existingUserId && activity.reword > 0) {
-                        const laytripPoint = new LayCreditEarn
-                        laytripPoint.userId = existingUserId;
-                        laytripPoint.points = activity.reword;
-                        laytripPoint.earnDate = new Date();
-                        laytripPoint.creditMode = RewordMode.QUIZGAME;
-                        laytripPoint.status = RewordStatus.AVAILABLE;
-                        laytripPoint.creditBy = existingUserId;
-                        laytripPoint.description = `User played a game`
-                        point = await laytripPoint.save();
-                    }
-                    if (!point) {
-                        activity.addToWallet = false
-                    }
-                    const replay: any = await activity.save();
+                if (existingUser) {
+                    existingUserId = existingUser.userId
                 }
             }
+            else {
+                existingUserId = user.userId
+            }
+
+
+            if (!user.email) {
+                user.firstName = first_name || null
+                user.lastName = last_name || null
+                user.email = email
+                user.userId = existingUserId;
+                await user.save()
+            }
+
+            if (existingUserId) {
+                const allActivity = await getManager()
+                    .createQueryBuilder(MarketingUserActivity, "activity")
+                    .where(`user_id = ${user.id} AND added_to_wallet = false`)
+                    .getMany();
+                if (allActivity.length) {
+                    for await (const activity of allActivity) {
+                        activity.addToWallet = existingUserId ? true : false
+                        var point = null;
+                        if (existingUserId && activity.reword > 0) {
+                            const laytripPoint = new LayCreditEarn
+                            laytripPoint.userId = existingUserId;
+                            laytripPoint.points = activity.reword;
+                            laytripPoint.earnDate = new Date();
+                            laytripPoint.creditMode = RewordMode.QUIZGAME;
+                            laytripPoint.status = RewordStatus.AVAILABLE;
+                            laytripPoint.creditBy = existingUserId;
+                            laytripPoint.description = `User played a game`
+                            point = await laytripPoint.save();
+                        }
+                        if (!point) {
+                            activity.addToWallet = false
+                        }
+                        const replay: any = await activity.save();
+                    }
+                }
+            }
+            return user;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
-        return user;
     }
 
     async checkUserAlredyPlayedOrNot(userId, gameId) {
-        let users = await getManager()
-            .createQueryBuilder(MarketingUserData, "user")
-            .where(`user_id =:userId`, { userId })
-            .getMany();
+        try {
+            let users = await getManager()
+                .createQueryBuilder(MarketingUserData, "user")
+                .where(`user_id =:userId`, { userId })
+                .getMany();
 
-        var tDate = new Date();
+            var tDate = new Date();
 
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.status = true AND game.id =:gameId", { gameId })
-            .getOne();
-        var gamePlayed = []
-
-        var periodTime = new Date();
-        periodTime.setTime(tDate.getTime() - (game.gameAvailableAfter * 60 * 60 * 1000));
-        console.log(periodTime);
-        var date = periodTime.toISOString()
-        date = date
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "");
-        for await (const user of users) {
-            const activity = await getManager()
-                .createQueryBuilder(MarketingUserActivity, "activity")
-                .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where("game.is_deleted = false AND game.status = true AND game.id =:gameId", { gameId })
                 .getOne();
-            if (activity) {
-                return false
+            var gamePlayed = []
+
+            var periodTime = new Date();
+            periodTime.setTime(tDate.getTime() - (game.gameAvailableAfter * 60 * 60 * 1000));
+            console.log(periodTime);
+            var date = periodTime.toISOString()
+            date = date
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            for await (const user of users) {
+                const activity = await getManager()
+                    .createQueryBuilder(MarketingUserActivity, "activity")
+                    .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
+                    .getOne();
+                if (activity) {
+                    return false
+                }
             }
+            return true;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
-        return true;
     }
 
     // async addWheelOption(addWheelDto: AddWheelDto) {
@@ -660,76 +1205,134 @@ export class MarketingService {
     // }
 
     async wheelGameOptionListForUser() {
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
+        try {
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
 
-            .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Wheel game not avilable`)
-        }
-        let [markup, count] = await getManager()
-            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-            .select(["markup.id", "markup.answerValue", "markup.rewordPoint"])
-            .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
-            .getManyAndCount();
+                .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Wheel game not avilable`)
+            }
+            let [markup, count] = await getManager()
+                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+                .select(["markup.id", "markup.answerValue", "markup.rewordPoint"])
+                .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
+                .getManyAndCount();
 
-        return {
-            data: markup, count: count
+            return {
+                data: markup, count: count
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
     }
 
     async submitWheelGame(userId: number) {
-        let game = await getManager()
-            .createQueryBuilder(MarketingGame, "game")
-            .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
-            .getOne();
-        if (!game) {
-            throw new NotFoundException(`Wheel game not avilable`)
-        }
+        try {
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
+                .getOne();
+            if (!game) {
+                throw new NotFoundException(`Wheel game not avilable`)
+            }
 
-        let [markup, count] = await getManager()
-            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-            .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
-            .getManyAndCount();
-        const random = await this.between(0, count - 1)
-        console.log(random);
+            let [markup, count] = await getManager()
+                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+                .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
+                .getManyAndCount();
+            const random = await this.between(0, count - 1)
+            console.log(random);
 
-        const reword = markup[random]
-        const rewordPoint = reword.rewordPoint;
-        let user = await getManager()
-            .createQueryBuilder(MarketingUserData, "user")
-            .where(`user.id =:userId`, { userId })
-            .getOne();
-        var existingUserId = null;
-        if (user.userId) {
-            existingUserId = user.userId
+            const reword = markup[random]
+            const rewordPoint = reword.rewordPoint;
+            let user = await getManager()
+                .createQueryBuilder(MarketingUserData, "user")
+                .where(`user.id =:userId`, { userId })
+                .getOne();
+            var existingUserId = null;
+            if (user.userId) {
+                existingUserId = user.userId
+            }
+            const activity = new MarketingUserActivity;
+            activity.userId = user.id
+            activity.gameId = game.id
+            activity.reword = rewordPoint;
+            activity.addToWallet = existingUserId ? true : false
+            activity.createdDate = new Date();
+            var point = null;
+            if (existingUserId && rewordPoint > 0) {
+                const laytripPoint = new LayCreditEarn
+                laytripPoint.userId = existingUserId;
+                laytripPoint.points = rewordPoint;
+                laytripPoint.earnDate = new Date();
+                laytripPoint.creditMode = RewordMode.WHEELGAME;
+                laytripPoint.status = RewordStatus.AVAILABLE;
+                laytripPoint.creditBy = existingUserId;
+                laytripPoint.description = `User played a game`
+                point = await laytripPoint.save();
+            }
+            if (!point) {
+                activity.addToWallet = false
+            }
+            const replay: any = await activity.save();
+            replay['marketingUser'] = user;
+            replay['reword'] = markup[random];
+            return replay;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
-        const activity = new MarketingUserActivity;
-        activity.userId = user.id
-        activity.gameId = game.id
-        activity.reword = rewordPoint;
-        activity.addToWallet = existingUserId ? true : false
-        activity.createdDate = new Date();
-        var point = null;
-        if (existingUserId && rewordPoint > 0) {
-            const laytripPoint = new LayCreditEarn
-            laytripPoint.userId = existingUserId;
-            laytripPoint.points = rewordPoint;
-            laytripPoint.earnDate = new Date();
-            laytripPoint.creditMode = RewordMode.WHEELGAME;
-            laytripPoint.status = RewordStatus.AVAILABLE;
-            laytripPoint.creditBy = existingUserId;
-            laytripPoint.description = `User played a game`
-            point = await laytripPoint.save();
-        }
-        if (!point) {
-            activity.addToWallet = false
-        }
-        const replay: any = await activity.save();
-        replay['marketingUser'] = user;
-        replay['reword'] = markup[random];
-        return replay;
     }
 
     async between(min, max) {
