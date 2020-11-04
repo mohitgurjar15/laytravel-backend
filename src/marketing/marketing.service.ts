@@ -1,10 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { errorMessage } from 'src/config/common.config';
+import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { MarketingGameRewordMarkup } from 'src/entity/marketing-game-reword-markup.entity';
 import { MarketingGame } from 'src/entity/marketing-game.entity';
 import { MarketingUserActivity } from 'src/entity/marketing-user-activity.entity';
 import { MarketingUserData } from 'src/entity/marketing-user.entity';
 import { QuizGameAnswer } from 'src/entity/quiz-game-answer.entity';
 import { QuizGameQuetion } from 'src/entity/quiz-game-quetion.entity';
+import { User } from 'src/entity/user.entity';
+import { PaidFor } from 'src/enum/paid-for.enum';
+import { RewordMode } from 'src/enum/reword-mode.enum';
+import { RewordStatus } from 'src/enum/reword-status.enum';
+import { Role } from 'src/enum/role.enum';
 import { getManager } from 'typeorm';
 import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.dto';
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
@@ -262,13 +269,17 @@ export class MarketingService {
                     gameName: game.gameName,
                     available: true
                 }
-                console.log(activity);
+                let check = true;
+                if (user.userId) {
+                    check = await this.checkUserAlredyPlayedOrNot(user.userId, game.id)
+                }
 
-                if (activity) {
+
+                if (activity || !check) {
                     gameAvailable['available'] = false
-                    var playedTime = new Date(activity.createdDate);
-                    // playedTime.setTime(playedTime.getTime() - periodTime.getTime());
-                    // gameAvailable['availableAfter'] = playedTime;
+                    if (!check) {
+                        gameAvailable['message'] = `You played this game in other device`
+                    }
                 }
                 gamePlayed.push(gameAvailable)
             }
@@ -418,14 +429,130 @@ export class MarketingService {
         }
     }
 
-    async quizResult(quizResult:QuizResultDto){
-        const {user_id , first_name , last_name , email , quiz_answer} = quizResult
+    async quizResult(quizResult: QuizResultDto) {
+        const { user_id, first_name, last_name, email, quiz_answer } = quizResult
 
         let user = await getManager()
             .createQueryBuilder(MarketingUserData, "user")
             .where(`user.id =:user_id`, { user_id })
             .getOne();
+        var existingUserId = null;
+        if (!user.userId) {
+            let existingUser = await getManager()
+                .createQueryBuilder(User, "user")
+                .where(`email =:email AND is_deleted = false`, { email })
+                .andWhere(`"user"."role_id" in (:...roles) `, {
+                    roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
+                })
+                .getOne();
 
-        
+            if (existingUser) {
+                existingUserId = existingUser.userId
+            }
+        }
+        else {
+            existingUserId = user.userId
+        }
+        var rightAnswer = 0;
+        for await (const quizAnswer of quiz_answer) {
+            let option = await getManager()
+                .createQueryBuilder(QuizGameAnswer, "quizAnswer")
+                .where(`quetion_id = ${quizAnswer.quetion_id} AND id = ${quizAnswer.option_id} AND is_right = true`)
+                .getOne();
+
+            if (option) {
+                rightAnswer = rightAnswer + 1
+            }
+        }
+
+        if (!user.email) {
+            user.firstName = first_name
+            user.lastName = last_name
+            user.email = email
+            user.userId = existingUserId;
+            await user.save()
+        }
+        let game = await getManager()
+            .createQueryBuilder(MarketingGame, "game")
+            .where(`game_name = 'Quiz' AND is_deleted = false`)
+            .getOne();
+        if (!game) {
+            throw new InternalServerErrorException(`Game not found  &&&game&&&${errorMessage}`)
+        }
+
+        const check = await this.checkUserAlredyPlayedOrNot(existingUserId, game.id)
+
+        if (!check) {
+            throw new ConflictException(`You alredy play a game on your ${user.deviceModel} device`)
+        }
+        let markup = await getManager()
+            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+            .where(`game_id = ${game.id} AND answer_value = '${rightAnswer}' AND status = true AND is_deleted = false`)
+            .getOne();
+        console.log(rightAnswer);
+        var rewordPoint = 0;
+        if (markup) {
+            rewordPoint = markup.rewordPoint;
+        }
+
+        const activity = new MarketingUserActivity;
+        activity.userId = user.id
+        activity.gameId = game.id
+        activity.reword = rewordPoint;
+        activity.addToWallet = existingUserId ? true : false
+        activity.createdDate = new Date();
+        var point = null;
+        if (existingUserId && rewordPoint > 0) {
+            const laytripPoint = new LayCreditEarn
+            laytripPoint.userId = existingUserId;
+            laytripPoint.points = rewordPoint;
+            laytripPoint.earnDate = new Date();
+            laytripPoint.creditMode = RewordMode.GAME;
+            laytripPoint.status = RewordStatus.AVAILABLE;
+            laytripPoint.creditBy = existingUserId;
+            laytripPoint.description = `User played a game`
+            point = await laytripPoint.save();
+
+        }
+        if (!point) {
+            activity.addToWallet = false
+        }
+        const replay: any = await activity.save();
+        replay['marketingUser'] = user;
+        replay['rightAnswer'] = rightAnswer;
+        replay['mainUserId'] = existingUserId;
+
+        return replay;
+    }
+
+    async checkUserAlredyPlayedOrNot(userId, gameId) {
+        let users = await getManager()
+            .createQueryBuilder(MarketingUserData, "user")
+            .where(`user.user_id =:userId`, { userId })
+            .getMany();
+
+        var tDate = new Date();
+
+        let game = await getManager()
+            .createQueryBuilder(MarketingGame, "game")
+            .where("game.is_deleted = false AND game.status = true AND game.id =:", { gameId })
+            .getOne();
+        var gamePlayed = []
+
+        var periodTime = new Date();
+        periodTime.setTime(tDate.getTime() - (game.gameAvailableAfter * 60 * 60 * 1000));
+        console.log(periodTime);
+        var date = periodTime.toISOString()
+        date = date
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "");
+        for await (const user of users) {
+            const activity = await getManager()
+                .createQueryBuilder(MarketingUserActivity, "activity")
+                .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
+                .getOne();
+            return false
+        }
+        return true;
     }
 }
