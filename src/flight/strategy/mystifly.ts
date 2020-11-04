@@ -58,7 +58,6 @@ export class Mystifly implements StrategyAirline{
     async createSession(){
 
         const mystiflyConfig =await this.getMystiflyCredential();
-        
         const requestBody = 
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
             <soapenv:Header/>
@@ -132,6 +131,7 @@ export class Mystifly implements StrategyAirline{
     async oneWaySearch(searchFlightDto:OneWaySearchFlightDto,user)/* :Promise<FlightSearchResult> */ {
         
         const mystiflyConfig = await this.getMystiflyCredential();
+
         const sessionToken = await this.startSession();
         const {
             source_location,
