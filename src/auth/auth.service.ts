@@ -620,7 +620,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`Given otp is wrong.&&&token&&&Given otp is wrong.`
+				`You have entered wrong otp.&&&token&&&You have entered wrong otp.`
 			);
 		}
 	}

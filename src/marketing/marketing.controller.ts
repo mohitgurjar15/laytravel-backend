@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
@@ -14,11 +14,13 @@ import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { MarketingService } from './marketing.service';
 import { AddQuetionDto } from './dto/add-quetion-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
+import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 
 @Controller('marketing')
+@ApiTags("Marketing")
 @ApiBearerAuth()
 export class MarketingController {
-    constructor(private marketingService: MarketingService) {}
+	constructor(private marketingService: MarketingService) { }
 	/**
 	 *
 	 * @param paginationOption
@@ -33,11 +35,11 @@ export class MarketingController {
 	})
 	@ApiResponse({ status: 404, description: "not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listGames(){
+	async listGames() {
 		return await this.marketingService.listGame();
-    }
-    
-    @Get('game/:id')
+	}
+
+	@Get('game/:id')
 	@ApiOperation({ summary: "get a game data with markup" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -47,25 +49,25 @@ export class MarketingController {
 	})
 	@ApiResponse({ status: 404, description: "not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getGame(@Param("id") id: number){
+	async getGame(@Param("id") id: number) {
 		return await this.marketingService.getGameData(id);
 	}
 
-	@Roles(Role.SUPER_ADMIN)
-	@UseGuards(AuthGuard(),RolesGuard)
-	@ApiOperation({ summary: "add new game"})
-	@ApiResponse({ status: 200, description: 'Api success' })
-	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post('game')
-    @HttpCode(200)
-	async addGame(
-	    @Body() createGameDto:CreateGameDto
-	){
-		return await this.marketingService.addGame(createGameDto);
-	}
+	// @Roles(Role.SUPER_ADMIN)
+	// @UseGuards(AuthGuard(),RolesGuard)
+	// @ApiOperation({ summary: "add new game"})
+	// @ApiResponse({ status: 200, description: 'Api success' })
+	// @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	// @ApiResponse({ status: 500, description: "Internal server error!" })
+	// @Post('game')
+	// @HttpCode(200)
+	// async addGame(
+	//     @Body() createGameDto:CreateGameDto
+	// ){
+	// 	return await this.marketingService.addGame(createGameDto);
+	// }
 
-	@Roles(Role.SUPER_ADMIN ,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Update Game by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -76,57 +78,57 @@ export class MarketingController {
 	async updateGame(
 		@Param("id") id: number,
 		@Body() updateGameDto: UpdateGameDto
-	){
-		return await this.marketingService.updateGame(id,updateGameDto)
+	) {
+		return await this.marketingService.updateGame(id, updateGameDto)
 	}
 
-	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
-	@UseGuards(AuthGuard(),RolesGuard)
-	@ApiOperation({ summary: "Change status of game by super admin"})
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "Change status of game by super admin" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 404, description: 'Not Found' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Patch('game/:id')
 	async changeStatus(
-	    @Param('id') id:number,
-	    @Body() activeInactiveGameDto:ActiveInactiveGameDto
-	){
-	    return await this.marketingService.activeInactiveGame(id,activeInactiveGameDto);
+		@Param('id') id: number,
+		@Body() activeInactiveGameDto: ActiveInactiveGameDto
+	) {
+		return await this.marketingService.activeInactiveGame(id, activeInactiveGameDto);
 	}
+
+	// @Roles(Role.SUPER_ADMIN)
+	// @UseGuards(AuthGuard(), RolesGuard)
+	// @ApiOperation({ summary: "Delete game by super admin" })
+	// @ApiResponse({ status: 200, description: "Api success" })
+	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	// @ApiResponse({ status: 404, description: "Not Found" })
+	// @ApiResponse({ status: 500, description: "Internal server error!" })
+	// @Delete("game/:id")
+	// async deleteGame(
+	// 	@Param("id") id: number,
+
+	// ){
+	// 	return await this.marketingService.deleteGame(id);
+	// }
+
+
 
 	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
-	@ApiOperation({ summary: "Delete game by super admin" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not Found" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@Delete("game/:id")
-	async deleteGame(
-		@Param("id") id: number,
-		
-	){
-		return await this.marketingService.deleteGame(id);
-    }
-
-
-
-    @Roles(Role.SUPER_ADMIN)
-	@UseGuards(AuthGuard(),RolesGuard)
-	@ApiOperation({ summary: "add new game markup"})
+	@ApiOperation({ summary: "add new game markup" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post('game-markup')
-    @HttpCode(200)
+	@Post('game-markup')
+	@HttpCode(200)
 	async addGameMarkup(
-	    @Body() addRewordMarkup:addRewordMarkupDto
-	){
+		@Body() addRewordMarkup: addRewordMarkupDto
+	) {
 		return await this.marketingService.addRewordMarkup(addRewordMarkup);
 	}
 
-	@Roles(Role.SUPER_ADMIN ,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Update Game markup by super admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -137,23 +139,23 @@ export class MarketingController {
 	async updateGameMarkup(
 		@Param("id") id: number,
 		@Body() updateRewordMarkupDto: UpdateRewordMarkupDto
-	){
-		return await this.marketingService.UpateRewordMarkup(id,updateRewordMarkupDto)
+	) {
+		return await this.marketingService.UpateRewordMarkup(id, updateRewordMarkupDto)
 	}
 
-	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
-	@UseGuards(AuthGuard(),RolesGuard)
-	@ApiOperation({ summary: "Change status of game markup by super admin"})
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "Change status of game markup by super admin" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 404, description: 'Not Found' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Patch('game-markup/:id')
 	async changeStatusGameMarkup(
-	    @Param('id') id:number,
-	    @Body() activeInactiveGameMarkupDto:ActiveInactiveGameMarkupDto
-	){
-	    return await this.marketingService.activeInactiveGameMarkup(id,activeInactiveGameMarkupDto);
+		@Param('id') id: number,
+		@Body() activeInactiveGameMarkupDto: ActiveInactiveGameMarkupDto
+	) {
+		return await this.marketingService.activeInactiveGameMarkup(id, activeInactiveGameMarkupDto);
 	}
 
 	@Roles(Role.SUPER_ADMIN)
@@ -166,70 +168,103 @@ export class MarketingController {
 	@Delete("game-markup/:id")
 	async deleteGameMarkup(
 		@Param("id") id: number,
-	){
+	) {
 		return await this.marketingService.deleteGameMarkup(id);
-    }
-    
-    
-	@ApiOperation({ summary: "user detail "})
+	}
+
+
+	@ApiOperation({ summary: "user detail " })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post('user')
-    @HttpCode(200)
+	@Post('user')
+	@HttpCode(200)
 	async newUser(
-	    @Body() createMarketingUserDto:CreateMarketingUserDto
-	){
+		@Body() createMarketingUserDto: CreateMarketingUserDto
+	) {
 		return await this.marketingService.marketingUser(createMarketingUserDto);
 	}
-	
+
 	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
-	@ApiOperation({ summary: "add new quetion for the quiz game"})
+	@ApiOperation({ summary: "add new quetion for the quiz game" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post('quiz')
-    @HttpCode(200)
+	@Post('quiz')
+	@HttpCode(200)
 	async newQuetion(
-	    @Body() addQuetionDto:AddQuetionDto
-	){
+		@Body() addQuetionDto: AddQuetionDto
+	) {
 		return await this.marketingService.addQuetionAnswer(addQuetionDto);
 	}
 
 	@Roles(Role.SUPER_ADMIN)
 	@UseGuards(AuthGuard(), RolesGuard)
-	@ApiOperation({ summary: "list quiz game for admin"})
+	@ApiOperation({ summary: "list quiz game for admin" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Get('list-quiz-for-admin')
+	@Get('quiz/list-for-admin')
 	async listQuizforAdmin(
-	){
+	) {
 		return await this.marketingService.getQuetionForAdmin();
 	}
 
 
-	@ApiOperation({ summary: "list quiz game for user"})
+	@ApiOperation({ summary: "list quiz game for user" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Get('list-quiz-for-user')
+	@Get('quiz/list-for-user')
 	async listQuizforUser(
-	){
+	) {
 		return await this.marketingService.getQuetionForUser();
 	}
 
-	@ApiOperation({ summary: "submit quiz"})
+	@ApiOperation({ summary: "submit quiz" })
 	@ApiResponse({ status: 200, description: 'Api success' })
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post('quiz/submit')
-    @HttpCode(200)
+	@Post('quiz/submit')
+	@HttpCode(200)
 	async submitQuiz(
-	    @Body() quizResultDto:QuizResultDto
-	){
+		@Body() quizResultDto: QuizResultDto
+	) {
 		return await this.marketingService.quizResult(quizResultDto);
 	}
 
+	@ApiOperation({ summary: "list wheel option for user" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Get('wheel/list-for-user')
+	async listWheelforUser(
+	) {
+		return await this.marketingService.wheelGameOptionListForUser();
+	}
+
+	@ApiOperation({ summary: "wheel submit for user" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 404, description: 'Not Found' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Patch('wheel/:user_id')
+	async wheelResult(
+		@Param('user_id') id: number,
+	){
+		return await this.marketingService.submitWheelGame(id);
+	}
+
+	@ApiOperation({ summary: "Update marketing user data" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 404, description: 'Not Found' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Put('user')
+	async updateMarketingUser(
+		@Body() userData: UpdateMarketingUserDto
+	){
+		return await this.marketingService.updateMarketingUser(userData);
+	}
 }

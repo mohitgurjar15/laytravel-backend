@@ -17,11 +17,13 @@ import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.d
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
 import { AddQuetionDto } from './dto/add-quetion-answer.dto';
 import { addRewordMarkupDto } from './dto/add-reword-markup.dto';
+import { AddWheelDto } from './dto/wheel-result.dto';
 import { CreateGameDto } from './dto/new-game.dto';
 import { CreateMarketingUserDto } from './dto/new-marketing-user.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
+import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 
 @Injectable()
 export class MarketingService {
@@ -58,7 +60,7 @@ export class MarketingService {
     }
 
     async updateGame(id: number, updateGameDto: UpdateGameDto) {
-        const { game_name, available_after } = updateGameDto
+        const { available_after } = updateGameDto
 
 
 
@@ -70,7 +72,7 @@ export class MarketingService {
             throw new NotFoundException(`Given game id not found`)
         }
 
-        game.gameName = game_name;
+        //game.gameName = game_name;
         game.gameAvailableAfter = available_after,
             game.updatedDate = new Date();
 
@@ -291,8 +293,16 @@ export class MarketingService {
 
     async addQuetionAnswer(addQuetionDto: AddQuetionDto) {
         const {
-            quetion, game_id, options
+            quetion,  options
         } = addQuetionDto
+
+        let game = await getManager()
+            .createQueryBuilder(MarketingGame, "game")
+            .where(`game.is_deleted = false AND game.game_name =:name`, { name: `Quiz` })
+            .getOne();
+        if (!game) {
+            throw new NotFoundException(`Quiz game not avilable`)
+        }
 
         if (options.length > 4) {
             throw new BadRequestException(`Only 4 option avilable for a quetion`)
@@ -316,7 +326,7 @@ export class MarketingService {
         }
 
         const quetionData = new QuizGameQuetion;
-        quetionData.gameId = game_id;
+        quetionData.gameId = game.id;
         quetionData.quetion = quetion;
         quetionData.createdDate = new Date();
         quetionData.status = true;
@@ -466,8 +476,8 @@ export class MarketingService {
         }
 
         if (!user.email) {
-            user.firstName = first_name
-            user.lastName = last_name
+            user.firstName = first_name || null
+            user.lastName = last_name || null
             user.email = email
             user.userId = existingUserId;
             await user.save()
@@ -507,7 +517,7 @@ export class MarketingService {
             laytripPoint.userId = existingUserId;
             laytripPoint.points = rewordPoint;
             laytripPoint.earnDate = new Date();
-            laytripPoint.creditMode = RewordMode.GAME;
+            laytripPoint.creditMode = RewordMode.QUIZGAME;
             laytripPoint.status = RewordStatus.AVAILABLE;
             laytripPoint.creditBy = existingUserId;
             laytripPoint.description = `User played a game`
@@ -525,17 +535,81 @@ export class MarketingService {
         return replay;
     }
 
+    async updateMarketingUser(updateMarketingUserDto: UpdateMarketingUserDto) {
+        const { user_id, first_name, last_name, email } = updateMarketingUserDto
+
+        let user = await getManager()
+            .createQueryBuilder(MarketingUserData, "user")
+            .where(`user.id =:user_id`, { user_id })
+            .getOne();
+        var existingUserId = null;
+        if (!user.userId) {
+            let existingUser = await getManager()
+                .createQueryBuilder(User, "user")
+                .where(`email =:email AND is_deleted = false`, { email })
+                .andWhere(`"user"."role_id" in (:...roles) `, {
+                    roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
+                })
+                .getOne();
+
+            if (existingUser) {
+                existingUserId = existingUser.userId
+            }
+        }
+        else {
+            existingUserId = user.userId
+        }
+
+
+        if (!user.email) {
+            user.firstName = first_name || null
+            user.lastName = last_name || null
+            user.email = email
+            user.userId = existingUserId;
+            await user.save()
+        }
+
+        if (existingUserId) {
+            const allActivity = await getManager()
+                .createQueryBuilder(MarketingUserActivity, "activity")
+                .where(`user_id = ${user.id} AND added_to_wallet = false`)
+                .getMany();
+            if (allActivity.length) {
+                for await (const activity of allActivity) {
+                    activity.addToWallet = existingUserId ? true : false
+                    var point = null;
+                    if (existingUserId && activity.reword > 0) {
+                        const laytripPoint = new LayCreditEarn
+                        laytripPoint.userId = existingUserId;
+                        laytripPoint.points = activity.reword;
+                        laytripPoint.earnDate = new Date();
+                        laytripPoint.creditMode = RewordMode.QUIZGAME;
+                        laytripPoint.status = RewordStatus.AVAILABLE;
+                        laytripPoint.creditBy = existingUserId;
+                        laytripPoint.description = `User played a game`
+                        point = await laytripPoint.save();
+                    }
+                    if (!point) {
+                        activity.addToWallet = false
+                    }
+                    const replay: any = await activity.save();
+                }
+            }
+        }
+        return user;
+    }
+
     async checkUserAlredyPlayedOrNot(userId, gameId) {
         let users = await getManager()
             .createQueryBuilder(MarketingUserData, "user")
-            .where(`user.user_id =:userId`, { userId })
+            .where(`user_id =:userId`, { userId })
             .getMany();
 
         var tDate = new Date();
 
         let game = await getManager()
             .createQueryBuilder(MarketingGame, "game")
-            .where("game.is_deleted = false AND game.status = true AND game.id =:", { gameId })
+            .where("game.is_deleted = false AND game.status = true AND game.id =:gameId", { gameId })
             .getOne();
         var gamePlayed = []
 
@@ -551,8 +625,116 @@ export class MarketingService {
                 .createQueryBuilder(MarketingUserActivity, "activity")
                 .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
                 .getOne();
-            return false
+            if (activity) {
+                return false
+            }
         }
         return true;
+    }
+
+    // async addWheelOption(addWheelDto: AddWheelDto) {
+    //     const { option, rewordPoint } = addWheelDto;
+
+    //     let game = await getManager()
+    //         .createQueryBuilder(MarketingGame, "game")
+    //         .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
+    //         .getOne();
+    //     if (!game) {
+    //         throw new NotFoundException(`Wheel game not found`)
+    //     }
+
+
+    //     const markup = new MarketingGameRewordMarkup();
+
+    //     markup.gameId = game.id;
+    //     markup.answerValue = option;
+    //     markup.rewordPoint = rewordPoint;
+    //     markup.createdDate = new Date();
+    //     markup.status = true;
+    //     markup.isDeleted = false;
+
+    //     await markup.save()
+    //     return {
+    //         message: `Wheel game option added succefully`
+    //     }
+    // }
+
+    async wheelGameOptionListForUser() {
+        let game = await getManager()
+            .createQueryBuilder(MarketingGame, "game")
+
+            .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
+            .getOne();
+        if (!game) {
+            throw new NotFoundException(`Wheel game not avilable`)
+        }
+        let [markup, count] = await getManager()
+            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+            .select(["markup.id", "markup.answerValue", "markup.rewordPoint"])
+            .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
+            .getManyAndCount();
+
+        return {
+            data: markup, count: count
+        }
+    }
+
+    async submitWheelGame(userId: number) {
+        let game = await getManager()
+            .createQueryBuilder(MarketingGame, "game")
+            .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
+            .getOne();
+        if (!game) {
+            throw new NotFoundException(`Wheel game not avilable`)
+        }
+
+        let [markup, count] = await getManager()
+            .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+            .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
+            .getManyAndCount();
+        const random = await this.between(0, count - 1)
+        console.log(random);
+
+        const reword = markup[random]
+        const rewordPoint = reword.rewordPoint;
+        let user = await getManager()
+            .createQueryBuilder(MarketingUserData, "user")
+            .where(`user.id =:userId`, { userId })
+            .getOne();
+        var existingUserId = null;
+        if (user.userId) {
+            existingUserId = user.userId
+        }
+        const activity = new MarketingUserActivity;
+        activity.userId = user.id
+        activity.gameId = game.id
+        activity.reword = rewordPoint;
+        activity.addToWallet = existingUserId ? true : false
+        activity.createdDate = new Date();
+        var point = null;
+        if (existingUserId && rewordPoint > 0) {
+            const laytripPoint = new LayCreditEarn
+            laytripPoint.userId = existingUserId;
+            laytripPoint.points = rewordPoint;
+            laytripPoint.earnDate = new Date();
+            laytripPoint.creditMode = RewordMode.WHEELGAME;
+            laytripPoint.status = RewordStatus.AVAILABLE;
+            laytripPoint.creditBy = existingUserId;
+            laytripPoint.description = `User played a game`
+            point = await laytripPoint.save();
+        }
+        if (!point) {
+            activity.addToWallet = false
+        }
+        const replay: any = await activity.save();
+        replay['marketingUser'] = user;
+        replay['reword'] = markup[random];
+        return replay;
+    }
+
+    async between(min, max) {
+        return Math.ceil(
+            Math.random() * (max - min) + min
+        )
     }
 }
