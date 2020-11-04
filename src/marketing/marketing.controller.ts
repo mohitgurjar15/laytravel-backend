@@ -13,6 +13,7 @@ import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { MarketingService } from './marketing.service';
 import { AddQuetionDto } from './dto/add-quetion-answer.dto';
+import { QuizResultDto } from './dto/quiz-result.dto';
 
 @Controller('marketing')
 @ApiBearerAuth()
@@ -218,4 +219,17 @@ export class MarketingController {
 	){
 		return await this.marketingService.getQuetionForUser();
 	}
+
+	@ApiOperation({ summary: "submit quiz"})
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+    @Post('quiz/submit')
+    @HttpCode(200)
+	async submitQuiz(
+	    @Body() quizResultDto:QuizResultDto
+	){
+		return await this.marketingService.quizResult(quizResultDto);
+	}
+
 }
