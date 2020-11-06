@@ -54,6 +54,7 @@ export class NewsLettersService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: "Welcome to Laytrip",
 					html: subscribeForNewsUpdates(),
 				})

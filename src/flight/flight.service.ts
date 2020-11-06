@@ -52,6 +52,7 @@ import { PriceMarkup } from "src/utility/markup.utility";
 import { NetRateDto } from "./dto/net-rate.dto";
 import { Generic } from "src/utility/generic.utility";
 const mailConfig = config.get("email");
+import * as uniqid from 'uniqid';
 
 @Injectable()
 export class FlightService {
@@ -151,7 +152,7 @@ export class FlightService {
 		return true;
 	} */
 
-	async getSellingPrice(netRateDto:NetRateDto,user){
+	async getSellingPrice(netRateDto: NetRateDto, user) {
 
 		const {
 			departure_date,
@@ -159,55 +160,55 @@ export class FlightService {
 		} = netRateDto;
 
 		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name:'flight' })
-            .getOne();
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
 
 		const bookingDate = moment().format("YYYY-MM-DD");
-		let result = await this.getMarkupDetails(departure_date,bookingDate,user,module);
-		let sellingPrice = PriceMarkup.applyMarkup(net_rate,result.markUpDetails);
-		let secondarySellingPrice = PriceMarkup.applyMarkup(net_rate,result.secondaryMarkUpDetails) || 0;
+		let result = await this.getMarkupDetails(departure_date, bookingDate, user, module);
+		let sellingPrice = PriceMarkup.applyMarkup(net_rate, result.markUpDetails);
+		let secondarySellingPrice = PriceMarkup.applyMarkup(net_rate, result.secondaryMarkUpDetails) || 0;
 
 		sellingPrice = Generic.formatPriceDecimal(sellingPrice);
 		secondarySellingPrice = Generic.formatPriceDecimal(secondarySellingPrice);
 
-		let response=[];
-		response[0]={
-			net_rate : net_rate,
-			selling_price : sellingPrice,
-			secondary_selling_price : secondarySellingPrice
+		let response = [];
+		response[0] = {
+			net_rate: net_rate,
+			selling_price: sellingPrice,
+			secondary_selling_price: secondarySellingPrice
 		}
 		return response;
 	}
 
-	async getMarkupDetails(departure_date,bookingDate,user,module){
-        let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date,bookingDate);
-        
-        let markUpDetails;
-        let secondaryMarkUpDetails;
-        if(!user.roleId || user.roleId==7 ){
-            
-            markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
-        }
-        else if(isInstalmentAvaible && (user.roleId==5 || user.roleId==6)){
-            
-            markUpDetails            = await PriceMarkup.getMarkup(module.id,user.roleId,'instalment');
-            secondaryMarkUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
-        }
-        else{
-            markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId,'no-instalment');
-        }
-        
-        if(!markUpDetails){
-            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
-        }
-        else{
-            return {
-                markUpDetails,
-                secondaryMarkUpDetails
-            }
-        }
-    }
+	async getMarkupDetails(departure_date, bookingDate, user, module) {
+		let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date, bookingDate);
+
+		let markUpDetails;
+		let secondaryMarkUpDetails;
+		if (!user.roleId || user.roleId == 7) {
+
+			markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId, 'no-instalment');
+		}
+		else if (isInstalmentAvaible && (user.roleId == 5 || user.roleId == 6)) {
+
+			markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId, 'instalment');
+			secondaryMarkUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId, 'no-instalment');
+		}
+		else {
+			markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId, 'no-instalment');
+		}
+
+		if (!markUpDetails) {
+			throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+		}
+		else {
+			return {
+				markUpDetails,
+				secondaryMarkUpDetails
+			}
+		}
+	}
 
 	async searchOneWayFlight(
 		searchFlightDto: OneWaySearchFlightDto,
@@ -685,16 +686,16 @@ export class FlightService {
 					? airRevalidateResult[0].infant_count
 					: 0;
 			bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
-			if(payment_type == PaymentType.INSTALMENT){
+			if (payment_type == PaymentType.INSTALMENT) {
 				bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
 			}
-			else{
-				
-				if(typeof airRevalidateResult[0].secondary_selling_price!='undefined' && airRevalidateResult[0].secondary_selling_price>0){
+			else {
+
+				if (typeof airRevalidateResult[0].secondary_selling_price != 'undefined' && airRevalidateResult[0].secondary_selling_price > 0) {
 
 					bookingRequestInfo.selling_price = airRevalidateResult[0].secondary_selling_price;
 				}
-				else{
+				else {
 					bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
 				}
 			}
@@ -999,7 +1000,7 @@ export class FlightService {
 		let booking = new Booking();
 		booking.id = uuidv4();
 		booking.moduleId = moduleDetails.id;
-
+		booking.laytripBookingId = uniqid.process();
 		booking.bookingType = bookingType;
 		booking.currency = currencyId;
 		booking.totalAmount = selling_price.toString();
@@ -1317,7 +1318,7 @@ export class FlightService {
 				})
 			}
 
-			var paymentDetail = bookingData.bookingInstalments ;
+			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
 			var EmailSubject = '';
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
@@ -1330,7 +1331,7 @@ export class FlightService {
 					})
 				}
 			}
-			else{
+			else {
 				EmailSubject = "Flight Booking Confirmation"
 				installmentDetail.push({
 					amount: bookingData.currency2.symbol + bookingData.totalAmount,
@@ -1372,6 +1373,7 @@ export class FlightService {
 				.sendMail({
 					to: user.email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: EmailSubject,
 					html: await FlightBookingConfirmtionMail(param),
 				})
@@ -1382,17 +1384,18 @@ export class FlightService {
 					console.log("err", err);
 				});
 		}
-		else if (bookingData.bookingStatus == 2){
+		else if (bookingData.bookingStatus == 2) {
 			var status = "Failed"
 			this.mailerService
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
-						error : null
+						error: null
 					}),
-					
+
 				})
 				.then((res) => {
 					console.log("res", res);
@@ -1401,7 +1404,7 @@ export class FlightService {
 					console.log("err", err);
 				});
 		}
-		else{
+		else {
 			var status = "Canceled"
 		}
 	}

@@ -15,36 +15,6 @@ export class QuizResultDto {
     user_id: number;
 
     
-    @ApiProperty({
-        description: `Enter First Name`,
-        example: `Jon`
-    })
-    first_name: string;
-
-    @ApiProperty({
-        description: `Enter Last Name`,
-        example: `Doe`
-    })
-    last_name: string;
-
-    @IsEmail(
-        {},
-        {
-            message: (args: ValidationArguments) => {
-                if (typeof args.value == "undefined" || args.value == "") {
-                    return `Please enter your email address.&&&email`;
-                } else {
-                    return `Please Enter valid email address.&&&email`;
-                }
-            },
-        },
-    )
-    @ApiProperty({
-        description: `Enter Email Id`,
-        example: `jon.doe@gmail.com`
-    })
-    email: string;
-
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => quiz)

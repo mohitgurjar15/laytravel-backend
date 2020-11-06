@@ -159,6 +159,7 @@ export class BookingService {
 				.sendMail({
 					to: user.email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: EmailSubject,
 					html: await FlightBookingConfirmtionMail(param),
 				})
@@ -175,6 +176,7 @@ export class BookingService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null

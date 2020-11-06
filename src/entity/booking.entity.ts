@@ -87,6 +87,9 @@ export class Booking extends BaseEntity {
   @Column("character varying", { name: "card_token", length: 200 , nullable : true})
   cardToken: string|null;
 
+  @Column("character varying", { name: "laytrip_booking_id", length: 200 , nullable : true})
+  laytripBookingId: string|null;
+
   @Column("boolean", { name: "is_ticketd", default: () => false})
   isTicketd: boolean;
 

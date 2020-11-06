@@ -24,6 +24,9 @@ import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
+import { exit } from 'process';
+import { UserCard } from 'src/entity/user-card.entity';
+import { SubmitWheelDto } from './dto/wheel-submit.dto';
 
 @Injectable()
 export class MarketingService {
@@ -510,71 +513,60 @@ export class MarketingService {
     async marketingUser(userDto: CreateMarketingUserDto) {
         try {
             const {
-                signup_via, device_model, device_type, ip_address, app_version, os_version
+                signup_via, device_model, device_type, ip_address, app_version, os_version, name, email
             } = userDto
 
             let user = await getManager()
-                .createQueryBuilder(MarketingUserData, "markup")
-                .where(`markup.ip_address =:ip_address`, { ip_address })
+                .createQueryBuilder(MarketingUserData, "user")
+                .where(`email =:email `, { email })
                 .getOne();
 
+            if (user && user.ipAddress != ip_address) {
+                throw new ConflictException(`Givel email id alredy used`)
+            }
+            let existingUser = await getManager()
+                .createQueryBuilder(User, "user")
+                .where(`email =:email AND is_deleted = false`, { email })
+                .andWhere(`"user"."role_id" in (:...roles) `, {
+                    roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
+                })
+                .getOne();
             if (!user) {
                 let userData = new MarketingUserData()
                 userData.deviceType = device_type || null
+                userData.email = email
+                userData.firstName = name
+                userData.userId = existingUser ? existingUser.userId : null
                 userData.deviceModel = device_model || null
                 userData.ipAddress = ip_address
                 userData.appVersion = app_version || null
                 userData.osVersion = os_version || null
                 user = await userData.save();
             }
+
             var tDate = new Date();
 
-            // var todayDate = tDate.toISOString();
-            // todayDate = todayDate
-            //     .replace(/T/, " ") // replace T with a space
-            //     .replace(/\..+/, "");
+            var periodTime = new Date();
+            periodTime.setTime(tDate.getTime() - (24 * 60 * 60 * 1000));
+            console.log(periodTime);
+            var date = periodTime.toISOString()
+            date = date
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
 
-            let allgame = await getManager()
-                .createQueryBuilder(MarketingGame, "game")
-                .where("game.is_deleted = false AND game.status = true")
-                .getMany();
-            var gamePlayed = []
-            if (allgame.length) {
-                for await (const game of allgame) {
-                    var periodTime = new Date();
-                    periodTime.setTime(tDate.getTime() - (game.gameAvailableAfter * 60 * 60 * 1000));
-                    console.log(periodTime);
-                    var date = periodTime.toISOString()
-                    date = date
-                        .replace(/T/, " ") // replace T with a space
-                        .replace(/\..+/, "");
+            const activity = await getManager()
+                .createQueryBuilder(MarketingUserActivity, "activity")
+                .where(`activity.created_date > '${date}' AND user_id = ${user.id}`)
+                .getOne();
+            console.log(activity);
 
-                    const activity = await getManager()
-                        .createQueryBuilder(MarketingUserActivity, "activity")
-                        .where(`activity.created_date > '${date}' AND user_id = ${user.id} AND game_id = ${game.id}`)
-                        .getOne();
-                    var gameAvailable = {
-                        gameId: game.id,
-                        gameName: game.gameName,
-                        available: true
-                    }
-                    let check = true;
-                    if (user.userId) {
-                        check = await this.checkUserAlredyPlayedOrNot(user.userId, game.id)
-                    }
-
-
-                    if (activity || !check) {
-                        gameAvailable['available'] = false
-                        if (!check) {
-                            gameAvailable['message'] = `You played this game in other device`
-                        }
-                    }
-                    gamePlayed.push(gameAvailable)
-                }
+            var available = true
+            if (activity) {
+                available = false
+                exit;
             }
             let data: any = user;
-            data['gameData'] = gamePlayed
+            data['gameAvailable'] = available
             return data;
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -850,7 +842,7 @@ export class MarketingService {
         }
     }
 
-    async changeStatus(id: number, statusDto: ActiveInactiveGameDto) {
+    async changeQuetionStatus(id: number, statusDto: ActiveInactiveGameDto) {
         try {
             let quetion = await getManager()
                 .createQueryBuilder(QuizGameQuetion, "quetion")
@@ -899,29 +891,22 @@ export class MarketingService {
 
     async quizResult(quizResult: QuizResultDto) {
         try {
-            const { user_id, first_name, last_name, email, quiz_answer } = quizResult
+            const { user_id, quiz_answer } = quizResult
 
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
                 .where(`user.id =:user_id`, { user_id })
                 .getOne();
-            var existingUserId = null;
-            if (!user.userId) {
-                let existingUser = await getManager()
-                    .createQueryBuilder(User, "user")
-                    .where(`email =:email AND is_deleted = false`, { email })
-                    .andWhere(`"user"."role_id" in (:...roles) `, {
-                        roles: [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER],
-                    })
-                    .getOne();
+            const existingUserId = user.userId;
 
-                if (existingUser) {
-                    existingUserId = existingUser.userId
-                }
+            let game = await getManager()
+                .createQueryBuilder(MarketingGame, "game")
+                .where(`game_name = 'Quiz' AND is_deleted = false`)
+                .getOne();
+            if (!game) {
+                throw new InternalServerErrorException(`Game not found  &&&game&&&${errorMessage}`)
             }
-            else {
-                existingUserId = user.userId
-            }
+
             var rightAnswer = 0;
             for await (const quizAnswer of quiz_answer) {
                 let option = await getManager()
@@ -934,26 +919,7 @@ export class MarketingService {
                 }
             }
 
-            if (!user.email) {
-                user.firstName = first_name || null
-                user.lastName = last_name || null
-                user.email = email
-                user.userId = existingUserId;
-                await user.save()
-            }
-            let game = await getManager()
-                .createQueryBuilder(MarketingGame, "game")
-                .where(`game_name = 'Quiz' AND is_deleted = false`)
-                .getOne();
-            if (!game) {
-                throw new InternalServerErrorException(`Game not found  &&&game&&&${errorMessage}`)
-            }
 
-            const check = await this.checkUserAlredyPlayedOrNot(existingUserId, game.id)
-
-            if (!check) {
-                throw new ConflictException(`You alredy play a game on your ${user.deviceModel} device`)
-            }
             let markup = await getManager()
                 .createQueryBuilder(MarketingGameRewordMarkup, "markup")
                 .where(`game_id = ${game.id} AND answer_value = '${rightAnswer}' AND status = true AND is_deleted = false`)
@@ -1177,32 +1143,6 @@ export class MarketingService {
         }
     }
 
-    // async addWheelOption(addWheelDto: AddWheelDto) {
-    //     const { option, rewordPoint } = addWheelDto;
-
-    //     let game = await getManager()
-    //         .createQueryBuilder(MarketingGame, "game")
-    //         .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
-    //         .getOne();
-    //     if (!game) {
-    //         throw new NotFoundException(`Wheel game not found`)
-    //     }
-
-
-    //     const markup = new MarketingGameRewordMarkup();
-
-    //     markup.gameId = game.id;
-    //     markup.answerValue = option;
-    //     markup.rewordPoint = rewordPoint;
-    //     markup.createdDate = new Date();
-    //     markup.status = true;
-    //     markup.isDeleted = false;
-
-    //     await markup.save()
-    //     return {
-    //         message: `Wheel game option added succefully`
-    //     }
-    // }
 
     async wheelGameOptionListForUser() {
         try {
@@ -1253,8 +1193,9 @@ export class MarketingService {
         }
     }
 
-    async submitWheelGame(userId: number) {
+    async submitWheelGame(submitWheeldto: SubmitWheelDto) {
         try {
+            const { user_id, reword_point } = submitWheeldto
             let game = await getManager()
                 .createQueryBuilder(MarketingGame, "game")
                 .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
@@ -1263,18 +1204,18 @@ export class MarketingService {
                 throw new NotFoundException(`Wheel game not avilable`)
             }
 
-            let [markup, count] = await getManager()
-                .createQueryBuilder(MarketingGameRewordMarkup, "markup")
-                .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
-                .getManyAndCount();
-            const random = await this.between(0, count - 1)
-            console.log(random);
+            // let [markup, count] = await getManager()
+            //     .createQueryBuilder(MarketingGameRewordMarkup, "markup")
+            //     .where(`markup.is_deleted = false AND markup.status = true AND markup.game_id =:id`, { id: game.id })
+            //     .getManyAndCount();
+            // const random = await this.between(0, count - 1)
+            // console.log(random);
 
-            const reword = markup[random]
-            const rewordPoint = reword.rewordPoint;
+            // const reword = markup[random]
+            // const rewordPoint = reword.rewordPoint;
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
-                .where(`user.id =:userId`, { userId })
+                .where(`user.id =:user_id`, { user_id })
                 .getOne();
             var existingUserId = null;
             if (user.userId) {
@@ -1283,14 +1224,14 @@ export class MarketingService {
             const activity = new MarketingUserActivity;
             activity.userId = user.id
             activity.gameId = game.id
-            activity.reword = rewordPoint;
+            activity.reword = reword_point;
             activity.addToWallet = existingUserId ? true : false
             activity.createdDate = new Date();
             var point = null;
-            if (existingUserId && rewordPoint > 0) {
+            if (existingUserId && reword_point > 0) {
                 const laytripPoint = new LayCreditEarn
                 laytripPoint.userId = existingUserId;
-                laytripPoint.points = rewordPoint;
+                laytripPoint.points = reword_point;
                 laytripPoint.earnDate = new Date();
                 laytripPoint.creditMode = RewordMode.WHEELGAME;
                 laytripPoint.status = RewordStatus.AVAILABLE;
@@ -1301,10 +1242,12 @@ export class MarketingService {
             if (!point) {
                 activity.addToWallet = false
             }
-            const replay: any = await activity.save();
-            replay['marketingUser'] = user;
-            replay['reword'] = markup[random];
-            return replay;
+            const replay = await activity.save();
+
+            return { message: `Congratulation you won ${reword_point} laytrip point` }
+
+            // replay['marketingUser'] = user;
+            // return replay;
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 switch (error.response.statusCode) {

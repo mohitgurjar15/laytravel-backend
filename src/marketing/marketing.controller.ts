@@ -15,6 +15,7 @@ import { MarketingService } from './marketing.service';
 import { AddQuetionDto } from './dto/add-question-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
+import { SubmitWheelDto } from './dto/wheel-submit.dto';
 
 @Controller('marketing')
 @ApiTags("Marketing")
@@ -97,20 +98,37 @@ export class MarketingController {
 		return await this.marketingService.activeInactiveGame(id, activeInactiveGameDto);
 	}
 
-	// @Roles(Role.SUPER_ADMIN)
-	// @UseGuards(AuthGuard(), RolesGuard)
-	// @ApiOperation({ summary: "Delete game by super admin" })
-	// @ApiResponse({ status: 200, description: "Api success" })
-	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	// @ApiResponse({ status: 404, description: "Not Found" })
-	// @ApiResponse({ status: 500, description: "Internal server error!" })
-	// @Delete("game/:id")
-	// async deleteGame(
-	// 	@Param("id") id: number,
+	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "Delete quetion of quiz by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Delete("quiz/quetion/:id")
+	async deleteGame(
+		@Param("id") id: number,
 
-	// ){
-	// 	return await this.marketingService.deleteGame(id);
-	// }
+	){
+		return await this.marketingService.deleteQuetion(id);
+	}
+
+
+	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "Change quetion status of quiz" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Patch("quiz/quetion/:id")
+	async changeQuetionStatus(
+		@Param("id") id: number,
+		@Body() activeInactiveGameDto: ActiveInactiveGameDto
+
+	){
+		return await this.marketingService.changeQuetionStatus(id,activeInactiveGameDto);
+	}
 
 
 
@@ -249,11 +267,11 @@ export class MarketingController {
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 404, description: 'Not Found' })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@Patch('wheel/:user_id')
+	@Post('wheel/submit')
 	async wheelResult(
-		@Param('user_id') id: number,
+		@Body() submitWheelDto: SubmitWheelDto,
 	){
-		return await this.marketingService.submitWheelGame(id);
+		return await this.marketingService.submitWheelGame(submitWheelDto);
 	}
 
 	@ApiOperation({ summary: "Update marketing user data" })
