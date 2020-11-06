@@ -289,6 +289,7 @@ export class SubscriptionService {
 				to: userdata.email,
 				from: mailConfig.from,
 				subject: `Subscription Expired`,
+				cc:mailConfig.BCC,
 				html: ConvertCustomerMail({
 					username: userdata.firstName + " " + userdata.lastName,
 					date: userdata.nextSubscriptionDate,

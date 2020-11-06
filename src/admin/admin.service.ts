@@ -84,6 +84,7 @@ export class AdminService {
 				.sendMail({
 					to: userdata.email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: `Welcome on board`,
 					template: "welcome.html",
 					context: {
@@ -389,6 +390,7 @@ export class AdminService {
 							.sendMail({
 								to: data.email,
 								from: mailConfig.from,
+								cc:mailConfig.BCC,
 								subject: `Welcome on board`,
 								template: "welcome.html",
 								context: {

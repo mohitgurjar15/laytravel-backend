@@ -58,5 +58,31 @@ export class CreateMarketingUserDto {
 		example: `7.0`,
 	})
     os_version: string;
+
+    @IsNotEmpty({ message: `Please enter your name. &&&name&&&Please enter your name.` })
+    @ApiProperty({
+        description: `Enter First Name`,
+        example: `Jon`
+    })
+    name: string;
+
+    @IsEmail(
+        {},
+        {
+            message: (args: ValidationArguments) => {
+                if (typeof args.value == "undefined" || args.value == "") {
+                    return `Please enter your email address.&&&email`;
+                } else {
+                    return `Please Enter valid email address.&&&email`;
+                }
+            },
+        },
+    )
+    @ApiProperty({
+        description: `Enter Email Id`,
+        example: `jon.doe@gmail.com`
+    })
+    email: string;
+
     
 }

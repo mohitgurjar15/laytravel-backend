@@ -124,6 +124,7 @@ export class UserService {
 					to: userdata.email,
 					from: mailConfig.from,
 					subject: `Welcome on board`,
+					cc:mailConfig.BCC,
 					template: "welcome.html",
 					context: {
 						// Data to be sent to template files.
@@ -447,6 +448,7 @@ export class UserService {
 							.sendMail({
 								to: data.email,
 								from: mailConfig.from,
+								cc:mailConfig.BCC,
 								subject: `Welcome on board`,
 								template: "welcome.html",
 								context: {
