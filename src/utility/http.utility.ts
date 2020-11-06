@@ -20,6 +20,9 @@ export class  HttpRequest{
                 }
             })
 
+            console.log("=========================")
+            console.log(result.data)
+
             result = await xml2js.parseStringPromise(result.data,{
                 normalizeTags :true,
                 ignoreAttrs:true
