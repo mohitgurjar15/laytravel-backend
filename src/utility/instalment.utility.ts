@@ -158,7 +158,7 @@ export class Instalment{
         }
         else if(customInstalmentNo && customInstalmentNo < instalmentsDates.length){
             instalmentsDates= instalmentsDates.slice(0, -(instalmentsDates.length-customInstalmentNo));
-            firstInstalment = (amount / instalmentsDates.length)+additionalAmount;
+            //firstInstalment = (amount / instalmentsDates.length)+additionalAmount;
             let remainingInstalmentAmount = amount-firstInstalment;
             remainingPerInstalmentAmount = remainingInstalmentAmount/(instalmentsDates.length-1);
         }
