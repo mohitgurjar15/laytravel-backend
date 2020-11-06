@@ -352,7 +352,6 @@ export class TravelerService {
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
-				console.log("m");
 				switch (error.response.statusCode) {
 					case 404:
 						if (

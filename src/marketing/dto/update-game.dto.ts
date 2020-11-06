@@ -4,15 +4,6 @@ import { IsNotEmpty } from "class-validator";
 export class UpdateGameDto{
 
     @IsNotEmpty({
-		message: `Please enter game name.&&&name`,
-	})
-    @ApiProperty({
-        description:`game name`,
-        example:`Quiz`
-    })
-    game_name:string;
-
-    @IsNotEmpty({
 		message: `Please enter available cron time.&&&time`,
 	})
     @ApiProperty({

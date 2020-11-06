@@ -5,15 +5,6 @@ import { IsArray, IsNotEmpty, ValidateNested } from "class-validator";
 export class AddQuetionDto{
 
     @IsNotEmpty({
-		message: `Please enter game id.&&&id`,
-	})
-    @ApiProperty({
-        description:`game id`,
-        example:1
-    })
-    game_id:number;
-
-    @IsNotEmpty({
 		message: `Please enter quetion &&&quetion`,
 	})
     @ApiProperty({
@@ -21,7 +12,7 @@ export class AddQuetionDto{
         example: ``
 
     })
-    quetion :string;
+    question :string;
 
     @IsArray()
     @ValidateNested({ each: true })

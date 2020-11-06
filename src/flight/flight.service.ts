@@ -1152,7 +1152,7 @@ export class FlightService {
 				travelerUser.bookingId = bookingId;
 				travelerUser.userId = travelerId;
 				travelerUser.roleId = Role.TRAVELER_USER;
-				travelerUser.save();
+				await travelerUser.save();
 			}
 		}
 	}
