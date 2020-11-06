@@ -1,7 +1,11 @@
 import * as moment from 'moment';
 import { Generic } from './generic.utility';
 
+const checkInDayDiffernce=90;
+const firstInstalmentPercentage1=40;
+const firstInstalmentPercentage2=20;
 export class Instalment{
+
 
     static weeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
         let instalmentData={'instalment_available':false,'instalment_date':[]}
@@ -11,8 +15,8 @@ export class Instalment{
             return instalmentData;
 
         let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
-        
         let instalmentsDates = [];
         let nextInstalmentsDate;
         let instalmentDatewithAmount=[];
@@ -33,7 +37,8 @@ export class Instalment{
             }
         
             let amountPerInstalment = amount / instalmentsDates.length;
-            let percentageAmount = (amount * 20 )/100;
+            let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
+            let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
         }
@@ -52,7 +57,7 @@ export class Instalment{
             
         let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
-        
+        let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
         let nextInstalmentsDate;
         let instalmentDatewithAmount=[];
@@ -74,7 +79,8 @@ export class Instalment{
             }
         
             let amountPerInstalment = amount / instalmentsDates.length;
-            let percentageAmount = (amount * 20 )/100;
+            let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
+            let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
         }
@@ -92,7 +98,7 @@ export class Instalment{
 
         let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
-        
+        let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
         let nextInstalmentsDate;
         let instalmentDatewithAmount=[];
@@ -114,7 +120,8 @@ export class Instalment{
             }
         
             let amountPerInstalment = amount / instalmentsDates.length;
-            let percentageAmount = (amount * 20 )/100;
+            let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
+            let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
         }
@@ -151,7 +158,7 @@ export class Instalment{
         }
         else if(customInstalmentNo && customInstalmentNo < instalmentsDates.length){
             instalmentsDates= instalmentsDates.slice(0, -(instalmentsDates.length-customInstalmentNo));
-            firstInstalment = (amount / instalmentsDates.length)+additionalAmount;
+            //firstInstalment = (amount / instalmentsDates.length)+additionalAmount;
             let remainingInstalmentAmount = amount-firstInstalment;
             remainingPerInstalmentAmount = remainingInstalmentAmount/(instalmentsDates.length-1);
         }
