@@ -60,9 +60,9 @@ export class Booking extends BaseEntity {
   @Column("integer", { name: "total_installments" })
   totalInstallments: number;
 
-  @Column("date", { name: "predected_booking_date" })
+  @Column("date", { name: "predected_booking_date" ,nullable : true })
   predectedBookingDate: string;
-  
+
 
   @Column("json", { name: "location_info" })
   locationInfo: object;
