@@ -8,6 +8,8 @@ export interface StrategyAirline{
 
     roundTripSearch(params1,params2);
 
+    roundTripSearchZip(params1,params2);
+    
     airRevalidate(params1,params2);
 
     bookFlight(params1,params2,param3);
