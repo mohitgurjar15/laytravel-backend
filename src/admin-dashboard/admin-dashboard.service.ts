@@ -33,7 +33,7 @@ export class AdminDashboardService {
 
 			var totalBookings = await getManager().query(`
                 SELECT count(id) as total_booking
-                from booking 
+                from booking WHERE "module_id" = '${moduleId}'
             `);
 		// var subdata = await getManager()
 		// .query(`

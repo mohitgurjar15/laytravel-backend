@@ -53,6 +53,7 @@ import { NetRateDto } from "./dto/net-rate.dto";
 import { Generic } from "src/utility/generic.utility";
 const mailConfig = config.get("email");
 import * as uniqid from 'uniqid';
+import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 
 @Injectable()
 export class FlightService {
@@ -233,6 +234,16 @@ export class FlightService {
 	}
 
 
+	async searchRoundTripZipFlight(searchFlightDto, headers, user) {
+		await this.validateHeaders(headers);
+		const mystifly = new Strategy(new Mystifly(headers));
+		const result = new Promise((resolve) =>
+			resolve(mystifly.roundTripSearchZip(searchFlightDto, user))
+		);
+		return result;
+	}
+
+
 
 
 	async preductBookingDate(serchFlightDto: PreductBookingDateDto, headers, user: User) {
@@ -240,7 +251,7 @@ export class FlightService {
 
 		const mystifly = new Strategy(new Mystifly(headers));
 
-		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count, unique_token } = serchFlightDto;
+		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count, unique_token, isRoundtrip, arrivale_date } = serchFlightDto;
 
 		const depatureDate = new Date(departure_date);
 
@@ -258,16 +269,31 @@ export class FlightService {
 			date = date
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			let dto = {
-				"source_location": source_location,
-				"destination_location": destination_location,
-				"departure_date": date,
-				"flight_class": flight_class,
-				"adult_count": adult_count,
-				"child_count": child_count,
-				"infant_count": infant_count
+			if (isRoundtrip) {
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": date,
+					"arrival_date": arrivale_date,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+				result[index] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user)));
+			} else {
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": date,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+				result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			}
-			result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+
 			weeklylastdate.setDate(weeklylastdate.getDate() - 7);
 
 		}
@@ -447,7 +473,9 @@ export class FlightService {
 
 		const mystifly = new Strategy(new Mystifly(headers));
 
-		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
+		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count, isRoundtrip, arrivale_date } = serchFlightDto;
+
+		console.log(isRoundtrip);
 
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
@@ -469,16 +497,33 @@ export class FlightService {
 			date = date
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			let dto = {
-				"source_location": source_location,
-				"destination_location": destination_location,
-				"departure_date": date,
-				"flight_class": flight_class,
-				"adult_count": adult_count,
-				"child_count": child_count,
-				"infant_count": infant_count
+			if (isRoundtrip && isRoundtrip == true) {
+				console.log(`Roundtrip`)
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": date,
+					"arrival_date": arrivale_date,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			} else {
+				console.log(`One way `)
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": date,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+
 			startDate.setDate(startDate.getDate() + 1);
 			resultIndex++;
 		}
@@ -534,6 +579,125 @@ export class FlightService {
 		return returnResponce;
 	}
 
+
+	async flexibleDateRateForRoundTrip(serchFlightDto: RoundtripSearchFlightDto, headers, user: User) {
+		await this.validateHeaders(headers);
+
+		const mystifly = new Strategy(new Mystifly(headers));
+
+		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count, arrival_date } = serchFlightDto;
+
+		const depatureDate = new Date(departure_date);
+		const depatureDate2 = new Date(departure_date);
+		const currentDate = new Date();
+
+		const dayDiffrence = await this.getDifferenceInDays(depatureDate, currentDate) + 1
+
+		var previousWeekDates = depatureDate2;
+
+		var nextWeekDates = depatureDate;
+
+		// nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+
+		var result = [];
+
+		var resultIndex = 0;
+
+
+		var count = dayDiffrence <= 7 ? dayDiffrence : 7;
+
+
+		previousWeekDates.setDate(previousWeekDates.getDate() - count);
+
+		for (let index = 0; index < count; index++) {
+			var predate = previousWeekDates.toISOString().split('T')[0];
+			predate = predate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": predate,
+				"arrival_date": arrival_date,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user)));
+			previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+			resultIndex++;
+		}
+
+		for (let index = 0; index <= 7; index++) {
+
+			var nextdate = nextWeekDates.toISOString().split('T')[0];
+			nextdate = nextdate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			let dto = {
+				"source_location": source_location,
+				"destination_location": destination_location,
+				"departure_date": nextdate,
+				"flight_class": flight_class,
+				"adult_count": adult_count,
+				"child_count": child_count,
+				"infant_count": infant_count
+			}
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+			resultIndex++;
+		}
+
+
+		const response = await Promise.all(result);
+
+		let returnResponce = [];
+		for await (const data of response) {
+			if (!data.message) {
+				var unique_code = '';
+				var lowestprice = 0;
+				var netRate = 0;
+				var key = 0;
+				var date;
+				for await (const flightData of data.items) {
+
+					if (key == 0) {
+						netRate = flightData.net_rate;
+						lowestprice = flightData.selling_price
+						unique_code = flightData.unique_code;
+						date = flightData.departure_date
+					}
+					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+					// 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+					// 	lowestPriceIndex = key
+					// 	lowestprice = flightData.net_rate;
+					// 	is_booking_avaible = true
+					// }
+					else if (lowestprice > flightData.selling_price) {
+						netRate = flightData.net_rate;
+						lowestprice = flightData.selling_price
+						unique_code = flightData.unique_code;
+						date = flightData.departure_date
+					}
+					key++;
+				}
+				var output = {
+					date: date,
+					net_rate: netRate,
+					price: lowestprice,
+					unique_code: unique_code
+				}
+
+				returnResponce.push(output)
+				// console.log(flightData.unique_code);
+				// console.log(flightData.net_rate);
+				// console.log(flightData.departure_date);
+			}
+		}
+		return returnResponce;
+	}
 
 	// async preductDate(searchFlightDto: PreductBookingDateDto, headers, user) {
 	// 	await this.validateHeaders(headers);
@@ -1373,7 +1537,7 @@ export class FlightService {
 				.sendMail({
 					to: user.email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: EmailSubject,
 					html: await FlightBookingConfirmtionMail(param),
 				})
@@ -1390,7 +1554,7 @@ export class FlightService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null
@@ -1421,4 +1585,24 @@ export class FlightService {
 
 		return [month, day, year].join('/');
 	}
+
+
+	async applyPreductionMarkup(netValue) {
+
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.maxRatePercentage",
+				"markup.minRatePercentage"
+			])
+		const result = await query.getOne();
+		const minimumMarkupValue = (result.minRatePercentage / 100) * netValue
+		const maxMarkupValue = (result.maxRatePercentage / 100) * netValue
+		return {
+			minPrice: netValue + minimumMarkupValue,
+			maxPrice: netValue + maxMarkupValue
+		}
+	}
+
+
 }

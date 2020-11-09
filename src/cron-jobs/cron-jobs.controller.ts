@@ -1,4 +1,4 @@
-import { Controller , Get, HttpCode, Post, Put } from '@nestjs/common';
+import { Controller , Get, HttpCode, Post, Put, Req } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -53,6 +53,24 @@ export class CronJobsController {
 	async getPartialPoint(
 	){
 		return await this.cronJobsService.partialPayment();
+	}
+
+
+	@Post('book-panding-partial-booking')
+	@ApiOperation({ summary: "book a pending partial bookings" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Admin not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async PandingPartialBooking(
+		@Req() req,
+	){
+		return await this.cronJobsService.PandingPartialBooking(req.headers);
 	}
 
 }
