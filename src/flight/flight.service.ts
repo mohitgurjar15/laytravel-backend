@@ -384,32 +384,31 @@ export class FlightService {
 
 
 		if (returnResponce[lowestPriceIndex]['date'] && returnResponce[lowestPriceIndex]['date'] == depature) {
-		console.log(returnResponce[lowestPriceIndex]);
-		const Installments = await this.instalmentService.calculateInstalemnt(installmentDTO)
+			console.log(returnResponce[lowestPriceIndex]);
+			const Installments = await this.instalmentService.calculateInstalemnt(installmentDTO)
 
-		console.log(Installments);
-		if (Installments.instalment_available == true) {
-			var totalOfInstallment = 0;
-			for (let index = 0; index < Installments.instalment_date.length; index++) {
-				const element = Installments.instalment_date[index];
+			console.log(Installments);
+			if (Installments.instalment_available == true) {
+				var totalOfInstallment = 0;
+				for (let index = 0; index < Installments.instalment_date.length; index++) {
+					const element = Installments.instalment_date[index];
 
-				totalOfInstallment = totalOfInstallment + element.instalment_amount
+					totalOfInstallment = totalOfInstallment + element.instalment_amount
 
-				if (totalOfInstallment > minimumForInstallment) {
-					returnResponce[lowestPriceIndex].is_booking_avaible = false
-					var o = {
-						date: element.instalment_date,
-						price: totalOfInstallment,
-						is_booking_avaible: true,
-						message: `Preduction date based on 60% of Installment value`
+					if (totalOfInstallment > minimumForInstallment) {
+						returnResponce[lowestPriceIndex].is_booking_avaible = false
+						var o = {
+							date: element.instalment_date,
+							price: totalOfInstallment,
+							is_booking_avaible: true,
+							message: `Prediction date based on 60% of Installment value`
+						}
+
+						return [o]
+
 					}
-
-					return [o]
-
 				}
 			}
-		}
-
 		}
 
 		return returnResponce;
