@@ -6,6 +6,7 @@ import {
 	BadRequestException,
 	NotAcceptableException,
 	UnauthorizedException,
+	ForbiddenException,
 } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
@@ -84,6 +85,8 @@ export class NewsLettersService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -159,6 +162,8 @@ export class NewsLettersService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -195,6 +200,8 @@ export class NewsLettersService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:

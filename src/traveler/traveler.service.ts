@@ -6,6 +6,7 @@ import {
 	InternalServerErrorException,
 	NotAcceptableException,
 	UnauthorizedException,
+	ForbiddenException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
@@ -29,14 +30,14 @@ export class TravelerService {
 		@InjectRepository(UserRepository)
 		private userRepository: UserRepository,
 		private jwtService: JwtService
-	) {}
+	) { }
 
 	async createNewtraveller(
 		saveTravelerDto: SaveTravelerDto,
 		parent_user_id: string
 	) {
 		const {
-			
+
 			first_name,
 			last_name,
 			dob,
@@ -136,6 +137,8 @@ export class TravelerService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -212,7 +215,7 @@ export class TravelerService {
 			if (!result.length) {
 				throw new NotFoundException(`No data found.`);
 			}
-			result.forEach(function(data) {
+			result.forEach(function (data) {
 				// delete data.updatedDate;
 				// delete data.salt;
 				// delete data.password;
@@ -239,6 +242,8 @@ export class TravelerService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -278,6 +283,8 @@ export class TravelerService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -314,7 +321,7 @@ export class TravelerService {
 			const {
 				first_name,
 				last_name,
-				
+
 				dob,
 				gender,
 				country_code,
@@ -365,6 +372,8 @@ export class TravelerService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -410,6 +419,8 @@ export class TravelerService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:

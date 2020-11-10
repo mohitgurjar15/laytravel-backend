@@ -2,7 +2,7 @@ import {
 	Injectable,
 	NotFoundException,
 	InternalServerErrorException,
-	BadRequestException, ConflictException, NotAcceptableException, UnauthorizedException
+	BadRequestException, ConflictException, NotAcceptableException, UnauthorizedException, ForbiddenException
 } from "@nestjs/common";
 import { FaqRepository } from "./faq.repository";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -21,7 +21,7 @@ export class FaqService {
 	constructor(
 		@InjectRepository(FaqRepository)
 		private FaqRepository: FaqRepository
-	) {}
+	) { }
 
 	async listFaq(
 		paginationOption: ListFaqDto
@@ -39,6 +39,8 @@ export class FaqService {
 						throw new BadRequestException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 406:
 						throw new NotAcceptableException(error.response.message);
 					case 404:
@@ -69,6 +71,8 @@ export class FaqService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -123,6 +127,8 @@ export class FaqService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -172,6 +178,8 @@ export class FaqService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -212,6 +220,8 @@ export class FaqService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -257,6 +267,8 @@ export class FaqService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -277,14 +289,13 @@ export class FaqService {
 		}
 	}
 
-	async getFaq(id: number):Promise <Faq> {
+	async getFaq(id: number): Promise<Faq> {
 		try {
 			const faq = await this.FaqRepository.findOne({ id });
 			if (!faq) {
 				throw new NotFoundException(`Faq Id Not Found`);
 			}
-			if (faq.isDeleted == true)
-			{
+			if (faq.isDeleted == true) {
 				throw new NotFoundException(`Given Faq is Deleted`);
 			}
 			return faq;
@@ -297,6 +308,8 @@ export class FaqService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:

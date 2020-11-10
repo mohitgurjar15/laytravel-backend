@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FaqCategoryRepository } from './faq-category.repository';
 import { AddFaqCategoryDto } from './dto/add-faq-category.dto';
@@ -19,12 +19,11 @@ export class FaqCategoryService {
     async addFaqCategory(addFaqCategoryDto: AddFaqCategoryDto) {
         try {
             const { name } = addFaqCategoryDto;
-            const alredyExiest = await this.faqCategoryRepository.count({name:name,isDeleted:false})
+            const alredyExiest = await this.faqCategoryRepository.count({ name: name, isDeleted: false })
 
             console.log(alredyExiest);
-            
-            if(alredyExiest)
-            {
+
+            if (alredyExiest) {
                 throw new ConflictException(`Given faq category alredy exiest`)
             }
             const category = new FaqCategory()
@@ -45,6 +44,8 @@ export class FaqCategoryService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -89,6 +90,8 @@ export class FaqCategoryService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -135,6 +138,8 @@ export class FaqCategoryService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -177,6 +182,8 @@ export class FaqCategoryService {
                         throw new BadRequestException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 406:
                         throw new NotAcceptableException(error.response.message);
                     case 404:
@@ -212,6 +219,8 @@ export class FaqCategoryService {
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
                     case 500:
