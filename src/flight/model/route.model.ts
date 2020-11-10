@@ -33,6 +33,7 @@ export class Route{
     airline                 : string;
     is_refundable           : boolean;
     start_price             : string;
+    secondary_start_price   : string;
     selling_price           : number;
     secondary_selling_price : number;
     airline_name            : string;
