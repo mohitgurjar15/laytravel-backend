@@ -51,5 +51,10 @@ export class Strategy{
         return data;
     }
 
+    async tripDetails(param1){
+        const data = await this.airline.tripDetails(param1);
+        return data;
+    }
+
     
 }

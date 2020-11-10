@@ -199,7 +199,18 @@ export class FlightController {
     @Param('id') id:String
     ){
         return await this.flightService.ticketFlight(id);
-        //return await this.flightService.mapChildParentAirport(name);
+    }
+
+    @Get('/trip-details/:id')
+    @ApiOperation({ summary: "Trip details" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async tripDetails(
+    @Param('id') id:String
+    ){
+        return await this.flightService.tripDetails(id);
     }
 
     @Post('/search-oneway-zip-flight')

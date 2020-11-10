@@ -14,5 +14,7 @@ export interface StrategyAirline{
 
     cancellationPolicy(param1);
 
-    ticketFlight(param1)
+    ticketFlight(param1);
+
+    tripDetails(param1);
 }

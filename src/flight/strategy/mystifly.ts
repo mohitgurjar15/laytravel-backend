@@ -1552,6 +1552,42 @@ export class Mystifly implements StrategyAirline{
         return bookingResponse;
     }
 
+    async tripDetails(tripId){
+        const mystiflyConfig = await this.getMystiflyCredential();
+        const sessionToken = await this.startSession();
+        console.log("mystiflyConfig",mystiflyConfig)
+        let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
+        requestBody += `<soapenv:Header/>`;
+        requestBody += `<soapenv:Body>`;
+        requestBody += `<mys:TripDetails>`;
+        requestBody += `<mys:rq>`;
+        requestBody += `<mys1:SessionId>5A14E536-B141-4A44-821C-06E74CDAEBE5-1847</mys1:SessionId>            `;
+        requestBody += `<mys1:Target>Test</mys1:Target>            `;
+        requestBody += `<mys1:UniqueID>${tripId}</mys1:UniqueID>`;
+        requestBody += `</mys:rq>`;
+        requestBody += `</mys:TripDetails>`;
+        requestBody += `</soapenv:Body>`;
+        requestBody += `</soapenv:Envelope>`;
+        mystiflyConfig.url = 'http://onepointdemo.myfarebox.com/V2/OnePoint.svc';
+        let tripDetailsResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'TripDetails');
+        console.log("tripDetailsResult",JSON.stringify(tripDetailsResult))
+        if(tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:success"][0]=='true'){
+
+            let travelItinerary = tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:travelitinerary"][0];
+
+            let tripDetails:any={};
+            tripDetails.booking_status=travelItinerary['a:bookingstatus'][0];
+            tripDetails.fare_type=travelItinerary['a:faretype'][0];
+            tripDetails.ticket_status = travelItinerary['a:ticketstatus'][0];
+            tripDetails.unique_id = travelItinerary['a:uniqueid'][0];
+
+            return tripDetails;
+        }
+        else{
+            throw new NotFoundException(`Trip details not found!`)
+        }
+    }
+
     async cancellationPolicy(routeIdDto){
         const { route_code } = routeIdDto;
         let fareRuleResult =await this.fareRule(route_code);

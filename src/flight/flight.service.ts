@@ -231,7 +231,12 @@ export class FlightService {
 		return result;
 	}
 
-
+	async tripDetails(tripId){
+		const mystifly = new Strategy(new Mystifly({}));
+		const result = new Promise((resolve) => resolve(mystifly.tripDetails(tripId))
+		);
+		return result;
+	}
 
 
 	async preductBookingDate(serchFlightDto: PreductBookingDateDto, headers, user: User) {
