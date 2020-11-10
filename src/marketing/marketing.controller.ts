@@ -12,7 +12,7 @@ import { CreateMarketingUserDto } from './dto/new-marketing-user.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { MarketingService } from './marketing.service';
-import { AddQuetionDto } from './dto/add-question-answer.dto';
+import { AddQuestionDto } from './dto/add-question-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
@@ -110,7 +110,7 @@ export class MarketingController {
 		@Param("id") id: number,
 
 	){
-		return await this.marketingService.deleteQuetion(id);
+		return await this.marketingService.deletequestion(id);
 	}
 
 
@@ -127,7 +127,7 @@ export class MarketingController {
 		@Body() activeInactiveGameDto: ActiveInactiveGameDto
 
 	){
-		return await this.marketingService.changeQuetionStatus(id,activeInactiveGameDto);
+		return await this.marketingService.changequestionStatus(id,activeInactiveGameDto);
 	}
 
 
@@ -212,9 +212,9 @@ export class MarketingController {
 	@Post('quiz')
 	@HttpCode(200)
 	async newQuetion(
-		@Body() addQuetionDto: AddQuetionDto
+		@Body() addQuetionDto: AddQuestionDto
 	) {
-		return await this.marketingService.addQuetionAnswer(addQuetionDto);
+		return await this.marketingService.addquestionAnswer(addQuetionDto);
 	}
 
 	@Roles(Role.SUPER_ADMIN)
@@ -226,7 +226,7 @@ export class MarketingController {
 	@Get('quiz/list-for-admin')
 	async listQuizforAdmin(
 	) {
-		return await this.marketingService.getQuetionForAdmin();
+		return await this.marketingService.getquestionForAdmin();
 	}
 
 
@@ -237,7 +237,7 @@ export class MarketingController {
 	@Get('quiz/list-for-user')
 	async listQuizforUser(
 	) {
-		return await this.marketingService.getQuetionForUser();
+		return await this.marketingService.getquestionForUser();
 	}
 
 	@ApiOperation({ summary: "submit quiz" })

@@ -281,7 +281,7 @@ export class CronJobsService {
 		return { data: paidInstallment };
 	}
 
-	async PandingPartialBooking(Headers) {
+	async PendingPartialBooking(Headers) {
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.currency2", "currency")
