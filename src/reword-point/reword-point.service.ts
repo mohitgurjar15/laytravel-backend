@@ -5,7 +5,7 @@
  * @modify date 2020-10-23 13:06:34
  * @desc :- service for manage a Laytrip reword point 
  */
-import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException, ConflictException, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException, ConflictException, NotAcceptableException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { RewordPointRedeemRepository } from './roword-point-redeem.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RewordPointEarnRepository } from './reword-point-earn.repository';
@@ -114,7 +114,7 @@ export class RewordPointService {
 			if (payment.paymentStatus == true) {
 
 				const reword = new LayCreditEarn();
-				reword.transactionId = payment.id; 
+				reword.transactionId = payment.id;
 				reword.points = points;
 				reword.userId = user.userId;
 				reword.status = RewordStatus.AVAILABLE;
@@ -140,6 +140,8 @@ export class RewordPointService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:

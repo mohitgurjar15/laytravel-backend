@@ -6,6 +6,7 @@ import {
 	UnauthorizedException,
 	BadRequestException,
 	NotAcceptableException,
+	ForbiddenException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SubscriptionRepository } from "./subscription.repository";
@@ -41,7 +42,7 @@ export class SubscriptionService {
 		private userRepository: UserRepository,
 
 		private readonly mailerService: MailerService
-	) {}
+	) { }
 
 	async planList(): Promise<{ data: Plan[] }> {
 		try {
@@ -54,6 +55,8 @@ export class SubscriptionService {
 					throw new ConflictException(error.response.message);
 				case 422:
 					throw new BadRequestException(error.response.message);
+				case 403:
+					throw new ForbiddenException(error.response.message);
 				case 500:
 					throw new InternalServerErrorException(error.response.message);
 				case 406:
@@ -81,7 +84,7 @@ export class SubscriptionService {
 			const todayDate = new Date();
 			const userdata = await this.userRepository.getUserData(userId);
 			const expiryPlanDate = userdata.nextSubscriptionDate;
-			
+
 			if (userdata.nextSubscriptionDate) {
 				var userNextSubscriptionDate = new Date(userdata.nextSubscriptionDate);
 
@@ -126,7 +129,7 @@ export class SubscriptionService {
 				`${userdata.email} is subscriped a ${planData.name} plan`
 			);
 			console.log(expiryPlanDate);
-			if (expiryPlanDate != null ) {
+			if (expiryPlanDate != null) {
 				await this.addLaytripPoint(planData.amount, userdata.userId);
 			}
 			return {
@@ -140,6 +143,8 @@ export class SubscriptionService {
 					throw new ConflictException(error.response.message);
 				case 422:
 					throw new BadRequestException(error.response.message);
+				case 403:
+					throw new ForbiddenException(error.response.message);
 				case 500:
 					throw new InternalServerErrorException(error.response.message);
 				case 406:
@@ -206,6 +211,8 @@ export class SubscriptionService {
 					throw new ConflictException(error.response.message);
 				case 422:
 					throw new BadRequestException(error.response.message);
+				case 403:
+					throw new ForbiddenException(error.response.message);
 				case 500:
 					throw new InternalServerErrorException(error.response.message);
 				case 406:
@@ -224,7 +231,7 @@ export class SubscriptionService {
 
 	async getPlan(planId: string, currency_id: number) {
 		const where = `"plan"."id" = '${planId}'`;
-		const result:any  = await getManager()
+		const result: any = await getManager()
 			.createQueryBuilder(Plan, "plan")
 			.leftJoinAndSelect("plan.currency", "currency")
 			.select([
@@ -233,14 +240,14 @@ export class SubscriptionService {
 				"plan.description",
 				"plan.validityDays",
 				"plan.amount",
-				"currency.liveRate",				
+				"currency.liveRate",
 			])
 			.where(where)
 			.getOne();
 		if (!result) {
 			throw new NotFoundException(`Plan not found&&&id&&&Plan not found`);
 		}
-		result.payble_amount =  result.amount * result.currency.liveRate
+		result.payble_amount = result.amount * result.currency.liveRate
 		return result;
 	}
 
@@ -268,7 +275,7 @@ export class SubscriptionService {
 		amount: number,
 		currency_id: number,
 		card_token: string
-	) {}
+	) { }
 
 	async convertUser(userId: string) {
 		var toDate = new Date();
@@ -289,7 +296,7 @@ export class SubscriptionService {
 				to: userdata.email,
 				from: mailConfig.from,
 				subject: `Subscription Expired`,
-				cc:mailConfig.BCC,
+				cc: mailConfig.BCC,
 				html: ConvertCustomerMail({
 					username: userdata.firstName + " " + userdata.lastName,
 					date: userdata.nextSubscriptionDate,

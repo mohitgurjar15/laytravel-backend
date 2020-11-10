@@ -6,6 +6,7 @@ import {
 	BadRequestException,
 	NotAcceptableException,
 	UnauthorizedException,
+	ForbiddenException,
 } from "@nestjs/common";
 import { BookingRepository } from "./booking.repository";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -101,7 +102,7 @@ export class BookingService {
 				})
 			}
 
-			var paymentDetail = bookingData.bookingInstalments ;
+			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
 			var EmailSubject = '';
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
@@ -114,7 +115,7 @@ export class BookingService {
 					})
 				}
 			}
-			else{
+			else {
 				EmailSubject = "Flight Booking Confirmation";
 				installmentDetail.push({
 					amount: bookingData.currency2.symbol + bookingData.totalAmount,
@@ -159,7 +160,7 @@ export class BookingService {
 				.sendMail({
 					to: user.email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: EmailSubject,
 					html: await FlightBookingConfirmtionMail(param),
 				})
@@ -176,7 +177,7 @@ export class BookingService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null
@@ -247,6 +248,8 @@ export class BookingService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -327,6 +330,8 @@ export class BookingService {
 						throw new NotAcceptableException(error.response.message);
 					case 404:
 						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 401:
 						throw new UnauthorizedException(error.response.message);
 					default:
@@ -392,6 +397,8 @@ export class BookingService {
 						throw new ConflictException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 500:
 						throw new InternalServerErrorException(error.response.message);
 					case 406:
@@ -474,26 +481,25 @@ export class BookingService {
 		}
 		if (search) {
 			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
-		
+
 		}
-		const {data , total_count} = await this.bookingRepository.listPayment(where, limit, page_no);
-		const result :any = data; 
+		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
+		const result: any = data;
 		for await (const instalment of result) {
 			let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
-			
+
 			for (let index = 0; index < infoDate.length; index++) {
 				const element = infoDate[index];
-				
-				if(element.instalment_date == instalment.instalmentDate)
-				{
-					instalment.installmentNo = index+1;
+
+				if (element.instalment_date == instalment.instalmentDate) {
+					instalment.installmentNo = index + 1;
 					exit;
 				}
-			}	
+			}
 		}
-		
+
 		return {
-			data:result , total_count : total_count
+			data: result, total_count: total_count
 		};
 	}
 	async formatDate(date) {

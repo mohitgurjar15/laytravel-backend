@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { errorMessage } from 'src/config/common.config';
 import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { MarketingGameRewordMarkup } from 'src/entity/marketing-game-reword-markup.entity';
@@ -57,6 +57,9 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -100,6 +103,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -152,6 +157,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -199,6 +206,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -248,6 +257,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -290,6 +301,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -346,6 +359,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -395,6 +410,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -442,6 +459,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -490,6 +509,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -578,6 +599,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -679,6 +702,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -726,6 +751,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -774,10 +801,14 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
                         throw new NotAcceptableException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 404:
                         throw new NotFoundException(error.response.message);
                     case 401:
@@ -822,6 +853,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -869,6 +902,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -968,6 +1003,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1061,6 +1098,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1123,6 +1162,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1173,6 +1214,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1258,6 +1301,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
