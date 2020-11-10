@@ -1,4 +1,4 @@
-import { IsNotEmpty,  ValidationArguments } from "class-validator";
+import { IsNotEmpty,  ValidateIf,  ValidationArguments } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
@@ -82,6 +82,28 @@ export class PreductBookingDateDto{
         description:`flight unique token`,
         example:"d91c2c72fc96e6d58d8fbd71f053d3ba"
     })
-	unique_token:string;
+    unique_token:string;
+    
+    @ApiProperty({
+        description:`It is round trip`,
+        example:true
+    })
+    isRoundtrip:boolean;
+    
+    @ValidateIf((o) =>  o.isRoundtrip == true)
+    @IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter departure date.&&&departure_date`;
+            } else {
+                return `Please enter valid departure date format(YYYY-MM-DD)&&&departure_date`;
+            }
+        },
+    })
+    @ApiProperty({
+        description:`arrival date`,
+        example:`2020-11-06`
+    })
+    arrivale_date : string;
 
 }

@@ -60,6 +60,10 @@ export class Booking extends BaseEntity {
   @Column("integer", { name: "total_installments" })
   totalInstallments: number;
 
+  @Column("date", { name: "predected_booking_date" ,nullable : true })
+  predectedBookingDate: string;
+
+
   @Column("json", { name: "location_info" })
   locationInfo: object;
 
@@ -86,6 +90,9 @@ export class Booking extends BaseEntity {
 
   @Column("character varying", { name: "card_token", length: 200 , nullable : true})
   cardToken: string|null;
+
+  @Column("character varying", { name: "laytrip_booking_id", length: 200 , nullable : true})
+  laytripBookingId: string|null;
 
   @Column("boolean", { name: "is_ticketd", default: () => false})
   isTicketd: boolean;

@@ -26,6 +26,12 @@ export class Strategy{
         return data;
     }
 
+    async roundTripSearchZip(param1,param2){
+
+        const data = await this.airline.roundTripSearchZip(param1,param2);
+        return data;
+    }
+
     async baggageDetails(params){
         const data = await this.airline.baggageDetails(params);
         return data;

@@ -152,6 +152,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: first_name + " " + last_name,
@@ -232,6 +233,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -287,6 +289,7 @@ export class AuthService {
 				.sendMail({
 					to: newEmail,
 					from: mailConfig.from,
+					cc:mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -419,6 +422,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
+				cc:mailConfig.BCC,
 				sender: "laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
@@ -596,6 +600,7 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
+						cc:mailConfig.BCC,
 						subject: "Welcome on board",
 						html: RagisterMail({
 							username: user.firstName + " " + user.lastName,

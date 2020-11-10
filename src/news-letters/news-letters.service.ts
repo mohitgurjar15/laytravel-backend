@@ -21,13 +21,13 @@ const mailConfig = config.get("email");
 
 @Injectable()
 export class NewsLettersService {
-	
+
 
 	constructor(
 		@InjectRepository(NewsLettersRepository)
 		private newsLettersRepository: NewsLettersRepository,
 		private readonly mailerService: MailerService
-	) {}
+	) { }
 
 	async subscribeForNewsLetters(
 		subscribeForNewslatterDto: SubscribeForNewslatterDto
@@ -39,11 +39,14 @@ export class NewsLettersService {
 				.createQueryBuilder(NewsLetters, "newsLetters")
 				.where(`email=:email`, { email })
 				.getOne();
-				
-			if (emailExiest) {
+
+			if (emailExiest && emailExiest.isSubscribed == false) {
 				emailExiest.isSubscribed = true;
-				await emailExiest.save();	
-			}else{
+				await emailExiest.save();
+			} else if (emailExiest) {
+				throw new ConflictException(`You are already subscribed to our newletter`)
+			}
+			else {
 				const subscribeData = new NewsLetters();
 				subscribeData.email = email;
 				subscribeData.subscribeDate = new Date();
@@ -54,6 +57,7 @@ export class NewsLettersService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
+					cc: mailConfig.BCC,
 					subject: "Welcome to Laytrip",
 					html: subscribeForNewsUpdates(),
 				})
@@ -108,8 +112,8 @@ export class NewsLettersService {
 
 			let subscribeData = await getManager()
 				.createQueryBuilder(NewsLetters, "newsLetters")
-                .where(`email=:email `, { email })
-                .orderBy('id','DESC')
+				.where(`email=:email `, { email })
+				.orderBy('id', 'DESC')
 				.getOne();
 			if (!subscribeData) {
 				throw new NotFoundException(
@@ -141,7 +145,7 @@ export class NewsLettersService {
 			return { message: `Email id unsubscribed successfully` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
-			
+
 				switch (error.response.statusCode) {
 					case 404:
 						if (
@@ -183,7 +187,7 @@ export class NewsLettersService {
 			return await this.newsLettersRepository.listSubscriber(paginationOption);
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
-			
+
 				switch (error.response.statusCode) {
 					case 404:
 						throw new NotFoundException(error.response.message);

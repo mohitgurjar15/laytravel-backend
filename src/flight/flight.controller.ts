@@ -24,7 +24,7 @@ export class FlightController {
     constructor(
         private flightService: FlightService
     ) { }
-    
+
     @Get('/search-airport/:name')
     @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -32,9 +32,9 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async searchAirport(
-    @Param('name', MinCharPipe) name:String
-    ){
-        return await this.flightService.searchAirport(name,'web');
+        @Param('name', MinCharPipe) name: String
+    ) {
+        return await this.flightService.searchAirport(name, 'web');
         //return await this.flightService.mapChildParentAirport(name);
     }
 
@@ -45,15 +45,15 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async searchMobileAirport(
-    @Param('name', MinCharPipe) name:String
-    ){
-        return await this.flightService.searchAirport(name,'mobile');
+        @Param('name', MinCharPipe) name: String
+    ) {
+        return await this.flightService.searchAirport(name, 'mobile');
         //return await this.flightService.mapChildParentAirport(name);
     }
 
-    
-        
-        
+
+
+
     @Post('/search-oneway-flight')
     @ApiBearerAuth()
     @ApiOperation({ summary: "Search One Way flight" })
@@ -65,23 +65,24 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     async searchOneWayFlight(
-       @Body() searchFlightDto:OneWaySearchFlightDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        if(moment(searchFlightDto.departure_date).isBefore(moment().format("YYYY-MM-DD")))
-             throw new BadRequestException(`Please enter departure date today or future date.&&&departure_date`)
-        
-        if(moment(searchFlightDto.departure_date).isAfter(moment().add(365,"days").format("YYYY-MM-DD")))
-             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
-        return await this.flightService.searchOneWayFlight(searchFlightDto,req.headers,user);
+        @Body() searchFlightDto: OneWaySearchFlightDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        if (moment(searchFlightDto.departure_date).isBefore(moment().format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter departure date today or future date.&&&departure_date`)
+
+        if (moment(searchFlightDto.departure_date).isAfter(moment().add(365, "days").format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
+        console.log(req.headers);
+        return await this.flightService.searchOneWayFlight(searchFlightDto, req.headers, user);
     }
 
     @Post('/search-roundtrip-flight')
@@ -93,24 +94,24 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
         name: 'language',
         description: 'Enter language code(ex. en)',
     })
     @HttpCode(200)
     async searchRoundTrip(
-       @Body() searchFlightDto:RoundtripSearchFlightDto,
-       @Req() req,
-       @LogInUser() user,
-    ){
-        if(moment(searchFlightDto.departure_date).isBefore(moment().format("YYYY-MM-DD")))
-             throw new BadRequestException(`Please enter departure date today or future date.&&&departure_date`)
-        
-        if(moment(searchFlightDto.departure_date).isAfter(moment().add(365,"days").format("YYYY-MM-DD")))
-             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
-        return await this.flightService.searchRoundTripFlight(searchFlightDto,req.headers,user);
+        @Body() searchFlightDto: RoundtripSearchFlightDto,
+        @Req() req,
+        @LogInUser() user,
+    ) {
+        if (moment(searchFlightDto.departure_date).isBefore(moment().format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter departure date today or future date.&&&departure_date`)
+
+        if (moment(searchFlightDto.departure_date).isAfter(moment().add(365, "days").format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
+        return await this.flightService.searchRoundTripFlight(searchFlightDto, req.headers, user);
     }
 
     @Post('/baggage-details')
@@ -120,8 +121,8 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @HttpCode(200)
     async baggageDetails(
-       @Body() routeIdDto:RouteIdsDto,
-    ){
+        @Body() routeIdDto: RouteIdsDto,
+    ) {
         //console.log(baggageDetailsDto)
         return await this.flightService.baggageDetails(routeIdDto);
     }
@@ -133,22 +134,22 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @HttpCode(200)
     async cancellationPolicy(
-       @Body() routeIdsDto:RouteIdsDto
-    ){
+        @Body() routeIdsDto: RouteIdsDto
+    ) {
         return await this.flightService.cancellationPolicy(routeIdsDto);
     }
 
-    
+
 
     @Post('/air-revalidate')
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     @ApiOperation({ summary: "AirRevalidate to get availability and updated price" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -156,11 +157,11 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Flight is not available now' })
     @HttpCode(200)
     async airRevalidate(
-       @Body() routeIdDto:RouteIdsDto,
-       @Req() req,
-       @LogInUser() user,
-    ){
-        return await this.flightService.airRevalidate(routeIdDto,req.headers,user);
+        @Body() routeIdDto: RouteIdsDto,
+        @Req() req,
+        @LogInUser() user,
+    ) {
+        return await this.flightService.airRevalidate(routeIdDto, req.headers, user);
     }
 
     /* @Post('/book')
@@ -196,8 +197,8 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async ticketFlight(
-    @Param('id') id:String
-    ){
+        @Param('id') id: String
+    ) {
         return await this.flightService.ticketFlight(id);
     }
 
@@ -224,18 +225,43 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     async searchOneWayFlightZip(
-       @Body() searchFlightDto:OneWaySearchFlightDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        return await this.flightService.searchOneWayZipFlight(searchFlightDto,req.headers,user);
+        @Body() searchFlightDto: OneWaySearchFlightDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.searchOneWayZipFlight(searchFlightDto, req.headers, user);
+    }
+
+    @Post('/search-roundtrip-zip-flight')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Search roundTrip flight" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async searchRoundTripZip(
+        @Body() searchFlightDto: RoundtripSearchFlightDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.searchRoundTripZipFlight(searchFlightDto, req.headers, user);
     }
 
 
@@ -250,18 +276,18 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     async predictedBookingDate(
-       @Body() searchFlightDto:PreductBookingDateDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        return await this.flightService.preductBookingDate(searchFlightDto,req.headers,user);
+        @Body() searchFlightDto: PreductBookingDateDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.preductBookingDate(searchFlightDto, req.headers, user);
     }
 
     @Post('/flexible-day-rate')
@@ -275,20 +301,44 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     async flexibleDayRate(
-       @Body() searchFlightDto:OneWaySearchFlightDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        return await this.flightService.flexibleDateRate(searchFlightDto,req.headers,user);
+        @Body() searchFlightDto: OneWaySearchFlightDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.flexibleDateRate(searchFlightDto, req.headers, user);
     }
 
+    @Post('/flexible-day-rate-for-round-trip')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It a return flight rate for flexible day for round trip" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async flexibleDayRateForRoundtrip(
+        @Body() searchFlightDto: RoundtripSearchFlightDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.flexibleDateRateForRoundTrip(searchFlightDto, req.headers, user);
+    }
 
     @Post('/calender-day-rate')
     @ApiBearerAuth()
@@ -301,18 +351,18 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     async callenderDayRates(
-       @Body() searchFlightDto:FullCalenderRateDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        return await this.flightService.fullcalenderRate(searchFlightDto,req.headers,user);
+        @Body() searchFlightDto: FullCalenderRateDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.fullcalenderRate(searchFlightDto, req.headers, user);
     }
 
     @Post('/selling-price')
@@ -323,9 +373,9 @@ export class FlightController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async getSellingPrice(
-       @Body() netRateDto:NetRateDto,
-       @LogInUser() user
-    ){
-        return await this.flightService.getSellingPrice(netRateDto,user);
+        @Body() netRateDto: NetRateDto,
+        @LogInUser() user
+    ) {
+        return await this.flightService.getSellingPrice(netRateDto, user);
     }
 }
