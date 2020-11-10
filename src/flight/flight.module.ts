@@ -9,6 +9,7 @@ import { BookingRepository } from 'src/booking/booking.repository';
 import { BookingService } from 'src/booking/booking.service';
 import { UserRepository } from 'src/auth/user.repository';
 import { CronJobsService } from 'src/cron-jobs/cron-jobs.service';
+import { InstalmentService } from 'src/instalment/instalment.service';
 
 @Module({
   imports:[
@@ -19,6 +20,6 @@ import { CronJobsService } from 'src/cron-jobs/cron-jobs.service';
       ]),
   ],
   controllers: [FlightController],
-  providers: [FlightService, PaymentService],
+  providers: [FlightService, PaymentService , InstalmentService],
 })
 export class FlightModule {}

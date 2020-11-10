@@ -54,6 +54,8 @@ import { Generic } from "src/utility/generic.utility";
 const mailConfig = config.get("email");
 import * as uniqid from 'uniqid';
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
+import { InstalmentService } from "src/instalment/instalment.service";
+import { exit } from "process";
 
 @Injectable()
 export class FlightService {
@@ -65,6 +67,9 @@ export class FlightService {
 		private bookingRepository: BookingRepository,
 
 		private paymentService: PaymentService,
+
+		private instalmentService: InstalmentService,
+
 		private readonly mailerService: MailerService
 	) { }
 
@@ -304,6 +309,37 @@ export class FlightService {
 		var lowestprice = 0
 		let returnResponce = [];
 		var key = 0;
+		var preductionMarkup = 0
+		var minimumForInstallment = 0;
+		var depature = '';
+		const DepatureDateData = response[0];
+		var installmentDTO = null;
+
+		if (!DepatureDateData.message) {
+			for await (const flightData of DepatureDateData.items) {
+				if (unique_token == flightData.unique_code) {
+					console.log(flightData)
+					const markupValue = await this.getValueWithPreductionPercentage(flightData.net_rate)
+					preductionMarkup = flightData.net_rate + markupValue;
+					depature = flightData.departure_date
+					minimumForInstallment = (flightData.selling_price * 60) / 100
+					installmentDTO = {
+						"instalment_type": "weekly",
+						"checkin_date": departure_date,
+						"booking_date": moment(new Date()).format("YYYY-MM-DD"),
+						"amount": flightData.selling_price,
+						"additional_amount": 0,
+						"custom_instalment_no": null,
+						"custom_amount": 0
+					}
+					console.log(preductionMarkup)
+					console.log(minimumForInstallment)
+					console.log(installmentDTO);
+
+				}
+			}
+		}
+
 		for await (const data of response) {
 			if (!data.message) {
 				for await (const flightData of data.items) {
@@ -321,7 +357,7 @@ export class FlightService {
 						// 	lowestprice = flightData.net_rate;
 						// 	is_booking_avaible = true
 						// }
-						else if (lowestprice > flightData.net_rate) {
+						else if (lowestprice > flightData.net_rate || preductionMarkup > flightData.net_rate) {
 							returnResponce[lowestPriceIndex].is_booking_avaible = false
 							lowestPriceIndex = key
 							lowestprice = flightData.net_rate;
@@ -344,6 +380,35 @@ export class FlightService {
 				}
 			}
 
+		}
+
+
+		if (returnResponce[lowestPriceIndex]['date'] && returnResponce[lowestPriceIndex]['date'] == depature) {
+			console.log(returnResponce[lowestPriceIndex]);
+			const Installments = await this.instalmentService.calculateInstalemnt(installmentDTO)
+
+			console.log(Installments);
+			if (Installments.instalment_available == true) {
+				var totalOfInstallment = 0;
+				for (let index = 0; index < Installments.instalment_date.length; index++) {
+					const element = Installments.instalment_date[index];
+
+					totalOfInstallment = totalOfInstallment + element.instalment_amount
+
+					if (totalOfInstallment > minimumForInstallment) {
+						returnResponce[lowestPriceIndex].is_booking_avaible = false
+						var o = {
+							date: element.instalment_date,
+							price: totalOfInstallment,
+							is_booking_avaible: true,
+							message: `Prediction date based on 60% of Installment value`
+						}
+
+						return [o]
+
+					}
+				}
+			}
 		}
 
 		return returnResponce;
@@ -1604,5 +1669,15 @@ export class FlightService {
 		}
 	}
 
+
+	async getValueWithPreductionPercentage(netValue) {
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.markupPercentage"
+			])
+		const result = await query.getOne();
+		return (netValue * result.markupPercentage) / 100;
+	}
 
 }
