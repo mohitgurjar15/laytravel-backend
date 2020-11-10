@@ -194,4 +194,43 @@ export class FaqCategoryService {
             );
         }
     }
+
+    async getFaqCategory(id) {
+        try {
+            return await this.faqCategoryRepository.getFaqCategory(id);
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        if (
+                            error.response.message ==
+                            "This user does not exist&&&email&&&This user does not exist"
+                        ) {
+                            error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+                        }
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
+    }
 }

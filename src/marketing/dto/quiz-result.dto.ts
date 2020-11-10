@@ -54,5 +54,5 @@ class quiz {
         example: ``
 
     })
-    quetion_id: number;
+    question_id: number;
 }

@@ -8,7 +8,7 @@ import {
     PrimaryGeneratedColumn
 } from "typeorm";
 import { MarketingGame } from "./marketing-game.entity";
-import { QuizGameQuetion } from "./quiz-game-quetion.entity";
+import { QuizGameQuestion } from "./quiz-game-question.entity";
 
 //@Index("markup_pk", ["id"], { unique: true })
 // @Index("gameId_idx", ["gameId"], {})
@@ -20,7 +20,7 @@ export class QuizGameAnswer extends BaseEntity {
     id: number;
 
     @Column("integer", { name: "quetion_id" })
-    quetionId: number;
+    questionId: number;
 
     @Column("character varying", { name: "answer", length: 255 })
     answer: string;
@@ -32,9 +32,9 @@ export class QuizGameAnswer extends BaseEntity {
     createdDate: Date;
 
     @ManyToOne(
-        () => QuizGameQuetion,
+        () => QuizGameQuestion,
         quizGameQuetion => quizGameQuetion.id
     )
     @JoinColumn([{ name: "quetion_id", referencedColumnName: "id" }])
-    quetion: QuizGameQuetion;
+    quetion: QuizGameQuestion;
 }

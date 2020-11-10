@@ -70,7 +70,7 @@ export class CronJobsController {
 	async PandingPartialBooking(
 		@Req() req,
 	){
-		return await this.cronJobsService.PandingPartialBooking(req.headers);
+		return await this.cronJobsService.PendingPartialBooking(req.headers);
 	}
 
 }

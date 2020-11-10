@@ -28,6 +28,18 @@ export class FaqCategoryController {
 		return await this.faqCategoryService.listFaqCategory();
 	}
 
+	@Get('/:id')
+	@ApiOperation({ summary: "get Faq Category" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFaqCategory(
+		@Param("id") id: number,
+	){
+		return await this.faqCategoryService.getFaqCategory(id);
+	}
+
 	@Post()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN,Role.ADMIN)

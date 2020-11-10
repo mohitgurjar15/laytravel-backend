@@ -15,16 +15,16 @@ import { QuizGameAnswer } from "./quiz-game-answer.entity";
 
 //@Index("markup_pk", ["id"], { unique: true })
 //@Index("gameName_idx", ["gameName"], {})
-@Entity("quiz_game_quetion")
-export class QuizGameQuetion extends BaseEntity {
+@Entity("quiz_game_question")
+export class QuizGameQuestion extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
     @Column("integer", { name: "game_id" })
     gameId: number;
 
-    @Column("character varying", { name: "quetion", length: 255, nullable: false })
-    quetion: string;
+    @Column("character varying", { name: "question", length: 255, nullable: false })
+    question: string;
 
     @Column("date", { name: "created_date" })
     createdDate: Date;

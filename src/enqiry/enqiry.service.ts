@@ -8,13 +8,19 @@ import { newEnquiryDto } from './dto/new-enquiry.dto';
 import { User } from 'src/entity/user.entity';
 import { v4 as uuidv4 } from "uuid";
 import { Activity } from 'src/utility/activity.utility';
+import { MailerService } from '@nestjs-modules/mailer';
+import * as config from "config";
+import { EnquiryNotificationHTML } from 'src/config/email_template/enquiry-notification.html';
+const mailConfig = config.get("email");
 
 @Injectable()
 export class EnqiryService {
-    constructor(
+	constructor(
 		@InjectRepository(EnquiryRepository)
-		private EnquiryRepository: EnquiryRepository
-	) {}
+		private EnquiryRepository: EnquiryRepository,
+
+		private readonly mailerService: MailerService
+	) { }
 
 	async listEnquiry(
 		paginationOption: EnquiryListDto
@@ -37,25 +43,39 @@ export class EnqiryService {
 
 	async newEnquiry(
 		newEnquiryDto: newEnquiryDto
-	){
+	) {
 		try {
-			const { message ,name,email,country_code,phone_no} = newEnquiryDto
+			const { message, name, email, country_code, phone_no } = newEnquiryDto
 			const enquiry = new Enquiry();
 			enquiry.id = uuidv4();
 			enquiry.email = email;
-			if(phone_no)
-			enquiry.phoneNo = phone_no;
+			if (phone_no)
+				enquiry.phoneNo = phone_no;
 
-			if(country_code)
-			enquiry.countryCode = country_code;
-			
+			if (country_code)
+				enquiry.countryCode = country_code;
+
 			enquiry.userName = name;
 			enquiry.message = message;
 			enquiry.createdDate = new Date;
 			await enquiry.save();
 			//Activity.logActivity(user.userId, "enquiry", `${email} is Added New Enquiry`);
-        
-			return { message : `Enquiry created successfully`};
+			this.mailerService
+				.sendMail({
+					to: mailConfig.admin,
+					from: mailConfig.from,
+					subject: `New enqiry`,
+					html: EnquiryNotificationHTML({
+						name: name, message: message
+					})
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+			return { message: `Enquiry created successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -71,7 +91,7 @@ export class EnqiryService {
 	}
 
 
-    async getEnquiry(id: string):Promise <Enquiry> {
+	async getEnquiry(id: string): Promise<Enquiry> {
 		try {
 			const EnqiryData = await this.EnquiryRepository.findOne({ id });
 			if (!EnqiryData) {

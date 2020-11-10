@@ -28,6 +28,7 @@ email:
     secure: true
     from: '"Laytrip" <no-reply@laytrip.com>'
     BCC:  'suresh@itoneclick.com'
+    admin: 'suresh@itoneclick.com'
 
 Sentry:
     DSN: "https://ae1830da5d4744fa9a03efeff65d68c7@o399378.ingest.sentry.io/5256424"
