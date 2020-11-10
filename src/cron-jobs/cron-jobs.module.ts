@@ -8,6 +8,7 @@ import { FlightService } from 'src/flight/flight.service';
 import { PaymentService } from 'src/payment/payment.service';
 import { BookingRepository } from 'src/booking/booking.repository';
 import { AirportRepository } from 'src/flight/airport.repository';
+import { InstalmentService } from 'src/instalment/instalment.service';
 
 @Module({
   imports:[
@@ -15,6 +16,6 @@ import { AirportRepository } from 'src/flight/airport.repository';
     AuthModule
   ],
   controllers: [CronJobsController],
-  providers: [CronJobsService,FlightService,PaymentService,BookingRepository]
+  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService]
 })
 export class CronJobsModule {}
