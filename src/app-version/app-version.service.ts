@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { errorMessage } from 'src/config/common.config';
 import { AppVersions } from 'src/entity/app-version.entity';
 import { getConnection, getManager } from 'typeorm';
@@ -32,6 +32,8 @@ export class AppVersionService {
 						throw new NotFoundException(error.response.message);
 					case 409:
 						throw new ConflictException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
 					case 422:
 						throw new BadRequestException(error.response.message);
 					case 500:
@@ -58,7 +60,7 @@ export class AppVersionService {
 		const { version, device_type } = checkForceUpdateDto
 
 		let data = await getManager().query(`SELECT "appVersions"."id" AS "appVersions_id", "appVersions"."device_type" AS "appVersions_device_type", "appVersions"."force_update" AS "appVersions_force_update", "appVersions"."version" AS "appVersions_version", "appVersions"."name" AS "appVersions_name", "appVersions"."url" AS "appVersions_url", "appVersions"."upload_date" AS "appVersions_upload_date" FROM "app_version" "appVersions" WHERE device_type = ${device_type} AND  version = '${version}'`)
-			
+
 
 
 		console.log(
@@ -66,11 +68,11 @@ export class AppVersionService {
 		);
 
 		if (!data.length) {
-			
-				const result = await getManager().query(`SELECT id, force_update, version, name, url, upload_date
+
+			const result = await getManager().query(`SELECT id, force_update, version, name, url, upload_date
 		FROM app_version where device_type = ${device_type} ORDER BY id DESC`
-				)
-				if (result.length) {
+			)
+			if (result.length) {
 				return result[0]
 			}
 			else {

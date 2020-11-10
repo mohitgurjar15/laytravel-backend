@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { errorMessage } from 'src/config/common.config';
 import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { MarketingGameRewordMarkup } from 'src/entity/marketing-game-reword-markup.entity';
@@ -6,7 +6,6 @@ import { MarketingGame } from 'src/entity/marketing-game.entity';
 import { MarketingUserActivity } from 'src/entity/marketing-user-activity.entity';
 import { MarketingUserData } from 'src/entity/marketing-user.entity';
 import { QuizGameAnswer } from 'src/entity/quiz-game-answer.entity';
-import { QuizGameQuetion } from 'src/entity/quiz-game-quetion.entity';
 import { User } from 'src/entity/user.entity';
 import { PaidFor } from 'src/enum/paid-for.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
@@ -15,7 +14,7 @@ import { Role } from 'src/enum/role.enum';
 import { getManager } from 'typeorm';
 import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.dto';
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
-import { AddQuetionDto } from './dto/add-question-answer.dto';
+import { AddQuestionDto } from './dto/add-question-answer.dto';
 import { addRewordMarkupDto } from './dto/add-reword-markup.dto';
 import { AddWheelDto } from './dto/wheel-result.dto';
 import { CreateGameDto } from './dto/new-game.dto';
@@ -27,6 +26,7 @@ import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 import { exit } from 'process';
 import { UserCard } from 'src/entity/user-card.entity';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
+import { QuizGameQuestion } from 'src/entity/quiz-game-question.entity';
 
 @Injectable()
 export class MarketingService {
@@ -57,6 +57,9 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -100,6 +103,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -152,6 +157,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -199,6 +206,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -248,6 +257,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -290,6 +301,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -346,6 +359,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -395,6 +410,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -442,6 +459,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -490,6 +509,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -578,6 +599,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -598,11 +621,11 @@ export class MarketingService {
         }
     }
 
-    async addQuetionAnswer(addQuetionDto: AddQuetionDto) {
+    async addquestionAnswer(addquestionDto: AddQuestionDto) {
         try {
             const {
                 question, options
-            } = addQuetionDto
+            } = addquestionDto
 
             let game = await getManager()
                 .createQueryBuilder(MarketingGame, "game")
@@ -613,10 +636,10 @@ export class MarketingService {
             }
 
             if (options.length > 4) {
-                throw new BadRequestException(`Only 4 option avilable for a quetion`)
+                throw new BadRequestException(`Only 4 option avilable for a question`)
             }
             else if (options.length < 4) {
-                throw new BadRequestException(`Minimum 4 option required for a quetion`)
+                throw new BadRequestException(`Minimum 4 option required for a question`)
             }
 
             var answer = 0;
@@ -633,18 +656,18 @@ export class MarketingService {
                 throw new BadRequestException(`Only one option select for right answer`)
             }
 
-            const quetionData = new QuizGameQuetion;
-            quetionData.gameId = game.id;
-            quetionData.quetion = question;
-            quetionData.createdDate = new Date();
-            quetionData.status = true;
-            quetionData.isDeleted = false;
+            const questionData = new QuizGameQuestion;
+            questionData.gameId = game.id;
+            questionData.question = question;
+            questionData.createdDate = new Date();
+            questionData.status = true;
+            questionData.isDeleted = false;
 
-            const savedQuetion = await quetionData.save();
+            const savedquestion = await questionData.save();
 
             for await (const option of options) {
                 var q = new QuizGameAnswer;
-                q.quetionId = savedQuetion.id;
+                q.questionId = savedquestion.id;
                 q.answer = option.option;
                 q.isRight = option.is_right
                 q.createdDate = new Date();
@@ -653,19 +676,19 @@ export class MarketingService {
             }
 
             let result = await getManager()
-                .createQueryBuilder(QuizGameQuetion, "quetion")
-                .leftJoinAndSelect("quetion.option", "option")
-                .leftJoinAndSelect("quetion.game", "game")
-                .select(["quetion.id",
-                    "quetion.quetion",
-                    "quetion.status",
-                    "quetion.is_deleted",
+                .createQueryBuilder(QuizGameQuestion, "question")
+                .leftJoinAndSelect("question.option", "option")
+                .leftJoinAndSelect("question.game", "game")
+                .select(["question.id",
+                    "question.question",
+                    "question.status",
+                    "question.is_deleted",
                     "option.id",
                     "option.answer",
                     "option.isRight",
                     "game.id",
                     "game.gameName"])
-                .where(`quetion.id =:id`, { id: savedQuetion.id })
+                .where(`question.id =:id`, { id: savedquestion.id })
                 .getOne();
 
             return result;
@@ -679,6 +702,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -699,21 +724,21 @@ export class MarketingService {
         }
     }
 
-    async getQuetionForUser() {
+    async getquestionForUser() {
         try {
             let [result, count] = await getManager()
-                .createQueryBuilder(QuizGameQuetion, "quetion")
-                .leftJoinAndSelect("quetion.option", "option")
-                .leftJoinAndSelect("quetion.game", "game")
-                .select(["quetion.id",
-                    "quetion.quetion",
-                    "quetion.status",
-                    "quetion.is_deleted",
+                .createQueryBuilder(QuizGameQuestion, "question")
+                .leftJoinAndSelect("question.option", "option")
+                .leftJoinAndSelect("question.game", "game")
+                .select(["question.id",
+                    "question.question",
+                    "question.status",
+                    "question.is_deleted",
                     "option.id",
                     "option.answer",
                     "game.id",
                     "game.gameName"])
-                .where(`quetion.is_deleted = false AND quetion.status = true`)
+                .where(`question.is_deleted = false AND question.status = true`)
                 .getManyAndCount();
             return { result, count };
         } catch (error) {
@@ -726,6 +751,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -746,22 +773,22 @@ export class MarketingService {
         }
     }
 
-    async getQuetionForAdmin() {
+    async getquestionForAdmin() {
         try {
             let [result, count] = await getManager()
-                .createQueryBuilder(QuizGameQuetion, "quetion")
-                .leftJoinAndSelect("quetion.option", "option")
-                .leftJoinAndSelect("quetion.game", "game")
-                .select(["quetion.id",
-                    "quetion.quetion",
-                    "quetion.status",
-                    "quetion.is_deleted",
+                .createQueryBuilder(QuizGameQuestion, "question")
+                .leftJoinAndSelect("question.option", "option")
+                .leftJoinAndSelect("question.game", "game")
+                .select(["question.id",
+                    "question.question",
+                    "question.status",
+                    "question.is_deleted",
                     "option.id",
                     "option.answer",
                     "option.isRight",
                     "game.id",
                     "game.gameName"])
-                .where(`quetion.is_deleted = false`)
+                .where(`question.is_deleted = false`)
                 .getManyAndCount();
             return { result, count };
         } catch (error) {
@@ -774,10 +801,14 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
                         throw new NotAcceptableException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 404:
                         throw new NotFoundException(error.response.message);
                     case 401:
@@ -795,22 +826,22 @@ export class MarketingService {
     }
 
 
-    async deleteQuetion(id: number) {
+    async deletequestion(id: number) {
         try {
-            let quetion = await getManager()
-                .createQueryBuilder(QuizGameQuetion, "quetion")
-                .where("quetion.is_deleted = false AND quetion.id =:id", { id })
+            let question = await getManager()
+                .createQueryBuilder(QuizGameQuestion, "question")
+                .where("question.is_deleted = false AND question.id =:id", { id })
                 .getOne();
-            if (!quetion) {
-                throw new NotFoundException(`Given quetion id not found`)
+            if (!question) {
+                throw new NotFoundException(`Given question id not found`)
             }
 
-            quetion.isDeleted = true;
-            quetion.updatedDate = new Date();
+            question.isDeleted = true;
+            question.updatedDate = new Date();
 
-            await quetion.save()
+            await question.save()
             return {
-                message: `Quiz quetion deleted succefully`
+                message: `Quiz question deleted succefully`
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -822,6 +853,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -842,22 +875,22 @@ export class MarketingService {
         }
     }
 
-    async changeQuetionStatus(id: number, statusDto: ActiveInactiveGameDto) {
+    async changequestionStatus(id: number, statusDto: ActiveInactiveGameDto) {
         try {
-            let quetion = await getManager()
-                .createQueryBuilder(QuizGameQuetion, "quetion")
-                .where("quetion.is_deleted = false AND quetion.id =:id", { id })
+            let question = await getManager()
+                .createQueryBuilder(QuizGameQuestion, "question")
+                .where("question.is_deleted = false AND question.id =:id", { id })
                 .getOne();
-            if (!quetion) {
-                throw new NotFoundException(`Given quetion id not found`)
+            if (!question) {
+                throw new NotFoundException(`Given question id not found`)
             }
             const { status } = statusDto
-            quetion.status = status;
-            quetion.updatedDate = new Date();
+            question.status = status;
+            question.updatedDate = new Date();
 
-            await quetion.save()
+            await question.save()
             return {
-                message: `Quiz quetion status changed succefully`
+                message: `Quiz question status changed succefully`
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -869,6 +902,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -911,7 +946,7 @@ export class MarketingService {
             for await (const quizAnswer of quiz_answer) {
                 let option = await getManager()
                     .createQueryBuilder(QuizGameAnswer, "quizAnswer")
-                    .where(`quetion_id = ${quizAnswer.quetion_id} AND id = ${quizAnswer.option_id} AND is_right = true`)
+                    .where(`question_id = ${quizAnswer.question_id} AND id = ${quizAnswer.option_id} AND is_right = true`)
                     .getOne();
 
                 if (option) {
@@ -968,6 +1003,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1061,6 +1098,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1123,6 +1162,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1173,6 +1214,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:
@@ -1258,6 +1301,8 @@ export class MarketingService {
                         throw new ConflictException(error.response.message);
                     case 422:
                         throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(error.response.message);
                     case 406:

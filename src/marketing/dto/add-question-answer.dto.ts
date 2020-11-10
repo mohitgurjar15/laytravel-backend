@@ -2,7 +2,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsNotEmpty, ValidateNested } from "class-validator";
 
-export class AddQuetionDto{
+export class AddQuestionDto{
+    
 
     @IsNotEmpty({
 		message: `Please enter quetion &&&quetion`,
