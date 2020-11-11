@@ -949,7 +949,7 @@ export class MarketingService {
             const ipAddress = req.connection.remoteAddress
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
-                .where(`user.ip_address =:ipAddress`, { ipAddress })
+                .where(`ip_address =:ipAddress`, { ipAddress })
                 .getOne();
             const existingUserId = user.userId;
 
@@ -1291,7 +1291,7 @@ export class MarketingService {
             const ipAddress = req.connection.remoteAddress
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
-                .where(`user.ip_address =:ipAddress`, { ipAddress })
+                .where(`ip_address =:ipAddress`, { ipAddress })
                 .getOne();
             const activityData = await getManager()
                 .createQueryBuilder(MarketingUserActivity, "activity")

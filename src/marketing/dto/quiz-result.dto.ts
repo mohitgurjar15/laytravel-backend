@@ -13,11 +13,11 @@ export class QuizResultDto {
         example: [
             {
                 option_id: 1,
-                quetion_id: 1
+                question_id: 1
             },
             {
                 option_id: 1,
-                quetion_id: 1
+                question_id: 1
             }
         ]
     })
@@ -46,3 +46,4 @@ class quiz {
     })
     question_id: number;
 }
+

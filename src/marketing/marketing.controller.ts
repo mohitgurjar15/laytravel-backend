@@ -201,6 +201,7 @@ export class MarketingController {
 		@Body() createMarketingUserDto: CreateMarketingUserDto,
 		@Req() req,
 	) {
+		console.log(req.connection.remoteAddress);
 		return await this.marketingService.marketingUser(createMarketingUserDto,req);
 	}
 
