@@ -19,7 +19,7 @@ export class QuizGameAnswer extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
-    @Column("integer", { name: "quetion_id" })
+    @Column("integer", { name: "question_id" , nullable:true})
     questionId: number;
 
     @Column("character varying", { name: "answer", length: 255 })
@@ -35,6 +35,6 @@ export class QuizGameAnswer extends BaseEntity {
         () => QuizGameQuestion,
         quizGameQuetion => quizGameQuetion.id
     )
-    @JoinColumn([{ name: "quetion_id", referencedColumnName: "id" }])
+    @JoinColumn([{ name: "question_id", referencedColumnName: "id" }])
     quetion: QuizGameQuestion;
 }
