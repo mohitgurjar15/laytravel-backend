@@ -19,6 +19,7 @@ import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
 import { missedPaymentInstallmentMail } from "src/config/email_template/missed-payment-installment-mail.html";
 import { PaymentInstallmentMail } from "src/config/email_template/payment-installment-mail.html";
 import { BookingStatus } from "src/enum/booking-status.enum";
+import * as moment from "moment";
 import { ignoreElements } from "rxjs/operators";
 
 
@@ -300,7 +301,7 @@ export class CronJobsService {
 		//console.log(bookingData);
 		for (let index = 0; index < result.length; index++) {
 			var bookingData = result[index];
-
+			let flights: any = null;
 			console.log(bookingData);
 
 			var bookingType = bookingData.locationInfo['journey_type']
@@ -312,47 +313,62 @@ export class CronJobsService {
 				let dto = {
 					"source_location": bookingData.moduleInfo[0].departure_code,
 					"destination_location": bookingData.moduleInfo[0].arrival_code,
-					"departure_date": bookingData.moduleInfo[0].departure_date,
+					"departure_date": moment(new Date(bookingData.moduleInfo[0].departure_date)).format("YYYY-MM-DD"),
 					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
 					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
 					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
 					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
 				}
-				const flights: any = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
-				for await (const flight of flights.items) {
-					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
-						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+				console.log(dto);
 
-						const savedDate = new Date(bookingData.predectedBookingDate);
-						var predictedDate = savedDate.toISOString();
-						predictedDate = predictedDate
-							.replace(/T/, " ") // replace T with a space
-							.replace(/\..+/, "");
-						const date = new Date();
-						var todayDate = date.toISOString();
-						todayDate = todayDate
-							.replace(/T/, " ") // replace T with a space
-							.replace(/\..+/, "");
-						if (flight.routes[0].stops[0].below_minimum_seat == true) {
-							console.log('rule 1 : - below minimum ')
-						}
-						else if (bookingData.netRate > flight.net_rate) {
-							console.log(`rule 2 :- flight net rate less than the user book net rate`)
-						}
-						else if (flight.selling_price < markups.maxPrice && predictedDate == todayDate) {
-							console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						}
-						else if (flight.selling_price < markups.maxPrice ) {
-							console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						}
-						else if (flight.selling_price > markups.minPrice && predictedDate == todayDate) {
-							console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						}
+				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
 
+			}
+			else {
+				Headers['currency'] = bookingData.currency2.code
+				Headers['language'] = 'en'
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": moment(new Date(bookingData.moduleInfo[0].departure_date)).format("YYYY-MM-DD"),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+					"arrival_date": moment(new Date(bookingData.moduleInfo[0].arrival_code)).format("YYYY-MM-DD")
+				}
+
+				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+			}
+			for await (const flight of flights.items) {
+				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+					const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+
+					const savedDate = new Date(bookingData.predectedBookingDate);
+					var predictedDate = savedDate.toISOString();
+					predictedDate = predictedDate
+						.replace(/T/, " ") // replace T with a space
+						.replace(/\..+/, "");
+					const date = new Date();
+					var todayDate = date.toISOString();
+					todayDate = todayDate
+						.replace(/T/, " ") // replace T with a space
+						.replace(/\..+/, "");
+					if (flight.routes[0].stops[0].below_minimum_seat == true) {
+						console.log('rule 1 : - below minimum ')
+					}
+					else if (bookingData.netRate > flight.net_rate) {
+						console.log(`rule 2 :- flight net rate less than the user book net rate`)
+					}
+					else if (flight.selling_price < markups.maxPrice && predictedDate == todayDate) {
+						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
+					}
+					else if (flight.selling_price > markups.maxPrice) {
+						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
 					}
 				}
 			}
-
 
 		}
 		return result[0]

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/enum/role.enum';
@@ -198,9 +198,10 @@ export class MarketingController {
 	@Post('user')
 	@HttpCode(200)
 	async newUser(
-		@Body() createMarketingUserDto: CreateMarketingUserDto
+		@Body() createMarketingUserDto: CreateMarketingUserDto,
+		@Req() req,
 	) {
-		return await this.marketingService.marketingUser(createMarketingUserDto);
+		return await this.marketingService.marketingUser(createMarketingUserDto,req);
 	}
 
 	@Roles(Role.SUPER_ADMIN)
@@ -225,7 +226,9 @@ export class MarketingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Get('quiz/list-for-admin')
 	async listQuizforAdmin(
+		
 	) {
+
 		return await this.marketingService.getquestionForAdmin();
 	}
 
@@ -236,7 +239,9 @@ export class MarketingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Get('quiz/list-for-user')
 	async listQuizforUser(
+		
 	) {
+		
 		return await this.marketingService.getquestionForUser();
 	}
 
@@ -247,9 +252,11 @@ export class MarketingController {
 	@Post('quiz/submit')
 	@HttpCode(200)
 	async submitQuiz(
-		@Body() quizResultDto: QuizResultDto
+		@Body() quizResultDto: QuizResultDto,
+		@Req() req,
 	) {
-		return await this.marketingService.quizResult(quizResultDto);
+		console.log(req.connection.remoteAddress);
+		return await this.marketingService.quizResult(quizResultDto,req);
 	}
 
 	@ApiOperation({ summary: "list wheel option for user" })
@@ -270,8 +277,9 @@ export class MarketingController {
 	@Post('wheel/submit')
 	async wheelResult(
 		@Body() submitWheelDto: SubmitWheelDto,
+		@Req() req,
 	){
-		return await this.marketingService.submitWheelGame(submitWheelDto);
+		return await this.marketingService.submitWheelGame(submitWheelDto,req);
 	}
 
 	@ApiOperation({ summary: "Update marketing user data" })
