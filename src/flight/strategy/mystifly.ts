@@ -811,7 +811,7 @@ export class Mystifly implements StrategyAirline {
          </tem:AirLowFareSearch>
      </soapenv:Body>
     </soapenv:Envelope>`;*/
-        console.log(requestBody)
+        //console.log(requestBody)
 
         let searchResult = await HttpRequest.mystiflyRequestZip(mystiflyConfig.zipSearchUrl, requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
@@ -828,7 +828,7 @@ export class Mystifly implements StrategyAirline {
 
         //console.log(jsonData.airlowfaresearchgziprs.errors[0].error[0])
 
-        console.log(jsonData);
+       // console.log(jsonData);
         
 
         // return jsonData;

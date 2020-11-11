@@ -35,14 +35,6 @@ export class CreateMarketingUserDto {
 	})
     device_model: string;
     
-    @IsNotEmpty({ message: `Please enter your ip adddress.&&&ip_address&&&${errorMessage}` })
-	@ApiProperty({
-		description: `ip_address`,
-		example: '127.0.0.1',
-	})
-	ip_address: string;
-
-
     @ValidateIf(o => o.signup_via === 'mobile')
 	@IsNotEmpty({ message: `Please enter your app version.&&&app_version&&&${errorMessage}` })
 	@ApiProperty({
