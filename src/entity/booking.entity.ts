@@ -105,6 +105,9 @@ export class Booking extends BaseEntity {
   })
   paymentGatewayProcessingFee: string | null;
 
+  @Column("integer", { name: "supplier_status", nullable:true })
+  supplierStatus: number;
+
   @Column("integer", { name: "supplier_id", nullable: true })
   supplierId: number | null;
 

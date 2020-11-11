@@ -291,9 +291,11 @@ export class Mystifly implements StrategyAirline {
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
                     route.start_price = '0';
+                    route.secondary_start_price = '0';
                 }
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
@@ -1389,9 +1391,11 @@ export class Mystifly implements StrategyAirline {
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
                     route.start_price = '0';
+                    route.secondary_start_price = '0';
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
@@ -1690,9 +1694,11 @@ export class Mystifly implements StrategyAirline {
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
                     route.start_price = '0';
+                    route.secondary_start_price = '0';
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
@@ -1860,8 +1866,9 @@ export class Mystifly implements StrategyAirline {
 
             bookingResponse = {
                 booking_status: 'success',
+                supplier_status:bookResultSegment['a:status'][0],
                 supplier_booking_id: bookResultSegment['a:uniqueid'][0],
-                success_message: `Booking is successfully is done!`,
+                success_message: `Booking is successfully done!`,
                 error_message: ''
             }
         }
@@ -1874,10 +1881,45 @@ export class Mystifly implements StrategyAirline {
                 error_message: `Booking failed`
             }
         }
-        console.log(JSON.stringify(bookResult));
         return bookingResponse;
     }
 
+    async tripDetails(tripId){
+        const mystiflyConfig = await this.getMystiflyCredential();
+        const sessionToken = await this.startSession();
+        console.log("mystiflyConfig",mystiflyConfig)
+        let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
+        requestBody += `<soapenv:Header/>`;
+        requestBody += `<soapenv:Body>`;
+        requestBody += `<mys:TripDetails>`;
+        requestBody += `<mys:rq>`;
+        requestBody += `<mys1:SessionId>5A14E536-B141-4A44-821C-06E74CDAEBE5-1847</mys1:SessionId>            `;
+        requestBody += `<mys1:Target>Test</mys1:Target>            `;
+        requestBody += `<mys1:UniqueID>${tripId}</mys1:UniqueID>`;
+        requestBody += `</mys:rq>`;
+        requestBody += `</mys:TripDetails>`;
+        requestBody += `</soapenv:Body>`;
+        requestBody += `</soapenv:Envelope>`;
+        mystiflyConfig.url = 'http://onepointdemo.myfarebox.com/V2/OnePoint.svc';
+        let tripDetailsResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url,requestBody,'TripDetails');
+        console.log("tripDetailsResult",JSON.stringify(tripDetailsResult))
+        if(tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:success"][0]=='true'){
+
+            let travelItinerary = tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:travelitinerary"][0];
+
+            let tripDetails:any={};
+            tripDetails.booking_status=travelItinerary['a:bookingstatus'][0];
+            tripDetails.fare_type=travelItinerary['a:faretype'][0];
+            tripDetails.ticket_status = travelItinerary['a:ticketstatus'][0];
+            tripDetails.unique_id = travelItinerary['a:uniqueid'][0];
+
+            return tripDetails;
+        }
+        else{
+            throw new NotFoundException(`Trip details not found!`)
+        }
+    }
+    
     async cancellationPolicy(routeIdDto) {
         const { route_code } = routeIdDto;
         let fareRuleResult = await this.fareRule(route_code);
@@ -2006,4 +2048,6 @@ export class Mystifly implements StrategyAirline {
 
         return fareBreakDowns;
     }
+
+    
 } 

@@ -238,6 +238,12 @@ export class FlightService {
 		return result;
 	}
 
+	async tripDetails(tripId){
+		const mystifly = new Strategy(new Mystifly({}));
+		const result = new Promise((resolve) => resolve(mystifly.tripDetails(tripId))
+		);
+		return result;
+	}
 
 	async searchRoundTripZipFlight(searchFlightDto, headers, user) {
 		await this.validateHeaders(headers);
@@ -878,7 +884,15 @@ export class FlightService {
 
 	async ticketFlight(id) {
 		const mystifly = new Strategy(new Mystifly({}));
-		const result = new Promise((resolve) => resolve(mystifly.ticketFlight(id)));
+		const result = await mystifly.ticketFlight(id);
+		if(result.status=='true'){
+			await getConnection()
+					.createQueryBuilder()
+					.update(Booking)
+					.set({ isTicketd: true })
+					.where("supplier_booking_id = :id", { id: id })
+					.execute();
+		}
 		return result;
 	}
 
@@ -1125,6 +1139,10 @@ export class FlightService {
 						bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 							laytripBookingResult.id
 						);
+
+						if(bookingRequestInfo.fare_type=='GDS'){
+							this.ticketFlight(bookingResult.supplier_booking_id)
+						}
 						return bookingResult;
 					} else {
 						await this.paymentService.voidCard(authCardToken);
@@ -1181,8 +1199,6 @@ export class FlightService {
 					);
 				}
 			}
-
-
 		}
 	}
 
@@ -1272,9 +1288,11 @@ export class FlightService {
 			booking.paymentStatus = PaymentStatus.PENDING;
 			booking.supplierBookingId = "";
 			booking.isPredictive = true;
+			booking.supplierStatus=0;
 		} else {
 			//pass here mystifly booking id
 			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
+			booking.supplierStatus = (supplierBookingData!=null && supplierBookingData.supplier_status=='BOOKINGINPROCESS')?0:1;
 			//booking.supplierBookingId = "";
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
@@ -1669,7 +1687,47 @@ export class FlightService {
 		}
 	}
 
+	async updateBooking(bookingId:string){
 
+        let tripDetails:any= await this.tripDetails(bookingId);
+        if(tripDetails.booking_status=='Not Booked'){
+            // void card & update booking status in DB & send email to customer
+        }
+
+        if(tripDetails.booking_status==""){
+
+			if(tripDetails.ticket_status=='Ticketed'){
+				await getConnection()
+					.createQueryBuilder()
+					.update(Booking)
+					.set({ isTicketd: true, supplierStatus:1 })
+					.where("supplier_booking_id = :id", { id: bookingId })
+					.execute();
+			}
+		}
+
+		if(tripDetails.booking_status=='Booked'){
+
+			let ticketDetails:any = await this.ticketFlight(bookingId);
+			//return ticketDetails; 
+			let newTripDetails:any = await this.tripDetails(bookingId);
+			if(newTripDetails.ticket_status=='Ticketed'){
+				await getConnection()
+					.createQueryBuilder()
+					.update(Booking)
+					.set({ isTicketd: true, supplierStatus:1 })
+					.where("supplier_booking_id = :id", { id: bookingId })
+					.execute();
+			}
+
+			//if TicketStatus = TktInProgress call it again
+		}
+
+		/* if(tripDetails.booking_status=='Pending'){
+
+			
+		} */
+    }
 	async getValueWithPreductionPercentage(netValue) {
 		let query = getManager()
 			.createQueryBuilder(PredictionFactorMarkup, "markup")
