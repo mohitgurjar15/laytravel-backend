@@ -1288,9 +1288,11 @@ export class FlightService {
 			booking.paymentStatus = PaymentStatus.PENDING;
 			booking.supplierBookingId = "";
 			booking.isPredictive = true;
+			booking.supplierStatus=0;
 		} else {
 			//pass here mystifly booking id
 			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
+			booking.supplierStatus = (supplierBookingData!=null && supplierBookingData.supplier_status=='BOOKINGINPROCESS')?0:1;
 			//booking.supplierBookingId = "";
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
@@ -1698,7 +1700,7 @@ export class FlightService {
 				await getConnection()
 					.createQueryBuilder()
 					.update(Booking)
-					.set({ isTicketd: true })
+					.set({ isTicketd: true, supplierStatus:1 })
 					.where("supplier_booking_id = :id", { id: bookingId })
 					.execute();
 			}
@@ -1713,7 +1715,7 @@ export class FlightService {
 				await getConnection()
 					.createQueryBuilder()
 					.update(Booking)
-					.set({ isTicketd: true })
+					.set({ isTicketd: true, supplierStatus:1 })
 					.where("supplier_booking_id = :id", { id: bookingId })
 					.execute();
 			}

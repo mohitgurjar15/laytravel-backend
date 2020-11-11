@@ -73,4 +73,16 @@ export class CronJobsController {
 		return await this.cronJobsService.PendingPartialBooking(req.headers);
 	}
 
+
+	@Get('update-flight-booking')
+	@ApiOperation({ summary: "update flight booking-in-process booking" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async updateFlightBookingInProcess(
+		@Req() req,
+	){
+		return await this.cronJobsService.updateFlightBookingInProcess();
+	}
+
 }

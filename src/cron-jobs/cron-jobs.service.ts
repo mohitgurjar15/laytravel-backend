@@ -358,4 +358,55 @@ export class CronJobsService {
 		return result[0]
 		//return { message: `${total} bookings are updated` }
 	}
+
+	async updateFlightBookingInProcess(){
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.select([
+				"booking.supplierBookingId",
+				"booking.id"
+			])
+			.where(
+				`"booking"."supplier_status" = 0 and "booking"."supplier_booking_id" !=''`
+			)
+
+		const result = await query.getMany();
+
+		for(let booking of result){
+
+			let tripDetails:any= await this.flightService.tripDetails(booking.supplierBookingId);
+			if(tripDetails.booking_status=='Not Booked'){
+				// void card & update booking status in DB & send email to customer
+			}
+
+			if(tripDetails.booking_status==""){
+
+				if(tripDetails.ticket_status=='Ticketed'){
+					await getConnection()
+						.createQueryBuilder()
+						.update(Booking)
+						.set({ isTicketd: true, supplierStatus:1 })
+						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
+						.execute();
+				}
+			}
+
+			if(tripDetails.booking_status=='Booked'){
+
+				let ticketDetails:any = await this.flightService.ticketFlight(booking.supplierBookingId);
+				//return ticketDetails; 
+				let newTripDetails:any = await this.flightService.tripDetails(booking.supplierBookingId);
+				if(newTripDetails.ticket_status=='Ticketed'){
+					await getConnection()
+						.createQueryBuilder()
+						.update(Booking)
+						.set({ isTicketd: true, supplierStatus:1 })
+						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
+						.execute();
+				}
+
+				//if TicketStatus = TktInProgress call it again
+			}
+		}
+	}
 }
