@@ -207,7 +207,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_type,
 			payment_start_date,
 			instalment_type,
-			module_id
+			module_id, payment_status
 		} = listPaymentDto;
 
 		const take = limit || 10;
@@ -300,6 +300,11 @@ export class BookingRepository extends Repository<Booking> {
 			query = query.andWhere(`"booking"."module_id"=:module_id`, {
 				module_id,
 			});
+		if (payment_status) {
+			query = query.andWhere(`"booking"."payment_status"=:payment_status`, {
+				payment_status,
+			});
+		}
 		if (payment_start_date && payment_end_date) {
 			query = query.andWhere(
 				`"BookingInstalments"."instalment_date" >=:payment_start_date and "BookingInstalments"."instalment_date" <=:payment_end_date`,

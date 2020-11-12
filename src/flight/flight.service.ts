@@ -56,6 +56,8 @@ import * as uniqid from 'uniqid';
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 import { InstalmentService } from "src/instalment/instalment.service";
 import { exit } from "process";
+import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
+import { airports } from "./airports";
 
 @Injectable()
 export class FlightService {
@@ -238,7 +240,7 @@ export class FlightService {
 		return result;
 	}
 
-	async tripDetails(tripId){
+	async tripDetails(tripId) {
 		const mystifly = new Strategy(new Mystifly({}));
 		const result = new Promise((resolve) => resolve(mystifly.tripDetails(tripId))
 		);
@@ -770,74 +772,7 @@ export class FlightService {
 		return returnResponce;
 	}
 
-	// async preductDate(searchFlightDto: PreductBookingDateDto, headers, user) {
-	// 	await this.validateHeaders(headers);
-	// 	const { unique_token } = searchFlightDto
-	// 	//calculates dates for getting booking date
-	// 	let dto1 = {
-	// 		"source_location": "DXB",
-	// 		"destination_location": "SYD",
-	// 		"departure_date": "2020-11-19",
-	// 		"flight_class": "Economy",
-	// 		"adult_count": 1,
-	// 		"child_count": 0,
-	// 		"infant_count": 0
-	// 	}
 
-	// 	let dto2 = {
-	// 		"source_location": "DXB",
-	// 		"destination_location": "SYD",
-	// 		"departure_date": "2020-11-07",
-	// 		"flight_class": "Economy",
-	// 		"adult_count": 1,
-	// 		"child_count": 0,
-	// 		"infant_count": 0
-	// 	}
-
-	// 	var result = [];
-
-	// 	const mystifly = new Strategy(new Mystifly(headers));
-	// 	const result1 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto1, user)));
-	// 	//const result2 = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto2, user)));
-	// 	result.push(result1);
-
-	// 	const response = await Promise.all(result);
-
-	// 	var lowestPriceIndex = 0;
-	// 	var lowestprice = 0
-	// 	let returnResponce = [];
-	// 	var key = 0;
-	// 	for await (const data of response) {
-	// 		for await (const flightData of data.items) {
-	// 			if (unique_token == flightData.unique_code) {
-	// 				var is_booking_avaible = false;
-	// 				if (key == 0) {
-	// 					lowestPriceIndex = key
-	// 					lowestprice = flightData.net_rate;
-	// 					is_booking_avaible = true;
-	// 				}
-	// 				else if (lowestprice > flightData.net_rate) {
-	// 					returnResponce[lowestPriceIndex].is_booking_avaible = false
-	// 					lowestPriceIndex = key
-	// 					lowestprice = flightData.net_rate;
-	// 					is_booking_avaible = true
-	// 				}
-
-	// 				returnResponce.push({
-	// 					date: flightData.departure_date,
-	// 					price: flightData.net_rate,
-	// 					is_booking_avaible
-	// 				})
-	// 				console.log(flightData.unique_code);
-	// 				console.log(flightData.net_rate);
-	// 				console.log(flightData.departure_date);
-	// 			}
-
-	// 		}
-	// 	}
-
-	// 	return returnResponce;
-	// }
 
 	async getDifferenceInDays(date1, date2) {
 		const diffInMs = Math.abs(date2 - date1);
@@ -885,13 +820,13 @@ export class FlightService {
 	async ticketFlight(id) {
 		const mystifly = new Strategy(new Mystifly({}));
 		const result = await mystifly.ticketFlight(id);
-		if(result.status=='true'){
+		if (result.status == 'true') {
 			await getConnection()
-					.createQueryBuilder()
-					.update(Booking)
-					.set({ isTicketd: true })
-					.where("supplier_booking_id = :id", { id: id })
-					.execute();
+				.createQueryBuilder()
+				.update(Booking)
+				.set({ isTicketd: true })
+				.where("supplier_booking_id = :id", { id: id })
+				.execute();
 		}
 		return result;
 	}
@@ -1140,7 +1075,7 @@ export class FlightService {
 							laytripBookingResult.id
 						);
 
-						if(bookingRequestInfo.fare_type=='GDS'){
+						if (bookingRequestInfo.fare_type == 'GDS') {
 							this.ticketFlight(bookingResult.supplier_booking_id)
 						}
 						return bookingResult;
@@ -1288,11 +1223,11 @@ export class FlightService {
 			booking.paymentStatus = PaymentStatus.PENDING;
 			booking.supplierBookingId = "";
 			booking.isPredictive = true;
-			booking.supplierStatus=0;
+			booking.supplierStatus = 0;
 		} else {
 			//pass here mystifly booking id
 			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
-			booking.supplierStatus = (supplierBookingData!=null && supplierBookingData.supplier_status=='BOOKINGINPROCESS')?0:1;
+			booking.supplierStatus = (supplierBookingData != null && supplierBookingData.supplier_status == 'BOOKINGINPROCESS') ? 0 : 1;
 			//booking.supplierBookingId = "";
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
@@ -1337,7 +1272,7 @@ export class FlightService {
 					.values(bookingInstalments)
 					.execute();
 			}
-			return bookingDetails;
+			return this.bookingRepository.getBookingDetails(booking.id);
 		} catch (error) {
 			console.log(error);
 		}
@@ -1687,35 +1622,35 @@ export class FlightService {
 		}
 	}
 
-	async updateBooking(bookingId:string){
+	async updateBooking(bookingId: string) {
 
-        let tripDetails:any= await this.tripDetails(bookingId);
-        if(tripDetails.booking_status=='Not Booked'){
-            // void card & update booking status in DB & send email to customer
-        }
+		let tripDetails: any = await this.tripDetails(bookingId);
+		if (tripDetails.booking_status == 'Not Booked') {
+			// void card & update booking status in DB & send email to customer
+		}
 
-        if(tripDetails.booking_status==""){
+		if (tripDetails.booking_status == "") {
 
-			if(tripDetails.ticket_status=='Ticketed'){
+			if (tripDetails.ticket_status == 'Ticketed') {
 				await getConnection()
 					.createQueryBuilder()
 					.update(Booking)
-					.set({ isTicketd: true, supplierStatus:1 })
+					.set({ isTicketd: true, supplierStatus: 1 })
 					.where("supplier_booking_id = :id", { id: bookingId })
 					.execute();
 			}
 		}
 
-		if(tripDetails.booking_status=='Booked'){
+		if (tripDetails.booking_status == 'Booked') {
 
-			let ticketDetails:any = await this.ticketFlight(bookingId);
+			let ticketDetails: any = await this.ticketFlight(bookingId);
 			//return ticketDetails; 
-			let newTripDetails:any = await this.tripDetails(bookingId);
-			if(newTripDetails.ticket_status=='Ticketed'){
+			let newTripDetails: any = await this.tripDetails(bookingId);
+			if (newTripDetails.ticket_status == 'Ticketed') {
 				await getConnection()
 					.createQueryBuilder()
 					.update(Booking)
-					.set({ isTicketd: true, supplierStatus:1 })
+					.set({ isTicketd: true, supplierStatus: 1 })
 					.where("supplier_booking_id = :id", { id: bookingId })
 					.execute();
 			}
@@ -1727,7 +1662,7 @@ export class FlightService {
 
 			
 		} */
-    }
+	}
 	async getValueWithPreductionPercentage(netValue) {
 		let query = getManager()
 			.createQueryBuilder(PredictionFactorMarkup, "markup")
@@ -1736,6 +1671,131 @@ export class FlightService {
 			])
 		const result = await query.getOne();
 		return (netValue * result.markupPercentage) / 100;
+	}
+
+	async manullyBooking(bookingId: string, manullyBooking: ManullyBookingDto) {
+		const { supplier_booking_id } = manullyBooking
+		const mystifly = new Strategy(new Mystifly({}));
+		let ticketDetails: any = await mystifly.tripDetails(supplier_booking_id)
+
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.where(`id = '${bookingId}'`)
+		const booking = await query.getOne();
+		if (!booking) {
+			throw new NotFoundException(`Given booking id not found`)
+		}
+		console.log(booking);
+
+		var moduleInfo = booking.moduleInfo[0]
+		const currencyCode = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:currencycode"][0]
+		let currencyDetails = await getManager()
+			.createQueryBuilder(Currency, "currency")
+			.where(`"currency"."code"=:currencyCode `, {
+				currencyCode,
+			})
+			.getOne();
+		console.log('amount', ticketDetails.data["a:itineraryinfo"]);
+		// console.log(moduleInfo);
+
+		moduleInfo['net_rate'] = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:amount"][0];
+
+		
+		var depatureIndex = 0
+		var arrivalIndex = 0
+		moduleInfo.routes[0].stops = [];
+		moduleInfo.routes[1].stops = [];
+		for await (const reservation of ticketDetails.data["a:itineraryinfo"][0]["a:reservationitems"][0]['a:reservationitem']) {
+
+			// console.log(reservation)
+			if (reservation != null) {
+				console.log(`reservation`, reservation);
+
+				var data = {
+					"departure_code": reservation["a:departureairportlocationcode"][0],
+					"departure_date": await (await this.getDataTimefromString(reservation["a:departuredatetime"][0])).date,
+					"departure_time": await (await this.getDataTimefromString(reservation["a:departuredatetime"][0])).time,
+					"departure_date_time": reservation["a:departuredatetime"][0],
+					"departure_info": airports[reservation["a:departureairportlocationcode"][0]],
+					"arrival_code": reservation["a:arrivalairportlocationcode"][0],
+					"arrival_date": await (await this.getDataTimefromString(reservation["a:arrivaldatetime"][0])).date,
+					"arrival_time": await (await this.getDataTimefromString(reservation["a:arrivaldatetime"][0])).time,
+					"arrival_date_time": reservation['a:arrivaldatetime'][0],
+					"arrival_info": airports[reservation["a:arrivalairportlocationcode"][0]],
+					"eticket": true,
+					"flight_number": reservation["a:flightnumber"][0],
+					"cabin_class": reservation["a:cabinclasstext"][0],
+					"duration": "",
+					"airline": reservation["a:marketingairlinecode"][0],
+					"remaining_seat": 0,
+					"below_minimum_seat": false,
+					"is_layover": false,
+					"airline_name": "",
+					"airline_logo": `http://d2q1prebf1m2s9.cloudfront.net/assets/images/airline/108x92/${reservation["a:marketingairlinecode"][0]}.png`
+				}
+				if (reservation['a:isreturn'][0] == 'true') {
+					
+
+					moduleInfo.routes[1].stops.push(data)
+
+				} else {
+					
+					moduleInfo.routes[0].stops.push(data)
+
+				}
+			}
+
+		}
+
+
+
+		const i = moduleInfo.routes[0].stops.length
+		const depatureData = moduleInfo.routes[0].stops[0]
+		
+		const arrivalData = moduleInfo.routes[0].stops[i - 1]
+
+		moduleInfo.departure_date = depatureData.departure_date
+		moduleInfo.departure_time = depatureData.departure_time
+		moduleInfo.departure_code = depatureData.departure_code
+		moduleInfo.departure_info = depatureData.departure_info
+		moduleInfo.airline = depatureData.airline
+		moduleInfo.stop_count = i
+		moduleInfo.airline_name = ''
+		moduleInfo.airline_logo = depatureData.airline_logo
+
+
+		moduleInfo.arrival_date = arrivalData.arrival_date
+		moduleInfo.arrival_time = arrivalData.arrival_time
+		moduleInfo.arrival_code = arrivalData.arrival_code
+		moduleInfo.arrival_info = arrivalData.arrival_info
+		moduleInfo['ismanully'] = true
+
+		booking.netRate = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:amount"][0]
+		booking.moduleInfo = [moduleInfo]
+		booking.supplierBookingId = supplier_booking_id;
+
+		await booking.save();
+		return this.bookingRepository.getBookingDetails(booking.id)
+
+	}
+
+	async getDataTimefromString(dateTime) {
+		var data = dateTime.split('T')
+		var date = data[0].split('-')
+		console.log(date);
+
+		var time = data[1].split(':')
+		console.log(time);
+
+		var amPm = 'AM'
+		if (time[0] > 12) {
+			amPm = 'PM'
+			time[0] = time[0] - 12;
+		}
+		return {
+			date: `${date[2]}/${date[1]}/${date[0]}`,
+			time: `${time[0]}:${time[1]} ${amPm}`
+		}
 	}
 
 }

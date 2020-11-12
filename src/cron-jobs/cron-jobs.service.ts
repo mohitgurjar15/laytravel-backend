@@ -21,6 +21,7 @@ import { PaymentInstallmentMail } from "src/config/email_template/payment-instal
 import { BookingStatus } from "src/enum/booking-status.enum";
 import * as moment from "moment";
 import { ignoreElements } from "rxjs/operators";
+import { OtherPayments } from "src/entity/other-payment.entity";
 
 
 @Injectable()
@@ -375,7 +376,7 @@ export class CronJobsService {
 		//return { message: `${total} bookings are updated` }
 	}
 
-	async updateFlightBookingInProcess(){
+	async updateFlightBookingInProcess() {
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.select([
@@ -388,35 +389,64 @@ export class CronJobsService {
 
 		const result = await query.getMany();
 
-		for(let booking of result){
+		for (let booking of result) {
 
-			let tripDetails:any= await this.flightService.tripDetails(booking.supplierBookingId);
-			if(tripDetails.booking_status=='Not Booked'){
-				// void card & update booking status in DB & send email to customer
-			}
+			let tripDetails: any = await this.flightService.tripDetails(booking.supplierBookingId);
+			if (tripDetails.booking_status == 'Not Booked') {
 
-			if(tripDetails.booking_status==""){
+				const voidCard = await this.paymentService.voidCard(booking.cardToken)
 
-				if(tripDetails.ticket_status=='Ticketed'){
+				if (voidCard.status == true) {
+					const transaction = new OtherPayments;
+
+					transaction.bookingId = booking.id;
+					transaction.userId = booking.userId;
+					transaction.currencyId = booking.currency;
+					transaction.amount = booking.totalAmount;
+					transaction.paidFor = `Void card`
+					transaction.comment = `transaction failed at update booking by cron`
+					transaction.transactionId = voidCard.token
+					transaction.paymentInfo = voidCard.meta_data
+					transaction.paymentStatus = PaymentStatus.CANCELLED
+					transaction.createdBy = "1c17cd17-9432-40c8-a256-10db77b95bca"
+					transaction.createdDate = new Date()
+
+					const transactionId = await transaction.save();
+
 					await getConnection()
 						.createQueryBuilder()
 						.update(Booking)
-						.set({ isTicketd: true, supplierStatus:1 })
+						.set({ bookingStatus: BookingStatus.FAILED , paymentStatus : PaymentStatus.REFUNDED , paymentInfo : voidCard.meta_data})
+						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
+						.execute();
+				}
+
+
+				// void card & update booking status in DB & send email to customer
+			}
+
+			if (tripDetails.booking_status == "") {
+
+				if (tripDetails.ticket_status == 'Ticketed') {
+					await getConnection()
+						.createQueryBuilder()
+						.update(Booking)
+						.set({ isTicketd: true, supplierStatus: 1 })
 						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
 						.execute();
 				}
 			}
 
-			if(tripDetails.booking_status=='Booked'){
+			if (tripDetails.booking_status == 'Booked') {
 
-				let ticketDetails:any = await this.flightService.ticketFlight(booking.supplierBookingId);
+				let ticketDetails: any = await this.flightService.ticketFlight(booking.supplierBookingId);
 				//return ticketDetails; 
-				let newTripDetails:any = await this.flightService.tripDetails(booking.supplierBookingId);
-				if(newTripDetails.ticket_status=='Ticketed'){
+				let newTripDetails: any = await this.flightService.tripDetails(booking.supplierBookingId);
+				if (newTripDetails.ticket_status == 'Ticketed') {
 					await getConnection()
 						.createQueryBuilder()
 						.update(Booking)
-						.set({ isTicketd: true, supplierStatus:1 })
+						.set({ isTicketd: true, supplierStatus: 1 })
 						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
 						.execute();
 				}

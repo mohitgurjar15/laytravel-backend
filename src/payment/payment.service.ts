@@ -16,6 +16,7 @@ import { AddCardDto } from "./dto/add-card.dto";
 import { CreteTransactionDto } from "./dto/create-transaction.dto";
 import { Generic } from "src/utility/generic.utility";
 import { OtherPayments } from "src/entity/other-payment.entity";
+import { PaymentStatus } from "src/enum/payment-status.enum";
 
 
 @Injectable()
@@ -338,18 +339,18 @@ export class PaymentService {
 		transaction.bookingId = bookingId;
 		transaction.userId = userId;
 		transaction.currencyId = currencyId;
-		transaction.amount = amount;
+		transaction.amount = `${amount}`;
 		transaction.paidFor = paidFor
 		transaction.comment = note
 		transaction.transactionId = result.token
 		transaction.paymentInfo = result.meta_data
-		transaction.paymentStatus = result.status
+		transaction.paymentStatus = result.status ==  true ? PaymentStatus.CONFIRM : PaymentStatus.FAILED ;
 		transaction.createdBy = createdBy
 		transaction.createdDate = new Date()
 
-		const transactionId = await transaction.save();
+		const transactionData = await transaction.save();
 
-		return transactionId;
+		return transactionData;
 	}
 
 

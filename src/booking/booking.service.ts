@@ -427,8 +427,9 @@ export class BookingService {
 
 		let paidAmount = 0;
 		for (let i in result.data) {
+			
 			for (let instalment of result.data[i].bookingInstalments) {
-				if (instalment.instalmentStatus == 1) {
+				if (instalment.instalmentStatus == 1 ) {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
