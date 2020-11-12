@@ -53,7 +53,7 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (booking_id) {
-			where += `AND ("booking"."id" =  '${booking_id}')`;
+			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
 		}
 
 		// if (payment_type) {
@@ -170,7 +170,7 @@ export class BookingRepository extends Repository<Booking> {
 			"user.passportExpiry",
 			"countries.name","countries.iso2","countries.iso3","countries.id",
 		]) */
-			.where('"booking"."id"=:bookingId', { bookingId })
+			.where('"booking"."laytrip_booking_id"=:bookingId', { bookingId })
 			.getOne();
 
 		return bookingDetails;
@@ -179,7 +179,7 @@ export class BookingRepository extends Repository<Booking> {
 	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;
 
-		const where = `"booking"."id" = '${bookingId}'`;
+		const where = `"booking"."laytrip_booking_id" = '${bookingId}'`;
 		const data = await getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
@@ -243,7 +243,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.comment", "BookingInstalments.transactionToken",
-
+				"booking.laytripBookingId",
 				"booking.id",
 				"booking.moduleId",
 				"booking.bookingType",
@@ -290,7 +290,7 @@ export class BookingRepository extends Repository<Booking> {
 		//.orderBy("BookingInstalments.id", 'DESC')
 
 		if (booking_id)
-			query = query.andWhere(`"booking"."id"=:booking_id`, { booking_id });
+			query = query.andWhere(`"booking"."laytrip_booking_id"=:booking_id`, { booking_id });
 		if (booking_type)
 			query = query.andWhere(`"booking"."booking_type"=:booking_type`, {
 				booking_type,
@@ -386,6 +386,7 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.layCredit",
 				"booking.fareType",
 				"booking.isTicketd",
+				"booking.laytripBookingId",
 				"booking.paymentGatewayProcessingFee",
 				"booking.supplierId",
 				"booking.nextInstalmentDate",
