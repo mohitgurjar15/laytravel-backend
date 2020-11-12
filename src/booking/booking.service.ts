@@ -459,7 +459,7 @@ export class BookingService {
 		}
 
 		if (booking_id) {
-			where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
+			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
