@@ -6,6 +6,7 @@ import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
+import * as moment from 'moment';
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -155,7 +156,7 @@ export class BookingRepository extends Repository<Booking> {
 	}
 
 	async getBookingDetails(bookingId) {
-		let bookingDetails = await getManager()
+		let result = await getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
@@ -173,7 +174,45 @@ export class BookingRepository extends Repository<Booking> {
 			.where('"booking"."laytrip_booking_id"=:bookingId', { bookingId })
 			.getOne();
 
-		return bookingDetails;
+			let paidAmount = 0;
+			let remainAmount = 0;
+
+			//console.log(result);
+
+
+			for (let instalment of result.bookingInstalments) {
+				if (instalment.instalmentStatus == 1) {
+					paidAmount += parseFloat(instalment.amount);
+				} else {
+					remainAmount += parseFloat(instalment.amount);
+				}
+			}
+			result["paidAmount"] = paidAmount;
+			result["remainAmount"] = remainAmount;
+			delete result.user.updatedDate;
+			delete result.user.salt;
+			delete result.user.password;
+			for (let j in result.travelers) {
+				delete result.travelers[j].userData.updatedDate;
+				delete result.travelers[j].userData.salt;
+				delete result.travelers[j].userData.password;
+
+				var birthDate = new Date(result.travelers[j].userData.dob);
+				var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+
+				if (age < 2) {
+					result.travelers[j].userData.user_type = "infant";
+				} else if (age < 12) {
+					result.travelers[j].userData.user_type = "child";
+				} else {
+					result.travelers[j].userData.user_type = "adult";
+				}
+			}
+
+			return result;
+
+		//return bookingDetails;
 	}
 
 	async bookingDetail(bookingId: string) {

@@ -1011,7 +1011,7 @@ export class FlightService {
 							success_message: `Booking is in pending state!`,
 							error_message: "",
 							booking_details: await this.bookingRepository.getBookingDetails(
-								laytripBookingResult.id
+								laytripBookingResult.laytripBookingId
 							),
 						};
 					} else {
@@ -1072,7 +1072,7 @@ export class FlightService {
 						this.sendBookingEmail(laytripBookingResult.id);
 						bookingResult.laytrip_booking_id = laytripBookingResult.id;
 						bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-							laytripBookingResult.id
+							laytripBookingResult.laytripBookingId
 						);
 
 						if (bookingRequestInfo.fare_type == 'GDS') {
@@ -1121,7 +1121,7 @@ export class FlightService {
 					this.sendBookingEmail(laytripBookingResult.id);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-						laytripBookingResult.id
+						laytripBookingResult.laytripBookingId
 					);
 					return bookingResult;
 				} else {
@@ -1272,7 +1272,7 @@ export class FlightService {
 					.values(bookingInstalments)
 					.execute();
 			}
-			return this.bookingRepository.getBookingDetails(booking.id);
+			return this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);
 		}
@@ -1680,7 +1680,7 @@ export class FlightService {
 
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
-			.where(`id = '${bookingId}'`)
+			.where(`laytrip_booking_id = '${bookingId}'`)
 		const booking = await query.getOne();
 		if (!booking) {
 			throw new NotFoundException(`Given booking id not found`)
@@ -1775,7 +1775,7 @@ export class FlightService {
 		booking.supplierBookingId = supplier_booking_id;
 
 		await booking.save();
-		return this.bookingRepository.getBookingDetails(booking.id)
+		return this.bookingRepository.getBookingDetails(booking.laytripBookingId)
 
 	}
 
