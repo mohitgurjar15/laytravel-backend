@@ -15,6 +15,7 @@ import { PreductBookingDateDto } from './dto/preduct-booking-date.dto';
 import { FullCalenderRateDto } from './dto/full-calender-date-rate.dto';
 import { NetRateDto } from './dto/net-rate.dto';
 import * as moment from 'moment';
+import { ManullyBookingDto } from './dto/manully-update-flight.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -377,5 +378,20 @@ export class FlightController {
         @LogInUser() user
     ) {
         return await this.flightService.getSellingPrice(netRateDto, user);
+    }
+
+
+    @Post('/manully-update/:booking_id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "manully update booking" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async manullyBookingUpdate(
+        @Body() manullybooking: ManullyBookingDto,
+        @Param('booking_id') booking_id : string
+    ) {
+        return await this.flightService.manullyBooking(booking_id, manullybooking);
     }
 }
