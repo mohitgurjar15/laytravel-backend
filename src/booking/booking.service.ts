@@ -23,6 +23,8 @@ import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { BookingType } from "src/enum/booking-type.enum";
 import { exit } from "process";
+import { PaymentType } from "src/enum/payment-type.enum";
+import { PaymentStatus } from "src/enum/payment-status.enum";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -213,8 +215,9 @@ export class BookingService {
 						remainAmount += parseFloat(instalment.amount);
 					}
 				}
-				result.data[i]["paidAmount"] = paidAmount;
-				result.data[i]["remainAmount"] = remainAmount;
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -287,8 +290,9 @@ export class BookingService {
 						remainAmount += parseFloat(instalment.amount);
 					}
 				}
-				result.data[i]["paidAmount"] = paidAmount;
-				result.data[i]["remainAmount"] = remainAmount;
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -348,7 +352,45 @@ export class BookingService {
 
 	async getBookingDetail(bookingId: string) {
 		try {
-			return await this.bookingRepository.bookingDetail(bookingId);
+			let result = await this.bookingRepository.bookingDetail(bookingId);
+
+			let paidAmount = 0;
+			let remainAmount = 0;
+
+			//console.log(result);
+
+
+			for (let instalment of result.bookingInstalments) {
+				if (instalment.instalmentStatus == 1) {
+					paidAmount += parseFloat(instalment.amount);
+				} else {
+					remainAmount += parseFloat(instalment.amount);
+				}
+			}
+			result["paidAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? result.totalAmount : paidAmount;
+			result["remainAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+			delete result.user.updatedDate;
+			delete result.user.salt;
+			delete result.user.password;
+			for (let j in result.travelers) {
+				delete result.travelers[j].userData.updatedDate;
+				delete result.travelers[j].userData.salt;
+				delete result.travelers[j].userData.password;
+
+				var birthDate = new Date(result.travelers[j].userData.dob);
+				var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+
+				if (age < 2) {
+					result.travelers[j].userData.user_type = "infant";
+				} else if (age < 12) {
+					result.travelers[j].userData.user_type = "child";
+				} else {
+					result.travelers[j].userData.user_type = "adult";
+				}
+			}
+
+			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");
@@ -381,6 +423,9 @@ export class BookingService {
 		}
 	}
 
+
+
+
 	async getPaymentHistory(user, listPaymentDto) {
 		let result = await this.bookingRepository.getPayments(user, listPaymentDto);
 		if (result.total_result == 0) {
@@ -389,13 +434,15 @@ export class BookingService {
 
 		let paidAmount = 0;
 		for (let i in result.data) {
-			
+
 			for (let instalment of result.data[i].bookingInstalments) {
-				if (instalment.instalmentStatus == 1 ) {
+				if (instalment.instalmentStatus == 1) {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
-			result.data[i]["paidAmount"] = paidAmount;
+
+			result[i]["paidAmount"] = result[i].bookingType == BookingType.NOINSTALMENT && result[i].paymentStatus == PaymentStatus.CONFIRM ? result[i].totalAmount : paidAmount;
+			//result[i]["remainAmount"] = result[i].bookingType == BookingType.NOINSTALMENT && result[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 		}
 		return result;
 	}
@@ -422,7 +469,7 @@ export class BookingService {
 		}
 
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+			where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
@@ -465,6 +512,7 @@ export class BookingService {
 			data: result, total_count: total_count
 		};
 	}
+
 	async formatDate(date) {
 		var d = new Date(date),
 			month = '' + (d.getMonth() + 1),

@@ -1272,7 +1272,7 @@ export class FlightService {
 					.values(bookingInstalments)
 					.execute();
 			}
-			return this.bookingRepository.getBookingDetails(booking.laytripBookingId);
+			return await this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);
 		}

@@ -158,11 +158,12 @@ export class BookingRepository extends Repository<Booking> {
 	async getBookingDetails(bookingId) {
 		let result = await getManager()
 			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
+			.leftJoinAndSelect("User.country", "countries")
 			/* .select([
 			"user.userId","user.title",
 			"user.firstName","user.lastName","user.email",
@@ -180,15 +181,7 @@ export class BookingRepository extends Repository<Booking> {
 			//console.log(result);
 
 
-			for (let instalment of result.bookingInstalments) {
-				if (instalment.instalmentStatus == 1) {
-					paidAmount += parseFloat(instalment.amount);
-				} else {
-					remainAmount += parseFloat(instalment.amount);
-				}
-			}
-			result["paidAmount"] = paidAmount;
-			result["remainAmount"] = remainAmount;
+			
 			delete result.user.updatedDate;
 			delete result.user.salt;
 			delete result.user.password;
@@ -234,6 +227,7 @@ export class BookingRepository extends Repository<Booking> {
 		if (!data) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
+		
 		return data;
 	}
 
