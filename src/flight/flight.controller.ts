@@ -165,7 +165,7 @@ export class FlightController {
         return await this.flightService.airRevalidate(routeIdDto, req.headers, user);
     }
 
-    /* @Post('/book')
+     @Post('/book')
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
@@ -189,7 +189,7 @@ export class FlightController {
     ){
         console.log(bookFlightDto)
         return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
-    } */
+    } 
 
     @Get('/ticket/:id')
     @ApiOperation({ summary: "Ticket flight booking" })
