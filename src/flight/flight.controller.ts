@@ -165,31 +165,31 @@ export class FlightController {
         return await this.flightService.airRevalidate(routeIdDto, req.headers, user);
     }
 
-     @Post('/book')
-    @ApiHeader({
-        name: 'currency',
-        description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
-    @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
-    })
-    @ApiOperation({ summary: "Book Flight" })
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Flight is not available now' })
-    @HttpCode(200)
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
-    async bookFlight(
-       @Body() bookFlightDto:BookFlightDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        console.log(bookFlightDto)
-        return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
-    } 
+    // @Post('/book')
+    // @ApiHeader({
+    //     name: 'currency',
+    //     description: 'Enter currency code(ex. USD)',
+    //     example : 'USD'
+    //   })
+    // @ApiHeader({
+    // name: 'language',
+    // description: 'Enter language code(ex. en)',
+    // })
+    // @ApiOperation({ summary: "Book Flight" })
+    // @ApiResponse({ status: 200, description: 'Api success' })
+    // @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    // @ApiResponse({ status: 404, description: 'Flight is not available now' })
+    // @HttpCode(200)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
+    // async bookFlight(
+    //    @Body() bookFlightDto:BookFlightDto,
+    //    @Req() req,
+    //    @LogInUser() user
+    // ){
+    //     console.log(bookFlightDto)
+    //     return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
+    // } 
 
     @Get('/ticket/:id')
     @ApiOperation({ summary: "Ticket flight booking" })
@@ -382,7 +382,9 @@ export class FlightController {
 
 
     @Post('/manully-update/:booking_id')
-    @ApiBearerAuth()
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
     @ApiOperation({ summary: "manully update booking" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
