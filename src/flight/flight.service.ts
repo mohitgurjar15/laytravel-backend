@@ -1277,6 +1277,161 @@ export class FlightService {
 			console.log(error);
 		}
 	}
+	async partialyBookSave(
+		bookFlightDto,
+		currencyId,
+		airRevalidateResult,
+		bookingId
+	) {
+		const {
+			net_rate,
+			fare_type
+		} = bookFlightDto;
+
+		let moduleDetails = await getManager()
+			.createQueryBuilder(Module, "module")
+			.where(`"module"."name"=:name`, { name: "flight" })
+			.getOne();
+		if (!moduleDetails) {
+			throw new BadRequestException(
+				`Please configure flight module in database&&&module_id&&&${errorMessage}`
+			);
+		}
+
+		let currencyDetails = await getManager()
+			.createQueryBuilder(Currency, "currency")
+			.where(`"currency"."id"=:currencyId and "currency"."status"=true`, {
+				currencyId,
+			})
+			.getOne();
+
+		let booking = await this.bookingRepository.getBookingDetails(bookingId);
+		booking.bookingStatus = BookingStatus.CONFIRM;
+		booking.netRate = net_rate.toString();
+		booking.usdFactor = currencyDetails.liveRate.toString();
+		booking.fareType = fare_type;
+		booking.isTicketd = fare_type == 'LCC' ? true : false;
+
+		booking.moduleInfo = airRevalidateResult;
+		try {
+			let bookingDetails = await booking.save();
+			return await this.bookingRepository.getBookingDetails(bookingDetails.laytripBookingId);
+		} catch (error) {
+			console.log(error);
+		}
+	}
+	async partiallyBookFlight(bookFlightDto: BookFlightDto, headers, user, bookingId) {
+		let headerDetails = await this.validateHeaders(headers);
+
+		let {
+			travelers,
+			payment_type,
+			instalment_type,
+			route_code,
+			additional_amount,
+			custom_instalment_amount,
+			custom_instalment_no,
+			laycredit_points,
+			card_token
+		} = bookFlightDto;
+
+		const mystifly = new Strategy(new Mystifly(headers));
+		const airRevalidateResult = await mystifly.airRevalidate(
+			{ route_code },
+			user
+		);
+		let isPassportRequired = false;
+		let bookingRequestInfo: any = {};
+		if (airRevalidateResult) {
+			bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
+			bookingRequestInfo.child_count =
+				typeof airRevalidateResult[0].child_count != "undefined"
+					? airRevalidateResult[0].child_count
+					: 0;
+			bookingRequestInfo.infant_count =
+				typeof airRevalidateResult[0].infant_count != "undefined"
+					? airRevalidateResult[0].infant_count
+					: 0;
+			bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
+			if (payment_type == PaymentType.INSTALMENT) {
+				bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
+			}
+			else {
+
+				if (typeof airRevalidateResult[0].secondary_selling_price != 'undefined' && airRevalidateResult[0].secondary_selling_price > 0) {
+
+					bookingRequestInfo.selling_price = airRevalidateResult[0].secondary_selling_price;
+				}
+				else {
+					bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
+				}
+			}
+
+			bookingRequestInfo.departure_date = DateTime.convertDateFormat(
+				airRevalidateResult[0].departure_date,
+				"DD/MM/YYYY",
+				"YYYY-MM-DD"
+			);
+			bookingRequestInfo.arrival_date = DateTime.convertDateFormat(
+				airRevalidateResult[0].arrival_date,
+				"DD/MM/YYYY",
+				"YYYY-MM-DD"
+			);
+			bookingRequestInfo.source_location =
+				airRevalidateResult[0].departure_code;
+			bookingRequestInfo.destination_location =
+				airRevalidateResult[0].arrival_code;
+			bookingRequestInfo.flight_class = "Economy";
+			bookingRequestInfo.instalment_type = instalment_type;
+			bookingRequestInfo.additional_amount = additional_amount;
+			isPassportRequired = airRevalidateResult[0].is_passport_required;
+			if (airRevalidateResult[0].routes.length == 1) {
+				bookingRequestInfo.journey_type = FlightJourney.ONEWAY;
+			} else {
+				bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
+			}
+			bookingRequestInfo.laycredit_points = laycredit_points;
+			bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
+		}
+		let {
+			selling_price,
+			departure_date,
+			adult_count,
+			child_count,
+			infant_count,
+		} = bookingRequestInfo;
+		let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+		let travelersDetails = await this.getTravelersInfo(
+			travelers,
+			isPassportRequired
+		);
+
+		let currencyId = headerDetails.currency.id;
+		const userId = user.user_id;
+
+		const bookingResult = await mystifly.bookFlight(
+			bookFlightDto,
+			travelersDetails,
+			isPassportRequired
+		);
+		if (bookingResult.booking_status == "success") {
+
+			let laytripBookingResult = await this.partiallyBookFlight(
+				bookFlightDto,
+				currencyId,
+				airRevalidateResult,
+				bookingId
+			);
+			//send email here
+			this.sendBookingEmail(laytripBookingResult.id);
+			bookingResult.laytrip_booking_id = laytripBookingResult.id;
+			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+				laytripBookingResult.laytripBookingId
+			);
+			return bookingResult;
+
+		}
+	}
 
 	async validateHeaders(headers) {
 		let currency = headers.currency;
@@ -1659,7 +1814,7 @@ export class FlightService {
 		}
 
 		/* if(tripDetails.booking_status=='Pending'){
-
+	
 			
 		} */
 	}
@@ -1700,7 +1855,7 @@ export class FlightService {
 
 		moduleInfo['net_rate'] = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:amount"][0];
 
-		
+
 		var depatureIndex = 0
 		var arrivalIndex = 0
 		moduleInfo.routes[0].stops = [];
@@ -1734,12 +1889,12 @@ export class FlightService {
 					"airline_logo": `http://d2q1prebf1m2s9.cloudfront.net/assets/images/airline/108x92/${reservation["a:marketingairlinecode"][0]}.png`
 				}
 				if (reservation['a:isreturn'][0] == 'true') {
-					
+
 
 					moduleInfo.routes[1].stops.push(data)
 
 				} else {
-					
+
 					moduleInfo.routes[0].stops.push(data)
 
 				}
@@ -1751,7 +1906,7 @@ export class FlightService {
 
 		const i = moduleInfo.routes[0].stops.length
 		const depatureData = moduleInfo.routes[0].stops[0]
-		
+
 		const arrivalData = moduleInfo.routes[0].stops[i - 1]
 
 		moduleInfo.departure_date = depatureData.departure_date
