@@ -1471,7 +1471,7 @@ export class Mystifly implements StrategyAirline {
         }
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        console.log("mystiflyConfig", mystiflyConfig)
+       // console.log("mystiflyConfig", mystiflyConfig)
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
             <soapenv:Body>
@@ -1831,7 +1831,7 @@ export class Mystifly implements StrategyAirline {
     async tripDetails(tripId) {
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        console.log(mystiflyConfig);
+        //console.log(mystiflyConfig);
         
         console.log("mystiflyConfig", mystiflyConfig)
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
@@ -1848,7 +1848,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`;
         mystiflyConfig.url = 'http://onepointdemo.myfarebox.com/V2/OnePoint.svc';
         let tripDetailsResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'TripDetails');
-        console.log("tripDetailsResult", JSON.stringify(tripDetailsResult))
+        //console.log("tripDetailsResult", JSON.stringify(tripDetailsResult))
         if (tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:success"][0] == 'true') {
 
             let travelItinerary = tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:travelitinerary"][0];
