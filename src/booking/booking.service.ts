@@ -423,25 +423,24 @@ export class BookingService {
 		}
 	}
 
-
-
-
 	async getPaymentHistory(user, listPaymentDto) {
-		let result = await this.bookingRepository.getPayments(user, listPaymentDto);
+		let result:any = await this.bookingRepository.getPayments(user, listPaymentDto);
 		if (result.total_result == 0) {
 			throw new NotFoundException(`No payment history found!`);
 		}
 
-		let paidAmount = 0;
-		for (let i in result.data) {
-
+		
+		for (let i = 0; i < result.data.length; i++) {
+			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
 				if (instalment.instalmentStatus == 1) {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
-
-			result[i]["paidAmount"] = result[i].bookingType == BookingType.NOINSTALMENT && result[i].paymentStatus == PaymentStatus.CONFIRM ? result[i].totalAmount : paidAmount;
+			console.log(result.data[i]);
+			console.log(paidAmount);
+			
+			result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
 			//result[i]["remainAmount"] = result[i].bookingType == BookingType.NOINSTALMENT && result[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 		}
 		return result;
