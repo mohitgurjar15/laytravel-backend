@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/enum/role.enum';
@@ -16,6 +16,7 @@ import { AddQuestionDto } from './dto/add-question-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
+import { ListUserActivity } from './dto/list-user-activity.dto';
 
 @Controller('marketing')
 @ApiTags("Marketing")
@@ -293,5 +294,17 @@ export class MarketingController {
 		@Body() userData: UpdateMarketingUserDto
 	){
 		return await this.marketingService.updateMarketingUser(userData);
+	}
+	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "list quiz game for admin" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Get('user-activities')
+	async userActivities(
+		@Query() listUserActivity: ListUserActivity
+	) {
+		return await this.marketingService.userActivity(listUserActivity);
 	}
 }

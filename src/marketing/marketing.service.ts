@@ -27,6 +27,7 @@ import { exit } from 'process';
 import { UserCard } from 'src/entity/user-card.entity';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
 import { QuizGameQuestion } from 'src/entity/quiz-game-question.entity';
+import { ListUserActivity } from './dto/list-user-activity.dto';
 
 @Injectable()
 export class MarketingService {
@@ -1370,5 +1371,27 @@ export class MarketingService {
         return Math.ceil(
             Math.random() * (max - min) + min
         )
+    }
+
+    async userActivity(useractivity:ListUserActivity){
+        const {page_no , limit , search} = useractivity
+
+        const take = limit || 10;
+		const skip = (page_no - 1) * limit || 0;
+
+		let query = getManager()
+        .createQueryBuilder(MarketingUserData, "user")
+			.leftJoinAndSelect("user.marketingUserActivity", "activity")
+			.leftJoinAndSelect("activity.game", "game")
+			.limit(take)
+			.offset(skip)
+		if (search) {
+			query = query.where(`email=:search OR ip_address=:search OR user_id=:search OR app_version=:search `, { search });
+		}
+
+		const [result, count] = await query.getManyAndCount();
+		//const count = await query.getCount();
+		return { data: result, total_result: count };
+
     }
 }
