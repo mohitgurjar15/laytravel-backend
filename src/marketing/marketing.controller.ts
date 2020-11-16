@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/enum/role.enum';
@@ -16,6 +16,7 @@ import { AddQuestionDto } from './dto/add-question-answer.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
+import { ListUserActivity } from './dto/list-user-activity.dto';
 
 @Controller('marketing')
 @ApiTags("Marketing")
@@ -198,9 +199,11 @@ export class MarketingController {
 	@Post('user')
 	@HttpCode(200)
 	async newUser(
-		@Body() createMarketingUserDto: CreateMarketingUserDto
+		@Body() createMarketingUserDto: CreateMarketingUserDto,
+		@Req() req,
 	) {
-		return await this.marketingService.marketingUser(createMarketingUserDto);
+		console.log(req.connection.remoteAddress);
+		return await this.marketingService.marketingUser(createMarketingUserDto,req);
 	}
 
 	@Roles(Role.SUPER_ADMIN)
@@ -225,7 +228,9 @@ export class MarketingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Get('quiz/list-for-admin')
 	async listQuizforAdmin(
+		
 	) {
+
 		return await this.marketingService.getquestionForAdmin();
 	}
 
@@ -236,7 +241,9 @@ export class MarketingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@Get('quiz/list-for-user')
 	async listQuizforUser(
+		
 	) {
+		
 		return await this.marketingService.getquestionForUser();
 	}
 
@@ -247,9 +254,11 @@ export class MarketingController {
 	@Post('quiz/submit')
 	@HttpCode(200)
 	async submitQuiz(
-		@Body() quizResultDto: QuizResultDto
+		@Body() quizResultDto: QuizResultDto,
+		@Req() req,
 	) {
-		return await this.marketingService.quizResult(quizResultDto);
+		console.log(req.connection.remoteAddress);
+		return await this.marketingService.quizResult(quizResultDto,req);
 	}
 
 	@ApiOperation({ summary: "list wheel option for user" })
@@ -270,8 +279,9 @@ export class MarketingController {
 	@Post('wheel/submit')
 	async wheelResult(
 		@Body() submitWheelDto: SubmitWheelDto,
+		@Req() req,
 	){
-		return await this.marketingService.submitWheelGame(submitWheelDto);
+		return await this.marketingService.submitWheelGame(submitWheelDto,req);
 	}
 
 	@ApiOperation({ summary: "Update marketing user data" })
@@ -284,5 +294,17 @@ export class MarketingController {
 		@Body() userData: UpdateMarketingUserDto
 	){
 		return await this.marketingService.updateMarketingUser(userData);
+	}
+	@Roles(Role.SUPER_ADMIN , Role.ADMIN)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "list quiz game for admin" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@Get('user-activities')
+	async userActivities(
+		@Query() listUserActivity: ListUserActivity
+	) {
+		return await this.marketingService.userActivity(listUserActivity);
 	}
 }

@@ -6,6 +6,7 @@ import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
+import * as moment from 'moment';
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -53,7 +54,7 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (booking_id) {
-			where += `AND ("booking"."id" =  '${booking_id}')`;
+			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
 		}
 
 		// if (payment_type) {
@@ -155,13 +156,14 @@ export class BookingRepository extends Repository<Booking> {
 	}
 
 	async getBookingDetails(bookingId) {
-		let bookingDetails = await getManager()
+		let result = await getManager()
 			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.bookingInstalments", "bookingInstalments")
+			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
+			.leftJoinAndSelect("User.country", "countries")
 			/* .select([
 			"user.userId","user.title",
 			"user.firstName","user.lastName","user.email",
@@ -170,16 +172,46 @@ export class BookingRepository extends Repository<Booking> {
 			"user.passportExpiry",
 			"countries.name","countries.iso2","countries.iso3","countries.id",
 		]) */
-			.where('"booking"."id"=:bookingId', { bookingId })
+			.where('"booking"."laytrip_booking_id"=:bookingId', { bookingId })
 			.getOne();
 
-		return bookingDetails;
+			let paidAmount = 0;
+			let remainAmount = 0;
+
+			//console.log(result);
+
+
+			
+			delete result.user.updatedDate;
+			delete result.user.salt;
+			delete result.user.password;
+			for (let j in result.travelers) {
+				delete result.travelers[j].userData.updatedDate;
+				delete result.travelers[j].userData.salt;
+				delete result.travelers[j].userData.password;
+
+				var birthDate = new Date(result.travelers[j].userData.dob);
+				var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+
+				if (age < 2) {
+					result.travelers[j].userData.user_type = "infant";
+				} else if (age < 12) {
+					result.travelers[j].userData.user_type = "child";
+				} else {
+					result.travelers[j].userData.user_type = "adult";
+				}
+			}
+
+			return result;
+
+		//return bookingDetails;
 	}
 
 	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;
 
-		const where = `"booking"."id" = '${bookingId}'`;
+		const where = `"booking"."laytrip_booking_id" = '${bookingId}'`;
 		const data = await getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
@@ -195,6 +227,7 @@ export class BookingRepository extends Repository<Booking> {
 		if (!data) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
+		
 		return data;
 	}
 
@@ -207,7 +240,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_type,
 			payment_start_date,
 			instalment_type,
-			module_id
+			module_id, payment_status
 		} = listPaymentDto;
 
 		const take = limit || 10;
@@ -243,7 +276,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.comment", "BookingInstalments.transactionToken",
-
+				"booking.laytripBookingId",
 				"booking.id",
 				"booking.moduleId",
 				"booking.bookingType",
@@ -290,7 +323,7 @@ export class BookingRepository extends Repository<Booking> {
 		//.orderBy("BookingInstalments.id", 'DESC')
 
 		if (booking_id)
-			query = query.andWhere(`"booking"."id"=:booking_id`, { booking_id });
+			query = query.andWhere(`"booking"."laytrip_booking_id"=:booking_id`, { booking_id });
 		if (booking_type)
 			query = query.andWhere(`"booking"."booking_type"=:booking_type`, {
 				booking_type,
@@ -300,6 +333,11 @@ export class BookingRepository extends Repository<Booking> {
 			query = query.andWhere(`"booking"."module_id"=:module_id`, {
 				module_id,
 			});
+		if (payment_status) {
+			query = query.andWhere(`"booking"."payment_status"=:payment_status`, {
+				payment_status,
+			});
+		}
 		if (payment_start_date && payment_end_date) {
 			query = query.andWhere(
 				`"BookingInstalments"."instalment_date" >=:payment_start_date and "BookingInstalments"."instalment_date" <=:payment_end_date`,
@@ -381,6 +419,7 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.layCredit",
 				"booking.fareType",
 				"booking.isTicketd",
+				"booking.laytripBookingId",
 				"booking.paymentGatewayProcessingFee",
 				"booking.supplierId",
 				"booking.nextInstalmentDate",

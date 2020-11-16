@@ -183,7 +183,7 @@ body {
                 <tr>
                   <td align="center" valign="top">
                     <a href="javascrip:void(0);" target="_blank">
-                      <img src="${BaseUrl}/images/logo-white.svg" alt="Laytrip" width="100%" height="auto" border="0" style="display: block; max-width: 180px; font-family: 'Open Sans', sans-serif;font-size: 18px; color: #fff; ">
+                      <img src="http://d2q1prebf1m2s9.cloudfront.net/assets/images/dr_logo.svg" alt="Laytrip" width="100%" height="auto" border="0" style="display: block; max-width: 180px; font-family: 'Open Sans', sans-serif;font-size: 18px; color: #fff; ">
                     </a>
                   </td>
                 </tr>

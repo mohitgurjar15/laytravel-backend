@@ -20,6 +20,7 @@ import { PaymentService } from "src/payment/payment.service";
 import { errorMessage } from 'src/config/common.config';
 import { CreteTransactionDto } from "src/payment/dto/create-transaction.dto";
 import { PaidFor } from 'src/enum/paid-for.enum';
+import { PaymentStatus } from 'src/enum/payment-status.enum';
 
 @Injectable()
 export class RewordPointService {
@@ -111,7 +112,7 @@ export class RewordPointService {
 			}
 			const payment = await this.paymentService.createTransaction(createTransaction, user.userId)
 
-			if (payment.paymentStatus == true) {
+			if (payment.paymentStatus == PaymentStatus.CONFIRM) {
 
 				const reword = new LayCreditEarn();
 				reword.transactionId = payment.id;

@@ -4,16 +4,6 @@ import { IsArray, IsEmail, IsNotEmpty, ValidateNested, ValidationArguments } fro
 import { errorMessage } from "src/config/common.config";
 
 export class QuizResultDto {
-
-    @IsNotEmpty({
-        message: `Please enter user id.&&&id&&&${errorMessage}`,
-    })
-    @ApiProperty({
-        description: `user id`,
-        example: 1
-    })
-    user_id: number;
-
     
     @IsArray()
     @ValidateNested({ each: true })
@@ -23,11 +13,11 @@ export class QuizResultDto {
         example: [
             {
                 option_id: 1,
-                quetion_id: 1
+                question_id: 1
             },
             {
                 option_id: 1,
-                quetion_id: 1
+                question_id: 1
             }
         ]
     })
@@ -56,3 +46,4 @@ class quiz {
     })
     question_id: number;
 }
+

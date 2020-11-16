@@ -1,3 +1,4 @@
+import { PaymentStatus } from "src/enum/payment-status.enum";
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Booking } from "./booking.entity";
 import { Currency } from "./currency.entity";
@@ -29,8 +30,8 @@ export class OtherPayments extends BaseEntity {
   @Column("integer", { name: "currency_id" })
   currencyId: number;
 
-  @Column("numeric", { name: "amount", precision: 15, scale: 3 })
-  amount: number;
+  @Column("character varying", { name: "amount" , nullable : true})
+  amount: string;
 
   @Column("character varying", { name: "paid_for", length: 255 , nullable:true})
   paidFor: string;
@@ -38,8 +39,8 @@ export class OtherPayments extends BaseEntity {
   @Column("json", { name: "payment_info", nullable:true })
   paymentInfo: object | null;
 
-  @Column("boolean", { name: "payment_status" })
-  paymentStatus: boolean;
+  @Column("integer", { name: "payment_status" , default : PaymentStatus.CONFIRM})
+  paymentStatus: number;
  
   @Column("text", { name: "comment", nullable:true })
   comment: string | null;

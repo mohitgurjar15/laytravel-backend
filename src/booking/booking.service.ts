@@ -23,6 +23,8 @@ import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { BookingType } from "src/enum/booking-type.enum";
 import { exit } from "process";
+import { PaymentType } from "src/enum/payment-type.enum";
+import { PaymentStatus } from "src/enum/payment-status.enum";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -213,8 +215,9 @@ export class BookingService {
 						remainAmount += parseFloat(instalment.amount);
 					}
 				}
-				result.data[i]["paidAmount"] = paidAmount;
-				result.data[i]["remainAmount"] = remainAmount;
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -287,8 +290,9 @@ export class BookingService {
 						remainAmount += parseFloat(instalment.amount);
 					}
 				}
-				result.data[i]["paidAmount"] = paidAmount;
-				result.data[i]["remainAmount"] = remainAmount;
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -363,8 +367,8 @@ export class BookingService {
 					remainAmount += parseFloat(instalment.amount);
 				}
 			}
-			result["paidAmount"] = paidAmount;
-			result["remainAmount"] = remainAmount;
+			result["paidAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? result.totalAmount : paidAmount;
+			result["remainAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 			delete result.user.updatedDate;
 			delete result.user.salt;
 			delete result.user.password;
@@ -420,19 +424,24 @@ export class BookingService {
 	}
 
 	async getPaymentHistory(user, listPaymentDto) {
-		let result = await this.bookingRepository.getPayments(user, listPaymentDto);
+		let result:any = await this.bookingRepository.getPayments(user, listPaymentDto);
 		if (result.total_result == 0) {
 			throw new NotFoundException(`No payment history found!`);
 		}
 
-		let paidAmount = 0;
-		for (let i in result.data) {
+		
+		for (let i = 0; i < result.data.length; i++) {
+			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
 				if (instalment.instalmentStatus == 1) {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
-			result.data[i]["paidAmount"] = paidAmount;
+			console.log(result.data[i]);
+			console.log(paidAmount);
+			
+			result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+			//result[i]["remainAmount"] = result[i].bookingType == BookingType.NOINSTALMENT && result[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 		}
 		return result;
 	}
@@ -502,6 +511,7 @@ export class BookingService {
 			data: result, total_count: total_count
 		};
 	}
+
 	async formatDate(date) {
 		var d = new Date(date),
 			month = '' + (d.getMonth() + 1),

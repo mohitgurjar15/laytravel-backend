@@ -41,6 +41,11 @@ export class ListPaymentDto {
     })
     booking_type: number;
 
+    @ApiPropertyOptional({
+        description:'payment status',
+        example:1
+    })
+    payment_status: number;
     /* @IsValidDate('',{
         message: (args: ValidationArguments) => {
             console.log(args)

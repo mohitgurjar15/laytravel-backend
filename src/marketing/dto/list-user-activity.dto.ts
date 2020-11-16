@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from "src/config/common.config";
-export class ListFaqDto {
+export class ListUserActivity {
 
     @IsNotEmpty({
         message : `Please enter limit&&&limit&&&${errorMessage}`
@@ -26,4 +26,5 @@ export class ListFaqDto {
         example:""
     })
     search: string;
+    
 }

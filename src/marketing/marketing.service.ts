@@ -27,6 +27,7 @@ import { exit } from 'process';
 import { UserCard } from 'src/entity/user-card.entity';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
 import { QuizGameQuestion } from 'src/entity/quiz-game-question.entity';
+import { ListUserActivity } from './dto/list-user-activity.dto';
 
 @Injectable()
 export class MarketingService {
@@ -531,12 +532,12 @@ export class MarketingService {
         }
     }
 
-    async marketingUser(userDto: CreateMarketingUserDto) {
+    async marketingUser(userDto: CreateMarketingUserDto, req) {
         try {
             const {
-                signup_via, device_model, device_type, ip_address, app_version, os_version, name, email
+                signup_via, device_model, device_type, app_version, os_version, name, email
             } = userDto
-
+            const ip_address = req.connection.remoteAddress
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
                 .where(`email =:email `, { email })
@@ -545,6 +546,16 @@ export class MarketingService {
             if (user && user.ipAddress != ip_address) {
                 throw new ConflictException(`Givel email id alredy used`)
             }
+
+            let ipAddressData = await getManager()
+                .createQueryBuilder(MarketingUserData, "user")
+                .where(`ip_address =:ip_address `, { ip_address })
+                .getOne();
+
+            if (ipAddressData && ipAddressData.email != email) {
+                throw new ConflictException(`On current Device another email subscribed`)
+            }
+
             let existingUser = await getManager()
                 .createQueryBuilder(User, "user")
                 .where(`email =:email AND is_deleted = false`, { email })
@@ -581,13 +592,20 @@ export class MarketingService {
                 .getOne();
             console.log(activity);
 
+            const playedGame = await getManager()
+                .createQueryBuilder(MarketingUserActivity, "activity")
+                .leftJoinAndSelect("activity.game", "game")
+                .where(`user_id = ${user.id}`)
+                .getMany();
+
             var available = true
             if (activity) {
                 available = false
                 exit;
             }
             let data: any = user;
-            data['gameAvailable'] = available
+            data['gameAvailable'] = available;
+            data['playedGame'] = playedGame
             return data;
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -924,15 +942,21 @@ export class MarketingService {
         }
     }
 
-    async quizResult(quizResult: QuizResultDto) {
+    async quizResult(quizResult: QuizResultDto, req) {
         try {
-            const { user_id, quiz_answer } = quizResult
+            console.log(req.connection.remoteAddress);
 
+            const { quiz_answer } = quizResult
+            const ipAddress = req.connection.remoteAddress
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
-                .where(`user.id =:user_id`, { user_id })
+                .where(`ip_address =:ipAddress`, { ipAddress })
                 .getOne();
             const existingUserId = user.userId;
+
+
+
+
 
             let game = await getManager()
                 .createQueryBuilder(MarketingGame, "game")
@@ -940,6 +964,15 @@ export class MarketingService {
                 .getOne();
             if (!game) {
                 throw new InternalServerErrorException(`Game not found  &&&game&&&${errorMessage}`)
+            }
+
+            const activityData = await getManager()
+                .createQueryBuilder(MarketingUserActivity, "activity")
+                .where(`user_id = ${user.id} AND game_id = ${game.id}`)
+                .getOne();
+
+            if (activityData) {
+                throw new ForbiddenException(`You have alredy played Quiz game`)
             }
 
             var rightAnswer = 0;
@@ -1236,9 +1269,9 @@ export class MarketingService {
         }
     }
 
-    async submitWheelGame(submitWheeldto: SubmitWheelDto) {
+    async submitWheelGame(submitWheeldto: SubmitWheelDto, req) {
         try {
-            const { user_id, reword_point } = submitWheeldto
+            const { reword_point } = submitWheeldto
             let game = await getManager()
                 .createQueryBuilder(MarketingGame, "game")
                 .where(`game.is_deleted = false AND game.game_name =:name`, { name: `wheel` })
@@ -1256,11 +1289,22 @@ export class MarketingService {
 
             // const reword = markup[random]
             // const rewordPoint = reword.rewordPoint;
+            const ipAddress = req.connection.remoteAddress
             let user = await getManager()
                 .createQueryBuilder(MarketingUserData, "user")
-                .where(`user.id =:user_id`, { user_id })
+                .where(`ip_address =:ipAddress`, { ipAddress })
                 .getOne();
-            var existingUserId = null;
+            const activityData = await getManager()
+                .createQueryBuilder(MarketingUserActivity, "activity")
+                .where(`user_id = ${user.id} AND game_id = ${game.id}`)
+                .getOne();
+
+            if (activityData) {
+                throw new ForbiddenException(`You have alredy played Wheel game`)
+            }
+
+            let existingUserId = null;
+
             if (user.userId) {
                 existingUserId = user.userId
             }
@@ -1327,5 +1371,27 @@ export class MarketingService {
         return Math.ceil(
             Math.random() * (max - min) + min
         )
+    }
+
+    async userActivity(useractivity:ListUserActivity){
+        const {page_no , limit , search} = useractivity
+
+        const take = limit || 10;
+		const skip = (page_no - 1) * limit || 0;
+
+		let query = getManager()
+        .createQueryBuilder(MarketingUserData, "user")
+			.leftJoinAndSelect("user.marketingUserActivity", "activity")
+			.leftJoinAndSelect("activity.game", "game")
+			.limit(take)
+			.offset(skip)
+		if (search) {
+			query = query.where(`email=:search OR ip_address=:search OR user_id=:search OR app_version=:search `, { search });
+		}
+
+		const [result, count] = await query.getManyAndCount();
+		//const count = await query.getCount();
+		return { data: result, total_result: count };
+
     }
 }

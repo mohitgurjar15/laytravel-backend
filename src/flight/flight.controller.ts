@@ -15,6 +15,7 @@ import { PreductBookingDateDto } from './dto/preduct-booking-date.dto';
 import { FullCalenderRateDto } from './dto/full-calender-date-rate.dto';
 import { NetRateDto } from './dto/net-rate.dto';
 import * as moment from 'moment';
+import { ManullyBookingDto } from './dto/manully-update-flight.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -164,31 +165,31 @@ export class FlightController {
         return await this.flightService.airRevalidate(routeIdDto, req.headers, user);
     }
 
-    @Post('/book')
-    @ApiHeader({
-        name: 'currency',
-        description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
-    @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
-    })
-    @ApiOperation({ summary: "Book Flight" })
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 404, description: 'Flight is not available now' })
-    @HttpCode(200)
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
-    async bookFlight(
-       @Body() bookFlightDto:BookFlightDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        console.log(bookFlightDto)
-        return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
-    }
+    // @Post('/book')
+    // @ApiHeader({
+    //     name: 'currency',
+    //     description: 'Enter currency code(ex. USD)',
+    //     example : 'USD'
+    //   })
+    // @ApiHeader({
+    // name: 'language',
+    // description: 'Enter language code(ex. en)',
+    // })
+    // @ApiOperation({ summary: "Book Flight" })
+    // @ApiResponse({ status: 200, description: 'Api success' })
+    // @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    // @ApiResponse({ status: 404, description: 'Flight is not available now' })
+    // @HttpCode(200)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
+    // async bookFlight(
+    //    @Body() bookFlightDto:BookFlightDto,
+    //    @Req() req,
+    //    @LogInUser() user
+    // ){
+    //     console.log(bookFlightDto)
+    //     return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
+    // } 
 
     @Get('/ticket/:id')
     @ApiOperation({ summary: "Ticket flight booking" })
@@ -377,5 +378,22 @@ export class FlightController {
         @LogInUser() user
     ) {
         return await this.flightService.getSellingPrice(netRateDto, user);
+    }
+
+
+    @Post('/manully-update/:booking_id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiOperation({ summary: "manully update booking" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async manullyBookingUpdate(
+        @Body() manullybooking: ManullyBookingDto,
+        @Param('booking_id') booking_id : string
+    ) {
+        return await this.flightService.manullyBooking(booking_id, manullybooking);
     }
 }
