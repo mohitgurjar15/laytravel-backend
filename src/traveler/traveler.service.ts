@@ -23,6 +23,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as moment from "moment";
 import { errorMessage } from "src/config/common.config";
 import { Gender } from "src/enum/gender.enum";
+import * as uuidValidator from "uuid-validate"
 
 @Injectable()
 export class TravelerService {
@@ -161,6 +162,10 @@ export class TravelerService {
 
 	async listTraveler(userId: string) {
 		try {
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			const where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
 			const [result, count] = await getManager()
 				.createQueryBuilder(User, "user")
@@ -266,8 +271,14 @@ export class TravelerService {
 
 	async getTraveler(userId: string): Promise<User> {
 		try {
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
+			console.log(error,'=====================================================');
+			
 			if (typeof error.response !== "undefined") {
 				console.log("m");
 				switch (error.response.statusCode) {
@@ -281,7 +292,7 @@ export class TravelerService {
 						throw new NotFoundException(error.response.message);
 					case 409:
 						throw new ConflictException(error.response.message);
-					case 422:
+					case 400:
 						throw new BadRequestException(error.response.message);
 					case 403:
 						throw new ForbiddenException(error.response.message);
@@ -311,6 +322,10 @@ export class TravelerService {
 		updateBy: string
 	) {
 		try {
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			//const traveler = await this.userRepository.getTravelData(userId);
 			const traveler = await this.userRepository.findOne(userId);
 			if (!traveler) {
@@ -396,6 +411,10 @@ export class TravelerService {
 
 	async deleteTraveler(userId: string, updateBy: string) {
 		try {
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			const traveler = await this.userRepository.getTravelData(userId);
 			traveler.isDeleted = true;
 			traveler.updatedBy = updateBy;
