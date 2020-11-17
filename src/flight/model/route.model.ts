@@ -45,6 +45,7 @@ export class Route{
     child_count             : number;
     infant_count            : number;
     fare_break_dwon         : FareInfo[];
+    secondary_fare_break_down : FareInfo[];
     cabin_class             : string;
     fare_type               : string;
     instalment_details      :{};

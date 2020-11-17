@@ -181,6 +181,7 @@ export class FlightService {
 		secondarySellingPrice = Generic.formatPriceDecimal(secondarySellingPrice);
 
 		let response = [];
+		const mystifly = new Strategy(new Mystifly({}));
 		response[0] = {
 			net_rate: net_rate,
 			selling_price: sellingPrice,
@@ -903,6 +904,7 @@ export class FlightService {
 			}
 			bookingRequestInfo.laycredit_points = laycredit_points;
 			bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
+			bookingRequestInfo.card_token = card_token;
 		}
 		let {
 			selling_price,
@@ -1267,6 +1269,7 @@ export class FlightService {
 			booking.isPredictive = false;
 			booking.totalInstallments = 0;
 		}
+		console.log("card_token",card_token)
 		booking.cardToken = card_token;
 		booking.moduleInfo = airRevalidateResult;
 		try {
