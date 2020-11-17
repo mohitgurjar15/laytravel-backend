@@ -181,6 +181,7 @@ export class FlightService {
 		secondarySellingPrice = Generic.formatPriceDecimal(secondarySellingPrice);
 
 		let response = [];
+		const mystifly = new Strategy(new Mystifly({}));
 		response[0] = {
 			net_rate: net_rate,
 			selling_price: sellingPrice,
@@ -903,6 +904,7 @@ export class FlightService {
 			}
 			bookingRequestInfo.laycredit_points = laycredit_points;
 			bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
+			bookingRequestInfo.card_token = card_token;
 		}
 		let {
 			selling_price,
@@ -986,11 +988,44 @@ export class FlightService {
 					"USD"
 				);
 				if (authCardResult.status == true) {
+
+					/* Call mystifly booking API if checkin date is less 3 months */
+					let dayDiff = moment(departure_date).diff(bookingDate,'days');
+					console.log("daydiff=>>>>>>",dayDiff, departure_date,bookingDate)
+					let bookingResult;
+					if(dayDiff<=90){
+						console.log("In 90 days")
+						const mystifly = new Strategy(new Mystifly(headers));
+						bookingResult = await mystifly.bookFlight(
+							bookFlightDto,
+							travelersDetails,
+							isPassportRequired
+							);
+					}
+
 					let authCardToken = authCardResult.token;
-					let captureCardresult = await this.paymentService.captureCard(
-						authCardToken
-					);
+
+					let captureCardresult;
+					if(typeof bookingResult=="undefined" || bookingResult.booking_status == "success"){
+
+						captureCardresult = await this.paymentService.captureCard(
+							authCardToken
+							);
+					}
+					else if(typeof bookingResult!=="undefined" && bookingResult.booking_status != "success"){
+						await this.paymentService.voidCard(authCardToken);
+						throw new HttpException(
+							{
+								status: 424,
+								message: bookingResult.error_message,
+							},
+							424
+						);
+					}
+
 					if (captureCardresult.status == true) {
+
+						
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
 							currencyId,
@@ -1000,7 +1035,7 @@ export class FlightService {
 							airRevalidateResult,
 							instalmentDetails,
 							captureCardresult,
-							null,
+							bookingResult || null,
 							travelers
 						);
 						this.sendBookingEmail(laytripBookingResult.id);
@@ -1219,11 +1254,11 @@ export class FlightService {
 					instalmentDetails.instalment_date[1].instalment_date;
 			}
 
-			booking.bookingStatus = BookingStatus.PENDING;
+			booking.bookingStatus = supplierBookingData!=null && supplierBookingData.supplier_booking_id ? BookingStatus.CONFIRM:BookingStatus.PENDING;
 			booking.paymentStatus = PaymentStatus.PENDING;
-			booking.supplierBookingId = "";
-			booking.isPredictive = true;
-			booking.supplierStatus = 0;
+			booking.supplierBookingId = supplierBookingData!=null && supplierBookingData.supplier_booking_id?supplierBookingData.supplier_booking_id:"";
+			booking.isPredictive = supplierBookingData!=null && supplierBookingData.supplier_booking_id?false:true;
+			booking.supplierStatus=(supplierBookingData!=null && supplierBookingData.supplier_status=='BOOKINGINPROCESS')?0:1;
 		} else {
 			//pass here mystifly booking id
 			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
@@ -1232,9 +1267,10 @@ export class FlightService {
 			booking.bookingStatus = BookingStatus.CONFIRM;
 			booking.paymentStatus = PaymentStatus.CONFIRM;
 			booking.isPredictive = false;
-			booking.cardToken = card_token;
 			booking.totalInstallments = 0;
 		}
+		console.log("card_token",card_token)
+		booking.cardToken = card_token;
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();
