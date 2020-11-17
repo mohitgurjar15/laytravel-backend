@@ -66,6 +66,7 @@ export class PaymentController {
 		status: 403,
 		description: "You are not allowed to access this resource.",
 	})
+	@HttpCode(200)
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async addCard(
         @Body() dddCardDto:AddCardDto,
@@ -99,6 +100,7 @@ export class PaymentController {
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@HttpCode(200)
 	@ApiResponse({
 		status: 403,
 		description: "You are not allowed to access this resource.",

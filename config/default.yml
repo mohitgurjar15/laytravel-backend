@@ -26,7 +26,7 @@ email:
     pass: "Oneclick1@"
     port: 465
     secure: true
-    from: '"Laytrip" <no-reply@laytrip.com>'
+    from: '"laytrip" <no-reply@laytrip.com>'
     BCC:  'suresh@itoneclick.com'
     admin: 'suresh@itoneclick.com'
 

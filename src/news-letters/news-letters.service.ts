@@ -45,7 +45,7 @@ export class NewsLettersService {
 				emailExiest.isSubscribed = true;
 				await emailExiest.save();
 			} else if (emailExiest) {
-				throw new ConflictException(`You are already subscribed to our newletter`)
+				throw new ConflictException(`You are already subscribed to our newsletter`)
 			}
 			else {
 				const subscribeData = new NewsLetters();

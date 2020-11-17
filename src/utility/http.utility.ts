@@ -22,6 +22,8 @@ export class  HttpRequest{
 
             console.log("=========================")
             console.log(result.data)
+            console.log(headerAction);
+            
 
             result = await xml2js.parseStringPromise(result.data,{
                 normalizeTags :true,

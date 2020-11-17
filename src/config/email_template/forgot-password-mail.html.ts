@@ -21,7 +21,7 @@ const content = `<!-- header Text section start -->
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 22px; line-height: 24px; color: #444; font-weight:700; padding-top: 15px; text-align: center;">Password Reset</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">You're receiving this email because you requested a password reset for your user account at Laytrip.</td>
+                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">You're receiving this email because you requested a password reset for your user account at laytrip.</td>
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
