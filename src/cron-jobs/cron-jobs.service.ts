@@ -307,8 +307,7 @@ export class CronJobsService {
 		for (let index = 0; index < result.length; index++) {
 			var bookingData = result[index];
 			let flights: any = null;
-			console.log(bookingData);
-
+			
 			var bookingType = bookingData.locationInfo['journey_type']
 
 			let travelers = [];
@@ -398,7 +397,7 @@ export class CronJobsService {
 						);
 						this.sendFlightConfirmationMail(bookingData.laytripBookingId,user.email)
 					}
-					else if (flight.selling_price < markups.maxPrice && predictedDate == todayDate) {
+					else if (flight.selling_price > markups.maxPrice || predictedDate == todayDate) {
 						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
 						const query = await this.flightService.partiallyBookFlight(bookingDto,Headers,user,bookingId)
 						Activity.logActivity(

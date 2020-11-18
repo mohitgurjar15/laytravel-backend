@@ -1204,18 +1204,13 @@ export class AuthService {
 			} else {
 				if (user.status != 1) {
 					throw new UnauthorizedException(
-						`Your account has been disabled. Please contact administrator person.`
+						`Given account has been disabled. Please contact administrator person.`
 					);
 				} else if (user.isDeleted == true) {
 					throw new UnauthorizedException(
-						`Your account has been deleted. Please contact administrator person.`
+						`Given account has been deleted. Please contact administrator person.`
 					);
-				} else
-					if (!user.isVerified) {
-						throw new NotAcceptableException(
-							`Please verify your email id&&&email&&&Please verify your email id`
-						);
-					}
+				}
 				const payload: JwtPayload = {
 					user_id: user.userId,
 					email: user.email,
