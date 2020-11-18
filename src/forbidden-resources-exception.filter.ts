@@ -9,7 +9,7 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 
 		response
-			.status(500)
+			.status(403)
 			// you can manipulate the response here
 			.json({
 				statusCode: 403,

@@ -1,8 +1,8 @@
-import { EmailHeader } from "./flight-booking-header.html";
-import { EmailFooter } from "./booking-footer.html";
+import { EmailHeader } from "./header.html";
+import { EmailFooter } from "./footer.html";
 import { BaseUrl } from "../base-url";
 
-export function BookingFailerMail(param: { error: string }) {
+export function BookingFailerMail(param: { error: string } , bookingId = null) {
     var content = `<table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
 <tr>
     <td align="center" valign="top">
@@ -29,15 +29,19 @@ export function BookingFailerMail(param: { error: string }) {
     if (param.error) {
         content += `<tr>
             <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >
-                The reason for booking failure:
+                The reason for booking failure:${param.error}
                     </td>
-                        < /tr>
-                        < tr >
+                        < /tr>`
+                        
+
+    }
+    if(bookingId)
+    {
+        content += `< tr >
                         <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >
-                            (description of the problem)
+                            Booking Id : ${bookingId}
         </td>
             < /tr>  `
-
     }
     content += `<tr>
         <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >

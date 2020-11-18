@@ -1215,7 +1215,7 @@ export class FlightService {
 		let booking = new Booking();
 		booking.id = uuidv4();
 		booking.moduleId = moduleDetails.id;
-		booking.laytripBookingId = `LT-${uniqid.time().toUpperCase()}`;
+		booking.laytripBookingId = `LT-F${uniqid.time().toUpperCase()}`;
 		booking.bookingType = bookingType;
 		booking.currency = currencyId;
 		booking.totalAmount = selling_price.toString();
