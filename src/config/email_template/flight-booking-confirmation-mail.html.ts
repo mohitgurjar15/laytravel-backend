@@ -1,8 +1,8 @@
-import { EmailHeader } from "./flight-booking-header.html";
+import { EmailHeader } from "./header.html";
 // import { EmailFooter } from "./footer.html";
 import { BaseUrl } from "../base-url";
 import { FlightBookingEmailParameterModel } from "./model/flight-booking-email-parameter.model";
-import { EmailFooter } from "./booking-footer.html";
+import { EmailFooter } from "./footer.html";
 
 export async function FlightBookingConfirmtionMail(
   param: FlightBookingEmailParameterModel

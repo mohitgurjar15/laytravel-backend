@@ -24,6 +24,7 @@ import { ignoreElements } from "rxjs/operators";
 import { OtherPayments } from "src/entity/other-payment.entity";
 import { BookFlightDto } from "src/flight/dto/book-flight.dto";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
+import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 
 
 @Injectable()
@@ -331,8 +332,6 @@ export class CronJobsService {
 					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
 					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
 				}
-				console.log(dto);
-
 
 				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
 
@@ -421,9 +420,12 @@ export class CronJobsService {
 	async updateFlightBookingInProcess() {
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.user", "User")
 			.select([
 				"booking.supplierBookingId",
-				"booking.id"
+				"booking.id",
+				"User.email",
+				"booking.laytripBookingId"
 			])
 			.where(
 				`"booking"."supplier_status" = 0 and "booking"."supplier_booking_id" !=''`
@@ -461,6 +463,8 @@ export class CronJobsService {
 						.set({ bookingStatus: BookingStatus.FAILED , paymentStatus : PaymentStatus.REFUNDED , paymentInfo : voidCard.meta_data})
 						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
 						.execute();
+					
+					this.sendFlightFailerMail(booking.user.email,booking.laytripBookingId)
 				}
 
 
@@ -510,5 +514,25 @@ export class CronJobsService {
 	{
 		console.log(`bookingId`,bookingID);
 		console.log(`bookingId`,emailId);
+	}
+
+	async sendFlightFailerMail(email,bookingId,error = null)
+	{
+		this.mailerService
+		.sendMail({
+			to: email,
+			from: mailConfig.from,
+			cc:mailConfig.BCC,
+			subject: "Booking Failer Mail",
+			html: BookingFailerMail({
+				error:error,
+			},bookingId),
+		})
+		.then((res) => {
+			console.log("res", res);
+		})
+		.catch((err) => {
+			console.log("err", err);
+		});
 	}
 }

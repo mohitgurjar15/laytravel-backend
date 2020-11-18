@@ -182,8 +182,8 @@ export class BookingService {
 					cc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
-						error: null
-					}),
+						error: null,
+					},bookingData.laytripBookingId),
 
 				})
 				.then((res) => {
