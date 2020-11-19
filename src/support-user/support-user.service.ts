@@ -17,6 +17,7 @@ import { User } from "src/entity/user.entity";
 import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { In } from "typeorm";
+import { Role } from "src/enum/role.enum";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -198,5 +199,34 @@ export class SupportUserService {
 	//Export user
 	async exportSupporter(): Promise<{ data: User[] }> {
 		return await this.userRepository.exportUser([3]);
+	}
+
+	async getSupportUserData(userId: string, siteUrl: string): Promise<User> {
+		try {
+			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.SUPPORT])
+			// const user = await this.userRepository.findOne({
+			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
+			// });
+
+			// if (!user) {
+			// 	throw new NotFoundException(`No Admin found`);
+			// }
+			// delete user.salt;
+			// delete user.password;
+			// user.profilePic = user.profilePic
+			// 	? `${siteUrl}/profile/${user.profilePic}`
+			// 	: "";
+			// return user;
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No supporter found`);
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
 	}
 }

@@ -181,4 +181,22 @@ export class SupportUserController {
 	): Promise<{ data: User[]}> {
 		return await this.supportUserService.exportSupporter();
 	}
+
+	@Get("/:id")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Get support user details by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getSupportUserData(
+		@Param("id") userId: string,
+		@SiteUrl() siteUrl: string
+	): Promise<User> {
+		return await this.supportUserService.getSupportUserData(userId, siteUrl);
+	}
 }
