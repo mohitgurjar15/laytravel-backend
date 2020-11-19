@@ -24,7 +24,6 @@ import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';
 import { UpdateMarketingUserDto } from './dto/update-marketing-user.dto';
 import { exit } from 'process';
-import { UserCard } from 'src/entity/user-card.entity';
 import { SubmitWheelDto } from './dto/wheel-submit.dto';
 import { QuizGameQuestion } from 'src/entity/quiz-game-question.entity';
 import { ListUserActivity } from './dto/list-user-activity.dto';
@@ -544,7 +543,7 @@ export class MarketingService {
                 .getOne();
 
             if (user && user.ipAddress != ip_address) {
-                throw new ConflictException(`Givel email id alredy used`)
+                throw new ConflictException(`This email address is already registered with us. Please enter different email address .`)
             }
 
             let ipAddressData = await getManager()
@@ -842,7 +841,6 @@ export class MarketingService {
             );
         }
     }
-
 
     async deletequestion(id: number) {
         try {
@@ -1217,7 +1215,6 @@ export class MarketingService {
         }
     }
 
-
     async wheelGameOptionListForUser() {
         try {
             let game = await getManager()
@@ -1329,9 +1326,8 @@ export class MarketingService {
             if (!point) {
                 activity.addToWallet = false
             }
-            const replay = await activity.save();
-
-            return { message: `Congratulation you won ${reword_point} laytrip point` }
+            const replay: any = await activity.save();
+            return replay
 
             // replay['marketingUser'] = user;
             // return replay;
@@ -1373,25 +1369,25 @@ export class MarketingService {
         )
     }
 
-    async userActivity(useractivity:ListUserActivity){
-        const {page_no , limit , search} = useractivity
+    async userActivity(useractivity: ListUserActivity) {
+        const { page_no, limit, search } = useractivity
 
         const take = limit || 10;
-		const skip = (page_no - 1) * limit || 0;
+        const skip = (page_no - 1) * limit || 0;
 
-		let query = getManager()
-        .createQueryBuilder(MarketingUserData, "user")
-			.leftJoinAndSelect("user.marketingUserActivity", "activity")
-			.leftJoinAndSelect("activity.game", "game")
-			.limit(take)
-			.offset(skip)
-		if (search) {
-			query = query.where(`email=:search OR ip_address=:search OR user_id=:search OR app_version=:search `, { search });
-		}
+        let query = getManager()
+            .createQueryBuilder(MarketingUserData, "user")
+            .leftJoinAndSelect("user.marketingUserActivity", "activity")
+            .leftJoinAndSelect("activity.game", "game")
+            .limit(take)
+            .offset(skip)
+        if (search) {
+            query = query.where(`email=:search OR ip_address=:search OR user_id=:search OR app_version=:search `, { search });
+        }
 
-		const [result, count] = await query.getManyAndCount();
-		//const count = await query.getCount();
-		return { data: result, total_result: count };
+        const [result, count] = await query.getManyAndCount();
+        //const count = await query.getCount();
+        return { data: result, total_result: count };
 
     }
 }

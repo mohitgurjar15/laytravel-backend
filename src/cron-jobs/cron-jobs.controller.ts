@@ -85,4 +85,15 @@ export class CronJobsController {
 		return await this.cronJobsService.updateFlightBookingInProcess();
 	}
 
+	@Get('add-recurring-laytrip-point')
+	@ApiOperation({ summary: "Add Recurring laytrip point" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async addRecurringLaytripPoint(
+		@Req() req,
+	){
+		return await this.cronJobsService.addRecurringLaytripPoint();
+	}
+
 }

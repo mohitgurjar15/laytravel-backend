@@ -30,7 +30,13 @@ export class LayCreditEarn extends BaseEntity {
   @Column("integer", { name: "status" })
   status: number;
 
-  @Column("integer", { name: "transaction_id" ,nullable : true})
+  @Column("integer", { name: "type", default: 1 })
+  type: number;
+
+  @Column("character varying", { name: "subscription_type", length: 20 , nullable : true})
+  subscriptionType: string;
+
+  @Column("integer", { name: "transaction_id", nullable: true })
   transactionId: number;
 
   @Column("character varying", { name: "credit_mode", length: 20 })
@@ -41,6 +47,12 @@ export class LayCreditEarn extends BaseEntity {
 
   @Column("uuid", { name: "credit_by" })
   creditBy: string;
+
+  @Column("character varying", { name: "card_token", nullable: true })
+  cardToken: string;
+
+  @Column("date", { name: "created_date", nullable: true })
+  createdDate: Date;
 
   @ManyToOne(
     () => User,

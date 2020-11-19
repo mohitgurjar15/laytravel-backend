@@ -452,4 +452,24 @@ export class AuthController {
 		return result;
 	}
 	
+
+	@Get("validate-user/:token")
+	@ApiOperation({ summary: "validate user token" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async validateuserToken(
+		@Param('token') token : string
+	) {
+		return await this.authService.validateUser(
+			token
+		);
+	}
+
 }

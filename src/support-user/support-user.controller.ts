@@ -17,7 +17,7 @@ import {
 } from "@nestjs/common";
 import { diskStorage } from "multer";
 import {
-	ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse
+	ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags
 } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/guards/role.guard";
@@ -35,7 +35,7 @@ import { SiteUrl } from "src/decorator/site-url.decorator";
 import { UpdateSupporterDto } from "./dto/update-supporter.dto";
 
 @Controller("support-user")
-// @ApiTags("Support-User")
+@ApiTags("Support-User")
 @ApiBearerAuth()
 @UseGuards(AuthGuard(), RolesGuard)
 export class SupportUserController {
@@ -180,5 +180,23 @@ export class SupportUserController {
 	async exportSuppoerter(
 	): Promise<{ data: User[]}> {
 		return await this.supportUserService.exportSupporter();
+	}
+
+	@Get("/:id")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Get support user details by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getSupportUserData(
+		@Param("id") userId: string,
+		@SiteUrl() siteUrl: string
+	): Promise<User> {
+		return await this.supportUserService.getSupportUserData(userId, siteUrl);
 	}
 }
