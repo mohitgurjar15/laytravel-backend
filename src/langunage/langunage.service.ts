@@ -144,9 +144,9 @@ export class LangunageService {
 			Data.updatedDate = new Date();
 			Data.save();
 			await getConnection().queryResultCache!.remove(["languages"]);
-			Activity.logActivity(adminId.userId, "language", `${Data.name} Languge status changed by admin`);
+			Activity.logActivity(adminId.userId, "language", ` Languge ${Data.name} status changed by admin`);
         
-			return { message: `${Data.name} Language  status Changed successfully` };
+			return { message: `${Data.name} language status changed successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

@@ -17,7 +17,7 @@ import {
 } from "@nestjs/common";
 import { diskStorage } from "multer";
 import {
-	ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse
+	ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags
 } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/guards/role.guard";
@@ -35,7 +35,7 @@ import { SiteUrl } from "src/decorator/site-url.decorator";
 import { UpdateSupporterDto } from "./dto/update-supporter.dto";
 
 @Controller("support-user")
-// @ApiTags("Support-User")
+@ApiTags("Support-User")
 @ApiBearerAuth()
 @UseGuards(AuthGuard(), RolesGuard)
 export class SupportUserController {

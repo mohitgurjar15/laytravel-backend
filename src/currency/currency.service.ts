@@ -111,7 +111,7 @@ export class CurrencyService {
 			Data.save();
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId.id, "currency", `currency ${Data.code} status ${status} changed by admin`);
-			return { message: `${Data.code} Currency  status changed successfully` };
+			return { message: `${Data.code} currency status changed successfully` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

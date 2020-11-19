@@ -502,6 +502,7 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date;
+				var startPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -509,6 +510,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -522,6 +524,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					key++;
 				}
@@ -529,7 +532,8 @@ export class FlightService {
 					date: date,
 					net_rate: netRate,
 					price: lowestprice,
-					unique_code: unique_code
+					unique_code: unique_code,
+					start_price:startPrice
 				}
 
 				returnResponce.push(output)
@@ -549,7 +553,7 @@ export class FlightService {
 
 		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count, isRoundtrip, arrivale_date } = serchFlightDto;
 
-		console.log(isRoundtrip);
+		
 
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
@@ -614,6 +618,7 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date = '';
+				var startPrice;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -621,6 +626,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -634,6 +640,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					key++;
 				}
@@ -641,7 +648,8 @@ export class FlightService {
 					date: date,
 					net_rate: netRate,
 					price: lowestprice,
-					unique_code: unique_code
+					unique_code: unique_code,
+					start_price:startPrice
 				}
 
 				returnResponce.push(output)
@@ -734,6 +742,7 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date;
+				var startPrice =  0 ;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -741,6 +750,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -754,6 +764,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					key++;
 				}
@@ -761,7 +772,8 @@ export class FlightService {
 					date: date,
 					net_rate: netRate,
 					price: lowestprice,
-					unique_code: unique_code
+					unique_code: unique_code,
+					start_price:startPrice
 				}
 
 				returnResponce.push(output)

@@ -62,6 +62,8 @@ import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import * as config from "config";
 const mailConfig = config.get("email");
+const jwtConfig = config.get("jwt");
+import * as uuidValidator from "uuid-validate"
 
 @Injectable()
 export class AuthService {
@@ -152,7 +154,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: first_name + " " + last_name,
@@ -233,7 +235,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -289,7 +291,7 @@ export class AuthService {
 				.sendMail({
 					to: newEmail,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -381,7 +383,7 @@ export class AuthService {
 			);
 		}
 		if (user.isDeleted == true || user.status == 0) {
-			throw new NotFoundException(`Given Email id is Deleted`);
+			throw new NotFoundException(`Your account has been disabled. Please contact administrator person&&&email&&&Your account has been disabled. Please contact administrator person`);
 		}
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
@@ -422,7 +424,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc:mailConfig.BCC,
+				cc: mailConfig.BCC,
 				sender: "laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
@@ -600,7 +602,7 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
-						cc:mailConfig.BCC,
+						cc: mailConfig.BCC,
 						subject: "Welcome on board",
 						html: RagisterMail({
 							username: user.firstName + " " + user.lastName,
@@ -1258,5 +1260,46 @@ export class AuthService {
 			.into(LoginLog)
 			.values(loginLog)
 			.execute();
+	}
+
+	async validateUser(token: string) {
+		var decoded = jwt_decode(token);
+		const { user_id, iat } = decoded;
+
+		if (!user_id || !uuidValidator(user_id)) {
+			throw new BadRequestException('given token is not valid')
+		}
+
+		const user = await this.userRepository.findOne({ userId: user_id })
+		if (!user)
+			throw new UnauthorizedException();
+
+		if (user.status != 1) {
+			throw new UnauthorizedException(
+				`Your account has been disabled. Please contact administrator person.`
+			);
+		}
+		if (user.isDeleted == true) {
+			throw new UnauthorizedException(
+				`Your account has been deleted. Please contact administrator person.`
+			);
+		}
+
+		if (!user.isVerified) {
+			throw new NotAcceptableException(
+				`Please verify your email id&&&email&&&Please verify your email id`
+			);
+		}
+
+		const unixTimestamp = Math.round(new Date().getTime() / 1000);
+		const time = unixTimestamp - iat;
+		if (time >= jwtConfig.ExpireIn) {
+			throw new BadRequestException(
+				`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
+			);
+		}
+		return {
+			message: `user validate successfully`
+		}
 	}
 }

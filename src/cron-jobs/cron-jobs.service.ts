@@ -25,6 +25,10 @@ import { OtherPayments } from "src/entity/other-payment.entity";
 import { BookFlightDto } from "src/flight/dto/book-flight.dto";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
+import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
+import { RewordStatus } from "src/enum/reword-status.enum";
+import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
+import { PaidFor } from "src/enum/paid-for.enum";
 
 
 @Injectable()
@@ -307,14 +311,14 @@ export class CronJobsService {
 		for (let index = 0; index < result.length; index++) {
 			var bookingData = result[index];
 			let flights: any = null;
-			
+
 			var bookingType = bookingData.locationInfo['journey_type']
 
 			let travelers = [];
-			
+
 			for await (const traveler of bookingData.travelers) {
 				travelers.push({
-					traveler_id : traveler.userId
+					traveler_id: traveler.userId
 				})
 			}
 
@@ -325,7 +329,7 @@ export class CronJobsService {
 				let dto = {
 					"source_location": bookingData.moduleInfo[0].departure_code,
 					"destination_location": bookingData.moduleInfo[0].arrival_code,
-					"departure_date":  await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
 					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
 					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
 					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
@@ -372,42 +376,42 @@ export class CronJobsService {
 					bookingDto.instalment_type = `${bookingData.bookingType}`
 					bookingDto.route_code = flight.route_code;
 					bookingDto.additional_amount = 0
-					bookingDto.laycredit_points = 0 
+					bookingDto.laycredit_points = 0
 
 					const user = bookingData.user
 
 					const bookingId = bookingData.laytripBookingId;
 					if (flight.routes[0].stops[0].below_minimum_seat == true) {
 						console.log(`rule 1 :- flight below minimum`)
-						const query = await this.flightService.partiallyBookFlight(bookingDto,Headers,user,bookingId)
+						const query = await this.flightService.partiallyBookFlight(bookingDto, Headers, user, bookingId)
 						Activity.logActivity(
 							"1c17cd17-9432-40c8-a256-10db77b95bca",
 							"cron",
 							`${bookingData.laytripBookingId} is Book by cron with (rule 1 :- flight below minimum)`
 						);
-						this.sendFlightConfirmationMail(bookingData.laytripBookingId,user.email)
+						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 					}
 					else if (bookingData.netRate > flight.net_rate) {
 						console.log(`rule 2 :- flight net rate less than the user book net rate`)
-						const query = await this.flightService.partiallyBookFlight(bookingDto,Headers,user,bookingId)
+						const query = await this.flightService.partiallyBookFlight(bookingDto, Headers, user, bookingId)
 						Activity.logActivity(
 							"1c17cd17-9432-40c8-a256-10db77b95bca",
 							"cron",
 							`${bookingData.laytripBookingId} is Book by cron with (rule 2 :- flight net rate less than the user book net rate)`
 						);
-						this.sendFlightConfirmationMail(bookingData.laytripBookingId,user.email)
+						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 					}
 					else if (flight.selling_price > markups.maxPrice || predictedDate == todayDate) {
 						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						const query = await this.flightService.partiallyBookFlight(bookingDto,Headers,user,bookingId)
+						const query = await this.flightService.partiallyBookFlight(bookingDto, Headers, user, bookingId)
 						Activity.logActivity(
 							"1c17cd17-9432-40c8-a256-10db77b95bca",
 							"cron",
 							`${bookingData.laytripBookingId} is Book by cron with (rule 3 :- flight net rate less than the preduction markup max amount)`
 						);
-						this.sendFlightConfirmationMail(bookingData.laytripBookingId,user.email)
+						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 					}
-					
+
 				}
 			}
 
@@ -459,11 +463,11 @@ export class CronJobsService {
 					await getConnection()
 						.createQueryBuilder()
 						.update(Booking)
-						.set({ bookingStatus: BookingStatus.FAILED , paymentStatus : PaymentStatus.REFUNDED , paymentInfo : voidCard.meta_data})
+						.set({ bookingStatus: BookingStatus.FAILED, paymentStatus: PaymentStatus.REFUNDED, paymentInfo: voidCard.meta_data })
 						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
 						.execute();
-					
-					this.sendFlightFailerMail(booking.user.email,booking.laytripBookingId)
+
+					this.sendFlightFailerMail(booking.user.email, booking.laytripBookingId)
 				}
 
 
@@ -506,32 +510,115 @@ export class CronJobsService {
 		console.log(date);
 
 		return `${date[2]}-${date[1]}-${date[0]}`
-		
+
 	}
 
-	async sendFlightConfirmationMail(bookingID,emailId)
-	{
-		console.log(`bookingId`,bookingID);
-		console.log(`bookingId`,emailId);
-	}
-
-	async sendFlightFailerMail(email,bookingId,error = null)
-	{
+	async sendFlightUpdateMail(bookingId, email, userName) {
 		this.mailerService
-		.sendMail({
-			to: email,
-			from: mailConfig.from,
-			cc:mailConfig.BCC,
-			subject: "Booking Failer Mail",
-			html: BookingFailerMail({
-				error:error,
-			},bookingId),
-		})
-		.then((res) => {
-			console.log("res", res);
-		})
-		.catch((err) => {
-			console.log("err", err);
-		});
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: "Booking detail updated",
+				html: BookingDetailsUpdateMail({ username: userName }),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
+	}
+
+	async sendFlightFailerMail(email, bookingId, error = null) {
+		this.mailerService
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: "Booking Failer Mail",
+				html: BookingFailerMail({
+					error: error,
+				}, bookingId),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
+	}
+
+	async addRecurringLaytripPoint() {
+		try {
+			var toDate = new Date();
+
+			var todayDate = toDate.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+
+			const result = await getManager()
+				.createQueryBuilder(LayCreditEarn, "layCreditEarn")
+				.where(`DATE("layCreditEarn"."earn_date") <= '${todayDate}' AND "layCreditEarn"."status" = ${RewordStatus.PENDING} AND "layCreditEarn"."type" = ${LaytripPointsType.RECURRING}`)
+				.getMany()
+			console.log(result);
+
+
+			if (result.length) {
+				for (let index = 0; index < result.length; index++) {
+					const data = result[index];
+					console.log(data);
+					
+					const createTransaction = {
+						"bookingId": null,
+						"userId": data.userId,
+						"card_token": data.cardToken,
+						"currencyId": 1,
+						"amount": data.points,
+						"paidFor": PaidFor.RewordPoint,
+						"note": ""
+					}
+					const payment = await this.paymentService.createTransaction(createTransaction, "1c17cd17-9432-40c8-a256-10db77b95bca")
+
+					if (payment.paymentStatus == PaymentStatus.CONFIRM) {
+
+						await getConnection()
+							.createQueryBuilder()
+							.update(LayCreditEarn)
+							.set({ transactionId: payment.id, status: RewordStatus.AVAILABLE })
+							.where("id = :id", { id: data.id })
+							.execute();
+						// 		this.mailerService
+						// 	.sendMail({
+						// 		to: data.user.email,
+						// 		from: mailConfig.from,
+						// 		cc: mailConfig.BCC,
+						// 		subject: `Subscription Expired`,
+						// 		html: ConvertCustomerMail({
+						// 			username: data.first_name + " " + data.last_name,
+						// 			date: data.next_subscription_date,
+						// 		}),
+						// 	})
+						// 	.then((res) => {
+						// 		console.log("res", res);
+						// 	})
+						// 	.catch((err) => {
+						// 		console.log("err", err);
+						// 	});
+						Activity.logActivity(
+							"1c17cd17-9432-40c8-a256-10db77b95bca",
+							"cron",
+							`${data.id} recurring laytrip poin added by cron`
+						);
+					}
+					else {
+						// failed transaction mail
+					}
+				}
+			}
+		} catch (error) {
+			console.log(error);
+		}
 	}
 }
