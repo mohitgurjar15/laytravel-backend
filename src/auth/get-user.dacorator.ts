@@ -1,4 +1,4 @@
-import { BadRequestException, createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { BadRequestException, createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import * as jwt_decode from "jwt-decode";
 import { errorMessage } from 'src/config/common.config';
 import * as config from "config";
@@ -45,9 +45,7 @@ export const LogInUser = createParamDecorator(
             const unixTimestamp = Math.round(new Date().getTime() / 1000);
             const time = unixTimestamp - iat;
             if (time >= jwtConfig.ExpireIn) {
-                throw new BadRequestException(
-                    `Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
-                );
+                throw new UnauthorizedException();
             }
         }
         return authorization;
