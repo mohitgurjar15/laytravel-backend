@@ -6,6 +6,8 @@ export interface StrategyAirline{
 
     baggageDetails(params);
 
+    cancelBooking(param1)
+
     roundTripSearch(params1,params2);
 
     roundTripSearchZip(params1,params2);
