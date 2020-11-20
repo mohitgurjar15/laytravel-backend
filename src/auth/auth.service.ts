@@ -1085,7 +1085,7 @@ export class AuthService {
 					: "",
 				roleId: data.roleId,
 			};
-			console.log(payload);
+			console.log(data);
 
 			const accessToken = this.jwtService.sign(payload);
 			const token = accessToken;

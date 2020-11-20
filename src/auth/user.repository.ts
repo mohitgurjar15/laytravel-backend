@@ -445,6 +445,7 @@ export class UserRepository extends Repository<User> {
 				"user.preferredLanguage2",
 				"user.passportNumber",
 				"user.passportExpiry",
+				"user.createdDate",
 				"language.id",
 				"language.name",
 				"language.iso_1Code",
@@ -460,6 +461,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
+				
 			])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`, {
 				userId,
@@ -505,6 +507,7 @@ export class UserRepository extends Repository<User> {
 		user.preferredLanguage = userDetail.preferredLanguage2 || {};
 		user.passportNumber = userDetail.passportNumber || "";
 		user.passportExpiry = userDetail.passportExpiry || "";
+		user.createdDate = userDetail.createdDate 
 		user.profilePic = userDetail.profilePic
 			? `${siteUrl}/profile/${userDetail.profilePic}`
 			: "";
