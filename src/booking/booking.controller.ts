@@ -125,4 +125,5 @@ export class BookingController {
 		return await this.bookingService.listPaymentForAdmin(paginationOption);
 	}
 
+	
 }

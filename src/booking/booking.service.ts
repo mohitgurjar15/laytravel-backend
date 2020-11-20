@@ -9,6 +9,7 @@ import {
 	ForbiddenException,
 } from "@nestjs/common";
 import { BookingRepository } from "./booking.repository";
+import * as uniqid from 'uniqid';
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
 import { FlightBookingEmailParameterModel } from "src/config/email_template/model/flight-booking-email-parameter.model";
@@ -25,6 +26,7 @@ import { BookingType } from "src/enum/booking-type.enum";
 import { exit } from "process";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
+import { getConnection, getManager } from "typeorm";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -183,7 +185,7 @@ export class BookingService {
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null,
-					},bookingData.laytripBookingId),
+					}, bookingData.laytripBookingId),
 
 				})
 				.then((res) => {
@@ -424,12 +426,12 @@ export class BookingService {
 	}
 
 	async getPaymentHistory(user, listPaymentDto) {
-		let result:any = await this.bookingRepository.getPayments(user, listPaymentDto);
+		let result : any = await this.bookingRepository.getPayments(user, listPaymentDto);
 		if (result.total_result == 0) {
 			throw new NotFoundException(`No payment history found!`);
 		}
 
-		
+
 		for (let i = 0; i < result.data.length; i++) {
 			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
@@ -437,11 +439,11 @@ export class BookingService {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
-			console.log(result.data[i]);
-			console.log(paidAmount);
-			
+			var totalAMount = result.data[i].totalAmount
+			let remainAmount = totalAMount - paidAmount
+
 			result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
-			//result[i]["remainAmount"] = result[i].bookingType == BookingType.NOINSTALMENT && result[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+			result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 		}
 		return result;
 	}
@@ -525,4 +527,20 @@ export class BookingService {
 
 		return [month, day, year].join('/');
 	}
+
+	// async updateId() {
+	// 	let query = await getManager()
+	// 		.createQueryBuilder(Booking, "booking")
+	// 		.getMany();
+
+	// 	for await (const booking of query) {
+	// 		booking.laytripBookingId
+	// 		await getConnection()
+	// 			.createQueryBuilder()
+	// 			.update(Booking)
+	// 			.set({ laytripBookingId: `LTF${uniqid.time().toUpperCase()}` })
+	// 			.where("id = :id", { id: booking.id })
+	// 			.execute();
+	// 	}
+	// }
 }
