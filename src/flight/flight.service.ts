@@ -533,7 +533,7 @@ export class FlightService {
 					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code,
-					start_price:startPrice
+					start_price: startPrice
 				}
 
 				returnResponce.push(output)
@@ -553,7 +553,7 @@ export class FlightService {
 
 		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count, isRoundtrip, arrivale_date } = serchFlightDto;
 
-		
+
 
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
@@ -649,7 +649,7 @@ export class FlightService {
 					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code,
-					start_price:startPrice
+					start_price: startPrice
 				}
 
 				returnResponce.push(output)
@@ -742,7 +742,7 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date;
-				var startPrice =  0 ;
+				var startPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -773,7 +773,7 @@ export class FlightService {
 					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code,
-					start_price:startPrice
+					start_price: startPrice
 				}
 
 				returnResponce.push(output)
@@ -1002,29 +1002,29 @@ export class FlightService {
 				if (authCardResult.status == true) {
 
 					/* Call mystifly booking API if checkin date is less 3 months */
-					let dayDiff = moment(departure_date).diff(bookingDate,'days');
-					console.log("daydiff=>>>>>>",dayDiff, departure_date,bookingDate)
+					let dayDiff = moment(departure_date).diff(bookingDate, 'days');
+					console.log("daydiff=>>>>>>", dayDiff, departure_date, bookingDate)
 					let bookingResult;
-					if(dayDiff<=90){
+					if (dayDiff <= 90) {
 						console.log("In 90 days")
 						const mystifly = new Strategy(new Mystifly(headers));
 						bookingResult = await mystifly.bookFlight(
 							bookFlightDto,
 							travelersDetails,
 							isPassportRequired
-							);
+						);
 					}
 
 					let authCardToken = authCardResult.token;
 
 					let captureCardresult;
-					if(typeof bookingResult=="undefined" || bookingResult.booking_status == "success"){
+					if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
 
 						captureCardresult = await this.paymentService.captureCard(
 							authCardToken
-							);
+						);
 					}
-					else if(typeof bookingResult!=="undefined" && bookingResult.booking_status != "success"){
+					else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
 						await this.paymentService.voidCard(authCardToken);
 						throw new HttpException(
 							{
@@ -1037,7 +1037,7 @@ export class FlightService {
 
 					if (captureCardresult.status == true) {
 
-						
+
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
 							currencyId,
@@ -1227,7 +1227,7 @@ export class FlightService {
 		let booking = new Booking();
 		booking.id = uuidv4();
 		booking.moduleId = moduleDetails.id;
-		booking.laytripBookingId = `LT-F${uniqid.time().toUpperCase()}`;
+		booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
 		booking.bookingType = bookingType;
 		booking.currency = currencyId;
 		booking.totalAmount = selling_price.toString();
@@ -1266,11 +1266,11 @@ export class FlightService {
 					instalmentDetails.instalment_date[1].instalment_date;
 			}
 
-			booking.bookingStatus = supplierBookingData!=null && supplierBookingData.supplier_booking_id ? BookingStatus.CONFIRM:BookingStatus.PENDING;
+			booking.bookingStatus = supplierBookingData != null && supplierBookingData.supplier_booking_id ? BookingStatus.CONFIRM : BookingStatus.PENDING;
 			booking.paymentStatus = PaymentStatus.PENDING;
-			booking.supplierBookingId = supplierBookingData!=null && supplierBookingData.supplier_booking_id?supplierBookingData.supplier_booking_id:"";
-			booking.isPredictive = supplierBookingData!=null && supplierBookingData.supplier_booking_id?false:true;
-			booking.supplierStatus=(supplierBookingData!=null && supplierBookingData.supplier_status=='BOOKINGINPROCESS')?0:1;
+			booking.supplierBookingId = supplierBookingData != null && supplierBookingData.supplier_booking_id ? supplierBookingData.supplier_booking_id : "";
+			booking.isPredictive = supplierBookingData != null && supplierBookingData.supplier_booking_id ? false : true;
+			booking.supplierStatus = (supplierBookingData != null && supplierBookingData.supplier_status == 'BOOKINGINPROCESS') ? 0 : 1;
 		} else {
 			//pass here mystifly booking id
 			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
@@ -1281,7 +1281,7 @@ export class FlightService {
 			booking.isPredictive = false;
 			booking.totalInstallments = 0;
 		}
-		console.log("card_token",card_token)
+		console.log("card_token", card_token)
 		booking.cardToken = card_token;
 		booking.moduleInfo = airRevalidateResult;
 		try {
@@ -1996,6 +1996,11 @@ export class FlightService {
 			date: `${date[2]}/${date[1]}/${date[0]}`,
 			time: `${time[0]}:${time[1]} ${amPm}`
 		}
+	}
+
+	async cancelBooking(tripId: string,headers) {
+		const mystifly = new Strategy(new Mystifly(headers));
+		return mystifly.cancelBooking(tripId);
 	}
 
 }
