@@ -364,15 +364,9 @@ export class AuthService {
 		}
 	}
 
-	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl) {
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl,roles) {
 		const { email } = forgetPasswordDto;
-		var roles = [
-			Role.ADMIN,
-			Role.SUPER_ADMIN,
-			Role.SUPPLIER,
-			Role.FREE_USER,
-			Role.PAID_USER,
-		];
+		
 		const user = await this.userRepository.findOne({
 			email,
 			roleId: In(roles),
