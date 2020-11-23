@@ -40,10 +40,11 @@ export class SupportUserService {
 		files: ProfilePicDto,
 		adminId: string
 	): Promise<User> {
-		const { email, password, first_name, last_name } = saveSupporterDto;
+		const { email, password, first_name, last_name,gender } = saveSupporterDto;
 		const salt = await bcrypt.genSalt();
 		const user = new User();
 		user.userId = uuidv4();
+		user.gender = gender;
 		user.accountType = 1;
 		user.socialAccountId = "";
 		user.phoneNo = "";
@@ -107,12 +108,13 @@ export class SupportUserService {
 				middleName,
 				lastName,
 				profile_pic,
+				gender
 			} = updateSupporterDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([3]) },
 			});
-
+			userData.gender = gender
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -204,19 +206,7 @@ export class SupportUserService {
 	async getSupportUserData(userId: string, siteUrl: string): Promise<User> {
 		try {
 			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.SUPPORT])
-			// const user = await this.userRepository.findOne({
-			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
-			// });
-
-			// if (!user) {
-			// 	throw new NotFoundException(`No Admin found`);
-			// }
-			// delete user.salt;
-			// delete user.password;
-			// user.profilePic = user.profilePic
-			// 	? `${siteUrl}/profile/${user.profilePic}`
-			// 	: "";
-			// return user;
+			
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

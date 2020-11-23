@@ -548,19 +548,4 @@ export class BookingService {
 	// 			.execute();
 	// 	}
 	// }
-
-	async getallUserBookingId(userId) {
-		if(!uuidValidator(userId))
-			{
-				throw new NotFoundException('Given user id not avilable')
-			}
-		let query = getManager()
-			.createQueryBuilder(Booking, "booking")
-			.select([
-				"booking.laytripBookingId",
-			])
-			.where(`"booking"."user_id" =:userId`, { userId: userId }
-			).getMany()
-		return query;
-	}
 }
