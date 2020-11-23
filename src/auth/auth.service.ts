@@ -512,7 +512,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`Otp Can not be validate.&&&token&&&${errorMessage}`
+				`We can not find your request for forget password&&&otp&&&We can not find your request for forget password`
 			);
 		}
 	}
