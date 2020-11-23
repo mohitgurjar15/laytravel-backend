@@ -316,6 +316,7 @@ export class Mystifly implements StrategyAirline {
                 else {
                     route.secondary_selling_price = 0;
                 }
+                route.instalment_details = instalmentDetails;
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0] == "true" ? true : false;
                 route.departure_code = source_location;
@@ -587,9 +588,11 @@ export class Mystifly implements StrategyAirline {
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
                     route.start_price = '0';
+                    route.secondary_start_price='0';
                 }
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
@@ -1401,7 +1404,7 @@ export class Mystifly implements StrategyAirline {
                 else {
                     route.secondary_selling_price = 0;
                 }
-
+                route.instalment_details = instalmentDetails;
                 route.inbound_stop_count = stops.length - 1;
                 route.departure_code = source_location;
                 route.arrival_code = destination_location;

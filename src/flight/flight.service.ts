@@ -503,6 +503,7 @@ export class FlightService {
 				var key = 0;
 				var date;
 				var startPrice = 0;
+				var secondaryStartPrice=0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -511,6 +512,7 @@ export class FlightService {
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -525,6 +527,7 @@ export class FlightService {
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					key++;
 				}
@@ -533,7 +536,8 @@ export class FlightService {
 					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code,
-					start_price: startPrice
+					start_price: startPrice,
+					secondary_start_price:secondaryStartPrice
 				}
 
 				returnResponce.push(output)
@@ -619,6 +623,7 @@ export class FlightService {
 				var key = 0;
 				var date = '';
 				var startPrice;
+				var secondaryStartPrice=0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -627,6 +632,7 @@ export class FlightService {
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -641,6 +647,7 @@ export class FlightService {
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					key++;
 				}
@@ -649,7 +656,8 @@ export class FlightService {
 					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code,
-					start_price: startPrice
+					start_price: startPrice,
+					secondary_start_price:secondaryStartPrice
 				}
 
 				returnResponce.push(output)

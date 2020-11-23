@@ -14,7 +14,7 @@ export class Instalment{
         if(!isAvailable)
             return instalmentData;
 
-        let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
@@ -55,7 +55,7 @@ export class Instalment{
         if(!isAvailable)
             return instalmentData;
             
-        let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
@@ -96,7 +96,7 @@ export class Instalment{
         if(!isAvailable)
             return instalmentData;
 
-        let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
