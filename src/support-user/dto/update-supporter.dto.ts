@@ -1,10 +1,14 @@
-import { IsNotEmpty,  MaxLength} from 'class-validator'
+import { IsEnum, IsNotEmpty,  MaxLength, ValidationArguments} from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Gender } from 'src/enum/gender.enum';
+import { errorMessage } from 'src/config/common.config';
 
 export class UpdateSupporterDto{
 
-    @IsNotEmpty()
-    @MaxLength(25)
+    @IsNotEmpty({
+        message : `Please enter your first name.&&&first_name`
+    })
+    
     @ApiProperty({
         description: 'Enter First Name',
         example: 'Jon'
@@ -17,13 +21,32 @@ export class UpdateSupporterDto{
     })
     middleName: string;
 
-    @IsNotEmpty()
-    @MaxLength(25)
+    @IsNotEmpty({
+        message : `Please enter your last name.&&&first_name`
+    })
     @ApiProperty({
         description: 'Enter Last Name',
         example: 'Doe'
     })
     lastName: string;
+
+    @IsEnum(['M','F','N'],{
+        message : (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
+                return `Please select your gender.&&&gender&&&Please select your gender.`
+            }
+            else{
+                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
+            }
+        }
+    })
+    @ApiProperty({
+        description: `Select Gender (M,F)`,
+        example: `M`
+    })
+    gender : Gender;
+
+    
     @ApiPropertyOptional({
 		type: "string",
 		format: "binary",
