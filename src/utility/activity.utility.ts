@@ -22,7 +22,7 @@ export class Activity {
     static createlogFile(filename, logData , folderName) {
         console.log(logData);
         
-        const path = '/var/www/html/laytravel_backend/logs/' + folderName
+        const path = '/var/www/html/logs/' + folderName +'/'
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path);
         }
