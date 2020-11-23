@@ -503,7 +503,7 @@ export class AuthService {
 			try {
 				await user.save();
 				await validate.save();
-				const res = { message: `Your password has been successfully updated` };
+				const res = { message: `Your password has been updated successfully.` };
 				return res;
 			} catch (error) {
 				throw new InternalServerErrorException(

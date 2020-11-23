@@ -64,6 +64,7 @@ export class SupportUserService {
 		user.createdBy = adminId
 		user.password = await this.userRepository.hashPassword(password, salt);
 		const userdata = await this.userRepository.createUser(user);
+		user.isVerified = true;
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
