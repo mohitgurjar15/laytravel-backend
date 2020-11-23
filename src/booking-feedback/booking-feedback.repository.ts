@@ -14,7 +14,7 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
             .leftJoinAndSelect("feedback.booking", "booking")
             .leftJoinAndSelect("booking.module", "module")
             .leftJoinAndSelect("feedback.user", "user")
-            .select(["feedback.id", "feedback.bookingId", "booking.bookingDate", "feedback.rating", "feedback.message", "module.name", "module.id", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
+            .select(["feedback.id", "feedback.bookingId", "booking.bookingDate", "feedback.rating", "feedback.message", "module.name", "module.id", "user.firstName", "user.lastName", "user.email", "user.profilePic","booking.laytripBookingId"])
             .where(where)
             .limit(take)
             .offset(skip)

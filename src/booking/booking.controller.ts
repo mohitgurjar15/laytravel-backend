@@ -7,7 +7,7 @@ import { Role } from "src/enum/role.enum";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
-import {ListPaymentDto} from './dto/list-payment.dto'
+import { ListPaymentDto } from './dto/list-payment.dto'
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 
 @ApiTags("Booking")
@@ -15,7 +15,7 @@ import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 @UseGuards(AuthGuard())
 @Controller("booking")
 export class BookingController {
-	constructor(private bookingService: BookingService) {}
+	constructor(private bookingService: BookingService) { }
 
 	@Get("re-sent-booking-email/:id")
 	@UseGuards(AuthGuard())
@@ -48,14 +48,14 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listBooking(
 		@Query() paginationOption: ListBookingDto,
-		
+
 	) {
 		return await this.bookingService.listBooking(paginationOption);
 	}
 
 
 	@Get('user-booking-list')
-	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)	
+	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)
 	@ApiOperation({ summary: "Booking listing by user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -69,12 +69,12 @@ export class BookingController {
 		@Query() paginationOption: ListBookingDto,
 		@GetUser() user: User
 	) {
-		return await this.bookingService.userBookingList(paginationOption,user.userId);
+		return await this.bookingService.userBookingList(paginationOption, user.userId);
 	}
 
 
 
-	@Get('booking-details/:id')	
+	@Get('booking-details/:id')
 	@ApiOperation({ summary: "get booking detail" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -90,7 +90,7 @@ export class BookingController {
 		return await this.bookingService.getBookingDetail(bookingId);
 	}
 
-	@Get('payment')	
+	@Get('payment')
 	@ApiOperation({ summary: "get booking detail" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -104,7 +104,7 @@ export class BookingController {
 		@Query() listPaymentDto: ListPaymentDto,
 		@GetUser() user
 	) {
-		return await this.bookingService.getPaymentHistory(user,listPaymentDto);
+		return await this.bookingService.getPaymentHistory(user, listPaymentDto);
 	}
 
 	@Get('installment-list')
@@ -120,10 +120,26 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listPaymentForAdmin(
 		@Query() paginationOption: ListPaymentAdminDto,
-		
+
 	) {
 		return await this.bookingService.listPaymentForAdmin(paginationOption);
 	}
 
-	
+	@Get('get-all-booking-id/:user_id')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "get all booking id of the user booking" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getAllBookingId(
+		@Param('user_id') userId: string
+	) {
+		return await this.bookingService.getallUserBookingId(userId);
+	}
+
 }
