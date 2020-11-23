@@ -96,4 +96,16 @@ export class CronJobsController {
 		return await this.cronJobsService.addRecurringLaytripPoint();
 	}
 
+
+	@Get('test-cron')
+	@ApiOperation({ summary: "test-cron" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async testCron(
+		@Req() req,
+	){
+		return await this.cronJobsService.sendFlightUpdateMail('LTF12ereqww','parthvirani@itoneclick.com','parthvirani');
+	}
+
 }

@@ -27,7 +27,9 @@ import { exit } from "process";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { getConnection, getManager } from "typeorm";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
+import * as uuidValidator from "uuid-validate"
 
 @Injectable()
 export class BookingService {
@@ -280,21 +282,24 @@ export class BookingService {
 	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
 			let result = await this.bookingRepository.listBooking(listBookingDto, userId);
-			let paidAmount = 0;
-			let remainAmount = 0;
 			//console.log(result);
 
 			for (let i in result.data) {
+				let paidAmount = 0;
+				let remainAmount = 0;
+				let pandinginstallment = 0;
+
 				for (let instalment of result.data[i].bookingInstalments) {
-					if (instalment.instalmentStatus == 1) {
+					if (instalment.instalmentStatus == InstalmentStatus.PAID) {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
+						pandinginstallment++;
 					}
 				}
 				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
 				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
-
+				result.data[i]["pendingInstallment"] = pandinginstallment;
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -426,7 +431,7 @@ export class BookingService {
 	}
 
 	async getPaymentHistory(user, listPaymentDto) {
-		let result : any = await this.bookingRepository.getPayments(user, listPaymentDto);
+		let result: any = await this.bookingRepository.getPayments(user, listPaymentDto);
 		if (result.total_result == 0) {
 			throw new NotFoundException(`No payment history found!`);
 		}
@@ -543,4 +548,19 @@ export class BookingService {
 	// 			.execute();
 	// 	}
 	// }
+
+	async getallUserBookingId(userId) {
+		if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given user id not avilable')
+			}
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.select([
+				"booking.laytripBookingId",
+			])
+			.where(`"Booking"."user_id" =:userId`, { userId: userId }
+			).getMany()
+		return query;
+	}
 }
