@@ -21,9 +21,9 @@ export class HttpRequest {
                 }
             })
 
-            console.log("=========================")
-            console.log(result.data)
-            console.log(headerAction);
+            // console.log("=========================")
+            // console.log(result.data)
+            // console.log(headerAction);
 
 
             let logData = {};

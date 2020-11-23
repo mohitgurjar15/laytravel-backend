@@ -294,12 +294,12 @@ export class BookingService {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
-						pandinginstallment++;
+						pandinginstallment = pandinginstallment + 1 ;
 					}
 				}
 				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
 				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
-				result.data[i]["pendingInstallment"] = pandinginstallment;
+				result.data[i]["pendingInstallment"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : pandinginstallment;
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -559,7 +559,7 @@ export class BookingService {
 			.select([
 				"booking.laytripBookingId",
 			])
-			.where(`"Booking"."user_id" =:userId`, { userId: userId }
+			.where(`"booking"."user_id" =:userId`, { userId: userId }
 			).getMany()
 		return query;
 	}
