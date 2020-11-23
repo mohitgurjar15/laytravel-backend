@@ -41,11 +41,17 @@ export class BookingInstalments extends BaseEntity {
   @Column("character varying", { name: "instalment_type", length: 30 })
   instalmentType: string;
 
-  @Column("character varying", { name: "transaction_token", length: 255 , nullable :true})
+  @Column("character varying", { name: "transaction_token", length: 255, nullable: true })
   transactionToken: string;
 
-  @Column("date", { name: "instalment_date" })
+  @Column("date", { name: "instalment_date", default: null })
   instalmentDate: string;
+
+  @Column("integer", { name: "attempt", default: 0 })
+  attempt: number;
+
+  @Column("date", { name: "payment_capture_date" , nullable:true})
+  paymentCaptureDate: Date;
 
   @Column("integer", { name: "currency_id" })
   currencyId: number;
@@ -56,10 +62,10 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "instalment_status" })
   instalmentStatus: number;
 
-  @Column("integer", { name: "payment_gateway_id", nullable:true })
+  @Column("integer", { name: "payment_gateway_id", nullable: true })
   paymentGatewayId: number | null;
 
-  @Column("json", { name: "payment_info", nullable:true })
+  @Column("json", { name: "payment_info", nullable: true })
   paymentInfo: object | null;
 
   @Column("integer", { name: "payment_status" })
@@ -74,7 +80,7 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "is_invoice_generated", default: () => "0" })
   isInvoiceGenerated: number;
 
-  @Column("text", { name: "comment", nullable:true })
+  @Column("text", { name: "comment", nullable: true })
   comment: string | null;
 
   @ManyToOne(

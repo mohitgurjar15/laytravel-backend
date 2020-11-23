@@ -29,7 +29,8 @@ import { BookingDetailsUpdateMail } from "src/config/email_template/booking-deta
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
 import { PaidFor } from "src/enum/paid-for.enum";
-
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+const AWS = require('aws-sdk');
 
 @Injectable()
 export class CronJobsService {
@@ -120,25 +121,8 @@ export class CronJobsService {
 			// console.log(element.supplierBookingId);
 
 			var responce: any = await this.flightService.ticketFlight(element.supplierBookingId);
-
-			// var booking =  await this.bookingRepository.findOne({id:element.id});
-			if (responce.status == true) {
-				var queryData = await getConnection()
-					.createQueryBuilder()
-					.update(Booking)
-					.set({ isTicketd: true })
-					.where("id = :id", { id: element.id })
-					.execute();
-
-				// queryData.affected ? console.log(`${element.id} is updated`) : 
-				// booking.isTicketd = true;
-				// await booking.save()
-
-				total = total + queryData.affected;
-			}
 		}
-
-		return { message: `${total} bookings are updated` }
+		return null;
 	}
 
 
@@ -149,6 +133,14 @@ export class CronJobsService {
 		currentDate = currentDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
+		var fromDate = new Date();
+		fromDate.setDate(fromDate.getDate() - 2);
+		var monthDate = fromDate.toISOString();
+		monthDate = monthDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		console.log(monthDate);
+
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
@@ -179,7 +171,7 @@ export class CronJobsService {
 				"User.phoneNo",
 			])
 
-			.where(`(DATE("BookingInstalments".instalment_date) = DATE('${currentDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT})`)
+			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${monthDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM, BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
 		//console.log(data)
@@ -203,11 +195,13 @@ export class CronJobsService {
 
 			let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-			instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.FAILED
+			instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 			instalment.paymentInfo = transaction.meta_data;
 			instalment.transactionToken = transaction.token;
+			instalment.paymentCaptureDate = new Date();
+			instalment.attempt = instalment.attempt + 1;
 			instalment.comment = `Get Payment by cron on ${currentDate}`
-
+			await instalment.save()
 
 			if (transaction.status == false) {
 				let faildTransaction = new FailedPaymentAttempt()
@@ -222,6 +216,15 @@ export class CronJobsService {
 					cardNo: transaction.meta_data.transaction.payment_method.number,
 					orderId: instalment.bookingId,
 					amount: amount,
+				}
+				if (instalment.attempt == 3) {
+					await getConnection()
+						.createQueryBuilder()
+						.update(Booking)
+						.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+						.where("id = :id", { id: instalment.bookingId })
+						.execute();
+					await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
 				}
 				this.mailerService
 					.sendMail({
@@ -242,52 +245,52 @@ export class CronJobsService {
 					"cron",
 					`${instalment.id} Payment Failed by Cron`
 				);
+
 			}
-			await instalment.save()
+			else {
+				let transactionData = {
+					userId: instalment.userId,
+					bookingId: instalment.bookingId,
+					installmentId: instalment.id,
+					PaymentStatus: transaction.status,
+					paymentToken: transaction.token,
+					amount: amount,
+					currency_code: currencyCode,
+					card_token: cardToken
+				}
 
-			let transactionData = {
-				userId: instalment.userId,
-				bookingId: instalment.bookingId,
-				installmentId: instalment.id,
-				PaymentStatus: transaction.status,
-				paymentToken: transaction.token,
-				amount: amount,
-				currency_code: currencyCode,
-				card_token: cardToken
+				let param = {
+					date: instalment.instalmentDate,
+					userName: instalment.user.firstName + ' ' + instalment.user.lastName,
+					cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+					cardNo: transaction.meta_data.transaction.payment_method.number,
+					orderId: instalment.booking.laytripBookingId,
+					amount: amount,
+				}
+
+				this.mailerService
+					.sendMail({
+						to: instalment.user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: `Installment Payment Successed`,
+						html: PaymentInstallmentMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+				Activity.logActivity(
+					"1c17cd17-9432-40c8-a256-10db77b95bca",
+					"cron",
+					`${instalment.id} Payment successed by Cron`
+				);
+				paidInstallment.push(transactionData)
 			}
-
-			let param = {
-				date: instalment.instalmentDate,
-				userName: instalment.user.firstName + ' ' + instalment.user.lastName,
-				cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-				cardNo: transaction.meta_data.transaction.payment_method.number,
-				orderId: instalment.bookingId,
-				amount: amount,
-			}
-
-			this.mailerService
-				.sendMail({
-					to: instalment.user.email,
-					from: mailConfig.from,
-					cc: mailConfig.BCC,
-					subject: `Installment Payment Successed`,
-					html: PaymentInstallmentMail(param),
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
-			Activity.logActivity(
-				"1c17cd17-9432-40c8-a256-10db77b95bca",
-				"cron",
-				`${instalment.id} Payment successed by Cron`
-			);
-
-			paidInstallment.push(transactionData)
 		}
-		return { data: paidInstallment };
+		return null;
 	}
 
 	async PendingPartialBooking(Headers) {
@@ -381,43 +384,31 @@ export class CronJobsService {
 					const user = bookingData.user
 
 					const bookingId = bookingData.laytripBookingId;
+					const predictiveBookingData = new PredictiveBookingData
+					predictiveBookingData.bookingId = bookingData.id
+					predictiveBookingData.price = flight.selling_price
+					predictiveBookingData.date = new Date();
+					predictiveBookingData.isBelowMinimum = false;
+					predictiveBookingData.bookIt = false;
 					if (flight.routes[0].stops[0].below_minimum_seat == true) {
 						console.log(`rule 1 :- flight below minimum`)
-						const query = await this.flightService.partiallyBookFlight(bookingDto, Headers, user, bookingId)
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${bookingData.laytripBookingId} is Book by cron with (rule 1 :- flight below minimum)`
-						);
-						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+						predictiveBookingData.isBelowMinimum = true;
+						predictiveBookingData.bookIt = true;
 					}
 					else if (bookingData.netRate > flight.net_rate) {
 						console.log(`rule 2 :- flight net rate less than the user book net rate`)
-						const query = await this.flightService.partiallyBookFlight(bookingDto, Headers, user, bookingId)
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${bookingData.laytripBookingId} is Book by cron with (rule 2 :- flight net rate less than the user book net rate)`
-						);
-						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+						predictiveBookingData.bookIt = true;
 					}
 					else if (flight.selling_price > markups.maxPrice || predictedDate == todayDate) {
 						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						const query = await this.flightService.partiallyBookFlight(bookingDto, Headers, user, bookingId)
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${bookingData.laytripBookingId} is Book by cron with (rule 3 :- flight net rate less than the preduction markup max amount)`
-						);
-						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+						predictiveBookingData.bookIt = true;
 					}
-
+					await predictiveBookingData.save()
 				}
 			}
 
 		}
-		return result[0]
-		//return { message: `${total} bookings are updated` }
+		return null
 	}
 
 	async updateFlightBookingInProcess() {
@@ -569,7 +560,7 @@ export class CronJobsService {
 				for (let index = 0; index < result.length; index++) {
 					const data = result[index];
 					console.log(data);
-					
+
 					const createTransaction = {
 						"bookingId": null,
 						"userId": data.userId,
@@ -620,5 +611,9 @@ export class CronJobsService {
 		} catch (error) {
 			console.log(error);
 		}
+	}
+
+	async uploadLogIntoS3Bucket() {
+
 	}
 }
