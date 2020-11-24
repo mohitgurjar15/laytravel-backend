@@ -31,6 +31,8 @@ import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
 import * as uuidValidator from "uuid-validate"
 import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 
 @Injectable()
 export class BookingService {
@@ -534,10 +536,62 @@ export class BookingService {
 		return [month, day, year].join('/');
 	}
 
-	async getPredictiveBookingDdata(bookingId,filterOption:listPredictedBookingData) {
+	async getPredictiveBookingDdata() {
 		try {
-			const {requireToBook} = filterOption
-			return await this.bookingRepository.getPredictiveBookingDdata(bookingId,requireToBook);
+
+			const result = await this.bookingRepository.getPredictiveBookingDdata();
+			let responce = [];
+			for await (const data of result.data) {
+				const bookingData = data.booking
+				// booking data
+				const paidAmount = await this.paidAmountByUser(data.bookingId)
+				// value of amount paid by user
+				
+				const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
+				// preduction markup maximum aur minimum value
+
+				const predictiveDate = new Date(bookingData.predectedBookingDate);
+				// predictive date for booking 
+
+				const predictiveMarkupAmount = await this.predictiveMarkupAmount(bookingData.totalAmount)
+
+				// predictive markup amount for minimum paid by user 
+
+				
+				const predictiveBookingData: any = {}
+				predictiveBookingData['booking_id'] = data.bookingId
+				predictiveBookingData['net_price'] = data.netPrice
+				predictiveBookingData['date'] = data.date
+				predictiveBookingData['is_below_minimum'] = data.isBelowMinimum
+				predictiveBookingData['remain_seat'] = data.remainSeat
+				predictiveBookingData['price'] = data.price;
+				predictiveBookingData['paid_amount'] = paidAmount;
+				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount * 100) / parseFloat(bookingData.totalAmount)
+				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
+				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
+				predictiveBookingData['bookIt'] = false;
+				predictiveBookingData['bookingData'] = bookingData;
+
+				if (data.isBelowMinimum == true) {
+					console.log(`rule 1 :- flight below minimum`)
+					predictiveBookingData.bookIt = true;
+				}
+				else if (parseFloat(bookingData.netRate) > data.netPrice && paidAmount >= predictiveMarkupAmount) {
+					console.log(`rule 2 :- flight net rate less than the user book net rate`)
+					predictiveBookingData.bookIt = true;
+				}
+				else if (data.price > markups.maxPrice && paidAmount >= predictiveMarkupAmount) {
+					console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
+					predictiveBookingData.bookIt = true;
+				}
+				else if (predictiveDate <= data.date) {
+					console.log(`rule 4 :- last date for booking`)
+					predictiveBookingData.bookIt = true;
+				}
+
+				responce.push(predictiveBookingData)
+			}
+			return { data: responce, count: result.count }
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -569,9 +623,48 @@ export class BookingService {
 		}
 	}
 
+	async paidAmountByUser(bookingId) {
+		console.log(bookingId);
+		
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.select([
+				"instalment.amount"
+			])
+			.where(`booking_id=:bookingId AND payment_status=:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
+			.getMany();
+		let amount = 0
+		for await (const data of query) {
+			amount = amount + parseFloat(data.amount)
+		}
+		return amount
+	}
+	async predictiveMarkupAmount(amountValue) {
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.minInstallmentPercentage"
+			])
+		const result = await query.getOne();
+		return (amountValue * result.minInstallmentPercentage) / 100;
+	}
+
+	async applyPreductionMarkup(netValue) {
+
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.maxRatePercentage",
+				"markup.minRatePercentage"
+			])
+		const result = await query.getOne();
+		const minimumMarkupValue = (result.minRatePercentage / 100) * netValue
+		const maxMarkupValue = (result.maxRatePercentage / 100) * netValue
+		return {
+			minPrice: netValue + minimumMarkupValue,
+			maxPrice: netValue + maxMarkupValue
+		}
+	}
 
 
-	
-	
-	
 }

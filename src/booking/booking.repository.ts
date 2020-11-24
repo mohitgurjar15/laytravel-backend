@@ -7,6 +7,7 @@ import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
 import * as moment from 'moment';
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -452,10 +453,15 @@ export class BookingRepository extends Repository<Booking> {
 		return { data: data, total_count: count };
 	}
 
-	async getPredictiveBookingDdata(bookingId,requireToBook) {
+	async getPredictiveBookingDdata() {
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
 		let query = getManager()
-			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.predictiveBookingData", "predictiveBookingData")
+			.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+			.leftJoinAndSelect("predictiveBookingData.booking", "booking")
 			.select([
 				"booking.bookingType",
 				"booking.bookingStatus",
@@ -466,6 +472,7 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.usdFactor",
 				"booking.bookingDate",
 				"booking.totalInstallments",
+				"booking.moduleInfo",
 				"booking.locationInfo",
 				"booking.paymentGatewayId",
 				"booking.paymentStatus",
@@ -480,24 +487,23 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.nextInstalmentDate",
 				"booking.supplierBookingId",
 				"predictiveBookingData.id",
+				"predictiveBookingData.bookingId",
 				"predictiveBookingData.price",
 				"predictiveBookingData.date",
 				"predictiveBookingData.isBelowMinimum",
-				"predictiveBookingData.bookIt",
+				"predictiveBookingData.netPrice",
+				"predictiveBookingData.remainSeat"
 			])
 
-			.where(`"booking"."laytrip_booking_id"=:bookingId`,{bookingId})
-			if(requireToBook)
-			{
-				query.andWhere(`"predictiveBookingData"."book_it" =:requireToBook`,{requireToBook})	
-			}
-		const data = await query.getOne();
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
+
+		const [data,count] = await query.getManyAndCount();
 		// const count = await query.getCount();
-		if (!data) {
+		if (!data.length) {
 			throw new NotFoundException(
-				`Booking id not available`
+				`Data not avilable`
 			);
 		}
-		return data;
+		return {data,count};
 	}
 }

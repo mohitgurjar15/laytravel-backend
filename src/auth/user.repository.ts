@@ -41,7 +41,7 @@ export class UserRepository extends Repository<User> {
 
 		try {
 			await user.save();
-			return { message: `Your password is updated successfully.` };
+			return { message: `Your password has been updated successfully.` };
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
