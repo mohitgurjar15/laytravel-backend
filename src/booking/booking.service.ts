@@ -30,6 +30,7 @@ import { getConnection, getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
 import * as uuidValidator from "uuid-validate"
+import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
 
 @Injectable()
 export class BookingService {
@@ -294,7 +295,7 @@ export class BookingService {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
-						pandinginstallment = pandinginstallment + 1 ;
+						pandinginstallment = pandinginstallment + 1;
 					}
 				}
 				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
@@ -533,19 +534,44 @@ export class BookingService {
 		return [month, day, year].join('/');
 	}
 
-	// async updateId() {
-	// 	let query = await getManager()
-	// 		.createQueryBuilder(Booking, "booking")
-	// 		.getMany();
+	async getPredictiveBookingDdata(bookingId,filterOption:listPredictedBookingData) {
+		try {
+			const {requireToBook} = filterOption
+			return await this.bookingRepository.getPredictiveBookingDdata(bookingId,requireToBook);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
+			);
+		}
+	}
 
-	// 	for await (const booking of query) {
-	// 		booking.laytripBookingId
-	// 		await getConnection()
-	// 			.createQueryBuilder()
-	// 			.update(Booking)
-	// 			.set({ laytripBookingId: `LTF${uniqid.time().toUpperCase()}` })
-	// 			.where("id = :id", { id: booking.id })
-	// 			.execute();
-	// 	}
-	// }
+
+
+	
+	
+	
 }

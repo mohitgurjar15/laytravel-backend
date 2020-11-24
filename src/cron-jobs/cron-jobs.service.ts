@@ -30,6 +30,7 @@ import { RewordStatus } from "src/enum/reword-status.enum";
 import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
 import { PaidFor } from "src/enum/paid-for.enum";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 const AWS = require('aws-sdk');
 
 @Injectable()
@@ -293,7 +294,12 @@ export class CronJobsService {
 		return null;
 	}
 
-	async PendingPartialBooking(Headers) {
+	async partialBookingPrice(Headers) {
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.currency2", "currency")
@@ -314,101 +320,102 @@ export class CronJobsService {
 		for (let index = 0; index < result.length; index++) {
 			var bookingData = result[index];
 			let flights: any = null;
+			if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+				var bookingType = bookingData.locationInfo['journey_type']
 
-			var bookingType = bookingData.locationInfo['journey_type']
+				let travelers = [];
 
-			let travelers = [];
-
-			for await (const traveler of bookingData.travelers) {
-				travelers.push({
-					traveler_id: traveler.userId
-				})
-			}
-
-			if (bookingType == 'oneway') {
-				Headers['currency'] = bookingData.currency2.code
-				Headers['language'] = 'en'
-
-				let dto = {
-					"source_location": bookingData.moduleInfo[0].departure_code,
-					"destination_location": bookingData.moduleInfo[0].arrival_code,
-					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+				for await (const traveler of bookingData.travelers) {
+					travelers.push({
+						traveler_id: traveler.userId
+					})
 				}
 
-				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+				if (bookingType == 'oneway') {
+					Headers['currency'] = bookingData.currency2.code
+					Headers['language'] = 'en'
 
-			}
-			else {
-				Headers['currency'] = bookingData.currency2.code
-				Headers['language'] = 'en'
+					let dto = {
+						"source_location": bookingData.moduleInfo[0].departure_code,
+						"destination_location": bookingData.moduleInfo[0].arrival_code,
+						"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+					}
 
-				let dto = {
-					"source_location": bookingData.moduleInfo[0].departure_code,
-					"destination_location": bookingData.moduleInfo[0].arrival_code,
-					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
-					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+					flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+
+				}
+				else {
+					Headers['currency'] = bookingData.currency2.code
+					Headers['language'] = 'en'
+
+					let dto = {
+						"source_location": bookingData.moduleInfo[0].departure_code,
+						"destination_location": bookingData.moduleInfo[0].arrival_code,
+						"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+						"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+					}
+
+					flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+				}
+				for await (const flight of flights.items) {
+					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+
+						const savedDate = new Date(bookingData.predectedBookingDate);
+						var predictedDate = savedDate.toISOString();
+						predictedDate = predictedDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+
+						const bookingDto = new BookFlightDto
+						bookingDto.travelers = travelers
+						bookingDto.payment_type = `${bookingData.bookingType}`;
+						bookingDto.instalment_type = `${bookingData.bookingType}`
+						bookingDto.route_code = flight.route_code;
+						bookingDto.additional_amount = 0
+						bookingDto.laycredit_points = 0
+
+						const user = bookingData.user
+
+						const paidAmount = await this.paidAmountByUser(bookingData.id)
+
+						const predictiveMarkupAmount = await this.predictiveMarkupAmount(bookingData.totalAmount)
+
+						const bookingId = bookingData.laytripBookingId;
+						const predictiveBookingData = new PredictiveBookingData
+						predictiveBookingData.bookingId = bookingData.id
+						predictiveBookingData.price = flight.selling_price
+						predictiveBookingData.date = new Date();
+						predictiveBookingData.isBelowMinimum = false;
+						predictiveBookingData.bookIt = false;
+						if (flight.routes[0].stops[0].below_minimum_seat == true) {
+							console.log(`rule 1 :- flight below minimum`)
+							predictiveBookingData.isBelowMinimum = true;
+							predictiveBookingData.bookIt = true;
+						}
+						else if (bookingData.netRate > flight.net_rate && paidAmount >= predictiveMarkupAmount) {
+							console.log(`rule 2 :- flight net rate less than the user book net rate`)
+							predictiveBookingData.bookIt = true;
+						}
+						else if ((flight.selling_price > markups.maxPrice && paidAmount >= predictiveMarkupAmount) || predictedDate == todayDate) {
+							console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
+							predictiveBookingData.bookIt = true;
+						}
+						await predictiveBookingData.save()
+					}
 				}
 
-				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
 			}
-			for await (const flight of flights.items) {
-				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
-					const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
-
-					const savedDate = new Date(bookingData.predectedBookingDate);
-					var predictedDate = savedDate.toISOString();
-					predictedDate = predictedDate
-						.replace(/T/, " ") // replace T with a space
-						.replace(/\..+/, "");
-					const date = new Date();
-					var todayDate = date.toISOString();
-					todayDate = todayDate
-						.replace(/T/, " ") // replace T with a space
-						.replace(/\..+/, "");
-					const bookingDto = new BookFlightDto
-					bookingDto.travelers = travelers
-					bookingDto.payment_type = `${bookingData.bookingType}`;
-					bookingDto.instalment_type = `${bookingData.bookingType}`
-					bookingDto.route_code = flight.route_code;
-					bookingDto.additional_amount = 0
-					bookingDto.laycredit_points = 0
-
-					const user = bookingData.user
-
-					const bookingId = bookingData.laytripBookingId;
-					const predictiveBookingData = new PredictiveBookingData
-					predictiveBookingData.bookingId = bookingData.id
-					predictiveBookingData.price = flight.selling_price
-					predictiveBookingData.date = new Date();
-					predictiveBookingData.isBelowMinimum = false;
-					predictiveBookingData.bookIt = false;
-					if (flight.routes[0].stops[0].below_minimum_seat == true) {
-						console.log(`rule 1 :- flight below minimum`)
-						predictiveBookingData.isBelowMinimum = true;
-						predictiveBookingData.bookIt = true;
-					}
-					else if (bookingData.netRate > flight.net_rate) {
-						console.log(`rule 2 :- flight net rate less than the user book net rate`)
-						predictiveBookingData.bookIt = true;
-					}
-					else if (flight.selling_price > markups.maxPrice || predictedDate == todayDate) {
-						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						predictiveBookingData.bookIt = true;
-					}
-					await predictiveBookingData.save()
-				}
-			}
-
+			return null
 		}
-		return null
 	}
 
 	async updateFlightBookingInProcess() {
@@ -504,22 +511,7 @@ export class CronJobsService {
 
 	}
 
-	async sendFlightUpdateMail(bookingId, email, userName) {
-		this.mailerService
-			.sendMail({
-				to: email,
-				from: mailConfig.from,
-				cc: mailConfig.BCC,
-				subject: "Booking detail updated",
-				html: BookingDetailsUpdateMail({ username: userName }),
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
-	}
+	
 
 	async sendFlightFailerMail(email, bookingId, error = null) {
 		this.mailerService
@@ -615,5 +607,29 @@ export class CronJobsService {
 
 	async uploadLogIntoS3Bucket() {
 
+	}
+
+	async paidAmountByUser(bookingId) {
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.select([
+				"instalment.amount"
+			])
+			.where(`booking_id=:bookingId AND payment_status=:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
+			.getMany();
+		let amount = 0
+		for await (const data of query) {
+			amount = amount + parseFloat(data.amount)
+		}
+		return amount
+	}
+	async predictiveMarkupAmount(amountValue) {
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.markupPercentage"
+			])
+		const result = await query.getOne();
+		return (amountValue * result.markupPercentage) / 100;
 	}
 }
