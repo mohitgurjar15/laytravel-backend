@@ -385,30 +385,19 @@ export class CronJobsService {
 
 						const user = bookingData.user
 
-						const paidAmount = await this.paidAmountByUser(bookingData.id)
-
-						const predictiveMarkupAmount = await this.predictiveMarkupAmount(bookingData.totalAmount)
-
+						
 						const bookingId = bookingData.laytripBookingId;
 						const predictiveBookingData = new PredictiveBookingData
 						predictiveBookingData.bookingId = bookingData.id
-						predictiveBookingData.price = flight.selling_price
+						predictiveBookingData.netPrice = flight.net_rate
 						predictiveBookingData.date = new Date();
-						predictiveBookingData.isBelowMinimum = false;
-						predictiveBookingData.bookIt = false;
-						if (flight.routes[0].stops[0].below_minimum_seat == true) {
-							console.log(`rule 1 :- flight below minimum`)
-							predictiveBookingData.isBelowMinimum = true;
-							predictiveBookingData.bookIt = true;
-						}
-						else if (bookingData.netRate > flight.net_rate && paidAmount >= predictiveMarkupAmount) {
-							console.log(`rule 2 :- flight net rate less than the user book net rate`)
-							predictiveBookingData.bookIt = true;
-						}
-						else if ((flight.selling_price > markups.maxPrice && paidAmount >= predictiveMarkupAmount) || predictedDate == todayDate) {
-							console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-							predictiveBookingData.bookIt = true;
-						}
+						predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+						predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
+						predictiveBookingData.price = flight.selling_price
+						console.log(flight);
+						
+						//predictiveBookingData.bookIt = false;
+						
 						await predictiveBookingData.save()
 					}
 				}
@@ -609,27 +598,5 @@ export class CronJobsService {
 
 	}
 
-	async paidAmountByUser(bookingId) {
-		let query = await getManager()
-			.createQueryBuilder(BookingInstalments, "instalment")
-			.select([
-				"instalment.amount"
-			])
-			.where(`booking_id=:bookingId AND payment_status=:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
-			.getMany();
-		let amount = 0
-		for await (const data of query) {
-			amount = amount + parseFloat(data.amount)
-		}
-		return amount
-	}
-	async predictiveMarkupAmount(amountValue) {
-		let query = getManager()
-			.createQueryBuilder(PredictionFactorMarkup, "markup")
-			.select([
-				"markup.markupPercentage"
-			])
-		const result = await query.getOne();
-		return (amountValue * result.markupPercentage) / 100;
-	}
+	
 }
