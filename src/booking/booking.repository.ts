@@ -501,7 +501,7 @@ export class BookingRepository extends Repository<Booking> {
 		// const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(
-				`Data not avilable`
+				`No booking found`
 			);
 		}
 		return {data,count};

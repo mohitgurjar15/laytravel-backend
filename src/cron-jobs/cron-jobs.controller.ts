@@ -95,4 +95,15 @@ export class CronJobsController {
 	){
 		return await this.cronJobsService.addRecurringLaytripPoint();
 	}
+
+	@Get('installment-reminder')
+	@ApiOperation({ summary: "send email notification to user have installment date in 2 days" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async installerReminder(
+		@Req() req,
+	){
+		return await this.cronJobsService.paymentReminder();
+	}
 }
