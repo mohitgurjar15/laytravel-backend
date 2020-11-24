@@ -41,10 +41,10 @@ export class User extends BaseEntity {
   @Column("uuid", { primary: true, name: "user_id" })
   userId: string;
 
-  @Column("character varying", { name: "first_name", length: 255 , nullable:true})
+  @Column("character varying", { name: "first_name", length: 255, nullable: true })
   firstName: string;
 
-  @Column("character varying", { name: "last_name", length: 255 , nullable:true})
+  @Column("character varying", { name: "last_name", length: 255, nullable: true })
   lastName: string;
 
   @Column("integer", { name: "account_type" })
@@ -53,14 +53,14 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "social_account_id", length: 255 })
   socialAccountId: string;
 
-  @Column("character varying", { name: "email", length: 255 , nullable:true })
+  @Column("character varying", { name: "email", length: 255, nullable: true })
   email: string | null;
 
-  @Column("character varying", { name: "salt", length: 255, nullable:true })
-  salt: string|null;
+  @Column("character varying", { name: "salt", length: 255, nullable: true })
+  salt: string | null;
 
-  @Column("character varying", { name: "password", length: 255, nullable:true })
-  password: string|null;
+  @Column("character varying", { name: "password", length: 255, nullable: true })
+  password: string | null;
 
   @Column("character varying", { name: "phone_no", length: 20 })
   phoneNo: string;
@@ -84,7 +84,7 @@ export class User extends BaseEntity {
   @Column("boolean", { name: "is_verified", default: () => "false" })
   isVerified: boolean;
 
-  @Column("integer", { name: "otp", nullable: true  })
+  @Column("integer", { name: "otp", nullable: true })
   otp: number;
 
   @Column("uuid", { name: "created_by", nullable: true })
@@ -96,7 +96,7 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "middle_name", length: 255 })
   middleName: string;
 
-  @Column("character varying", { name: "zip_code", length: 20 ,nullable :true})
+  @Column("character varying", { name: "zip_code", length: 20, nullable: true })
   zipCode: string;
 
   @Column("timestamp with time zone", { name: "created_date" })
@@ -136,7 +136,9 @@ export class User extends BaseEntity {
   @Column("integer", { name: "preferred_currency", nullable: true })
   preferredCurrency: number | null;
 
-  user_type : string;
+  user_type: string;
+
+  age: number;
 
 
   @Column("character varying", {
@@ -156,7 +158,7 @@ export class User extends BaseEntity {
   })
   cityName: string | null;
 
-  
+
 
   @Column("date", { name: "dob", nullable: true })
   dob: string | null;
@@ -249,7 +251,7 @@ export class User extends BaseEntity {
   )
   planSubscriptions: PlanSubscription[];
 
-  
+
   @OneToMany(
     () => Supplier,
     supplier => supplier.updatedBy2
@@ -323,19 +325,19 @@ export class User extends BaseEntity {
   userDeviceDetails: UserDeviceDetail[];
 
   async validatePassword(password: string): Promise<boolean> {
-		const hash = await bcrypt.hash(password, this.salt);
-		return hash === this.password;
+    const hash = await bcrypt.hash(password, this.salt);
+    return hash === this.password;
   }
-  
+
   async validateOtp(Otp: number): Promise<boolean> {
-		return Otp == this.otp;
+    return Otp == this.otp;
   }
 
   @OneToMany(
-		() => TravelerInfo,
-		traveler => traveler.userData
-	)
-	traveler: TravelerInfo[];  
+    () => TravelerInfo,
+    traveler => traveler.userData
+  )
+  traveler: TravelerInfo[];
 
-  
+
 }
