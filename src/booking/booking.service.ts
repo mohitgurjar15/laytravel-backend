@@ -570,7 +570,7 @@ export class BookingService {
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
 				predictiveBookingData['bookIt'] = false;
-				predictiveBookingData['bookingData'] = bookingData;
+				//predictiveBookingData['bookingData'] = bookingData;
 
 				if (data.isBelowMinimum == true) {
 					console.log(`rule 1 :- flight below minimum`)

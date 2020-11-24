@@ -19,18 +19,14 @@ import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
 import { missedPaymentInstallmentMail } from "src/config/email_template/missed-payment-installment-mail.html";
 import { PaymentInstallmentMail } from "src/config/email_template/payment-installment-mail.html";
 import { BookingStatus } from "src/enum/booking-status.enum";
-import * as moment from "moment";
-import { ignoreElements } from "rxjs/operators";
-import { OtherPayments } from "src/entity/other-payment.entity";
 import { BookFlightDto } from "src/flight/dto/book-flight.dto";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
-import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
 import { PaidFor } from "src/enum/paid-for.enum";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
-import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const AWS = require('aws-sdk');
 
 @Injectable()
@@ -45,6 +41,7 @@ export class CronJobsService {
 		private flightService: FlightService,
 
 		private paymentService: PaymentService,
+
 		private readonly mailerService: MailerService
 
 	) { }
@@ -98,8 +95,6 @@ export class CronJobsService {
 			console.log(error);
 		}
 	}
-
-
 
 	async checkPandingFlights() {
 		let query = getManager()
@@ -249,16 +244,19 @@ export class CronJobsService {
 
 			}
 			else {
-				let transactionData = {
-					userId: instalment.userId,
-					bookingId: instalment.bookingId,
-					installmentId: instalment.id,
-					PaymentStatus: transaction.status,
-					paymentToken: transaction.token,
-					amount: amount,
-					currency_code: currencyCode,
-					card_token: cardToken
-				}
+
+
+				const nextDate = getManager()
+					.createQueryBuilder(BookingInstalments, "bookingInstalments")
+					.select(['bookingInstalments.instalmentDate'])
+					.where(`bookingInstalments.instalment_status =${InstalmentStatus.PENDING} AND bookingInstalments.booking_id = ${instalment.bookingId}`)
+
+				await getConnection()
+					.createQueryBuilder()
+					.update(Booking)
+					.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+					.where("id = :id", { id: instalment.bookingId })
+					.execute();
 
 				let param = {
 					date: instalment.instalmentDate,
@@ -288,7 +286,6 @@ export class CronJobsService {
 					"cron",
 					`${instalment.id} Payment successed by Cron`
 				);
-				paidInstallment.push(transactionData)
 			}
 		}
 		return null;
@@ -316,8 +313,9 @@ export class CronJobsService {
 		const result = await query.getMany();
 
 		var total = 0;
-		//console.log(bookingData);
+		console.log(result.length);
 		for (let index = 0; index < result.length; index++) {
+			
 			var bookingData = result[index];
 			let flights: any = null;
 			if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
@@ -367,6 +365,7 @@ export class CronJobsService {
 				}
 				for await (const flight of flights.items) {
 					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+
 						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
 
 						const savedDate = new Date(bookingData.predectedBookingDate);
@@ -385,7 +384,7 @@ export class CronJobsService {
 
 						const user = bookingData.user
 
-						
+
 						const bookingId = bookingData.laytripBookingId;
 						const predictiveBookingData = new PredictiveBookingData
 						predictiveBookingData.bookingId = bookingData.id
@@ -395,15 +394,14 @@ export class CronJobsService {
 						predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
 						predictiveBookingData.price = flight.selling_price
 						console.log(flight);
-						
+
 						//predictiveBookingData.bookIt = false;
-						
+
 						await predictiveBookingData.save()
 					}
 				}
 
 			}
-			return null
 		}
 	}
 
@@ -499,8 +497,6 @@ export class CronJobsService {
 		return `${date[2]}-${date[1]}-${date[0]}`
 
 	}
-
-	
 
 	async sendFlightFailerMail(email, bookingId, error = null) {
 		this.mailerService
@@ -598,5 +594,60 @@ export class CronJobsService {
 
 	}
 
-	
+	async paymentReminder() {
+
+		const date = new Date();
+		var currentDate = date.toISOString();
+		currentDate = currentDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		var fromDate = new Date();
+		fromDate.setDate(fromDate.getDate() + 2);
+		var toDate = fromDate.toISOString();
+		toDate = toDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		toDate = toDate.split(' ')[0]
+		console.log(toDate);
+
+		let query = getManager()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("BookingInstalments.currency", "currency")
+			.leftJoinAndSelect("BookingInstalments.user", "User")
+
+			.select([
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.cardToken",
+				"booking.currency",
+				"booking.netRate",
+				"booking.usdFactor",
+				"booking.isTicketd",
+				"currency.id",
+				"currency.code",
+				"currency.liveRate",
+				"User.userId",
+				"User.email",
+				"User.phoneNo",
+			])
+
+			.where(`(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
+
+		const data = await query.getMany();
+
+		for await (const installment of data) {
+
+		}
+		return data;
+
+	}
 }
