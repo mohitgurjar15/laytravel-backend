@@ -8,6 +8,7 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
 import * as moment from 'moment';
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -453,7 +454,9 @@ export class BookingRepository extends Repository<Booking> {
 		return { data: data, total_count: count };
 	}
 
-	async getPredictiveBookingDdata() {
+	async getPredictiveBookingDdata(filterOption: listPredictedBookingData) {
+
+		const {booking_id , below_minimum_seat} = filterOption
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate
@@ -496,6 +499,15 @@ export class BookingRepository extends Repository<Booking> {
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
+			if(booking_id)
+			{
+				query.andWhere(`booking.laytripBookingId = '${booking_id}'`);
+			}
+
+			if(below_minimum_seat)
+			{
+				query.andWhere(`predictiveBookingData.isBelowMinimum = ${below_minimum_seat}`);
+			}
 
 		const [data,count] = await query.getManyAndCount();
 		// const count = await query.getCount();

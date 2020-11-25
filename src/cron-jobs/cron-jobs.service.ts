@@ -315,7 +315,7 @@ export class CronJobsService {
 		var total = 0;
 		console.log(result.length);
 		for (let index = 0; index < result.length; index++) {
-			
+
 			var bookingData = result[index];
 			let flights: any = null;
 			if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
@@ -385,19 +385,41 @@ export class CronJobsService {
 						const user = bookingData.user
 
 
+
 						const bookingId = bookingData.laytripBookingId;
-						const predictiveBookingData = new PredictiveBookingData
-						predictiveBookingData.bookingId = bookingData.id
-						predictiveBookingData.netPrice = flight.net_rate
-						predictiveBookingData.date = new Date();
-						predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
-						predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
-						predictiveBookingData.price = flight.selling_price
-						console.log(flight);
 
-						//predictiveBookingData.bookIt = false;
+						const date = new Date();
+						var todayDate = date.toISOString();
+						todayDate = todayDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+						let query = await getManager()
+							.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+							.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+							.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
+							.getOne();
+						if (query) {
+							query.bookingId = bookingData.id
+							query.netPrice = flight.net_rate
+							query.date = new Date();
+							query.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+							query.remainSeat = flight.routes[0].stops[0].remaining_seat
+							query.price = flight.selling_price
+							await query.save();
+						}
+						else {
+							const predictiveBookingData = new PredictiveBookingData
+							predictiveBookingData.bookingId = bookingData.id
+							predictiveBookingData.netPrice = flight.net_rate
+							predictiveBookingData.date = new Date();
+							predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+							predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
+							predictiveBookingData.price = flight.selling_price
+							console.log(flight);
+							//predictiveBookingData.bookIt = false;
+							await predictiveBookingData.save()
+						}
 
-						await predictiveBookingData.save()
 					}
 				}
 

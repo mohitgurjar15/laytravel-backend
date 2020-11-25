@@ -536,10 +536,10 @@ export class BookingService {
 		return [month, day, year].join('/');
 	}
 
-	async getPredictiveBookingDdata() {
+	async getPredictiveBookingDdata(filterOption: listPredictedBookingData) {
 		try {
 
-			const result = await this.bookingRepository.getPredictiveBookingDdata();
+			const result = await this.bookingRepository.getPredictiveBookingDdata(filterOption);
 			let responce = [];
 			for await (const data of result.data) {
 				const bookingData = data.booking
@@ -564,11 +564,12 @@ export class BookingService {
 				predictiveBookingData['date'] = data.date
 				predictiveBookingData['is_below_minimum'] = data.isBelowMinimum
 				predictiveBookingData['remain_seat'] = data.remainSeat
-				predictiveBookingData['price'] = data.price;
+				predictiveBookingData['selling_price'] = data.price;
 				predictiveBookingData['paid_amount'] = paidAmount;
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
+				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				//predictiveBookingData['bookingData'] = bookingData;
 
