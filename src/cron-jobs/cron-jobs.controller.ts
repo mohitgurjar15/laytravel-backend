@@ -57,7 +57,7 @@ export class CronJobsController {
 
 
 	@Post('partial-booking-price')
-	@ApiOperation({ summary: "store a partial booking price to help preduct booking or not " })
+	@ApiOperation({ summary: "daily price of partial booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({

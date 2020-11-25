@@ -144,9 +144,9 @@ export class BookingController {
 		return await this.bookingService.userBookingList(paginationOption,userId);
 	}
 
-	@Get('predictive-booking-data')
+	@Get('pending-booking')
 	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
-	@ApiOperation({ summary: "It return daily price of the booking " })
+	@ApiOperation({ summary: "It return daily price of the pending booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -156,7 +156,8 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Booking not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getPredictiveBookingDdata(
+		@Query() filterOption: listPredictedBookingData
 	) {
-		return await this.bookingService.getPredictiveBookingDdata();
+		return await this.bookingService.getPredictiveBookingDdata(filterOption);
 	}
 }

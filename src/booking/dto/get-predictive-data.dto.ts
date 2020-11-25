@@ -1,8 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class listPredictedBookingData {
-    @ApiProperty({
-        description:'require to book',
+
+    @ApiPropertyOptional({
+        description: 'booking id',
+        example: ''
+    })
+    booking_id: string;
+
+
+    @ApiPropertyOptional({
+        description: 'Below minimum seat',
         example: true
     })
-    requireToBook:boolean;   
+    below_minimum_seat: boolean;
 }
