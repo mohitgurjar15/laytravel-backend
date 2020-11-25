@@ -307,8 +307,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price = '0';
+                    route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
@@ -591,8 +591,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price='0';
+                    route.start_price = 0;
+                    route.secondary_start_price=0;
                 }
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
@@ -883,7 +883,7 @@ export class Mystifly implements StrategyAirline {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
+                    route.start_price = 0;
                 }
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
@@ -1395,8 +1395,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price = '0';
+                    route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
@@ -1702,8 +1702,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price = '0';
+                    route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
