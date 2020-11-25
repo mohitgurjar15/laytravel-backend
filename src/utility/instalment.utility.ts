@@ -8,7 +8,7 @@ export class Instalment{
 
 
     static weeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
-        let instalmentData={'instalment_available':false,'instalment_date':[]}
+        let instalmentData={'instalment_available':false,'instalment_date':[],'percentage':0}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         
         if(!isAvailable)
@@ -41,6 +41,7 @@ export class Instalment{
             let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
+            instalmentData.percentage=percentage;
         }
 
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -50,7 +51,7 @@ export class Instalment{
     }
     
     static biWeeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
-        let instalmentData={'instalment_available':false,'instalment_date':[]}
+        let instalmentData={'instalment_available':false,'instalment_date':[],'percentage':0}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if(!isAvailable)
             return instalmentData;
@@ -83,6 +84,7 @@ export class Instalment{
             let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
+            instalmentData.percentage=percentage;
         }
         
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -91,7 +93,7 @@ export class Instalment{
     }
     
     static monthlyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
-        let instalmentData={'instalment_available':false,'instalment_date':[]}
+        let instalmentData={'instalment_available':false,'instalment_date':[],'percentage':0}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if(!isAvailable)
             return instalmentData;
@@ -124,6 +126,7 @@ export class Instalment{
             let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
+            instalmentData.percentage=percentage;
         }
         
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;

@@ -206,7 +206,7 @@ export class BookFlightDto{
     custom_instalment_no:number | null;
     
     @IsNotEmpty({
-		message: `Please enter route code.&&&route_code${errorMessage}`,
+		message: `Please enter route code.&&&route_code&&&${errorMessage}`,
 	})
     @ApiProperty({
         description:`Flight route code`,
