@@ -91,7 +91,7 @@ export class FlightService {
 			if (type == 'web')
 				result = this.sortAirport(result)
 			else
-				result = this.getNestedChildren(result, 0)
+				result = this.getNestedChildren(result, 0,true)
 
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
@@ -123,15 +123,13 @@ export class FlightService {
 
 		return result;
 	}
-	getNestedChildren(arr, parent) {
+	getNestedChildren(arr, parent,param) {
 		let out = [];
 		for (let i in arr) {
-			arr[
-				i
-			].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
+			arr[i].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
 			if (arr[i].parentId == parent) {
-				let children = this.getNestedChildren(arr, arr[i].id);
-
+				let children = this.getNestedChildren(arr, arr[i].id,false);
+				
 				if (children.length) {
 					arr[i].sub_airport = children;
 				} else {
@@ -142,6 +140,13 @@ export class FlightService {
 				].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
 				out.push(arr[i]);
 			}
+			
+			
+		}
+		
+		if(param===true && arr.length==1 && arr[0].parentId!=0){
+			arr['display_name'] = `${arr.city},${arr.country},(${arr.code}),${arr.name}`;
+			out.push(arr[0]);
 		}
 		return out;
 	}
@@ -1013,10 +1018,8 @@ export class FlightService {
 
 					/* Call mystifly booking API if checkin date is less 3 months */
 					let dayDiff = moment(departure_date).diff(bookingDate, 'days');
-					console.log("daydiff=>>>>>>", dayDiff, departure_date, bookingDate)
 					let bookingResult;
 					if (dayDiff <= 90) {
-						console.log("In 90 days")
 						const mystifly = new Strategy(new Mystifly(headers));
 						bookingResult = await mystifly.bookFlight(
 							bookFlightDto,
