@@ -55,7 +55,7 @@ export class Mystifly implements StrategyAirline {
         }
 
         //mystiflyConfig = JSON.parse(`{ "account_number": "MCN001693","password": "Laytripxml@2020","target": "Test", "user_name": "Laytrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}`)
-        mystiflyConfig = JSON.parse(`{ "account_number": "MCN014611","password": "Lay2020@xml","target": "Production", "user_name": "LayTrip_XML","url": "https://onepoint.myfarebox.com/V2/OnePoint.svc"}`)
+        //mystiflyConfig = JSON.parse(`{ "account_number": "MCN014611","password": "Lay2020@xml","target": "Production", "user_name": "LayTrip_XML","url": "https://onepoint.myfarebox.com/V2/OnePoint.svc"}`)
         //mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
 
         return mystiflyConfig;
