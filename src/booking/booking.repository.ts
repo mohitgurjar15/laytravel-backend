@@ -454,9 +454,9 @@ export class BookingRepository extends Repository<Booking> {
 		return { data: data, total_count: count };
 	}
 
-	async getPredictiveBookingDdata(filterOption: listPredictedBookingData) {
+	async getPredictiveBookingDdata() {
 
-		const {booking_id , below_minimum_seat} = filterOption
+		//const {booking_id , below_minimum_seat} = filterOption
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate
@@ -499,15 +499,7 @@ export class BookingRepository extends Repository<Booking> {
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
-			if(booking_id)
-			{
-				query.andWhere(`booking.laytripBookingId = '${booking_id}'`);
-			}
-
-			if(below_minimum_seat)
-			{
-				query.andWhere(`predictiveBookingData.isBelowMinimum = ${below_minimum_seat}`);
-			}
+			
 
 		const [data,count] = await query.getManyAndCount();
 		// const count = await query.getCount();

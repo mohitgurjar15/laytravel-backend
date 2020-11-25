@@ -156,8 +156,8 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Booking not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getPredictiveBookingDdata(
-		@Query() filterOption: listPredictedBookingData
+		
 	) {
-		return await this.bookingService.getPredictiveBookingDdata(filterOption);
+		return await this.bookingService.getPredictiveBookingDdata();
 	}
 }

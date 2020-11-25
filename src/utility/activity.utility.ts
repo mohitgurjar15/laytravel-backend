@@ -20,7 +20,7 @@ export class Activity {
     }
 
     static createlogFile(filename, logData , folderName) {
-        console.log(logData);
+        //console.log(logData);
         
         const path = '/var/www/html/logs/' + folderName +'/'
         if (!fs.existsSync(path)) {
