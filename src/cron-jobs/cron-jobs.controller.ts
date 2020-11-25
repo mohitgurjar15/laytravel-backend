@@ -56,8 +56,8 @@ export class CronJobsController {
 	}
 
 
-	@Post('book-panding-partial-booking')
-	@ApiOperation({ summary: "book a pending partial bookings" })
+	@Post('partial-booking-price')
+	@ApiOperation({ summary: "store a partial booking price to help preduct booking or not " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -67,10 +67,10 @@ export class CronJobsController {
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
-	async PandingPartialBooking(
+	async partialBookingPrice(
 		@Req() req,
 	){
-		return await this.cronJobsService.PendingPartialBooking(req.headers);
+		return await this.cronJobsService.partialBookingPrice(req.headers);
 	}
 
 
@@ -96,16 +96,14 @@ export class CronJobsController {
 		return await this.cronJobsService.addRecurringLaytripPoint();
 	}
 
-
-	@Get('test-cron')
-	@ApiOperation({ summary: "test-cron" })
+	@Get('installment-reminder')
+	@ApiOperation({ summary: "send email notification to user have installment date in 2 days" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
-	async testCron(
+	async installerReminder(
 		@Req() req,
 	){
-		return await this.cronJobsService.sendFlightUpdateMail('LTF12ereqww','parthvirani@itoneclick.com','parthvirani');
+		return await this.cronJobsService.paymentReminder();
 	}
-
 }

@@ -58,6 +58,7 @@ import { InstalmentService } from "src/instalment/instalment.service";
 import { exit } from "process";
 import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
 import { airports } from "./airports";
+import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
 
 @Injectable()
 export class FlightService {
@@ -2009,6 +2010,112 @@ export class FlightService {
 	async cancelBooking(tripId: string,headers) {
 		const mystifly = new Strategy(new Mystifly(headers));
 		return mystifly.cancelBooking(tripId);
+	}
+
+	async bookPartialBooking(bookingId,Headers)
+	{
+		const bookingData = await this.bookingRepository.getBookingDetails(bookingId)
+
+			let flights: any = null;
+			if (new Date(await this.changeDateFormat(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+				var bookingType = bookingData.locationInfo['journey_type']
+
+				let travelers = [];
+
+				for await (const traveler of bookingData.travelers) {
+					travelers.push({
+						traveler_id: traveler.userId
+					})
+				}
+
+				if (bookingType == 'oneway') {
+					Headers['currency'] = bookingData.currency2.code
+					Headers['language'] = 'en'
+
+					let dto = {
+						"source_location": bookingData.moduleInfo[0].departure_code,
+						"destination_location": bookingData.moduleInfo[0].arrival_code,
+						"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
+						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+					}
+
+					flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
+
+				}
+				else {
+					Headers['currency'] = bookingData.currency2.code
+					Headers['language'] = 'en'
+
+					let dto = {
+						"source_location": bookingData.moduleInfo[0].departure_code,
+						"destination_location": bookingData.moduleInfo[0].arrival_code,
+						"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
+						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+						"arrival_date": await this.changeDateFormat(bookingData.moduleInfo[0].arrival_code)
+					}
+
+					flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
+				}
+				for await (const flight of flights.items) {
+					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+						const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
+
+						const savedDate = new Date(bookingData.predectedBookingDate);
+						var predictedDate = savedDate.toISOString();
+						predictedDate = predictedDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+
+						const bookingDto = new BookFlightDto
+						bookingDto.travelers = travelers
+						bookingDto.payment_type = `${bookingData.bookingType}`;
+						bookingDto.instalment_type = `${bookingData.bookingType}`
+						bookingDto.route_code = flight.route_code;
+						bookingDto.additional_amount = 0
+						bookingDto.laycredit_points = 0
+
+						const user = bookingData.user
+
+						const bookingId = bookingData.laytripBookingId;
+						
+						const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId)
+						
+						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+
+					}
+				}
+
+			}
+	}
+
+	async changeDateFormat(dateTime) {
+		var date = dateTime.split('/')
+
+		return `${date[2]}-${date[1]}-${date[0]}`
+
+	}
+
+	async sendFlightUpdateMail(bookingId, email, userName) {
+		this.mailerService
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: "Booking detail updated",
+				html: BookingDetailsUpdateMail({ username: userName }),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
 	}
 
 }

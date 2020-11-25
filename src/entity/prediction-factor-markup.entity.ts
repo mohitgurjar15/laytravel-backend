@@ -24,6 +24,9 @@ import {
 
     @Column("numeric", { name: "min_rate_percentage", precision: 10, scale: 2})
     minRatePercentage: number;
+
+    @Column("numeric", { name: "min_installment_percentage", precision: 10, scale: 2,nullable:true})
+    minInstallmentPercentage: number;
   
     @Column("date", { name: "created_date" ,nullable:true})
     createdDate: Date;

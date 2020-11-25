@@ -422,4 +422,31 @@ export class FlightController {
     ) {
         return await this.flightService.cancelBooking(booking_id, req.headers);
     }
+
+
+    @Put('/book-partially-booking/:booking_id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiOperation({ summary: "book parially booking by the admin" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async bookPartiallyBooking(
+        @Param('booking_id') booking_id : string,
+        @Req() req,
+
+    ) {
+        return await this.flightService.bookPartialBooking(booking_id, req.headers);
+    }
 }

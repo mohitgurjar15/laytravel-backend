@@ -21,9 +21,9 @@ export class HttpRequest {
                 }
             })
 
-            console.log("=========================")
-            console.log(result.data)
-            console.log(headerAction);
+            // console.log("=========================")
+            // console.log(result.data)
+            // console.log(headerAction);
 
 
             let logData = {};
@@ -47,7 +47,7 @@ export class HttpRequest {
             return result;
         }
         catch (error) {
-            console.log("===================", error.message)
+            //console.log("===================", error.message)
             throw new RequestTimeoutException(`Connection time out`)
         }
 

@@ -7,6 +7,7 @@ import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
 import * as moment from 'moment';
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -175,35 +176,35 @@ export class BookingRepository extends Repository<Booking> {
 			.where('"booking"."laytrip_booking_id"=:bookingId', { bookingId })
 			.getOne();
 
-			let paidAmount = 0;
-			let remainAmount = 0;
+		let paidAmount = 0;
+		let remainAmount = 0;
 
-			//console.log(result);
-
-
-			
-			delete result.user.updatedDate;
-			delete result.user.salt;
-			delete result.user.password;
-			for (let j in result.travelers) {
-				delete result.travelers[j].userData.updatedDate;
-				delete result.travelers[j].userData.salt;
-				delete result.travelers[j].userData.password;
-
-				var birthDate = new Date(result.travelers[j].userData.dob);
-				var age = moment(new Date()).diff(moment(birthDate), 'years');
+		//console.log(result);
 
 
-				if (age < 2) {
-					result.travelers[j].userData.user_type = "infant";
-				} else if (age < 12) {
-					result.travelers[j].userData.user_type = "child";
-				} else {
-					result.travelers[j].userData.user_type = "adult";
-				}
+
+		delete result.user.updatedDate;
+		delete result.user.salt;
+		delete result.user.password;
+		for (let j in result.travelers) {
+			delete result.travelers[j].userData.updatedDate;
+			delete result.travelers[j].userData.salt;
+			delete result.travelers[j].userData.password;
+
+			var birthDate = new Date(result.travelers[j].userData.dob);
+			var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+			result.travelers[j].userData.age =  age;
+			if (age < 2) {
+				result.travelers[j].userData.user_type = "infant";
+			} else if (age < 12) {
+				result.travelers[j].userData.user_type = "child";
+			} else {
+				result.travelers[j].userData.user_type = "adult";
 			}
+		}
 
-			return result;
+		return result;
 
 		//return bookingDetails;
 	}
@@ -227,7 +228,7 @@ export class BookingRepository extends Repository<Booking> {
 		if (!data) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
-		
+
 		return data;
 	}
 
@@ -450,5 +451,59 @@ export class BookingRepository extends Repository<Booking> {
 			);
 		}
 		return { data: data, total_count: count };
+	}
+
+	async getPredictiveBookingDdata() {
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		let query = getManager()
+			.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+			.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+			.select([
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.currency",
+				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.moduleInfo",
+				"booking.locationInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.laytripBookingId",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
+				"booking.nextInstalmentDate",
+				"booking.supplierBookingId",
+				"predictiveBookingData.id",
+				"predictiveBookingData.bookingId",
+				"predictiveBookingData.price",
+				"predictiveBookingData.date",
+				"predictiveBookingData.isBelowMinimum",
+				"predictiveBookingData.netPrice",
+				"predictiveBookingData.remainSeat"
+			])
+
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
+
+		const [data,count] = await query.getManyAndCount();
+		// const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(
+				`No booking found`
+			);
+		}
+		return {data,count};
 	}
 }

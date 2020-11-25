@@ -14,6 +14,7 @@ import { Module } from "./module.entity";
 import { Supplier } from "./supplier.entity";
 import { BookingInstalments } from "./booking-instalments.entity";
 import { TravelerInfo } from "./traveler-info.entity";
+import { PredictiveBookingData } from "./predictive-booking-data.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -163,5 +164,11 @@ export class Booking extends BaseEntity {
 		() => TravelerInfo,
 		(traveler) => traveler.bookingData
 	)
-	travelers: TravelerInfo[];
+  travelers: TravelerInfo[];
+  
+  @OneToMany(
+    () => PredictiveBookingData,
+    predictiveBookingData => predictiveBookingData.booking
+  )
+  predictiveBookingData: PredictiveBookingData[];
 }

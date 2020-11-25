@@ -19,17 +19,14 @@ import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
 import { missedPaymentInstallmentMail } from "src/config/email_template/missed-payment-installment-mail.html";
 import { PaymentInstallmentMail } from "src/config/email_template/payment-installment-mail.html";
 import { BookingStatus } from "src/enum/booking-status.enum";
-import * as moment from "moment";
-import { ignoreElements } from "rxjs/operators";
-import { OtherPayments } from "src/entity/other-payment.entity";
 import { BookFlightDto } from "src/flight/dto/book-flight.dto";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
-import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
 import { PaidFor } from "src/enum/paid-for.enum";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const AWS = require('aws-sdk');
 
 @Injectable()
@@ -44,6 +41,7 @@ export class CronJobsService {
 		private flightService: FlightService,
 
 		private paymentService: PaymentService,
+
 		private readonly mailerService: MailerService
 
 	) { }
@@ -97,8 +95,6 @@ export class CronJobsService {
 			console.log(error);
 		}
 	}
-
-
 
 	async checkPandingFlights() {
 		let query = getManager()
@@ -248,16 +244,19 @@ export class CronJobsService {
 
 			}
 			else {
-				let transactionData = {
-					userId: instalment.userId,
-					bookingId: instalment.bookingId,
-					installmentId: instalment.id,
-					PaymentStatus: transaction.status,
-					paymentToken: transaction.token,
-					amount: amount,
-					currency_code: currencyCode,
-					card_token: cardToken
-				}
+
+
+				const nextDate = getManager()
+					.createQueryBuilder(BookingInstalments, "bookingInstalments")
+					.select(['bookingInstalments.instalmentDate'])
+					.where(`bookingInstalments.instalment_status =${InstalmentStatus.PENDING} AND bookingInstalments.booking_id = ${instalment.bookingId}`)
+
+				await getConnection()
+					.createQueryBuilder()
+					.update(Booking)
+					.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+					.where("id = :id", { id: instalment.bookingId })
+					.execute();
 
 				let param = {
 					date: instalment.instalmentDate,
@@ -287,13 +286,17 @@ export class CronJobsService {
 					"cron",
 					`${instalment.id} Payment successed by Cron`
 				);
-				paidInstallment.push(transactionData)
 			}
 		}
 		return null;
 	}
 
-	async PendingPartialBooking(Headers) {
+	async partialBookingPrice(Headers) {
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.currency2", "currency")
@@ -310,105 +313,96 @@ export class CronJobsService {
 		const result = await query.getMany();
 
 		var total = 0;
-		//console.log(bookingData);
+		console.log(result.length);
 		for (let index = 0; index < result.length; index++) {
+			
 			var bookingData = result[index];
 			let flights: any = null;
+			if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+				var bookingType = bookingData.locationInfo['journey_type']
 
-			var bookingType = bookingData.locationInfo['journey_type']
+				let travelers = [];
 
-			let travelers = [];
-
-			for await (const traveler of bookingData.travelers) {
-				travelers.push({
-					traveler_id: traveler.userId
-				})
-			}
-
-			if (bookingType == 'oneway') {
-				Headers['currency'] = bookingData.currency2.code
-				Headers['language'] = 'en'
-
-				let dto = {
-					"source_location": bookingData.moduleInfo[0].departure_code,
-					"destination_location": bookingData.moduleInfo[0].arrival_code,
-					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+				for await (const traveler of bookingData.travelers) {
+					travelers.push({
+						traveler_id: traveler.userId
+					})
 				}
 
-				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+				if (bookingType == 'oneway') {
+					Headers['currency'] = bookingData.currency2.code
+					Headers['language'] = 'en'
 
-			}
-			else {
-				Headers['currency'] = bookingData.currency2.code
-				Headers['language'] = 'en'
+					let dto = {
+						"source_location": bookingData.moduleInfo[0].departure_code,
+						"destination_location": bookingData.moduleInfo[0].arrival_code,
+						"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+					}
 
-				let dto = {
-					"source_location": bookingData.moduleInfo[0].departure_code,
-					"destination_location": bookingData.moduleInfo[0].arrival_code,
-					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
-					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+					flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+
+				}
+				else {
+					Headers['currency'] = bookingData.currency2.code
+					Headers['language'] = 'en'
+
+					let dto = {
+						"source_location": bookingData.moduleInfo[0].departure_code,
+						"destination_location": bookingData.moduleInfo[0].arrival_code,
+						"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+						"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+					}
+
+					flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+				}
+				for await (const flight of flights.items) {
+					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+
+						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+
+						const savedDate = new Date(bookingData.predectedBookingDate);
+						var predictedDate = savedDate.toISOString();
+						predictedDate = predictedDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+
+						const bookingDto = new BookFlightDto
+						bookingDto.travelers = travelers
+						bookingDto.payment_type = `${bookingData.bookingType}`;
+						bookingDto.instalment_type = `${bookingData.bookingType}`
+						bookingDto.route_code = flight.route_code;
+						bookingDto.additional_amount = 0
+						bookingDto.laycredit_points = 0
+
+						const user = bookingData.user
+
+
+						const bookingId = bookingData.laytripBookingId;
+						const predictiveBookingData = new PredictiveBookingData
+						predictiveBookingData.bookingId = bookingData.id
+						predictiveBookingData.netPrice = flight.net_rate
+						predictiveBookingData.date = new Date();
+						predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+						predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
+						predictiveBookingData.price = flight.selling_price
+						console.log(flight);
+
+						//predictiveBookingData.bookIt = false;
+
+						await predictiveBookingData.save()
+					}
 				}
 
-				flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
 			}
-			for await (const flight of flights.items) {
-				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
-					const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
-
-					const savedDate = new Date(bookingData.predectedBookingDate);
-					var predictedDate = savedDate.toISOString();
-					predictedDate = predictedDate
-						.replace(/T/, " ") // replace T with a space
-						.replace(/\..+/, "");
-					const date = new Date();
-					var todayDate = date.toISOString();
-					todayDate = todayDate
-						.replace(/T/, " ") // replace T with a space
-						.replace(/\..+/, "");
-					const bookingDto = new BookFlightDto
-					bookingDto.travelers = travelers
-					bookingDto.payment_type = `${bookingData.bookingType}`;
-					bookingDto.instalment_type = `${bookingData.bookingType}`
-					bookingDto.route_code = flight.route_code;
-					bookingDto.additional_amount = 0
-					bookingDto.laycredit_points = 0
-
-					const user = bookingData.user
-
-					const bookingId = bookingData.laytripBookingId;
-					const predictiveBookingData = new PredictiveBookingData
-					predictiveBookingData.bookingId = bookingData.id
-					predictiveBookingData.price = flight.selling_price
-					predictiveBookingData.date = new Date();
-					predictiveBookingData.isBelowMinimum = false;
-					predictiveBookingData.bookIt = false;
-					if (flight.routes[0].stops[0].below_minimum_seat == true) {
-						console.log(`rule 1 :- flight below minimum`)
-						predictiveBookingData.isBelowMinimum = true;
-						predictiveBookingData.bookIt = true;
-					}
-					else if (bookingData.netRate > flight.net_rate) {
-						console.log(`rule 2 :- flight net rate less than the user book net rate`)
-						predictiveBookingData.bookIt = true;
-					}
-					else if (flight.selling_price > markups.maxPrice || predictedDate == todayDate) {
-						console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
-						predictiveBookingData.bookIt = true;
-					}
-					await predictiveBookingData.save()
-				}
-			}
-
 		}
-		return null
 	}
 
 	async updateFlightBookingInProcess() {
@@ -504,23 +498,6 @@ export class CronJobsService {
 
 	}
 
-	async sendFlightUpdateMail(bookingId, email, userName) {
-		this.mailerService
-			.sendMail({
-				to: email,
-				from: mailConfig.from,
-				cc: mailConfig.BCC,
-				subject: "Booking detail updated",
-				html: BookingDetailsUpdateMail({ username: userName }),
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
-	}
-
 	async sendFlightFailerMail(email, bookingId, error = null) {
 		this.mailerService
 			.sendMail({
@@ -614,6 +591,63 @@ export class CronJobsService {
 	}
 
 	async uploadLogIntoS3Bucket() {
+
+	}
+
+	async paymentReminder() {
+
+		const date = new Date();
+		var currentDate = date.toISOString();
+		currentDate = currentDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		var fromDate = new Date();
+		fromDate.setDate(fromDate.getDate() + 2);
+		var toDate = fromDate.toISOString();
+		toDate = toDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		toDate = toDate.split(' ')[0]
+		console.log(toDate);
+
+		let query = getManager()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("BookingInstalments.currency", "currency")
+			.leftJoinAndSelect("BookingInstalments.user", "User")
+
+			.select([
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.cardToken",
+				"booking.currency",
+				"booking.netRate",
+				"booking.usdFactor",
+				"booking.isTicketd",
+				"currency.id",
+				"currency.code",
+				"currency.liveRate",
+				"User.userId",
+				"User.email",
+				"User.phoneNo",
+			])
+
+			.where(`(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
+
+		const data = await query.getMany();
+
+		for await (const installment of data) {
+
+		}
+		return data;
 
 	}
 }

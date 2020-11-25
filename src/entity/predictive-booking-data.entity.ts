@@ -11,8 +11,14 @@ export class PredictiveBookingData extends BaseEntity {
     @Column("character varying", { name: "booking_id" })
     bookingId: string;
 
-    @Column("integer", { name: "price" })
-    price: number;
+    @Column("numeric", { name: "price", precision: 15, scale: 3 })
+    price: number ;
+
+    @Column("integer", { name: "remain_seat" })
+    remainSeat: number ;
+
+    @Column("numeric", { name: "net_price", precision: 15, scale: 3 })
+    netPrice: number ;
 
     @Column("date", { name: "created_date", nullable: true })
     date: Date;
@@ -20,8 +26,6 @@ export class PredictiveBookingData extends BaseEntity {
     @Column("boolean", { name: "is_below_minimum", default: false })
     isBelowMinimum: boolean;
 
-    @Column("boolean", { name: "book_it", default: false })
-    bookIt: boolean;
 
     @ManyToOne(
         () => Booking,

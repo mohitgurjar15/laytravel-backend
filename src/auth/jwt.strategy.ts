@@ -48,14 +48,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             );
         }
 
-        if (accessToken) {
-            const userDevice = await getConnection()
-                .createQueryBuilder(UserDeviceDetail, "device")
-                .where(`user_id=:user_id AND  access_token=:accessToken`, { user_id, accessToken })
-                .getOne();
+        // if (accessToken) {
+        //     const userDevice = await getConnection()
+        //         .createQueryBuilder(UserDeviceDetail, "device")
+        //         .where(`user_id=:user_id AND  access_token=:accessToken`, { user_id, accessToken })
+        //         .getOne();
 
-            if (!userDevice) throw new UnauthorizedException();
-        }
+        //     if (!userDevice) throw new UnauthorizedException();
+        // }
         return user;
     }
 }

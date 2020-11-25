@@ -30,6 +30,9 @@ import { getConnection, getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
 import * as uuidValidator from "uuid-validate"
+import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 
 @Injectable()
 export class BookingService {
@@ -294,12 +297,12 @@ export class BookingService {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
-						pandinginstallment++;
+						pandinginstallment = pandinginstallment + 1;
 					}
 				}
 				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
 				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
-				result.data[i]["pendingInstallment"] = pandinginstallment;
+				result.data[i]["pendingInstallment"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : pandinginstallment;
 				delete result.data[i].user.updatedDate;
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
@@ -533,34 +536,135 @@ export class BookingService {
 		return [month, day, year].join('/');
 	}
 
-	// async updateId() {
-	// 	let query = await getManager()
-	// 		.createQueryBuilder(Booking, "booking")
-	// 		.getMany();
+	async getPredictiveBookingDdata() {
+		try {
 
-	// 	for await (const booking of query) {
-	// 		booking.laytripBookingId
-	// 		await getConnection()
-	// 			.createQueryBuilder()
-	// 			.update(Booking)
-	// 			.set({ laytripBookingId: `LTF${uniqid.time().toUpperCase()}` })
-	// 			.where("id = :id", { id: booking.id })
-	// 			.execute();
-	// 	}
-	// }
+			const result = await this.bookingRepository.getPredictiveBookingDdata();
+			let responce = [];
+			for await (const data of result.data) {
+				const bookingData = data.booking
+				// booking data
+				const paidAmount = await this.paidAmountByUser(data.bookingId)
+				// value of amount paid by user
+				
+				const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
+				// preduction markup maximum aur minimum value
 
-	async getallUserBookingId(userId) {
-		if(!uuidValidator(userId))
-			{
-				throw new NotFoundException('Given user id not avilable')
+				const predictiveDate = new Date(bookingData.predectedBookingDate);
+				// predictive date for booking 
+
+				const predictiveMarkupAmount = await this.predictiveMarkupAmount(bookingData.totalAmount)
+
+				// predictive markup amount for minimum paid by user 
+
+				
+				const predictiveBookingData: any = {}
+				predictiveBookingData['booking_id'] = data.bookingId
+				predictiveBookingData['net_price'] = data.netPrice
+				predictiveBookingData['date'] = data.date
+				predictiveBookingData['is_below_minimum'] = data.isBelowMinimum
+				predictiveBookingData['remain_seat'] = data.remainSeat
+				predictiveBookingData['price'] = data.price;
+				predictiveBookingData['paid_amount'] = paidAmount;
+				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount * 100) / parseFloat(bookingData.totalAmount)
+				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
+				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
+				predictiveBookingData['bookIt'] = false;
+				//predictiveBookingData['bookingData'] = bookingData;
+
+				if (data.isBelowMinimum == true) {
+					console.log(`rule 1 :- flight below minimum`)
+					predictiveBookingData.bookIt = true;
+				}
+				else if (parseFloat(bookingData.netRate) > data.netPrice && paidAmount >= predictiveMarkupAmount) {
+					console.log(`rule 2 :- flight net rate less than the user book net rate`)
+					predictiveBookingData.bookIt = true;
+				}
+				else if (data.price > markups.maxPrice && paidAmount >= predictiveMarkupAmount) {
+					console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
+					predictiveBookingData.bookIt = true;
+				}
+				else if (predictiveDate <= data.date) {
+					console.log(`rule 4 :- last date for booking`)
+					predictiveBookingData.bookIt = true;
+				}
+
+				responce.push(predictiveBookingData)
 			}
-		let query = getManager()
-			.createQueryBuilder(Booking, "booking")
-			.select([
-				"booking.laytripBookingId",
-			])
-			.where(`"Booking"."user_id" =:userId`, { userId: userId }
-			).getMany()
-		return query;
+			return { data: responce, count: result.count }
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
+			);
+		}
 	}
+
+	async paidAmountByUser(bookingId) {
+		console.log(bookingId);
+		
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.select([
+				"instalment.amount"
+			])
+			.where(`booking_id=:bookingId AND payment_status=:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
+			.getMany();
+		let amount = 0
+		for await (const data of query) {
+			amount = amount + parseFloat(data.amount)
+		}
+		return amount
+	}
+	async predictiveMarkupAmount(amountValue) {
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.minInstallmentPercentage"
+			])
+		const result = await query.getOne();
+		return (amountValue * result.minInstallmentPercentage) / 100;
+	}
+
+	async applyPreductionMarkup(netValue) {
+
+		let query = getManager()
+			.createQueryBuilder(PredictionFactorMarkup, "markup")
+			.select([
+				"markup.maxRatePercentage",
+				"markup.minRatePercentage"
+			])
+		const result = await query.getOne();
+		const minimumMarkupValue = (result.minRatePercentage / 100) * netValue
+		const maxMarkupValue = (result.maxRatePercentage / 100) * netValue
+		return {
+			minPrice: netValue + minimumMarkupValue,
+			maxPrice: netValue + maxMarkupValue
+		}
+	}
+
+
 }

@@ -9,6 +9,7 @@ import { GetUser } from "src/auth/get-user.dacorator";
 import { User } from "@sentry/node";
 import { ListPaymentDto } from './dto/list-payment.dto'
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
+import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -125,9 +126,9 @@ export class BookingController {
 		return await this.bookingService.listPaymentForAdmin(paginationOption);
 	}
 
-	@Get('get-all-booking-id/:user_id')
+	@Get('get-all-user-booking/:user_id')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
-	@ApiOperation({ summary: "get all booking id of the user booking" })
+	@ApiOperation({ summary: "get all user booking for admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -137,9 +138,25 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Payment not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getAllBookingId(
-		@Param('user_id') userId: string
+		@Param('user_id') userId: string,
+		@Query() paginationOption: ListBookingDto,		
 	) {
-		return await this.bookingService.getallUserBookingId(userId);
+		return await this.bookingService.userBookingList(paginationOption,userId);
 	}
 
+	@Get('predictive-booking-data')
+	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@ApiOperation({ summary: "It return daily price of the booking " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getPredictiveBookingDdata(
+	) {
+		return await this.bookingService.getPredictiveBookingDdata();
+	}
 }
