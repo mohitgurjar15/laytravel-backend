@@ -209,15 +209,15 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
         requestBody += `<mys1:TravelPreferences>`
         requestBody += `<mys1:AirTripType>OneWay</mys1:AirTripType>`
-        //requestBody += `<mys1:CabinPreference>Y</mys1:CabinPreference>`
+        requestBody += `<mys1:CabinPreference>${this.getFlightClass(flight_class)}</mys1:CabinPreference>`
         requestBody += `<mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>`
-        requestBody += `</mys1:TravelPreferences>`
         requestBody += `<mys1:Preferences>`
         requestBody += `<mys1:CabinClassPreference>`
         requestBody += `<mys1:CabinType>${this.getFlightClass(flight_class)}</mys1:CabinType>`
         requestBody += `<mys1:PreferenceLevel>Restricted</mys1:PreferenceLevel>`
         requestBody += `</mys1:CabinClassPreference>`
         requestBody += `</mys1:Preferences>`
+        requestBody += `</mys1:TravelPreferences>`
         requestBody += `</mys:rq>`
         requestBody += `</mys:AirLowFareSearch>`
         requestBody += `</soapenv:Body>`
@@ -307,8 +307,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price = '0';
+                    route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
@@ -591,8 +591,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price='0';
+                    route.start_price = 0;
+                    route.secondary_start_price=0;
                 }
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
@@ -883,7 +883,7 @@ export class Mystifly implements StrategyAirline {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
+                    route.start_price = 0;
                 }
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
@@ -1233,21 +1233,22 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`
         requestBody += `<mys1:TravelPreferences>`
         requestBody += `<mys1:AirTripType>Return</mys1:AirTripType>`
-        //requestBody += `<mys1:CabinPreference>Y</mys1:CabinPreference>`
+        requestBody += `<mys1:CabinPreference>${this.getFlightClass(flight_class)}</mys1:CabinPreference>`
         requestBody += `<mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>`
-        requestBody += `</mys1:TravelPreferences>`
         requestBody += `<mys1:Preferences>`
         requestBody += `<mys1:CabinClassPreference>`
         requestBody += `<mys1:CabinType>${this.getFlightClass(flight_class)}</mys1:CabinType>`
         requestBody += `<mys1:PreferenceLevel>Restricted</mys1:PreferenceLevel>`
         requestBody += `</mys1:CabinClassPreference>`
         requestBody += `</mys1:Preferences>`
+        requestBody += `</mys1:TravelPreferences>`
         requestBody += `</mys:rq>`
         requestBody += `</mys:AirLowFareSearch>`
         requestBody += `</soapenv:Body>`
         requestBody += `</soapenv:Envelope>`
         let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'AirLowFareSearch');
 
+        
         if (searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0] == "true") {
 
 
@@ -1394,8 +1395,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price = '0';
+                    route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
@@ -1701,8 +1702,8 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
-                    route.start_price = '0';
-                    route.secondary_start_price = '0';
+                    route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
