@@ -10,6 +10,8 @@ import { User } from "@sentry/node";
 import { ListPaymentDto } from './dto/list-payment.dto'
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
+import { query } from "express";
+import { ExportBookingDto } from "./dto/export-booking.dto";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -159,5 +161,22 @@ export class BookingController {
 		
 	) {
 		return await this.bookingService.getPredictiveBookingDdata();
+	}
+
+	@Get('export-bookings')
+	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@ApiOperation({ summary: "Export all bookings " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportBooking(
+		@Query() filterOption : ExportBookingDto
+	) {
+		return await this.bookingService.exportBookings(filterOption);
 	}
 }

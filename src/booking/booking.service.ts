@@ -33,6 +33,7 @@ import * as uuidValidator from "uuid-validate"
 import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
+import { ExportBookingDto } from "./dto/export-booking.dto";
 
 @Injectable()
 export class BookingService {
@@ -566,7 +567,7 @@ export class BookingService {
 				predictiveBookingData['remain_seat'] = data.remainSeat
 				predictiveBookingData['selling_price'] = data.price;
 				predictiveBookingData['paid_amount'] = paidAmount.amount;
-				predictiveBookingData['installment_status'] = paidAmount.attempt <= 1 ? 'ON TRAC': 'FAIL'
+				predictiveBookingData['installment_status'] = paidAmount.attempt <= 1 ? 'ON TRAC' : 'FAIL'
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
@@ -577,6 +578,13 @@ export class BookingService {
 
 				const net_rate_percentage_variation = ((data.netPrice - parseFloat(bookingData.netRate)) * 100) / parseFloat(bookingData.netRate);
 				predictiveBookingData['net_rate_percentage_variation'] = net_rate_percentage_variation
+
+				predictiveBookingData['is_minimum_installment_paid'] = false;
+				predictiveBookingData['is_net_rate_price_change_below_threshold'] = false;
+				predictiveBookingData['is_net_rate_price_change_above_threshold'] = false;
+				predictiveBookingData['is_last_date_for_booking'] = false;
+
+
 				if (net_rate_percentage_variation == 0) {
 					predictiveBookingData['net_rate_percentage_variation_stage'] = 'EQUAL'
 					predictiveBookingData['profit_stage'] = 'EQUAL'
@@ -591,21 +599,27 @@ export class BookingService {
 					console.log(`rule 1 :- flight below minimum`)
 					predictiveBookingData.bookIt = true;
 				}
-				else if (net_rate_percentage_variation > markups.minRatePercentage && predictiveBookingData['net_rate_percentage_variation_stage'] == 'DOWN') {
+
+				if (net_rate_percentage_variation > markups.minRatePercentage && predictiveBookingData['net_rate_percentage_variation_stage'] == 'DOWN') {
 					console.log(`rule 2 :- flight net rate less than the user book net rate`)
 					predictiveBookingData.bookIt = true;
+					predictiveBookingData['is_net_rate_price_change_below_threshold'] = true;
 				}
 				else if (net_rate_percentage_variation > markups.maxRatePercentage && predictiveBookingData['net_rate_percentage_variation_stage'] == 'UP') {
 					console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
 					predictiveBookingData.bookIt = true;
+					predictiveBookingData['is_net_rate_price_change_above_threshold'] = true;
 				}
-				else if (predictiveDate <= data.date) {
+
+				if (predictiveDate <= data.date) {
 					console.log(`rule 4 :- last date for booking`)
 					predictiveBookingData.bookIt = true;
+					predictiveBookingData['is_last_date_for_booking'] = true;
 				}
-				else if(predictiveBookingData.paid_amount_in_percentage > markups.minInstallmentPercentage)
-				{
+
+				if (predictiveBookingData.paid_amount_in_percentage >= markups.minInstallmentPercentage) {
 					predictiveBookingData.bookIt = true;
+					predictiveBookingData['is_minimum_installment_paid'] = true;
 				}
 
 				responce.push(predictiveBookingData)
@@ -653,50 +667,111 @@ export class BookingService {
 				"instalment.attempt"
 			])
 			.where(`booking_id=:bookingId AND payment_status=:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
-			.orderBy(`instalment_date`,"ASC")
+			.orderBy(`instalment_date`, "ASC")
 			.getMany();
 		let amount = 0
 		let attempt = 0;
 		for await (const data of query) {
 			amount = amount + parseFloat(data.amount)
-			if(data.paymentStatus == PaymentStatus.CONFIRM)
-			{	
+			if (data.paymentStatus == PaymentStatus.CONFIRM) {
 				attempt = data.attempt
 			}
-		
+
 		}
 
-		return {amount,attempt}
+		return { amount, attempt }
 	}
-	// async predictiveMarkupAmount(amountValue) {
-	// 	let query = getManager()
-	// 		.createQueryBuilder(PredictionFactorMarkup, "markup")
-	// 		.select([
-	// 			"markup.minInstallmentPercentage"
-	// 		])
-	// 	const result = await query.getOne();
-	// 	return (amountValue * result.minInstallmentPercentage) / 100;
-	// }
+
 
 	async getPreductionMarkup() {
 
 		let query = getManager()
 			.createQueryBuilder(PredictionFactorMarkup, "markup")
-			// .select([
-			// 	"markup.maxRatePercentage",
-			// 	"markup.minRatePercentage"
-			// ])
+		// .select([
+		// 	"markup.maxRatePercentage",
+		// 	"markup.minRatePercentage"
+		// ])
 		const result = await query.getOne();
-		// const minimumMarkupValue = (result.minRatePercentage / 100) * netValue
-		// const maxMarkupValue = (result.maxRatePercentage / 100) * netValue
-		// return {
-		// 	minPrice: netValue + minimumMarkupValue,
-		// 	maxPrice: netValue + maxMarkupValue
-		// }
 
 		return result;
 	}
 
-	
+	async exportBookings(listBookingDto: ExportBookingDto) {
+		try {
+			let result = await this.bookingRepository.exportCSV(listBookingDto);
+
+			let paidAmount = 0;
+			let remainAmount = 0;
+
+			//console.log(result);
+
+			for (let i in result.data) {
+				for (let instalment of result.data[i].bookingInstalments) {
+					if (instalment.instalmentStatus == 1) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+					}
+				}
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+
+				delete result.data[i].user.updatedDate;
+				delete result.data[i].user.salt;
+				delete result.data[i].user.password;
+				for (let j in result.data[i].travelers) {
+					delete result.data[i].travelers[j].userData.updatedDate;
+					delete result.data[i].travelers[j].userData.salt;
+					delete result.data[i].travelers[j].userData.password;
+
+					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+
+					if (age < 2) {
+						result.data[i].travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.data[i].travelers[j].userData.user_type = "child";
+					} else {
+						result.data[i].travelers[j].userData.user_type = "adult";
+					}
+				}
+			}
+			return result;
+		} catch (error) {
+
+			if (typeof error.response !== "undefined") {
+				console.log('m');
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+
+			}
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
+			);
+
+		}
+	}
+
 
 }
