@@ -54,17 +54,14 @@ export class Mystifly implements StrategyAirline {
             mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
         }
 
-        //mystiflyConfig = JSON.parse(`{ "account_number": "MCN001693","password": "Laytripxml@2020","target": "Test", "user_name": "Laytrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}`)
-        //mystiflyConfig = JSON.parse(`{ "account_number": "MCN014611","password": "Lay2020@xml","target": "Production", "user_name": "LayTrip_XML","url": "https://onepoint.myfarebox.com/V2/OnePoint.svc"}`)
-        //mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
-
+       
         return mystiflyConfig;
     }
     async createSession() {
 
         const mystiflyConfig = await this.getMystiflyCredential();
         console.log(mystiflyConfig);
-        
+
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
             <soapenv:Header/>
@@ -99,7 +96,7 @@ export class Mystifly implements StrategyAirline {
             else {
                 return sessionDetails.sessionToken;
             }
-            //return "55140297-9561-4b4b-b812-beb0dc143c25"
+            
         }
         catch (e) {
             return await this.createSession();
@@ -400,10 +397,8 @@ export class Mystifly implements StrategyAirline {
 
         let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date, bookingDate);
 
-        //const markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId);
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
         let markUpDetails = markup.markUpDetails;
-        //let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
         if (!markUpDetails) {
             throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
         }
@@ -461,12 +456,18 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys1:AirTripType>OneWay</mys1:AirTripType>`;
         requestBody += `<mys1:CabinPreference>${this.getFlightClass(flight_class)}</mys1:CabinPreference>`;
         requestBody += `<mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>`;
+        requestBody += `<mys1:Preferences>`
+        requestBody += `<mys1:CabinClassPreference>`
+        requestBody += `<mys1:CabinType>${this.getFlightClass(flight_class)}</mys1:CabinType>`
+        requestBody += `<mys1:PreferenceLevel>Restricted</mys1:PreferenceLevel>`
+        requestBody += `</mys1:CabinClassPreference>`
+        requestBody += `</mys1:Preferences>`
         requestBody += `</mys:TravelPreferences>`;
         requestBody += `</tem:rq>`;
         requestBody += `</tem:AirLowFareSearch>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-       
+
         let searchResult = await HttpRequest.mystiflyRequestZip(mystiflyConfig.zipSearchUrl, requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
         //console.log(compressedResult)
@@ -480,11 +481,7 @@ export class Mystifly implements StrategyAirline {
 
         let jsonData: any = await Generic.xmlToJson(unCompressedData)
 
-        //console.log(jsonData)
-
-
-        // return jsonData;
-
+        
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
 
 
@@ -592,7 +589,7 @@ export class Mystifly implements StrategyAirline {
                 }
                 else {
                     route.start_price = 0;
-                    route.secondary_start_price=0;
+                    route.secondary_start_price = 0;
                 }
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
@@ -647,18 +644,6 @@ export class Mystifly implements StrategyAirline {
 
             return { message: "flight not found" }
         }
-
-
-        //    const variable = promisify(zlib.unzip(buffer, function(err, buffer) {
-        //       if (!err) {
-        //         console.log(buffer.toString());
-        //       }
-        //     }))
-        //return buffer.toString();
-        /*let result = await zlib.unzip(buffer,{})
-        console.log(result.toString())*/
-        //(err,)
-
     }
 
     async roundTripSearchZip(searchFlightDto: RoundtripSearchFlightDto, user) {
@@ -752,15 +737,20 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys1:AirTripType>Circle</mys1:AirTripType>`;
         requestBody += `<mys1:CabinPreference>${this.getFlightClass(flight_class)}</mys1:CabinPreference>`;
         requestBody += `<mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>`;
+        requestBody += `<mys1:Preferences>`
+        requestBody += `<mys1:CabinClassPreference>`
+        requestBody += `<mys1:CabinType>${this.getFlightClass(flight_class)}</mys1:CabinType>`
+        requestBody += `<mys1:PreferenceLevel>Restricted</mys1:PreferenceLevel>`
+        requestBody += `</mys1:CabinClassPreference>`
+        requestBody += `</mys1:Preferences>`
         requestBody += `</mys:TravelPreferences>`;
         requestBody += `</tem:rq>`;
         requestBody += `</tem:AirLowFareSearch>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-        
+
         let searchResult = await HttpRequest.mystiflyRequestZip(mystiflyConfig.zipSearchUrl, requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
-        //console.log(compressedResult)
         let buffer = Buffer.from(compressedResult, 'base64');
 
         const unCompressedData = await new Promise((resolve) => {
@@ -771,17 +761,7 @@ export class Mystifly implements StrategyAirline {
 
         let jsonData: any = await Generic.xmlToJson(unCompressedData)
 
-        //console.log(jsonData.airlowfaresearchgziprs.errors[0].error[0])
-
-        // console.log(jsonData);
-
-
-        // return jsonData;
-
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
-
-
-
             let flightRoutes = jsonData.airlowfaresearchgziprs.priceditineraries[0].priceditinerary;
             let stop: Stop;
             let stops: Stop[] = [];
@@ -854,8 +834,6 @@ export class Mystifly implements StrategyAirline {
                         stop.layover_duration = `${layOverduration.hours} h ${layOverduration.minutes} m`
                         stop.layover_airport_name = flightSegment['departureairportlocationcode'][0];
                     }
-                    // uniqueCode += stop.departure_time;
-                    // uniqueCode += stop.arrival_time;
                     uniqueCode += stop.flight_number;
                     uniqueCode += stop.airline;
                     uniqueCode += stop.cabin_class;
@@ -940,24 +918,10 @@ export class Mystifly implements StrategyAirline {
         }
 
 
-        //    const variable = promisify(zlib.unzip(buffer, function(err, buffer) {
-        //       if (!err) {
-        //         console.log(buffer.toString());
-        //       }
-        //     }))
-        //return buffer.toString();
-        /*let result = await zlib.unzip(buffer,{})
-        console.log(result.toString())*/
-        //(err,)
-
+        
     }
 
-    async cancelBooking(tripId:string){
-        //const mystiflyConfig = await this.getMystiflyCredential();
-        //const sessionToken = await this.startSession();
-        //console.log(mystiflyConfig);
-        
-        //console.log("mystiflyConfig", mystiflyConfig)
+    async cancelBooking(tripId: string) {
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
         requestBody += `<soapenv:Header/>`;
         requestBody += `<soapenv:Body>`;
@@ -970,32 +934,10 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</mys:CancelBooking>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-        //mystiflyConfig.url = 'http://onepointdemo.myfarebox.com/V2/OnePoint.svc';
         let tripDetailsResult = await HttpRequest.mystiflyRequest('http://onepointdemo.myfarebox.com/V2/OnePoint.svc', requestBody, 'TripDetails');
 
         return tripDetailsResult
-        //console.log("tripDetailsResult", JSON.stringify(tripDetailsResult))
-        // if (tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:success"][0] == 'true') {
-
-        //     let travelItinerary = tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:travelitinerary"][0];
-
-        //     let tripDetails: any = {};
-        //     tripDetails.booking_status = travelItinerary['a:bookingstatus'][0];
-        //     tripDetails.fare_type = travelItinerary['a:faretype'][0];
-        //     tripDetails.ticket_status = travelItinerary['a:ticketstatus'][0];
-        //     tripDetails.unique_id = travelItinerary['a:uniqueid'][0];
-        //     tripDetails.data = travelItinerary;
-            
-            
-            
-
-
-        //     return tripDetails;
-        // }
-        // else {
-        //     throw new NotFoundException(`Trip details not found!`)
-        // }
-    }
+        }
 
     getMinPrice(routes, priceType) {
         return Math.min.apply(null, routes.map(item => item[priceType]))
@@ -1248,7 +1190,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`
         let searchResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'AirLowFareSearch');
 
-        
+
         if (searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0]['a:success'][0] == "true") {
 
 
@@ -1532,7 +1474,7 @@ export class Mystifly implements StrategyAirline {
         }
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-       // console.log("mystiflyConfig", mystiflyConfig)
+        // console.log("mystiflyConfig", mystiflyConfig)
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
             <soapenv:Body>
@@ -1868,6 +1810,8 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`
 
         let bookResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'BookFlight');
+        //console.log(JSON.stringify(bookResult));
+
         let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
         let bookingResponse;
         if (bookResultSegment['a:success'][0] == 'true') {
@@ -1896,7 +1840,7 @@ export class Mystifly implements StrategyAirline {
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
         //console.log(mystiflyConfig);
-        
+
         console.log("mystiflyConfig", mystiflyConfig)
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
         requestBody += `<soapenv:Header/>`;
@@ -1923,9 +1867,9 @@ export class Mystifly implements StrategyAirline {
             tripDetails.ticket_status = travelItinerary['a:ticketstatus'][0];
             tripDetails.unique_id = travelItinerary['a:uniqueid'][0];
             tripDetails.data = travelItinerary;
-            
-            
-            
+
+
+
 
 
             return tripDetails;
@@ -1973,7 +1917,7 @@ export class Mystifly implements StrategyAirline {
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
         console.log(mystiflyConfig);
-        
+
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
         requestBody += `<soapenv:Header/>`;

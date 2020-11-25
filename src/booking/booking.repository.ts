@@ -9,6 +9,7 @@ import { User } from "src/entity/user.entity";
 import * as moment from 'moment';
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
+import { ExportBookingDto } from "./dto/export-booking.dto";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -454,9 +455,9 @@ export class BookingRepository extends Repository<Booking> {
 		return { data: data, total_count: count };
 	}
 
-	async getPredictiveBookingDdata(filterOption: listPredictedBookingData) {
+	async getPredictiveBookingDdata() {
 
-		const {booking_id , below_minimum_seat} = filterOption
+		//const {booking_id , below_minimum_seat} = filterOption
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate
@@ -499,15 +500,7 @@ export class BookingRepository extends Repository<Booking> {
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
-			if(booking_id)
-			{
-				query.andWhere(`booking.laytripBookingId = '${booking_id}'`);
-			}
-
-			if(below_minimum_seat)
-			{
-				query.andWhere(`predictiveBookingData.isBelowMinimum = ${below_minimum_seat}`);
-			}
+			
 
 		const [data,count] = await query.getManyAndCount();
 		// const count = await query.getCount();
@@ -517,5 +510,82 @@ export class BookingRepository extends Repository<Booking> {
 			);
 		}
 		return {data,count};
+	}
+
+	async exportCSV(filterOption:ExportBookingDto)
+	{
+		const {
+			start_date,
+			end_date,
+			booking_status,
+			booking_type,
+			customer_name,
+			payment_type,
+			booking_id,
+			search,
+			module_id, supplier_id,userId
+		} = filterOption;
+		
+		let where;
+		where = `1=1 `;
+		if (userId) {
+			where += `AND ("booking"."user_id" = '${userId}')`;
+		}
+		if (module_id) {
+			where += `AND ("booking"."module_id" = '${module_id}')`;
+		}
+
+		if (supplier_id) {
+			where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+		}
+
+		if (start_date) {
+			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
+		}
+		if (end_date) {
+			where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
+		}
+		if (booking_status) {
+			where += `AND ("booking"."booking_status" = '${booking_status}')`;
+		}
+		if (booking_type) {
+			where += `AND ("booking"."booking_type" = '${booking_type}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+		}
+
+		// if (payment_type) {
+		// 	where += `("booking"."payment_type" = '${payment_type}') AND`;
+		// }
+		if (customer_name) {
+			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
+		}
+
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+		}
+		const query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
+			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.travelers", "traveler")
+			.leftJoinAndSelect("traveler.userData", "userData")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			// .leftJoinAndSelect("userData.state", "state")
+			// .leftJoinAndSelect("userData.country", "countries")
+			.leftJoinAndSelect("booking.supplier", "supplier")
+			
+			.where(where)
+			.orderBy(`booking.bookingDate`, 'DESC')
+		const [data, count] = await query.getManyAndCount();
+		//const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
+		}
+		return { data: data, total_count: count };	
 	}
 }

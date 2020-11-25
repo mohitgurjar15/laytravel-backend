@@ -59,6 +59,7 @@ import { exit } from "process";
 import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
 import { airports } from "./airports";
 import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
+import { match } from "assert";
 
 @Injectable()
 export class FlightService {
@@ -509,7 +510,7 @@ export class FlightService {
 				var key = 0;
 				var date;
 				var startPrice = 0;
-				var secondaryStartPrice=0;
+				var secondaryStartPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -543,7 +544,7 @@ export class FlightService {
 					price: lowestprice,
 					unique_code: unique_code,
 					start_price: startPrice,
-					secondary_start_price:secondaryStartPrice
+					secondary_start_price: secondaryStartPrice
 				}
 
 				returnResponce.push(output)
@@ -629,7 +630,7 @@ export class FlightService {
 				var key = 0;
 				var date = '';
 				var startPrice;
-				var secondaryStartPrice=0;
+				var secondaryStartPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -663,7 +664,7 @@ export class FlightService {
 					price: lowestprice,
 					unique_code: unique_code,
 					start_price: startPrice,
-					secondary_start_price:secondaryStartPrice
+					secondary_start_price: secondaryStartPrice
 				}
 
 				returnResponce.push(output)
@@ -1337,11 +1338,12 @@ export class FlightService {
 			console.log(error);
 		}
 	}
-	async partialyBookSave(
+	async partialyBookingSave(
 		bookFlightDto,
 		currencyId,
 		airRevalidateResult,
-		bookingId
+		bookingId,
+		supplierBookingData,
 	) {
 		const {
 			net_rate,
@@ -1371,6 +1373,7 @@ export class FlightService {
 		booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
+		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
 
 		booking.moduleInfo = airRevalidateResult;
 		try {
@@ -1465,21 +1468,28 @@ export class FlightService {
 
 		let currencyId = headerDetails.currency.id;
 		const userId = user.user_id;
-
+		console.log(`step - 2 call booking`);
 		const bookingResult = await mystifly.bookFlight(
 			bookFlightDto,
 			travelersDetails,
 			isPassportRequired
 		);
-		if (bookingResult.booking_status == "success") {
+		console.log(bookingResult);
 
-			let laytripBookingResult = await this.partiallyBookFlight(
+		if (bookingResult.booking_status == "success") {
+			console.log(`step - 3 save Booking`);
+			let laytripBookingResult = await this.partialyBookingSave(
 				bookFlightDto,
 				currencyId,
 				airRevalidateResult,
-				bookingId
+				bookingId,
+				bookingResult,
 			);
+
+			//console.log(laytripBookingResult);
+
 			//send email here
+			console.log(`step - 4 mail`);
 			this.sendBookingEmail(laytripBookingResult.id);
 			bookingResult.laytrip_booking_id = laytripBookingResult.id;
 			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
@@ -1487,6 +1497,9 @@ export class FlightService {
 			);
 			return bookingResult;
 
+		}
+		else {
+			throw new InternalServerErrorException(`flight not booked`)
 		}
 	}
 
@@ -2010,91 +2023,99 @@ export class FlightService {
 		}
 	}
 
-	async cancelBooking(tripId: string,headers) {
+	async cancelBooking(tripId: string, headers) {
 		const mystifly = new Strategy(new Mystifly(headers));
 		return mystifly.cancelBooking(tripId);
 	}
 
-	async bookPartialBooking(bookingId,Headers)
-	{
+	async bookPartialBooking(bookingId, Headers) {
 		const bookingData = await this.bookingRepository.getBookingDetails(bookingId)
 
-			let flights: any = null;
-			if (new Date(await this.changeDateFormat(bookingData.moduleInfo[0].departure_date)) > new Date()) {
-				var bookingType = bookingData.locationInfo['journey_type']
+		let flights: any = null;
+		if (new Date(await this.changeDateFormat(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+			var bookingType = bookingData.locationInfo['journey_type']
 
-				let travelers = [];
+			let travelers = [];
 
-				for await (const traveler of bookingData.travelers) {
-					travelers.push({
-						traveler_id: traveler.userId
-					})
+			for await (const traveler of bookingData.travelers) {
+				travelers.push({
+					traveler_id: traveler.userId
+				})
+			}
+
+			Headers['currency'] = bookingData.currency2.code
+			Headers['language'] = 'en'
+			if (bookingType == 'oneway') {
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
 				}
-
-				if (bookingType == 'oneway') {
-					Headers['currency'] = bookingData.currency2.code
-					Headers['language'] = 'en'
-
-					let dto = {
-						"source_location": bookingData.moduleInfo[0].departure_code,
-						"destination_location": bookingData.moduleInfo[0].arrival_code,
-						"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
-						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
-					}
-
-					flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
-
-				}
-				else {
-					Headers['currency'] = bookingData.currency2.code
-					Headers['language'] = 'en'
-
-					let dto = {
-						"source_location": bookingData.moduleInfo[0].departure_code,
-						"destination_location": bookingData.moduleInfo[0].arrival_code,
-						"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
-						"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-						"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-						"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-						"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
-						"arrival_date": await this.changeDateFormat(bookingData.moduleInfo[0].arrival_code)
-					}
-
-					flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
-				}
-				for await (const flight of flights.items) {
-					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
-						const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
-
-						const savedDate = new Date(bookingData.predectedBookingDate);
-						var predictedDate = savedDate.toISOString();
-						predictedDate = predictedDate
-							.replace(/T/, " ") // replace T with a space
-							.replace(/\..+/, "");
-
-						const bookingDto = new BookFlightDto
-						bookingDto.travelers = travelers
-						bookingDto.payment_type = `${bookingData.bookingType}`;
-						bookingDto.instalment_type = `${bookingData.bookingType}`
-						bookingDto.route_code = flight.route_code;
-						bookingDto.additional_amount = 0
-						bookingDto.laycredit_points = 0
-
-						const user = bookingData.user
-
-						const bookingId = bookingData.laytripBookingId;
-						
-						const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId)
-						
-						this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
-
-					}
-				}
+				console.log('oneway dto', dto)
+				flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
 
 			}
+			else {
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+					"arrival_date": await this.changeDateFormat(bookingData.moduleInfo[0].arrival_code)
+				}
+				console.log('two dto', dto)
+				flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
+			}
+			console.log(flights);
+			console.log(bookingData.moduleInfo[0].unique_code);
+
+			var match = 0;
+			for await (const flight of flights.items) {
+				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+					match = match + 1
+					//const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
+
+					//const savedDate = new Date(bookingData.predectedBookingDate);
+					// var predictedDate = savedDate.toISOString();
+					// predictedDate = predictedDate
+					// 	.replace(/T/, " ") // replace T with a space
+					// 	.replace(/\..+/, "");
+
+					const bookingDto = new BookFlightDto
+					bookingDto.travelers = travelers
+					bookingDto.payment_type = `${bookingData.bookingType}`;
+					bookingDto.instalment_type = `${bookingData.bookingType}`
+					bookingDto.route_code = flight.route_code;
+					bookingDto.additional_amount = 0
+					bookingDto.laycredit_points = 0
+
+					const user = bookingData.user
+
+					const bookingId = bookingData.laytripBookingId;
+
+					console.log(`step - 1 find booking`);
+
+					const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId)
+
+					this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+
+				}
+			}
+
+			if (match == 0) {
+				throw new NotFoundException(`Given flight not available`)
+			}
+
+		}
 	}
 
 	async changeDateFormat(dateTime) {
