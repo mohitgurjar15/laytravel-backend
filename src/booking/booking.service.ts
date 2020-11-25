@@ -546,7 +546,7 @@ export class BookingService {
 				// booking data
 				const paidAmount = await this.paidAmountByUser(data.bookingId)
 				// value of amount paid by user
-				
+
 				const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
 				// preduction markup maximum aur minimum value
 
@@ -557,7 +557,7 @@ export class BookingService {
 
 				// predictive markup amount for minimum paid by user 
 
-				
+
 				const predictiveBookingData: any = {}
 				predictiveBookingData['booking_id'] = data.bookingId
 				predictiveBookingData['net_price'] = data.netPrice
@@ -571,6 +571,19 @@ export class BookingService {
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
+
+				predictiveBookingData['profit'] = parseFloat(bookingData.totalAmount) - data.netPrice;
+				
+				const net_rate_percentage_variation = ((data.netPrice - parseFloat(bookingData.netRate)) * 100) / parseFloat(bookingData.netRate);
+				predictiveBookingData['net_rate_percentage_variation'] = net_rate_percentage_variation
+				if (net_rate_percentage_variation == 0) {
+					predictiveBookingData['net_rate_percentage_variation_stage'] = 'EQUAL'
+					predictiveBookingData['profit_stage'] = 'EQUAL'
+				} else {
+					predictiveBookingData['net_rate_percentage_variation_stage'] = net_rate_percentage_variation > 0 ? 'UP' : 'DOWN';
+					predictiveBookingData['profit_stage'] = net_rate_percentage_variation > 0 ? 'DOWN' : 'UP';
+				}
+
 				//predictiveBookingData['bookingData'] = bookingData;
 
 				if (data.isBelowMinimum == true) {
@@ -626,7 +639,7 @@ export class BookingService {
 
 	async paidAmountByUser(bookingId) {
 		console.log(bookingId);
-		
+
 		let query = await getManager()
 			.createQueryBuilder(BookingInstalments, "instalment")
 			.select([
