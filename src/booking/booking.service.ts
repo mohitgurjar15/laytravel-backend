@@ -301,7 +301,7 @@ export class BookingService {
 						pandinginstallment = pandinginstallment + 1;
 					}
 				}
-				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? parseFloat(result.data[i].totalAmount) : paidAmount;
 				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 				result.data[i]["pendingInstallment"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : pandinginstallment;
 				delete result.data[i].user.updatedDate;
@@ -378,7 +378,7 @@ export class BookingService {
 					remainAmount += parseFloat(instalment.amount);
 				}
 			}
-			result["paidAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? result.totalAmount : paidAmount;
+			result["paidAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? parseFloat(result.totalAmount) : paidAmount;
 			result["remainAmount"] = result.bookingType == BookingType.NOINSTALMENT && result.paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 			delete result.user.updatedDate;
 			delete result.user.salt;
@@ -451,7 +451,7 @@ export class BookingService {
 			var totalAMount = result.data[i].totalAmount
 			let remainAmount = totalAMount - paidAmount
 
-			result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? result.data[i].totalAmount : paidAmount;
+			result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? parseFloat(result.data[i].totalAmount) : paidAmount;
 			result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
 		}
 		return result;
@@ -479,7 +479,7 @@ export class BookingService {
 		}
 
 		if (booking_id) {
-			where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
+			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
@@ -694,6 +694,51 @@ export class BookingService {
 		const result = await query.getOne();
 
 		return result;
+	}
+
+	async getDailyPricesOfBooking(bookingId: string) {
+		try {
+			const result = await this.bookingRepository.getDailyPredictiveBookingPrices(bookingId);
+			const data = result.predictiveBookingData
+			if (!data.length) {
+				throw new NotFoundException(
+					`No data found`
+				);
+			}
+
+			return {
+				result: data, count: data.length
+			}
+
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
+			);
+		}
 	}
 
 	async exportBookings(listBookingDto: ExportBookingDto) {

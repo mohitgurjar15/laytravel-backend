@@ -60,9 +60,6 @@ export class BookingRepository extends Repository<Booking> {
 			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
 		}
 
-		// if (payment_type) {
-		// 	where += `("booking"."payment_type" = '${payment_type}') AND`;
-		// }
 		if (customer_name) {
 			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
 		}
@@ -79,72 +76,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("User.country", "countries")
-			// .leftJoinAndSelect("userData.state", "state")
-			// .leftJoinAndSelect("userData.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
-			// .select(["booking.id",
-			// 	"booking.userId",
-			// 	"booking.moduleId",
-			// 	"booking.bookingType",
-			// 	"booking.bookingStatus",
-			// 	"booking.currency",
-			// 	"booking.totalAmount",
-			// 	"booking.netRate",
-			// 	"booking.markupAmount",
-			// 	"booking.usdFactor",
-			// 	"booking.bookingDate",
-			// 	"booking.totalInstallments",
-			// 	"booking.locationInfo",
-			// 	"booking.moduleInfo",
-			// 	"booking.paymentGatewayId",
-			// 	"booking.paymentStatus",
-			// 	"booking.paymentInfo",
-			// 	"booking.isPredictive",
-			// 	"booking.layCredit",
-			// 	"booking.fareType",
-			// 	"booking.isTicketd",
-			// 	"booking.paymentGatewayProcessingFee",
-			// 	"booking.supplierId",
-			// 	"booking.nextInstalmentDate",
-			// 	"booking.supplierBookingId",
-			// 	"instalments.id",
-			// 	"instalments.instalmentType",
-			// 	"instalments.instalmentDate",
-			// 	"instalments.currencyId",
-			// 	"instalments.amount",
-			// 	"instalments.instalmentStatus",
-			// 	"instalments.paymentGatewayId",
-			// 	"instalments.paymentInfo",
-			// 	"instalments.paymentStatus",
-			// 	// "bookingInstalments.instalment_date",
-			// 	// "bookingInstalments.instalment_amount",
-			// 	// "User.firstName",
-			// 	// "User.lastName",
-			// 	// "User.email",
-			// 	// "User.phoneNo",
-			// 	// "User.profilePic",
-			// 	// "User.roleId",
-			// 	"currency.id",
-			// 	"currency.country",
-			// 	"currency.code",
-			// 	"currency.symbol",
-			// 	"currency.liveRate",
-			// 	"User.firstName",
-			// 	"userData.lastName",
-			// 	"userData.email",
-			// 	"userData.phoneNo",
-			// 	"userData.profilePic",
-			// 	"userData.roleId",
-			// 	"supplier.id",
-			// 	"supplier.name",
-			// 	"countries.name",
-			// 	"countries.iso2",
-			// 	"countries.iso3",
-			// 	"countries.id",
-			// 	"state.id",
-			// 	"state.name",
-			// 	"state.iso2",
-			// ])
 
 			.where(where)
 			.take(take)
@@ -196,7 +128,7 @@ export class BookingRepository extends Repository<Booking> {
 			var birthDate = new Date(result.travelers[j].userData.dob);
 			var age = moment(new Date()).diff(moment(birthDate), 'years');
 
-			result.travelers[j].userData.age =  age;
+			result.travelers[j].userData.age = age;
 			if (age < 2) {
 				result.travelers[j].userData.user_type = "infant";
 			} else if (age < 12) {
@@ -374,11 +306,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			// .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-			// .leftJoinAndSelect(
-			// 	"BookingInstalments.failedPaymentAttempts",
-			// 	"failedPaymentAttempts"
-			// )
 			.select([
 				"BookingInstalments.id",
 				"BookingInstalments.bookingId",
@@ -500,20 +427,55 @@ export class BookingRepository extends Repository<Booking> {
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
-			
 
-		const [data,count] = await query.getManyAndCount();
+
+		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
 		if (!data.length) {
 			throw new NotFoundException(
 				`No booking found`
 			);
 		}
-		return {data,count};
+		return { data, count };
 	}
 
-	async exportCSV(filterOption:ExportBookingDto)
-	{
+	async getDailyPredictiveBookingPrices(bookingId) {
+
+		//const {booking_id , below_minimum_seat} = filterOption
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.predictiveBookingData", "predictiveBookingData")
+			.select([
+				"booking.laytripBookingId",
+				"booking.id",
+				"predictiveBookingData.id",
+				"predictiveBookingData.bookingId",
+				"predictiveBookingData.price",
+				"predictiveBookingData.date",
+				"predictiveBookingData.isBelowMinimum",
+				"predictiveBookingData.netPrice",
+				"predictiveBookingData.remainSeat"
+			])
+
+			.where(`booking.laytripBookingId = '${bookingId}'`)
+
+
+		const data = await query.getOne();
+		// const count = await query.getCount();
+		if (!data) {
+			throw new NotFoundException(
+				`Booking id not found`
+			);
+		}
+		return data;
+	}
+
+	async exportCSV(filterOption: ExportBookingDto) {
 		const {
 			start_date,
 			end_date,
@@ -523,9 +485,9 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id, supplier_id,userId
+			module_id, supplier_id, userId
 		} = filterOption;
-		
+
 		let where;
 		where = `1=1 `;
 		if (userId) {
@@ -578,7 +540,7 @@ export class BookingRepository extends Repository<Booking> {
 			// .leftJoinAndSelect("userData.state", "state")
 			// .leftJoinAndSelect("userData.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
-			
+
 			.where(where)
 			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
@@ -586,6 +548,6 @@ export class BookingRepository extends Repository<Booking> {
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
-		return { data: data, total_count: count };	
+		return { data: data, total_count: count };
 	}
 }
