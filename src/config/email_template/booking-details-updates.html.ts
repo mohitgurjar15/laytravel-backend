@@ -23,7 +23,7 @@ const content = `<!-- header Text section start -->
 
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
-                                                        <span style="text-decoration: none; color: #000;">{{name}}</span> it looks like your reservation details have been updated. Please review the following information:
+                                                        <span style="text-decoration: none; color: #000;">${param.username ? param.username : '' }</span> it looks like your reservation details have been updated. Please review the following information:
                                                     </td>
                                                 </tr>
 
