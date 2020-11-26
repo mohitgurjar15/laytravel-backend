@@ -120,7 +120,7 @@ export class CronJobsService {
 
 			var responce: any = await this.flightService.ticketFlight(element.supplierBookingId);
 		}
-		return null;
+		return { message : `pending flight updated successfully`};
 	}
 
 
@@ -293,7 +293,7 @@ export class CronJobsService {
 				);
 			}
 		}
-		return null;
+		return { message : `${currentDate} date installation payment capture successfully`};
 	}
 
 	async partialBookingPrice(Headers) {
@@ -430,6 +430,8 @@ export class CronJobsService {
 
 			}
 		}
+
+		return { message : `today booking price added for pending booking`}
 	}
 
 	async updateFlightBookingInProcess() {
@@ -456,21 +458,7 @@ export class CronJobsService {
 				const voidCard = await this.paymentService.voidCard(booking.cardToken)
 
 				if (voidCard.status == true) {
-					// const transaction = new OtherPayments;
-
-					// transaction.bookingId = booking.id;
-					// transaction.userId = booking.userId;
-					// transaction.currencyId = booking.currency;
-					// transaction.amount = booking.totalAmount;
-					// transaction.paidFor = `Void card`
-					// transaction.comment = `transaction failed at update booking by cron`
-					// transaction.transactionId = voidCard.token
-					// transaction.paymentInfo = voidCard.meta_data
-					// transaction.paymentStatus = PaymentStatus.CANCELLED
-					// transaction.createdBy = "1c17cd17-9432-40c8-a256-10db77b95bca"
-					// transaction.createdDate = new Date()
-
-					//const transactionId = await transaction.save();
+					
 
 					await getConnection()
 						.createQueryBuilder()
@@ -515,6 +503,7 @@ export class CronJobsService {
 				//if TicketStatus = TktInProgress call it again
 			}
 		}
+		return { message : `pending booking updated successfully`}
 	}
 
 	async getDataTimefromString(dateTime) {
@@ -615,6 +604,7 @@ export class CronJobsService {
 		} catch (error) {
 			console.log(error);
 		}
+		return { message : `today recurring point added succesfully`}
 	}
 
 	async uploadLogIntoS3Bucket(folderName) {
@@ -669,6 +659,9 @@ export class CronJobsService {
 			});
 		});
 
+		return {
+			message : `${folderName} log uploaded on s3 bucket`
+		}
 
 	}
 
