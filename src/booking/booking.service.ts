@@ -541,7 +541,8 @@ export class BookingService {
 		try {
 
 			const result = await this.bookingRepository.getPredictiveBookingDdata();
-			let responce = [];
+			let todayPrice = [];
+			let availableBookingId = []; 
 			for await (const data of result.data) {
 				const bookingData = data.booking
 				// booking data
@@ -621,10 +622,51 @@ export class BookingService {
 					predictiveBookingData.bookIt = true;
 					predictiveBookingData['is_minimum_installment_paid'] = true;
 				}
-
-				responce.push(predictiveBookingData)
+				const id = predictiveBookingData.laytrip_booking_id
+				todayPrice.push(predictiveBookingData)
+				availableBookingId.push(id)
 			}
-			return { data: responce, count: result.count }
+			const allBooking = await this.bookingRepository.getPendingBooking()
+			let responce = []
+			console.log(todayPrice);
+			
+			for await (const booking of allBooking) {
+				if (availableBookingId.indexOf(booking.laytripBookingId) != -1) {
+					//console.log(availableBookingId.indexOf(booking.laytripBookingId));
+					responce.push(todayPrice[availableBookingId.indexOf(booking.laytripBookingId)])
+
+				}
+				else {
+					const paidAmount = await this.paidAmountByUser(booking.id)
+				
+					const predictiveBookingData: any = {}
+					predictiveBookingData['booking_id'] = booking.id
+					predictiveBookingData['net_price'] = null
+					predictiveBookingData['date'] = null
+					predictiveBookingData['is_below_minimum'] = false
+					predictiveBookingData['remain_seat'] = 0
+					predictiveBookingData['selling_price'] = 0
+					predictiveBookingData['paid_amount'] = paidAmount.amount;
+					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
+					predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(booking.totalAmount)
+					predictiveBookingData['booking_status'] = booking.bookingStatus;
+					predictiveBookingData['departure_date'] = booking.moduleInfo[0].departure_date
+					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
+					predictiveBookingData['bookIt'] = false;
+
+					predictiveBookingData['profit'] = 0
+
+					predictiveBookingData['net_rate_percentage_variation'] = 0
+
+					predictiveBookingData['is_minimum_installment_paid'] = false;
+					predictiveBookingData['is_net_rate_price_change_below_threshold'] = false;
+					predictiveBookingData['is_net_rate_price_change_above_threshold'] = false;
+
+					responce.push(predictiveBookingData)
+
+				}
+			}
+			return { data: responce, count: responce.length }
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -699,11 +741,14 @@ export class BookingService {
 	async getDailyPricesOfBooking(bookingId: string) {
 		try {
 			const result = await this.bookingRepository.getDailyPredictiveBookingPrices(bookingId);
-			const data = result.predictiveBookingData
+			const data:any = result.predictiveBookingData
 			if (!data.length) {
 				throw new NotFoundException(
 					`No data found`
 				);
+			}
+			for await (const value of data) {
+				value['laytripBookingId'] = result.laytripBookingId 
 			}
 
 			return {

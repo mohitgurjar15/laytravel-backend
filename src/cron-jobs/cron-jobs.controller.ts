@@ -106,4 +106,26 @@ export class CronJobsController {
 	){
 		return await this.cronJobsService.paymentReminder();
 	}
+
+
+	@Get('upload-flight-log')
+	@ApiOperation({ summary: "upload flight log on s3 bucket" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async uploadFlightLog(
+	){
+		return await this.cronJobsService.uploadLogIntoS3Bucket('flights');
+	}
+
+	@Get('upload-payment-log')
+	@ApiOperation({ summary: "upload payment log on s3 bucket" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async uploadPaymentLog(
+		
+	){
+		return await this.cronJobsService.uploadLogIntoS3Bucket('payment');
+	}
 }
