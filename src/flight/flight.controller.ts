@@ -82,7 +82,7 @@ export class FlightController {
 
         if (moment(searchFlightDto.departure_date).isAfter(moment().add(365, "days").format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
-        console.log(req.headers);
+        
         return await this.flightService.searchOneWayFlight(searchFlightDto, req.headers, user);
     }
 
@@ -187,7 +187,6 @@ export class FlightController {
        @Req() req,
        @LogInUser() user
     ){
-        console.log(bookFlightDto)
         return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
     } 
 

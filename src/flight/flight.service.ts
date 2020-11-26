@@ -600,7 +600,6 @@ export class FlightService {
 				}
 				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			} else {
-				console.log(`One way `)
 				let dto = {
 					"source_location": source_location,
 					"destination_location": destination_location,
@@ -792,9 +791,6 @@ export class FlightService {
 				}
 
 				returnResponce.push(output)
-				// console.log(flightData.unique_code);
-				// console.log(flightData.net_rate);
-				// console.log(flightData.departure_date);
 			}
 		}
 		return returnResponce;
@@ -916,6 +912,7 @@ export class FlightService {
 				"DD/MM/YYYY",
 				"YYYY-MM-DD"
 			);
+
 			bookingRequestInfo.source_location =
 				airRevalidateResult[0].departure_code;
 			bookingRequestInfo.destination_location =
@@ -1294,7 +1291,6 @@ export class FlightService {
 			booking.isPredictive = false;
 			booking.totalInstallments = 0;
 		}
-		console.log("card_token", card_token)
 		booking.cardToken = card_token;
 
 		booking.moduleInfo = airRevalidateResult;
@@ -1777,7 +1773,6 @@ export class FlightService {
 			param.orderId = bookingData.id;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
-			// console.log(param.flightData);
 
 			this.mailerService
 				.sendMail({
@@ -1913,7 +1908,6 @@ export class FlightService {
 		if (!booking) {
 			throw new NotFoundException(`Given booking id not found`)
 		}
-		console.log(booking);
 
 		var moduleInfo = booking.moduleInfo[0]
 		const currencyCode = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:currencycode"][0]
@@ -1923,8 +1917,6 @@ export class FlightService {
 				currencyCode,
 			})
 			.getOne();
-		console.log('amount', ticketDetails.data["a:itineraryinfo"]);
-		// console.log(moduleInfo);
 
 		moduleInfo['net_rate'] = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:amount"][0];
 
@@ -1935,9 +1927,7 @@ export class FlightService {
 		moduleInfo.routes[1].stops = [];
 		for await (const reservation of ticketDetails.data["a:itineraryinfo"][0]["a:reservationitems"][0]['a:reservationitem']) {
 
-			// console.log(reservation)
 			if (reservation != null) {
-				console.log(`reservation`, reservation);
 
 				var data = {
 					"departure_code": reservation["a:departureairportlocationcode"][0],
@@ -2010,10 +2000,8 @@ export class FlightService {
 	async getDataTimefromString(dateTime) {
 		var data = dateTime.split('T')
 		var date = data[0].split('-')
-		console.log(date);
 
 		var time = data[1].split(':')
-		console.log(time);
 
 		var amPm = 'AM'
 		if (time[0] > 12) {
