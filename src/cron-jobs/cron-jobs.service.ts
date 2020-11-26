@@ -246,15 +246,18 @@ export class CronJobsService {
 			else {
 
 
-				const nextDate = getManager()
+				const nextDate = await getManager()
 					.createQueryBuilder(BookingInstalments, "bookingInstalments")
 					.select(['bookingInstalments.instalmentDate'])
 					.where(`bookingInstalments.instalment_status =${InstalmentStatus.PENDING} AND bookingInstalments.booking_id = ${instalment.bookingId}`)
+					.orderBy(`bookingInstalments.instalmentDate`)
+					.getOne()
 
+				
 				await getConnection()
 					.createQueryBuilder()
 					.update(Booking)
-					.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+					.set({ nextInstalmentDate: nextDate.instalmentDate })
 					.where("id = :id", { id: instalment.bookingId })
 					.execute();
 
