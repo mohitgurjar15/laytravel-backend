@@ -567,7 +567,7 @@ export class BookingService {
 				predictiveBookingData['remain_seat'] = data.remainSeat
 				predictiveBookingData['selling_price'] = data.price;
 				predictiveBookingData['paid_amount'] = paidAmount.amount;
-				predictiveBookingData['installment_status'] = paidAmount.attempt <= 1 ? 'ON TRAC' : 'FAIL'
+				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
@@ -582,7 +582,7 @@ export class BookingService {
 				predictiveBookingData['is_minimum_installment_paid'] = false;
 				predictiveBookingData['is_net_rate_price_change_below_threshold'] = false;
 				predictiveBookingData['is_net_rate_price_change_above_threshold'] = false;
-				predictiveBookingData['is_last_date_for_booking'] = false;
+				//predictiveBookingData['is_last_date_for_booking'] = false;
 
 
 				if (net_rate_percentage_variation == 0) {
@@ -611,11 +611,11 @@ export class BookingService {
 					predictiveBookingData['is_net_rate_price_change_above_threshold'] = true;
 				}
 
-				if (predictiveDate <= data.date) {
-					console.log(`rule 4 :- last date for booking`)
-					predictiveBookingData.bookIt = true;
-					predictiveBookingData['is_last_date_for_booking'] = true;
-				}
+				// if (predictiveDate <= data.date) {
+				// 	console.log(`rule 4 :- last date for booking`)
+				// 	predictiveBookingData.bookIt = true;
+				// 	predictiveBookingData['is_last_date_for_booking'] = true;
+				// }
 
 				if (predictiveBookingData.paid_amount_in_percentage >= markups.minInstallmentPercentage) {
 					predictiveBookingData.bookIt = true;

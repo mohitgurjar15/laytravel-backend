@@ -1090,6 +1090,7 @@ export class Mystifly implements StrategyAirline {
         })
         return timeSlots;
 
+        
     }
 
     async roundTripSearch(searchFlightDto: RoundtripSearchFlightDto, user) {

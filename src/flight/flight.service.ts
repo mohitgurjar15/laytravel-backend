@@ -91,7 +91,7 @@ export class FlightService {
 			if (type == 'web')
 				result = this.sortAirport(result)
 			else
-				result = this.getNestedChildren(result, 0,true)
+				result = this.getNestedChildren(result, 0, true)
 
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
@@ -123,13 +123,13 @@ export class FlightService {
 
 		return result;
 	}
-	getNestedChildren(arr, parent,param) {
+	getNestedChildren(arr, parent, param) {
 		let out = [];
 		for (let i in arr) {
 			arr[i].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
 			if (arr[i].parentId == parent) {
-				let children = this.getNestedChildren(arr, arr[i].id,false);
-				
+				let children = this.getNestedChildren(arr, arr[i].id, false);
+
 				if (children.length) {
 					arr[i].sub_airport = children;
 				} else {
@@ -140,11 +140,11 @@ export class FlightService {
 				].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
 				out.push(arr[i]);
 			}
-			
-			
+
+
 		}
-		
-		if(param===true && arr.length==1 && arr[0].parentId!=0){
+
+		if (param === true && arr.length == 1 && arr[0].parentId != 0) {
 			arr['display_name'] = `${arr.city},${arr.country},(${arr.code}),${arr.name}`;
 			out.push(arr[0]);
 		}
@@ -1296,6 +1296,7 @@ export class FlightService {
 		}
 		console.log("card_token", card_token)
 		booking.cardToken = card_token;
+
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();
@@ -1319,6 +1320,8 @@ export class FlightService {
 						i == 0 ? captureCardresult.token : null;
 					bookingInstalment.paymentStatus =
 						i == 0 ? PaymentStatus.CONFIRM : PaymentStatus.PENDING;
+					bookingInstalment.attempt =
+						i == 0 ? 1 : 0;
 					bookingInstalment.supplierId = 1;
 					bookingInstalment.isPaymentProcessedToSupplier = 0;
 					bookingInstalment.isInvoiceGenerated = 0;
@@ -1499,7 +1502,7 @@ export class FlightService {
 
 		}
 		else {
-			throw new InternalServerErrorException(`flight not booked`)
+			throw new InternalServerErrorException(bookingResult.error_message)
 		}
 	}
 
