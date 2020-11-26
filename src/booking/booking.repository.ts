@@ -10,6 +10,8 @@ import * as moment from 'moment';
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
 import { ExportBookingDto } from "./dto/export-booking.dto";
+import { BookingType } from "src/enum/booking-type.enum";
+import { BookingStatus } from "src/enum/booking-status.enum";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -437,6 +439,25 @@ export class BookingRepository extends Repository<Booking> {
 			);
 		}
 		return { data, count };
+	}
+
+	async getPendingBooking(){
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			// .select([
+			// 	"booking.supplierBookingId",
+			// 	"booking.id"
+			// ])
+			.where(
+				`"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
+			)
+
+		return await query.getMany();
 	}
 
 	async getDailyPredictiveBookingPrices(bookingId) {
