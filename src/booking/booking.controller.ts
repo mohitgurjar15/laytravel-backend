@@ -148,7 +148,7 @@ export class BookingController {
 
 	@Get('pending-booking')
 	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
-	@ApiOperation({ summary: "It return daily price of the pending booking " })
+	@ApiOperation({ summary: "It return to day price of the all pending booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -161,6 +161,23 @@ export class BookingController {
 		
 	) {
 		return await this.bookingService.getPredictiveBookingDdata();
+	}
+
+	@Get('daily-prices-of-booking/:booking_id')
+	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@ApiOperation({ summary: "It return daily price of the pending booking " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async dailyPricesOfBooking(
+		@Param('booking_id') bookingId : string
+	) {
+		return await this.bookingService.getDailyPricesOfBooking(bookingId);
 	}
 
 	@Get('export-bookings')
