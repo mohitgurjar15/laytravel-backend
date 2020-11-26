@@ -32,3 +32,7 @@ email:
 
 Sentry:
     DSN: "https://ae1830da5d4744fa9a03efeff65d68c7@o399378.ingest.sentry.io/5256424"
+
+AWS:
+    accessKeyId: 'AKIAI6MH7IDCFQQYBGOA'
+    secretAccessKey: '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'

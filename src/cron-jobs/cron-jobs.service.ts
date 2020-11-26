@@ -29,6 +29,8 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const AWS = require('aws-sdk');
 
+
+
 @Injectable()
 export class CronJobsService {
 	constructor(
@@ -253,7 +255,7 @@ export class CronJobsService {
 					.orderBy(`bookingInstalments.instalmentDate`)
 					.getOne()
 
-				
+
 				await getConnection()
 					.createQueryBuilder()
 					.update(Booking)
@@ -615,7 +617,58 @@ export class CronJobsService {
 		}
 	}
 
-	async uploadLogIntoS3Bucket() {
+	async uploadLogIntoS3Bucket(folderName) {
+		const path = require('path');
+		const fs = require('fs');
+		//joining path of directory 
+		const directoryPath = path.join('/var/www/html/logs/'+folderName);
+		//passsing directoryPath and callback function
+		fs.readdir(directoryPath, function (err, files) {
+			//handling error
+			if (err) {
+				return console.log('Unable to scan directory: ' + err);
+			}
+			//listing all files using forEach
+			files.forEach(function (file) {
+				// Do whatever you want to do with the file
+				console.log(file);
+
+
+
+				const AWSconfig = config.get('AWS');
+
+				const s3 = new AWS.S3({
+					accessKeyId: process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId,
+					secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || AWSconfig.secretAccessKey
+				});
+
+				const fileName = '/var/www/html/logs/'+folderName+'/' + file;
+
+				const uploadFile = () => {
+					fs.readFile(fileName, (err, data) => {
+						if (err) throw err;
+						const params = {
+							Bucket: 'laytrip/logs/'+folderName, // pass your bucket name
+							Key: file, // file will be saved as testBucket/contacts.csv
+							Body: JSON.stringify(data, null, 2)
+						};
+						s3.upload(params, function (s3Err, data) {
+							if (s3Err) {
+								throw s3Err
+							}
+							else{
+								fs.unlinkSync(fileName)
+								console.log(`File uploaded successfully at ${data.Location}`)
+							}
+							
+						});
+					});
+				};
+
+				uploadFile();
+			});
+		});
+
 
 	}
 
