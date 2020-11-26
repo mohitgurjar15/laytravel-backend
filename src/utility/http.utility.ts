@@ -21,24 +21,23 @@ export class HttpRequest {
                 }
             })
 
-            // console.log("=========================")
-            // console.log(result.data)
-            // console.log(headerAction);
-
-
-            let logData = {};
-            logData['url'] = url
-            logData['requestBody'] = requestBody
-            logData['headers'] = {
-                'content-type': 'text/xml',
-                'Accept-Encoding': 'gzip',
-                'soapaction': `Mystifly.OnePoint/OnePoint/${headerAction}`,
-                'charset': 'UTF-8',
-                'cache-control': 'no-cache'
+            let fileName = '';
+            if (headerAction != 'CreateSession') {
+                let logData = {};
+                logData['url'] = url
+                logData['requestBody'] = requestBody
+                logData['headers'] = {
+                    'content-type': 'text/xml',
+                    'Accept-Encoding': 'gzip',
+                    'soapaction': `Mystifly.OnePoint/OnePoint/${headerAction}`,
+                    'charset': 'UTF-8',
+                    'cache-control': 'no-cache'
+                }
+                logData['responce'] = result.data;
+                fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
+                Activity.createlogFile(fileName, logData, 'flights');
             }
-            logData['responce'] = result.data;
-            let fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
-            Activity.createlogFile(fileName,logData,'flights');
+
             result = await xml2js.parseStringPromise(result.data, {
                 normalizeTags: true,
                 ignoreAttrs: true
