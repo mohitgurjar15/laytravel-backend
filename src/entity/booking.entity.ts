@@ -88,6 +88,9 @@ export class Booking extends BaseEntity {
 
   @Column("character varying", { name: "fare_type", length: 20, nullable:true })
   fareType: string|null;
+  
+  @Column("character varying", { name: "booking_through", length: 20, nullable:true })
+  bookingThrough: string|null;
 
   @Column("character varying", { name: "card_token", length: 200 , nullable : true})
   cardToken: string|null;
