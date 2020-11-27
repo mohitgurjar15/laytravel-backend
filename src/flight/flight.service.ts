@@ -867,7 +867,8 @@ export class FlightService {
 			custom_instalment_amount,
 			custom_instalment_no,
 			laycredit_points,
-			card_token
+			card_token,
+			booking_through
 		} = bookFlightDto;
 
 		const mystifly = new Strategy(new Mystifly(headers));
@@ -920,6 +921,7 @@ export class FlightService {
 			bookingRequestInfo.flight_class = "Economy";
 			bookingRequestInfo.instalment_type = instalment_type;
 			bookingRequestInfo.additional_amount = additional_amount;
+			bookingRequestInfo.booking_through = booking_through;
 			isPassportRequired = airRevalidateResult[0].is_passport_required;
 			if (airRevalidateResult[0].routes.length == 1) {
 				bookingRequestInfo.journey_type = FlightJourney.ONEWAY;
@@ -1214,7 +1216,7 @@ export class FlightService {
 			destination_location,
 			instalment_type,
 			laycredit_points,
-			fare_type, card_token
+			fare_type, card_token, booking_through
 		} = bookFlightDto;
 
 		let moduleDetails = await getManager()
@@ -1246,6 +1248,7 @@ export class FlightService {
 		booking.bookingDate = bookingDate;
 		booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.layCredit = laycredit_points || 0;
+		booking.bookingThrough = booking_through || '';
 		booking.locationInfo = {
 			journey_type,
 			source_location,
