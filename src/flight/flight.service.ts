@@ -2034,8 +2034,8 @@ export class FlightService {
 				})
 			}
 
-			Headers['currency'] = bookingData.currency2.code
-			Headers['language'] = 'en'
+			// Headers['currency'] = bookingData.currency2.code
+			// Headers['language'] = 'en'
 			if (bookingType == 'oneway') {
 
 				let dto = {
