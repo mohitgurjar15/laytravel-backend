@@ -353,7 +353,9 @@ export class AuthService {
 					: "",
 				roleId: user.roleId,
 				createdDate: user.createdDate,
+				socialAccountId: user.socialAccountId
 			};
+
 			const accessToken = this.jwtService.sign(payload);
 			const token = { token: accessToken };
 			this.addLoginLog(user.userId, request, "web");
@@ -365,9 +367,9 @@ export class AuthService {
 		}
 	}
 
-	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl,roles) {
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles) {
 		const { email } = forgetPasswordDto;
-		
+
 		const user = await this.userRepository.findOne({
 			email,
 			roleId: In(roles),
@@ -539,24 +541,25 @@ export class AuthService {
 				await user.save();
 				if (user.registerVia == "android" || user.registerVia == "ios") {
 					loginvia = "mobile";
-					
-						const payload: JwtPayload = {
-							user_id: user.userId,
-							firstName: user.firstName,
-							username: user.firstName + " " + user.lastName,
-							phone: user.phoneNo,
-							middleName: "",
-							profilePic: "",
-							lastName: user.lastName,
-							email,
-							salt: user.salt,
-							//accessToken: newToken,
-							roleId: user.roleId,
-							createdDate: user.createdDate,
-						};
 
-						accessToken = this.jwtService.sign(payload);
-					
+					const payload: JwtPayload = {
+						user_id: user.userId,
+						firstName: user.firstName,
+						username: user.firstName + " " + user.lastName,
+						phone: user.phoneNo,
+						middleName: "",
+						profilePic: "",
+						lastName: user.lastName,
+						email,
+						salt: user.salt,
+						//accessToken: newToken,
+						roleId: user.roleId,
+						createdDate: user.createdDate,
+						socialAccountId: user.socialAccountId
+					};
+
+					accessToken = this.jwtService.sign(payload);
+
 				} else {
 					loginvia = "web";
 					const payload: JwtPayload = {
@@ -573,6 +576,7 @@ export class AuthService {
 							: "",
 						roleId: user.roleId,
 						createdDate: user.createdDate,
+						socialAccountId: user.socialAccountId
 					};
 					accessToken = this.jwtService.sign(payload);
 				}
@@ -721,6 +725,7 @@ export class AuthService {
 					accessToken: newToken,
 					roleId: user.roleId,
 					createdDate: user.createdDate,
+					socialAccountId: user.socialAccountId
 				};
 
 				const accessToken = this.jwtService.sign(payload);
@@ -883,6 +888,7 @@ export class AuthService {
 				accessToken: newToken,
 				roleId: userDetail.roleId,
 				createdDate: user.createdDate,
+				socialAccountId: user.socialAccountId
 			};
 
 			const accessToken = this.jwtService.sign(payload);
@@ -1105,6 +1111,8 @@ export class AuthService {
 					? data.profilePic
 					: "",
 				roleId: data.roleId,
+				socialAccountId: data.socialAccountId
+				
 			};
 			console.log(data);
 
@@ -1249,6 +1257,7 @@ export class AuthService {
 					roleId: user.roleId,
 					refrenceId: parentUser.userId,
 					createdDate: user.createdDate,
+					socialAccountId: user.socialAccountId
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };

@@ -1476,7 +1476,7 @@ export class FlightService {
 			travelersDetails,
 			isPassportRequired
 		);
-		console.log(bookingResult);
+
 
 		if (bookingResult.booking_status == "success") {
 			console.log(`step - 3 save Booking`);
@@ -1501,7 +1501,7 @@ export class FlightService {
 
 		}
 		else {
-			throw new InternalServerErrorException(bookingResult.error_message)
+			throw new HttpException(bookingResult.error_message, 424)
 		}
 	}
 
@@ -2066,23 +2066,13 @@ export class FlightService {
 					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
 					"arrival_date": await this.changeDateFormat(bookingData.moduleInfo[0].arrival_code)
 				}
-				console.log('two dto', dto)
 				flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
 			}
-			console.log(flights);
-			console.log(bookingData.moduleInfo[0].unique_code);
 
 			var match = 0;
 			for await (const flight of flights.items) {
 				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
 					match = match + 1
-					//const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
-
-					//const savedDate = new Date(bookingData.predectedBookingDate);
-					// var predictedDate = savedDate.toISOString();
-					// predictedDate = predictedDate
-					// 	.replace(/T/, " ") // replace T with a space
-					// 	.replace(/\..+/, "");
 
 					const bookingDto = new BookFlightDto
 					bookingDto.travelers = travelers

@@ -12,4 +12,5 @@ export interface JwtPayload {
     roleId?:number;
     refrenceId?:string;
     createdDate?:Date;
+    socialAccountId?:string;
 }
