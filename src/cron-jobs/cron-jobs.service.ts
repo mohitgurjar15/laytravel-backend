@@ -322,6 +322,11 @@ export class CronJobsService {
 
 		const result = await query.getMany();
 
+		if(!result.length)
+		{
+			throw new NotFoundException(`no booking found`)
+		}
+
 		var total = 0;
 		console.log(result.length);
 		for (let index = 0; index < result.length; index++) {
