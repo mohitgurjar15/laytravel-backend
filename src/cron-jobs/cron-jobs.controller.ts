@@ -1,6 +1,7 @@
-import { Controller , Get, HttpCode, Post, Put, Req } from '@nestjs/common';
+import { Controller , Get, HttpCode, Post, Put, Query, Req } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { getBookingDailyPriceDto } from './dto/get-daily-booking-price.dto';
 
 
 @ApiTags("Cron jobs")
@@ -57,7 +58,7 @@ export class CronJobsController {
 
 
 	@Post('partial-booking-price')
-	@ApiOperation({ summary: "daily price of partial booking " })
+	@ApiOperation({ summary: "get daily price of partial booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -69,8 +70,9 @@ export class CronJobsController {
 	@HttpCode(200)
 	async partialBookingPrice(
 		@Req() req,
+		@Query() options : getBookingDailyPriceDto
 	){
-		return await this.cronJobsService.partialBookingPrice(req.headers);
+		return await this.cronJobsService.partialBookingPrice(req.headers,options);
 	}
 
 

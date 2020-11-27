@@ -27,6 +27,7 @@ import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
 import { PaidFor } from "src/enum/paid-for.enum";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
+import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
 const AWS = require('aws-sdk');
 
 
@@ -296,7 +297,8 @@ export class CronJobsService {
 		return { message : `${currentDate} date installation payment capture successfully`};
 	}
 
-	async partialBookingPrice(Headers) {
+	async partialBookingPrice(Headers,options : getBookingDailyPriceDto) {
+		const {bookingId } = options
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate
@@ -314,8 +316,16 @@ export class CronJobsService {
 			.where(
 				`"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
 			)
+			if(bookingId){
+				query.andWhere(`"booking"."laytrip_booking_id" = '${bookingId}'`)
+			}
 
 		const result = await query.getMany();
+
+		if(!result.length)
+		{
+			throw new NotFoundException(`no booking found`)
+		}
 
 		var total = 0;
 		console.log(result.length);
