@@ -1809,7 +1809,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`
 
         let bookResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'BookFlight');
-        //console.log(JSON.stringify(bookResult));
+        console.log(JSON.stringify(bookResult));
 
         let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
         let bookingResponse;

@@ -1909,7 +1909,7 @@ export class FlightService {
 			.where(`laytrip_booking_id = '${bookingId}'`)
 		const booking = await query.getOne();
 		if (!booking) {
-			throw new NotFoundException(`Given booking id not found`)
+			throw new NotFoundException(`Booking id not found`)
 		}
 
 		var moduleInfo = booking.moduleInfo[0]
@@ -2106,7 +2106,7 @@ export class FlightService {
 			}
 
 			if (match == 0) {
-				throw new NotFoundException(`Given flight not available`)
+				throw new NotFoundException(`Flight is not available`)
 			}
 
 		}
