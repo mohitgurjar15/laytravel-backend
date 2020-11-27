@@ -513,7 +513,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`We can not find your request for forget password&&&otp&&&We can not find your request for forget password`
+				`Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
 			);
 		}
 	}

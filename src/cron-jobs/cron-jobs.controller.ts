@@ -24,7 +24,7 @@ export class CronJobsController {
 		return await this.cronJobsService.convertCustomer();
 	}
 
-	@Put('update-pending-flight-booking')
+	@Get('update-pending-flight-booking')
 	@ApiOperation({ summary: "change status of the booking fare type is GDS " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -40,7 +40,7 @@ export class CronJobsController {
 	}
 
 
-	@Post('get-partial-payment')
+	@Get('get-partial-payment')
 	@ApiOperation({ summary: "Get Partial paymnt from the user " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -50,14 +50,13 @@ export class CronJobsController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
 	async getPartialPoint(
 	){
 		return await this.cronJobsService.partialPayment();
 	}
 
 
-	@Post('partial-booking-price')
+	@Get('partial-booking-price')
 	@ApiOperation({ summary: "get daily price of partial booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -67,7 +66,6 @@ export class CronJobsController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
 	async partialBookingPrice(
 		@Req() req,
 		@Query() options : getBookingDailyPriceDto
@@ -102,7 +100,6 @@ export class CronJobsController {
 	@ApiOperation({ summary: "send email notification to user have installment date in 2 days" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
 	async installerReminder(
 		@Req() req,
 	){
@@ -114,7 +111,6 @@ export class CronJobsController {
 	@ApiOperation({ summary: "upload flight log on s3 bucket" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
 	async uploadFlightLog(
 	){
 		return await this.cronJobsService.uploadLogIntoS3Bucket('flights');
@@ -124,7 +120,6 @@ export class CronJobsController {
 	@ApiOperation({ summary: "upload payment log on s3 bucket" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
 	async uploadPaymentLog(
 		
 	){
