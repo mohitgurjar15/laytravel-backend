@@ -1,6 +1,6 @@
 import { NotFoundException } from "@nestjs/common";
 import { FaqCategory } from "src/entity/faq-category.entity";
-import { EntityRepository, getManager, Repository } from "typeorm";
+import { EntityRepository, Repository } from "typeorm";
 
 @EntityRepository(FaqCategory)
 export class FaqCategoryRepository extends Repository<FaqCategory> {

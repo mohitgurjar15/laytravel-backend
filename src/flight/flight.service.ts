@@ -1297,6 +1297,8 @@ export class FlightService {
 		booking.cardToken = card_token;
 
 		booking.moduleInfo = airRevalidateResult;
+		booking.checkInDate = await  this.changeDateFormat(airRevalidateResult[0].departure_date)
+		booking.checkOutDate = await  this.changeDateFormat(airRevalidateResult[0].arrival_date)
 		try {
 			let bookingDetails = await booking.save();
 			await this.saveTravelers(booking.id, userId, travelers);
@@ -1909,7 +1911,7 @@ export class FlightService {
 			.where(`laytrip_booking_id = '${bookingId}'`)
 		const booking = await query.getOne();
 		if (!booking) {
-			throw new NotFoundException(`Given booking id not found`)
+			throw new NotFoundException(`Booking id not found`)
 		}
 
 		var moduleInfo = booking.moduleInfo[0]
@@ -2096,7 +2098,7 @@ export class FlightService {
 			}
 
 			if (match == 0) {
-				throw new NotFoundException(`Given flight not available`)
+				throw new NotFoundException(`Flight is not available`)
 			}
 
 		}

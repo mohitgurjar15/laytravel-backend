@@ -3,11 +3,8 @@ import {
   Entity,
   BaseEntity,
   Column,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  JoinColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
-import { HotelRoom } from './hotel-room.entity';
 
 @Index("id", ["id"], {})
 @Index("hotel_code", ["hotelCode"], {})

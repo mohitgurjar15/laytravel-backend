@@ -14,21 +14,6 @@ export class NetRateDto{
     })
     net_rate:number;
 
-    /* @IsEnum([PaymentType.INSTALMENT,PaymentType.NOINSTALMENT],{
-        message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
-            } else {
-                return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT}').&&&payment_type&&&${errorMessage}`
-            }
-        }
-    })
-    @ApiProperty({
-        description:`Payment type`,
-        example:PaymentType.INSTALMENT
-    })
-    payment_type:string; */
-    
     @IsValidDate('',{
         message: (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "") {

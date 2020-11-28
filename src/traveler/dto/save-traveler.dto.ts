@@ -4,7 +4,6 @@ import {
 	ValidationArguments,
 	IsEnum,
 	ValidateIf,
-	IsMobilePhone,
 	NotContains,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";

@@ -8,8 +8,6 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/guards/role.decorator';
 import { newEnquiryDto } from './dto/new-enquiry.dto'
-import { GetUser } from 'src/auth/get-user.dacorator';
-import { User } from 'src/entity/user.entity';
 
 
 @ApiTags("Enquiry")

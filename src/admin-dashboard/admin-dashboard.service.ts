@@ -1,6 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { getManager } from "typeorm";
-import { Booking } from "src/entity/booking.entity";
 import { DashboardFilterDto } from "./dto/dashboard-filter.dto";
 import { Role } from "src/enum/role.enum";
 import { errorMessage } from "src/config/common.config";

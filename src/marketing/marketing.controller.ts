@@ -7,7 +7,6 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.dto';
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
 import { addRewordMarkupDto } from './dto/add-reword-markup.dto';
-import { CreateGameDto } from './dto/new-game.dto';
 import { CreateMarketingUserDto } from './dto/new-marketing-user.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { UpdateRewordMarkupDto } from './dto/update-reword-markup.dto';

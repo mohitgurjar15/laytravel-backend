@@ -7,7 +7,6 @@ import { MarketingUserActivity } from 'src/entity/marketing-user-activity.entity
 import { MarketingUserData } from 'src/entity/marketing-user.entity';
 import { QuizGameAnswer } from 'src/entity/quiz-game-answer.entity';
 import { User } from 'src/entity/user.entity';
-import { PaidFor } from 'src/enum/paid-for.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { Role } from 'src/enum/role.enum';
@@ -16,7 +15,6 @@ import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.d
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
 import { AddQuestionDto } from './dto/add-question-answer.dto';
 import { addRewordMarkupDto } from './dto/add-reword-markup.dto';
-import { AddWheelDto } from './dto/wheel-result.dto';
 import { CreateGameDto } from './dto/new-game.dto';
 import { CreateMarketingUserDto } from './dto/new-marketing-user.dto';
 import { QuizResultDto } from './dto/quiz-result.dto';

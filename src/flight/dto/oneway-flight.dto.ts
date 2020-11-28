@@ -2,7 +2,6 @@ import { IsEnum, IsNotEmpty,  MaxLength,   ValidationArguments } from "class-val
 import { ApiProperty } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 import { errorMessage } from "src/config/common.config";
-import { flightClass } from '../strategy/mystifly'
 export class OneWaySearchFlightDto{
     
     @IsNotEmpty({
