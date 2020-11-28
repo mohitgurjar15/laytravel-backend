@@ -23,9 +23,11 @@ export class Activity {
         //console.log(logData);
         
         const path = '/var/www/html/logs/' + folderName +'/'
+
+        filename = path + filename + '.json'
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path);
         }
-        fs.promises.writeFile(path + filename,JSON.stringify(logData))
+        fs.promises.writeFile(filename,JSON.stringify(logData))
     }
 }

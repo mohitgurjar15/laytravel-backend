@@ -395,5 +395,9 @@ export class AdminDashboardService {
 			);
 		}
 	}
-
+	
+	async bookingStatistics()
+	{
+			
+	} 
 }
