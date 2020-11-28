@@ -19,6 +19,7 @@ import * as path from "path";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { ValidationPipe } from "@nestjs/common";
 import { NotAcceptableExceptionFilter } from "./not-acceptable-exception.filter";
+import { timeout } from "rxjs/operators";
 
 async function bootstrap() {
 	const serverConfig = config.get("server");
@@ -63,8 +64,10 @@ async function bootstrap() {
 	console.log(process.env.PORT)
 	await app.init();
 	
+	server.use(timeout(3600))
 	http.createServer(server).listen(port);
 	https.createServer(httpsOptions, server).listen(4047);
-}
+	
+}	
 
 bootstrap();

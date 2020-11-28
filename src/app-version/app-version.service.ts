@@ -72,6 +72,11 @@ export class AppVersionService {
 			const result = await getManager().query(`SELECT id, force_update, version, name, url, upload_date
 		FROM app_version where device_type = ${device_type} ORDER BY id DESC`
 			)
+			if (await this.checkGraterVersion(version, result[0].version)) {
+				return {
+					force_update: false
+				}
+			}
 			if (result.length) {
 				return result[0]
 			}
@@ -89,13 +94,32 @@ export class AppVersionService {
 			}
 		}
 
-		if(parseFloat(version) > parseFloat(forceUpdateData))
-		{
-			return {
-				force_update: false
-			}
-		}
-
 		return forceUpdateData[0]
+	}
+
+	async checkGraterVersion(version1, version2) {
+		console.log('version1',version1);
+		console.log('version2',version2);
+		
+		
+		const version1Array = version1.split('.')
+		const version2Array = version2.split('.')
+
+		console.log('version1Array',version1Array);
+		console.log('version2Array',version2Array);
+		
+		
+		if (version1Array[0] > version2Array[0]) {
+			return true
+		}
+		else if (version1Array[0] == version2Array[0] && version1Array[1] > version2Array[1] && version1Array[1] && version2Array[1]) {
+			return true
+		}
+		else if (version1Array[0] == version2Array[0] && version1Array[1] == version2Array[1] && version1Array[2] >= version2Array[2] && version1Array[2] && version2Array[2]) {
+			return true
+		}
+		else {
+			return false
+		}
 	}
 }
