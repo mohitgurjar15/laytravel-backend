@@ -6,13 +6,13 @@ import {
     PrimaryGeneratedColumn
   } from 'typeorm';
   
-  @Index("id", ["id"], {})
-  @Index("hotel_id", ["hotelId"], {})
-  @Index("city_name", ["city"], {})
-  @Index("state_name", ["state"], {})
-  @Index("country_name", ["country"], {})
-  @Index("hotel_latitude", ["latitude"], {})
-  @Index("hotel_longitude", ["longitude"])
+  @Index("hotel_view_id", ["id"], {})
+  @Index("hotel_view_hotel_id", ["hotelId"], {})
+  @Index("hotel_view_name", ["city"], {})
+  @Index("hotel_view_state_name", ["state"], {})
+  @Index("hotel_view_country_name", ["country"], {})
+  @Index("hotel_view_hotel_latitude", ["latitude"], {})
+  @Index("hotel_view_longitude", ["longitude"])
   @Entity('hotel_view')
   export class HotelView extends BaseEntity {
   
