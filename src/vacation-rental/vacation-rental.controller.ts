@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth } from "@nestjs/swagger";
-import { DumpPaginationDto } from './dto/list-languge.dto';
 import { SearchLocation } from './dto/search_location.dto';
 import { AvailabilityDto } from './dto/availability.dto';
 import { VacationRentalService } from './vacation-rental.service';
@@ -29,6 +28,7 @@ export class VacationRentalController {
     }
 
     @Get('/availability')
+    @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
@@ -39,7 +39,6 @@ export class VacationRentalController {
         description: 'Enter currency code(ex. USD)',
         example: 'USD'
     })
-    @UseGuards(AuthGuard())
     async hotelAvailability(
         @Req() req,
         @Query() availability: AvailabilityDto,

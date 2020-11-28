@@ -25,6 +25,7 @@ export class Monaker implements StrategyVacationRental {
 
     async getMarkupDetails(check_in_date, booking_date, user, module) {
         let isInstalmentAvaible = Instalment.instalmentAvailbility(check_in_date, booking_date);
+        console.log("Istalment---",isInstalmentAvaible)
 
         let markUpDetails;
         let secondaryMarkUpDetails;
@@ -41,7 +42,7 @@ export class Monaker implements StrategyVacationRental {
         }
 
         if (!markUpDetails) {
-            throw new InternalServerErrorException(`Markup is not configured for flight&&&module&&&${errorMessage}`);
+            throw new InternalServerErrorException(`Markup is not configured for home-rental&&&module&&&${errorMessage}`);
         }else {
             return {
                 markUpDetails,
@@ -60,13 +61,13 @@ export class Monaker implements StrategyVacationRental {
             .where("module.name = :name", { name: 'home rental' })
             .getOne();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-        console.log("user---------",user.roleId)
+        
         if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+            throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
         if (type == "hotel") {
             hotelIds = await getManager().query(`
-				SELECT DISTINCT hotel_id FROM "hotel_view" WHERE id = ${id}
+				SELECT DISTINCT hotel_id FROM "hotel" WHERE id = ${id}
              `);
 
             if (hotelIds.length == 0) {
@@ -74,16 +75,21 @@ export class Monaker implements StrategyVacationRental {
             }
         } else {
             city = await getManager().query(`
-			  SELECT city FROM "hotel_view" WHERE id = ${id}
+			  SELECT city FROM "hotel" WHERE id = ${id}
             `)
             if (city.length == 0) {
                 throw new NotFoundException(`No found city`)
             }
             hotelIds = await getManager().query(`
-                SELECT DISTINCT hotel_id FROM "hotel_view" WHERE city = '${city[0]["city"]}'
+                SELECT DISTINCT hotel_id FROM "hotel" WHERE city = '${city[0]["city"]}'
             `)
         }
 
+        let markup = await this.getMarkupDetails(bookingDate,check_in_date,user,module);
+        let markUpDetails;
+        let secondaryMarkUpDetails;
+
+        console.log("mark up ====>",markup)
         let availabilityVR: Availability[] = [];
 
 
@@ -117,7 +123,7 @@ export class Monaker implements StrategyVacationRental {
                 for (let i = 0; i < result.length; i++) {
                     const availability = new Availability();
                     const data = await getManager().query(`
-					SELECT DISTINCT hotel_name,city,country,hotel_id,latitude,longitude,images FROM "hotel_view" WHERE hotel_id = ${result[i]["propertyId"]}
+					SELECT DISTINCT hotel_name,city,country,hotel_id,latitude,longitude,images FROM "hotel" WHERE hotel_id = ${result[i]["propertyId"]}
 				`)
                     availability.property_id = result[i]["propertyId"];
                     availability.property_name = data[0]["hotel_name"];
