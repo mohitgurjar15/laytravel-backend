@@ -6,8 +6,6 @@ import { User } from "../entity/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtPayload } from "./jwt-payload.interface";
 import * as config from 'config'
-import { getConnection, getManager } from "typeorm";
-import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 
 
 const jwtConfig = config.get('jwt');

@@ -9,7 +9,6 @@ import {
 	ForbiddenException,
 } from "@nestjs/common";
 import { BookingRepository } from "./booking.repository";
-import * as uniqid from 'uniqid';
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
 import { FlightBookingEmailParameterModel } from "src/config/email_template/model/flight-booking-email-parameter.model";
@@ -20,17 +19,13 @@ import * as moment from 'moment';
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import * as config from "config";
 import { Booking } from "src/entity/booking.entity";
-import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { BookingType } from "src/enum/booking-type.enum";
 import { exit } from "process";
-import { PaymentType } from "src/enum/payment-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
-import { getConnection, getManager } from "typeorm";
+import {  getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
-import * as uuidValidator from "uuid-validate"
-import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 import { ExportBookingDto } from "./dto/export-booking.dto";

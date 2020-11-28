@@ -18,7 +18,6 @@ import { User } from 'src/entity/user.entity';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { PaymentService } from "src/payment/payment.service";
 import { errorMessage } from 'src/config/common.config';
-import { CreteTransactionDto } from "src/payment/dto/create-transaction.dto";
 import { PaidFor } from 'src/enum/paid-for.enum';
 import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { LaytripPointsType } from 'src/enum/laytrip-point-type.enum';
