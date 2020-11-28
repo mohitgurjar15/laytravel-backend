@@ -3,21 +3,18 @@ import {
   Entity,
   BaseEntity,
   Column,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  JoinColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
-import { HotelRoom } from './hotel-room.entity';
 
-@Index("id_idx", ["id"], {})
-@Index("hotel_code_idx", ["hotelCode"], {})
-@Index("city_name_idx", ["city"], {})
-@Index("state_name_idx", ["state"], {})
-@Index("country_name_idx", ["country"], {})
-@Index("hotel_latitude_idx", ["latitude"], {})
-@Index("hotel_longitude_idx", ["longitude"])
-@Entity('hotel_view')
-export class HotelView extends BaseEntity {
+@Index("id", ["id"], {})
+@Index("hotel_code", ["hotelCode"], {})
+@Index("city_name", ["city"], {})
+@Index("state_name", ["state"], {})
+@Index("country_name", ["country"], {})
+@Index("hotel_latitude", ["latitude"], {})
+@Index("hotel_longitude", ["longitude"])
+@Entity('hotel')
+export class Hotel extends BaseEntity {
 
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
@@ -91,10 +88,4 @@ export class HotelView extends BaseEntity {
   @Column('text', { name: 'activites' ,nullable: true })
   activites: string;
 
-  // @OneToMany(
-  //   () => HotelMonakarENRoom,
-  //   HotelMonakarENRoom => HotelMonakarENRoom.hotelCode
-  // )
-  // @JoinColumn([{ name: "hotel_code", referencedColumnName: "hotel_code" }])
-  // hotelRoom: HotelMonakarENRoom;
 }
