@@ -64,6 +64,11 @@ export class Booking extends BaseEntity {
   @Column("date", { name: "predected_booking_date" ,nullable : true })
   predectedBookingDate: string;
 
+  @Column("date", { name: "check_in_date" ,nullable : true })
+  checkInDate: Date;
+
+  @Column("date", { name: "check_out_date" ,nullable : true })
+  checkOutDate: Date;
 
   @Column("json", { name: "location_info" })
   locationInfo: object;

@@ -9,13 +9,13 @@ import {
 } from 'typeorm';
 import { HotelRoom } from './hotel-room.entity';
 
-@Index("id", ["id"], {})
-@Index("hotel_code", ["hotelCode"], {})
-@Index("city_name", ["city"], {})
-@Index("state_name", ["state"], {})
-@Index("country_name", ["country"], {})
-@Index("hotel_latitude", ["latitude"], {})
-@Index("hotel_longitude", ["longitude"])
+@Index("id_idx", ["id"], {})
+@Index("hotel_code_idx", ["hotelCode"], {})
+@Index("city_name_idx", ["city"], {})
+@Index("state_name_idx", ["state"], {})
+@Index("country_name_idx", ["country"], {})
+@Index("hotel_latitude_idx", ["latitude"], {})
+@Index("hotel_longitude_idx", ["longitude"])
 @Entity('hotel_view')
 export class HotelView extends BaseEntity {
 
