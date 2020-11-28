@@ -345,7 +345,7 @@ export class Mystifly implements StrategyAirline {
 
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
-            priceType = 'start_price';
+            priceType = 'secondary_start_price';
             partialPaymentPriceRange.min_price = this.getMinPrice(routes, priceType);
             partialPaymentPriceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
@@ -620,7 +620,7 @@ export class Mystifly implements StrategyAirline {
 
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
-            priceType = 'start_price';
+            priceType = 'secondary_start_price';
             partialPaymentPriceRange.min_price = this.getMinPrice(routes, priceType);
             partialPaymentPriceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
@@ -890,7 +890,7 @@ export class Mystifly implements StrategyAirline {
 
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
-            priceType = 'start_price';
+            priceType = 'secondary_start_price';
             partialPaymentPriceRange.min_price = this.getMinPrice(routes, priceType);
             partialPaymentPriceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
@@ -1375,7 +1375,7 @@ export class Mystifly implements StrategyAirline {
 
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
-            priceType = 'start_price';
+            priceType = 'secondary_start_price';
             partialPaymentPriceRange.min_price = this.getMinPrice(routes, priceType);
             partialPaymentPriceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
