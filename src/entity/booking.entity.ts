@@ -65,10 +65,10 @@ export class Booking extends BaseEntity {
   predectedBookingDate: string;
 
   @Column("date", { name: "check_in_date" ,nullable : true })
-  checkInDate: Date;
+  checkInDate: string;
 
   @Column("date", { name: "check_out_date" ,nullable : true })
-  checkOutDate: Date;
+  checkOutDate: string;
 
   @Column("json", { name: "location_info" })
   locationInfo: object;
