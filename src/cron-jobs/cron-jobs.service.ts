@@ -376,7 +376,7 @@ export class CronJobsService {
 						"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
 					}
 
-					flights = await this.flightService.searchOneWayFlight(dto, Headers, bookingData.user);
+					flights = await this.flightService.searchRoundTripFlight(dto, Headers, bookingData.user);
 				}
 				for await (const flight of flights.items) {
 					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
