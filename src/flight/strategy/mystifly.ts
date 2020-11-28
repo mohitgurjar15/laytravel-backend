@@ -1486,11 +1486,13 @@ export class Mystifly implements StrategyAirline {
             </soapenv:Envelope>`;
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
         let airRevalidateResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'AirRevalidate');
+        console.log("airRevalidateResult",JSON.stringify(airRevalidateResult))
         if (airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:success'][0] == "true") {
 
 
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
             let flightRoutes = airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
+            let extraServices = airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:priceditineraries'][0]['a:extraservices1_1'];
             let stop: Stop;
             let stops: Stop[] = [];
             let routes: Route[] = [];

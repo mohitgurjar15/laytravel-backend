@@ -50,6 +50,7 @@ export class Route{
     fare_type               : string;
     instalment_details      :{};
     unique_code             :string;
+    extra_service           :[]
 }
 
 export class RouteType{
