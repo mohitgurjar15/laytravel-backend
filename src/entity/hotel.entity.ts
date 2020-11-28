@@ -16,8 +16,8 @@ import { HotelRoom } from './hotel-room.entity';
 @Index("country_name", ["country"], {})
 @Index("hotel_latitude", ["latitude"], {})
 @Index("hotel_longitude", ["longitude"])
-@Entity('hotel_view')
-export class HotelView extends BaseEntity {
+@Entity('hotel')
+export class Hotel extends BaseEntity {
 
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
@@ -91,10 +91,4 @@ export class HotelView extends BaseEntity {
   @Column('text', { name: 'activites' ,nullable: true })
   activites: string;
 
-  // @OneToMany(
-  //   () => HotelMonakarENRoom,
-  //   HotelMonakarENRoom => HotelMonakarENRoom.hotelCode
-  // )
-  // @JoinColumn([{ name: "hotel_code", referencedColumnName: "hotel_code" }])
-  // hotelRoom: HotelMonakarENRoom;
 }

@@ -73,6 +73,7 @@ import { MarketingModule } from './marketing/marketing.module';
       },
     }),
     FlightModule,
+    VacationRentalModule,
     AdminModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -94,7 +95,6 @@ import { MarketingModule } from './marketing/marketing.module';
     InstalmentModule,
     ModulesModule,
     MarkupModule,
-    VacationRentalModule,
     ActivitiesModule,
     FaqModule,
     EnqiryModule,

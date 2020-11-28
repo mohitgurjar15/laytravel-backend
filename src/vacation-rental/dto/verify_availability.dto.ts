@@ -2,24 +2,13 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from "class-validator";
 import { errorMessage } from "src/config/common.config";
 
-export class AvailabilityDto {
-    @ApiProperty({
-        description:"Enter a id",
-        example:133
-    })
-    id:number;
+export class VerifyAvailabilityDto {
 
     @ApiProperty({
-        description:"Enter a type city or hotel ",
-        example:'hotel'
+        description:"Enter rate plan selected for price check.  ",
+        example:'096F5MI601'
     })
-    type:string;
-
-    // @ApiProperty({
-    //     description:"Enter a contry name",
-    //     example:'Spain'
-    // })
-    // country:string;
+    rate_plan_code:string;
 
     @ApiProperty({
         description:"Enter a check in date",
@@ -40,10 +29,4 @@ export class AvailabilityDto {
     })
     adult_count:number;
 
-
-    // @ApiProperty({
-    //     description:"Enter a currency",
-    //     example:'USD'
-    // })
-    // currency:string;
 }
