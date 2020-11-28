@@ -41,7 +41,7 @@ export class UserRepository extends Repository<User> {
 
 		try {
 			await user.save();
-			return { message: `Your password is updated successfully.` };
+			return { message: `Your password has been updated successfully.` };
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
@@ -232,7 +232,8 @@ export class UserRepository extends Repository<User> {
 		console.log(`birthdate ${birthDate}`);
 		
 		var age = moment(new Date()).diff(moment(birthDate),'years');
-		console.log(`age ${age}`);
+		
+		userDetail.age = age
 		if (age < 2) {
 			userDetail.user_type = "infant";
 		} else if (age < 12) {
@@ -333,7 +334,7 @@ export class UserRepository extends Repository<User> {
 		var today = new Date();
 		var birthDate = new Date(userdata.dob);
 		var age = moment(new Date()).diff(moment(birthDate),'years');
-
+		userdata.age = age
 		if (age < 2) {
 			userdata.user_type = "infant";
 		} else if (age < 12) {
@@ -445,6 +446,7 @@ export class UserRepository extends Repository<User> {
 				"user.preferredLanguage2",
 				"user.passportNumber",
 				"user.passportExpiry",
+				"user.createdDate",
 				"language.id",
 				"language.name",
 				"language.iso_1Code",
@@ -460,6 +462,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
+				
 			])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`, {
 				userId,
@@ -478,6 +481,7 @@ export class UserRepository extends Repository<User> {
 		var age = moment(new Date()).diff(moment(birthDate),'years');
 
 		let user: any = {};
+		user.age = age
 		if (age < 2) {
 			user.user_type = "infant";
 		} else if (age < 12) {
@@ -505,6 +509,7 @@ export class UserRepository extends Repository<User> {
 		user.preferredLanguage = userDetail.preferredLanguage2 || {};
 		user.passportNumber = userDetail.passportNumber || "";
 		user.passportExpiry = userDetail.passportExpiry || "";
+		user.createdDate = userDetail.createdDate 
 		user.profilePic = userDetail.profilePic
 			? `${siteUrl}/profile/${userDetail.profilePic}`
 			: "";

@@ -8,13 +8,13 @@ export class Instalment{
 
 
     static weeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
-        let instalmentData={'instalment_available':false,'instalment_date':[]}
+        let instalmentData={'instalment_available':false,'instalment_date':[],'percentage':0}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         
         if(!isAvailable)
             return instalmentData;
 
-        let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
@@ -41,6 +41,7 @@ export class Instalment{
             let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
+            instalmentData.percentage=percentage;
         }
 
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -50,12 +51,12 @@ export class Instalment{
     }
     
     static biWeeklyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
-        let instalmentData={'instalment_available':false,'instalment_date':[]}
+        let instalmentData={'instalment_available':false,'instalment_date':[],'percentage':0}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if(!isAvailable)
             return instalmentData;
             
-        let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
@@ -83,6 +84,7 @@ export class Instalment{
             let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
+            instalmentData.percentage=percentage;
         }
         
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -91,12 +93,12 @@ export class Instalment{
     }
     
     static monthlyInstalment(amount,ckeckInDate,bookingDate,additionalAmount=null,customAmount=null,customInstalmentNo=null){
-        let instalmentData={'instalment_available':false,'instalment_date':[]}
+        let instalmentData={'instalment_available':false,'instalment_date':[],'percentage':0}
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if(!isAvailable)
             return instalmentData;
 
-        let lastInstalmentDate = moment(ckeckInDate).subtract(7, 'days').format('YYYY-MM-DD');
+        let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
@@ -124,6 +126,7 @@ export class Instalment{
             let percentageAmount = (amount * percentage )/100;
         
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment,percentageAmount,instalmentsDates,amount,additionalAmount,customAmount,customInstalmentNo)
+            instalmentData.percentage=percentage;
         }
         
         instalmentData.instalment_available=(instalmentsDates.length) ? true:false;
@@ -198,7 +201,7 @@ export class Instalment{
     static instalmentAvailbility(checkinDate, bookingDate){
         let dayDiffernce = moment(checkinDate).diff(moment(bookingDate), 'days')
         let available=true;
-        if(dayDiffernce<30)
+        if(dayDiffernce<=30)
             available=false;
         
         return available;

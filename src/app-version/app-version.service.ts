@@ -89,6 +89,13 @@ export class AppVersionService {
 			}
 		}
 
+		if(parseFloat(version) > parseFloat(forceUpdateData))
+		{
+			return {
+				force_update: false
+			}
+		}
+
 		return forceUpdateData[0]
 	}
 }

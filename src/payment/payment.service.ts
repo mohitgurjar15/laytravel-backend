@@ -17,6 +17,7 @@ import { CreteTransactionDto } from "./dto/create-transaction.dto";
 import { Generic } from "src/utility/generic.utility";
 import { OtherPayments } from "src/entity/other-payment.entity";
 import { PaymentStatus } from "src/enum/payment-status.enum";
+import { Activity } from "src/utility/activity.utility";
 
 
 @Injectable()
@@ -113,7 +114,8 @@ export class PaymentService {
 				retained: true,
 			},
 		};
-		let cardResult = await this.axiosRequest(url, requestBody, headers);
+		let cardResult = await this.axiosRequest(url, requestBody, headers,null,'add-card');
+
 		console.log(cardResult);
 		if (
 			typeof cardResult != "undefined" &&
@@ -172,7 +174,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers);
+		let authResult = await this.axiosRequest(url, requestBody, headers , null ,'authorise-card');
 		console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -200,7 +202,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers);
+		let captureRes = await this.axiosRequest(url, requestBody, headers,null,'capture-card');
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -226,7 +228,7 @@ export class PaymentService {
 		}
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
-		let voidRes = await this.axiosRequest(url, requestBody, headers);
+		let voidRes = await this.axiosRequest(url, requestBody, headers,null,'void-card');
 		if (typeof voidRes.transaction != 'undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -253,7 +255,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
 		let requestBody = {};
-		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT');
+		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT','retain-card');
 		if (typeof retainRes != 'undefined' && retainRes.transaction.succeeded) {
 			return {
 				success: true
@@ -265,7 +267,7 @@ export class PaymentService {
 		}
 	}
 
-	async axiosRequest(url, requestBody, headers, method = null) {
+	async axiosRequest(url, requestBody, headers, method = null, headerAction = null) {
 
 		method = method || 'POST';
 		console.log("method", method)
@@ -276,6 +278,14 @@ export class PaymentService {
 				data: requestBody,
 				headers: headers,
 			});
+
+			let logData = {};
+			logData['url'] = url
+			logData['requestBody'] = requestBody
+			logData['headers'] = headers
+			logData['responce'] = result.data;
+			let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
+			Activity.createlogFile(fileName, logData, 'payment');
 			return result.data;
 		} catch (exception) {
 			throw new InternalServerErrorException(`${exception.message}&&&card&&&${errorMessage}`)
@@ -302,8 +312,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers);
-		console.log(authResult)
+		let authResult = await this.axiosRequest(url, requestBody, headers,null,'capture-payment');
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
@@ -333,7 +342,7 @@ export class PaymentService {
 
 		const result = await this.getPayment(card_token, amount, "USD")
 
-		
+
 		const transaction = new OtherPayments;
 
 		transaction.bookingId = bookingId;
@@ -344,7 +353,7 @@ export class PaymentService {
 		transaction.comment = note
 		transaction.transactionId = result.token
 		transaction.paymentInfo = result.meta_data
-		transaction.paymentStatus = result.status ==  true ? PaymentStatus.CONFIRM : PaymentStatus.FAILED ;
+		transaction.paymentStatus = result.status == true ? PaymentStatus.CONFIRM : PaymentStatus.FAILED;
 		transaction.createdBy = createdBy
 		transaction.createdDate = new Date()
 
@@ -355,44 +364,6 @@ export class PaymentService {
 
 
 
-	// async listPaymentForUser(
-	// 	listPaymentUserDto: ListPaymentUserDto,
-	// 	user_id: string = ""
-	// ) {
-	// 	const {
-	// 		limit,
-	// 		page_no,
-	// 		module_id,
-	// 		status,
-	// 		start_date,
-	// 		end_date,
-	// 		instalment_type,
-	// 		booking_id,
-	// 	} = listPaymentUserDto;
-
-	// 	let where;
-	// 	where = `("BookingInstalments"."user_id" = '${user_id}')`;
-
-	// 	if (booking_id) {
-	// 		where += `AND ("BookingInstalments"."booking_id" = '${booking_id}')`;
-	// 	}
-	// 	if (start_date) {
-	// 		where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
-	// 	}
-	// 	if (end_date) {
-	// 		where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
-	// 	}
-	// 	if (status) {
-	// 		where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
-	// 	}
-	// 	if (module_id) {
-	// 		where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
-	// 	}
-	// 	if (instalment_type) {
-	// 		where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
-	// 	}
-	// 	return this.bookingRepository.listPayment(where, limit, page_no);
-	// }
 
 
 }

@@ -62,5 +62,11 @@ export class Strategy{
         return data;
     }
 
+    async cancelBooking(param1)
+    {
+        const data = await this.airline.cancelBooking(param1);
+        return data;
+    }
+
     
 }

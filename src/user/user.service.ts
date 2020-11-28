@@ -4,6 +4,9 @@ import {
 	NotFoundException,
 	ForbiddenException,
 	BadRequestException,
+	ConflictException,
+	NotAcceptableException,
+	UnauthorizedException,
 } from "@nestjs/common";
 import { UserRepository } from "../auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -59,7 +62,7 @@ export class UserService {
 			prefer_language,
 			state_id,
 			city_name,
-			gender,dob
+			gender, dob
 		} = saveUserDto;
 
 		let countryDetails = await getManager()
@@ -124,7 +127,7 @@ export class UserService {
 					to: userdata.email,
 					from: mailConfig.from,
 					subject: `Welcome on board`,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					template: "welcome.html",
 					context: {
 						// Data to be sent to template files.
@@ -231,8 +234,32 @@ export class UserService {
 			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`);
 			return userData;
 		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
 			throw new InternalServerErrorException(
-				`${error.message}&&&no_key&&&${errorMessage}`
+				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
 	}
@@ -448,7 +475,7 @@ export class UserService {
 							.sendMail({
 								to: data.email,
 								from: mailConfig.from,
-								cc:mailConfig.BCC,
+								cc: mailConfig.BCC,
 								subject: `Welcome on board`,
 								template: "welcome.html",
 								context: {

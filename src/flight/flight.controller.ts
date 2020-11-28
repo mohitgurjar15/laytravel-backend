@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException, Put } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
@@ -82,7 +82,7 @@ export class FlightController {
 
         if (moment(searchFlightDto.departure_date).isAfter(moment().add(365, "days").format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
-        console.log(req.headers);
+        
         return await this.flightService.searchOneWayFlight(searchFlightDto, req.headers, user);
     }
 
@@ -165,31 +165,30 @@ export class FlightController {
         return await this.flightService.airRevalidate(routeIdDto, req.headers, user);
     }
 
-    // @Post('/book')
-    // @ApiHeader({
-    //     name: 'currency',
-    //     description: 'Enter currency code(ex. USD)',
-    //     example : 'USD'
-    //   })
-    // @ApiHeader({
-    // name: 'language',
-    // description: 'Enter language code(ex. en)',
-    // })
-    // @ApiOperation({ summary: "Book Flight" })
-    // @ApiResponse({ status: 200, description: 'Api success' })
-    // @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    // @ApiResponse({ status: 404, description: 'Flight is not available now' })
-    // @HttpCode(200)
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
-    // async bookFlight(
-    //    @Body() bookFlightDto:BookFlightDto,
-    //    @Req() req,
-    //    @LogInUser() user
-    // ){
-    //     console.log(bookFlightDto)
-    //     return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
-    // } 
+    @Post('/book')
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example : 'USD'
+      })
+    @ApiHeader({
+    name: 'language',
+    description: 'Enter language code(ex. en)',
+    })
+    @ApiOperation({ summary: "Book Flight" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Flight is not available now' })
+    @HttpCode(200)
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
+    async bookFlight(
+       @Body() bookFlightDto:BookFlightDto,
+       @Req() req,
+       @LogInUser() user
+    ){
+        return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
+    } 
 
     @Get('/ticket/:id')
     @ApiOperation({ summary: "Ticket flight booking" })
@@ -395,5 +394,58 @@ export class FlightController {
         @Param('booking_id') booking_id : string
     ) {
         return await this.flightService.manullyBooking(booking_id, manullybooking);
+    }
+
+    @Put('/cancel-booking/:booking_id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiOperation({ summary: "cancel booking" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async cancelBooking(
+        @Param('booking_id') booking_id : string,
+        @Req() req,
+
+    ) {
+        return await this.flightService.cancelBooking(booking_id, req.headers);
+    }
+
+
+    @Put('/book-partially-booking/:booking_id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiOperation({ summary: "book parially booking by the admin" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async bookPartiallyBooking(
+        @Param('booking_id') booking_id : string,
+        @Req() req,
+
+    ) {
+        return await this.flightService.bookPartialBooking(booking_id, req.headers);
     }
 }

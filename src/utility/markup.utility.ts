@@ -42,7 +42,6 @@ export class PriceMarkup{
         
         userType = userType==null ? 7 : userType;
         bookingType = bookingType || 'no-instalment';
-        console.log(userType,bookingType)
         let markupDetails =  await getManager()
                             .createQueryBuilder(Markup, "markup")
                             .where("markup.module_id = :moduleId and markup.user_type=:userType and markup.booking_type=:bookingType", { moduleId,userType,bookingType })

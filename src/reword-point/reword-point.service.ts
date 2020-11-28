@@ -21,6 +21,8 @@ import { errorMessage } from 'src/config/common.config';
 import { CreteTransactionDto } from "src/payment/dto/create-transaction.dto";
 import { PaidFor } from 'src/enum/paid-for.enum';
 import { PaymentStatus } from 'src/enum/payment-status.enum';
+import { LaytripPointsType } from 'src/enum/laytrip-point-type.enum';
+import { LaytripPointSubscriptionType } from 'src/enum/laytrip-point-subscription-type.emum';
 
 @Injectable()
 export class RewordPointService {
@@ -99,7 +101,7 @@ export class RewordPointService {
 	}
 	async addLaytripPoint(addLaytripPoint: AddLaytripPoint, user: User) {
 		try {
-			const { card_token, points } = addLaytripPoint;
+			const { card_token, points, type, number_of_cycle, subscription_type } = addLaytripPoint;
 
 			const createTransaction = {
 				"bookingId": null,
@@ -114,18 +116,56 @@ export class RewordPointService {
 
 			if (payment.paymentStatus == PaymentStatus.CONFIRM) {
 
-				const reword = new LayCreditEarn();
-				reword.transactionId = payment.id;
-				reword.points = points;
-				reword.userId = user.userId;
-				reword.status = RewordStatus.AVAILABLE;
-				reword.creditMode = 'Purchesed';
-				reword.earnDate = new Date();
-				reword.description = `Point Purchesed by user`;
-				reword.creditBy = user.userId;
-				await reword.save();
-				return {
-					message: `${points} Laytrip point added succefully`
+				if (type != LaytripPointsType.RECURRING) {
+					const reword = new LayCreditEarn();
+					reword.transactionId = payment.id;
+					reword.points = points;
+					reword.userId = user.userId;
+					reword.status = RewordStatus.AVAILABLE;
+					reword.creditMode = 'Purchesed';
+					reword.earnDate = new Date();
+					reword.description = `Point Purchesed by user`;
+					reword.creditBy = user.userId;
+					reword.cardToken = card_token;
+					reword.type = LaytripPointsType.ONETIME
+					reword.createdDate = new Date();
+					reword.subscriptionType = null
+					await reword.save();
+					return {
+						message: `${points} Laytrip point added succefully`
+					}
+				}
+				else {
+					const today = new Date();
+					var dayDiffrence = 7;
+					if (subscription_type == LaytripPointSubscriptionType.BIWEEKLY) {
+						dayDiffrence = 15;
+					}
+					if (subscription_type == LaytripPointSubscriptionType.MONTHLY) {
+						dayDiffrence = 30;
+					}
+					for (let index = 0; index < number_of_cycle; index++) {
+
+						const reword = new LayCreditEarn();
+						reword.points = points;
+						reword.userId = user.userId;
+						reword.status = index == 0 ? RewordStatus.AVAILABLE : RewordStatus.PENDING;
+						reword.cardToken = card_token;
+						reword.type = type
+						reword.createdDate = new Date();
+						reword.subscriptionType = subscription_type
+						reword.creditMode = 'Purchesed';
+						reword.earnDate = today;
+						reword.description = `Point added by user`;
+						reword.creditBy = user.userId;
+						reword.transactionId = index == 0 ? payment.id : null;
+						await reword.save();
+
+						today.setDate(today.getDate() + dayDiffrence);
+					}
+					return {
+						message: `${points} Laytrip point added succefully`
+					}
 				}
 			}
 			else {
@@ -162,6 +202,4 @@ export class RewordPointService {
 			);
 		}
 	}
-
-
 }

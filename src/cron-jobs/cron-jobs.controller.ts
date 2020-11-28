@@ -1,6 +1,7 @@
-import { Controller , Get, HttpCode, Post, Put, Req } from '@nestjs/common';
+import { Controller , Get, HttpCode, Post, Put, Query, Req } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { getBookingDailyPriceDto } from './dto/get-daily-booking-price.dto';
 
 
 @ApiTags("Cron jobs")
@@ -23,7 +24,7 @@ export class CronJobsController {
 		return await this.cronJobsService.convertCustomer();
 	}
 
-	@Put('update-pending-flight-booking')
+	@Get('update-pending-flight-booking')
 	@ApiOperation({ summary: "change status of the booking fare type is GDS " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -39,7 +40,7 @@ export class CronJobsController {
 	}
 
 
-	@Post('get-partial-payment')
+	@Get('get-partial-payment')
 	@ApiOperation({ summary: "Get Partial paymnt from the user " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -49,15 +50,14 @@ export class CronJobsController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
 	async getPartialPoint(
 	){
 		return await this.cronJobsService.partialPayment();
 	}
 
 
-	@Post('book-panding-partial-booking')
-	@ApiOperation({ summary: "book a pending partial bookings" })
+	@Get('partial-booking-price')
+	@ApiOperation({ summary: "get daily price of partial booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -66,11 +66,11 @@ export class CronJobsController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async PandingPartialBooking(
+	async partialBookingPrice(
 		@Req() req,
+		@Query() options : getBookingDailyPriceDto
 	){
-		return await this.cronJobsService.PendingPartialBooking(req.headers);
+		return await this.cronJobsService.partialBookingPrice(req.headers,options);
 	}
 
 
@@ -85,4 +85,44 @@ export class CronJobsController {
 		return await this.cronJobsService.updateFlightBookingInProcess();
 	}
 
+	@Get('add-recurring-laytrip-point')
+	@ApiOperation({ summary: "Add Recurring laytrip point" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async addRecurringLaytripPoint(
+		@Req() req,
+	){
+		return await this.cronJobsService.addRecurringLaytripPoint();
+	}
+
+	@Get('installment-reminder')
+	@ApiOperation({ summary: "send email notification to user have installment date in 2 days" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async installerReminder(
+		@Req() req,
+	){
+		return await this.cronJobsService.paymentReminder();
+	}
+
+
+	@Get('upload-flight-log')
+	@ApiOperation({ summary: "upload flight log on s3 bucket" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async uploadFlightLog(
+	){
+		return await this.cronJobsService.uploadLogIntoS3Bucket('flights');
+	}
+
+	@Get('upload-payment-log')
+	@ApiOperation({ summary: "upload payment log on s3 bucket" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async uploadPaymentLog(
+		
+	){
+		return await this.cronJobsService.uploadLogIntoS3Bucket('payment');
+	}
 }

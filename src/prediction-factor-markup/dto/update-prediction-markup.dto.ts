@@ -4,13 +4,13 @@ import { ApiProperty } from "@nestjs/swagger";
 export class UpdatePredictionMarkupDto{
 
     @IsNotEmpty({
-		message: `Please enter prediction markup percentage.&&&markup&&&Please enter prediction markup percentage`,
+		message: `Please enter minimum installment percentage.&&&markup&&&Please enter minimum installment percentage`,
 	})
     @ApiProperty({
-        description:`Please enter markup percentage`,
+        description:`Please enter minimum installment percentage`,
         example:''
     })
-    markup_percentage:number;
+    minimum_installment_percentage:number;
 
 
     @IsNotEmpty({

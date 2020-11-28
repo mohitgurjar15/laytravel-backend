@@ -1,5 +1,5 @@
-import { EmailHeader } from "./flight-booking-header.html";
-import {  EmailFooter} from "./booking-footer.html";
+import { EmailHeader } from "./header.html";
+import {  EmailFooter} from "./footer.html";
 import { BaseUrl } from "../base-url";
 
 export function EnquiryNotificationHTML(param:{ name:string , message:any  })

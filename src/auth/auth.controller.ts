@@ -196,7 +196,31 @@ export class AuthController {
 		@Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
 		@SiteUrl() siteUrl: string
 	) {
-		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl);
+		var roles = [
+			Role.FREE_USER,
+			Role.PAID_USER,
+		]
+		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl,roles);
+	}
+
+	@Post("backend-forgot-password")
+	@ApiOperation({ summary: "Forgot password for backend user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not found!" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async forgotPasswordForBackend(
+		@Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
+		@SiteUrl() siteUrl: string
+	) {
+		var roles = [
+			Role.SUPER_ADMIN,
+			Role.ADMIN,
+			Role.SUPPLIER
+		]
+		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl,roles);
 	}
 
 	@ApiOperation({ summary: "Reset password of user" })
@@ -452,4 +476,24 @@ export class AuthController {
 		return result;
 	}
 	
+
+	@Get("validate-user/:token")
+	@ApiOperation({ summary: "validate user token" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async validateuserToken(
+		@Param('token') token : string
+	) {
+		return await this.authService.validateUser(
+			token
+		);
+	}
+
 }

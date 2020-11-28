@@ -17,6 +17,7 @@ import { User } from "src/entity/user.entity";
 import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { In } from "typeorm";
+import { Role } from "src/enum/role.enum";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -39,10 +40,11 @@ export class SupportUserService {
 		files: ProfilePicDto,
 		adminId: string
 	): Promise<User> {
-		const { email, password, first_name, last_name } = saveSupporterDto;
+		const { email, password, first_name, last_name,gender } = saveSupporterDto;
 		const salt = await bcrypt.genSalt();
 		const user = new User();
 		user.userId = uuidv4();
+		user.gender = gender;
 		user.accountType = 1;
 		user.socialAccountId = "";
 		user.phoneNo = "";
@@ -60,8 +62,10 @@ export class SupportUserService {
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.createdBy = adminId
+		user.isVerified = true;
 		user.password = await this.userRepository.hashPassword(password, salt);
 		const userdata = await this.userRepository.createUser(user);
+		
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
@@ -106,12 +110,13 @@ export class SupportUserService {
 				middleName,
 				lastName,
 				profile_pic,
+				gender
 			} = updateSupporterDto;
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([3]) },
 			});
-
+			userData.gender = gender
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -198,5 +203,22 @@ export class SupportUserService {
 	//Export user
 	async exportSupporter(): Promise<{ data: User[] }> {
 		return await this.userRepository.exportUser([3]);
+	}
+
+	async getSupportUserData(userId: string, siteUrl: string): Promise<User> {
+		try {
+			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.SUPPORT])
+			
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No supporter found`);
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
 	}
 }

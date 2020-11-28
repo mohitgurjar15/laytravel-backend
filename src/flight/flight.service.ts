@@ -58,6 +58,8 @@ import { InstalmentService } from "src/instalment/instalment.service";
 import { exit } from "process";
 import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
 import { airports } from "./airports";
+import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
+import { match } from "assert";
 
 @Injectable()
 export class FlightService {
@@ -89,7 +91,7 @@ export class FlightService {
 			if (type == 'web')
 				result = this.sortAirport(result)
 			else
-				result = this.getNestedChildren(result, 0)
+				result = this.getNestedChildren(result, 0, true)
 
 			if (!result.length)
 				throw new NotFoundException(`No Airport Found.&&&name`);
@@ -121,14 +123,12 @@ export class FlightService {
 
 		return result;
 	}
-	getNestedChildren(arr, parent) {
+	getNestedChildren(arr, parent, param) {
 		let out = [];
 		for (let i in arr) {
-			arr[
-				i
-			].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
+			arr[i].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
 			if (arr[i].parentId == parent) {
-				let children = this.getNestedChildren(arr, arr[i].id);
+				let children = this.getNestedChildren(arr, arr[i].id, false);
 
 				if (children.length) {
 					arr[i].sub_airport = children;
@@ -140,6 +140,13 @@ export class FlightService {
 				].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
 				out.push(arr[i]);
 			}
+
+
+		}
+
+		if (param === true && arr.length == 1 && arr[0].parentId != 0) {
+			arr['display_name'] = `${arr.city},${arr.country},(${arr.code}),${arr.name}`;
+			out.push(arr[0]);
 		}
 		return out;
 	}
@@ -502,6 +509,8 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date;
+				var startPrice = 0;
+				var secondaryStartPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -509,6 +518,8 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -522,6 +533,8 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					key++;
 				}
@@ -529,7 +542,9 @@ export class FlightService {
 					date: date,
 					net_rate: netRate,
 					price: lowestprice,
-					unique_code: unique_code
+					unique_code: unique_code,
+					start_price: startPrice,
+					secondary_start_price: secondaryStartPrice
 				}
 
 				returnResponce.push(output)
@@ -549,7 +564,7 @@ export class FlightService {
 
 		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count, isRoundtrip, arrivale_date } = serchFlightDto;
 
-		console.log(isRoundtrip);
+
 
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
@@ -585,7 +600,6 @@ export class FlightService {
 				}
 				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
 			} else {
-				console.log(`One way `)
 				let dto = {
 					"source_location": source_location,
 					"destination_location": destination_location,
@@ -614,6 +628,8 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date = '';
+				var startPrice;
+				var secondaryStartPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -621,6 +637,8 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -634,6 +652,8 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
+						secondaryStartPrice = flightData.secondary_start_price || 0
 					}
 					key++;
 				}
@@ -641,7 +661,9 @@ export class FlightService {
 					date: date,
 					net_rate: netRate,
 					price: lowestprice,
-					unique_code: unique_code
+					unique_code: unique_code,
+					start_price: startPrice,
+					secondary_start_price: secondaryStartPrice
 				}
 
 				returnResponce.push(output)
@@ -734,6 +756,7 @@ export class FlightService {
 				var netRate = 0;
 				var key = 0;
 				var date;
+				var startPrice = 0;
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -741,6 +764,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -754,6 +778,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						startPrice = flightData.start_price || 0
 					}
 					key++;
 				}
@@ -761,13 +786,11 @@ export class FlightService {
 					date: date,
 					net_rate: netRate,
 					price: lowestprice,
-					unique_code: unique_code
+					unique_code: unique_code,
+					start_price: startPrice
 				}
 
 				returnResponce.push(output)
-				// console.log(flightData.unique_code);
-				// console.log(flightData.net_rate);
-				// console.log(flightData.departure_date);
 			}
 		}
 		return returnResponce;
@@ -844,7 +867,8 @@ export class FlightService {
 			custom_instalment_amount,
 			custom_instalment_no,
 			laycredit_points,
-			card_token
+			card_token,
+			booking_through
 		} = bookFlightDto;
 
 		const mystifly = new Strategy(new Mystifly(headers));
@@ -889,6 +913,7 @@ export class FlightService {
 				"DD/MM/YYYY",
 				"YYYY-MM-DD"
 			);
+
 			bookingRequestInfo.source_location =
 				airRevalidateResult[0].departure_code;
 			bookingRequestInfo.destination_location =
@@ -896,6 +921,7 @@ export class FlightService {
 			bookingRequestInfo.flight_class = "Economy";
 			bookingRequestInfo.instalment_type = instalment_type;
 			bookingRequestInfo.additional_amount = additional_amount;
+			bookingRequestInfo.booking_through = booking_through;
 			isPassportRequired = airRevalidateResult[0].is_passport_required;
 			if (airRevalidateResult[0].routes.length == 1) {
 				bookingRequestInfo.journey_type = FlightJourney.ONEWAY;
@@ -990,29 +1016,27 @@ export class FlightService {
 				if (authCardResult.status == true) {
 
 					/* Call mystifly booking API if checkin date is less 3 months */
-					let dayDiff = moment(departure_date).diff(bookingDate,'days');
-					console.log("daydiff=>>>>>>",dayDiff, departure_date,bookingDate)
+					let dayDiff = moment(departure_date).diff(bookingDate, 'days');
 					let bookingResult;
-					if(dayDiff<=90){
-						console.log("In 90 days")
+					if (dayDiff <= 90) {
 						const mystifly = new Strategy(new Mystifly(headers));
 						bookingResult = await mystifly.bookFlight(
 							bookFlightDto,
 							travelersDetails,
 							isPassportRequired
-							);
+						);
 					}
 
 					let authCardToken = authCardResult.token;
 
 					let captureCardresult;
-					if(typeof bookingResult=="undefined" || bookingResult.booking_status == "success"){
+					if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
 
 						captureCardresult = await this.paymentService.captureCard(
 							authCardToken
-							);
+						);
 					}
-					else if(typeof bookingResult!=="undefined" && bookingResult.booking_status != "success"){
+					else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
 						await this.paymentService.voidCard(authCardToken);
 						throw new HttpException(
 							{
@@ -1025,7 +1049,7 @@ export class FlightService {
 
 					if (captureCardresult.status == true) {
 
-						
+
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
 							currencyId,
@@ -1192,7 +1216,7 @@ export class FlightService {
 			destination_location,
 			instalment_type,
 			laycredit_points,
-			fare_type, card_token
+			fare_type, card_token, booking_through
 		} = bookFlightDto;
 
 		let moduleDetails = await getManager()
@@ -1215,7 +1239,7 @@ export class FlightService {
 		let booking = new Booking();
 		booking.id = uuidv4();
 		booking.moduleId = moduleDetails.id;
-		booking.laytripBookingId = `LT-${uniqid.time().toUpperCase()}`;
+		booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
 		booking.bookingType = bookingType;
 		booking.currency = currencyId;
 		booking.totalAmount = selling_price.toString();
@@ -1224,6 +1248,7 @@ export class FlightService {
 		booking.bookingDate = bookingDate;
 		booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.layCredit = laycredit_points || 0;
+		booking.bookingThrough = booking_through || '';
 		booking.locationInfo = {
 			journey_type,
 			source_location,
@@ -1254,11 +1279,11 @@ export class FlightService {
 					instalmentDetails.instalment_date[1].instalment_date;
 			}
 
-			booking.bookingStatus = supplierBookingData!=null && supplierBookingData.supplier_booking_id ? BookingStatus.CONFIRM:BookingStatus.PENDING;
+			booking.bookingStatus = supplierBookingData != null && supplierBookingData.supplier_booking_id ? BookingStatus.CONFIRM : BookingStatus.PENDING;
 			booking.paymentStatus = PaymentStatus.PENDING;
-			booking.supplierBookingId = supplierBookingData!=null && supplierBookingData.supplier_booking_id?supplierBookingData.supplier_booking_id:"";
-			booking.isPredictive = supplierBookingData!=null && supplierBookingData.supplier_booking_id?false:true;
-			booking.supplierStatus=(supplierBookingData!=null && supplierBookingData.supplier_status=='BOOKINGINPROCESS')?0:1;
+			booking.supplierBookingId = supplierBookingData != null && supplierBookingData.supplier_booking_id ? supplierBookingData.supplier_booking_id : "";
+			booking.isPredictive = supplierBookingData != null && supplierBookingData.supplier_booking_id ? false : true;
+			booking.supplierStatus = (supplierBookingData != null && supplierBookingData.supplier_status == 'BOOKINGINPROCESS') ? 0 : 1;
 		} else {
 			//pass here mystifly booking id
 			booking.supplierBookingId = supplierBookingData.supplier_booking_id;
@@ -1269,8 +1294,8 @@ export class FlightService {
 			booking.isPredictive = false;
 			booking.totalInstallments = 0;
 		}
-		console.log("card_token",card_token)
 		booking.cardToken = card_token;
+
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();
@@ -1294,6 +1319,8 @@ export class FlightService {
 						i == 0 ? captureCardresult.token : null;
 					bookingInstalment.paymentStatus =
 						i == 0 ? PaymentStatus.CONFIRM : PaymentStatus.PENDING;
+					bookingInstalment.attempt =
+						i == 0 ? 1 : 0;
 					bookingInstalment.supplierId = 1;
 					bookingInstalment.isPaymentProcessedToSupplier = 0;
 					bookingInstalment.isInvoiceGenerated = 0;
@@ -1313,11 +1340,12 @@ export class FlightService {
 			console.log(error);
 		}
 	}
-	async partialyBookSave(
+	async partialyBookingSave(
 		bookFlightDto,
 		currencyId,
 		airRevalidateResult,
-		bookingId
+		bookingId,
+		supplierBookingData,
 	) {
 		const {
 			net_rate,
@@ -1347,6 +1375,7 @@ export class FlightService {
 		booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
+		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
 
 		booking.moduleInfo = airRevalidateResult;
 		try {
@@ -1441,21 +1470,28 @@ export class FlightService {
 
 		let currencyId = headerDetails.currency.id;
 		const userId = user.user_id;
-
+		console.log(`step - 2 call booking`);
 		const bookingResult = await mystifly.bookFlight(
 			bookFlightDto,
 			travelersDetails,
 			isPassportRequired
 		);
-		if (bookingResult.booking_status == "success") {
 
-			let laytripBookingResult = await this.partiallyBookFlight(
+
+		if (bookingResult.booking_status == "success") {
+			console.log(`step - 3 save Booking`);
+			let laytripBookingResult = await this.partialyBookingSave(
 				bookFlightDto,
 				currencyId,
 				airRevalidateResult,
-				bookingId
+				bookingId,
+				bookingResult,
 			);
+
+			//console.log(laytripBookingResult);
+
 			//send email here
+			console.log(`step - 4 mail`);
 			this.sendBookingEmail(laytripBookingResult.id);
 			bookingResult.laytrip_booking_id = laytripBookingResult.id;
 			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
@@ -1463,6 +1499,9 @@ export class FlightService {
 			);
 			return bookingResult;
 
+		}
+		else {
+			throw new HttpException(bookingResult.error_message, 424)
 		}
 	}
 
@@ -1737,7 +1776,6 @@ export class FlightService {
 			param.orderId = bookingData.id;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
-			// console.log(param.flightData);
 
 			this.mailerService
 				.sendMail({
@@ -1873,7 +1911,6 @@ export class FlightService {
 		if (!booking) {
 			throw new NotFoundException(`Given booking id not found`)
 		}
-		console.log(booking);
 
 		var moduleInfo = booking.moduleInfo[0]
 		const currencyCode = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:currencycode"][0]
@@ -1883,8 +1920,6 @@ export class FlightService {
 				currencyCode,
 			})
 			.getOne();
-		console.log('amount', ticketDetails.data["a:itineraryinfo"]);
-		// console.log(moduleInfo);
 
 		moduleInfo['net_rate'] = ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0]["a:totalfare"][0]["a:amount"][0];
 
@@ -1895,9 +1930,7 @@ export class FlightService {
 		moduleInfo.routes[1].stops = [];
 		for await (const reservation of ticketDetails.data["a:itineraryinfo"][0]["a:reservationitems"][0]['a:reservationitem']) {
 
-			// console.log(reservation)
 			if (reservation != null) {
-				console.log(`reservation`, reservation);
 
 				var data = {
 					"departure_code": reservation["a:departureairportlocationcode"][0],
@@ -1970,10 +2003,8 @@ export class FlightService {
 	async getDataTimefromString(dateTime) {
 		var data = dateTime.split('T')
 		var date = data[0].split('-')
-		console.log(date);
 
 		var time = data[1].split(':')
-		console.log(time);
 
 		var amPm = 'AM'
 		if (time[0] > 12) {
@@ -1984,6 +2015,115 @@ export class FlightService {
 			date: `${date[2]}/${date[1]}/${date[0]}`,
 			time: `${time[0]}:${time[1]} ${amPm}`
 		}
+	}
+
+	async cancelBooking(tripId: string, headers) {
+		const mystifly = new Strategy(new Mystifly(headers));
+		return mystifly.cancelBooking(tripId);
+	}
+
+	async bookPartialBooking(bookingId, Headers) {
+		const bookingData = await this.bookingRepository.getBookingDetails(bookingId)
+
+		let flights: any = null;
+		if (new Date(await this.changeDateFormat(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+			var bookingType = bookingData.locationInfo['journey_type']
+
+			let travelers = [];
+
+			for await (const traveler of bookingData.travelers) {
+				travelers.push({
+					traveler_id: traveler.userId
+				})
+			}
+
+			// Headers['currency'] = bookingData.currency2.code
+			// Headers['language'] = 'en'
+			if (bookingType == 'oneway') {
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+				}
+				console.log('oneway dto', dto)
+				flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
+
+			}
+			else {
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.changeDateFormat(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+					"arrival_date": await this.changeDateFormat(bookingData.moduleInfo[0].arrival_code)
+				}
+				flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
+			}
+
+			var match = 0;
+			for await (const flight of flights.items) {
+				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+					match = match + 1
+
+					const bookingDto = new BookFlightDto
+					bookingDto.travelers = travelers
+					bookingDto.payment_type = `${bookingData.bookingType}`;
+					bookingDto.instalment_type = `${bookingData.bookingType}`
+					bookingDto.route_code = flight.route_code;
+					bookingDto.additional_amount = 0
+					bookingDto.laycredit_points = 0
+
+					const user = bookingData.user
+
+					const bookingId = bookingData.laytripBookingId;
+
+					console.log(`step - 1 find booking`);
+
+					const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId)
+
+					this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+
+				}
+			}
+
+			if (match == 0) {
+				throw new NotFoundException(`Given flight not available`)
+			}
+
+		}
+	}
+
+	async changeDateFormat(dateTime) {
+		var date = dateTime.split('/')
+
+		return `${date[2]}-${date[1]}-${date[0]}`
+
+	}
+
+	async sendFlightUpdateMail(bookingId, email, userName) {
+		this.mailerService
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: "Booking detail updated",
+				html: BookingDetailsUpdateMail({ username: userName }),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
 	}
 
 }

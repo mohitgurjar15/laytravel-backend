@@ -227,7 +227,7 @@ export class TravelerService {
 				var birthDate = new Date(data.dob);
 
 				var age = moment(new Date()).diff(moment(birthDate), "years");
-
+				data.age = age
 				if (age < 2) {
 					data.user_type = "infant";
 				} else if (age < 12) {

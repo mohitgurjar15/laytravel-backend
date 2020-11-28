@@ -7,6 +7,11 @@ import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
 import * as moment from 'moment';
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { listPredictedBookingData } from "./dto/get-predictive-data.dto";
+import { ExportBookingDto } from "./dto/export-booking.dto";
+import { BookingType } from "src/enum/booking-type.enum";
+import { BookingStatus } from "src/enum/booking-status.enum";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -57,9 +62,6 @@ export class BookingRepository extends Repository<Booking> {
 			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
 		}
 
-		// if (payment_type) {
-		// 	where += `("booking"."payment_type" = '${payment_type}') AND`;
-		// }
 		if (customer_name) {
 			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
 		}
@@ -76,72 +78,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("User.country", "countries")
-			// .leftJoinAndSelect("userData.state", "state")
-			// .leftJoinAndSelect("userData.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
-			// .select(["booking.id",
-			// 	"booking.userId",
-			// 	"booking.moduleId",
-			// 	"booking.bookingType",
-			// 	"booking.bookingStatus",
-			// 	"booking.currency",
-			// 	"booking.totalAmount",
-			// 	"booking.netRate",
-			// 	"booking.markupAmount",
-			// 	"booking.usdFactor",
-			// 	"booking.bookingDate",
-			// 	"booking.totalInstallments",
-			// 	"booking.locationInfo",
-			// 	"booking.moduleInfo",
-			// 	"booking.paymentGatewayId",
-			// 	"booking.paymentStatus",
-			// 	"booking.paymentInfo",
-			// 	"booking.isPredictive",
-			// 	"booking.layCredit",
-			// 	"booking.fareType",
-			// 	"booking.isTicketd",
-			// 	"booking.paymentGatewayProcessingFee",
-			// 	"booking.supplierId",
-			// 	"booking.nextInstalmentDate",
-			// 	"booking.supplierBookingId",
-			// 	"instalments.id",
-			// 	"instalments.instalmentType",
-			// 	"instalments.instalmentDate",
-			// 	"instalments.currencyId",
-			// 	"instalments.amount",
-			// 	"instalments.instalmentStatus",
-			// 	"instalments.paymentGatewayId",
-			// 	"instalments.paymentInfo",
-			// 	"instalments.paymentStatus",
-			// 	// "bookingInstalments.instalment_date",
-			// 	// "bookingInstalments.instalment_amount",
-			// 	// "User.firstName",
-			// 	// "User.lastName",
-			// 	// "User.email",
-			// 	// "User.phoneNo",
-			// 	// "User.profilePic",
-			// 	// "User.roleId",
-			// 	"currency.id",
-			// 	"currency.country",
-			// 	"currency.code",
-			// 	"currency.symbol",
-			// 	"currency.liveRate",
-			// 	"User.firstName",
-			// 	"userData.lastName",
-			// 	"userData.email",
-			// 	"userData.phoneNo",
-			// 	"userData.profilePic",
-			// 	"userData.roleId",
-			// 	"supplier.id",
-			// 	"supplier.name",
-			// 	"countries.name",
-			// 	"countries.iso2",
-			// 	"countries.iso3",
-			// 	"countries.id",
-			// 	"state.id",
-			// 	"state.name",
-			// 	"state.iso2",
-			// ])
 
 			.where(where)
 			.take(take)
@@ -175,35 +112,35 @@ export class BookingRepository extends Repository<Booking> {
 			.where('"booking"."laytrip_booking_id"=:bookingId', { bookingId })
 			.getOne();
 
-			let paidAmount = 0;
-			let remainAmount = 0;
+		let paidAmount = 0;
+		let remainAmount = 0;
 
-			//console.log(result);
-
-
-			
-			delete result.user.updatedDate;
-			delete result.user.salt;
-			delete result.user.password;
-			for (let j in result.travelers) {
-				delete result.travelers[j].userData.updatedDate;
-				delete result.travelers[j].userData.salt;
-				delete result.travelers[j].userData.password;
-
-				var birthDate = new Date(result.travelers[j].userData.dob);
-				var age = moment(new Date()).diff(moment(birthDate), 'years');
+		//console.log(result);
 
 
-				if (age < 2) {
-					result.travelers[j].userData.user_type = "infant";
-				} else if (age < 12) {
-					result.travelers[j].userData.user_type = "child";
-				} else {
-					result.travelers[j].userData.user_type = "adult";
-				}
+
+		delete result.user.updatedDate;
+		delete result.user.salt;
+		delete result.user.password;
+		for (let j in result.travelers) {
+			delete result.travelers[j].userData.updatedDate;
+			delete result.travelers[j].userData.salt;
+			delete result.travelers[j].userData.password;
+
+			var birthDate = new Date(result.travelers[j].userData.dob);
+			var age = moment(new Date()).diff(moment(birthDate), 'years');
+
+			result.travelers[j].userData.age = age;
+			if (age < 2) {
+				result.travelers[j].userData.user_type = "infant";
+			} else if (age < 12) {
+				result.travelers[j].userData.user_type = "child";
+			} else {
+				result.travelers[j].userData.user_type = "adult";
 			}
+		}
 
-			return result;
+		return result;
 
 		//return bookingDetails;
 	}
@@ -227,7 +164,7 @@ export class BookingRepository extends Repository<Booking> {
 		if (!data) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
-		
+
 		return data;
 	}
 
@@ -371,11 +308,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			// .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-			// .leftJoinAndSelect(
-			// 	"BookingInstalments.failedPaymentAttempts",
-			// 	"failedPaymentAttempts"
-			// )
 			.select([
 				"BookingInstalments.id",
 				"BookingInstalments.bookingId",
@@ -448,6 +380,194 @@ export class BookingRepository extends Repository<Booking> {
 			throw new NotFoundException(
 				`Payment record not found&&&id&&&Payment record not found`
 			);
+		}
+		return { data: data, total_count: count };
+	}
+
+	async getPredictiveBookingDdata() {
+
+		//const {booking_id , below_minimum_seat} = filterOption
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		let query = getManager()
+			.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+			.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+			.select([
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.currency",
+				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.moduleInfo",
+				"booking.locationInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.laytripBookingId",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
+				"booking.nextInstalmentDate",
+				"booking.supplierBookingId",
+				"predictiveBookingData.id",
+				"predictiveBookingData.bookingId",
+				"predictiveBookingData.price",
+				"predictiveBookingData.date",
+				"predictiveBookingData.isBelowMinimum",
+				"predictiveBookingData.netPrice",
+				"predictiveBookingData.remainSeat"
+			])
+
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
+
+
+		const [data, count] = await query.getManyAndCount();
+		// const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(
+				`No booking found`
+			);
+		}
+		return { data, count };
+	}
+
+	async getPendingBooking(){
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			// .select([
+			// 	"booking.supplierBookingId",
+			// 	"booking.id"
+			// ])
+			.where(
+				`"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
+			)
+
+		return await query.getMany();
+	}
+
+	async getDailyPredictiveBookingPrices(bookingId) {
+
+		//const {booking_id , below_minimum_seat} = filterOption
+		const date = new Date();
+		var todayDate = date.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		let query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.predictiveBookingData", "predictiveBookingData")
+			.select([
+				"booking.laytripBookingId",
+				"booking.id",
+				"predictiveBookingData.id",
+				"predictiveBookingData.bookingId",
+				"predictiveBookingData.price",
+				"predictiveBookingData.date",
+				"predictiveBookingData.isBelowMinimum",
+				"predictiveBookingData.netPrice",
+				"predictiveBookingData.remainSeat"
+			])
+
+			.where(`booking.laytripBookingId = '${bookingId}'`)
+
+
+		const data = await query.getOne();
+		// const count = await query.getCount();
+		if (!data) {
+			throw new NotFoundException(
+				`Booking id not found`
+			);
+		}
+		return data;
+	}
+
+	async exportCSV(filterOption: ExportBookingDto) {
+		const {
+			start_date,
+			end_date,
+			booking_status,
+			booking_type,
+			customer_name,
+			payment_type,
+			booking_id,
+			search,
+			module_id, supplier_id, userId
+		} = filterOption;
+
+		let where;
+		where = `1=1 `;
+		if (userId) {
+			where += `AND ("booking"."user_id" = '${userId}')`;
+		}
+		if (module_id) {
+			where += `AND ("booking"."module_id" = '${module_id}')`;
+		}
+
+		if (supplier_id) {
+			where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+		}
+
+		if (start_date) {
+			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
+		}
+		if (end_date) {
+			where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
+		}
+		if (booking_status) {
+			where += `AND ("booking"."booking_status" = '${booking_status}')`;
+		}
+		if (booking_type) {
+			where += `AND ("booking"."booking_type" = '${booking_type}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+		}
+
+		// if (payment_type) {
+		// 	where += `("booking"."payment_type" = '${payment_type}') AND`;
+		// }
+		if (customer_name) {
+			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
+		}
+
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+		}
+		const query = getManager()
+			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
+			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("booking.travelers", "traveler")
+			.leftJoinAndSelect("traveler.userData", "userData")
+			.leftJoinAndSelect("User.state", "state")
+			.leftJoinAndSelect("User.country", "countries")
+			// .leftJoinAndSelect("userData.state", "state")
+			// .leftJoinAndSelect("userData.country", "countries")
+			.leftJoinAndSelect("booking.supplier", "supplier")
+
+			.where(where)
+			.orderBy(`booking.bookingDate`, 'DESC')
+		const [data, count] = await query.getManyAndCount();
+		//const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 		return { data: data, total_count: count };
 	}

@@ -14,6 +14,7 @@ import {
 	NotFoundException,
 	BadRequestException,
 	NotAcceptableException,
+	ForbiddenException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -62,6 +63,8 @@ import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import * as config from "config";
 const mailConfig = config.get("email");
+const jwtConfig = config.get("jwt");
+import * as uuidValidator from "uuid-validate"
 
 @Injectable()
 export class AuthService {
@@ -152,7 +155,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: first_name + " " + last_name,
@@ -233,7 +236,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -289,7 +292,7 @@ export class AuthService {
 				.sendMail({
 					to: newEmail,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -350,7 +353,9 @@ export class AuthService {
 					: "",
 				roleId: user.roleId,
 				createdDate: user.createdDate,
+				socialAccountId: user.socialAccountId
 			};
+
 			const accessToken = this.jwtService.sign(payload);
 			const token = { token: accessToken };
 			this.addLoginLog(user.userId, request, "web");
@@ -362,15 +367,9 @@ export class AuthService {
 		}
 	}
 
-	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl) {
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles) {
 		const { email } = forgetPasswordDto;
-		var roles = [
-			Role.ADMIN,
-			Role.SUPER_ADMIN,
-			Role.SUPPLIER,
-			Role.FREE_USER,
-			Role.PAID_USER,
-		];
+
 		const user = await this.userRepository.findOne({
 			email,
 			roleId: In(roles),
@@ -381,7 +380,7 @@ export class AuthService {
 			);
 		}
 		if (user.isDeleted == true || user.status == 0) {
-			throw new NotFoundException(`Given Email id is Deleted`);
+			throw new NotFoundException(`Your account has been disabled. Please contact administrator person&&&email&&&Your account has been disabled. Please contact administrator person`);
 		}
 		if (!user.isVerified) {
 			throw new NotAcceptableException(
@@ -422,7 +421,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc:mailConfig.BCC,
+				cc: mailConfig.BCC,
 				sender: "laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
@@ -507,7 +506,7 @@ export class AuthService {
 			try {
 				await user.save();
 				await validate.save();
-				const res = { message: `Your password has been succesfully updated` };
+				const res = { message: `Your password has been updated successfully.` };
 				return res;
 			} catch (error) {
 				throw new InternalServerErrorException(
@@ -516,7 +515,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`Otp Can not be validate.&&&token&&&${errorMessage}`
+				`Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
 			);
 		}
 	}
@@ -542,28 +541,25 @@ export class AuthService {
 				await user.save();
 				if (user.registerVia == "android" || user.registerVia == "ios") {
 					loginvia = "mobile";
-					try {
-						const payload: JwtPayload = {
-							user_id: user.userId,
-							firstName: user.firstName,
-							username: user.firstName + " " + user.lastName,
-							phone: user.phoneNo,
-							middleName: "",
-							profilePic: "",
-							lastName: user.lastName,
-							email,
-							salt: user.salt,
-							//accessToken: newToken,
-							roleId: user.roleId,
-							createdDate: user.createdDate,
-						};
 
-						accessToken = this.jwtService.sign(payload);
-					} catch (error) {
-						throw new InternalServerErrorException(
-							`Oops. Something went wrong. Please try again.`
-						);
-					}
+					const payload: JwtPayload = {
+						user_id: user.userId,
+						firstName: user.firstName,
+						username: user.firstName + " " + user.lastName,
+						phone: user.phoneNo,
+						middleName: "",
+						profilePic: "",
+						lastName: user.lastName,
+						email,
+						salt: user.salt,
+						//accessToken: newToken,
+						roleId: user.roleId,
+						createdDate: user.createdDate,
+						socialAccountId: user.socialAccountId
+					};
+
+					accessToken = this.jwtService.sign(payload);
+
 				} else {
 					loginvia = "web";
 					const payload: JwtPayload = {
@@ -580,6 +576,7 @@ export class AuthService {
 							: "",
 						roleId: user.roleId,
 						createdDate: user.createdDate,
+						socialAccountId: user.socialAccountId
 					};
 					accessToken = this.jwtService.sign(payload);
 				}
@@ -600,7 +597,7 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
-						cc:mailConfig.BCC,
+						cc: mailConfig.BCC,
 						subject: "Welcome on board",
 						html: RagisterMail({
 							username: user.firstName + " " + user.lastName,
@@ -619,8 +616,38 @@ export class AuthService {
 				);
 				return { userDetails };
 			} catch (error) {
+				if (typeof error.response !== "undefined") {
+					switch (error.response.statusCode) {
+						case 404:
+							if (
+								error.response.message ==
+								"This user does not exist&&&email&&&This user does not exist"
+							) {
+								error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+							}
+							throw new NotFoundException(error.response.message);
+						case 409:
+							throw new ConflictException(error.response.message);
+						case 422:
+							throw new BadRequestException(error.response.message);
+						case 403:
+							throw new ForbiddenException(error.response.message);
+						case 500:
+							throw new InternalServerErrorException(error.response.message);
+						case 406:
+							throw new NotAcceptableException(error.response.message);
+						case 404:
+							throw new NotFoundException(error.response.message);
+						case 401:
+							throw new UnauthorizedException(error.response.message);
+						default:
+							throw new InternalServerErrorException(
+								`${error.message}&&&id&&&${error.Message}`
+							);
+					}
+				}
 				throw new InternalServerErrorException(
-					`${error.sqlMessage}&&& &&&` + errorMessage
+					`${error.message}&&&id&&&${errorMessage}`
 				);
 			}
 		} else {
@@ -698,6 +725,7 @@ export class AuthService {
 					accessToken: newToken,
 					roleId: user.roleId,
 					createdDate: user.createdDate,
+					socialAccountId: user.socialAccountId
 				};
 
 				const accessToken = this.jwtService.sign(payload);
@@ -860,6 +888,7 @@ export class AuthService {
 				accessToken: newToken,
 				roleId: userDetail.roleId,
 				createdDate: user.createdDate,
+				socialAccountId: user.socialAccountId
 			};
 
 			const accessToken = this.jwtService.sign(payload);
@@ -1082,8 +1111,10 @@ export class AuthService {
 					? data.profilePic
 					: "",
 				roleId: data.roleId,
+				socialAccountId: data.socialAccountId
+				
 			};
-			console.log(payload);
+			console.log(data);
 
 			const accessToken = this.jwtService.sign(payload);
 			const token = accessToken;
@@ -1204,18 +1235,13 @@ export class AuthService {
 			} else {
 				if (user.status != 1) {
 					throw new UnauthorizedException(
-						`Your account has been disabled. Please contact administrator person.`
+						`Given account has been disabled. Please contact administrator person.`
 					);
 				} else if (user.isDeleted == true) {
 					throw new UnauthorizedException(
-						`Your account has been deleted. Please contact administrator person.`
+						`Given account has been deleted. Please contact administrator person.`
 					);
-				} else
-					if (!user.isVerified) {
-						throw new NotAcceptableException(
-							`Please verify your email id&&&email&&&Please verify your email id`
-						);
-					}
+				}
 				const payload: JwtPayload = {
 					user_id: user.userId,
 					email: user.email,
@@ -1231,6 +1257,7 @@ export class AuthService {
 					roleId: user.roleId,
 					refrenceId: parentUser.userId,
 					createdDate: user.createdDate,
+					socialAccountId: user.socialAccountId
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };
@@ -1263,5 +1290,46 @@ export class AuthService {
 			.into(LoginLog)
 			.values(loginLog)
 			.execute();
+	}
+
+	async validateUser(token: string) {
+		var decoded = jwt_decode(token);
+		const { user_id, iat } = decoded;
+
+		if (!user_id || !uuidValidator(user_id)) {
+			throw new BadRequestException('given token is not valid')
+		}
+
+		const user = await this.userRepository.findOne({ userId: user_id })
+		if (!user)
+			throw new UnauthorizedException();
+
+		if (user.status != 1) {
+			throw new UnauthorizedException(
+				`Your account has been disabled. Please contact administrator person.`
+			);
+		}
+		if (user.isDeleted == true) {
+			throw new UnauthorizedException(
+				`Your account has been deleted. Please contact administrator person.`
+			);
+		}
+
+		if (!user.isVerified) {
+			throw new NotAcceptableException(
+				`Please verify your email id&&&email&&&Please verify your email id`
+			);
+		}
+
+		const unixTimestamp = Math.round(new Date().getTime() / 1000);
+		const time = unixTimestamp - iat;
+		if (time >= jwtConfig.ExpireIn) {
+			throw new BadRequestException(
+				`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
+			);
+		}
+		return {
+			message: `user validate successfully`
+		}
 	}
 }

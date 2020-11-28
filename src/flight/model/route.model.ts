@@ -32,8 +32,8 @@ export class Route{
     total_duration          : string;
     airline                 : string;
     is_refundable           : boolean;
-    start_price             : string;
-    secondary_start_price   : string;
+    start_price             : number;
+    secondary_start_price   : number;
     selling_price           : number;
     secondary_selling_price : number;
     airline_name            : string;
