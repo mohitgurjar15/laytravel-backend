@@ -4,5 +4,5 @@ export class getBookingDailyPriceDto {
         description:'booking id',
         example: ''
     })
-    bookingId:string;   
+    booking_id:string;   
 }
