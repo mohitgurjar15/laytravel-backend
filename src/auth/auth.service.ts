@@ -372,7 +372,7 @@ export class AuthService {
 
 		const user = await this.userRepository.findOne({
 			email,
-			roleId: In(roles),
+			// roleId: In(roles),
 		});
 		if (!user) {
 			throw new NotFoundException(
@@ -675,7 +675,7 @@ export class AuthService {
 		const user = await this.userRepository.findOne({
 			email,
 			isDeleted: false,
-			roleId: In(roles),
+			// roleId: In(roles),
 		});
 
 		if (user && (await user.validatePassword(password))) {

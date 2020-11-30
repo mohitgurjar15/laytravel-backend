@@ -38,6 +38,7 @@
     "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.12.2",
+    "collect.js": "^4.28.6",
     "config": "^3.3.1",
     "config-yml": "^0.10.3",
     "csv-parser": "^2.3.3",

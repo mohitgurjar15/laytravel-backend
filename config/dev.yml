@@ -9,3 +9,6 @@ db:
     database: "laytrip"
     password: "nOEbFEONMcWpZNPzdcQ1"
     synchronize: false
+
+ppn:
+    url: "https://api-sandbox.rezserver.com/api/hotel/"
