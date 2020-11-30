@@ -541,7 +541,7 @@ export class Mystifly implements StrategyAirline {
 
 
 
-                    stop.cabin_baggage = this.getBaggageDetails(otherSegments['cabinbaggageinfo'][0]['string'][j]);
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo']!=='undefined'?otherSegments['cabinbaggageinfo'][0]['string'][j]:'');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage =this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
 
@@ -815,7 +815,7 @@ export class Mystifly implements StrategyAirline {
 
 
 
-                    stop.cabin_baggage =this.getBaggageDetails(otherSegments['cabinbaggageinfo'][0]['string'][j]);
+                    stop.cabin_baggage =this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo']!=='undefined'?otherSegments['cabinbaggageinfo'][0]['string'][j]:'');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage =this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
 
