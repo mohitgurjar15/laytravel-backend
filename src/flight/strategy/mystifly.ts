@@ -53,7 +53,7 @@ export class Mystifly implements StrategyAirline {
             mystiflyConfig = JSON.parse(config.liveCredential);
             mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
         }
-
+        //mystiflyConfig = { "account_number": "MCN001506","password": "MWR2018_xml","target": "Test", "user_name": "MWR_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
        
         return mystiflyConfig;
     }
@@ -265,7 +265,7 @@ export class Mystifly implements StrategyAirline {
                     stop.is_layover = false;
                     stop.airline_name = airlines[flightSegment['a:marketingairlinecode'][0]];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
-                    stop.cabin_baggage = this.getBaggageDetails(otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]);
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
                     stop.meal = this.getMealCode(flightSegment['a:mealcode'][0]);
@@ -1237,7 +1237,7 @@ export class Mystifly implements StrategyAirline {
                     stop.remaining_seat = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0] == 'true' ? true : false;
                     stop.is_layover = false;
-                    stop.cabin_baggage =this.getBaggageDetails(otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]);
+                    stop.cabin_baggage =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage =this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
                     stop.meal = this.getMealCode(flightSegment['a:mealcode'][0]);
@@ -1294,7 +1294,7 @@ export class Mystifly implements StrategyAirline {
                     stop.remaining_seat = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0] == 'true' ? true : false;
                     stop.is_layover = false;
-                    stop.cabin_baggage =this.getBaggageDetails(otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]);
+                    stop.cabin_baggage =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage =this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j])
                     stop.meal = this.getMealCode(flightSegment['a:mealcode'][0]);
@@ -1543,7 +1543,7 @@ export class Mystifly implements StrategyAirline {
                     stop.airline_name = airlines[stop.airline];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
-                    stop.cabin_baggage   =this.getBaggageDetails(otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]);
+                    stop.cabin_baggage   =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
                     if (stops.length > 0) {
 
                         stop.is_layover = true;
@@ -1601,7 +1601,7 @@ export class Mystifly implements StrategyAirline {
                         stop.below_minimum_seat = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0] == 'true' ? true : false;
                         stop.is_layover = false;
                         stop.checkin_baggage =this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
-                        stop.cabin_baggage   =this.getBaggageDetails(otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]);
+                        stop.cabin_baggage   =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
                         if (stops.length > 0) {
 
                             stop.is_layover = true;
