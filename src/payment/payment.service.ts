@@ -114,7 +114,7 @@ export class PaymentService {
 				retained: true,
 			},
 		};
-		let cardResult = await this.axiosRequest(url, requestBody, headers,null,'add-card');
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card');
 
 		console.log(cardResult);
 		if (
@@ -174,7 +174,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers , null ,'authorise-card');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
 		console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -202,7 +202,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers,null,'capture-card');
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -228,7 +228,7 @@ export class PaymentService {
 		}
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
-		let voidRes = await this.axiosRequest(url, requestBody, headers,null,'void-card');
+		let voidRes = await this.axiosRequest(url, requestBody, headers, null, 'void-card');
 		if (typeof voidRes.transaction != 'undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -255,7 +255,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
 		let requestBody = {};
-		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT','retain-card');
+		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT', 'retain-card');
 		if (typeof retainRes != 'undefined' && retainRes.transaction.succeeded) {
 			return {
 				success: true
@@ -288,6 +288,13 @@ export class PaymentService {
 			Activity.createlogFile(fileName, logData, 'payment');
 			return result.data;
 		} catch (exception) {
+			let logData = {};
+			logData['url'] = url
+			logData['requestBody'] = requestBody
+			logData['headers'] = headers
+			logData['responce'] = exception;
+			let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
+			Activity.createlogFile(fileName, logData, 'payment');
 			throw new InternalServerErrorException(`${exception.message}&&&card&&&${errorMessage}`)
 		}
 	}
@@ -310,9 +317,10 @@ export class PaymentService {
 				payment_method_token: card_token,
 				amount: amount,
 				currency_code: currency_code,
+				retain_on_success: true
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers,null,'capture-payment');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment');
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,

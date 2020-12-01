@@ -82,6 +82,7 @@ export class BookingRepository extends Repository<Booking> {
 			.take(take)
 			.skip(skip)
 			.orderBy(`booking.bookingDate`, 'DESC')
+			.addOrderBy(`instalments.id`)
 		const [data, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		if (!data.length) {
@@ -255,7 +256,7 @@ export class BookingRepository extends Repository<Booking> {
 			.take(take)
 			.skip(skip)
 			.where(`"User"."user_id" =:userId`, { userId: user.userId })
-		//.orderBy("BookingInstalments.id", 'DESC')
+			//.orderBy("BookingInstalments.id", 'ASC')
 
 		if (booking_id)
 			query = query.andWhere(`"booking"."laytrip_booking_id"=:booking_id`, { booking_id });
@@ -289,8 +290,11 @@ export class BookingRepository extends Repository<Booking> {
 			query = query.andWhere(`"BookingInstalments"."instalment_type" =:instalment_type`, { instalment_type });
 		}
 
+
 		const [result, count] = await query.getManyAndCount();
+
 		//const count = await query.getCount();
+		
 		return { data: result, total_result: count };
 	}
 
@@ -439,7 +443,7 @@ export class BookingRepository extends Repository<Booking> {
 		return { data, count };
 	}
 
-	async getPendingBooking(){
+	async getPendingBooking() {
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate

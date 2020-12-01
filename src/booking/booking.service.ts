@@ -318,6 +318,29 @@ export class BookingService {
 					}
 				}
 			}
+			// for await (const booking of result.data) {
+				
+			// 	var installmentData = []
+			// 	var id = 0;
+			// 	for (let index = 0; index < booking.bookingInstalments.length; index++) {
+			// 		var data = null;
+			// 		const installment = booking.bookingInstalments[index];
+					
+			// 		for (let i = 0; i < booking.bookingInstalments.length; i++) {
+			// 			const installment = booking.bookingInstalments[i];
+			// 			if(installment.id > id || id == 0)
+			// 			{
+			// 				console.log("installment.id" , installment.id);
+			// 				console.log("id" , id);
+							
+			// 				id = installment.id;
+			// 				data = installment;
+			// 			}
+			// 		}
+			// 		installmentData.push(data)
+			// 	}
+			// 	booking.bookingInstalments = installmentData
+			// }
 			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
