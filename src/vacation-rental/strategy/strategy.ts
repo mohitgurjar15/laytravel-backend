@@ -13,14 +13,14 @@ export class MonakerStrategy{
         return data;
     }
     
-    async unitTypeListAvailability(param1,param2){
-        const data = await this.strategyVacationRental.unitTypeListAvailability(param1,param2);
+    async unitTypeListAvailability(param1){
+        const data = await this.strategyVacationRental.unitTypeListAvailability(param1);
 
         return data;
     }
 
-    async verifyUnitTypeAvailability(param1,param2){
-        const data = await this.strategyVacationRental.verifyUnitTypeAvailability(param1,param2);
+    async verifyUnitTypeAvailability(param2){
+        const data = await this.strategyVacationRental.verifyUnitTypeAvailability(param2);
 
         return data;
     }
