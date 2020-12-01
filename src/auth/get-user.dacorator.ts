@@ -1,6 +1,5 @@
-import { BadRequestException, createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {  createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import * as jwt_decode from "jwt-decode";
-import { errorMessage } from 'src/config/common.config';
 import * as config from "config";
 const jwtConfig = config.get("jwt");
 

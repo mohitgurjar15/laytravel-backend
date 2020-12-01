@@ -1,4 +1,4 @@
-import { IsNotEmpty, ValidationArguments, IsEnum, IsOptional, ValidateIf, Length } from 'class-validator'
+import { IsNotEmpty, ValidationArguments, IsEnum, Length } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from 'src/config/common.config';
 import { IsValidDate } from 'src/decorator/is-valid-date.decorator';

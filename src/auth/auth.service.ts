@@ -25,10 +25,7 @@ import { CreateUserDto } from "./dto/crete-user.dto";
 import { AuthCredentialDto } from "./dto/auth-credentials.dto";
 import { JwtPayload } from "./jwt-payload.interface";
 import { ForgetPasswordDto } from "./dto/forget-paasword.dto";
-import { UpdatePasswordDto } from "./dto/update-password.dto";
 import * as jwt_decode from "jwt-decode";
-import * as crypto from "crypto";
-import { forgetPass } from "./forget-Pass.interface";
 import { MailerService } from "@nestjs-modules/mailer";
 import { forget_password } from "src/entity/forget-password.entity";
 import { ForgetPassWordRepository } from "./forget-password.repository";
@@ -58,9 +55,6 @@ import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 import { forgotPasswordMail } from "src/config/email_template/forgot-password-mail.html";
-import { SubscribeForNewslatterDto } from "../news-letters/dto/subscribe-for-newslatter.dto";
-import { NewsLetters } from "src/entity/news-letter.entity";
-import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import * as config from "config";
 const mailConfig = config.get("email");
 const jwtConfig = config.get("jwt");
@@ -370,10 +364,16 @@ export class AuthService {
 	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles) {
 		const { email } = forgetPasswordDto;
 
-		const user = await this.userRepository.findOne({
-			email,
-			roleId: In(roles),
-		});
+		// const user = await this.userRepository.findOne({
+		// 	email:email,
+		// 	roleId: In(roles),
+		// });
+
+		const user = await getManager()
+			.createQueryBuilder(User, "user")
+			.where(`email=:email and role_id  IN (:...role_id)`, { email, role_id: roles })
+			.getOne();
+
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.`
@@ -672,11 +672,16 @@ export class AuthService {
 			os_version,
 			device_model,
 		} = mobileAuthCredentialDto;
-		const user = await this.userRepository.findOne({
-			email,
-			isDeleted: false,
-			roleId: In(roles),
-		});
+		// const user = await this.userRepository.findOne({
+		// 	email,
+		// 	isDeleted: false,
+		// 	roleId: In(roles),
+		// });
+
+		const user = await getManager()
+			.createQueryBuilder(User, "user")
+			.where(`email=:email and role_id  IN (:...role_id) and is_deleted =:is_deleted`, { email, role_id: roles,is_deleted:false })
+			.getOne();
 
 		if (user && (await user.validatePassword(password))) {
 			if (user.status != 1)
@@ -1112,7 +1117,7 @@ export class AuthService {
 					: "",
 				roleId: data.roleId,
 				socialAccountId: data.socialAccountId
-				
+
 			};
 			console.log(data);
 

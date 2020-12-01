@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsEmail, IsNotEmpty, ValidateNested, ValidationArguments } from "class-validator";
+import { IsArray, IsNotEmpty, ValidateNested, ValidationArguments } from "class-validator";
 import { errorMessage } from "src/config/common.config";
 
 export class QuizResultDto {

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Query, Param, Put, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get,  Param, Put, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
@@ -7,10 +7,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AddCardDto } from './dto/add-card.dto';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
-import { ListPaymentAdminDto } from '../booking/dto/list-payment-admin.dto';
 import { User } from 'src/entity/user.entity';
-import { ListPaymentUserDto } from './dto/list-payment-user.dto';
-import { ListPaymentDto } from 'src/booking/dto/list-payment.dto';
 import { CreteTransactionDto } from './dto/create-transaction.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 

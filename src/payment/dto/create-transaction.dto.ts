@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, Max, max, Min } from "class-validator";
+import { IsNotEmpty, Max, Min } from "class-validator";
 import { errorMessage } from "src/config/common.config";
 
 export class CreteTransactionDto {

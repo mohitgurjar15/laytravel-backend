@@ -1,9 +1,7 @@
-import { IsNotEmpty,  ValidationArguments, IsEnum, IsArray, ValidateNested, ValidateIf, IsOptional,  IsNumber } from "class-validator";
+import { IsNotEmpty,  ValidationArguments, IsEnum, IsArray, ValidateNested, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 import { errorMessage } from "src/config/common.config";
 import { Type } from 'class-transformer';
-import { FlightJourney } from "src/enum/flight-journey.enum";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { InstalmentType} from "src/enum/instalment-type.enum";
 

@@ -298,7 +298,7 @@ export class CronJobsService {
 	}
 
 	async partialBookingPrice(Headers, options: getBookingDailyPriceDto) {
-		const { bookingId } = options
+		const { booking_id } = options
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate
@@ -316,18 +316,17 @@ export class CronJobsService {
 			.where(
 				`"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
 			)
-		if (bookingId) {
-			query.andWhere(`"booking"."laytrip_booking_id" = '${bookingId}'`)
+		if (booking_id) {
+			query.andWhere(`"booking"."laytrip_booking_id" = '${booking_id}'`)
 		}
 
 		const result = await query.getMany();
 
 		if (!result.length) {
-			throw new NotFoundException(`no booking found`)
+			throw new NotFoundException(`No booking found`)
 		}
 
 		var total = 0;
-		console.log(result.length);
 		for (let index = 0; index < result.length; index++) {
 
 			var bookingData = result[index];

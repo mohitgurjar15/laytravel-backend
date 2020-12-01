@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { errorMessage } from 'src/config/common.config';
 import { AppVersions } from 'src/entity/app-version.entity';
-import { getConnection, getManager } from 'typeorm';
+import {  getManager } from 'typeorm';
 import { AddVersionDto } from './dto/add-version.dto'
 import { CheckForceUpdateDto } from './dto/check-force-update.dto'
 

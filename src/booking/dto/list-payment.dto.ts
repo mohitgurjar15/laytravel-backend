@@ -1,7 +1,6 @@
-import { IsNotEmpty, ValidationArguments } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from "src/config/common.config";
-import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 export class ListPaymentDto {
 
     @IsNotEmpty({

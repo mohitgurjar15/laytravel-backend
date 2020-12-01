@@ -22,7 +22,6 @@ import {
 	BadRequestException,
 	Patch,
 	Query,
-	Delete,
 } from "@nestjs/common";
 import { AuthCredentialDto } from "./dto/auth-credentials.dto";
 import { AuthService } from "./auth.service";
@@ -59,7 +58,6 @@ import { OtpDto } from "./dto/otp.dto";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
-import { SubscribeForNewslatterDto } from "../news-letters/dto/subscribe-for-newslatter.dto";
 
 @ApiTags("Auth")
 @Controller("auth")

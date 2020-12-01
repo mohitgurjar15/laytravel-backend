@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Delete, Param, Patch, Body, Put } from '@nestjs/common';
+import { Controller, Get, UseGuards, Param, Patch, Body, Put } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ModulesService } from './modules.service';
 import { Module } from 'src/entity/module.entity';

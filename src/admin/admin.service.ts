@@ -8,7 +8,6 @@
 
 import {
 	Injectable,
-	ForbiddenException,
 	NotFoundException,
 	InternalServerErrorException,
 	UnauthorizedException,

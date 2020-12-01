@@ -13,7 +13,7 @@ import { Invoice } from "./invoice.entity";
 import { User } from "./user.entity";
 import { Supplier } from "./supplier.entity";
 import { Markup } from "./markup.entity";
-
+import { Notification } from "./notification.entity";
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
 export class Module extends BaseEntity {
@@ -80,4 +80,10 @@ export class Module extends BaseEntity {
     supplier => supplier.module
   )
   suppliers: Supplier[];
+
+  @OneToMany(
+    () => Notification,
+    notification => notification.module
+  )
+  notifications: Notification[];
 }
