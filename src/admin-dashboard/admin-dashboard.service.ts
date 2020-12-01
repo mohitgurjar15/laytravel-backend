@@ -3,6 +3,8 @@ import { getManager } from "typeorm";
 import { DashboardFilterDto } from "./dto/dashboard-filter.dto";
 import { Role } from "src/enum/role.enum";
 import { errorMessage } from "src/config/common.config";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { PaymentStatus } from "src/enum/payment-status.enum";
 
 
 @Injectable()
@@ -35,25 +37,6 @@ export class AdminDashboardService {
                 SELECT count(id) as total_booking
                 from booking ${moduleId ? `WHERE "module_id" = '${moduleId}'` : ''}
             `);
-			// var subdata = await getManager()
-			// .query(`
-			//     SELECT booking_status as status_code ,
-			//     count(id) as total_booking,
-			//     CASE
-			//         WHEN booking_status = 0 THEN 'PENDING'
-			//         WHEN booking_status = 1 THEN 'CONFIRM'
-			//     END AS status,
-			//     SUM( total_amount * usd_factor) as total_amount,
-			//     SUM( net_rate * usd_factor) as total_cost,
-			//     SUM( markup_amount * usd_factor) as total_profit
-			//     from booking GROUP BY booking_status where ${where}
-			// `);
-			// data ['status_code_wise_revanue'] = subdata;
-
-			// if(!data.length)
-			// {
-			//     throw new NotFoundException("Revanue not found")
-			// }
 			if (data[0].total_amount == null) {
 				data[0].total_amount = 0;
 				data[0].total_cost = 0;
@@ -282,19 +265,6 @@ export class AdminDashboardService {
 
 	async userCountOnCountry() {
 
-		// let userCount = await getManager()
-		// 	.createQueryBuilder(User, "user")
-		// 	//.leftJoinAndSelect("user.createdBy2", "parentUser")
-		// 	//.leftJoinAndSelect("user.state", "state")
-		// 	.leftJoinAndSelect("user.country", "countries")
-		// 	.select([
-		// 		"count(user.userId)",
-		// 		// "user.country_id",
-		// 		"countries.name",
-
-		// 	])
-		// 	.groupBy("countries_id")
-		// 	.getMany();
 
 		try {
 			const result = await getManager().query(
@@ -395,9 +365,71 @@ export class AdminDashboardService {
 			);
 		}
 	}
-	
-	async bookingStatistics()
-	{
+
+	async bookingStatistics() {
+		try {
+			var tDate = new Date();
+			var todayDate = tDate.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			todayDate = todayDate.split(' ')[0]
 			
-	} 
+			let response = {}
+
+			// complited trips :- complite bookings 
+			const completedTrips = await getManager().query(
+				`SELECT  sum ("total_amount") as 'total', count(*) as "cnt"
+				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM}`
+			);
+			response['completed_trips'] = completedTrips.cnt
+
+			// open bookings
+			const openBookings = await getManager().query(
+				`SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM})`
+			);
+			response['open_bookings'] = openBookings.cnt
+
+			const ToBePaidByTheCustomer = await getManager().query(
+				`SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total"
+				FROM booking
+				INNER JOIN booking_instalments
+				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+			);
+			response['to_be_paid_by_the_customer'] = ToBePaidByTheCustomer.total
+			
+		
+			return response;
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
 }
