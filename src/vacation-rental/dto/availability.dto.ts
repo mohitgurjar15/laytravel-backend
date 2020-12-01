@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
-import { errorMessage } from "src/config/common.config";
+import { Type } from "class-transformer/decorators";
+import { IsArray} from "class-validator";
 
 export class AvailabilityDto {
     @ApiProperty({
@@ -15,12 +15,6 @@ export class AvailabilityDto {
     })
     type:string;
 
-    // @ApiProperty({
-    //     description:"Enter a contry name",
-    //     example:'Spain'
-    // })
-    // country:string;
-
     @ApiProperty({
         description:"Enter a check in date",
         example:'2021-01-05'
@@ -34,16 +28,18 @@ export class AvailabilityDto {
     })
     check_out_date:string;
 
+
+    @IsArray()
+    @Type(() => Number)
+    @ApiProperty({
+        description:`Children ages collection`,
+        example:[10,12,15]
+    })
+    number_of_children_ages:Array<Number>;
+    
     @ApiProperty({
         description:"Enter a adult count",
         example: 2
     })
     adult_count:number;
-
-
-    // @ApiProperty({
-    //     description:"Enter a currency",
-    //     example:'USD'
-    // })
-    // currency:string;
 }

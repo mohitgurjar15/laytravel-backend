@@ -13,6 +13,9 @@ import { Module } from "src/entity/module.entity";
 import * as moment from 'moment';
 import { errorMessage } from "src/config/common.config";
 import { PriceMarkup } from "src/utility/markup.utility";
+import { HotelView } from "src/entity/hotel-view.entity";
+import { Generic } from "src/utility/generic.utility";
+import { Hotel } from "src/entity/hotel.entity";
 
 export class Monaker implements StrategyVacationRental {
 
@@ -25,7 +28,6 @@ export class Monaker implements StrategyVacationRental {
 
     async getMarkupDetails(check_in_date, booking_date, user, module) {
         let isInstalmentAvaible = Instalment.instalmentAvailbility(check_in_date, booking_date);
-        console.log("Istalment---",isInstalmentAvaible)
 
         let markUpDetails;
         let secondaryMarkUpDetails;
@@ -43,7 +45,7 @@ export class Monaker implements StrategyVacationRental {
 
         if (!markUpDetails) {
             throw new InternalServerErrorException(`Markup is not configured for home-rental&&&module&&&${errorMessage}`);
-        }else {
+        } else {
             return {
                 markUpDetails,
                 secondaryMarkUpDetails
@@ -51,9 +53,9 @@ export class Monaker implements StrategyVacationRental {
         }
     }
 
-    async checkAllavaiability(availability: AvailabilityDto,user) {
+    async checkAllavaiability(availability: AvailabilityDto, user) {
 
-        const { id, type, check_in_date, check_out_date, adult_count } = availability;
+        const { id, type, check_in_date, check_out_date, adult_count, number_of_children_ages } = availability;
         let hotelIds;
         let city;
         let module = await getManager()
@@ -61,36 +63,72 @@ export class Monaker implements StrategyVacationRental {
             .where("module.name = :name", { name: 'home rental' })
             .getOne();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-        
+
+
         if (!module) {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
+
         if (type == "hotel") {
-            hotelIds = await getManager().query(`
-				SELECT DISTINCT hotel_id FROM "hotel" WHERE id = ${id}
-             `);
+            hotelIds = await getManager()
+                .createQueryBuilder(HotelView, "hotel_view")
+                .distinctOn(["hotel_id"])
+                .select([
+                    "hotel_view.hotelId"
+                ])
+                .where("hotel_view.id = :id", { id: id })
+                .getMany();
 
             if (hotelIds.length == 0) {
                 throw new NotFoundException(`No found hotel`)
             }
         } else {
-            city = await getManager().query(`
-			  SELECT city FROM "hotel" WHERE id = ${id}
-            `)
+            city = await getManager()
+                .createQueryBuilder(HotelView, "hotel_view")
+                .select([
+                    "hotel_view.city"
+                ])
+                .where("hotel_view.id = :id", { id: id })
+                .getMany();
+
             if (city.length == 0) {
                 throw new NotFoundException(`No found city`)
             }
-            hotelIds = await getManager().query(`
-                SELECT DISTINCT hotel_id FROM "hotel" WHERE city = '${city[0]["city"]}'
-            `)
+
+            hotelIds = await getManager()
+                .createQueryBuilder(HotelView, "hotelView")
+                .distinctOn(["hotel_id"])
+                .select([
+                    "hotelView.hotelId"
+                ])
+                .where("hotelView.city = :city", { city: city[0]["city"] })
+                .getMany();
+
+            if (hotelIds.length == 0) {
+                throw new NotFoundException(`No found hotel`)
+            }
+
         }
 
-        let markup = await this.getMarkupDetails(bookingDate,check_in_date,user,module);
-        let markUpDetails;
-        let secondaryMarkUpDetails;
 
-        console.log("mark up ====>",markup)
+        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markUpDetails = markup.markUpDetails;
+        let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
+
         let availabilityVR: Availability[] = [];
+
+        console.log("ffffffffffffff",number_of_children_ages.length)
+
+        let childrensAges = ``;
+        if (number_of_children_ages) {
+            for (let k = 0; k < number_of_children_ages.length; k++) {
+                if (k != number_of_children_ages.length - 1) {
+                    childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
+                } else {
+                    childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
+                }
+            }
+        }
 
 
         for (let j = 0; j < (Math.ceil(hotelIds.length) / 50); j++) {
@@ -101,16 +139,16 @@ export class Monaker implements StrategyVacationRental {
             let Ids = ``;
             for (let i = 0; i < l.length; i++) {
                 if (i !== l.length - 1) {
-                    Ids += `Ids=${l[i]["hotel_id"]}&`
+                    Ids += `Ids=${l[i]["hotelId"]}&`
                 } else {
-                    Ids += `Ids=${l[i]["hotel_id"]}`
+                    Ids += `Ids=${l[i]["hotelId"]}`
                 }
             }
 
             try {
                 let res = await Axios({
                     method: "GET",
-                    url: `https://sandbox-api.nexttrip.com/api/v1/product/property-availabilities/availability?${Ids}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&Currency=${this.headers.currency}`,
+                    url: `https://sandbox-api.nexttrip.com/api/v1/product/property-availabilities/availability?${Ids}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
                     headers: {
                         "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
                         "cache-control": "no-cache",
@@ -119,24 +157,36 @@ export class Monaker implements StrategyVacationRental {
                 });
                 const result = res.data;
 
-
                 for (let i = 0; i < result.length; i++) {
                     const availability = new Availability();
-                    const data = await getManager().query(`
-					SELECT DISTINCT hotel_name,city,country,hotel_id,latitude,longitude,images FROM "hotel" WHERE hotel_id = ${result[i]["propertyId"]}
-				`)
-                    availability.property_id = result[i]["propertyId"];
-                    availability.property_name = data[0]["hotel_name"];
+                    // const data = await getManager().query(`
+                    //     	SELECT DISTINCT hotel_name,city,country,hotel_id,latitude,longitude,images FROM "hotel" WHERE hotel_id = ${result[i]["propertyId"]}
+                    // `)
+                    const data = await getManager()
+                        .createQueryBuilder(Hotel, "hotel")
+                        .distinctOn(["hotel_name"])
+                        .select([
+                            "hotel.hotelId",
+                            "hotel.hotelName",
+                            "hotel.city",
+                            "hotel.country",
+                            "hotel.latitude",
+                            "hotel.longitude",
+                            "hotel.images",
+                        ])
+                        .where("hotel.hotel_id = :hotel_id", { hotel_id: result[i]["propertyId"] })
+                        .getMany();
 
+                    availability.property_id = result[i]["propertyId"];
+                    availability.property_name = data[0]["hotelName"];
                     availability.city = data[0]["city"];
                     availability.country = data[0]["country"];
                     availability.net_price = result[i]["totalPrice"];
-                    availability.selling_price = 0.0;
+                    availability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(availability.net_price, markUpDetails));
                     availability.start_price = 0.0;
                     availability.display_image = `https://sandbox-images.nexttrip.com${data[0]["images"].split(',')[0]}`;
                     availability.latitude = data[0]["latitude"];
                     availability.longintude = data[0]["longitude"];
-
                     availabilityVR.push(availability);
                 }
             } catch (e) {
@@ -149,12 +199,22 @@ export class Monaker implements StrategyVacationRental {
         return availabilityVR;
     }
 
-    async unitTypeListAvailability(hotelId, availabilityDetailsDto: AvailabilityDetailsDto) {
-        const { check_in_date, check_out_date, adult_count } = availabilityDetailsDto;
+    async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto) {
+        const { id, check_in_date, check_out_date, adult_count, number_of_children_ages } = availabilityDetailsDto;
+
+        let childrensAges = ``;
+        for (let k = 0; k < number_of_children_ages.length; k++) {
+            if (k != number_of_children_ages.length - 1) {
+                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
+            } else {
+                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
+            }
+        }
+
         try {
             let res = await Axios({
                 method: "GET",
-                url: `https://sandbox-api.nexttrip.com/api/v1/product/property-availabilities/${hotelId}/availability?CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&Currency=${this.headers.currency}`,
+                url: `https://sandbox-api.nexttrip.com/api/v1/product/property-availabilities/${id}/availability?CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
                 headers: {
                     "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
                     "cache-control": "no-cache",
@@ -162,12 +222,11 @@ export class Monaker implements StrategyVacationRental {
                 },
             });
 
-            // console.log("RES", res.data["unitStays"]);
             const result = res.data["unitStays"];
 
             let hotel_details = await Axios({
                 method: "GET",
-                url: `https://sandbox-api.nexttrip.com/api/v1/content/properties/${hotelId}`,
+                url: `https://sandbox-api.nexttrip.com/api/v1/content/properties/${id}`,
                 headers: {
                     "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
                     "cache-control": "no-cache",
@@ -191,7 +250,7 @@ export class Monaker implements StrategyVacationRental {
                 rooms.push(room);
             }
             const hotelDetails = new HotelDetails();
-            hotelDetails.property_id = hotelId;
+            hotelDetails.property_id = id;
             hotelDetails.property_name = hotel["propertyName"];
             hotelDetails.description = hotel["descriptions"][0]["description"];
             let images: Images[] = [];
@@ -212,13 +271,22 @@ export class Monaker implements StrategyVacationRental {
     }
 
 
-    async verifyUnitTypeAvailability(unitTypeId, verifyAvailabilitydto: VerifyAvailabilityDto) {
-        const { rate_plan_code, check_in_date, check_out_date, adult_count } = verifyAvailabilitydto;
+    async verifyUnitTypeAvailability(verifyAvailabilitydto: VerifyAvailabilityDto) {
+        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_of_children_ages } = verifyAvailabilitydto;
+
+        let childrensAges = ``;
+        for (let k = 0; k < number_of_children_ages.length; k++) {
+            if (k != number_of_children_ages.length - 1) {
+                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
+            } else {
+                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
+            }
+        }
 
         try {
             let res = await Axios({
                 method: "GET",
-                url: `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${unitTypeId}/verify-availability?RatePlanCode=${rate_plan_code}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&Currency=${this.headers.currency}`,
+                url: `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?RatePlanCode=${rate_plan_code}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
                 headers: {
                     "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
                     "cache-control": "no-cache",
@@ -227,7 +295,6 @@ export class Monaker implements StrategyVacationRental {
             })
 
             const response = res.data;
-            console.log("response", response);
             const result = {
                 "available_status": response["available"],
                 "booking_code": response["quoteHandle"],
@@ -243,11 +310,20 @@ export class Monaker implements StrategyVacationRental {
     }
 
     async booking(bookingDto: BookingDto) {
-        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count } = bookingDto;
+        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_of_children_ages } = bookingDto;
+
+        let childrensAges = ``;
+        for (let k = 0; k < number_of_children_ages.length; k++) {
+            if (k != number_of_children_ages.length - 1) {
+                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
+            } else {
+                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
+            }
+        }
 
         let verifyResponse = await Axios({
             method: "GET",
-            url: `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?RatePlanCode=${rate_plan_code}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&Currency=${this.headers.currency}`,
+            url: `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?RatePlanCode=${rate_plan_code}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
             headers: {
                 "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
                 "cache-control": "no-cache",
@@ -256,13 +332,6 @@ export class Monaker implements StrategyVacationRental {
         })
 
         const response = verifyResponse.data;
-
-        // const result = {
-        // 	"available_status": response["available"],
-        // 	"booking_code": response["quoteHandle"],
-        // 	"net_rate": response["available"] == true ? response["totalPrice"]["amountBeforeTax"] : null,
-        // 	"selling_rate": 0.0
-        // }
 
         try {
             let booking = await Axios({
@@ -277,6 +346,7 @@ export class Monaker implements StrategyVacationRental {
                     "checkInDate": check_in_date,
                     "checkOutDate": check_out_date,
                     "numberOfAdults": adult_count,
+                    "numberAndAgeOfChildren": number_of_children_ages,
                     "customer": {
                         "firstName": "chintan",
                         "lastName": "patel",

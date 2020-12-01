@@ -1,4 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsArray } from "class-validator";
 
 export class BookingDto{
 
@@ -32,4 +34,12 @@ export class BookingDto{
         example: 2
     })
     adult_count:number;
+
+    @IsArray()
+    @Type(() => Number)
+    @ApiProperty({
+        description:`Children ages collection`,
+        example:[10,12,15]
+    })
+    number_of_children_ages:Array<Number>;
 }
