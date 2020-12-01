@@ -1062,7 +1062,7 @@ export class FlightService {
 							bookingResult || null,
 							travelers
 						);
-						this.sendBookingEmail(laytripBookingResult.id);
+						this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 						return {
 							laytrip_booking_id: laytripBookingResult.id,
 							booking_status: "pending",
@@ -1128,7 +1128,7 @@ export class FlightService {
 							travelers
 						);
 						//send email here
-						this.sendBookingEmail(laytripBookingResult.id);
+						this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 						bookingResult.laytrip_booking_id = laytripBookingResult.id;
 						bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 							laytripBookingResult.laytripBookingId
@@ -1177,7 +1177,7 @@ export class FlightService {
 						travelers
 					);
 					//send email here
-					this.sendBookingEmail(laytripBookingResult.id);
+					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 						laytripBookingResult.laytripBookingId
@@ -1297,6 +1297,8 @@ export class FlightService {
 		booking.cardToken = card_token;
 
 		booking.moduleInfo = airRevalidateResult;
+		booking.checkInDate = await  this.changeDateFormat(airRevalidateResult[0].departure_date)
+		booking.checkOutDate = await  this.changeDateFormat(airRevalidateResult[0].arrival_date)
 		try {
 			let bookingDetails = await booking.save();
 			await this.saveTravelers(booking.id, userId, travelers);
@@ -1371,8 +1373,9 @@ export class FlightService {
 
 		let booking = await this.bookingRepository.getBookingDetails(bookingId);
 		booking.bookingStatus = BookingStatus.CONFIRM;
-		booking.netRate = net_rate.toString();
-		booking.usdFactor = currencyDetails.liveRate.toString();
+		console.log("Net rate",net_rate)
+		//booking.netRate = net_rate.toString();
+		//booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
@@ -1476,10 +1479,11 @@ export class FlightService {
 			travelersDetails,
 			isPassportRequired
 		);
-		console.log(bookingResult);
+
 
 		if (bookingResult.booking_status == "success") {
-			console.log(`step - 3 save Booking`);
+			console.log(`step - 3 save Booking`,bookingResult);
+			
 			let laytripBookingResult = await this.partialyBookingSave(
 				bookFlightDto,
 				currencyId,
@@ -1492,7 +1496,7 @@ export class FlightService {
 
 			//send email here
 			console.log(`step - 4 mail`);
-			this.sendBookingEmail(laytripBookingResult.id);
+			this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 			bookingResult.laytrip_booking_id = laytripBookingResult.id;
 			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 				laytripBookingResult.laytripBookingId
@@ -1501,7 +1505,7 @@ export class FlightService {
 
 		}
 		else {
-			throw new InternalServerErrorException(bookingResult.error_message)
+			throw new HttpException(bookingResult.error_message, 424)
 		}
 	}
 
@@ -2066,23 +2070,13 @@ export class FlightService {
 					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
 					"arrival_date": await this.changeDateFormat(bookingData.moduleInfo[0].arrival_code)
 				}
-				console.log('two dto', dto)
 				flights = await this.searchOneWayFlight(dto, Headers, bookingData.user);
 			}
-			console.log(flights);
-			console.log(bookingData.moduleInfo[0].unique_code);
 
 			var match = 0;
 			for await (const flight of flights.items) {
 				if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
 					match = match + 1
-					//const markups = await this.applyPreductionMarkup(bookingData.totalAmount)
-
-					//const savedDate = new Date(bookingData.predectedBookingDate);
-					// var predictedDate = savedDate.toISOString();
-					// predictedDate = predictedDate
-					// 	.replace(/T/, " ") // replace T with a space
-					// 	.replace(/\..+/, "");
 
 					const bookingDto = new BookFlightDto
 					bookingDto.travelers = travelers

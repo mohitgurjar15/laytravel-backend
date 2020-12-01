@@ -2,7 +2,6 @@ import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/auth/get-user.dacorator';
-import { PredictionFactorMarkup } from 'src/entity/prediction-factor-markup.entity';
 import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
