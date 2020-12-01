@@ -203,7 +203,6 @@ export class CronJobsService {
 			await instalment.save()
 
 			if (transaction.status == false) {
-
 				let faildTransaction = new FailedPaymentAttempt()
 				faildTransaction.instalmentId = instalment.id
 				faildTransaction.paymentInfo = transaction.meta_data
@@ -294,7 +293,6 @@ export class CronJobsService {
 					`${instalment.id} Payment successed by Cron`
 				);
 			}
-			this.checkAllinstallmentPaid(instalment.bookingId)
 		}
 		return { message: `${currentDate} date installation payment capture successfully` };
 	}
@@ -730,23 +728,6 @@ export class CronJobsService {
 
 		}
 		return data;
-
-	}
-
-	async checkAllinstallmentPaid(bookingId) {
-
-		let query = await getManager()
-			.createQueryBuilder(BookingInstalments, "BookingInstalments")
-			.where(`booking_id = ${bookingId} AND payment_status != ${PaymentStatus.CONFIRM}`)
-			.getCount()
-		if (query <= 0) {
-			await getConnection()
-				.createQueryBuilder()
-				.update(Booking)
-				.set({ paymentStatus: PaymentStatus.CONFIRM })
-				.where("id = :id", { id: bookingId })
-				.execute();
-		}
 
 	}
 }

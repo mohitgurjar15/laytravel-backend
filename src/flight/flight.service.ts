@@ -60,7 +60,6 @@ import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
 import { airports } from "./airports";
 import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
 import { match } from "assert";
-import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 @Injectable()
 export class FlightService {
@@ -1178,19 +1177,8 @@ export class FlightService {
 						travelers
 					);
 					//send email here
-
 					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
-					
-					const predictiveBooking = new PredictiveBookingData
-					predictiveBooking.bookingId = laytripBookingResult.id
-					predictiveBooking.date 		=  new Date()
-					predictiveBooking.netPrice = parseFloat(laytripBookingResult.netRate)
-					predictiveBooking.isBelowMinimum = false
-					predictiveBooking.price = parseFloat(laytripBookingResult.totalAmount);
-					await predictiveBooking.save()
-					
-
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 						laytripBookingResult.laytripBookingId
 					);
@@ -1386,8 +1374,8 @@ export class FlightService {
 		let booking = await this.bookingRepository.getBookingDetails(bookingId);
 		booking.bookingStatus = BookingStatus.CONFIRM;
 		console.log("Net rate",net_rate)
-		booking.netRate = `${net_rate}`;
-		booking.usdFactor = `${currencyDetails.liveRate}`;
+		//booking.netRate = net_rate.toString();
+		//booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
