@@ -1,4 +1,5 @@
 import { Locations } from "../dto/search-location/location.dto";
+import { SearchReqDto } from "../dto/search/search-req.dto";
 import { HotelInterface } from "./hotel.interface";
 
 export class Hotel{
@@ -10,5 +11,9 @@ export class Hotel{
 
     autoComplete(term: string): Locations {
         return this.hotel.autoComplete(term);
+    }
+    
+    search(searchReqDto: SearchReqDto) {
+        return this.hotel.search(searchReqDto);
     }
 }

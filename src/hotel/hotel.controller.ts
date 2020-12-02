@@ -1,14 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Inject, Param, Post, Res, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Locations } from './dto/search-location/location.dto';
 import { HotelSearchLocationDto } from './dto/search-location/search-location.dto';
+import { SearchReqDto } from './dto/search/search-req.dto';
 import { HotelService } from './hotel.service';
+import { Cache } from 'cache-manager';
 
 @ApiTags('Hotel')
 @Controller('hotel')
 export class HotelController {
     private hotelService;
-    constructor( ) {
+    constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
         this.hotelService = new HotelService();
     }
 
@@ -19,10 +20,26 @@ export class HotelController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     suggestion(
-        @Body() searchLocationDto: HotelSearchLocationDto
-    ): Locations {
-        let res = this.hotelService.autoComplete(searchLocationDto);
-        // console.log(c);
-        return res;
+        @Body() searchLocationDto: HotelSearchLocationDto,
+        @Res() res: any
+    ) {
+
+        this.hotelService.autoComplete(searchLocationDto).subscribe((data) => {
+            res.send({
+                data,
+                message: data.length ? 'Result found' : 'No result Found'
+            });
+        });
+        
+    }
+
+    @Post('search')
+    search(
+        @Body() searchReqDto: SearchReqDto
+    ) {
+        return this.hotelService.search(searchReqDto)
+            // .subscribe((data) => {
+            //     console.log(data);
+            // });
     }
 }
