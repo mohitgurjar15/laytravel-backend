@@ -817,7 +817,10 @@ export class AuthService {
 			}
 		}
 		const user = new User();
-		user.email = email || "";
+		if(email)
+		{
+			user.email = email
+		}
 		user.firstName = name || "";
 
 		if (!userExist) {
