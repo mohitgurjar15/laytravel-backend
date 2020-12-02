@@ -51,7 +51,13 @@ export class Search{
                 return newItem;
             });
             
-            return hotels;
+            return {
+                hotels,
+                details: {
+                    total: hotels.count(),
+                    token: ""
+                }
+            };
         } else {
             throw new InternalServerErrorException(results.error.status);
         }
