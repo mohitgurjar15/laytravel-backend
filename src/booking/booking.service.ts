@@ -211,6 +211,13 @@ export class BookingService {
 			//console.log(result);
 
 			for (let i in result.data) {
+				if(result.data[i].bookingInstalments.length > 0)
+				{
+					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+
+					result.data[i].bookingInstalments.reverse()
+				}
+				
 				for (let instalment of result.data[i].bookingInstalments) {
 					if (instalment.instalmentStatus == 1) {
 						paidAmount += parseFloat(instalment.amount);
