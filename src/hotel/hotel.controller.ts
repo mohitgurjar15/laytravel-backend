@@ -35,11 +35,14 @@ export class HotelController {
 
     @Post('search')
     search(
-        @Body() searchReqDto: SearchReqDto
+        @Body() searchReqDto: SearchReqDto,
+        @Res() res: any
     ) {
-        return this.hotelService.search(searchReqDto)
-            // .subscribe((data) => {
-            //     console.log(data);
-            // });
+        return this.hotelService.search(searchReqDto).subscribe((data) => {
+            res.send({
+                data,
+                message: data.length ? 'Result found' : 'No result Found'
+            });
+        });
     }
 }
