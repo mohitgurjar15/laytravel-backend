@@ -1062,7 +1062,7 @@ export class FlightService {
 							bookingResult || null,
 							travelers
 						);
-						this.sendBookingEmail(laytripBookingResult.id);
+						this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 						return {
 							laytrip_booking_id: laytripBookingResult.id,
 							booking_status: "pending",
@@ -1128,7 +1128,7 @@ export class FlightService {
 							travelers
 						);
 						//send email here
-						this.sendBookingEmail(laytripBookingResult.id);
+						this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 						bookingResult.laytrip_booking_id = laytripBookingResult.id;
 						bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 							laytripBookingResult.laytripBookingId
@@ -1177,7 +1177,7 @@ export class FlightService {
 						travelers
 					);
 					//send email here
-					this.sendBookingEmail(laytripBookingResult.id);
+					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 						laytripBookingResult.laytripBookingId
@@ -1297,6 +1297,8 @@ export class FlightService {
 		booking.cardToken = card_token;
 
 		booking.moduleInfo = airRevalidateResult;
+		booking.checkInDate = await  this.changeDateFormat(airRevalidateResult[0].departure_date)
+		booking.checkOutDate = await  this.changeDateFormat(airRevalidateResult[0].arrival_date)
 		try {
 			let bookingDetails = await booking.save();
 			await this.saveTravelers(booking.id, userId, travelers);
@@ -1371,8 +1373,9 @@ export class FlightService {
 
 		let booking = await this.bookingRepository.getBookingDetails(bookingId);
 		booking.bookingStatus = BookingStatus.CONFIRM;
-		booking.netRate = net_rate.toString();
-		booking.usdFactor = currencyDetails.liveRate.toString();
+		console.log("Net rate",net_rate)
+		//booking.netRate = net_rate.toString();
+		//booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
@@ -1479,7 +1482,8 @@ export class FlightService {
 
 
 		if (bookingResult.booking_status == "success") {
-			console.log(`step - 3 save Booking`);
+			console.log(`step - 3 save Booking`,bookingResult);
+			
 			let laytripBookingResult = await this.partialyBookingSave(
 				bookFlightDto,
 				currencyId,
@@ -1492,7 +1496,7 @@ export class FlightService {
 
 			//send email here
 			console.log(`step - 4 mail`);
-			this.sendBookingEmail(laytripBookingResult.id);
+			this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 			bookingResult.laytrip_booking_id = laytripBookingResult.id;
 			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 				laytripBookingResult.laytripBookingId
@@ -1909,7 +1913,7 @@ export class FlightService {
 			.where(`laytrip_booking_id = '${bookingId}'`)
 		const booking = await query.getOne();
 		if (!booking) {
-			throw new NotFoundException(`Given booking id not found`)
+			throw new NotFoundException(`Booking id not found`)
 		}
 
 		var moduleInfo = booking.moduleInfo[0]
@@ -2096,7 +2100,7 @@ export class FlightService {
 			}
 
 			if (match == 0) {
-				throw new NotFoundException(`Given flight not available`)
+				throw new NotFoundException(`Flight is not available`)
 			}
 
 		}

@@ -37575,7 +37575,7 @@ export const airports ={
   "PUJ": {
     "code": "PUJ",
     "name": "Punta Cana Intl.",
-    "city": "Higuey",
+    "city": "Punta Cana",
     "country": "Dominican Republic"
   },
   "PUK": {

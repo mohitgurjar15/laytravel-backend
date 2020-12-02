@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards } 
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Role } from 'src/enum/role.enum';
-import { UpdateFaqDto } from 'src/faq/dto/update-faq.dto';
 import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AddFaqCategoryDto } from './dto/add-faq-category.dto';

@@ -10,7 +10,6 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
-import { MailerService } from "@nestjs-modules/mailer";
 import { SaveTravelerDto } from "./dto/save-traveler.dto";
 import { User } from "src/entity/user.entity";
 import { v4 as uuidv4 } from "uuid";

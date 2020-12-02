@@ -2,7 +2,6 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entity/user.entity';
 import { Activity } from 'src/utility/activity.utility';
-import { getConnection } from 'typeorm';
 import { UpdatePredictionMarkupDto } from './dto/update-prediction-markup.dto';
 import { PredictionFactorMarkupRepository } from './prediction-factor-markup.repository';
 
