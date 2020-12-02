@@ -364,6 +364,7 @@ export class AuthService {
 	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles) {
 		const { email } = forgetPasswordDto;
 
+<<<<<<< HEAD
 		// const user = await this.userRepository.findOne({
 		// 	email:email,
 		// 	roleId: In(roles),
@@ -374,6 +375,12 @@ export class AuthService {
 			.where(`email=:email and role_id  IN (:...role_id)`, { email, role_id: roles })
 			.getOne();
 
+=======
+		const user = await this.userRepository.findOne({
+			email,
+			// roleId: In(roles),
+		});
+>>>>>>> 7ad5eb7bd9b0e0f2529e28a9d23524e8d1e5f2c2
 		if (!user) {
 			throw new NotFoundException(
 				`Email is not registered with us. Please check the email.`
@@ -672,6 +679,7 @@ export class AuthService {
 			os_version,
 			device_model,
 		} = mobileAuthCredentialDto;
+<<<<<<< HEAD
 		// const user = await this.userRepository.findOne({
 		// 	email,
 		// 	isDeleted: false,
@@ -682,6 +690,13 @@ export class AuthService {
 			.createQueryBuilder(User, "user")
 			.where(`email=:email and role_id  IN (:...role_id) and is_deleted =:is_deleted`, { email, role_id: roles,is_deleted:false })
 			.getOne();
+=======
+		const user = await this.userRepository.findOne({
+			email,
+			isDeleted: false,
+			// roleId: In(roles),
+		});
+>>>>>>> 7ad5eb7bd9b0e0f2529e28a9d23524e8d1e5f2c2
 
 		if (user && (await user.validatePassword(password))) {
 			if (user.status != 1)
