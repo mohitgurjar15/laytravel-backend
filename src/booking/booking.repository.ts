@@ -82,7 +82,7 @@ export class BookingRepository extends Repository<Booking> {
 			.take(take)
 			.skip(skip)
 			.orderBy(`booking.bookingDate`, 'DESC')
-			.addOrderBy(`instalments.id`)
+			//.addOrderBy(`instalments.id`)
 		const [data, count] = await query.getManyAndCount();
 		//const count = await query.getCount();
 		if (!data.length) {

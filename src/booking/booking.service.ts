@@ -23,7 +23,7 @@ import { BookingFailerMail } from "src/config/email_template/booking-failure-mai
 import { BookingType } from "src/enum/booking-type.enum";
 import { exit } from "process";
 import { PaymentStatus } from "src/enum/payment-status.enum";
-import {  getManager } from "typeorm";
+import { getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
@@ -281,13 +281,19 @@ export class BookingService {
 	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
 			let result = await this.bookingRepository.listBooking(listBookingDto, userId);
-			//console.log(result);
-
+			
 			for (let i in result.data) {
 				let paidAmount = 0;
 				let remainAmount = 0;
 				let pandinginstallment = 0;
+				
+				if(result.data[i].bookingInstalments.length > 0)
+				{
+					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
 
+					result.data[i].bookingInstalments.reverse()
+				}
+				
 				for (let instalment of result.data[i].bookingInstalments) {
 					if (instalment.instalmentStatus == InstalmentStatus.PAID) {
 						paidAmount += parseFloat(instalment.amount);
@@ -318,29 +324,6 @@ export class BookingService {
 					}
 				}
 			}
-			// for await (const booking of result.data) {
-				
-			// 	var installmentData = []
-			// 	var id = 0;
-			// 	for (let index = 0; index < booking.bookingInstalments.length; index++) {
-			// 		var data = null;
-			// 		const installment = booking.bookingInstalments[index];
-					
-			// 		for (let i = 0; i < booking.bookingInstalments.length; i++) {
-			// 			const installment = booking.bookingInstalments[i];
-			// 			if(installment.id > id || id == 0)
-			// 			{
-			// 				console.log("installment.id" , installment.id);
-			// 				console.log("id" , id);
-							
-			// 				id = installment.id;
-			// 				data = installment;
-			// 			}
-			// 		}
-			// 		installmentData.push(data)
-			// 	}
-			// 	booking.bookingInstalments = installmentData
-			// }
 			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -379,6 +362,7 @@ export class BookingService {
 		}
 	}
 
+	
 	async getBookingDetail(bookingId: string) {
 		try {
 			let result = await this.bookingRepository.bookingDetail(bookingId);
@@ -560,7 +544,7 @@ export class BookingService {
 
 			const result = await this.bookingRepository.getPredictiveBookingDdata();
 			let todayPrice = [];
-			let availableBookingId = []; 
+			let availableBookingId = [];
 			for await (const data of result.data) {
 				const bookingData = data.booking
 				// booking data
@@ -647,7 +631,7 @@ export class BookingService {
 			const allBooking = await this.bookingRepository.getPendingBooking()
 			let responce = []
 			console.log(todayPrice);
-			
+
 			for await (const booking of allBooking) {
 				if (availableBookingId.indexOf(booking.laytripBookingId) != -1) {
 					//console.log(availableBookingId.indexOf(booking.laytripBookingId));
@@ -656,7 +640,7 @@ export class BookingService {
 				}
 				else {
 					const paidAmount = await this.paidAmountByUser(booking.id)
-				
+
 					const predictiveBookingData: any = {}
 					predictiveBookingData['booking_id'] = booking.id
 					predictiveBookingData['net_price'] = null
@@ -759,14 +743,14 @@ export class BookingService {
 	async getDailyPricesOfBooking(bookingId: string) {
 		try {
 			const result = await this.bookingRepository.getDailyPredictiveBookingPrices(bookingId);
-			const data:any = result.predictiveBookingData
+			const data: any = result.predictiveBookingData
 			if (!data.length) {
 				throw new NotFoundException(
 					`No data found`
 				);
 			}
 			for await (const value of data) {
-				value['laytripBookingId'] = result.laytripBookingId 
+				value['laytripBookingId'] = result.laytripBookingId
 			}
 
 			return {

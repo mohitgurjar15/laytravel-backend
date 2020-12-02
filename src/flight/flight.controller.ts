@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException, Put } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException, Put, Delete } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
@@ -6,7 +6,7 @@ import { OneWaySearchFlightDto } from './dto/oneway-flight.dto';
 import { MinCharPipe } from './pipes/min-char.pipes';
 import { RouteIdsDto } from './dto/routeids.dto';
 import { RoundtripSearchFlightDto } from './dto/roundtrip-flight.dto';
-import { LogInUser } from 'src/auth/get-user.dacorator';
+import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
 import { BookFlightDto } from './dto/book-flight.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/guards/role.decorator';
@@ -16,6 +16,7 @@ import { FullCalenderRateDto } from './dto/full-calender-date-rate.dto';
 import { NetRateDto } from './dto/net-rate.dto';
 import * as moment from 'moment';
 import { ManullyBookingDto } from './dto/manully-update-flight.dto';
+import { User } from 'src/entity/user.entity';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -82,7 +83,7 @@ export class FlightController {
 
         if (moment(searchFlightDto.departure_date).isAfter(moment().add(365, "days").format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter departure date less then year.&&&departure_date`)
-        
+
         return await this.flightService.searchOneWayFlight(searchFlightDto, req.headers, user);
     }
 
@@ -169,11 +170,11 @@ export class FlightController {
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
-        example : 'USD'
-      })
+        example: 'USD'
+    })
     @ApiHeader({
-    name: 'language',
-    description: 'Enter language code(ex. en)',
+        name: 'language',
+        description: 'Enter language code(ex. en)',
     })
     @ApiOperation({ summary: "Book Flight" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -181,14 +182,14 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Flight is not available now' })
     @HttpCode(200)
     @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.PAID_USER,Role.FREE_USER,Role.GUEST_USER)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     async bookFlight(
-       @Body() bookFlightDto:BookFlightDto,
-       @Req() req,
-       @LogInUser() user
-    ){
-        return await this.flightService.bookFlight(bookFlightDto,req.headers,user);
-    } 
+        @Body() bookFlightDto: BookFlightDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.flightService.bookFlight(bookFlightDto, req.headers, user);
+    }
 
     @Get('/ticket/:id')
     @ApiOperation({ summary: "Ticket flight booking" })
@@ -209,8 +210,8 @@ export class FlightController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async tripDetails(
-    @Param('id') id:String
-    ){
+        @Param('id') id: String
+    ) {
         return await this.flightService.tripDetails(id);
     }
 
@@ -382,8 +383,8 @@ export class FlightController {
 
     @Post('/manully-update/:booking_id')
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @ApiOperation({ summary: "manully update booking" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -391,42 +392,32 @@ export class FlightController {
     @HttpCode(200)
     async manullyBookingUpdate(
         @Body() manullybooking: ManullyBookingDto,
-        @Param('booking_id') booking_id : string
+        @Param('booking_id') booking_id: string
     ) {
         return await this.flightService.manullyBooking(booking_id, manullybooking);
     }
 
-    @Put('/cancel-booking/:booking_id')
+    @Delete('/cancel-booking/:booking_id')
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @ApiOperation({ summary: "cancel booking" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    @ApiHeader({
-        name: 'currency',
-        description: 'Enter currency code(ex. USD)',
-        example: 'USD'
-    })
-    @ApiHeader({
-        name: 'language',
-        description: 'Enter language code(ex. en)',
-    })
     async cancelBooking(
-        @Param('booking_id') booking_id : string,
-        @Req() req,
-
+        @Param('booking_id') booking_id: string,
+        @GetUser() user: User,
     ) {
-        return await this.flightService.cancelBooking(booking_id, req.headers);
+        return await this.flightService.cancelBooking(booking_id, user.userId);
     }
 
 
     @Put('/book-partially-booking/:booking_id')
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard(),RolesGuard)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @ApiOperation({ summary: "book parially booking by the admin" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -442,7 +433,7 @@ export class FlightController {
         description: 'Enter language code(ex. en)',
     })
     async bookPartiallyBooking(
-        @Param('booking_id') booking_id : string,
+        @Param('booking_id') booking_id: string,
         @Req() req,
 
     ) {

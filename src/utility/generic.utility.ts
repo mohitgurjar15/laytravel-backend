@@ -46,7 +46,7 @@ export class  Generic{
         return result
     }
     
-    static formatPriceDecimal(price){
+    static formatPriceDecimal(price:number){
         return Number(price.toFixed(2))
     }
 

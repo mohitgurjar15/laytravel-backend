@@ -61,6 +61,9 @@ import { airports } from "./airports";
 import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
 import { match } from "assert";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
+import { RewordStatus } from "src/enum/reword-status.enum";
+import { RewordMode } from "src/enum/reword-mode.enum";
 
 @Injectable()
 export class FlightService {
@@ -1181,15 +1184,15 @@ export class FlightService {
 
 					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
-					
+
 					const predictiveBooking = new PredictiveBookingData
 					predictiveBooking.bookingId = laytripBookingResult.id
-					predictiveBooking.date 		=  new Date()
+					predictiveBooking.date = new Date()
 					predictiveBooking.netPrice = parseFloat(laytripBookingResult.netRate)
 					predictiveBooking.isBelowMinimum = false
 					predictiveBooking.price = parseFloat(laytripBookingResult.totalAmount);
 					await predictiveBooking.save()
-					
+
 
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 						laytripBookingResult.laytripBookingId
@@ -1309,8 +1312,8 @@ export class FlightService {
 		booking.cardToken = card_token;
 
 		booking.moduleInfo = airRevalidateResult;
-		booking.checkInDate = await  this.changeDateFormat(airRevalidateResult[0].departure_date)
-		booking.checkOutDate = await  this.changeDateFormat(airRevalidateResult[0].arrival_date)
+		booking.checkInDate = await this.changeDateFormat(airRevalidateResult[0].departure_date)
+		booking.checkOutDate = await this.changeDateFormat(airRevalidateResult[0].arrival_date)
 		try {
 			let bookingDetails = await booking.save();
 			await this.saveTravelers(booking.id, userId, travelers);
@@ -1385,7 +1388,7 @@ export class FlightService {
 
 		let booking = await this.bookingRepository.getBookingDetails(bookingId);
 		booking.bookingStatus = BookingStatus.CONFIRM;
-		console.log("Net rate",net_rate)
+		console.log("Net rate", net_rate)
 		booking.netRate = `${net_rate}`;
 		booking.usdFactor = `${currencyDetails.liveRate}`;
 		booking.fareType = fare_type;
@@ -1494,8 +1497,8 @@ export class FlightService {
 
 
 		if (bookingResult.booking_status == "success") {
-			console.log(`step - 3 save Booking`,bookingResult);
-			
+			console.log(`step - 3 save Booking`, bookingResult);
+
 			let laytripBookingResult = await this.partialyBookingSave(
 				bookFlightDto,
 				currencyId,
@@ -2033,9 +2036,53 @@ export class FlightService {
 		}
 	}
 
-	async cancelBooking(tripId: string, headers) {
-		const mystifly = new Strategy(new Mystifly(headers));
-		return mystifly.cancelBooking(tripId);
+	async cancelBooking(bookingId: string, userId) {
+		const bookingData = await this.bookingRepository.getBookingDetails(bookingId)
+
+		const checkInDate = new Date(bookingData.checkInDate)
+
+		const date = new Date()
+		
+		if (bookingData.bookingStatus == BookingStatus.PENDING && bookingData.bookingType == BookingType.INSTALMENT && checkInDate > date) {
+			const paidInstallment = await getConnection().query(
+				`SELECT  sum(amount) as "total" FROM "booking_instalments" WHERE payment_status = ${PaymentStatus.CONFIRM} AND booking_id = ${bookingData.id}`
+			)
+			const point = parseFloat(paidInstallment[0].total) / parseFloat(bookingData.usdFactor)
+
+			const laytripPoint = new LayCreditEarn
+
+			laytripPoint.userId = bookingData.userId
+			laytripPoint.points = point
+			laytripPoint.earnDate = new Date()
+			laytripPoint.status = RewordStatus.AVAILABLE
+			laytripPoint.creditMode = RewordMode.CANCELBOOKING
+			laytripPoint.description = `Booking ${bookingData.laytripBookingId} is canceled by admin`
+			laytripPoint.creditBy = userId
+
+			const savedLaytripPoint = await laytripPoint.save()
+			if (savedLaytripPoint) {
+				bookingData.bookingStatus = BookingStatus.CANCELLED
+				await bookingData.save();
+				return `booking (bookingData.laytripBookingId) is canceled successfully `
+			}
+			else {
+				throw new InternalServerErrorException(errorMessage)
+			}
+		}
+		else {
+			if (bookingData.bookingStatus != BookingStatus.PENDING) {
+				throw new BadRequestException(`Given booking not in pending state`)
+
+			}
+			if (bookingData.bookingType != BookingType.INSTALMENT) {
+				throw new BadRequestException(`Given booking type is not a instalment`)
+			}
+			if (checkInDate > date) {
+				throw new BadRequestException(`Booking depature date is a past date`)
+			}
+
+		}
+
 	}
 
 	async bookPartialBooking(bookingId, Headers) {
@@ -2141,5 +2188,7 @@ export class FlightService {
 				console.log("err", err);
 			});
 	}
+
+
 
 }

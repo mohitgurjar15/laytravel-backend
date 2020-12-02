@@ -28,6 +28,7 @@ import { PaidFor } from "src/enum/paid-for.enum";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
+import { Generic } from "src/utility/generic.utility";
 const AWS = require('aws-sdk');
 
 
@@ -170,7 +171,7 @@ export class CronJobsService {
 				"User.phoneNo",
 			])
 
-			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${monthDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM, BookingStatus.PENDING}))`)
+			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${monthDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${ BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
 		//console.log(data)
@@ -184,7 +185,7 @@ export class CronJobsService {
 
 		for await (const instalment of data) {
 			console.log(instalment);
-			let amount = instalment.amount
+			let amount: any = Generic.formatPriceDecimal(parseFloat(instalment.amount)) * 100
 			let currencyCode = instalment.currency.code
 			let cardToken = instalment.booking.cardToken
 
@@ -192,109 +193,117 @@ export class CronJobsService {
 			console.log('currencyCode', currencyCode)
 			console.log('cardToken', cardToken)
 
-			let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
+			if (cardToken) {
+				let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-			instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-			instalment.paymentInfo = transaction.meta_data;
-			instalment.transactionToken = transaction.token;
-			instalment.paymentCaptureDate = new Date();
-			instalment.attempt = instalment.attempt + 1;
-			instalment.comment = `Get Payment by cron on ${currentDate}`
-			await instalment.save()
+				
+				instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+				instalment.paymentInfo = transaction.meta_data;
+				instalment.transactionToken = transaction.token;
+				instalment.paymentCaptureDate = new Date();
+				instalment.attempt = (instalment.attempt || 0) + 1;
+				instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+				instalment.comment = `Get Payment by cron on ${currentDate}`
+				await instalment.save()
 
-			if (transaction.status == false) {
+				console.log(transaction.status);
+				
+				if (transaction.status == false) {
 
-				let faildTransaction = new FailedPaymentAttempt()
-				faildTransaction.instalmentId = instalment.id
-				faildTransaction.paymentInfo = transaction.meta_data
-				faildTransaction.date = new Date();
+					let faildTransaction = new FailedPaymentAttempt()
+					faildTransaction.instalmentId = instalment.id
+					faildTransaction.paymentInfo = transaction.meta_data
+					faildTransaction.date = new Date();
 
-				await faildTransaction.save()
-				let param = {
-					message: transaction.meta_data.transaction.response.message,
-					cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-					cardNo: transaction.meta_data.transaction.payment_method.number,
-					orderId: instalment.bookingId,
-					amount: amount,
+					await faildTransaction.save()
+					let param = {
+						message: transaction.meta_data.transaction.response.message,
+						cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+						cardNo: transaction.meta_data.transaction.payment_method.number,
+						orderId: instalment.bookingId,
+						amount: amount,
+					}
+					if (instalment.attempt == 3) {
+						await getConnection()
+							.createQueryBuilder()
+							.update(Booking)
+							.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+							.where("id = :id", { id: instalment.bookingId })
+							.execute();
+						await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
+					}
+					this.mailerService
+						.sendMail({
+							to: instalment.user.email,
+							from: mailConfig.from,
+							cc: mailConfig.BCC,
+							subject: `Payment Failed Notification`,
+							html: missedPaymentInstallmentMail(param),
+						})
+						.then((res) => {
+							console.log("res", res);
+						})
+						.catch((err) => {
+							console.log("err", err);
+						});
+					Activity.logActivity(
+						"1c17cd17-9432-40c8-a256-10db77b95bca",
+						"cron",
+						`${instalment.id} Payment Failed by Cron`
+					);
+
 				}
-				if (instalment.attempt == 3) {
+				else {
+					console.log('nextDate');
+					
+					const nextDate = await getManager()
+						.createQueryBuilder(BookingInstalments, "BookingInstalments")
+						.select(['BookingInstalments.instalmentDate'])
+						.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
+						.orderBy(`"BookingInstalments"."id"`)
+						.getOne()
+					console.log(nextDate);
+					
+
 					await getConnection()
 						.createQueryBuilder()
 						.update(Booking)
-						.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+						.set({ nextInstalmentDate: nextDate.instalmentDate })
 						.where("id = :id", { id: instalment.bookingId })
 						.execute();
-					await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
-				}
-				this.mailerService
-					.sendMail({
-						to: instalment.user.email,
-						from: mailConfig.from,
-						cc: mailConfig.BCC,
-						subject: `Payment Failed Notification`,
-						html: missedPaymentInstallmentMail(param),
-					})
-					.then((res) => {
-						console.log("res", res);
-					})
-					.catch((err) => {
-						console.log("err", err);
-					});
-				Activity.logActivity(
-					"1c17cd17-9432-40c8-a256-10db77b95bca",
-					"cron",
-					`${instalment.id} Payment Failed by Cron`
-				);
 
-			}
-			else {
+					let param = {
+						date: instalment.instalmentDate,
+						userName: instalment.user.firstName + ' ' + instalment.user.lastName,
+						cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+						cardNo: transaction.meta_data.transaction.payment_method.number,
+						orderId: instalment.booking.laytripBookingId,
+						amount: amount,
+					}
 
-
-				const nextDate = await getManager()
-					.createQueryBuilder(BookingInstalments, "bookingInstalments")
-					.select(['bookingInstalments.instalmentDate'])
-					.where(`bookingInstalments.instalment_status =${InstalmentStatus.PENDING} AND bookingInstalments.booking_id = ${instalment.bookingId}`)
-					.orderBy(`bookingInstalments.instalmentDate`)
-					.getOne()
-
-
-				await getConnection()
-					.createQueryBuilder()
-					.update(Booking)
-					.set({ nextInstalmentDate: nextDate.instalmentDate })
-					.where("id = :id", { id: instalment.bookingId })
-					.execute();
-
-				let param = {
-					date: instalment.instalmentDate,
-					userName: instalment.user.firstName + ' ' + instalment.user.lastName,
-					cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-					cardNo: transaction.meta_data.transaction.payment_method.number,
-					orderId: instalment.booking.laytripBookingId,
-					amount: amount,
+					this.mailerService
+						.sendMail({
+							to: instalment.user.email,
+							from: mailConfig.from,
+							bcc: mailConfig.BCC,
+							subject: `Installment Payment Successed`,
+							html: PaymentInstallmentMail(param),
+						})
+						.then((res) => {
+							console.log("res", res);
+						})
+						.catch((err) => {
+							console.log("err", err);
+						});
+					Activity.logActivity(
+						"1c17cd17-9432-40c8-a256-10db77b95bca",
+						"cron",
+						`${instalment.id} Payment successed by Cron`
+					);
 				}
 
-				this.mailerService
-					.sendMail({
-						to: instalment.user.email,
-						from: mailConfig.from,
-						bcc: mailConfig.BCC,
-						subject: `Installment Payment Successed`,
-						html: PaymentInstallmentMail(param),
-					})
-					.then((res) => {
-						console.log("res", res);
-					})
-					.catch((err) => {
-						console.log("err", err);
-					});
-				Activity.logActivity(
-					"1c17cd17-9432-40c8-a256-10db77b95bca",
-					"cron",
-					`${instalment.id} Payment successed by Cron`
-				);
+				await this.checkAllinstallmentPaid(instalment.bookingId)
 			}
-			this.checkAllinstallmentPaid(instalment.bookingId)
 		}
 		return { message: `${currentDate} date installation payment capture successfully` };
 	}
@@ -737,7 +746,7 @@ export class CronJobsService {
 
 		let query = await getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
-			.where(`booking_id = ${bookingId} AND payment_status != ${PaymentStatus.CONFIRM}`)
+			.where(`booking_id = '${bookingId}' AND payment_status != ${PaymentStatus.CONFIRM}`)
 			.getCount()
 		if (query <= 0) {
 			await getConnection()
