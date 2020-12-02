@@ -930,6 +930,7 @@ export class AuthService {
 			const roleId = [
 				Role.SUPER_ADMIN,
 				Role.ADMIN,
+				Role.SUPPORT,
 				Role.SUPPLIER,
 				Role.FREE_USER,
 				Role.GUEST_USER,
