@@ -3,6 +3,10 @@ import {
 	BadRequestException,
 	InternalServerErrorException,
 	NotFoundException,
+	ConflictException,
+	ForbiddenException,
+	NotAcceptableException,
+	UnauthorizedException,
 } from "@nestjs/common";
 import { SaveCardDto } from "./dto/save-card.dto";
 import { getManager } from "typeorm";
@@ -114,7 +118,7 @@ export class PaymentService {
 				retained: true,
 			},
 		};
-		let cardResult = await this.axiosRequest(url, requestBody, headers,null,'add-card');
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card');
 
 		console.log(cardResult);
 		if (
@@ -174,7 +178,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers , null ,'authorise-card');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
 		console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -202,7 +206,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers,null,'capture-card');
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -228,7 +232,7 @@ export class PaymentService {
 		}
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
-		let voidRes = await this.axiosRequest(url, requestBody, headers,null,'void-card');
+		let voidRes = await this.axiosRequest(url, requestBody, headers, null, 'void-card');
 		if (typeof voidRes.transaction != 'undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -255,7 +259,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
 		let requestBody = {};
-		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT','retain-card');
+		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT', 'retain-card');
 		if (typeof retainRes != 'undefined' && retainRes.transaction.succeeded) {
 			return {
 				success: true
@@ -287,8 +291,38 @@ export class PaymentService {
 			let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
 			Activity.createlogFile(fileName, logData, 'payment');
 			return result.data;
-		} catch (exception) {
-			throw new InternalServerErrorException(`${exception.message}&&&card&&&${errorMessage}`)
+		} catch (error) {
+			console.log();
+
+			if (typeof error.response !== "undefined") {
+				switch (error.response.status) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 402:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
@@ -312,7 +346,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers,null,'capture-payment');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment');
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
@@ -361,9 +395,4 @@ export class PaymentService {
 
 		return transactionData;
 	}
-
-
-
-
-
 }
