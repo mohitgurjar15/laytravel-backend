@@ -1,12 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
+import { Type } from "class-transformer";
+import { IsArray, IsNotEmpty } from "class-validator";
 import { errorMessage } from "src/config/common.config";
 
 export class VerifyAvailabilityDto {
 
+    
+    @ApiProperty({
+        description:"Enter room id ",
+        example:'7111514346492'
+    })
+    room_id:number;
+
     @ApiProperty({
         description:"Enter rate plan selected for price check.  ",
-        example:'096F5MI601'
+        example:'186PNPNX01'
     })
     rate_plan_code:string;
 
@@ -29,4 +37,11 @@ export class VerifyAvailabilityDto {
     })
     adult_count:number;
 
+    @IsArray()
+    @Type(() => Number)
+    @ApiProperty({
+        description:`Children ages collection`,
+        example:[10,12,15]
+    })
+    number_of_children_ages:Array<Number>;
 }
