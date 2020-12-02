@@ -211,13 +211,12 @@ export class BookingService {
 			//console.log(result);
 
 			for (let i in result.data) {
-				if(result.data[i].bookingInstalments.length > 0)
-				{
+				if (result.data[i].bookingInstalments.length > 0) {
 					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
 
 					result.data[i].bookingInstalments.reverse()
 				}
-				
+
 				for (let instalment of result.data[i].bookingInstalments) {
 					if (instalment.instalmentStatus == 1) {
 						paidAmount += parseFloat(instalment.amount);
@@ -288,19 +287,18 @@ export class BookingService {
 	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
 			let result = await this.bookingRepository.listBooking(listBookingDto, userId);
-			
+
 			for (let i in result.data) {
 				let paidAmount = 0;
 				let remainAmount = 0;
 				let pandinginstallment = 0;
-				
-				if(result.data[i].bookingInstalments.length > 0)
-				{
+
+				if (result.data[i].bookingInstalments.length > 0) {
 					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
 
 					result.data[i].bookingInstalments.reverse()
 				}
-				
+
 				for (let instalment of result.data[i].bookingInstalments) {
 					if (instalment.instalmentStatus == InstalmentStatus.PAID) {
 						paidAmount += parseFloat(instalment.amount);
@@ -369,7 +367,7 @@ export class BookingService {
 		}
 	}
 
-	
+
 	async getBookingDetail(bookingId: string) {
 		try {
 			let result = await this.bookingRepository.bookingDetail(bookingId);
@@ -379,7 +377,11 @@ export class BookingService {
 
 			//console.log(result);
 
+			if (result.bookingInstalments.length > 0) {
+				result.bookingInstalments.sort((a, b) => b.id - a.id)
 
+				result.bookingInstalments.reverse()
+			}
 			for (let instalment of result.bookingInstalments) {
 				if (instalment.instalmentStatus == 1) {
 					paidAmount += parseFloat(instalment.amount);
