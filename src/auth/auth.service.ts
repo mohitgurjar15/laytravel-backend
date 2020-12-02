@@ -672,13 +672,7 @@ export class AuthService {
 			os_version,
 			device_model,
 		} = mobileAuthCredentialDto;
-<<<<<<< HEAD
-		const user = await this.userRepository.findOne({
-			email,
-			isDeleted: false,
-			// roleId: In(roles),
-		});
-=======
+
 		// const user = await this.userRepository.findOne({
 		// 	email,
 		// 	isDeleted: false,
@@ -689,7 +683,6 @@ export class AuthService {
 			.createQueryBuilder(User, "user")
 			.where(`email=:email and role_id  IN (:...role_id) and is_deleted =:is_deleted`, { email, role_id: roles,is_deleted:false })
 			.getOne();
->>>>>>> d13f78c444fd36aa9d289f5899ab260e24c0ecde
 
 		if (user && (await user.validatePassword(password))) {
 			if (user.status != 1)
