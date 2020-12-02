@@ -50,7 +50,7 @@ export class Route{
     fare_type               : string;
     instalment_details      :{};
     unique_code             :string;
-    extra_service           :[]
+    extra_service           :{}
 }
 
 export class RouteType{
@@ -83,4 +83,10 @@ export class StopDetails{
 
     count : number;
     min_price : string;
+}
+
+export class ExtraService{
+
+    outbound : []
+    inbound : []
 }
