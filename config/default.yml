@@ -21,10 +21,18 @@ jwt:
     SecretKey: "mySecre@tKey"
 
 email:
-    host: "smtpout.secureserver.net"
-    user: "suresh@itoneclick.com"
-    pass: "Oneclick1@"
-    port: 465
+    # host: "smtpout.secureserver.net"
+    # user: "suresh@itoneclick.com"
+    # pass: "Oneclick1@"
+    # port: 465
+    # secure: true
+    # from: '"laytrip" <no-reply@laytrip.com>'
+    # BCC:  'suresh@itoneclick.com'
+    # admin: 'suresh@itoneclick.com'
+    host: "smtp.office365.com"
+    user: "no-reply@laytrip.com"
+    pass: "Autoanswer21!"
+    port: 587
     secure: true
     from: '"laytrip" <no-reply@laytrip.com>'
     BCC:  'suresh@itoneclick.com'
