@@ -12,37 +12,37 @@ export const EmailFooter = `<!-- footer section -->
                   <tr>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="https://laytrip.s3.us-east-2.amazonaws.com/assets/images/email/icons/instagram.png" alt="instagram" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}assets/images/email/icons/instagram.png" alt="instagram" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="https://laytrip.s3.us-east-2.amazonaws.com/assets/images/email/icons/facebook.png" alt="facebook" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #ffffff; " />
+                        <img src="${BaseUrl}assets/images/email/icons/facebook.png" alt="facebook" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="https://laytrip.s3.us-east-2.amazonaws.com/assets/images/email/icons/twitter.png" alt="twitter" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}assets/images/email/icons/twitter.png" alt="twitter" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="https://laytrip.s3.us-east-2.amazonaws.com/assets/images/email/icons/linkedin.png" alt="linkedin" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}assets/images/email/icons/linkedin.png" alt="linkedin" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="https://laytrip.s3.us-east-2.amazonaws.com/assets/images/email/icons/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}assets/images/email/icons/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
                       <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="https://laytrip.s3.us-east-2.amazonaws.com/assets/images/email/icons/link.png" alt="link" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
+                        <img src="${BaseUrl}assets/images/email/icons/link.png" alt="link" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                   </tr>
