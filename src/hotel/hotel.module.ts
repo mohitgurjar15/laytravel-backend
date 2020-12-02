@@ -1,9 +1,12 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { HotelController } from './hotel.controller';
 import { HotelService } from './hotel.service';
 
 @Module({
   controllers: [HotelController],
-  providers: [HotelService]
+  providers: [HotelService],
+  imports: [
+    CacheModule.register()
+  ]
 })
 export class HotelModule {}

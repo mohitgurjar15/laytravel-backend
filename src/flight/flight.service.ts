@@ -1181,7 +1181,6 @@ export class FlightService {
 						travelers
 					);
 					//send email here
-
 					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
 

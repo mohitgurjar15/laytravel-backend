@@ -672,6 +672,7 @@ export class AuthService {
 			os_version,
 			device_model,
 		} = mobileAuthCredentialDto;
+
 		// const user = await this.userRepository.findOne({
 		// 	email,
 		// 	isDeleted: false,
