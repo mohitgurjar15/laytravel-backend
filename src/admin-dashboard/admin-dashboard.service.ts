@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { DashboardFilterDto } from "./dto/dashboard-filter.dto";
 import { Role } from "src/enum/role.enum";
 import { errorMessage } from "src/config/common.config";
@@ -24,7 +24,7 @@ export class AdminDashboardService {
 			if (toDate) {
 				where += `AND (DATE("booking".booking_date) >= '${toDate}') `;
 			}
-			var data = await getManager().query(`
+			var data = await getConnection().query(`
                 SELECT count(id) as confirm_booking,
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
@@ -33,7 +33,7 @@ export class AdminDashboardService {
             `);
 
 
-			var totalBookings = await getManager().query(`
+			var totalBookings = await getConnection().query(`
                 SELECT count(id) as total_booking
                 from booking ${moduleId ? `WHERE "module_id" = '${moduleId}'` : ''}
             `);
@@ -110,7 +110,7 @@ export class AdminDashboardService {
 				where += `AND (DATE(created_date) >= '${todayDate}') `;
 			}
 
-			const result = await getManager().query(
+			const result = await getConnection().query(
 				`SELECT DATE("created_date"),
             COUNT(DISTINCT("User"."user_id")) as "count" 
             FROM "user" "User" 
@@ -190,7 +190,7 @@ export class AdminDashboardService {
 			mondayDate = mondayDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			const monthlyCount = await getManager().query(
+			const monthlyCount = await getConnection().query(
 				`SELECT 
                 COUNT(DISTINCT("User"."user_id")) as "count" 
                 FROM "user" "User" 
@@ -201,7 +201,7 @@ export class AdminDashboardService {
 			`
 			);
 
-			const weeklyCount = await getManager().query(
+			const weeklyCount = await getConnection().query(
 				`SELECT
 				COUNT(DISTINCT("User"."user_id")) as "count" 
 				FROM "user" "User" 
@@ -212,7 +212,7 @@ export class AdminDashboardService {
 			`
 			);
 
-			const totalCount = await getManager().query(
+			const totalCount = await getConnection().query(
 				`SELECT
 				COUNT(DISTINCT("User"."user_id")) as "count" 
 				FROM "user" "User" 
@@ -267,7 +267,7 @@ export class AdminDashboardService {
 
 
 		try {
-			const result = await getManager().query(
+			const result = await getConnection().query(
 				`SELECT "countries"."iso2" AS "country_sort_code","countries"."iso3" AS "countries_code","countries"."name" AS "countries_name", "countries"."id" AS "countries_id", COUNT(DISTINCT("user"."user_id")) as "user_count" FROM "user" "user" RIGHT JOIN "countries" "countries" ON "countries"."id"="user"."country_id" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) AND "country_id" > 0  GROUP BY countries_id`
 			);
 			return result;
@@ -324,10 +324,10 @@ export class AdminDashboardService {
 				earned_where += `AND (DATE(earn_date) <= '${toDate}')`;
 				redeem_where += `AND (DATE(redeem_date) <= '${toDate}')`;
 			}
-			let [earnedReword] = await getManager()
+			let [earnedReword] = await getConnection()
 				.query(`SELECT sum("points") FROM "lay_credit_earn" WHERE ${earned_where}  `);
 
-			let [redeemReword] = await getManager()
+			let [redeemReword] = await getConnection()
 				.query(`SELECT sum("points") FROM "lay_credit_redeem" WHERE ${redeem_where}`)
 
 			//const points = earnedReword.sum - redeemReword.sum;
@@ -374,31 +374,55 @@ export class AdminDashboardService {
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 			todayDate = todayDate.split(' ')[0]
-			
-			let response = {}
+
+			var response = {}
 
 			// complited trips :- complite bookings 
-			const completedTrips = await getManager().query(
-				`SELECT  sum ("total_amount") as 'total', count(*) as "cnt"
+			const completedTrips = await getConnection().query(
+				`SELECT  count(*) as "cnt"
 				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM}`
 			);
-			response['completed_trips'] = completedTrips.cnt
+			console.log();
+
+			response["completed_trips"] = completedTrips[0].cnt
 
 			// open bookings
-			const openBookings = await getManager().query(
-				`SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM})`
+			const openBookings = await getConnection().query(
+				`SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM})`
 			);
-			response['open_bookings'] = openBookings.cnt
+			response["open_bookings"] = openBookings[0].cnt
 
-			const ToBePaidByTheCustomer = await getManager().query(
-				`SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total"
+			const ToBePaidByTheCustomer = await getConnection().query(
+				`SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total" 
 				FROM booking
 				INNER JOIN booking_instalments
 				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
 			);
-			response['to_be_paid_by_the_customer'] = ToBePaidByTheCustomer.total
-			
-		
+			response["to_be_paid_by_the_customer"] = ToBePaidByTheCustomer[0].total
+
+			const paidByTheCustomer = await getConnection().query(
+				`SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total" 
+				FROM booking
+				INNER JOIN booking_instalments
+				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.CONFIRM} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+			);
+			response["paid_by_the_customer"] = paidByTheCustomer[0].total
+
+			const uncoveredPreBookings = await getConnection().query(
+				`SELECT count(*) as "cnt" FROM "booking" WHERE booking_status = ${BookingStatus.PENDING}`
+			);
+			response["Uncovered_Pre_Bookings"] = uncoveredPreBookings[0].cnt
+
+			var revenues = await getConnection().query(`
+                SELECT count(id) as confirm_booking,
+                SUM( total_amount * usd_factor) as total_amount,
+                SUM( net_rate * usd_factor) as total_cost,
+                SUM( markup_amount * usd_factor) as total_profit
+                from booking where check_in_date >= '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM}
+			`);
+
+			response["revenues"] = revenues[0].total_profit
+
 			return response;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -431,5 +455,61 @@ export class AdminDashboardService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	async customerStatistics(filterOption: DashboardFilterDto) {
+
+		var response = {}
+
+		const userDoneBooking90Days = await getConnection().query(
+			`SELECT count(*) as cnt  FROM "user" "User" WHERE DATE_PART('day',(select booking_date from booking where booking.user_id = "User"."user_id" order by booking_date limit 1) - created_date ) < 90`
+		)
+		response["user_done_booking_90_days"] = userDoneBooking90Days[0].cnt
+
+		const userDoneBookingAfter90Days = await getConnection().query(
+			`SELECT  count(*) as "cnt" FROM "user" "User" `
+		)
+		response["user_done_booking_after_90_days"] = userDoneBookingAfter90Days[0].cnt - userDoneBooking90Days[0].cnt
+
+		var d = new Date();
+		var n = d.getDate();
+
+		var fromDate = new Date();
+		fromDate.setDate(fromDate.getDate() - n);
+		var monthDate = fromDate.toISOString();
+		monthDate = monthDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+		var tDate = new Date();
+
+		var todayDate = tDate.toISOString();
+		todayDate = todayDate
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "");
+
+		const { moduleId, startDate, toDate } = filterOption;
+		var where = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) `;
+		if (startDate) {
+			where += `AND (DATE(created_date) >= '${startDate}') `;
+		} else {
+			where += `AND (DATE(created_date) >= '${monthDate}') `;
+		}
+
+		if (toDate) {
+			where += `AND (DATE(created_date) >= '${toDate}') `;
+		} else {
+			where += `AND (DATE(created_date) >= '${todayDate}') `;
+		}
+
+		const result = await getConnection().query(
+			`SELECT
+		COUNT(DISTINCT("User"."user_id")) as "count" 
+		FROM "user" "User" 
+		where ${where} 
+	`
+		);
+		response["new_user"] = result[0].count
+
+		return response;
 	}
 }

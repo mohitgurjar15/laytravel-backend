@@ -1184,6 +1184,7 @@ export class FlightService {
 					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
 
+					
 					const predictiveBooking = new PredictiveBookingData
 					predictiveBooking.bookingId = laytripBookingResult.id
 					predictiveBooking.date = new Date()
@@ -1191,6 +1192,7 @@ export class FlightService {
 					predictiveBooking.isBelowMinimum = false
 					predictiveBooking.price = parseFloat(laytripBookingResult.totalAmount);
 					await predictiveBooking.save()
+
 
 
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
@@ -1387,7 +1389,8 @@ export class FlightService {
 
 		let booking = await this.bookingRepository.getBookingDetails(bookingId);
 		booking.bookingStatus = BookingStatus.CONFIRM;
-		console.log("Net rate", net_rate)
+		//console.log("Net rate", net_rate)
+
 		booking.netRate = `${net_rate}`;
 		booking.usdFactor = `${currencyDetails.liveRate}`;
 		booking.fareType = fare_type;
