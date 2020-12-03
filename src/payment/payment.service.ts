@@ -283,6 +283,7 @@ export class PaymentService {
 				headers: headers,
 			});
 
+			
 			let logData = {};
 			logData['url'] = url
 			logData['requestBody'] = requestBody
@@ -292,8 +293,14 @@ export class PaymentService {
 			Activity.createlogFile(fileName, logData, 'payment');
 			return result.data;
 		} catch (error) {
-			console.log();
-
+			let logData = {};
+			logData['url'] = url
+			logData['requestBody'] = requestBody
+			logData['headers'] = headers
+			logData['responce'] = error;
+			let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
+			Activity.createlogFile(fileName, logData, 'payment');
+			
 			if (typeof error.response !== "undefined") {
 				switch (error.response.status) {
 					case 404:
