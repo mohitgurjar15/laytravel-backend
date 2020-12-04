@@ -81,4 +81,27 @@ export class HttpRequest {
         }
 
     }
+
+    static async monakerRequest(url,method, requestBody, apiKey) {
+        
+        // console.log("requestBody==============>",url);
+        try {
+            let result = await Axios({
+                method: method,
+                url: url,
+                data: requestBody,
+                headers: {
+                    'Ocp-Apim-Subscription-Key':apiKey,
+                    'Accept-Encoding': 'gzip',
+                }
+            })
+            
+            return result;
+        }
+        catch (error) {
+            console.log("===================", error)
+            throw new RequestTimeoutException(`Connection time out`)
+        }
+
+    }
 }
