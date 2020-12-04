@@ -10,7 +10,7 @@ import { User } from 'src/entity/user.entity';
 import { RewordMode } from 'src/enum/reword-mode.enum';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { Role } from 'src/enum/role.enum';
-import { getManager } from 'typeorm';
+import { getConnection, getManager } from 'typeorm';
 import { ActiveInactiveGameMarkupDto } from './dto/active-inactive-game-markup.dto';
 import { ActiveInactiveGameDto } from './dto/active-inactive-game.dto';
 import { AddQuestionDto } from './dto/add-question-answer.dto';
@@ -1373,14 +1373,15 @@ export class MarketingService {
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
 
-        let query = getManager()
-            .createQueryBuilder(MarketingUserData, "user")
-            .leftJoinAndSelect("user.marketingUserActivity", "activity")
+        let query = getConnection()
+            .createQueryBuilder(MarketingUserActivity, "activity")
+            //.createQueryBuilder(MarketingUserData, "user")
+            .leftJoinAndSelect("activity.marketingUserData", "marketingUserData")
             .leftJoinAndSelect("activity.game", "game")
-            .limit(take)
-            .offset(skip)
+            .take(take)
+            .skip(skip)
         if (search) {
-            query = query.where(`email=:search OR ip_address=:search OR user_id=:search OR app_version=:search `, { search });
+            query = query.where(`"marketingUserData"."email"=:search OR "marketingUserData"."first_name"=:search OR "marketingUserData"."ip_address"=:search OR "marketingUserData"."app_version"=:search OR "game"."game_name"=:search  `, { search });
         }
 
         const [result, count] = await query.getManyAndCount();

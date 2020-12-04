@@ -660,7 +660,7 @@ export class CronJobsService {
 						const params = {
 							Bucket: 'laytrip/logs/' + folderName, // pass your bucket name
 							Key: file, // file will be saved as testBucket/contacts.csv
-							Body: JSON.stringify(data, null, 2)
+							Body: data
 						};
 						s3.upload(params, function (s3Err, data) {
 							if (s3Err) {
