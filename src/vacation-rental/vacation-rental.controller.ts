@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth, ApiProperty } from "@nestjs/swagger";
 import { AvailabilityDto } from './dto/availability.dto';
 import { VacationRentalService } from './vacation-rental.service';
 import { AvailabilityDetailsDto } from './dto/availabilty_details.dto';
@@ -22,7 +22,7 @@ export class VacationRentalController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @ApiOperation({ summary: "Search hotel and vacation rental" })
     async getData(
-        @Query('search_name', MinCharPipe) searchLocation: string
+        @Query('search_name', MinCharPipe,) searchLocation: string
     ) {
 
         return this.vacationRentalService.getSearchLocation(searchLocation)
@@ -55,6 +55,7 @@ export class VacationRentalController {
     }
 
     @Post("availability/:id")
+    @ApiBearerAuth()
     @ApiOperation({ summary: "List of unit types in property" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -68,17 +69,19 @@ export class VacationRentalController {
     })
     async hotelAvailabilityId(
         @Req() req,
-        @Body() availabilityDetailsDto: AvailabilityDetailsDto
+        @Body() availabilityDetailsDto: AvailabilityDetailsDto,
+        @LogInUser() user
     ) {
         if (moment(availabilityDetailsDto.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(availabilityDetailsDto.check_out_date).isAfter(availabilityDetailsDto.check_in_date))
             throw new BadRequestException(`Please enter valid checkout date`)
-        return await this.vacationRentalService.unitTypeListAvailability(availabilityDetailsDto, req.headers);
+        return await this.vacationRentalService.unitTypeListAvailability(availabilityDetailsDto, req.headers,user);
     }
 
     @Post('verify-availability/:UTid')
+    @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
@@ -92,14 +95,15 @@ export class VacationRentalController {
     })
     async verifyAvailability(
         @Req() req,
-        @Body() verifyAvailabilityDetailsDto: VerifyAvailabilityDto
+        @Body() verifyAvailabilityDetailsDto: VerifyAvailabilityDto,
+        @LogInUser() user
     ) {
         if (moment(verifyAvailabilityDetailsDto.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(verifyAvailabilityDetailsDto.check_out_date).isAfter(verifyAvailabilityDetailsDto.check_in_date))
             throw new BadRequestException(`Please enter valid checkout date`)
-        return await this.vacationRentalService.verifyUnitAvailability(verifyAvailabilityDetailsDto, req.headers);
+        return await this.vacationRentalService.verifyUnitAvailability(verifyAvailabilityDetailsDto, req.headers,user);
     }
 
     @Post('/booking')

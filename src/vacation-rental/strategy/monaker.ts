@@ -1,13 +1,13 @@
 import { getManager } from "typeorm";
 import { AvailabilityDto } from "../dto/availability.dto";
-import { Availability } from "../model/availability.model";
+import { HotelDetail, HotelSearchResult, PriceRange } from "../model/availability.model";
 import { StrategyVacationRental } from "./strategy.interface";
 import Axios from "axios";
 import { AvailabilityDetailsDto } from "../dto/availabilty_details.dto";
 import { HotelDetails, Images, Room } from "../model/room_details.model";
 import { VerifyAvailabilityDto } from "../dto/verify_availability.dto";
 import { BookingDto } from "../dto/booking.dto";
-import { InternalServerErrorException, NotAcceptableException, NotFoundException } from "@nestjs/common";
+import { InternalServerErrorException, NotAcceptableException, NotFoundException, RequestTimeoutException } from "@nestjs/common";
 import { Instalment } from "src/utility/instalment.utility";
 import { Module } from "src/entity/module.entity";
 import * as moment from 'moment';
@@ -16,6 +16,9 @@ import { PriceMarkup } from "src/utility/markup.utility";
 import { HotelView } from "src/entity/hotel-view.entity";
 import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
+import { HttpRequest } from "src/utility/http.utility";
+import { VerifyAvailability } from "../model/verify-availability.model";
+import { json } from "express";
 
 export class Monaker implements StrategyVacationRental {
 
@@ -24,6 +27,16 @@ export class Monaker implements StrategyVacationRental {
         headers
     ) {
         this.headers = headers;
+    }
+
+    async getMonakerCredential() {
+
+        const config = await Generic.getCredential('home rental');
+        let monakerConfig = JSON.parse(config.testCredential)
+        if (config.mode) {
+            monakerConfig = JSON.parse(config.liveCredential);
+        }
+        return monakerConfig;
     }
 
     async getMarkupDetails(check_in_date, booking_date, user, module) {
@@ -53,17 +66,57 @@ export class Monaker implements StrategyVacationRental {
         }
     }
 
+    getMinPrice(hotels, priceType) {
+        return Math.min.apply(null, hotels.map(item => item[priceType]))
+    }
+
+    getMaxPrice(hotels, priceType) {
+        return Math.max.apply(null, hotels.map(item => item[priceType]))
+    }
+
+    getAminities(hotels) {
+        let amenities: any = [];
+        hotels.forEach((item) => {
+            item["amenties"].map((e) => {
+                if (!amenities.includes(e)) {
+                    amenities.push(e);
+                }
+            })
+        });
+        return amenities;
+    }
+
     async checkAllavaiability(availability: AvailabilityDto, user) {
 
-        const { id, type, check_in_date, check_out_date, adult_count, number_of_children_ages } = availability;
+        const { id, type, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availability;
         let hotelIds;
         let city;
+        let childrensAges = ``;
+
+        if (number_and_children_ages.length != 0) {
+            let check_age = number_and_children_ages.every((age) => {
+                return age <= 17;
+            })
+
+            if (!check_age) {
+                throw new NotAcceptableException(`Children age must be 17 year or below`)
+            }
+
+            for (let k = 0; k < number_and_children_ages.length; k++) {
+                if (k != number_and_children_ages.length - 1) {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}&`
+                } else {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}`
+                }
+            }
+        }
+
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: 'home rental' })
             .getOne();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-
+        let monakerCredential = await this.getMonakerCredential();
 
         if (!module) {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
@@ -110,26 +163,11 @@ export class Monaker implements StrategyVacationRental {
 
         }
 
-
         let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
-        let availabilityVR: Availability[] = [];
-
-        console.log("ffffffffffffff",number_of_children_ages.length)
-
-        let childrensAges = ``;
-        if (number_of_children_ages) {
-            for (let k = 0; k < number_of_children_ages.length; k++) {
-                if (k != number_of_children_ages.length - 1) {
-                    childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
-                } else {
-                    childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
-                }
-            }
-        }
-
+        let hotelDetails: HotelDetail[] = [];
 
         for (let j = 0; j < (Math.ceil(hotelIds.length) / 50); j++) {
             let start = (j * 2 * 25);
@@ -145,270 +183,390 @@ export class Monaker implements StrategyVacationRental {
                 }
             }
 
-            try {
-                let res = await Axios({
-                    method: "GET",
-                    url: `https://sandbox-api.nexttrip.com/api/v1/product/property-availabilities/availability?${Ids}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
-                    headers: {
-                        "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                        "cache-control": "no-cache",
-                        "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-                    },
-                });
-                const result = res.data;
+            let queryParams = ``;
+            queryParams += Ids;
+            queryParams += `&CheckInDate=${check_in_date}`;
+            queryParams += `&CheckOutDate=${check_out_date}`;
+            queryParams += `&NumberOfAdults=${adult_count}`;
+            if (number_and_children_ages.length != 0) {
+                queryParams += `&${childrensAges}`
+            }
+            queryParams += `&Currency=${this.headers.currency}`
+
+
+            let url = `${monakerCredential["url"]}/product/property-availabilities/availability?${queryParams}`
+            let availabilityResult = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"])
+
+            let result = availabilityResult.data;
+
+            if (result.length != 0) {
+                let hotelId = result.map((hotel) => {
+                    return hotel["propertyId"];
+                })
+
+                let data = await getManager()
+                    .createQueryBuilder(Hotel, "hotel")
+                    .distinctOn(["hotel_name"])
+                    .select([
+                        "hotel.hotelId",
+                        "hotel.hotelName",
+                        "hotel.city",
+                        "hotel.country",
+                        "hotel.latitude",
+                        "hotel.longitude",
+                        "hotel.images",
+                        "hotel.amenties"
+                    ])
+                    .where("hotel.hotel_id IN(:...hotel_id)", { hotel_id: hotelId })
+                    .getMany();
 
                 for (let i = 0; i < result.length; i++) {
-                    const availability = new Availability();
-                    // const data = await getManager().query(`
-                    //     	SELECT DISTINCT hotel_name,city,country,hotel_id,latitude,longitude,images FROM "hotel" WHERE hotel_id = ${result[i]["propertyId"]}
-                    // `)
-                    const data = await getManager()
-                        .createQueryBuilder(Hotel, "hotel")
-                        .distinctOn(["hotel_name"])
-                        .select([
-                            "hotel.hotelId",
-                            "hotel.hotelName",
-                            "hotel.city",
-                            "hotel.country",
-                            "hotel.latitude",
-                            "hotel.longitude",
-                            "hotel.images",
-                        ])
-                        .where("hotel.hotel_id = :hotel_id", { hotel_id: result[i]["propertyId"] })
-                        .getMany();
-
-                    availability.property_id = result[i]["propertyId"];
-                    availability.property_name = data[0]["hotelName"];
-                    availability.city = data[0]["city"];
-                    availability.country = data[0]["country"];
-                    availability.net_price = result[i]["totalPrice"];
-                    availability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(availability.net_price, markUpDetails));
-                    availability.start_price = 0.0;
-                    availability.display_image = `https://sandbox-images.nexttrip.com${data[0]["images"].split(',')[0]}`;
-                    availability.latitude = data[0]["latitude"];
-                    availability.longintude = data[0]["longitude"];
-                    availabilityVR.push(availability);
+                    const hotel = new HotelDetail();
+                    const hotel_details = data.find((data) => data["hotelId"] == result[i]["propertyId"]);
+                    hotel.property_id = hotel_details["hotelId"];
+                    hotel.property_name = hotel_details["hotelName"];
+                    hotel.city = hotel_details["city"];
+                    hotel.country = hotel_details["country"];
+                    hotel.net_price = result[i]["totalPrice"];
+                    hotel.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(hotel.net_price, markUpDetails));
+                    let instalmentDetails = Instalment.weeklyInstalment(hotel.selling_price, check_in_date, bookingDate, 0);
+                    if (instalmentDetails.instalment_available) {
+                        hotel.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                        hotel.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                    }
+                    else {
+                        hotel.start_price = 0;
+                        hotel.secondary_start_price = 0;
+                    }
+                    if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
+                        hotel.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(hotel.net_price, secondaryMarkUpDetails))
+                    }
+                    else {
+                        hotel.secondary_selling_price = 0;
+                    }
+                    hotel.instalment_details = instalmentDetails;
+                    let amenities = (hotel_details["amenties"]).replace("{", "").replace("}", "").split(",");
+                    let addAmenities: any = [];
+                    for (let i = 0; i < amenities.length; i++) {
+                        addAmenities.push(JSON.parse(amenities[i]));
+                    }
+                    hotel.amenties = addAmenities
+                    hotel.display_image = `https://sandbox-images.nexttrip.com${hotel_details["images"].split(',')[0]}`;
+                    hotel.latitude = hotel_details["latitude"];
+                    hotel.longintude = hotel_details["longitude"];
+                    hotelDetails.push(hotel);
                 }
-            } catch (e) {
-                console.log("Err==", e)
             }
         }
-        if (availabilityVR.length == 0) {
-            throw new NotFoundException(`Not available any vacation rental`)
+
+        if (hotelDetails.length == 0) {
+            throw new NotFoundException(`No found any vacation rental home`);
         }
-        return availabilityVR;
+
+        let hotels = new HotelSearchResult();
+        hotels.items = hotelDetails;
+
+        let priceRange = new PriceRange();
+        let priceType = 'selling_price';
+        priceRange.min_price = this.getMinPrice(hotelDetails, priceType);
+        priceRange.max_price = this.getMaxPrice(hotelDetails, priceType);
+        hotels.price_range = priceRange;
+
+        let partialPaymentPriceRange = new PriceRange();
+        priceType = 'secondary_start_price';
+        partialPaymentPriceRange.min_price = this.getMinPrice(hotelDetails, priceType);
+        partialPaymentPriceRange.max_price = this.getMaxPrice(hotelDetails, priceType);
+        hotels.partial_payment_price_range = partialPaymentPriceRange;
+
+        hotels.amenties = this.getAminities(hotelDetails);
+
+        return hotels;
     }
 
-    async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto) {
-        const { id, check_in_date, check_out_date, adult_count, number_of_children_ages } = availabilityDetailsDto;
+    async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, user) {
+        const { id, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availabilityDetailsDto;
 
         let childrensAges = ``;
-        for (let k = 0; k < number_of_children_ages.length; k++) {
-            if (k != number_of_children_ages.length - 1) {
-                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
-            } else {
-                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
+        let queryParams = ``;
+
+        if (number_and_children_ages.length != 0) {
+            let check_age = number_and_children_ages.every((age) => {
+                return age <= 17;
+            })
+
+            if (!check_age) {
+                throw new NotAcceptableException(`Children age must be 17 year or below`)
+            }
+
+            for (let k = 0; k < number_and_children_ages.length; k++) {
+                if (k != number_and_children_ages.length - 1) {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}&`
+                } else {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}`
+                }
             }
         }
 
-        try {
-            let res = await Axios({
-                method: "GET",
-                url: `https://sandbox-api.nexttrip.com/api/v1/product/property-availabilities/${id}/availability?CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
-                headers: {
-                    "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                    "cache-control": "no-cache",
-                    "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-                },
-            });
+        let monakerCredential = await this.getMonakerCredential();
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+        let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: 'home rental' })
+            .getOne();
 
-            const result = res.data["unitStays"];
+        if (!module) {
+            throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
+        }
 
-            let hotel_details = await Axios({
-                method: "GET",
-                url: `https://sandbox-api.nexttrip.com/api/v1/content/properties/${id}`,
-                headers: {
-                    "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                    "cache-control": "no-cache",
-                    "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-                },
-            })
+        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markUpDetails = markup.markUpDetails;
+        let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
-            const hotel = hotel_details.data;
+        queryParams += `CheckInDate=${check_in_date}`;
+        queryParams += `&CheckOutDate=${check_out_date}`;
+        queryParams += `&NumberOfAdults=${adult_count}`;
+        if (number_and_children_ages.length != 0) {
+            queryParams += `&${childrensAges}`;
+        }
+        queryParams += `&Currency=${this.headers.currency}`;
 
-            let rooms: Room[] = [];
-            let room: Room;
 
-            for (let i = 0; i < result.length; i++) {
-                room = new Room();
-                room.id = result[i]["id"]
-                room.net_rate = result[i]["prices"][0]["amountBeforeTax"];
-                room.rate_plan_code = result[i]["prices"][0]["ratePlanCode"];
-                room.selling_price = 0.0;
-                room.start_price = 0.0;
-                room.name = result[i]["prices"][0]["ratePlanDescription"]
-                rooms.push(room);
+        let url = `${monakerCredential["url"]}/product/property-availabilities/${id}/availability?${queryParams}`;
+        let unitTypeListResponse = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"])
+
+        let unitTypeResult = unitTypeListResponse.data["unitStays"]
+
+        let url2 = `${monakerCredential["url"]}/content/properties/${id}`;
+        let hotelDetailResponse = await HttpRequest.monakerRequest(url2, "GET", {}, monakerCredential["key"]);
+
+        const hotelResult = hotelDetailResponse.data;
+
+        let rooms: Room[] = [];
+        let room: Room;
+
+        for (let i = 0; i < unitTypeResult.length; i++) {
+            room = new Room();
+            room.id = unitTypeResult[i]["id"]
+            room.rate_plan_code = unitTypeResult[i]["prices"][0]["ratePlanCode"];
+            room.net_price = unitTypeResult[i]["prices"][0]["amountAfterTax"];
+            room.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(room.net_price, markUpDetails));
+            let instalmentDetails = Instalment.weeklyInstalment(room.selling_price, check_in_date, bookingDate, 0);
+
+            if (instalmentDetails.instalment_available) {
+                room.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                room.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
             }
-            const hotelDetails = new HotelDetails();
-            hotelDetails.property_id = id;
-            hotelDetails.property_name = hotel["propertyName"];
-            hotelDetails.description = hotel["descriptions"][0]["description"];
-            let images: Images[] = [];
-            let image: Images;
-            for (let j = 0; j < hotel["images"].length; j++) {
-                image = new Images();
-                image.url = `https://sandbox-images.nexttrip.com${hotel["images"][j]["url"]}`;
+            else {
+                room.start_price = 0;
+                room.secondary_start_price = 0;
+            }
+            if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
+                room.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(room.net_price, secondaryMarkUpDetails))
+            }
+            else {
+                room.secondary_selling_price = 0;
+            }
+            room.instalment_details = instalmentDetails;
+            room.name = unitTypeResult[i]["prices"][0]["ratePlanDescription"] != null ? unitTypeResult[i]["prices"][0]["ratePlanDescription"] : " "
+            room.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][0]["nonRefundable"] == true ? false : true;
+            rooms.push(room);
+        }
+        const hotelDetails = new HotelDetails();
+        hotelDetails.property_id = id;
+        hotelDetails.property_name = hotelResult["propertyName"];
+        hotelDetails.description = hotelResult["descriptions"][0]["description"];
+        let images: Images[] = [];
+        let image: Images;
+        for (let j = 0; j < hotelResult["images"].length; j++) {
+            image = new Images();
+            if (hotelResult["images"][j]["imageSize"] == 'Medium') {
+                image.url = `https://sandbox-images.nexttrip.com${hotelResult["images"][j]["url"]}`;
                 images.push(image);
             }
-            hotelDetails.images = images;
-            hotelDetails.amenities = hotel["propertyAmenities"]
-            hotelDetails.rooms = rooms;
-            return hotelDetails;
-        } catch (e) {
-            console.log("ERR", e)
-            throw new NotFoundException(`Not fount any property available`)
         }
+        hotelDetails.images = images;
+        hotelDetails.amenities = hotelResult["propertyAmenities"]
+        hotelDetails.rooms = rooms;
+        return hotelDetails;
+
     }
 
 
-    async verifyUnitTypeAvailability(verifyAvailabilitydto: VerifyAvailabilityDto) {
-        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_of_children_ages } = verifyAvailabilitydto;
-
+    async verifyUnitTypeAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, user) {
+        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
+        let monakerCredential = await this.getMonakerCredential();
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let childrensAges = ``;
-        for (let k = 0; k < number_of_children_ages.length; k++) {
-            if (k != number_of_children_ages.length - 1) {
-                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
-            } else {
-                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
-            }
-        }
+        let queryParams = ``;
 
-        try {
-            let res = await Axios({
-                method: "GET",
-                url: `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?RatePlanCode=${rate_plan_code}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
-                headers: {
-                    "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                    "cache-control": "no-cache",
-                    "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-                },
+        if (number_and_children_ages.length != 0) {
+            let check_age = number_and_children_ages.every((age) => {
+                return age <= 17;
             })
 
-            const response = res.data;
-            const result = {
-                "available_status": response["available"],
-                "booking_code": response["quoteHandle"],
-                "net_rate": response["available"] == true ? response["totalPrice"]["amountBeforeTax"] : null,
-                "selling_rate": 0.0
+            if (!check_age) {
+                throw new NotAcceptableException(`Children age must be 17 year or below`)
             }
 
-            // console.log("RESULT===>", response)
-            return result;
-        } catch (e) {
-            console.log("Err===>", e)
+            for (let k = 0; k < number_and_children_ages.length; k++) {
+                if (k != number_and_children_ages.length - 1) {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}&`
+                } else {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}`
+                }
+            }
         }
+
+        let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: 'home rental' })
+            .getOne();
+
+        if (!module) {
+            throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
+        }
+
+        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markUpDetails = markup.markUpDetails;
+        let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
+
+        queryParams += `RatePlanCode=${rate_plan_code}`;
+        queryParams += `&CheckInDate=${check_in_date}`;
+        queryParams += `&CheckOutDate=${check_out_date}`;
+        queryParams += `&NumberOfAdults=${adult_count}`;
+        if (number_and_children_ages.length != 0) {
+            queryParams += `&${childrensAges}`;
+        }
+        queryParams += `&Currency=${this.headers.currency}`;
+
+        let url = `${monakerCredential["url"]}/product/unit-availabilities/${room_id}/verify-availability?${queryParams}`
+
+        let verifyResult = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"]);
+
+        const response = verifyResult.data;
+
+        if (!response["available"]) {
+            throw new NotAcceptableException(`Not available vacation rental home`)
+        }
+
+        const verifyAvailability = new VerifyAvailability();
+
+        verifyAvailability.available_status = response["available"];
+        verifyAvailability.booking_code = response["quoteHandle"];
+        verifyAvailability.net_price = response["totalPrice"]["amountAfterTax"];
+        verifyAvailability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(verifyAvailability.net_price, markUpDetails));
+        let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 0);
+
+        if (instalmentDetails.instalment_available) {
+            verifyAvailability.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+            verifyAvailability.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+        }
+        else {
+            verifyAvailability.start_price = 0;
+            verifyAvailability.secondary_start_price = 0;
+        }
+        if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
+            verifyAvailability.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(verifyAvailability.net_price, secondaryMarkUpDetails))
+        }
+        else {
+            verifyAvailability.secondary_selling_price = 0;
+        }
+        verifyAvailability.instalment_details = instalmentDetails;
+
+        return verifyAvailability;
+
     }
 
     async booking(bookingDto: BookingDto) {
-        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_of_children_ages } = bookingDto;
+        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = bookingDto;
+        let monakerCredential = await this.getMonakerCredential();
 
         let childrensAges = ``;
-        for (let k = 0; k < number_of_children_ages.length; k++) {
-            if (k != number_of_children_ages.length - 1) {
-                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}&`
-            } else {
-                childrensAges += `NumberAndAgeOfChildren=${number_of_children_ages[k]}`
+        let queryParams = ``;
+
+        if (number_and_children_ages.length != 0) {
+            let check_age = number_and_children_ages.every((age) => {
+                return age <= 17;
+            })
+
+            if (!check_age) {
+                throw new NotAcceptableException(`Children age must be 17 year or below`)
+            }
+
+            for (let k = 0; k < number_and_children_ages.length; k++) {
+                if (k != number_and_children_ages.length - 1) {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}&`
+                } else {
+                    childrensAges += `NumberAndAgeOfChildren=${number_and_children_ages[k]}`
+                }
             }
         }
 
-        let verifyResponse = await Axios({
-            method: "GET",
-            url: `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?RatePlanCode=${rate_plan_code}&CheckInDate=${check_in_date}&CheckOutDate=${check_out_date}&NumberOfAdults=${adult_count}&${childrensAges}&Currency=${this.headers.currency}`,
-            headers: {
-                "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                "cache-control": "no-cache",
-                "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-            },
-        })
-
-        const response = verifyResponse.data;
-
-        try {
-            let booking = await Axios({
-                method: "POST",
-                url: `https://sandbox-api.nexttrip.com/api/v1/transaction/reservations?Language=${this.headers.language}`,
-                data: {
-                    "id": room_id,
-                    "currency": this.headers.currency,
-                    "price": response["available"] == true ? response["totalPrice"]["amountBeforeTax"] : null,
-                    "quoteHandle": response["quoteHandle"],
-                    "ratePlanCode": rate_plan_code,
-                    "checkInDate": check_in_date,
-                    "checkOutDate": check_out_date,
-                    "numberOfAdults": adult_count,
-                    "numberAndAgeOfChildren": number_of_children_ages,
-                    "customer": {
-                        "firstName": "chintan",
-                        "lastName": "patel",
-                        "address": "Anindra",
-                        "city": "Surendranagar",
-                        "stateOrTerritory": "Gujarat",
-                        "zip": "363110",
-                        "country": "IN",
-                        "phoneNumber": "9537580306",
-                        "email": "vasoyachintan@gmail.com",
-                        "salutation": "Mr",
-                        "dateOfBirth": "2001-01-15",
-                        "gender": "Male"
-                    },
-                    // "guests": [
-                    // 	{
-                    // 		"firstName": "string",
-                    // 		"lastName": "string",
-                    // 		"address": "string",
-                    // 		"city": "string",
-                    // 		"stateOrTerritory": "string",
-                    // 		"zip": "string",
-                    // 		"country": "string",
-                    // 		"email": "string",
-                    // 		"phoneNumber": "string",
-                    // 		"dateOfBirth": "2020-11-27",
-                    // 		"gender": "string"
-                    // 	}
-                    // ],
-                },
-                headers: {
-                    "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                    "cache-control": "no-cache",
-                    'content-type': 'application/json',
-                    "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-                },
-            })
-            return booking.data;
-        } catch (e) {
-            console.log("Err--->", e);
-            throw new NotAcceptableException(`Something went wrong`)
+        queryParams += `RatePlanCode=${rate_plan_code}`;
+        queryParams += `&CheckInDate=${check_in_date}`;
+        queryParams += `&CheckOutDate=${check_out_date}`;
+        queryParams += `&NumberOfAdults=${adult_count}`;
+        if (number_and_children_ages.length != 0) {
+            queryParams += `&${childrensAges}`;
         }
+        queryParams += `&Currency=${this.headers.currency}`;
+
+        let verifyResponse;
+        let verifyResult;
+
+
+        let url = `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?${queryParams}`;
+        verifyResponse = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"]);
+
+        verifyResult = verifyResponse.data;
+
+        if (!verifyResult["available"]) {
+            throw new NotAcceptableException(`Not available vacation rental home`)
+        }
+
+        let url2 = `${monakerCredential["url"]}/transaction/reservations?Language=${this.headers.language}`;
+        let requestBody = {
+            "id": room_id,
+            "currency": this.headers.currency,
+            "price": verifyResult["totalPrice"]["amountAfterTax"],
+            "quoteHandle": verifyResult["quoteHandle"],
+            "ratePlanCode": rate_plan_code,
+            "checkInDate": check_in_date,
+            "checkOutDate": check_out_date,
+            "numberOfAdults": adult_count,
+            "numberAndAgeOfChildren": number_and_children_ages.length != 0 ? number_and_children_ages : null,
+            "customer": {
+                "firstName": "chintan",
+                "lastName": "patel",
+                "address": "Anindra",
+                "city": "Surendranagar",
+                "stateOrTerritory": "Gujarat",
+                "zip": "363110",
+                "country": "IN",
+                "phoneNumber": "9537580306",
+                "email": "vasoyachintan@gmail.com",
+                "salutation": "Mr",
+                "dateOfBirth": "2001-01-15",
+                "gender": "Male"
+            }
+        }
+
+        let bookingResult = await HttpRequest.monakerRequest(url2, "POST", requestBody, monakerCredential["key"])
+
+        return bookingResult.data;
+
     }
 
     async deleteBooking(reservationId) {
+        let monakerCredential = await this.getMonakerCredential();
 
-        try {
-            let res = await Axios({
-                method: "DELETE",
-                url: `https://sandbox-api.nexttrip.com/api/v1/transaction/reservations/${reservationId}`,
-                headers: {
-                    "Postman-Token": "32421909-c494-4f6b-a377-4a82a1c4c9a7",
-                    "cache-control": "no-cache",
-                    "Ocp-Apim-Subscription-Key": "415dfbf10992442db4ab3f3a5f6bdf2e",
-                },
-            })
 
-            // console.log("delete booking",res.data)
-            return res.data
-        } catch (e) {
-            throw new NotAcceptableException(`Something went wrong`)
-        }
+        let url = `${monakerCredential["url"]}/transaction/reservations/${reservationId}`;
+
+        let deleteReponse = await HttpRequest.monakerRequest(url, "DELETE", {}, monakerCredential["key"]);
+
+        return deleteReponse.data
+
     }
 
 }
