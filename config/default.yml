@@ -44,3 +44,5 @@ Sentry:
 AWS:
     accessKeyId: 'AKIAI6MH7IDCFQQYBGOA'
     secretAccessKey: '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'
+
+fcmServerKey: "AAAAJAgdxc0:APA91bHvxPQRHIG3uxmbn6GXXjny1kgZuTgootgE1ZuJdeAw1UwnMPIZYJPGIsXasOmK5kGtmA7Ll_WPYYvEu6L4daCwzug1ZdiMgKaDt14DDNfITQbeePZiU6OpqYSKZYzbE0HqYnN7"
