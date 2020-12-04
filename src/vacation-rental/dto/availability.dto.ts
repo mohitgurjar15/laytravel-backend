@@ -5,13 +5,13 @@ import { IsArray} from "class-validator";
 export class AvailabilityDto {
     @ApiProperty({
         description:"Enter a id",
-        example:133
+        example:19
     })
     id:number;
 
     @ApiProperty({
         description:"Enter a type city or hotel ",
-        example:'hotel'
+        example:'city'
     })
     type:string;
 
@@ -28,14 +28,12 @@ export class AvailabilityDto {
     })
     check_out_date:string;
 
-
-    @IsArray()
     @Type(() => Number)
     @ApiProperty({
         description:`Children ages collection`,
         example:[10,12,15]
     })
-    number_of_children_ages:Array<Number>;
+    number_and_children_ages:Array<Number>;
     
     @ApiProperty({
         description:"Enter a adult count",

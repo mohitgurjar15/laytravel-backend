@@ -35,11 +35,10 @@ export class BookingDto{
     })
     adult_count:number;
 
-    @IsArray()
     @Type(() => Number)
     @ApiProperty({
         description:`Children ages collection`,
         example:[10,12,15]
     })
-    number_of_children_ages:Array<Number>;
+    number_and_children_ages:Array<Number>;
 }

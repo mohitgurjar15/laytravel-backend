@@ -10,11 +10,15 @@ export class HotelDetails {
 export class Room {
     name: string;
     id: number;
-    net_rate: number;
+    net_price: number;
     rate_plan_code:string;
     selling_price: number;
     start_price: number;
+    secondary_start_price:number;
+    secondary_selling_price : number;
+    instalment_details:{};
     description: string;
+    is_refundable:boolean;
     amenities: [];
     meal_type: string;
 }

@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PushNotification } from 'src/utility/push-notification.utility';
 import { GeneralService } from './general.service';
 
 @ApiTags("Generic")
@@ -69,5 +70,28 @@ export class GeneralController {
         @Req() req
     ){
        return await this.generalService.getUserLocation(req);
+    }
+
+    @ApiOperation({ summary: "User Location" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not found!' })
+    @ApiResponse({ status: 500, description: 'Internal server error!' })
+    @Get('push/:token')
+    async pusTest(
+        @Param('token') token:string 
+    ){
+    
+        let tokens=[token];
+        let  data={  //you can send only notification or only data(or include both)
+            my_key: 'my value',
+            my_another_key: 'my another value'
+        }
+
+        let pushData={
+            title: 'Title of your push notification', 
+            body: 'Body of your push notification' 
+        }
+        PushNotification.sendPushNotification(tokens, data, pushData,null)
     }
 }
