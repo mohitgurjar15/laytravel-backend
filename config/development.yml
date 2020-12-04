@@ -25,3 +25,8 @@ mystifly:
          user_name: "MWR_XML"
          url: "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"
 
+ppn:
+    url: "https://api-sandbox.rezserver.com/api/hotel/"
+    refid: 10082
+    api_key: 'd34a90133cb9e552aff80c6f6188fbe3'
+    format: 'json2'

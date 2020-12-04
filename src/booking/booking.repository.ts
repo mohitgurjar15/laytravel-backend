@@ -83,7 +83,7 @@ export class BookingRepository extends Repository<Booking> {
 			.skip(skip)
 			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
-		//const count = await query.getCount();
+		
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}

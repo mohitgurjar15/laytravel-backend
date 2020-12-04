@@ -276,7 +276,6 @@ export class TravelerService {
 			}
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
-			console.log(error,'=====================================================');
 			
 			if (typeof error.response !== "undefined") {
 				console.log("m");
@@ -421,7 +420,7 @@ export class TravelerService {
 
 			await traveler.save();
 
-			return { message: `Traveler is deleted successfully` };
+			return { message: `Traveller is deleted successfully` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
