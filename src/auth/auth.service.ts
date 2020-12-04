@@ -672,6 +672,7 @@ export class AuthService {
 			os_version,
 			device_model,
 		} = mobileAuthCredentialDto;
+
 		// const user = await this.userRepository.findOne({
 		// 	email,
 		// 	isDeleted: false,
@@ -816,7 +817,10 @@ export class AuthService {
 			}
 		}
 		const user = new User();
-		user.email = email || "";
+		if(email)
+		{
+			user.email = email
+		}
 		user.firstName = name || "";
 
 		if (!userExist) {
@@ -926,6 +930,7 @@ export class AuthService {
 			const roleId = [
 				Role.SUPER_ADMIN,
 				Role.ADMIN,
+				Role.SUPPORT,
 				Role.SUPPLIER,
 				Role.FREE_USER,
 				Role.GUEST_USER,
