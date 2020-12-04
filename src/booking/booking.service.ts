@@ -218,7 +218,7 @@ export class BookingService {
 				}
 
 				for (let instalment of result.data[i].bookingInstalments) {
-					if (instalment.instalmentStatus == 1) {
+					if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
@@ -300,7 +300,7 @@ export class BookingService {
 				}
 
 				for (let instalment of result.data[i].bookingInstalments) {
-					if (instalment.instalmentStatus == InstalmentStatus.PAID) {
+					if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
@@ -383,7 +383,7 @@ export class BookingService {
 				result.bookingInstalments.reverse()
 			}
 			for (let instalment of result.bookingInstalments) {
-				if (instalment.instalmentStatus == 1) {
+				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 					paidAmount += parseFloat(instalment.amount);
 				} else {
 					remainAmount += parseFloat(instalment.amount);
@@ -455,7 +455,7 @@ export class BookingService {
 		for (let i = 0; i < result.data.length; i++) {
 			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
-				if (instalment.instalmentStatus == 1) {
+				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
