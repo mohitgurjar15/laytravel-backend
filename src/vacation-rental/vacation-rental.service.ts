@@ -95,19 +95,19 @@ export class VacationRentalService {
 
 	}
 
-	async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, headers) {
+	async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, headers,user) {
 		await this.validateCurrency(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
-		const result = new Promise((resolve) => resolve(monaker.unitTypeListAvailability(availabilityDetailsDto)));
+		const result = new Promise((resolve) => resolve(monaker.unitTypeListAvailability(availabilityDetailsDto,user)));
 
 		return result;
 
 	}
 
-	async verifyUnitAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, headers) {
+	async verifyUnitAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, headers,user) {
 		await this.validateCurrency(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
-		const result = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(verifyAvailabilitydto)));
+		const result = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(verifyAvailabilitydto,user)));
 
 		return result;
 
