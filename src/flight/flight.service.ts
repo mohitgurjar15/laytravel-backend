@@ -1343,7 +1343,7 @@ export class FlightService {
 					.execute();
 			}
 			const predictiveBooking = new PredictiveBookingData
-					predictiveBooking.bookingId = booking.laytripBookingId
+					predictiveBooking.bookingId = booking.id
 					predictiveBooking.date = new Date()
 					predictiveBooking.netPrice = parseFloat(booking.netRate)
 					predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
