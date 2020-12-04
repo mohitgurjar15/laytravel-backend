@@ -1381,7 +1381,7 @@ export class MarketingService {
             .take(take)
             .skip(skip)
         if (search) {
-            query = query.where(`"marketingUserData"."email"=:search OR "marketingUserData"."first_name"=:search OR "marketingUserData"."ip_address"=:search OR "marketingUserData"."app_version"=:search OR "game"."game_name"=:search  `, { search });
+            query = query.where(`"marketingUserData"."email" ILIKE '%${search}%' OR "marketingUserData"."first_name" ILIKE '%${search}%' OR "marketingUserData"."ip_address" ILIKE '%${search}%' OR "marketingUserData"."app_version" ILIKE '%${search}%' OR "game"."game_name" ILIKE '%${search}%'  `);
         }
 
         const [result, count] = await query.getManyAndCount();
