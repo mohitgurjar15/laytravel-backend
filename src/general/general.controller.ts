@@ -84,8 +84,8 @@ export class GeneralController {
     
         let tokens=[token];
         let  data={  //you can send only notification or only data(or include both)
-            my_key: 'my value',
-            my_another_key: 'my another value'
+            booking_id: '123',
+            type: 'payment'
         }
 
         let pushData={
