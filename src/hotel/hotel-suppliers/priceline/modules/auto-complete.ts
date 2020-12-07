@@ -1,11 +1,18 @@
-import { InternalServerErrorException } from "@nestjs/common";
+import { InternalServerErrorException, UsePipes, ValidationPipe } from "@nestjs/common";
 import { collect } from "collect.js";
+import { DetailHelper } from "../helpers/detail.helper";
+import { Location } from './../../../dto/search-location/location.dto';
 
+@UsePipes(new ValidationPipe({whitelist:true, forbidNonWhitelisted: true}))
 export class AutoComplete{
     
-    processSearchLocationResults(res: any) {
+    private detailHelper: DetailHelper;
+    constructor() {
+        this.detailHelper = new DetailHelper;
+    }
+    processSearchLocationResult(res: any) {
         let results = res.data.getHotelAutoSuggestV2;
-
+        // return results;
         if (results.error) {
             throw new InternalServerErrorException(results.error.status);
         }
@@ -29,14 +36,14 @@ export class AutoComplete{
                         case 'city':
                             country = sub['country'];
                             city = sub['city'];
-                            state = sub['state'];
+                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : null;
                             break;
                         
                         case 'airport':
                             country = sub['country_code'];
-                            state = sub['state_code'];
+                            state = this.detailHelper.isset(sub['state_code']) ? sub['state_code'] : null;
                             city = sub['city'];
-                            line = sub['airport'];
+                            line = sub['icao']+' - '+sub['airport'];
                             break;
                             
                         case 'region':
@@ -45,7 +52,7 @@ export class AutoComplete{
                                 
                         case 'poi':
                             line = sub['poi_name'];
-                            state = sub['state'];
+                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : null;
                             city = sub['city'];
                             country = sub['country'];
                             break;
@@ -78,7 +85,7 @@ export class AutoComplete{
             });
 
             return filterData;
-            // return Object.assign(new Locations(), filterData);
+            // return Object.assign(new Location(), filterData);
 
         } else{
             throw new InternalServerErrorException(results.error.status);

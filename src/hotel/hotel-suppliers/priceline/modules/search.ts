@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { collect } from "collect.js";
-import { ApiHelper } from "../helpers/api.helper";
+import { DetailHelper } from "../helpers/detail.helper";
 
 export class Search{
     
@@ -10,15 +10,15 @@ export class Search{
     
     private supplierName: string = 'priceline';
 
-    private apiHelper: ApiHelper;
+    private detailHelper: DetailHelper;
 
     private searchParameters: any;
 
     constructor() {
-        this.apiHelper = new ApiHelper();
+        this.detailHelper = new DetailHelper();
     }
 
-    processSearchResults(res, parameters) {
+    processSearchResult(res, parameters) {
         
         this.searchParameters = parameters;
         
@@ -29,14 +29,14 @@ export class Search{
         }
         
         if (results.results.status && results.results.status === "Success") { 
-            
+
             let hotels = collect(results.results.hotel_data).map((item) => {
                 this.item = item;
                 this.rate = item['room_data'][0]['rate_data'][0];
 
                 let { retail, selling, saving_percent, markup } = this.getRates();
                 
-                let details = this.apiHelper.getHotelDetails(item);
+                let details = this.detailHelper.getHotelDetails(item, 'list');
 
                 let newItem = {
                     ...details,
@@ -44,20 +44,16 @@ export class Search{
                     selling,
                     saving_percent,
                     markup,
-                    refundable: this.rate['is_cancellable'],
-                    card_required: this.rate['cvc_required']
+                    refundable: this.rate.is_cancellable,
+                    card_required: this.rate.cvc_required,
+                    bundle: this.rate.ppn_bundle
                 };
 
                 return newItem;
             });
             
-            return {
-                hotels,
-                details: {
-                    total: hotels.count(),
-                    token: ""
-                }
-            };
+            return hotels;
+            
         } else {
             throw new InternalServerErrorException(results.error.status);
         }
@@ -65,9 +61,9 @@ export class Search{
 
     getRates() {
 
-        let retail = this.apiHelper.getPublicPriceBreakUp(this.rate, this.searchParameters);
+        let retail = this.detailHelper.getPublicPriceBreakUp(this.rate, this.searchParameters);
         
-        let selling = this.apiHelper.getSellingPriceBreakUp(this.rate);
+        let selling = this.detailHelper.getSellingPriceBreakUp(this.rate);
 
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         
