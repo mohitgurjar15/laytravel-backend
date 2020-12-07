@@ -798,7 +798,7 @@ export class AuthService {
 
 		let conditions = [];
 		conditions.push({ socialAccountId: social_account_id });
-		if (email) {
+		if (email && email != "") {
 			conditions.push({ email: email });
 		}
 
@@ -849,7 +849,11 @@ export class AuthService {
 			}
 		} else {
 			try {
-				const user1 = { email: email || "", firstName: name || "" };
+				var user1 = { firstName: name || "" };
+				if(email && email != "")
+				{
+					user1['email'] = email
+				} 
 				await this.userRepository.update(
 					{ socialAccountId: social_account_id },
 					user1
