@@ -1184,17 +1184,6 @@ export class FlightService {
 					this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 					bookingResult.laytrip_booking_id = laytripBookingResult.id;
 
-					
-					const predictiveBooking = new PredictiveBookingData
-					predictiveBooking.bookingId = laytripBookingResult.id
-					predictiveBooking.date = new Date()
-					predictiveBooking.netPrice = parseFloat(laytripBookingResult.netRate)
-					predictiveBooking.isBelowMinimum = false
-					predictiveBooking.price = parseFloat(laytripBookingResult.totalAmount);
-					await predictiveBooking.save()
-
-
-
 					bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 						laytripBookingResult.laytripBookingId
 					);
@@ -1353,6 +1342,14 @@ export class FlightService {
 					.values(bookingInstalments)
 					.execute();
 			}
+			const predictiveBooking = new PredictiveBookingData
+					predictiveBooking.bookingId = booking.id
+					predictiveBooking.date = new Date()
+					predictiveBooking.netPrice = parseFloat(booking.netRate)
+					predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
+					predictiveBooking.price = parseFloat(booking.totalAmount);
+					predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
+					await predictiveBooking.save()
 			return await this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);

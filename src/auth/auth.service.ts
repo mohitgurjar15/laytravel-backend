@@ -356,7 +356,7 @@ export class AuthService {
 			return token;
 		} else {
 			throw new UnauthorizedException(
-				`Invalid login credentials! Please enter correct email id and password.`
+				`Invalid login credentials! Please enter correct email address and password.`
 			);
 		}
 	}
@@ -652,7 +652,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`You have entered wrong otp.&&&token&&&You have entered wrong otp.`
+				`Incorrect OTP.Please try again!&&&token.`
 			);
 		}
 	}

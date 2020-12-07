@@ -29,6 +29,8 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
 import { Generic } from "src/utility/generic.utility";
+import { PushNotification } from "src/utility/push-notification.utility";
+import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
 const AWS = require('aws-sdk');
 
 
@@ -135,11 +137,12 @@ export class CronJobsService {
 			.replace(/\..+/, "");
 		var fromDate = new Date();
 		fromDate.setDate(fromDate.getDate() - 2);
-		var monthDate = fromDate.toISOString();
-		monthDate = monthDate
+		var nextDate = fromDate.toISOString();
+		nextDate = nextDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
-		console.log(monthDate);
+
+		console.log(nextDate);
 
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
@@ -171,7 +174,7 @@ export class CronJobsService {
 				"User.phoneNo",
 			])
 
-			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${monthDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${ BookingStatus.PENDING}))`)
+			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
 		//console.log(data)
@@ -196,7 +199,7 @@ export class CronJobsService {
 			if (cardToken) {
 				let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-				
+
 				instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 				instalment.paymentInfo = transaction.meta_data;
 				instalment.transactionToken = transaction.token;
@@ -207,7 +210,7 @@ export class CronJobsService {
 				await instalment.save()
 
 				console.log(transaction.status);
-				
+
 				if (transaction.status == false) {
 
 					let faildTransaction = new FailedPaymentAttempt()
@@ -216,12 +219,20 @@ export class CronJobsService {
 					faildTransaction.date = new Date();
 
 					await faildTransaction.save()
+					var availableTry = ''
+
+					if (instalment.attempt == 1) {
+						availableTry = 'two'
+
+					} else {
+						availableTry = instalment.attempt == 2 ? 'one' : 'zero'
+					}
+
 					let param = {
-						message: transaction.meta_data.transaction.response.message,
-						cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-						cardNo: transaction.meta_data.transaction.payment_method.number,
-						orderId: instalment.bookingId,
+						date: instalment.instalmentDate,
 						amount: amount,
+						available_try: availableTry,
+						payment_dates: nextDate
 					}
 					if (instalment.attempt == 3) {
 						await getConnection()
@@ -255,7 +266,7 @@ export class CronJobsService {
 				}
 				else {
 					console.log('nextDate');
-					
+
 					const nextDate = await getManager()
 						.createQueryBuilder(BookingInstalments, "BookingInstalments")
 						.select(['BookingInstalments.instalmentDate'])
@@ -263,7 +274,7 @@ export class CronJobsService {
 						.orderBy(`"BookingInstalments"."id"`)
 						.getOne()
 					console.log(nextDate);
-					
+
 
 					await getConnection()
 						.createQueryBuilder()
@@ -660,7 +671,7 @@ export class CronJobsService {
 						const params = {
 							Bucket: 'laytrip/logs/' + folderName, // pass your bucket name
 							Key: file, // file will be saved as testBucket/contacts.csv
-							Body: JSON.stringify(data, null, 2)
+							Body: data
 						};
 						s3.upload(params, function (s3Err, data) {
 							if (s3Err) {
@@ -701,11 +712,12 @@ export class CronJobsService {
 		toDate = toDate.split(' ')[0]
 		console.log(toDate);
 
-		let query = getManager()
+		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
+			.leftJoinAndSelect("User.userDeviceDetails", "userDeviceDetails")
 
 			.select([
 				"BookingInstalments.id",
@@ -726,19 +738,59 @@ export class CronJobsService {
 				"currency.id",
 				"currency.code",
 				"currency.liveRate",
+				"currency.symbol",
 				"User.userId",
 				"User.email",
 				"User.phoneNo",
+				"User.firstName",
+				"userDeviceDetails.deviceToken",
+				"userDeviceDetails.deviceType"
 			])
-
 			.where(`(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
 
 		for await (const installment of data) {
+			const param = {
+				userName: installment.user.firstName,
+				amount: installment.currency.symbol + installment.amount,
+				date: installment.instalmentDate
+			}
+			this.mailerService
+				.sendMail({
+					to: installment.user.email,
+					from: mailConfig.from,
+					bcc: mailConfig.BCC,
+					subject: "Payment Reminder",
+					html: PaymentReminderMail(param),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+
+			const devices = installment.user.userDeviceDetails
+			if (devices.length) {
+				for await (const device of devices) {
+					if (device.deviceToken) {
+						PushNotification.sendPushNotification(device.deviceToken,
+							{  //you can send only notification or only data(or include both)
+								my_key: 'payment_reminder'
+							},
+							{
+								title: 'Payment Reminder',
+								body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+							},
+							device.deviceType)
+					}
+
+				}
+			}
 
 		}
-		return data;
+		return { message: `Payment reminder send successfully` };
 
 	}
 
@@ -759,5 +811,5 @@ export class CronJobsService {
 
 	}
 
-	
+
 }
