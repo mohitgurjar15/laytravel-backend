@@ -4,7 +4,7 @@ import { HotelDetail, HotelSearchResult, PriceRange } from "../model/availabilit
 import { StrategyVacationRental } from "./strategy.interface";
 import Axios from "axios";
 import { AvailabilityDetailsDto } from "../dto/availabilty_details.dto";
-import { HotelDetails, Images, Room } from "../model/room_details.model";
+import { CancellationPolicy, HotelDetails, Images, Room } from "../model/room_details.model";
 import { VerifyAvailabilityDto } from "../dto/verify_availability.dto";
 import { BookingDto } from "../dto/booking.dto";
 import { InternalServerErrorException, NotAcceptableException, NotFoundException, RequestTimeoutException } from "@nestjs/common";
@@ -18,7 +18,6 @@ import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
 import { HttpRequest } from "src/utility/http.utility";
 import { VerifyAvailability } from "../model/verify-availability.model";
-import { json } from "express";
 
 export class Monaker implements StrategyVacationRental {
 
@@ -367,8 +366,27 @@ export class Monaker implements StrategyVacationRental {
                 room.secondary_selling_price = 0;
             }
             room.instalment_details = instalmentDetails;
-            room.name = unitTypeResult[i]["prices"][0]["ratePlanDescription"] != null ? unitTypeResult[i]["prices"][0]["ratePlanDescription"] : " "
-            room.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][0]["nonRefundable"] == true ? false : true;
+            room.name = unitTypeResult[i]["prices"][0]["ratePlanDescription"] != null ? unitTypeResult[i]["prices"][0]["ratePlanDescription"] : ''
+
+            let cancelPolicies = new CancellationPolicy()
+            let policy_info: any = [];
+
+            let off_set_drop_time;
+            let off_set_time_unit
+            let off_unit_multiplier;
+            for (let k = 0; k < unitTypeResult[i]["policyInfo"]["cancelPolicies"].length; k++) {
+                let data = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k];
+                let amount_percent = data["amountPercent"]["percent"] != null ? (data["amountPercent"]["percent"] * room.selling_price) : data["amountPercent"]["amount"];
+                if (data["deadline"] != null) {
+                    off_set_drop_time = data["deadline"]["offsetDropTime"] != null ? data["deadline"]["offsetDropTime"] : '';
+                    off_set_time_unit = data["deadline"]["offsetTimeUnit"] != null ? data["deadline"]["offsetTimeUnit"] : '';
+                    off_unit_multiplier = data["deadline"]["offsetUnitMultiplier"] != null ? data["deadline"]["offsetUnitMultiplier"] : '';
+                    policy_info.push(`${amount_percent} cancellation fee ${off_unit_multiplier} ${off_set_time_unit} ${off_set_drop_time}`);
+                }
+                cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
+                cancelPolicies.penalty_info = policy_info;
+                room.cancellation_policy = cancelPolicies;
+            }
             rooms.push(room);
         }
         const hotelDetails = new HotelDetails();
