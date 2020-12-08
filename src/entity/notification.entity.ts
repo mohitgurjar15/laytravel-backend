@@ -10,7 +10,7 @@ import {
 import { User } from "./user.entity";
 import { Module } from "./module.entity";
 
-@Index("notification_pk", ["id"], { unique: true })
+@Index("notification_idx", ["id"], { unique: true })
 @Entity("notification")
 export class Notification extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })

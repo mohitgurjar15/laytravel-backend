@@ -70,7 +70,7 @@ export class Booking extends BaseEntity {
   @Column("date", { name: "check_out_date" ,nullable : true })
   checkOutDate: string;
 
-  @Column("json", { name: "location_info" })
+  @Column("json", { name: "location_info" ,nullable : true})
   locationInfo: object;
 
   @Column("json", { name: "module_info" })
