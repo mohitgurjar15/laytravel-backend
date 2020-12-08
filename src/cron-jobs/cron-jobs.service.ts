@@ -73,16 +73,16 @@ export class CronJobsService {
 			for (let index = 0; index < result.length; index++) {
 				const data = result[index];
 
-				this.giveNotification(data.userId,
+				PushNotification.giveNotificationTouser(data.userId,
 					{  //you can send only notification or only data(or include both)
-					module_name: 'user',
-					task: 'user_convert',
-					userId:data.userId
-				},
-				{
-					title: 'We not capture subscription',
-					body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
-				})
+						module_name: 'user',
+						task: 'user_convert',
+						userId: data.userId
+					},
+					{
+						title: 'We not capture subscription',
+						body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
+					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 
 				this.mailerService
 					.sendMail({
@@ -111,6 +111,7 @@ export class CronJobsService {
 			console.log(updateQuery);
 		} catch (error) {
 			console.log(error);
+			
 		}
 	}
 
@@ -130,11 +131,18 @@ export class CronJobsService {
 		var total = 0;
 
 		for (let index = 0; index < result.length; index++) {
+			try{
+
 			const element = result[index];
 
 			// console.log(element.supplierBookingId);
 
 			var responce: any = await this.flightService.ticketFlight(element.supplierBookingId);
+			} catch(error){
+				console.log(error);
+				this.cronfailedmail(JSON.stringify(result[index]),'check pending flight cron failed')
+				Activity.createlogFile('check-pending-flight-cron-failed',JSON.stringify(result[index]) + 'error' + JSON.stringify(error),'flight')
+			}
 		}
 		return { message: `pending flight updated successfully` };
 	}
@@ -162,29 +170,29 @@ export class CronJobsService {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 
-			.select([
-				"BookingInstalments.id",
-				"BookingInstalments.bookingId",
-				"BookingInstalments.userId",
-				"BookingInstalments.instalmentType",
-				"BookingInstalments.instalmentDate",
-				"BookingInstalments.currencyId",
-				"BookingInstalments.amount",
-				"BookingInstalments.instalmentStatus",
-				"booking.bookingType",
-				"booking.bookingStatus",
-				"booking.cardToken",
-				"booking.currency",
-				"booking.netRate",
-				"booking.usdFactor",
-				"booking.isTicketd",
-				"currency.id",
-				"currency.code",
-				"currency.liveRate",
-				"User.userId",
-				"User.email",
-				"User.phoneNo",
-			])
+			// .select([
+			// 	"BookingInstalments.id",
+			// 	"BookingInstalments.bookingId",
+			// 	"BookingInstalments.userId",
+			// 	"BookingInstalments.instalmentType",
+			// 	"BookingInstalments.instalmentDate",
+			// 	"BookingInstalments.currencyId",
+			// 	"BookingInstalments.amount",
+			// 	"BookingInstalments.instalmentStatus",
+			// 	"booking.bookingType",
+			// 	"booking.bookingStatus",
+			// 	"booking.cardToken",
+			// 	"booking.currency",
+			// 	"booking.netRate",
+			// 	"booking.usdFactor",
+			// 	"booking.isTicketd",
+			// 	"currency.id",
+			// 	"currency.code",
+			// 	"currency.liveRate",
+			// 	"User.userId",
+			// 	"User.email",
+			// 	"User.phoneNo",
+			// ])
 
 			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
@@ -199,167 +207,179 @@ export class CronJobsService {
 
 
 		for await (const instalment of data) {
-			console.log(instalment);
-			let amount: any = Generic.formatPriceDecimal(parseFloat(instalment.amount)) * 100
-			let currencyCode = instalment.currency.code
-			let cardToken = instalment.booking.cardToken
+			try {
+				
+				console.log('installment amount' , instalment.amount);
+				
+				let amount: number = Generic.formatPriceDecimal(parseFloat(instalment.amount))
+				let currencyCode = instalment.currency.code
+				let cardToken = instalment.booking.cardToken
+				amount = amount * 100
+				amount = Math.ceil(amount)
+				console.log('amount', amount)
+				console.log('currencyCode', currencyCode)
+				console.log('cardToken', cardToken)
 
-			console.log('amount', amount)
-			console.log('currencyCode', currencyCode)
-			console.log('cardToken', cardToken)
-
-			if (cardToken) {
-				let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
+				if (cardToken) {
+					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
 
-				instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-				instalment.paymentInfo = transaction.meta_data;
-				instalment.transactionToken = transaction.token;
-				instalment.paymentCaptureDate = new Date();
-				instalment.attempt = (instalment.attempt || 0) + 1;
-				instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-				instalment.comment = `Get Payment by cron on ${currentDate}`
-				await instalment.save()
+					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+					instalment.paymentInfo = transaction.meta_data;
+					instalment.transactionToken = transaction.token;
+					instalment.paymentCaptureDate = new Date();
+					instalment.attempt = (instalment.attempt || 0) + 1;
+					instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+					instalment.comment = `Get Payment by cron on ${currentDate}`
+					await instalment.save()
 
-				console.log(transaction.status);
+					console.log(transaction.status);
 
-				if (transaction.status == false) {
+					if (transaction.status == false) {
 
-					let faildTransaction = new FailedPaymentAttempt()
-					faildTransaction.instalmentId = instalment.id
-					faildTransaction.paymentInfo = transaction.meta_data
-					faildTransaction.date = new Date();
+						let faildTransaction = new FailedPaymentAttempt()
+						faildTransaction.instalmentId = instalment.id
+						faildTransaction.paymentInfo = transaction.meta_data
+						faildTransaction.date = new Date();
 
-					await faildTransaction.save()
-					var availableTry = ''
+						await faildTransaction.save()
+						var availableTry = ''
 
-					if (instalment.attempt == 1) {
-						availableTry = 'two'
+						if (instalment.attempt == 1) {
+							availableTry = 'two'
 
-					} else {
-						availableTry = instalment.attempt == 2 ? 'one' : 'zero'
+						} else {
+							availableTry = instalment.attempt == 2 ? 'one' : 'zero'
+						}
+
+						let param = {
+							date: instalment.instalmentDate,
+							amount: amount,
+							available_try: availableTry,
+							payment_dates: nextDate
+						}
+						if (instalment.attempt == 3) {
+							await getConnection()
+								.createQueryBuilder()
+								.update(Booking)
+								.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+								.where("id = :id", { id: instalment.bookingId })
+								.execute();
+							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
+							PushNotification.giveNotificationTouser(instalment.user.userId,
+								{  //you can send only notification or only data(or include both)
+									module_name: 'booking',
+									task: 'booking_cancelled',
+									bookingId: instalment.booking.laytripBookingId
+								},
+								{
+									title: 'booking Cancelled',
+									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
+								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+						}
+						this.mailerService
+							.sendMail({
+								to: instalment.user.email,
+								from: mailConfig.from,
+								cc: mailConfig.BCC,
+								subject: `Payment Failed Notification`,
+								html: missedPaymentInstallmentMail(param),
+							})
+							.then((res) => {
+								console.log("res", res);
+							})
+							.catch((err) => {
+								console.log("err", err);
+							});
+						Activity.logActivity(
+							"1c17cd17-9432-40c8-a256-10db77b95bca",
+							"cron",
+							`${instalment.id} Payment Failed by Cron`
+						);
+
+						PushNotification.giveNotificationTouser(instalment.user.userId,
+							{  //you can send only notification or only data(or include both)
+								module_name: 'instalment',
+								task: 'instalment_failed',
+								bookingId: instalment.booking.laytripBookingId,
+								instalmentId: instalment.id
+							},
+							{
+								title: 'Instalment Failed',
+								body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+
 					}
+					else {
+						console.log('nextDate');
 
-					let param = {
-						date: instalment.instalmentDate,
-						amount: amount,
-						available_try: availableTry,
-						payment_dates: nextDate
-					}
-					if (instalment.attempt == 3) {
+						const nextDate = await getManager()
+							.createQueryBuilder(BookingInstalments, "BookingInstalments")
+							.select(['BookingInstalments.instalmentDate'])
+							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
+							.orderBy(`"BookingInstalments"."id"`)
+							.getOne()
+						console.log(nextDate);
+
+
 						await getConnection()
 							.createQueryBuilder()
 							.update(Booking)
-							.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+							.set({ nextInstalmentDate: nextDate.instalmentDate })
 							.where("id = :id", { id: instalment.bookingId })
 							.execute();
-						await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
-						this.giveNotification(instalment.user.userId,
+
+						let param = {
+							date: instalment.instalmentDate,
+							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
+							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+							cardNo: transaction.meta_data.transaction.payment_method.number,
+							orderId: instalment.booking.laytripBookingId,
+							amount: parseFloat(instalment.amount),
+							installmentId : instalment.id,
+							complitedAmount : parseFloat (await this.totalPaidAmount(instalment.bookingId)),
+							totalAmount: parseFloat (instalment.booking.totalAmount)
+						}
+
+						this.mailerService
+							.sendMail({
+								to: instalment.user.email,
+								from: mailConfig.from,
+								bcc: mailConfig.BCC,
+								subject: `Installment Payment Successed`,
+								html: PaymentInstallmentMail(param),
+							})
+							.then((res) => {
+								console.log("res", res);
+							})
+							.catch((err) => {
+								console.log("err", err);
+							});
+						Activity.logActivity(
+							"1c17cd17-9432-40c8-a256-10db77b95bca",
+							"cron",
+							`${instalment.id} Payment successed by Cron`
+						);
+
+						PushNotification.giveNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
-							module_name: 'booking',
-							task: 'booking_cancelled',
-							bookingId:instalment.booking.laytripBookingId
-						},
-						{
-							title: 'booking Cancelled',
-							body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
-						})
-					}
-					this.mailerService
-						.sendMail({
-							to: instalment.user.email,
-							from: mailConfig.from,
-							cc: mailConfig.BCC,
-							subject: `Payment Failed Notification`,
-							html: missedPaymentInstallmentMail(param),
-						})
-						.then((res) => {
-							console.log("res", res);
-						})
-						.catch((err) => {
-							console.log("err", err);
-						});
-					Activity.logActivity(
-						"1c17cd17-9432-40c8-a256-10db77b95bca",
-						"cron",
-						`${instalment.id} Payment Failed by Cron`
-					);
-
-					this.giveNotification(instalment.user.userId,
-						{  //you can send only notification or only data(or include both)
-						module_name: 'instalment',
-						task: 'instalment_failed',
-						bookingId:instalment.booking.laytripBookingId,
-						instalmentId:instalment.id
-					},
-					{
-						title: 'Instalment Failed',
-						body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-					})
-
-				}
-				else {
-					console.log('nextDate');
-
-					const nextDate = await getManager()
-						.createQueryBuilder(BookingInstalments, "BookingInstalments")
-						.select(['BookingInstalments.instalmentDate'])
-						.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
-						.orderBy(`"BookingInstalments"."id"`)
-						.getOne()
-					console.log(nextDate);
-
-
-					await getConnection()
-						.createQueryBuilder()
-						.update(Booking)
-						.set({ nextInstalmentDate: nextDate.instalmentDate })
-						.where("id = :id", { id: instalment.bookingId })
-						.execute();
-
-					let param = {
-						date: instalment.instalmentDate,
-						userName: instalment.user.firstName + ' ' + instalment.user.lastName,
-						cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-						cardNo: transaction.meta_data.transaction.payment_method.number,
-						orderId: instalment.booking.laytripBookingId,
-						amount: amount,
+								module_name: 'instalment',
+								task: 'instalment_received',
+								bookingId: instalment.booking.laytripBookingId,
+								instalmentId: instalment.id
+							},
+							{
+								title: 'Installment Received',
+								body: `We have received your payment of $${instalment.amount}.`
+							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 					}
 
-					this.mailerService
-						.sendMail({
-							to: instalment.user.email,
-							from: mailConfig.from,
-							bcc: mailConfig.BCC,
-							subject: `Installment Payment Successed`,
-							html: PaymentInstallmentMail(param),
-						})
-						.then((res) => {
-							console.log("res", res);
-						})
-						.catch((err) => {
-							console.log("err", err);
-						});
-					Activity.logActivity(
-						"1c17cd17-9432-40c8-a256-10db77b95bca",
-						"cron",
-						`${instalment.id} Payment successed by Cron`
-					);
-
-					this.giveNotification(instalment.user.userId,
-						{  //you can send only notification or only data(or include both)
-						module_name: 'instalment',
-						task: 'instalment_received',
-						bookingId:instalment.booking.laytripBookingId,
-						instalmentId:instalment.id
-					},
-					{
-						title: 'INSTALLMENT RECEIVED',
-						body: `We have received your payment of $${instalment.amount}.`
-					})
+					await this.checkAllinstallmentPaid(instalment.bookingId)
 				}
-
-				await this.checkAllinstallmentPaid(instalment.bookingId)
+			} catch (error) {
+				console.log(error);
+				this.cronfailedmail(JSON.stringify(instalment),'Partial payment cron failed')
+				Activity.createlogFile('partial-payment-cron-failed',JSON.stringify(instalment) + 'error' + JSON.stringify(error),'payment')
 			}
 		}
 		return { message: `${currentDate} date installation payment capture successfully` };
@@ -396,7 +416,7 @@ export class CronJobsService {
 
 		var total = 0;
 		for (let index = 0; index < result.length; index++) {
-
+			try {
 			var bookingData = result[index];
 			let flights: any = null;
 			if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
@@ -506,6 +526,12 @@ export class CronJobsService {
 					}
 				}
 			}
+		}catch(error)
+		{
+			console.log(error);
+			this.cronfailedmail(JSON.stringify(result[index]),'pending booking price cron failed')
+				Activity.createlogFile('pending-booking-cron-failed',JSON.stringify(result[index]) + 'error' + JSON.stringify(error),'booking')
+		}
 		}
 
 		return { message: `today booking price added for pending booking` }
@@ -546,16 +572,16 @@ export class CronJobsService {
 
 					this.sendFlightFailerMail(booking.user.email, booking.laytripBookingId)
 
-					this.giveNotification(booking.user.userId,
+					PushNotification.giveNotificationTouser(booking.user.userId,
 						{  //you can send only notification or only data(or include both)
-						module_name: 'booking',
-						task: 'booking_failed',
-						bookingId:booking.laytripBookingId
-					},
-					{
-						title: 'Booking failed',
-						body: `we couldn’t process your booking request.`
-					})
+							module_name: 'booking',
+							task: 'booking_failed',
+							bookingId: booking.laytripBookingId
+						},
+						{
+							title: 'Booking failed',
+							body: `we couldn’t process your booking request.`
+						}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 				}
 
 
@@ -588,16 +614,16 @@ export class CronJobsService {
 						.execute();
 				}
 
-				this.giveNotification(booking.user.userId,
+				PushNotification.giveNotificationTouser(booking.user.userId,
 					{  //you can send only notification or only data(or include both)
-					module_name: 'booking',
-					task: 'booking_done',
-					bookingId:booking.laytripBookingId
-				},
-				{
-					title: 'Booking ',
-					body: `We’re as excited for your trip as you are! please check all the details`
-				})
+						module_name: 'booking',
+						task: 'booking_done',
+						bookingId: booking.laytripBookingId
+					},
+					{
+						title: 'Booking ',
+						body: `We’re as excited for your trip as you are! please check all the details`
+					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 
 				//if TicketStatus = TktInProgress call it again
 			}
@@ -702,6 +728,7 @@ export class CronJobsService {
 			}
 		} catch (error) {
 			console.log(error);
+			
 		}
 		return { message: `today recurring point added succesfully` }
 	}
@@ -785,7 +812,7 @@ export class CronJobsService {
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
-			.leftJoinAndSelect("User.userDeviceDetails", "userDeviceDetails")
+			//.leftJoinAndSelect("User.userDeviceDetails", "userDeviceDetails")
 
 			.select([
 				"BookingInstalments.id",
@@ -839,23 +866,15 @@ export class CronJobsService {
 					console.log("err", err);
 				});
 
-			const devices = installment.user.userDeviceDetails
-			if (devices.length) {
-				for await (const device of devices) {
-					if (device.deviceToken) {
-						PushNotification.sendPushNotification(device.deviceToken,
-							{  //you can send only notification or only data(or include both)
-								my_key: 'payment_reminder'
-							},
-							{
-								title: 'Payment Reminder',
-								body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
-							},
-							device.deviceType)
-					}
-
-				}
-			}
+			PushNotification.giveNotificationTouser(installment.user.userId,
+				{  //you can send only notification or only data(or include both)
+					module_name: 'payment',
+					task: 'payment_reminder',
+				},
+				{
+					title: 'Payment Reminder',
+					body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+				}, '1c17cd17-9432-40c8-a256-10db77b95bca')
 
 		}
 		return { message: `Payment reminder send successfully` };
@@ -879,20 +898,30 @@ export class CronJobsService {
 
 	}
 
-	async giveNotification(userId, data, pushData) {
-		const devices = await getConnection()
-			.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
-			.where(`"userDeviceDetails"."user_id" = '${userId}'`)
-			.getMany()
-		if (devices.length) {
-			for await (const device of devices) {
-				if (device.deviceToken) {
-					PushNotification.sendPushNotification(device.deviceToken,
-						data, pushData,
-						device.deviceType)
-				}
-
-			}
-		}
+	async cronfailedmail(data , subject)
+	{
+		this.mailerService
+			.sendMail({
+				to: mailConfig.BCC,
+				from: mailConfig.from,
+				//cc: mailConfig.BCC,
+				subject: subject,
+				html: data,
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
 	}
+
+	async totalPaidAmount(bookingId:string)
+	{
+		var paidAmount = await getConnection().query(`
+                SELECT  SUM( amount) as total_amount from booking_instalments where payment_status = ${PaymentStatus.CONFIRM} AND booking_id = '${bookingId}'  
+			`);
+		return paidAmount[0].total_amount
+	}
+
 }

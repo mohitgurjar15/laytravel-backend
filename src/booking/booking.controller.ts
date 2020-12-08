@@ -6,11 +6,12 @@ import { Roles } from "src/guards/role.decorator";
 import { Role } from "src/enum/role.enum";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
-import { User } from "@sentry/node";
 import { ListPaymentDto } from './dto/list-payment.dto'
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import { ExportBookingDto } from "./dto/export-booking.dto";
 import { ShareBookingDto } from "./dto/share-booking-detail.dto";
+import { User } from "src/entity/user.entity";
+
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -210,8 +211,9 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async shareBookingDetail(
 		@Param("booking_id") bookingId: string,
-		@Query() shareBookingDto:ShareBookingDto
+		@Query() shareBookingDto:ShareBookingDto,
+		@GetUser() user : User
 	): Promise<{ message: any }> {
-		return await this.bookingService.shareBooking(bookingId,shareBookingDto);
+		return await this.bookingService.shareBooking(bookingId,shareBookingDto,user);
 	}
 }

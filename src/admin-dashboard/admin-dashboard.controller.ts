@@ -120,8 +120,9 @@ export class AdminDashboardController {
 	@ApiResponse({ status: 404, description: "not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async bookingStatistics(
+		@Query() filterOption : DashboardFilterDto
     ) {
-		return await this.adminDashboardService.bookingStatistics();
+		return await this.adminDashboardService.bookingStatistics(filterOption);
 	}
 
 
