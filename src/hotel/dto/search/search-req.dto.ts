@@ -39,7 +39,7 @@ export class SearchReqDto{
     
     @ApiProperty({
         description: 'Latitude of the searched location',
-        example: 51.5074,
+        example: "51.5074",
         required: true
     })
     @IsString()
@@ -47,7 +47,7 @@ export class SearchReqDto{
     
     @ApiProperty({
         description: 'Longitude of the searched location',
-        example: -0.1276,
+        example: "-0.1276",
         required: true
     })
     @IsString()
