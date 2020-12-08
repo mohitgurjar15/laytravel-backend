@@ -1691,22 +1691,28 @@ export class Mystifly implements StrategyAirline {
                 let eService:any;
                 let outBoundExtraService=[];
                 let inBoundExtraService=[];
+                let decodedBaggae={};
                 if(extraServices.length>0){
                     for(let service of extraServices[0]['b:services'][0]['b:service']){
-
+                            decodedBaggae={};
                             if(service['b:type'][0]!=='Meal'){
-                            eService={};
-                            eService['type']=service['b:type'][0];
-                            eService['checkin_type']=service['b:checkintype'][0];
-                            eService['description']=service['b:description'][0];
-                            eService['cost']=Number(service['b:servicecost'][0]['a:amount'][0]);
-                            eService['service_id']=Number(service['b:serviceid'][0]);
-                            if(service['b:behavior'][0]=='PER_PAX_OUTBOUND'){
-                                outBoundExtraService.push(eService);
+                            decodedBaggae = this.decodeExtraBaggae(service['b:description'][0])
+                            console.log(decodedBaggae,service['b:description'][0])
+                            if(decodedBaggae!=false){
+                                eService={};
+                                eService['type']=service['b:type'][0];
+                                eService['checkin_type']=service['b:checkintype'][0];
+                                eService['description']= decodedBaggae;
+                                eService['cost']=Number(service['b:servicecost'][0]['a:amount'][0]);
+                                eService['service_id']=Number(service['b:serviceid'][0]);
+                                if(service['b:behavior'][0]=='PER_PAX_OUTBOUND'){
+                                    outBoundExtraService.push(eService);
+                                }
+                                else if(service['b:behavior'][0]=='PER_PAX_INBOUND'){
+                                    inBoundExtraService.push(eService);
+                                }
                             }
-                            else if(service['b:behavior'][0]=='PER_PAX_INBOUND'){
-                                inBoundExtraService.push(eService);
-                            }
+                            
                         }
                     }
                     
@@ -1723,6 +1729,53 @@ export class Mystifly implements StrategyAirline {
             throw new NotFoundException(`Flight is not available now`);
         }
 
+    }
+
+    decodeExtraBaggae(description){
+        
+        let descArray = description.split("||");
+        console.log("descArray",descArray)
+        if(descArray.length==2){
+
+            let descArrayDetails = descArray[0].split("-");
+            console.log("descArrayDetails",descArrayDetails)
+            if(descArrayDetails.length==2){
+
+                let weight = Generic.convertKGtoLB(Number(descArrayDetails[1].trim().replace("Kg",'')));
+                if(descArrayDetails[0].includes("Total Weight: 1 bags")){
+                    console.log("innnn")
+                    return {
+                        
+                        title : "1 bag",
+                        weight : weight
+                    }
+                }
+                else if(descArray[0].includes("Total Weight: 2 bags")){
+                    return {
+                        
+                        title : "2 bag",
+                        weight : weight
+                    }
+                }
+                else if(descArray[0].includes("Total Weight: 3 bags")){
+                    return {
+                        
+                        title : "2 bag",
+                        weight : weight
+                    }
+                }
+                else if(descArray[0].includes("Total Weight: 4 bags")){
+                    return {
+                        
+                        title : "3 bag",
+                        weight : weight
+                    }
+                }
+            }
+        }
+        else{
+            return false;
+        }
     }
 
     async bookFlight(bookFlightDto, traveles, isPassportRequired) {
