@@ -4,4 +4,7 @@ export interface HotelInterface{
     
     search(request);
 
+    detail(request);
+    
+    rooms(request);
 }
