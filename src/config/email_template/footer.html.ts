@@ -11,31 +11,31 @@ export const EmailFooter = `<!-- footer section -->
                 <tbody>
                   <tr>
                     <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
+                      <a href="https://www.instagram.com/laytrip_travel/" target="_blank" style="text-decoration: none;">
                         <img src="${BaseUrl}assets/images/email/icons/instagram.png" alt="instagram" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
+                      <a href="https://www.facebook.com/LaytripTravel" target="_blank" style="text-decoration: none;">
                         <img src="${BaseUrl}assets/images/email/icons/facebook.png" alt="facebook" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
+                      <a href="https://twitter.com/LaytripTravel" target="_blank" style="text-decoration: none;">
                         <img src="${BaseUrl}assets/images/email/icons/twitter.png" alt="twitter" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
+                      <a href="https://www.linkedin.com/company/laytriptravels" target="_blank" style="text-decoration: none;">
                         <img src="${BaseUrl}assets/images/email/icons/linkedin.png" alt="linkedin" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
                     <td width="24" style="width: 24px;">&nbsp;</td>
                     <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
+                      <a href="https://in.pinterest.com/laytriptravel/" target="_blank" style="text-decoration: none;">
                         <img src="${BaseUrl}assets/images/email/icons/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>

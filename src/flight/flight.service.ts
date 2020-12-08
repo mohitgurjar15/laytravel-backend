@@ -1395,32 +1395,9 @@ export class FlightService {
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
-
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();
-			const devices = await getConnection()
-				.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
-				.where(`"userDeviceDetails"."user_id" = '${bookingDetails.userId}'`)
-				.getMany()
-			if (devices.length) {
-				for await (const device of devices) {
-					if (device.deviceToken) {
-						PushNotification.sendPushNotification(device.deviceToken,
-							{  //you can send only notification or only data(or include both)
-								module_name: 'booking',
-								task: 'booking_done',
-								bookingId: bookingDetails.laytripBookingId
-							},
-							{
-								title: 'Booking',
-								body: `We’re as excited for your trip as you are! please check all the details`
-							},
-							device.deviceType)
-					}
-
-				}
-			}
 			return await this.bookingRepository.getBookingDetails(bookingDetails.laytripBookingId);
 		} catch (error) {
 			console.log(error);
@@ -1529,6 +1506,19 @@ export class FlightService {
 				bookingId,
 				bookingResult,
 			);
+
+			PushNotification.giveNotificationTouser(laytripBookingResult.userId,
+				{  //you can send only notification or only data(or include both)
+					module_id: laytripBookingResult.moduleId,
+					module_name: 'booking',
+					task: 'booking_done',
+					bookingId: laytripBookingResult.laytripBookingId
+				},
+				{
+					title: 'Booking',
+					body: `We’re as excited for your trip as you are! please check all the details`
+				},
+				userId)
 
 			//console.log(laytripBookingResult);
 
@@ -2086,28 +2076,18 @@ export class FlightService {
 			if (savedLaytripPoint) {
 				bookingData.bookingStatus = BookingStatus.CANCELLED
 				await bookingData.save();
-				const devices = await getConnection()
-					.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
-					.where(`"userDeviceDetails"."user_id" = '${bookingData.userId}'`)
-					.getMany()
-				if (devices.length) {
-					for await (const device of devices) {
-						if (device.deviceToken) {
-							PushNotification.sendPushNotification(device.deviceToken,
-								{  //you can send only notification or only data(or include both)
-									module_name: 'booking',
-									task: 'booking_cancelled',
-									bookingId: bookingData.laytripBookingId
-								},
-								{
-									title: 'booking Cancelled',
-									body: `we have unfortunately had to cancel your booking.`
-								},
-								device.deviceType)
-						}
-
-					}
-				}
+				PushNotification.giveNotificationTouser(bookingData.userId,
+					{  //you can send only notification or only data(or include both)
+						module_id: bookingData.moduleId,
+						module_name: 'booking',
+						task: 'booking_cancelled',
+						bookingId: bookingData.laytripBookingId
+					},
+					{
+						title: 'booking Cancelled',
+						body: `we have unfortunately had to cancel your booking.`
+					},
+					userId)
 				return `booking (bookingData.laytripBookingId) is canceled successfully `
 			}
 			else {
