@@ -4,7 +4,7 @@ import { BaseUrl } from "../base-url";
 
 export function missedPaymentInstallmentMail(param: {
     date: string,
-    amount: string,
+    amount: number,
     available_try: string,
     payment_dates: string
 }) {

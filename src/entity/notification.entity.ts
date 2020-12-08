@@ -19,6 +19,9 @@ export class Notification extends BaseEntity {
   @Column("character varying", { name: "type", length: 50 })
   type: string;
 
+  @Column("integer", { name: "module_id", nullable : true })
+  moduleId: string;
+
   @Column("character varying", { name: "resource_id", length: 255 })
   resourceId: string;
 
@@ -26,7 +29,7 @@ export class Notification extends BaseEntity {
   message: string;
 
   @Column("date", { name: "created_date" })
-  createdDate: string;
+  createdDate: Date;
 
   @ManyToOne(
     () => User,
