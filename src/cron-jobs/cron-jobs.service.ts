@@ -31,6 +31,7 @@ import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
 import { Generic } from "src/utility/generic.utility";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
+import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 const AWS = require('aws-sdk');
 
 
@@ -71,6 +72,17 @@ export class CronJobsService {
 			);
 			for (let index = 0; index < result.length; index++) {
 				const data = result[index];
+
+				this.giveNotification(data.userId,
+					{  //you can send only notification or only data(or include both)
+					module_name: 'user',
+					task: 'user_convert',
+					userId:data.userId
+				},
+				{
+					title: 'We not capture subscription',
+					body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
+				})
 
 				this.mailerService
 					.sendMail({
@@ -242,6 +254,16 @@ export class CronJobsService {
 							.where("id = :id", { id: instalment.bookingId })
 							.execute();
 						await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
+						this.giveNotification(instalment.user.userId,
+							{  //you can send only notification or only data(or include both)
+							module_name: 'booking',
+							task: 'booking_cancelled',
+							bookingId:instalment.booking.laytripBookingId
+						},
+						{
+							title: 'booking Cancelled',
+							body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
+						})
 					}
 					this.mailerService
 						.sendMail({
@@ -262,6 +284,18 @@ export class CronJobsService {
 						"cron",
 						`${instalment.id} Payment Failed by Cron`
 					);
+
+					this.giveNotification(instalment.user.userId,
+						{  //you can send only notification or only data(or include both)
+						module_name: 'instalment',
+						task: 'instalment_failed',
+						bookingId:instalment.booking.laytripBookingId,
+						instalmentId:instalment.id
+					},
+					{
+						title: 'Instalment Failed',
+						body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+					})
 
 				}
 				else {
@@ -311,6 +345,18 @@ export class CronJobsService {
 						"cron",
 						`${instalment.id} Payment successed by Cron`
 					);
+
+					this.giveNotification(instalment.user.userId,
+						{  //you can send only notification or only data(or include both)
+						module_name: 'instalment',
+						task: 'instalment_received',
+						bookingId:instalment.booking.laytripBookingId,
+						instalmentId:instalment.id
+					},
+					{
+						title: 'INSTALLMENT RECEIVED',
+						body: `We have received your payment of $${instalment.amount}.`
+					})
 				}
 
 				await this.checkAllinstallmentPaid(instalment.bookingId)
@@ -499,6 +545,17 @@ export class CronJobsService {
 						.execute();
 
 					this.sendFlightFailerMail(booking.user.email, booking.laytripBookingId)
+
+					this.giveNotification(booking.user.userId,
+						{  //you can send only notification or only data(or include both)
+						module_name: 'booking',
+						task: 'booking_failed',
+						bookingId:booking.laytripBookingId
+					},
+					{
+						title: 'Booking failed',
+						body: `we couldn’t process your booking request.`
+					})
 				}
 
 
@@ -530,6 +587,17 @@ export class CronJobsService {
 						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
 						.execute();
 				}
+
+				this.giveNotification(booking.user.userId,
+					{  //you can send only notification or only data(or include both)
+					module_name: 'booking',
+					task: 'booking_done',
+					bookingId:booking.laytripBookingId
+				},
+				{
+					title: 'Booking ',
+					body: `We’re as excited for your trip as you are! please check all the details`
+				})
 
 				//if TicketStatus = TktInProgress call it again
 			}
@@ -811,5 +879,20 @@ export class CronJobsService {
 
 	}
 
+	async giveNotification(userId, data, pushData) {
+		const devices = await getConnection()
+			.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
+			.where(`"userDeviceDetails"."user_id" = '${userId}'`)
+			.getMany()
+		if (devices.length) {
+			for await (const device of devices) {
+				if (device.deviceToken) {
+					PushNotification.sendPushNotification(device.deviceToken,
+						data, pushData,
+						device.deviceType)
+				}
 
+			}
+		}
+	}
 }
