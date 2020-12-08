@@ -18,11 +18,16 @@ export class Room {
     secondary_selling_price : number;
     instalment_details:{};
     description: string;
-    is_refundable:boolean;
+    cancellation_policy:CancellationPolicy;
     amenities: [];
     meal_type: string;
 }
 
 export class Images{
     url:string
+}
+
+export class CancellationPolicy{
+    is_refundable:boolean;
+    penalty_info:[]
 }
