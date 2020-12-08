@@ -792,6 +792,12 @@ export class BookingService {
 				value['laytripBookingId'] = result.laytripBookingId
 			}
 
+			if (data.length > 0) {
+				data.sort((a, b) => b.id - a.id)
+
+				data.reverse()
+			}
+
 			return {
 				result: data, count: data.length
 			}
