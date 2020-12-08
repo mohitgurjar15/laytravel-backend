@@ -23,12 +23,14 @@ import { BookingFailerMail } from "src/config/email_template/booking-failure-mai
 import { BookingType } from "src/enum/booking-type.enum";
 import { exit } from "process";
 import { PaymentStatus } from "src/enum/payment-status.enum";
-import {  getManager } from "typeorm";
+import { getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 const mailConfig = config.get("email");
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 import { ExportBookingDto } from "./dto/export-booking.dto";
+import { ShareBookingDto } from "./dto/share-booking-detail.dto";
+import { BookingStatus } from "src/enum/booking-status.enum";
 
 @Injectable()
 export class BookingService {
@@ -64,8 +66,8 @@ export class BookingService {
 		return { message: `Booking information send on ragister user email id ` };
 	}
 
-	async flightBookingEmailSend(bookingData: Booking) {
-		if (bookingData.bookingStatus < 2) {
+	async flightBookingEmailSend(bookingData: Booking , email = '') {
+		if (bookingData.bookingStatus == BookingStatus.CONFIRM || bookingData.bookingStatus == BookingStatus.PENDING) {
 			var param = new FlightBookingEmailParameterModel();
 			const user = bookingData.user;
 			const moduleInfo = bookingData.moduleInfo[0]
@@ -160,12 +162,14 @@ export class BookingService {
 
 			console.log(param);
 			// console.log(param.flightData);
-
-			this.mailerService
+			if(email != '')
+			{
+				this.mailerService
 				.sendMail({
-					to: user.email,
+					to:email,
+					cc: user.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC ,
 					subject: EmailSubject,
 					html: await FlightBookingConfirmtionMail(param),
 				})
@@ -175,8 +179,30 @@ export class BookingService {
 				.catch((err) => {
 					console.log("err", err);
 				});
+			}
+			else{
+				this.mailerService
+				.sendMail({
+					to: user.email,
+					from: mailConfig.from,
+					bcc: mailConfig.BCC,
+					subject: EmailSubject,
+					html: await FlightBookingConfirmtionMail(param),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+			}
+			
 		}
-		else if (bookingData.bookingStatus == 2) {
+		else if (bookingData.bookingStatus == BookingStatus.FAILED) {
+			if(email != '')
+			{
+				throw new BadRequestException(`Given booking is failed`)
+			}
 			var status = "Failed"
 			this.mailerService
 				.sendMail({
@@ -198,6 +224,10 @@ export class BookingService {
 		}
 		else {
 			var status = "Canceled"
+			if(email != '')
+			{
+				throw new BadRequestException(`Given booking is canceled`)
+			}
 		}
 	}
 
@@ -211,8 +241,14 @@ export class BookingService {
 			//console.log(result);
 
 			for (let i in result.data) {
+				if (result.data[i].bookingInstalments.length > 0) {
+					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+
+					result.data[i].bookingInstalments.reverse()
+				}
+
 				for (let instalment of result.data[i].bookingInstalments) {
-					if (instalment.instalmentStatus == 1) {
+					if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
@@ -281,15 +317,20 @@ export class BookingService {
 	async userBookingList(listBookingDto: ListBookingDto, userId: string) {
 		try {
 			let result = await this.bookingRepository.listBooking(listBookingDto, userId);
-			//console.log(result);
 
 			for (let i in result.data) {
 				let paidAmount = 0;
 				let remainAmount = 0;
 				let pandinginstallment = 0;
 
+				if (result.data[i].bookingInstalments.length > 0) {
+					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+
+					result.data[i].bookingInstalments.reverse()
+				}
+
 				for (let instalment of result.data[i].bookingInstalments) {
-					if (instalment.instalmentStatus == InstalmentStatus.PAID) {
+					if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 						paidAmount += parseFloat(instalment.amount);
 					} else {
 						remainAmount += parseFloat(instalment.amount);
@@ -356,6 +397,7 @@ export class BookingService {
 		}
 	}
 
+
 	async getBookingDetail(bookingId: string) {
 		try {
 			let result = await this.bookingRepository.bookingDetail(bookingId);
@@ -365,9 +407,13 @@ export class BookingService {
 
 			//console.log(result);
 
+			if (result.bookingInstalments.length > 0) {
+				result.bookingInstalments.sort((a, b) => b.id - a.id)
 
+				result.bookingInstalments.reverse()
+			}
 			for (let instalment of result.bookingInstalments) {
-				if (instalment.instalmentStatus == 1) {
+				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 					paidAmount += parseFloat(instalment.amount);
 				} else {
 					remainAmount += parseFloat(instalment.amount);
@@ -439,7 +485,7 @@ export class BookingService {
 		for (let i = 0; i < result.data.length; i++) {
 			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
-				if (instalment.instalmentStatus == 1) {
+				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
 					paidAmount += parseFloat(instalment.amount);
 				}
 			}
@@ -537,7 +583,7 @@ export class BookingService {
 
 			const result = await this.bookingRepository.getPredictiveBookingDdata();
 			let todayPrice = [];
-			let availableBookingId = []; 
+			let availableBookingId = [];
 			for await (const data of result.data) {
 				const bookingData = data.booking
 				// booking data
@@ -624,7 +670,7 @@ export class BookingService {
 			const allBooking = await this.bookingRepository.getPendingBooking()
 			let responce = []
 			console.log(todayPrice);
-			
+
 			for await (const booking of allBooking) {
 				if (availableBookingId.indexOf(booking.laytripBookingId) != -1) {
 					//console.log(availableBookingId.indexOf(booking.laytripBookingId));
@@ -633,7 +679,7 @@ export class BookingService {
 				}
 				else {
 					const paidAmount = await this.paidAmountByUser(booking.id)
-				
+
 					const predictiveBookingData: any = {}
 					predictiveBookingData['booking_id'] = booking.id
 					predictiveBookingData['net_price'] = null
@@ -736,14 +782,20 @@ export class BookingService {
 	async getDailyPricesOfBooking(bookingId: string) {
 		try {
 			const result = await this.bookingRepository.getDailyPredictiveBookingPrices(bookingId);
-			const data:any = result.predictiveBookingData
+			const data: any = result.predictiveBookingData
 			if (!data.length) {
 				throw new NotFoundException(
 					`No data found`
 				);
 			}
 			for await (const value of data) {
-				value['laytripBookingId'] = result.laytripBookingId 
+				value['laytripBookingId'] = result.laytripBookingId
+			}
+
+			if (data.length > 0) {
+				data.sort((a, b) => b.id - a.id)
+
+				//data.reverse()
 			}
 
 			return {
@@ -859,4 +911,28 @@ export class BookingService {
 	}
 
 
+	async shareBooking(bookingId: string , shareBookingDto : ShareBookingDto): Promise<{ message: any }> {
+		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
+		const {email} = shareBookingDto
+		if (!bookingData) {
+			throw new NotFoundException(
+				"Given booking id not found&&&booking_id&&&Given booking id not found"
+			);
+		}
+		//console.log(bookingData);
+		const Data = bookingData;
+		switch (Data.moduleId) {
+			case ModulesName.HOTEL:
+				break;
+
+			case ModulesName.FLIGHT:
+				await this.flightBookingEmailSend(Data,email);
+				break;
+
+			default:
+				break;
+		}
+
+		return { message: `Booking information send to ${email}` };
+	}
 }

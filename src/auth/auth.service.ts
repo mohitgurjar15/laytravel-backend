@@ -356,7 +356,7 @@ export class AuthService {
 			return token;
 		} else {
 			throw new UnauthorizedException(
-				`Invalid login credentials! Please enter correct email id and password.`
+				`Invalid login credentials! Please enter correct email address and password.`
 			);
 		}
 	}
@@ -652,7 +652,7 @@ export class AuthService {
 			}
 		} else {
 			throw new BadRequestException(
-				`You have entered wrong otp.&&&token&&&You have entered wrong otp.`
+				`Incorrect OTP.Please try again!&&&token.`
 			);
 		}
 	}
@@ -798,7 +798,7 @@ export class AuthService {
 
 		let conditions = [];
 		conditions.push({ socialAccountId: social_account_id });
-		if (email) {
+		if (email && email != "") {
 			conditions.push({ email: email });
 		}
 
@@ -817,7 +817,10 @@ export class AuthService {
 			}
 		}
 		const user = new User();
-		user.email = email || "";
+		if(email)
+		{
+			user.email = email
+		}
 		user.firstName = name || "";
 
 		if (!userExist) {
@@ -846,7 +849,11 @@ export class AuthService {
 			}
 		} else {
 			try {
-				const user1 = { email: email || "", firstName: name || "" };
+				var user1 = { firstName: name || "" };
+				if(email && email != "")
+				{
+					user1['email'] = email
+				} 
 				await this.userRepository.update(
 					{ socialAccountId: social_account_id },
 					user1
@@ -927,6 +934,7 @@ export class AuthService {
 			const roleId = [
 				Role.SUPER_ADMIN,
 				Role.ADMIN,
+				Role.SUPPORT,
 				Role.SUPPLIER,
 				Role.FREE_USER,
 				Role.GUEST_USER,

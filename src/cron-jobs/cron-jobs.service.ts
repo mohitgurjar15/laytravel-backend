@@ -28,6 +28,10 @@ import { PaidFor } from "src/enum/paid-for.enum";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
+import { Generic } from "src/utility/generic.utility";
+import { PushNotification } from "src/utility/push-notification.utility";
+import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
+import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 const AWS = require('aws-sdk');
 
 
@@ -68,6 +72,17 @@ export class CronJobsService {
 			);
 			for (let index = 0; index < result.length; index++) {
 				const data = result[index];
+
+				this.giveNotification(data.userId,
+					{  //you can send only notification or only data(or include both)
+					module_name: 'user',
+					task: 'user_convert',
+					userId:data.userId
+				},
+				{
+					title: 'We not capture subscription',
+					body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
+				})
 
 				this.mailerService
 					.sendMail({
@@ -134,11 +149,12 @@ export class CronJobsService {
 			.replace(/\..+/, "");
 		var fromDate = new Date();
 		fromDate.setDate(fromDate.getDate() - 2);
-		var monthDate = fromDate.toISOString();
-		monthDate = monthDate
+		var nextDate = fromDate.toISOString();
+		nextDate = nextDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
-		console.log(monthDate);
+
+		console.log(nextDate);
 
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
@@ -170,7 +186,7 @@ export class CronJobsService {
 				"User.phoneNo",
 			])
 
-			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${monthDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM, BookingStatus.PENDING}))`)
+			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
 		//console.log(data)
@@ -184,7 +200,7 @@ export class CronJobsService {
 
 		for await (const instalment of data) {
 			console.log(instalment);
-			let amount = instalment.amount
+			let amount: any = Generic.formatPriceDecimal(parseFloat(instalment.amount)) * 100
 			let currencyCode = instalment.currency.code
 			let cardToken = instalment.booking.cardToken
 
@@ -192,106 +208,158 @@ export class CronJobsService {
 			console.log('currencyCode', currencyCode)
 			console.log('cardToken', cardToken)
 
-			let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
+			if (cardToken) {
+				let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-			instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-			instalment.paymentInfo = transaction.meta_data;
-			instalment.transactionToken = transaction.token;
-			instalment.paymentCaptureDate = new Date();
-			instalment.attempt = instalment.attempt + 1;
-			instalment.comment = `Get Payment by cron on ${currentDate}`
-			await instalment.save()
 
-			if (transaction.status == false) {
-				let faildTransaction = new FailedPaymentAttempt()
-				faildTransaction.instalmentId = instalment.id
-				faildTransaction.paymentInfo = transaction.meta_data
-				faildTransaction.date = new Date();
+				instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+				instalment.paymentInfo = transaction.meta_data;
+				instalment.transactionToken = transaction.token;
+				instalment.paymentCaptureDate = new Date();
+				instalment.attempt = (instalment.attempt || 0) + 1;
+				instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+				instalment.comment = `Get Payment by cron on ${currentDate}`
+				await instalment.save()
 
-				await faildTransaction.save()
-				let param = {
-					message: transaction.meta_data.transaction.response.message,
-					cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-					cardNo: transaction.meta_data.transaction.payment_method.number,
-					orderId: instalment.bookingId,
-					amount: amount,
+				console.log(transaction.status);
+
+				if (transaction.status == false) {
+
+					let faildTransaction = new FailedPaymentAttempt()
+					faildTransaction.instalmentId = instalment.id
+					faildTransaction.paymentInfo = transaction.meta_data
+					faildTransaction.date = new Date();
+
+					await faildTransaction.save()
+					var availableTry = ''
+
+					if (instalment.attempt == 1) {
+						availableTry = 'two'
+
+					} else {
+						availableTry = instalment.attempt == 2 ? 'one' : 'zero'
+					}
+
+					let param = {
+						date: instalment.instalmentDate,
+						amount: amount,
+						available_try: availableTry,
+						payment_dates: nextDate
+					}
+					if (instalment.attempt == 3) {
+						await getConnection()
+							.createQueryBuilder()
+							.update(Booking)
+							.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+							.where("id = :id", { id: instalment.bookingId })
+							.execute();
+						await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
+						this.giveNotification(instalment.user.userId,
+							{  //you can send only notification or only data(or include both)
+							module_name: 'booking',
+							task: 'booking_cancelled',
+							bookingId:instalment.booking.laytripBookingId
+						},
+						{
+							title: 'booking Cancelled',
+							body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
+						})
+					}
+					this.mailerService
+						.sendMail({
+							to: instalment.user.email,
+							from: mailConfig.from,
+							cc: mailConfig.BCC,
+							subject: `Payment Failed Notification`,
+							html: missedPaymentInstallmentMail(param),
+						})
+						.then((res) => {
+							console.log("res", res);
+						})
+						.catch((err) => {
+							console.log("err", err);
+						});
+					Activity.logActivity(
+						"1c17cd17-9432-40c8-a256-10db77b95bca",
+						"cron",
+						`${instalment.id} Payment Failed by Cron`
+					);
+
+					this.giveNotification(instalment.user.userId,
+						{  //you can send only notification or only data(or include both)
+						module_name: 'instalment',
+						task: 'instalment_failed',
+						bookingId:instalment.booking.laytripBookingId,
+						instalmentId:instalment.id
+					},
+					{
+						title: 'Instalment Failed',
+						body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+					})
+
 				}
-				if (instalment.attempt == 3) {
+				else {
+					console.log('nextDate');
+
+					const nextDate = await getManager()
+						.createQueryBuilder(BookingInstalments, "BookingInstalments")
+						.select(['BookingInstalments.instalmentDate'])
+						.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
+						.orderBy(`"BookingInstalments"."id"`)
+						.getOne()
+					console.log(nextDate);
+
+
 					await getConnection()
 						.createQueryBuilder()
 						.update(Booking)
-						.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+						.set({ nextInstalmentDate: nextDate.instalmentDate })
 						.where("id = :id", { id: instalment.bookingId })
 						.execute();
-					await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
-				}
-				this.mailerService
-					.sendMail({
-						to: instalment.user.email,
-						from: mailConfig.from,
-						cc: mailConfig.BCC,
-						subject: `Payment Failed Notification`,
-						html: missedPaymentInstallmentMail(param),
+
+					let param = {
+						date: instalment.instalmentDate,
+						userName: instalment.user.firstName + ' ' + instalment.user.lastName,
+						cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+						cardNo: transaction.meta_data.transaction.payment_method.number,
+						orderId: instalment.booking.laytripBookingId,
+						amount: amount,
+					}
+
+					this.mailerService
+						.sendMail({
+							to: instalment.user.email,
+							from: mailConfig.from,
+							bcc: mailConfig.BCC,
+							subject: `Installment Payment Successed`,
+							html: PaymentInstallmentMail(param),
+						})
+						.then((res) => {
+							console.log("res", res);
+						})
+						.catch((err) => {
+							console.log("err", err);
+						});
+					Activity.logActivity(
+						"1c17cd17-9432-40c8-a256-10db77b95bca",
+						"cron",
+						`${instalment.id} Payment successed by Cron`
+					);
+
+					this.giveNotification(instalment.user.userId,
+						{  //you can send only notification or only data(or include both)
+						module_name: 'instalment',
+						task: 'instalment_received',
+						bookingId:instalment.booking.laytripBookingId,
+						instalmentId:instalment.id
+					},
+					{
+						title: 'INSTALLMENT RECEIVED',
+						body: `We have received your payment of $${instalment.amount}.`
 					})
-					.then((res) => {
-						console.log("res", res);
-					})
-					.catch((err) => {
-						console.log("err", err);
-					});
-				Activity.logActivity(
-					"1c17cd17-9432-40c8-a256-10db77b95bca",
-					"cron",
-					`${instalment.id} Payment Failed by Cron`
-				);
-
-			}
-			else {
-
-
-				const nextDate = await getManager()
-					.createQueryBuilder(BookingInstalments, "bookingInstalments")
-					.select(['bookingInstalments.instalmentDate'])
-					.where(`bookingInstalments.instalment_status =${InstalmentStatus.PENDING} AND bookingInstalments.booking_id = ${instalment.bookingId}`)
-					.orderBy(`bookingInstalments.instalmentDate`)
-					.getOne()
-
-
-				await getConnection()
-					.createQueryBuilder()
-					.update(Booking)
-					.set({ nextInstalmentDate: nextDate.instalmentDate })
-					.where("id = :id", { id: instalment.bookingId })
-					.execute();
-
-				let param = {
-					date: instalment.instalmentDate,
-					userName: instalment.user.firstName + ' ' + instalment.user.lastName,
-					cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-					cardNo: transaction.meta_data.transaction.payment_method.number,
-					orderId: instalment.booking.laytripBookingId,
-					amount: amount,
 				}
 
-				this.mailerService
-					.sendMail({
-						to: instalment.user.email,
-						from: mailConfig.from,
-						bcc: mailConfig.BCC,
-						subject: `Installment Payment Successed`,
-						html: PaymentInstallmentMail(param),
-					})
-					.then((res) => {
-						console.log("res", res);
-					})
-					.catch((err) => {
-						console.log("err", err);
-					});
-				Activity.logActivity(
-					"1c17cd17-9432-40c8-a256-10db77b95bca",
-					"cron",
-					`${instalment.id} Payment successed by Cron`
-				);
+				await this.checkAllinstallmentPaid(instalment.bookingId)
 			}
 		}
 		return { message: `${currentDate} date installation payment capture successfully` };
@@ -477,6 +545,17 @@ export class CronJobsService {
 						.execute();
 
 					this.sendFlightFailerMail(booking.user.email, booking.laytripBookingId)
+
+					this.giveNotification(booking.user.userId,
+						{  //you can send only notification or only data(or include both)
+						module_name: 'booking',
+						task: 'booking_failed',
+						bookingId:booking.laytripBookingId
+					},
+					{
+						title: 'Booking failed',
+						body: `we couldn’t process your booking request.`
+					})
 				}
 
 
@@ -508,6 +587,17 @@ export class CronJobsService {
 						.where("supplier_booking_id = :id", { id: booking.supplierBookingId })
 						.execute();
 				}
+
+				this.giveNotification(booking.user.userId,
+					{  //you can send only notification or only data(or include both)
+					module_name: 'booking',
+					task: 'booking_done',
+					bookingId:booking.laytripBookingId
+				},
+				{
+					title: 'Booking ',
+					body: `We’re as excited for your trip as you are! please check all the details`
+				})
 
 				//if TicketStatus = TktInProgress call it again
 			}
@@ -649,7 +739,7 @@ export class CronJobsService {
 						const params = {
 							Bucket: 'laytrip/logs/' + folderName, // pass your bucket name
 							Key: file, // file will be saved as testBucket/contacts.csv
-							Body: JSON.stringify(data, null, 2)
+							Body: data
 						};
 						s3.upload(params, function (s3Err, data) {
 							if (s3Err) {
@@ -690,11 +780,12 @@ export class CronJobsService {
 		toDate = toDate.split(' ')[0]
 		console.log(toDate);
 
-		let query = getManager()
+		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
+			.leftJoinAndSelect("User.userDeviceDetails", "userDeviceDetails")
 
 			.select([
 				"BookingInstalments.id",
@@ -715,19 +806,93 @@ export class CronJobsService {
 				"currency.id",
 				"currency.code",
 				"currency.liveRate",
+				"currency.symbol",
 				"User.userId",
 				"User.email",
 				"User.phoneNo",
+				"User.firstName",
+				"userDeviceDetails.deviceToken",
+				"userDeviceDetails.deviceType"
 			])
-
 			.where(`(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
 
 		for await (const installment of data) {
+			const param = {
+				userName: installment.user.firstName,
+				amount: installment.currency.symbol + installment.amount,
+				date: installment.instalmentDate
+			}
+			this.mailerService
+				.sendMail({
+					to: installment.user.email,
+					from: mailConfig.from,
+					bcc: mailConfig.BCC,
+					subject: "Payment Reminder",
+					html: PaymentReminderMail(param),
+				})
+				.then((res) => {
+					console.log("res", res);
+				})
+				.catch((err) => {
+					console.log("err", err);
+				});
+
+			const devices = installment.user.userDeviceDetails
+			if (devices.length) {
+				for await (const device of devices) {
+					if (device.deviceToken) {
+						PushNotification.sendPushNotification(device.deviceToken,
+							{  //you can send only notification or only data(or include both)
+								my_key: 'payment_reminder'
+							},
+							{
+								title: 'Payment Reminder',
+								body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+							},
+							device.deviceType)
+					}
+
+				}
+			}
 
 		}
-		return data;
+		return { message: `Payment reminder send successfully` };
 
+	}
+
+	async checkAllinstallmentPaid(bookingId) {
+
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.where(`booking_id = '${bookingId}' AND payment_status != ${PaymentStatus.CONFIRM}`)
+			.getCount()
+		if (query <= 0) {
+			await getConnection()
+				.createQueryBuilder()
+				.update(Booking)
+				.set({ paymentStatus: PaymentStatus.CONFIRM })
+				.where("id = :id", { id: bookingId })
+				.execute();
+		}
+
+	}
+
+	async giveNotification(userId, data, pushData) {
+		const devices = await getConnection()
+			.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
+			.where(`"userDeviceDetails"."user_id" = '${userId}'`)
+			.getMany()
+		if (devices.length) {
+			for await (const device of devices) {
+				if (device.deviceToken) {
+					PushNotification.sendPushNotification(device.deviceToken,
+						data, pushData,
+						device.deviceType)
+				}
+
+			}
+		}
 	}
 }
