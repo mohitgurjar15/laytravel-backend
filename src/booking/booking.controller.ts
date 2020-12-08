@@ -10,6 +10,7 @@ import { User } from "@sentry/node";
 import { ListPaymentDto } from './dto/list-payment.dto'
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import { ExportBookingDto } from "./dto/export-booking.dto";
+import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -193,5 +194,24 @@ export class BookingController {
 		@Query() filterOption : ExportBookingDto
 	) {
 		return await this.bookingService.exportBookings(filterOption);
+	}
+
+	@Get("share-booking-detail/:booking_id")
+	@UseGuards(AuthGuard())
+	@Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
+	@ApiOperation({ summary: "share your booking detail" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Given booking id not found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async shareBookingDetail(
+		@Param("booking_id") bookingId: string,
+		@Query() shareBookingDto:ShareBookingDto
+	): Promise<{ message: any }> {
+		return await this.bookingService.shareBooking(bookingId,shareBookingDto);
 	}
 }

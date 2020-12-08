@@ -64,6 +64,8 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { RewordMode } from "src/enum/reword-mode.enum";
+import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
+import { PushNotification } from "src/utility/push-notification.utility";
 
 @Injectable()
 export class FlightService {
@@ -1343,13 +1345,13 @@ export class FlightService {
 					.execute();
 			}
 			const predictiveBooking = new PredictiveBookingData
-					predictiveBooking.bookingId = booking.id
-					predictiveBooking.date = new Date()
-					predictiveBooking.netPrice = parseFloat(booking.netRate)
-					predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
-					predictiveBooking.price = parseFloat(booking.totalAmount);
-					predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
-					await predictiveBooking.save()
+			predictiveBooking.bookingId = booking.id
+			predictiveBooking.date = new Date()
+			predictiveBooking.netPrice = parseFloat(booking.netRate)
+			predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
+			predictiveBooking.price = parseFloat(booking.totalAmount);
+			predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
+			await predictiveBooking.save()
 			return await this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);
@@ -1397,6 +1399,28 @@ export class FlightService {
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();
+			const devices = await getConnection()
+				.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
+				.where(`"userDeviceDetails"."user_id" = '${bookingDetails.userId}'`)
+				.getMany()
+			if (devices.length) {
+				for await (const device of devices) {
+					if (device.deviceToken) {
+						PushNotification.sendPushNotification(device.deviceToken,
+							{  //you can send only notification or only data(or include both)
+								module_name: 'booking',
+								task: 'booking_done',
+								bookingId: bookingDetails.laytripBookingId
+							},
+							{
+								title: 'Booking',
+								body: `We’re as excited for your trip as you are! please check all the details`
+							},
+							device.deviceType)
+					}
+
+				}
+			}
 			return await this.bookingRepository.getBookingDetails(bookingDetails.laytripBookingId);
 		} catch (error) {
 			console.log(error);
@@ -2041,7 +2065,7 @@ export class FlightService {
 		const checkInDate = new Date(bookingData.checkInDate)
 
 		const date = new Date()
-		
+
 		if (bookingData.bookingStatus == BookingStatus.PENDING && bookingData.bookingType == BookingType.INSTALMENT && checkInDate > date) {
 			const paidInstallment = await getConnection().query(
 				`SELECT  sum(amount) as "total" FROM "booking_instalments" WHERE payment_status = ${PaymentStatus.CONFIRM} AND booking_id = ${bookingData.id}`
@@ -2062,6 +2086,28 @@ export class FlightService {
 			if (savedLaytripPoint) {
 				bookingData.bookingStatus = BookingStatus.CANCELLED
 				await bookingData.save();
+				const devices = await getConnection()
+					.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
+					.where(`"userDeviceDetails"."user_id" = '${bookingData.userId}'`)
+					.getMany()
+				if (devices.length) {
+					for await (const device of devices) {
+						if (device.deviceToken) {
+							PushNotification.sendPushNotification(device.deviceToken,
+								{  //you can send only notification or only data(or include both)
+									module_name: 'booking',
+									task: 'booking_cancelled',
+									bookingId: bookingData.laytripBookingId
+								},
+								{
+									title: 'booking Cancelled',
+									body: `we have unfortunately had to cancel your booking.`
+								},
+								device.deviceType)
+						}
+
+					}
+				}
 				return `booking (bookingData.laytripBookingId) is canceled successfully `
 			}
 			else {
