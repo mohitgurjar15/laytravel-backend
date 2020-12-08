@@ -33,7 +33,7 @@ const content = `<!-- header Text section start -->
 
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                                                        Hi <span>{name}</span>,<br/> 
+                                                        Hi <span>${param.userName}</span>,<br/> 
                                                     </td>
                                                 </tr>
 
