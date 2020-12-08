@@ -42,16 +42,16 @@ export class SearchReqDto{
         example: 51.5074,
         required: true
     })
-    @IsNumber()
-    latitude: number;
+    @IsString()
+    latitude: string; 
     
     @ApiProperty({
         description: 'Longitude of the searched location',
         example: -0.1276,
         required: true
     })
-    @IsNumber()
-    longitude: number;
+    @IsString()
+    longitude: string;
     
     @ApiProperty({
         description: 'Number of occupancies for this search',
