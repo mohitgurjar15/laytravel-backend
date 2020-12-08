@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsArray, IsNumber, IsString } from "class-validator";
 
 export class Occupancy{
     @ApiProperty({
@@ -6,6 +7,7 @@ export class Occupancy{
         example: 2,
         required: true
     })
+    @IsNumber()
     adults: number;
     
     @ApiProperty({
@@ -13,6 +15,7 @@ export class Occupancy{
         example: [2,3],
         required: true
     })
+    @IsArray()
     children: Array<number>;
 }
 
@@ -23,6 +26,7 @@ export class SearchReqDto{
         example: new Date(new Date().setDate(new Date().getDate() + 10)).toISOString().split('T')[0],
         required: true
     })
+    @IsString()
     check_in: Date;
     
     @ApiProperty({
@@ -30,27 +34,31 @@ export class SearchReqDto{
         example: new Date(new Date().setDate(new Date().getDate() + 11)).toISOString().split('T')[0],
         required: true
     })
+    @IsString()
     check_out: Date;
     
     @ApiProperty({
         description: 'Latitude of the searched location',
-        example: 51.5074,
+        example: "51.5074",
         required: true
     })
-    latitude: number;
+    @IsString()
+    latitude: string; 
     
     @ApiProperty({
         description: 'Longitude of the searched location',
-        example: -0.1276,
+        example: "-0.1276",
         required: true
     })
-    longitude: number;
+    @IsString()
+    longitude: string;
     
     @ApiProperty({
         description: 'Number of occupancies for this search',
         required: true,
         type: () => [Occupancy],
     })
+    @IsArray()
     occupancies: Array<Occupancy[]>;
 
 }
