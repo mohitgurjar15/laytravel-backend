@@ -2,6 +2,7 @@ import { InternalServerErrorException } from "@nestjs/common";
 import { collect } from "collect.js";
 import { DetailHelper } from "../helpers/detail.helper";
 
+
 export class Search{
     
     private item: any;
@@ -29,12 +30,14 @@ export class Search{
         }
         
         if (results.results.status && results.results.status === "Success") { 
-
+            
             let hotels = collect(results.results.hotel_data).map((item) => {
+
                 this.item = item;
+                
                 this.rate = item['room_data'][0]['rate_data'][0];
 
-                let { retail, selling, saving_percent, markup } = this.getRates();
+                let { retail, selling, saving_percent } = this.getRates();
                 
                 let details = this.detailHelper.getHotelDetails(item, 'list');
 
@@ -43,7 +46,6 @@ export class Search{
                     retail,
                     selling,
                     saving_percent,
-                    markup,
                     refundable: this.rate.is_cancellable,
                     card_required: this.rate.cvc_required,
                     bundle: this.rate.ppn_bundle
@@ -60,11 +62,11 @@ export class Search{
     }
 
     getRates() {
-
-        let retail = this.detailHelper.getPublicPriceBreakUp(this.rate, this.searchParameters);
         
-        let selling = this.detailHelper.getSellingPriceBreakUp(this.rate);
+        let retail = this.detailHelper.getPublicPriceBreakUp(this.rate, this.searchParameters);
 
+        let selling = this.detailHelper.getSellingPriceBreakUp(this.rate);
+        
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         
         let markup = 0;
@@ -72,8 +74,7 @@ export class Search{
         return {
             retail,
             selling,
-            saving_percent,
-            markup
+            saving_percent
         }
     }
 }

@@ -12,7 +12,8 @@ export class RoomsReqDto{
         description: 'Hotel ID'
     })
     @IsString()
-    token: string;
+    @IsOptional()
+    token?: string;
 
     @IsOptional()
     ppn_bundle?: string;
