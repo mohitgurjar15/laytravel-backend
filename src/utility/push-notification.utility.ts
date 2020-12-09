@@ -31,7 +31,7 @@ export class PushNotification {
 		}
 	}
 
-	static async giveNotificationTouser(userId, data, pushData, fromUser) {
+	static async sendNotificationTouser(userId, data, pushData, fromUser) {
 		const devices = await getConnection()
 			.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
 			.where(`"userDeviceDetails"."user_id" = '${userId}'`)

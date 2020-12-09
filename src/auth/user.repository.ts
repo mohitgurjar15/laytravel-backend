@@ -136,10 +136,10 @@ export class UserRepository extends Repository<User> {
 		return { data: result, TotalReseult: count };
 	}
 
-	async createUser(user: User): Promise<User> {
+	async createUser(user: User , roles: Role[]): Promise<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
-			email,isDeleted : false
+			email,isDeleted : false,roleId: In(roles)
 		});
 		console.log(userExist);
 
