@@ -64,7 +64,8 @@ export class SupportUserService {
 		user.createdBy = adminId
 		user.isVerified = true;
 		user.password = await this.userRepository.hashPassword(password, salt);
-		const userdata = await this.userRepository.createUser(user);
+		const roles = [Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPLIER,Role.SUPPORT]
+		const userdata = await this.userRepository.createUser(user,roles);
 		
 		delete userdata.password;
 		delete userdata.salt;

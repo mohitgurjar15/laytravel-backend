@@ -117,7 +117,9 @@ export class UserService {
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
-		const userdata = await this.userRepository.createUser(user);
+		const roles = [Role.ADMIN,Role.SUPER_ADMIN,Role.FREE_USER]
+		
+		const userdata = await this.userRepository.createUser(user,roles);
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
