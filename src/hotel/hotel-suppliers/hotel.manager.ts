@@ -5,9 +5,8 @@ import { SearchReqDto } from "../dto/search/search-req.dto";
 import { HotelInterface } from "./hotel.interface";
 
 export class Hotel{
-    private hotel: HotelInterface;
     
-    private listing: any;
+    private hotel: HotelInterface;
 
     constructor(hotel: HotelInterface) {
         this.hotel = hotel;

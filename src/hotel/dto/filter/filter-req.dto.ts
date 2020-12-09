@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
 
-export class DetailReqDto{
+export class FilterReqDto{
     @ApiProperty({
-        description: 'Hotel ID for which details are required',
+        description: 'Token string which got after search API',
         required:true
     })
     @IsString()
-    hotel_id: string;
+    token: string;
 }
