@@ -420,7 +420,7 @@ export class TravelerService {
 
 			await traveler.save();
 
-			return { message: `Traveller is deleted successfully` };
+			return { message: `Traveler is deleted successfully` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
