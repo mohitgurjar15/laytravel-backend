@@ -139,7 +139,7 @@ export class UserRepository extends Repository<User> {
 	async createUser(user: User): Promise<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
-			email,
+			email,isDeleted : false
 		});
 		console.log(userExist);
 
