@@ -11,9 +11,9 @@ import { FlightModule } from "./flight/flight.module";
 import { AdminModule } from "./admin/admin.module";
 const mailConfig = config.get("email");
 import {
-	I18nModule,
-	I18nJsonParser,
-	QueryResolver,
+  I18nModule,
+  I18nJsonParser,
+  QueryResolver,
 } from "nestjs-i18n";
 import * as path from "path";
 import { GeneralModule } from "./general/general.module";
@@ -53,8 +53,8 @@ import { MarketingModule } from './marketing/marketing.module';
       transport: {
         host: mailConfig.host,
         port: mailConfig.port,
-        ignoreTLS: true,
         secure: mailConfig.secure,
+        service: "Outlook365",
         auth: {
           user: mailConfig.user,
           pass: mailConfig.pass,
@@ -66,7 +66,7 @@ import { MarketingModule } from './marketing/marketing.module';
       preview: false,
       template: {
         dir: 'src/config/email_template',
-        adapter: new HandlebarsAdapter(), 
+        adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
         },
@@ -117,12 +117,12 @@ import { MarketingModule } from './marketing/marketing.module';
       host: 'localhost',
       port: 6379,
     }), */
-	],
-	/* providers: [
+  ],
+  /* providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     }
   ],*/
 })
-export class AppModule {}
+export class AppModule { }
