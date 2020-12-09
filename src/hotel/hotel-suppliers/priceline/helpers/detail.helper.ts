@@ -54,6 +54,8 @@ export class DetailHelper {
 
     getSellingPriceBreakUp(rate) {
         
+        let nights = (rate['price_details']['night_price_data']).length;
+
         let displayRates = rate['price_details'];
 
         let sub_total = displayRates['display_sub_total'];
@@ -62,10 +64,13 @@ export class DetailHelper {
         
         let total = displayRates['display_total'];
 
+        let avg_night_price = +(total / nights).toFixed(2);
+        
         return {
             sub_total,
             total,
-            taxes
+            taxes,
+            avg_night_price
         };
     }
 
@@ -104,7 +109,7 @@ export class DetailHelper {
             full_address,
             amenities,
             thumbnail,
-            rating: hotel.star_rating,
+            rating: Math.ceil(hotel.star_rating),
             geocodes: hotel.geo,
             hotel_chain: {
                 code: hotel.hotel_chain.code,
