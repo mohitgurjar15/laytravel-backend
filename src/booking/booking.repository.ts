@@ -393,6 +393,8 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getManager()
 			.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
 			.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+			.leftJoinAndSelect("booking.module", "moduleData")
+			
 			.select([
 				"booking.bookingType",
 				"booking.bookingStatus",
@@ -423,7 +425,9 @@ export class BookingRepository extends Repository<Booking> {
 				"predictiveBookingData.date",
 				"predictiveBookingData.isBelowMinimum",
 				"predictiveBookingData.netPrice",
-				"predictiveBookingData.remainSeat"
+				"predictiveBookingData.remainSeat",
+				"moduleData.name",
+				"moduleData.id"
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
@@ -447,6 +451,8 @@ export class BookingRepository extends Repository<Booking> {
 			.replace(/\..+/, "");
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.module", "moduleData")
+			
 			// .select([
 			// 	"booking.supplierBookingId",
 			// 	"booking.id"
