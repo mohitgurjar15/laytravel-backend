@@ -10,7 +10,7 @@ import {
 import { User } from "./user.entity";
 import { Module } from "./module.entity";
 
-@Index("notification_pk", ["id"], { unique: true })
+@Index("notification_idx", ["id"], { unique: true })
 @Entity("notification")
 export class Notification extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
@@ -19,6 +19,9 @@ export class Notification extends BaseEntity {
   @Column("character varying", { name: "type", length: 50 })
   type: string;
 
+  @Column("integer", { name: "module_id", nullable : true })
+  moduleId: string;
+
   @Column("character varying", { name: "resource_id", length: 255 })
   resourceId: string;
 
@@ -26,7 +29,7 @@ export class Notification extends BaseEntity {
   message: string;
 
   @Column("date", { name: "created_date" })
-  createdDate: string;
+  createdDate: Date;
 
   @ManyToOne(
     () => User,

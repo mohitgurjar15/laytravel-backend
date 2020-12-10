@@ -86,9 +86,13 @@ export class AuthService {
 		} = createUser;
 
 		let loginvia = "";
+		const roles = [Role.FREE_USER, Role.PAID_USER];
 		const userExist = await this.userRepository.findOne({
 			email: email,
+			roleId: In(roles)
 		});
+
+		
 
 		if (userExist) {
 			if (userExist.status != 1) {
@@ -203,8 +207,10 @@ export class AuthService {
 
 	async resendOtp(reSendVerifyoOtpDto: ReSendVerifyoOtpDto) {
 		const { email } = reSendVerifyoOtpDto;
+		const roles = [Role.FREE_USER, Role.PAID_USER];
+		
 		const user = await this.userRepository.findOne({
-			where: { email, isDeleted: false },
+			where: { email, isDeleted: false ,roleId:In(roles)},
 		});
 
 		if (!user)
@@ -269,8 +275,9 @@ export class AuthService {
 			throw new UnauthorizedException(
 				`Your account has been disabled. Please contact administrator person.`
 			);
+			const roles = [Role.FREE_USER ,Role.PAID_USER]
 		const userExist = await this.userRepository.findOne({
-			email: newEmail,
+			email: newEmail,roleId: In(roles)
 		});
 
 		if (userExist)
@@ -523,8 +530,9 @@ export class AuthService {
 	async VerifyOtp(OtpDto: OtpDto, req, siteUrl: string) {
 		const { otp, email } = OtpDto;
 
+		const roles = [Role.FREE_USER, Role.PAID_USER];
 		const user = await this.userRepository.findOne({
-			where: { email: email, isDeleted: 0, status: 1 },
+			where: { email: email, isDeleted: 0, status: 1 , roleId:In(roles)},
 		});
 
 		if (!user) {
@@ -681,7 +689,7 @@ export class AuthService {
 
 		const user = await getManager()
 			.createQueryBuilder(User, "user")
-			.where(`email=:email and role_id  IN (:...role_id) and is_deleted =:is_deleted`, { email, role_id: roles,is_deleted:false })
+			.where(`email=:email and role_id  IN (:...role_id) and is_deleted =:is_deleted`, { email, role_id: roles, is_deleted: false })
 			.getOne();
 
 		if (user && (await user.validatePassword(password))) {
@@ -798,7 +806,7 @@ export class AuthService {
 
 		let conditions = [];
 		conditions.push({ socialAccountId: social_account_id });
-		if (email) {
+		if (email && email != "") {
 			conditions.push({ email: email });
 		}
 
@@ -817,8 +825,7 @@ export class AuthService {
 			}
 		}
 		const user = new User();
-		if(email)
-		{
+		if (email) {
 			user.email = email
 		}
 		user.firstName = name || "";
@@ -849,7 +856,10 @@ export class AuthService {
 			}
 		} else {
 			try {
-				const user1 = { email: email || "", firstName: name || "" };
+				var user1 = { firstName: name || "" };
+				if (email && email != "") {
+					user1['email'] = email
+				}
 				await this.userRepository.update(
 					{ socialAccountId: social_account_id },
 					user1

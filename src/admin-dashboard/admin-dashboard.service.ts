@@ -5,6 +5,7 @@ import { Role } from "src/enum/role.enum";
 import { errorMessage } from "src/config/common.config";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
+import { BookingType } from "src/enum/booking-type.enum";
 
 
 @Injectable()
@@ -366,8 +367,9 @@ export class AdminDashboardService {
 		}
 	}
 
-	async bookingStatistics() {
+	async bookingStatistics(filterOption:DashboardFilterDto) {
 		try {
+			const {moduleId , startDate ,toDate} = filterOption
 			var tDate = new Date();
 			var todayDate = tDate.toISOString();
 			todayDate = todayDate
@@ -375,12 +377,28 @@ export class AdminDashboardService {
 				.replace(/\..+/, "");
 			todayDate = todayDate.split(' ')[0]
 
+
 			var response = {}
 
+			let moduleIdCondition = '1=1'  
+			if(moduleId)
+			{
+				moduleIdCondition = `"booking"."module_id" = ${moduleId}`
+			}
+
+			let dateConditon = `1=1`
+			if (startDate)
+			{
+				dateConditon += `AND DATE ("booking"."booking_date") >= DATE(${startDate})`
+			}
+			if (toDate)
+			{
+				dateConditon += `AND DATE ("booking"."booking_date") <= DATE(${toDate})`
+			}
 			// complited trips :- complite bookings 
 			const completedTrips = await getConnection().query(
 				`SELECT  count(*) as "cnt"
-				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM}`
+				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`
 			);
 			console.log();
 
@@ -388,7 +406,7 @@ export class AdminDashboardService {
 
 			// open bookings
 			const openBookings = await getConnection().query(
-				`SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM})`
+				`SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition}`
 			);
 			response["open_bookings"] = openBookings[0].cnt
 
@@ -396,32 +414,54 @@ export class AdminDashboardService {
 				`SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total" 
 				FROM booking
 				INNER JOIN booking_instalments
-				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})
+				AND ${moduleIdCondition}`
 			);
-			response["to_be_paid_by_the_customer"] = ToBePaidByTheCustomer[0].total
+			response["to_be_paid_by_the_customer"] = ToBePaidByTheCustomer[0].total || 0
 
 			const paidByTheCustomer = await getConnection().query(
 				`SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total" 
 				FROM booking
 				INNER JOIN booking_instalments
-				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.CONFIRM} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.CONFIRM} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})
+				AND ${moduleIdCondition}`
 			);
-			response["paid_by_the_customer"] = paidByTheCustomer[0].total
+			//response["paid_by_the_customer"] = paidByTheCustomer[0].total
 
 			const uncoveredPreBookings = await getConnection().query(
-				`SELECT count(*) as "cnt" FROM "booking" WHERE booking_status = ${BookingStatus.PENDING}`
+				`SELECT count(*) as "cnt" FROM "booking" WHERE booking_status = ${BookingStatus.PENDING} AND ${moduleIdCondition}`
 			);
-			response["Uncovered_Pre_Bookings"] = uncoveredPreBookings[0].cnt
+			response["uncovered_Pre_Bookings"] = uncoveredPreBookings[0].cnt || 0
 
 			var revenues = await getConnection().query(`
                 SELECT count(id) as confirm_booking,
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
                 SUM( markup_amount * usd_factor) as total_profit
-                from booking where check_in_date >= '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM}
+                from booking where check_in_date >= '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}
 			`);
 
-			response["revenues"] = revenues[0].total_profit
+			response["revenues"] = revenues[0].total_profit || 0
+
+			var valueOfBooking = await getConnection().query(`
+                SELECT  SUM( total_amount * usd_factor) as total_amount from booking where ${moduleIdCondition} AND ${dateConditon}
+			`);
+
+			response["value_of_bookings"] = valueOfBooking[0].total_amount || 0
+
+			var paidbyCustomerFullPayment = await getConnection().query(`
+                SELECT  SUM( total_amount * usd_factor) as total_amount from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} AND "booking"."payment_status" = ${PaymentStatus.CONFIRM}  
+			`);
+
+			var paidbyCustomerPoint = await getConnection().query(`
+                SELECT  SUM( lay_credit) as total_point from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING})  
+			`);
+			response["paid_by_customer"] = parseFloat (valueOfBooking[0].total_amount) + parseFloat (paidByTheCustomer[0].total ) + parseFloat(paidbyCustomerPoint[0].total_point) || 0
+
+			var totalBooking = await getConnection().query(`
+                SELECT  count(id) as cnt from booking where ${moduleIdCondition} AND ${dateConditon}  
+			`);
+			response["total_booking"] = totalBooking[0].cnt 
 
 			return response;
 		} catch (error) {

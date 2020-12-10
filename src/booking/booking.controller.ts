@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Param, Query } from "@nestjs/common";
+import { Controller, Get, UseGuards, Param, Query, Post, Body } from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
@@ -6,10 +6,12 @@ import { Roles } from "src/guards/role.decorator";
 import { Role } from "src/enum/role.enum";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { GetUser } from "src/auth/get-user.dacorator";
-import { User } from "@sentry/node";
 import { ListPaymentDto } from './dto/list-payment.dto'
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import { ExportBookingDto } from "./dto/export-booking.dto";
+import { ShareBookingDto } from "./dto/share-booking-detail.dto";
+import { User } from "src/entity/user.entity";
+
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -193,5 +195,25 @@ export class BookingController {
 		@Query() filterOption : ExportBookingDto
 	) {
 		return await this.bookingService.exportBookings(filterOption);
+	}
+
+	@Post("share-booking-detail/:booking_id")
+	@UseGuards(AuthGuard())
+	@Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
+	@ApiOperation({ summary: "share your booking detail" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Given booking id not found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async shareBookingDetail(
+		@Param("booking_id") bookingId: string,
+		@Body() shareBookingDto:ShareBookingDto,
+		@GetUser() user : User
+	): Promise<{ message: any }> {
+		return await this.bookingService.shareBooking(bookingId,shareBookingDto,user);
 	}
 }

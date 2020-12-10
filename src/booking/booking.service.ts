@@ -29,6 +29,9 @@ const mailConfig = config.get("email");
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
 import { ExportBookingDto } from "./dto/export-booking.dto";
+import { ShareBookingDto } from "./dto/share-booking-detail.dto";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { User } from "src/entity/user.entity";
 
 @Injectable()
 export class BookingService {
@@ -64,8 +67,8 @@ export class BookingService {
 		return { message: `Booking information send on ragister user email id ` };
 	}
 
-	async flightBookingEmailSend(bookingData: Booking) {
-		if (bookingData.bookingStatus < 2) {
+	async flightBookingEmailSend(bookingData: Booking, email = '') {
+		if (bookingData.bookingStatus == BookingStatus.CONFIRM || bookingData.bookingStatus == BookingStatus.PENDING) {
 			var param = new FlightBookingEmailParameterModel();
 			const user = bookingData.user;
 			const moduleInfo = bookingData.moduleInfo[0]
@@ -160,23 +163,45 @@ export class BookingService {
 
 			console.log(param);
 			// console.log(param.flightData);
+			if (email != '') {
+				this.mailerService
+					.sendMail({
+						to: email,
+						cc: user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: EmailSubject,
+						html: await FlightBookingConfirmtionMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+			}
+			else {
+				this.mailerService
+					.sendMail({
+						to: user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: EmailSubject,
+						html: await FlightBookingConfirmtionMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+			}
 
-			this.mailerService
-				.sendMail({
-					to: user.email,
-					from: mailConfig.from,
-					cc: mailConfig.BCC,
-					subject: EmailSubject,
-					html: await FlightBookingConfirmtionMail(param),
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
 		}
-		else if (bookingData.bookingStatus == 2) {
+		else if (bookingData.bookingStatus == BookingStatus.FAILED) {
+			if (email != '') {
+				throw new BadRequestException(`Given booking is failed`)
+			}
 			var status = "Failed"
 			this.mailerService
 				.sendMail({
@@ -198,6 +223,9 @@ export class BookingService {
 		}
 		else {
 			var status = "Canceled"
+			if (email != '') {
+				throw new BadRequestException(`Given booking is canceled`)
+			}
 		}
 	}
 
@@ -585,6 +613,8 @@ export class BookingService {
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
+				predictiveBookingData['module_name'] = bookingData.module.name;
+				
 
 				predictiveBookingData['profit'] = parseFloat(bookingData.totalAmount) - data.netPrice;
 
@@ -656,6 +686,7 @@ export class BookingService {
 					predictiveBookingData['date'] = null
 					predictiveBookingData['is_below_minimum'] = false
 					predictiveBookingData['remain_seat'] = 0
+					predictiveBookingData['module_name'] = booking.module.name;
 					predictiveBookingData['selling_price'] = 0
 					predictiveBookingData['paid_amount'] = paidAmount.amount;
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
@@ -760,6 +791,12 @@ export class BookingService {
 			}
 			for await (const value of data) {
 				value['laytripBookingId'] = result.laytripBookingId
+			}
+
+			if (data.length > 0) {
+				data.sort((a, b) => b.id - a.id)
+
+				//data.reverse()
 			}
 
 			return {
@@ -875,4 +912,32 @@ export class BookingService {
 	}
 
 
+	async shareBooking(bookingId: string, shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
+		if (bookingData.userId != user.userId) {
+			throw new NotAcceptableException(`given booking not found`)
+		}
+		const { emails } = shareBookingDto
+		if (!bookingData) {
+			throw new NotFoundException(
+				"Given booking id not found&&&booking_id&&&Given booking id not found"
+			);
+		}
+		for await (const emailData of emails) {
+			const email = emailData.email
+			const Data = bookingData;
+			switch (Data.moduleId) {
+				case ModulesName.HOTEL:
+					break;
+
+				case ModulesName.FLIGHT:
+					await this.flightBookingEmailSend(Data, email);
+					break;
+
+				default:
+					break;
+			}
+		}
+		return { message: `emails send successfully` };
+	}
 }

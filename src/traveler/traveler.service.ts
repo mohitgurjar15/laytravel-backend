@@ -101,7 +101,8 @@ export class TravelerService {
 						`Please enter your email id &&&email&&&Please enter your email id`
 					);
 				}
-				const data = await this.userRepository.createUser(user);
+				const roles = [Role.TRAVELER_USER]
+				const data = await this.userRepository.createUser(user,roles);
 				const payload: JwtPayload = {
 					user_id: data.userId,
 					email: data.email,
@@ -420,7 +421,7 @@ export class TravelerService {
 
 			await traveler.save();
 
-			return { message: `Traveller is deleted successfully` };
+			return { message: `Traveler is deleted successfully` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {

@@ -1,16 +1,18 @@
-import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Inject, Param, Post, Res, UseInterceptors } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Inject, Param, Post, Res, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DetailReqDto } from './dto/detail/detail-req.dto';
+import { FilterReqDto } from './dto/filter/filter-req.dto';
+import { RoomsReqDto } from './dto/rooms/rooms-req.dto';
 import { HotelSearchLocationDto } from './dto/search-location/search-location.dto';
 import { SearchReqDto } from './dto/search/search-req.dto';
 import { HotelService } from './hotel.service';
-import { Cache } from 'cache-manager';
+
 
 @ApiTags('Hotel')
+@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 @Controller('hotel')
 export class HotelController {
-    private hotelService;
-    constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
-        this.hotelService = new HotelService();
+    constructor(private readonly hotelService: HotelService) {
     }
 
     @Post('/search-location')
@@ -23,7 +25,6 @@ export class HotelController {
         @Body() searchLocationDto: HotelSearchLocationDto,
         @Res() res: any
     ) {
-
         this.hotelService.autoComplete(searchLocationDto).subscribe((data) => {
             res.send({
                 data,
@@ -35,14 +36,31 @@ export class HotelController {
 
     @Post('search')
     search(
-        @Body() searchReqDto: SearchReqDto,
-        @Res() res: any
+        @Body() searchReqDto: SearchReqDto
     ) {
-        return this.hotelService.search(searchReqDto).subscribe((data) => {
-            res.send({
-                data,
-                message: data.length ? 'Result found' : 'No result Found'
-            });
-        });
+        return this.hotelService.search(searchReqDto);
+    }
+
+    @Post('detail')
+    detail(
+        @Body() detailReqDto: DetailReqDto
+    ) {
+
+        return this.hotelService.detail(detailReqDto);
+    }
+    
+    @Post('rooms')
+    rooms(
+        @Body() roomsReqDto: RoomsReqDto
+    ) {
+        return this.hotelService.rooms(roomsReqDto);
+    }
+
+    @Post('filter-objects')
+    filterObjects(
+        @Body() filterReqDto: FilterReqDto
+    ) {
+
+        return this.hotelService.filterObjects(filterReqDto);
     }
 }

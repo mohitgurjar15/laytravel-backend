@@ -1,9 +1,8 @@
 import { Generic } from "src/hotel/helpers/generic.helper";
 import * as config from 'config';
 import { collect } from "collect.js";
-import { pluck } from "rxjs/operators";
 
-export class ApiHelper {
+export class DetailHelper {
 
     private hotel: any;
 
@@ -55,6 +54,8 @@ export class ApiHelper {
 
     getSellingPriceBreakUp(rate) {
         
+        let nights = (rate['price_details']['night_price_data']).length;
+
         let displayRates = rate['price_details'];
 
         let sub_total = displayRates['display_sub_total'];
@@ -63,14 +64,17 @@ export class ApiHelper {
         
         let total = displayRates['display_total'];
 
+        let avg_night_price = +(total / nights).toFixed(2);
+        
         return {
             sub_total,
             total,
-            taxes
+            taxes,
+            avg_night_price
         };
     }
 
-    getHotelDetails(hotel: any, type?: string) {
+    getHotelDetails(hotel: any, type: string = 'detail') {
         
         this.hotel = hotel;
 
@@ -84,22 +88,35 @@ export class ApiHelper {
 
         let distance = this.setDistance();
 
+        let extra = {};
+
+        if(type == 'detail'){
+            
+            extra = {
+                images : hotel.photo_data,
+                total_images : hotel.photo_data.length,
+                check_in_time : hotel.check_in_time,
+                check_out_time : hotel.check_out_time,
+            };
+        }
+
         return {
-            id: hotel['id'],
-            name: hotel['name'],
-            description: hotel['hotel_description'],
-            hotel_zone: hotel['hotel_zone'],
+            id: hotel.id,
+            name: hotel.name,
+            description: hotel.hotel_description,
+            hotel_zone: hotel.hotel_zone,
             address,
             full_address,
             amenities,
             thumbnail,
-            rating: hotel['star_rating'],
-            geocodes: hotel['geo'],
+            rating: Math.ceil(hotel.star_rating),
+            geocodes: hotel.geo,
             hotel_chain: {
-                code: hotel['hotel_chain']['code'],
-                name: hotel['hotel_chain']['name']
+                code: hotel.hotel_chain.code,
+                name: hotel.hotel_chain.name
             },
-            distance
+            distance,
+            ...extra
         };
     }
 

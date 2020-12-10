@@ -64,6 +64,8 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { RewordMode } from "src/enum/reword-mode.enum";
+import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
+import { PushNotification } from "src/utility/push-notification.utility";
 
 @Injectable()
 export class FlightService {
@@ -1343,13 +1345,13 @@ export class FlightService {
 					.execute();
 			}
 			const predictiveBooking = new PredictiveBookingData
-					predictiveBooking.bookingId = booking.id
-					predictiveBooking.date = new Date()
-					predictiveBooking.netPrice = parseFloat(booking.netRate)
-					predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
-					predictiveBooking.price = parseFloat(booking.totalAmount);
-					predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
-					await predictiveBooking.save()
+			predictiveBooking.bookingId = booking.id
+			predictiveBooking.date = new Date()
+			predictiveBooking.netPrice = parseFloat(booking.netRate)
+			predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
+			predictiveBooking.price = parseFloat(booking.totalAmount);
+			predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
+			await predictiveBooking.save()
 			return await this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);
@@ -1393,7 +1395,6 @@ export class FlightService {
 		booking.fareType = fare_type;
 		booking.isTicketd = fare_type == 'LCC' ? true : false;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
-
 		booking.moduleInfo = airRevalidateResult;
 		try {
 			let bookingDetails = await booking.save();
@@ -1505,6 +1506,19 @@ export class FlightService {
 				bookingId,
 				bookingResult,
 			);
+
+			PushNotification.sendNotificationTouser(laytripBookingResult.userId,
+				{  //you can send only notification or only data(or include both)
+					module_id: laytripBookingResult.moduleId,
+					module_name: 'booking',
+					task: 'booking_done',
+					bookingId: laytripBookingResult.laytripBookingId
+				},
+				{
+					title: 'Booking',
+					body: `We’re as excited for your trip as you are! please check all the details`
+				},
+				userId)
 
 			//console.log(laytripBookingResult);
 
@@ -2041,7 +2055,7 @@ export class FlightService {
 		const checkInDate = new Date(bookingData.checkInDate)
 
 		const date = new Date()
-		
+
 		if (bookingData.bookingStatus == BookingStatus.PENDING && bookingData.bookingType == BookingType.INSTALMENT && checkInDate > date) {
 			const paidInstallment = await getConnection().query(
 				`SELECT  sum(amount) as "total" FROM "booking_instalments" WHERE payment_status = ${PaymentStatus.CONFIRM} AND booking_id = ${bookingData.id}`
@@ -2062,6 +2076,18 @@ export class FlightService {
 			if (savedLaytripPoint) {
 				bookingData.bookingStatus = BookingStatus.CANCELLED
 				await bookingData.save();
+				PushNotification.sendNotificationTouser(bookingData.userId,
+					{  //you can send only notification or only data(or include both)
+						module_id: bookingData.moduleId,
+						module_name: 'booking',
+						task: 'booking_cancelled',
+						bookingId: bookingData.laytripBookingId
+					},
+					{
+						title: 'booking Cancelled',
+						body: `we have unfortunately had to cancel your booking.`
+					},
+					userId)
 				return `booking (bookingData.laytripBookingId) is canceled successfully `
 			}
 			else {
