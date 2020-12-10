@@ -21,9 +21,9 @@ export class Rooms{
             
             let hotel = results.results.hotel_data[0];
 
-            // let details = this.roomHelper.processRoom(hotel);
+            let rooms = this.roomHelper.processRoom(hotel);
 
-            return hotel;
+            return rooms;
 
         }
     }
