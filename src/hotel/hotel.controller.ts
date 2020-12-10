@@ -1,6 +1,7 @@
 import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Inject, Param, Post, Res, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DetailReqDto } from './dto/detail/detail-req.dto';
+import { FilterReqDto } from './dto/filter/filter-req.dto';
 import { RoomsReqDto } from './dto/rooms/rooms-req.dto';
 import { HotelSearchLocationDto } from './dto/search-location/search-location.dto';
 import { SearchReqDto } from './dto/search/search-req.dto';
@@ -11,8 +12,7 @@ import { HotelService } from './hotel.service';
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 @Controller('hotel')
 export class HotelController {
-    // private hotelService: HotelService;
-    constructor(private readonly hotelService: HotelService ) {
+    constructor(private readonly hotelService: HotelService) {
     }
 
     @Post('/search-location')
@@ -53,7 +53,14 @@ export class HotelController {
     rooms(
         @Body() roomsReqDto: RoomsReqDto
     ) {
-
         return this.hotelService.rooms(roomsReqDto);
+    }
+
+    @Post('filter-objects')
+    filterObjects(
+        @Body() filterReqDto: FilterReqDto
+    ) {
+
+        return this.hotelService.filterObjects(filterReqDto);
     }
 }

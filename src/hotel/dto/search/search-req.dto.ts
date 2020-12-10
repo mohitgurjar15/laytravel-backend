@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNumber, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class Occupancy{
     @ApiProperty({
@@ -11,7 +11,7 @@ export class Occupancy{
     adults: number;
     
     @ApiProperty({
-        description: 'Number of Children for a room',
+        description: 'Array of Age\'s of Children as per the room',
         example: [2,3],
         required: true
     })
@@ -27,7 +27,7 @@ export class SearchReqDto{
         required: true
     })
     @IsString()
-    check_in: Date;
+    check_in: string;
     
     @ApiProperty({
         description: 'Check Out date',
@@ -35,7 +35,7 @@ export class SearchReqDto{
         required: true
     })
     @IsString()
-    check_out: Date;
+    check_out: string;
     
     @ApiProperty({
         description: 'Latitude of the searched location',
@@ -60,5 +60,13 @@ export class SearchReqDto{
     })
     @IsArray()
     occupancies: Array<Occupancy[]>;
+
+    @ApiProperty({
+        description: 'If this object is set as "true" than "filter_object" will be provided with the search result which can be used to show under the Filter section',
+        required: false
+    })
+    @IsBoolean()
+    @IsOptional()
+    filter?: boolean = false;
 
 }
