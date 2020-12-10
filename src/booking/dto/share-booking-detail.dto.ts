@@ -8,11 +8,7 @@ export class ShareBookingDto {
 	@Type(() => emailsArray)
 	@ApiProperty({
 		description: `emails`,
-		example: `[
-			{
-				"email":"jon.doe@gmail.com"
-			}
-		]`
+		example: `[{"email":"jon.doe@gmail.com"}]`
 	})
 	emails: emailsArray[]
 }
