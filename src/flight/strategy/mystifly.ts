@@ -1697,15 +1697,16 @@ export class Mystifly implements StrategyAirline {
                             decodedBaggae={};
                             if(service['b:type'][0]!=='Meal'){
                             decodedBaggae = this.decodeExtraBaggae(service['b:description'][0])
-                            console.log(decodedBaggae,service['b:description'][0])
                             if(decodedBaggae!=false){
                                 eService={};
                                 eService['type']=service['b:type'][0];
+                                eService['bag_type']=decodedBaggae['type'];
                                 eService['checkin_type']=service['b:checkintype'][0];
                                 eService['description']= decodedBaggae;
                                 eService['cost']=Number(service['b:servicecost'][0]['a:amount'][0]);
                                 eService['service_id']=Number(service['b:serviceid'][0]);
                                 if(service['b:behavior'][0]=='PER_PAX_OUTBOUND'){
+
                                     outBoundExtraService.push(eService);
                                 }
                                 else if(service['b:behavior'][0]=='PER_PAX_INBOUND'){
@@ -1734,40 +1735,42 @@ export class Mystifly implements StrategyAirline {
     decodeExtraBaggae(description){
         
         let descArray = description.split("||");
-        console.log("descArray",descArray)
         if(descArray.length==2){
 
             let descArrayDetails = descArray[0].split("-");
-            console.log("descArrayDetails",descArrayDetails)
             if(descArrayDetails.length==2){
 
-                let weight = Generic.convertKGtoLB(Number(descArrayDetails[1].trim().replace("Kg",'')));
+                let weight = this.decodeWeight(descArrayDetails[1]);
                 if(descArrayDetails[0].includes("Total Weight: 1 bags")){
                     console.log("innnn")
                     return {
                         
-                        title : "1 bag",
+                        title : "1 Bag",
+                        type : 'one_bag',
                         weight : weight
                     }
                 }
                 else if(descArray[0].includes("Total Weight: 2 bags")){
                     return {
                         
-                        title : "2 bag",
+                        title : "2 Bag",
+                        type : 'two_bag',
                         weight : weight
                     }
                 }
                 else if(descArray[0].includes("Total Weight: 3 bags")){
                     return {
                         
-                        title : "2 bag",
+                        title : "3 Bag",
+                        type : 'three_bag',
                         weight : weight
                     }
                 }
                 else if(descArray[0].includes("Total Weight: 4 bags")){
                     return {
                         
-                        title : "3 bag",
+                        title : "4 Bag",
+                        type : 'four_bag',
                         weight : weight
                     }
                 }
@@ -1777,6 +1780,22 @@ export class Mystifly implements StrategyAirline {
             return false;
         }
     }
+
+    decodeWeight(description){
+        let weightDescription =  description.trim();
+        let weightDescriptionArray = weightDescription.split("+");
+        
+        let weightInLb='';
+        for(let weight of weightDescriptionArray){
+            
+          let weightWithoutkg = Number(weight.replace("Kg",''));
+          weightInLb+= Generic.convertKGtoLB(weightWithoutkg)+'LB+'
+          
+        }
+            
+        return weightInLb.substring(0, weightInLb.length - 1);
+    }
+    
 
     async bookFlight(bookFlightDto, traveles, isPassportRequired) {
 
