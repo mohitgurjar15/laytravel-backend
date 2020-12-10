@@ -6,7 +6,7 @@ export interface StrategyVacationRental{
 
    verifyUnitTypeAvailability(param1,param2);
 
-   booking(parm1);
+   booking(parm1,param2,param3,param4);
 
    deleteBooking(param1);
 }
