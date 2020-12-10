@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Param, Query } from "@nestjs/common";
+import { Controller, Get, UseGuards, Param, Query, Post, Body } from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
@@ -196,7 +196,7 @@ export class BookingController {
 		return await this.bookingService.exportBookings(filterOption);
 	}
 
-	@Get("share-booking-detail/:booking_id")
+	@Post("share-booking-detail/:booking_id")
 	@UseGuards(AuthGuard())
 	@Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
 	@ApiOperation({ summary: "share your booking detail" })
@@ -210,7 +210,7 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async shareBookingDetail(
 		@Param("booking_id") bookingId: string,
-		@Query() shareBookingDto:ShareBookingDto
+		@Body() shareBookingDto:ShareBookingDto
 	): Promise<{ message: any }> {
 		return await this.bookingService.shareBooking(bookingId,shareBookingDto);
 	}
