@@ -23,15 +23,10 @@ export class HotelController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     suggestion(
-        @Body() searchLocationDto: HotelSearchLocationDto,
-        @Res() res: any
+        @Body() searchLocationDto: HotelSearchLocationDto
     ) {
-        this.hotelService.autoComplete(searchLocationDto).subscribe((data) => {
-            res.send({
-                data,
-                message: data.length ? 'Result found' : 'No result Found'
-            });
-        });
+        
+        return this.hotelService.autoComplete(searchLocationDto);
         
     }
 

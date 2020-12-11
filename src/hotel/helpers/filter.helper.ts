@@ -1,9 +1,16 @@
 import { collect } from "collect.js";
 
 export class FilterHelper{
-
+    
     static async generateFilterObjects(cacheData) {
         
+        const mapper = (item, key) => {
+            return {
+                title: key,
+                count: item
+            }
+        };
+
         let hotels = collect(cacheData.hotels)
         
         let sellings = hotels.pluck('selling');
@@ -14,11 +21,11 @@ export class FilterHelper{
         
         let fixRatings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
         
-        let ratings = hotels.pluck('rating').countBy().union(fixRatings);
+        let ratings = hotels.pluck('rating').countBy().union(fixRatings).map(mapper).values()
         
-        let ameneties = hotels.pluck('amenities').flatten().countBy();
+        let ameneties = hotels.pluck('amenities').flatten().countBy().map(mapper).values();
         
-        let refund_policy = hotels.pluck('refundable').countBy();
+        let refund_policy = hotels.pluck('refundable').countBy().map(mapper).values();
         
         let secondary_price = {
             min: hotels.min('secondary_start_price'),

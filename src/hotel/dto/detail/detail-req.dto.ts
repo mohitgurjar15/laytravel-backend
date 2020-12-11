@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 
 export class DetailReqDto{
     @ApiProperty({
@@ -8,4 +8,11 @@ export class DetailReqDto{
     })
     @IsString()
     hotel_id: string;
+
+    @ApiProperty({
+        description: 'Token which is got from Search API'
+    })
+    @IsString()
+    @IsOptional()
+    token?: string;
 }
