@@ -197,7 +197,7 @@ export class BookingController {
 		return await this.bookingService.exportBookings(filterOption);
 	}
 
-	@Post("share-booking-detail/:booking_id")
+	@Post("share-booking-detail")
 	@UseGuards(AuthGuard())
 	@Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
 	@ApiOperation({ summary: "share your booking detail" })
