@@ -19,7 +19,7 @@ export class Priceline implements HotelInterface{
         this.httpsService = new HttpService();
     }
 
-    autoComplete(term: string){
+    async autoComplete(term: string){
         
         let parameters = {
             string: term,
@@ -32,10 +32,9 @@ export class Priceline implements HotelInterface{
         
         let url = CommonHelper.generateUrl('getAutoSuggestV2', parameters);
 
-        return this.httpsService.get(url).pipe(map(res => new AutoComplete().processSearchLocationResult(res)));
+        let locations = await this.httpsService.get(url).pipe(map(res => new AutoComplete().processSearchLocationResult(res))).toPromise();
 
-        // console.log(res);
-        // return Object.assign(new Location(), []);
+        return locations;
     }
     
     async search(searchReqDto: SearchReqDto) {
