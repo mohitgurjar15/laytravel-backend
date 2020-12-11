@@ -20,7 +20,7 @@ import { User } from "src/entity/user.entity";
 export class BookingController {
 	constructor(private bookingService: BookingService) { }
 
-	@Get("re-sent-booking-email/:id")
+	@Post("re-sent-booking-email/:id")
 	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "re-sent the email of the booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -210,10 +210,9 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async shareBookingDetail(
-		@Param("booking_id") bookingId: string,
 		@Body() shareBookingDto:ShareBookingDto,
 		@GetUser() user : User
 	): Promise<{ message: any }> {
-		return await this.bookingService.shareBooking(bookingId,shareBookingDto,user);
+		return await this.bookingService.shareBooking(shareBookingDto,user);
 	}
 }

@@ -115,7 +115,11 @@ export class BookingRepository extends Repository<Booking> {
 
 		//console.log(result);
 
+		if (result.bookingInstalments.length > 0) {
+			result.bookingInstalments.sort((a, b) => b.id - a.id)
 
+			result.bookingInstalments.reverse()
+		}
 
 		delete result.user.updatedDate;
 		delete result.user.salt;
