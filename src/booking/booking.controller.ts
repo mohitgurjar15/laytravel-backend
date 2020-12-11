@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Param, Query, Post, Body } from "@nestjs/common";
+import { Controller, Get, UseGuards, Param, Query, Post, Body, HttpCode } from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
@@ -11,6 +11,7 @@ import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
 import { ExportBookingDto } from "./dto/export-booking.dto";
 import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { User } from "src/entity/user.entity";
+import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 
 
 @ApiTags("Booking")
@@ -20,7 +21,7 @@ import { User } from "src/entity/user.entity";
 export class BookingController {
 	constructor(private bookingService: BookingService) { }
 
-	@Get("re-sent-booking-email/:id")
+	@Post("re-sent-booking-email")
 	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "re-sent the email of the booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -31,10 +32,11 @@ export class BookingController {
 	})
 	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
 	async resentEmailId(
-		@Param("id") bookingId: string
+		@Body() shareBookingDto:getBookingDetailsDto
 	): Promise<{ message: any }> {
-		return await this.bookingService.resendBookingEmail(bookingId);
+		return await this.bookingService.resendBookingEmail(shareBookingDto);
 	}
 
 
@@ -94,7 +96,7 @@ export class BookingController {
 	}
 
 	@Get('payment')
-	@ApiOperation({ summary: "get booking detail" })
+	@ApiOperation({ summary: "get booking payment detail" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -197,7 +199,7 @@ export class BookingController {
 		return await this.bookingService.exportBookings(filterOption);
 	}
 
-	@Post("share-booking-detail/:booking_id")
+	@Post("share-booking-detail")
 	@UseGuards(AuthGuard())
 	@Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
 	@ApiOperation({ summary: "share your booking detail" })
@@ -209,11 +211,11 @@ export class BookingController {
 	})
 	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
 	async shareBookingDetail(
-		@Param("booking_id") bookingId: string,
 		@Body() shareBookingDto:ShareBookingDto,
 		@GetUser() user : User
 	): Promise<{ message: any }> {
-		return await this.bookingService.shareBooking(bookingId,shareBookingDto,user);
+		return await this.bookingService.shareBooking(shareBookingDto,user);
 	}
 }

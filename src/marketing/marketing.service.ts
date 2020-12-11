@@ -1385,6 +1385,11 @@ export class MarketingService {
         }
 
         const [result, count] = await query.getManyAndCount();
+
+        if(!result.length)
+        {
+            throw new NotFoundException(`No User Activity Found`)
+        }
         //const count = await query.getCount();
         return { data: result, total_result: count };
 

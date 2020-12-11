@@ -1,14 +1,24 @@
 import { IsArray, IsEmail, IsNotEmpty, ValidateNested, ValidationArguments } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from "class-transformer";
+import { errorMessage } from "src/config/common.config";
 
 export class ShareBookingDto {
+	@IsNotEmpty({
+		message: `Please enter booking id &&&limit&&&${errorMessage}`
+	})
+	@ApiProperty({
+		description: 'booking id',
+		example: ''
+	})
+	bookingId: string;
+
 	@IsArray()
 	@ValidateNested({ each: true })
 	@Type(() => emailsArray)
 	@ApiProperty({
 		description: `emails`,
-		example: `[{"email":"jon.doe@gmail.com"}]`
+		example: [{ "email": "jon.doe@gmail.com" }]
 	})
 	emails: emailsArray[]
 }
