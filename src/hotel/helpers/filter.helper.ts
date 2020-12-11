@@ -20,7 +20,7 @@ export class FilterHelper{
         
         let refund_policy = hotels.pluck('refundable').countBy();
         
-        let secondary_prices = {
+        let secondary_price = {
             min: hotels.min('secondary_start_price'),
             max: hotels.max('secondary_start_price')
         };
@@ -31,7 +31,7 @@ export class FilterHelper{
                 min,
                 max
             },
-            secondary_prices,
+            secondary_price,
             ameneties,
             ratings,
             refund_policy
