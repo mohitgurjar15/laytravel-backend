@@ -116,9 +116,7 @@ export class BookingRepository extends Repository<Booking> {
 		//console.log(result);
 
 		if (result.bookingInstalments.length > 0) {
-			result.bookingInstalments.sort((a, b) => b.id - a.id)
-
-			result.bookingInstalments.reverse()
+			result.bookingInstalments.sort((a, b) => a.id - b.id)
 		}
 
 		delete result.user.updatedDate;
@@ -169,9 +167,9 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (data.bookingInstalments.length > 0) {
-			data.bookingInstalments.sort((a, b) => b.id - a.id)
+			data.bookingInstalments.sort((a, b) =>  a.id - b.id )
 
-			data.bookingInstalments.reverse()
+			
 		}
 		return data;
 	}
