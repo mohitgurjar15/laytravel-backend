@@ -4,7 +4,10 @@ export class HotelDetails {
     description: string;
     images:Images[];
     amenities: []
-    rooms: Room[]
+    rooms: Room[];
+    city:string;
+    country:string;
+    hotel_name:string;
 }
 
 export class Room {

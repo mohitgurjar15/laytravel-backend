@@ -5,20 +5,16 @@ import { Type } from "class-transformer";
 export class ShareBookingDto {
 	@IsArray()
 	@ValidateNested({ each: true })
-	@Type(() => emails)
+	@Type(() => emailsArray)
 	@ApiProperty({
 		description: `emails`,
-		example: [
-			{
-				email: ``
-			}
-		]
+		example: `[{"email":"jon.doe@gmail.com"}]`
 	})
-	emails: emails[]
+	emails: emailsArray[]
 }
 
 
-class emails {
+class emailsArray {
 
 	@IsEmail(
 		{},

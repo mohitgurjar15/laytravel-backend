@@ -379,6 +379,7 @@ export class Mystifly implements StrategyAirline {
             source_location,
             destination_location,
             departure_date,
+            
             flight_class,
             adult_count,
             child_count,

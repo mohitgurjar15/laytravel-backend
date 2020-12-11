@@ -18,6 +18,7 @@ import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
 import { HttpRequest } from "src/utility/http.utility";
 import { VerifyAvailability } from "../model/verify-availability.model";
+import { check } from "prettier";
 
 export class Monaker implements StrategyVacationRental {
 
@@ -162,6 +163,8 @@ export class Monaker implements StrategyVacationRental {
 
         }
 
+        console.log("hotel ids", hotelIds);
+
         let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
@@ -194,9 +197,11 @@ export class Monaker implements StrategyVacationRental {
 
 
             let url = `${monakerCredential["url"]}/product/property-availabilities/availability?${queryParams}`
+            console.log("URL", url)
             let availabilityResult = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"])
 
             let result = availabilityResult.data;
+            console.log("result", result);
 
             if (result.length != 0) {
                 let hotelId = result.map((hotel) => {
@@ -250,6 +255,7 @@ export class Monaker implements StrategyVacationRental {
                         addAmenities.push(JSON.parse(amenities[i]));
                     }
                     hotel.amenties = addAmenities
+                    hotel.date = check_out_date
                     hotel.display_image = `https://sandbox-images.nexttrip.com${hotel_details["images"].split(',')[0]}`;
                     hotel.latitude = hotel_details["latitude"];
                     hotel.longintude = hotel_details["longitude"];
@@ -259,7 +265,7 @@ export class Monaker implements StrategyVacationRental {
         }
 
         if (hotelDetails.length == 0) {
-            throw new NotFoundException(`No found any vacation rental home`);
+            return { message: "hotel not found" }
         }
 
         let hotels = new HotelSearchResult();
@@ -376,12 +382,20 @@ export class Monaker implements StrategyVacationRental {
             let off_unit_multiplier;
             for (let k = 0; k < unitTypeResult[i]["policyInfo"]["cancelPolicies"].length; k++) {
                 let data = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k];
+                let policy = ``;
                 let amount_percent = data["amountPercent"]["percent"] != null ? (data["amountPercent"]["percent"] * room.selling_price) : data["amountPercent"]["amount"];
                 if (data["deadline"] != null) {
-                    off_set_drop_time = data["deadline"]["offsetDropTime"] != null ? data["deadline"]["offsetDropTime"] : '';
-                    off_set_time_unit = data["deadline"]["offsetTimeUnit"] != null ? data["deadline"]["offsetTimeUnit"] : '';
-                    off_unit_multiplier = data["deadline"]["offsetUnitMultiplier"] != null ? data["deadline"]["offsetUnitMultiplier"] : '';
-                    policy_info.push(`${amount_percent} cancellation fee ${off_unit_multiplier} ${off_set_time_unit} ${off_set_drop_time}`);
+                    if (data["deadline"]["absoluteDeadline"] != null) {
+                        let absoluteDeadline = ` ${amount_percent} cancellation fee up to 23:59 on ${data["deadline"]["absoluteDeadline"]} `;
+                        policy = absoluteDeadline;
+                    }
+                    else {
+                        off_set_drop_time = data["deadline"]["offsetDropTime"] != null ? data["deadline"]["offsetDropTime"] : '';
+                        off_set_time_unit = data["deadline"]["offsetTimeUnit"] != null ? data["deadline"]["offsetTimeUnit"] : '';
+                        off_unit_multiplier = data["deadline"]["offsetUnitMultiplier"] != null ? data["deadline"]["offsetUnitMultiplier"] : '';
+                        policy = `${amount_percent} cancellation fee ${off_unit_multiplier} ${off_set_time_unit} ${off_set_drop_time}`;
+                    }
+                    policy_info.push(policy);
                 }
                 cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
                 cancelPolicies.penalty_info = policy_info;
@@ -404,6 +418,8 @@ export class Monaker implements StrategyVacationRental {
         }
         hotelDetails.images = images;
         hotelDetails.amenities = hotelResult["propertyAmenities"]
+        hotelDetails.city = hotelResult["address"]["city"]
+        hotelDetails.country = hotelResult["address"]["country"]
         hotelDetails.rooms = rooms;
         return hotelDetails;
 
@@ -411,6 +427,7 @@ export class Monaker implements StrategyVacationRental {
 
 
     async verifyUnitTypeAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, user) {
+
         const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
         let monakerCredential = await this.getMonakerCredential();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
@@ -495,9 +512,12 @@ export class Monaker implements StrategyVacationRental {
 
     }
 
-    async booking(bookingDto: BookingDto) {
+    async booking(bookingDto: BookingDto, travelers, booking_code, selling_price) {
         const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = bookingDto;
         let monakerCredential = await this.getMonakerCredential();
+
+        console.log("travelers customer", travelers.customer)
+        console.log("travelers guest", travelers.guest)
 
         let childrensAges = ``;
         let queryParams = ``;
@@ -520,58 +540,41 @@ export class Monaker implements StrategyVacationRental {
             }
         }
 
-        queryParams += `RatePlanCode=${rate_plan_code}`;
-        queryParams += `&CheckInDate=${check_in_date}`;
-        queryParams += `&CheckOutDate=${check_out_date}`;
-        queryParams += `&NumberOfAdults=${adult_count}`;
-        if (number_and_children_ages.length != 0) {
-            queryParams += `&${childrensAges}`;
-        }
-        queryParams += `&Currency=${this.headers.currency}`;
-
-        let verifyResponse;
-        let verifyResult;
-
-
-        let url = `https://sandbox-api.nexttrip.com/api/v1/product/unit-availabilities/${room_id}/verify-availability?${queryParams}`;
-        verifyResponse = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"]);
-
-        verifyResult = verifyResponse.data;
-
-        if (!verifyResult["available"]) {
-            throw new NotAcceptableException(`Not available vacation rental home`)
-        }
-
         let url2 = `${monakerCredential["url"]}/transaction/reservations?Language=${this.headers.language}`;
         let requestBody = {
             "id": room_id,
             "currency": this.headers.currency,
-            "price": verifyResult["totalPrice"]["amountAfterTax"],
-            "quoteHandle": verifyResult["quoteHandle"],
+            "price": selling_price,
+            "quoteHandle": booking_code,
             "ratePlanCode": rate_plan_code,
             "checkInDate": check_in_date,
             "checkOutDate": check_out_date,
             "numberOfAdults": adult_count,
             "numberAndAgeOfChildren": number_and_children_ages.length != 0 ? number_and_children_ages : null,
-            "customer": {
-                "firstName": "chintan",
-                "lastName": "patel",
-                "address": "Anindra",
-                "city": "Surendranagar",
-                "stateOrTerritory": "Gujarat",
-                "zip": "363110",
-                "country": "IN",
-                "phoneNumber": "9537580306",
-                "email": "vasoyachintan@gmail.com",
-                "salutation": "Mr",
-                "dateOfBirth": "2001-01-15",
-                "gender": "Male"
-            }
+            "customer": travelers.customer,
+            "Guests": travelers.guest
         }
 
         let bookingResult = await HttpRequest.monakerRequest(url2, "POST", requestBody, monakerCredential["key"])
 
-        return bookingResult.data;
+        let bookingResponse;
+        if (bookingResult.data.bookingStatus == "Confirmed") {
+            bookingResponse = {
+                booking_status: 'success',
+                supplier_status: '',
+                supplier_booking_id: bookingResult.data['reservationId'],
+                success_message: `Booking is successfully done!`,
+                error_message: ''
+            }
+        } else {
+            bookingResponse = {
+                booking_status: 'failed',
+                supplier_booking_id: '',
+                success_message: ``,
+                error_message: `Booking failed`
+            }
+        }
+        return bookingResponse;
 
     }
 

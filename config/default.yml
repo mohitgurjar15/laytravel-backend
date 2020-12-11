@@ -24,7 +24,7 @@ email:
     # host: "smtpout.secureserver.net"
     # user: "suresh@itoneclick.com"
     # pass: "Oneclick1@"
-    # port: 587
+    # port: 465
     # secure: true
     # from: '"laytrip" <no-reply@laytrip.com>'
     # BCC:  'suresh@itoneclick.com'

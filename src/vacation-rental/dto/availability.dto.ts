@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer/decorators";
-import { IsArray} from "class-validator";
 
 export class AvailabilityDto {
     @ApiProperty({

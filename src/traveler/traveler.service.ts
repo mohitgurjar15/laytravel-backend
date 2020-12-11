@@ -101,7 +101,8 @@ export class TravelerService {
 						`Please enter your email id &&&email&&&Please enter your email id`
 					);
 				}
-				const data = await this.userRepository.createUser(user);
+				const roles = [Role.TRAVELER_USER]
+				const data = await this.userRepository.createUser(user,roles);
 				const payload: JwtPayload = {
 					user_id: data.userId,
 					email: data.email,
