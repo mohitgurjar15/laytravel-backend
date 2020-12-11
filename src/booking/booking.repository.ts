@@ -147,6 +147,7 @@ export class BookingRepository extends Repository<Booking> {
 		//return bookingDetails;
 	}
 
+
 	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;
 
@@ -167,6 +168,11 @@ export class BookingRepository extends Repository<Booking> {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 
+		if (data.bookingInstalments.length > 0) {
+			data.bookingInstalments.sort((a, b) => b.id - a.id)
+
+			data.bookingInstalments.reverse()
+		}
 		return data;
 	}
 

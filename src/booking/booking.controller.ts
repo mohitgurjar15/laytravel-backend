@@ -96,7 +96,7 @@ export class BookingController {
 	}
 
 	@Get('payment')
-	@ApiOperation({ summary: "get booking detail" })
+	@ApiOperation({ summary: "get booking payment detail" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
