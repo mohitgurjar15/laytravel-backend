@@ -912,12 +912,13 @@ export class BookingService {
 	}
 
 
-	async shareBooking(bookingId: string, shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+	async shareBooking( shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+		const { emails , bookingId } = shareBookingDto
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 		if (bookingData.userId != user.userId) {
 			throw new NotAcceptableException(`given booking not found`)
 		}
-		const { emails } = shareBookingDto
+		
 		if (!bookingData) {
 			throw new NotFoundException(
 				"Given booking id not found&&&booking_id&&&Given booking id not found"
