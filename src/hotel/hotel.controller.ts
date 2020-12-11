@@ -1,4 +1,4 @@
-import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Inject, Param, Post, Res, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, HttpCode, Inject, Param, Post, Res, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DetailReqDto } from './dto/detail/detail-req.dto';
 import { FilterReqDto } from './dto/filter/filter-req.dto';
@@ -16,6 +16,7 @@ export class HotelController {
     }
 
     @Post('/search-location')
+    @HttpCode(200)
     @ApiOperation({ summary: "Search locations", description:"Search locations for Hotel" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -35,6 +36,7 @@ export class HotelController {
     }
 
     @Post('search')
+    @HttpCode(200)
     search(
         @Body() searchReqDto: SearchReqDto
     ) {
@@ -42,6 +44,7 @@ export class HotelController {
     }
 
     @Post('detail')
+    @HttpCode(200)
     detail(
         @Body() detailReqDto: DetailReqDto
     ) {
@@ -50,6 +53,7 @@ export class HotelController {
     }
     
     @Post('rooms')
+    @HttpCode(200)
     rooms(
         @Body() roomsReqDto: RoomsReqDto
     ) {
@@ -57,6 +61,7 @@ export class HotelController {
     }
 
     @Post('filter-objects')
+    @HttpCode(200)
     filterObjects(
         @Body() filterReqDto: FilterReqDto
     ) {
