@@ -84,7 +84,8 @@ export class AutoComplete{
                 });
             });
 
-            return filterData;
+            return JSON.parse(JSON.stringify(filterData).replace(/\:null/gi, "\:\"\""));
+            // return filterData;
             // return Object.assign(new Location(), filterData);
 
         } else{
