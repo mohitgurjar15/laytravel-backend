@@ -25,8 +25,8 @@ export class MonakerStrategy{
         return data;
     }
 
-    async booking(param1){
-        const data = await this.strategyVacationRental.booking(param1);
+    async booking(param1,param2,param3,param4){
+        const data = await this.strategyVacationRental.booking(param1,param2,param3,param4);
         return data;
     }
 

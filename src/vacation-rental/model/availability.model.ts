@@ -18,6 +18,7 @@ export class HotelDetail {
     instalment_details: {};
     display_image: string;
     amenties:[];
+    date:string;
     latitude: string;
     longintude: string;
 }

@@ -5,12 +5,19 @@ import { VacationRentalService } from './vacation-rental.service';
 import { AvailabilityDetailsDto } from './dto/availabilty_details.dto';
 import { VerifyAvailabilityDto } from './dto/verify_availability.dto';
 import { BookingDto } from './dto/booking.dto';
-import { LogInUser } from 'src/auth/get-user.dacorator';
+import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
 import { MinCharPipe } from 'src/flight/pipes/min-char.pipes';
 import * as moment from 'moment';
+import { Roles } from 'src/guards/role.decorator';
+import { Role } from 'src/enum/role.enum';
+import { HomeRentalCalendarDto } from './dto/home-rental-calendar.dto';
+import { User } from 'src/entity/user.entity';
+import { RolesGuard } from 'src/guards/role.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('vacation-rental')
 @ApiTags("Vacation-Rental")
+@ApiBearerAuth()
 export class VacationRentalController {
 
     constructor(private vacationRentalService: VacationRentalService) { }
@@ -37,6 +44,11 @@ export class VacationRentalController {
     @ApiOperation({ summary: "Check list of all available property" })
     @HttpCode(200)
     @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+        example: 'en'
+    })
+    @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
         example: 'USD'
@@ -54,7 +66,7 @@ export class VacationRentalController {
         return await this.vacationRentalService.availabilityHotel(availability, user, req.headers);
     }
 
-    @Post("availability/:id")
+    @Post("/details")
     @ApiBearerAuth()
     @ApiOperation({ summary: "List of unit types in property" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -62,6 +74,11 @@ export class VacationRentalController {
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+        example: 'en'
+    })
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
@@ -80,7 +97,7 @@ export class VacationRentalController {
         return await this.vacationRentalService.unitTypeListAvailability(availabilityDetailsDto, req.headers,user);
     }
 
-    @Post('verify-availability/:UTid')
+    @Post('verify-availability')
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -88,6 +105,11 @@ export class VacationRentalController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @ApiOperation({ summary: "Verify unit type price and availability" })
     @HttpCode(200)
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+        example: 'en'
+    })  
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
@@ -107,7 +129,57 @@ export class VacationRentalController {
     }
 
     @Post('/booking')
+    @ApiBearerAuth()
     @ApiOperation({ summary: "Booking the property" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+        example: 'en'
+    })
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    async bookingProperty(
+        @Req() req,
+        @Body() bookingDto: BookingDto,
+        @LogInUser() user
+        ) {
+        if (moment(bookingDto.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
+
+        if (!moment(bookingDto.check_out_date).isAfter(bookingDto.check_in_date))
+            throw new BadRequestException(`Please enter valid checkout date`)
+        return await this.vacationRentalService.booking(bookingDto, req.headers,user)
+    }
+
+    @Delete('/cancel-booking/:booking_id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.FREE_USER)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "cancel booking" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async cancelBooking(
+        @Param('booking_id') booking_id: string,
+        @LogInUser() user,
+    ) {
+        return await this.vacationRentalService.deleteBooking(booking_id, user.user_id);
+    }
+
+
+    @Post('/calender-day-rate')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "It a return home rental rate between given start date to end date" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
@@ -121,33 +193,12 @@ export class VacationRentalController {
     @ApiHeader({
         name: 'language',
         description: 'Enter language code(ex. en)',
-        example: 'en'
     })
-    async bookingProperty(
+    async callenderDayRates(
+        @Body() searchHomeRental: HomeRentalCalendarDto,
         @Req() req,
-        @Body() bookingDto: BookingDto
+        @LogInUser() user
     ) {
-        if (moment(bookingDto.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
-            throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
-
-        if (!moment(bookingDto.check_out_date).isAfter(bookingDto.check_in_date))
-            throw new BadRequestException(`Please enter valid checkout date`)
-        return await this.vacationRentalService.booking(bookingDto, req.headers)
-    }
-
-    @Delete(":reservationId")
-    @ApiOperation({ summary: "Delete booking reservation" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-    @ApiResponse({
-        status: 403,
-        description: "You are not allowed to access this resource.",
-    })
-    @ApiResponse({ status: 404, description: "Admin not found!" })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    async deleteBooking(
-        @Param('reservationId') reservationId: string
-    ) {
-        return await this.vacationRentalService.deleteBooking(reservationId);
+        return await this.vacationRentalService.fullcalenderRate(searchHomeRental, req.headers, user);
     }
 }
