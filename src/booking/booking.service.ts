@@ -32,6 +32,7 @@ import { ExportBookingDto } from "./dto/export-booking.dto";
 import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { User } from "src/entity/user.entity";
+import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 
 @Injectable()
 export class BookingService {
@@ -42,7 +43,8 @@ export class BookingService {
 		public readonly mailerService: MailerService
 	) { }
 
-	async resendBookingEmail(bookingId: string): Promise<{ message: any }> {
+	async resendBookingEmail(bookingDetail: getBookingDetailsDto): Promise<{ message: any }> {
+		const {bookingId} = bookingDetail
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 
 		if (!bookingData) {

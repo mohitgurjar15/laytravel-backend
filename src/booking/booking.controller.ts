@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Param, Query, Post, Body } from "@nestjs/common";
+import { Controller, Get, UseGuards, Param, Query, Post, Body, HttpCode } from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
@@ -31,6 +31,8 @@ export class BookingController {
 	})
 	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	
 	async resentEmailId(
 		@Param("id") bookingId: string
 	): Promise<{ message: any }> {
@@ -209,6 +211,7 @@ export class BookingController {
 	})
 	@ApiResponse({ status: 404, description: "Given booking id not found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
 	async shareBookingDetail(
 		@Body() shareBookingDto:ShareBookingDto,
 		@GetUser() user : User
