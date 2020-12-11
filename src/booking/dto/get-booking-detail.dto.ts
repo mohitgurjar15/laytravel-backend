@@ -7,7 +7,7 @@ export class getBookingDetailsDto {
     })
     @ApiProperty({
         description:'booking id',
-        example: '447a5557-1f53-4318-b24a-045bc0d9f2b5'
+        example: ''
     })
     bookingId:string;   
 }

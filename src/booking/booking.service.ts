@@ -483,6 +483,11 @@ export class BookingService {
 
 
 		for (let i = 0; i < result.data.length; i++) {
+			if (result.data[i].bookingInstalments.length > 0) {
+				result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+	
+				result.data[i].bookingInstalments.reverse()
+			}
 			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
 				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
