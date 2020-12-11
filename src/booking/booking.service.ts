@@ -242,9 +242,8 @@ export class BookingService {
 
 			for (let i in result.data) {
 				if (result.data[i].bookingInstalments.length > 0) {
-					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+					result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
 
-					result.data[i].bookingInstalments.reverse()
 				}
 
 				for (let instalment of result.data[i].bookingInstalments) {
@@ -324,9 +323,9 @@ export class BookingService {
 				let pandinginstallment = 0;
 
 				if (result.data[i].bookingInstalments.length > 0) {
-					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+					result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
 
-					result.data[i].bookingInstalments.reverse()
+					//result.data[i].bookingInstalments.reverse()
 				}
 
 				for (let instalment of result.data[i].bookingInstalments) {
@@ -408,9 +407,9 @@ export class BookingService {
 			//console.log(result);
 
 			if (result.bookingInstalments.length > 0) {
-				result.bookingInstalments.sort((a, b) => b.id - a.id)
+				result.bookingInstalments.sort((a, b) => a.id - b.id)
 
-				result.bookingInstalments.reverse()
+				//result.bookingInstalments.reverse()
 			}
 			for (let instalment of result.bookingInstalments) {
 				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
@@ -484,9 +483,9 @@ export class BookingService {
 
 		for (let i = 0; i < result.data.length; i++) {
 			if (result.data[i].bookingInstalments.length > 0) {
-				result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+				result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
 	
-				result.data[i].bookingInstalments.reverse()
+				//result.data[i].bookingInstalments.reverse()
 			}
 			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {

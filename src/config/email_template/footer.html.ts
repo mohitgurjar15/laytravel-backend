@@ -39,12 +39,7 @@ export const EmailFooter = `<!-- footer section -->
                         <img src="${BaseUrl}assets/images/email/icons/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
-                    <td width="24" style="width: 24px;">&nbsp;</td>
-                    <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="${BaseUrl}assets/images/email/icons/link.png" alt="link" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
-                      </a>
-                    </td>
+                    
                   </tr>
                 </tbody>
               </table>
