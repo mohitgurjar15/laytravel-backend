@@ -16,7 +16,7 @@ export class HotelController {
     }
 
     @Post('/search-location')
-    @ApiOperation({ summary: "Search Airpot by airport name, airport code and city name" })
+    @ApiOperation({ summary: "Search locations", description:"Search locations for Hotel" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })

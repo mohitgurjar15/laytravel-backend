@@ -84,38 +84,7 @@ export class HotelService{
     }
 
     async rooms(roomsReqDto: RoomsReqDto) {
-
-        // let transporter = nodemailer.createTransport({
-        //     service: "Outlook365",
-        //     auth: {
-        //         user: 'FROMUSER@office365.com',
-        //         pass: 'FROMUSERPASS'
-        //     },    
-        // })
-
-        // let info = transporter.sendMail({
-        //     from: 'FROMUSER@office365.com',
-        //     to: 'TOUSER@office365.com',
-        //     subject: 'Test',
-        //     text: 'hello world',
-        //     html: '<h1>TEST</h1>'
-        // })
-console.log(mailConfig);
-        this.mailerService
-            .sendMail({
-                to: 'chirag@itoneclick.com',
-                from: mailConfig.from,
-                cc: mailConfig.BCC,
-                subject: 'Subscription Expired',
-                html: '<h1>TEST</h1>',
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-        return;
+        
         let cached = await this.cacheManager.get(roomsReqDto.token);
         
         if (!cached.hotels) {
