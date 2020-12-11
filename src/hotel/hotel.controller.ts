@@ -1,7 +1,8 @@
-import { Body, CacheModule, CACHE_MANAGER, Controller, Get, HttpCode, Inject, Param, Post, Res, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Res, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DetailReqDto } from './dto/detail/detail-req.dto';
 import { FilterReqDto } from './dto/filter/filter-req.dto';
+import { HotelHeaderDto } from './dto/header.dto';
 import { RoomsReqDto } from './dto/rooms/rooms-req.dto';
 import { HotelSearchLocationDto } from './dto/search-location/search-location.dto';
 import { SearchReqDto } from './dto/search/search-req.dto';
