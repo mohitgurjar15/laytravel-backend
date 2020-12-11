@@ -53,8 +53,8 @@ import { MarketingModule } from './marketing/marketing.module';
       transport: {
         host: mailConfig.host,
         port: mailConfig.port,
-        ignoreTLS: true,
         secure: mailConfig.secure,
+        service: "Outlook365",
         auth: {
           user: mailConfig.user,
           pass: mailConfig.pass,
