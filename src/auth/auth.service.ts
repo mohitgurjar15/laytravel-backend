@@ -59,6 +59,10 @@ import * as config from "config";
 const mailConfig = config.get("email");
 const jwtConfig = config.get("jwt");
 import * as uuidValidator from "uuid-validate"
+import { MarketingUserData } from "src/entity/marketing-user.entity";
+import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
+import { RewordMode } from "src/enum/reword-mode.enum";
+import { RewordStatus } from "src/enum/reword-status.enum";
 
 @Injectable()
 export class AuthService {
@@ -92,7 +96,7 @@ export class AuthService {
 			roleId: In(roles)
 		});
 
-		
+
 
 		if (userExist) {
 			if (userExist.status != 1) {
@@ -149,6 +153,39 @@ export class AuthService {
 		user.address = address */
 		try {
 			await user.save();
+			let marketingUserData = await getConnection()
+				//.createQueryBuilder(MarketingUserActivity, "activity")
+				.createQueryBuilder(MarketingUserData, "marketingUserData")
+				.leftJoinAndSelect("marketingUserData.marketingUserActivity", "activity")
+				.where(`"marketingUserData"."email" = '${user.email}'`)
+				.getOne()
+
+			if (marketingUserData) {
+				if (!marketingUserData.userId) {
+					marketingUserData.userId = user.userId
+					marketingUserData.save();
+				}
+				if (marketingUserData.marketingUserActivity.length) {
+					for await (const activity of marketingUserData.marketingUserActivity) {
+
+						if (activity.addToWallet == false) {
+
+							const laytripPoint = new LayCreditEarn
+							laytripPoint.userId = user.userId
+							laytripPoint.points = activity.reword;
+							laytripPoint.earnDate = new Date();
+							laytripPoint.creditMode = activity.gameId == 1 ? RewordMode.WHEELGAME : RewordMode.QUIZGAME;
+							laytripPoint.status = RewordStatus.AVAILABLE;
+							laytripPoint.creditBy = user.userId;
+							laytripPoint.description = `User played a game`
+							await laytripPoint.save();
+							activity.addToWallet = true;
+							activity.save();
+						}
+					}
+				}
+			}
+
 			this.mailerService
 				.sendMail({
 					to: email,
@@ -208,9 +245,9 @@ export class AuthService {
 	async resendOtp(reSendVerifyoOtpDto: ReSendVerifyoOtpDto) {
 		const { email } = reSendVerifyoOtpDto;
 		const roles = [Role.FREE_USER, Role.PAID_USER];
-		
+
 		const user = await this.userRepository.findOne({
-			where: { email, isDeleted: false ,roleId:In(roles)},
+			where: { email, isDeleted: false, roleId: In(roles) },
 		});
 
 		if (!user)
@@ -275,9 +312,9 @@ export class AuthService {
 			throw new UnauthorizedException(
 				`Your account has been disabled. Please contact administrator person.`
 			);
-			const roles = [Role.FREE_USER ,Role.PAID_USER]
+		const roles = [Role.FREE_USER, Role.PAID_USER]
 		const userExist = await this.userRepository.findOne({
-			email: newEmail,roleId: In(roles)
+			email: newEmail, roleId: In(roles)
 		});
 
 		if (userExist)
@@ -505,6 +542,8 @@ export class AuthService {
 			where: { email: email, is_used: 0, otp: otp },
 		});
 		if (validate) {
+			console.log(validate);
+
 			const salt = await bcrypt.genSalt();
 			user.salt = salt;
 			user.password = await this.hashPassword(new_password, salt);
@@ -532,7 +571,7 @@ export class AuthService {
 
 		const roles = [Role.FREE_USER, Role.PAID_USER];
 		const user = await this.userRepository.findOne({
-			where: { email: email, isDeleted: 0, status: 1 , roleId:In(roles)},
+			where: { email: email, isDeleted: 0, status: 1, roleId: In(roles) },
 		});
 
 		if (!user) {

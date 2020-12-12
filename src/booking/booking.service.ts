@@ -616,7 +616,9 @@ export class BookingService {
 				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
-				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
+				console.log(bookingData.laytripBookingId);
+					
+				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				predictiveBookingData['module_name'] = bookingData.module.name;
@@ -685,7 +687,8 @@ export class BookingService {
 				}
 				else {
 					const paidAmount = await this.paidAmountByUser(booking.id)
-
+					console.log(booking.laytripBookingId);
+					console.log('booking.laytripBookingId');
 					const predictiveBookingData: any = {}
 					predictiveBookingData['booking_id'] = booking.id
 					predictiveBookingData['net_price'] = null
@@ -698,7 +701,7 @@ export class BookingService {
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 					predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(booking.totalAmount)
 					predictiveBookingData['booking_status'] = booking.bookingStatus;
-					predictiveBookingData['departure_date'] = booking.moduleInfo[0].departure_date
+					predictiveBookingData['departure_date'] = booking.moduleInfo[0].departure_date || ''
 					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
 					predictiveBookingData['bookIt'] = false;
 

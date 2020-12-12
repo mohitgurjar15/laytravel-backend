@@ -1509,7 +1509,6 @@ export class FlightService {
 
 			PushNotification.sendNotificationTouser(laytripBookingResult.userId,
 				{  //you can send only notification or only data(or include both)
-					module_id: laytripBookingResult.moduleId,
 					module_name: 'booking',
 					task: 'booking_done',
 					bookingId: laytripBookingResult.laytripBookingId
@@ -2078,7 +2077,6 @@ export class FlightService {
 				await bookingData.save();
 				PushNotification.sendNotificationTouser(bookingData.userId,
 					{  //you can send only notification or only data(or include both)
-						module_id: bookingData.moduleId,
 						module_name: 'booking',
 						task: 'booking_cancelled',
 						bookingId: bookingData.laytripBookingId
