@@ -10,6 +10,7 @@ export class AutoComplete{
     constructor() {
         this.detailHelper = new DetailHelper;
     }
+    
     processSearchLocationResult(res: any) {
         let results = res.data.getHotelAutoSuggestV2;
         // return results;
@@ -85,7 +86,6 @@ export class AutoComplete{
             });
 
             return filterData;
-            // return Object.assign(new Location(), filterData);
 
         } else{
             throw new InternalServerErrorException(results.error.status);

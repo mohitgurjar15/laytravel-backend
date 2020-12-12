@@ -10,23 +10,27 @@ import { RoomsReqDto } from './dto/rooms/rooms-req.dto';
 import { collect } from 'collect.js';
 import { FilterHelper } from './helpers/filter.helper';
 import { FilterReqDto } from './dto/filter/filter-req.dto';
-import { response } from 'express';
 import { RateHelper } from './helpers/rate.helper';
-import { MailerService } from '@nestjs-modules/mailer';
-import * as config from "config";
-const mailConfig = config.get("email");
 
 @Injectable()
 export class HotelService{
     
     private hotel: Hotel;
 
-    constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache, private readonly mailerService: MailerService) {
+    constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
         this.hotel = new Hotel(new Priceline());
     }
 
-    autoComplete(searchLocationDto: HotelSearchLocationDto) {
-        return this.hotel.autoComplete(searchLocationDto.term);
+    async autoComplete(searchLocationDto: HotelSearchLocationDto) {
+        
+        let locations = await this.hotel.autoComplete(searchLocationDto.term);
+        
+        locations = JSON.parse(JSON.stringify(locations).replace(/\:null/gi, "\:\"\""));
+        
+        return {
+            data: locations,
+            message: locations.length ? 'Result found' : 'No result Found'
+        };
     }
     
     async search(searchReqDto: SearchReqDto) {
@@ -79,43 +83,17 @@ export class HotelService{
 
     async detail(detailReqDto: DetailReqDto) {
         
-        return this.hotel.detail(detailReqDto);
+        let detail = await this.hotel.detail(detailReqDto);
+
+        return {
+            data: detail,
+            message: "Detail found for " + detailReqDto.hotel_id
+        };
 
     }
 
     async rooms(roomsReqDto: RoomsReqDto) {
 
-        // let transporter = nodemailer.createTransport({
-        //     service: "Outlook365",
-        //     auth: {
-        //         user: 'FROMUSER@office365.com',
-        //         pass: 'FROMUSERPASS'
-        //     },    
-        // })
-
-        // let info = transporter.sendMail({
-        //     from: 'FROMUSER@office365.com',
-        //     to: 'TOUSER@office365.com',
-        //     subject: 'Test',
-        //     text: 'hello world',
-        //     html: '<h1>TEST</h1>'
-        // })
-console.log(mailConfig);
-        this.mailerService
-            .sendMail({
-                to: 'chirag@itoneclick.com',
-                from: mailConfig.from,
-                cc: mailConfig.BCC,
-                subject: 'Subscription Expired',
-                html: '<h1>TEST</h1>',
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-        return;
         let cached = await this.cacheManager.get(roomsReqDto.token);
         
         if (!cached.hotels) {

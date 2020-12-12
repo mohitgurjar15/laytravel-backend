@@ -8,6 +8,7 @@ import { ExpressAdapter } from "@nestjs/platform-express";
 import { AppModule } from "./app.module";
 import * as config from "config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { RedocModule, RedocOptions } from 'nestjs-redoc';
 import { BadRequestExceptionFilter } from "./bad-request-exception.filter";
 import { NotFoundExceptionFilter } from "./not-found-exception.filter";
 import { UnauthorizedExceptionFilter } from "./unauthorized-exception.filter";
@@ -53,15 +54,35 @@ async function bootstrap() {
 		.setVersion("1.0")
 		.build();
 	const document = SwaggerModule.createDocument(app, options);
+	
 	Sentry.init({
 		dsn: process.env.DSN || sentryConfig.DSN,
 	});
+
 	SwaggerModule.setup("api-docs", app, document);
+
+	/* Added by Chirag Khatri (just to check other theme for OpenApi )*/
+	const redocOptions: RedocOptions = {
+		title: 'Laytrip API Doc',
+		logo: {
+			// url: 'https://redocly.github.io/redoc/petstore-logo.png',
+			backgroundColor: '#F0F0F0',
+			altText: 'Laytrip Logo'
+		},
+		sortPropsAlphabetically: true,
+		hideDownloadButton: false,
+		hideHostname: false,
+		hideLoading: false
+	};
+	
+	// Instead of using SwaggerModule.setup() you call this module
+	await RedocModule.setup('/docs', app, document, redocOptions);
+	
 	app.enableCors();
 
 	const port = process.env.PORT || serverConfig.port;
 	app.useStaticAssets(path.join(__dirname, "/../assets"));
-	console.log(process.env.PORT)
+	// console.log(process.env.PORT)
 	await app.init();
 	
 	server.use(timeout(3600))
