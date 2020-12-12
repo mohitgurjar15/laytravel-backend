@@ -135,6 +135,7 @@ export class VacationRentalController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     @HttpCode(200)
     @ApiHeader({
