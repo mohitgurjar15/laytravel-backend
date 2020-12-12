@@ -438,7 +438,7 @@ export class BookingRepository extends Repository<Booking> {
 				"moduleData.id"
 			])
 
-			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id = 1`)
 
 
 		const [data, count] = await query.getManyAndCount();

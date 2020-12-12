@@ -23,7 +23,7 @@ const content = `<!-- header Text section start -->
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
-                                                        You’re the newest member of an inspirational worldwide community of travellers.
+                                                        You’re the newest member of an inspirational worldwide community of travelers.
                                                     </td>
                                                 </tr>
                                                 <tr>
