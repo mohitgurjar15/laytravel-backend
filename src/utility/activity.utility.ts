@@ -22,7 +22,7 @@ export class Activity {
     static createlogFile(filename, logData , folderName) {
         //console.log(logData);
         
-        const path = '/var/www/html/logs/' + folderName +'/'
+        const path = 'E:/logs/' + folderName +'/'
 
         filename = path + filename + '.json'
         if (!fs.existsSync(path)) {

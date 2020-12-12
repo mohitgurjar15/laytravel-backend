@@ -135,7 +135,7 @@ export class VacationRentalController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     @HttpCode(200)
     @ApiHeader({
         name: 'language',
@@ -199,6 +199,11 @@ export class VacationRentalController {
         @Req() req,
         @LogInUser() user
     ) {
+        if (moment(searchHomeRental.start_date).isBefore(moment().format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
+
+        if (!moment(searchHomeRental.end_date).isAfter(searchHomeRental.start_date))
+            throw new BadRequestException(`Please enter valid checkout date`)
         return await this.vacationRentalService.fullcalenderRate(searchHomeRental, req.headers, user);
     }
 }

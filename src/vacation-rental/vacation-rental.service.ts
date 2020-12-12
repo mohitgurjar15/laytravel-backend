@@ -214,7 +214,7 @@ export class VacationRentalService {
 			propertyName: propertyDetails["property_name"],
 			propertyDesc: propertyDetails["description"],
 			propertyAminities: propertyDetails["amenities"],
-			cancellationPolicy: roomDetails["cancellation_policy"] == false ? `Not refundable` : roomDetails["cancellation_policy"]["penalty_info"].toString(),
+			cancellationPolicy: roomDetails["cancellation_policy"]["is_refundable"] == false ? `Not refundable` : roomDetails["cancellation_policy"]["penalty_info"].toString(),
 			roomDetails: verifyAvailabilityResult
 		}
 
@@ -334,7 +334,7 @@ export class VacationRentalService {
 
 					if (dayDiff <= 90) {
 						const monaker = new MonakerStrategy(new Monaker(headers));
-						bookingResult = await monaker.booking(bookingDto, travelers, booking_code, net_price)
+						bookingResult = await monaker.booking(bookingDto, travelersDetails, booking_code, net_price)
 					}
 
 					let authCardToken = authCardResult.token;
@@ -654,7 +654,7 @@ export class VacationRentalService {
 			predictiveBooking.bookingId = booking.id
 			predictiveBooking.date = new Date()
 			predictiveBooking.netPrice = parseFloat(booking.netRate)
-			predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
+			predictiveBooking.isBelowMinimum = false
 			predictiveBooking.price = parseFloat(booking.totalAmount);
 			predictiveBooking.remainSeat = 0
 			await predictiveBooking.save()
@@ -709,42 +709,6 @@ export class VacationRentalService {
 			hotelInfo.check_in_date = check_in_date;
 			hotelInfo.check_out_date = check_out_date;
 			hotelInfo.cancellation_policy = moduleInfo["cancellationPolicy"]
-
-			// console.log("booking ----->",bookingData.user)
-
-			// for (let index = 0; index < routes.length; index++) {
-			// 	const element = routes[index];
-			// 	var rout = index == 0 ? `${moduleInfo.departure_info.city} To ${moduleInfo.arrival_info.city} (${moduleInfo.routes[0].type})` : `${moduleInfo.arrival_info.city} To ${moduleInfo.departure_info.city} (${moduleInfo.routes[1].type})`;
-			// 	var status = bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
-			// 	var droups = [];
-			// 	for await (const stop of element.stops) {
-			// 		var flight = `${stop.airline}-${stop.flight_number}`;
-			// 		var depature = {
-			// 			code: stop.departure_info.code,
-			// 			name: stop.departure_info.name,
-			// 			city: stop.departure_info.city,
-			// 			country: stop.departure_info.country,
-			// 			date: await this.formatDate(stop.departure_date_time),
-			// 			time: stop.departure_time
-			// 		}
-			// 		var arrival = {
-			// 			code: stop.arrival_info.code,
-			// 			name: stop.arrival_info.name,
-			// 			city: stop.arrival_info.city,
-			// 			country: stop.arrival_info.country,
-			// 			date: await this.formatDate(stop.arrival_date_time),
-			// 			time: stop.arrival_time
-			// 		}
-			// 		droups.push({
-			// 			flight: flight, depature: depature, arrival: arrival, airline: stop.airline_name
-			// 		})
-			// 	}
-			// 	flightData.push({
-			// 		rout: rout,
-			// 		status: status,
-			// 		droups: droups,
-			// 	})
-			// }
 
 			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
@@ -844,24 +808,21 @@ export class VacationRentalService {
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
 
-		console.log("stra date", startDate);
 		const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
 
+		console.log("Diffrence--->",dayDiffrence)
 		var result = [];
 
 		var resultIndex = 0;
 
 		for (let index = 0; index <= dayDiffrence; index++) {
-			// let date = moment(startDate).add(index + 1, 'days');
-			// let checkOutDate = date.toISOString().split('T')[0];
-			// console.log("Checkout days", checkOutDate);
+		
 			startDate.setDate(startDate.getDate() + 1);
 			var checkOutDate = startDate.toISOString().split('T')[0];
 			checkOutDate = checkOutDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 
-			// console.log(moment(checkOutDate).subtract(1,'days').toISOString().split('T')[0]);
 			let dto = {
 				"id": id,
 				"type": type,
@@ -871,8 +832,8 @@ export class VacationRentalService {
 				"adult_count": adult_count
 
 			}
+			
 			result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user)));
-
 
 			resultIndex++;
 		}

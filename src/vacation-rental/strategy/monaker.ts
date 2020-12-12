@@ -384,6 +384,10 @@ export class Monaker implements StrategyVacationRental {
                 let data = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k];
                 let policy = ``;
                 let amount_percent = data["amountPercent"]["percent"] != null ? (data["amountPercent"]["percent"] * room.selling_price) : data["amountPercent"]["amount"];
+                cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
+                if(!cancelPolicies.is_refundable){
+                    policy_info.push(`This is not refundable`)
+                }
                 if (data["deadline"] != null) {
                     if (data["deadline"]["absoluteDeadline"] != null) {
                         let absoluteDeadline = ` ${amount_percent} cancellation fee up to 23:59 on ${data["deadline"]["absoluteDeadline"]} `;
@@ -397,7 +401,6 @@ export class Monaker implements StrategyVacationRental {
                     }
                     policy_info.push(policy);
                 }
-                cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
                 cancelPolicies.penalty_info = policy_info;
                 room.cancellation_policy = cancelPolicies;
             }
