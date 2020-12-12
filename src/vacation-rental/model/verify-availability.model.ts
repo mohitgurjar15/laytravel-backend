@@ -7,4 +7,9 @@ export class VerifyAvailability {
     secondary_start_price: number;
     secondary_selling_price: number;
     instalment_details: {};
+    fees:Fees[] =[];
+}
+
+export class Fees{
+    message:string;
 }

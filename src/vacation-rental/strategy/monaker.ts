@@ -17,7 +17,7 @@ import { HotelView } from "src/entity/hotel-view.entity";
 import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
 import { HttpRequest } from "src/utility/http.utility";
-import { VerifyAvailability } from "../model/verify-availability.model";
+import { Fees, VerifyAvailability } from "../model/verify-availability.model";
 import { check } from "prettier";
 
 export class Monaker implements StrategyVacationRental {
@@ -385,7 +385,7 @@ export class Monaker implements StrategyVacationRental {
                 let policy = ``;
                 let amount_percent = data["amountPercent"]["percent"] != null ? (data["amountPercent"]["percent"] * room.selling_price) : data["amountPercent"]["amount"];
                 cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
-                if(!cancelPolicies.is_refundable){
+                if (!cancelPolicies.is_refundable) {
                     policy_info.push(`This is not refundable`)
                 }
                 if (data["deadline"] != null) {
@@ -483,15 +483,21 @@ export class Monaker implements StrategyVacationRental {
 
         const response = verifyResult.data;
 
+        console.log("REPONSe", response);
+
         if (!response["available"]) {
             throw new NotAcceptableException(`Not available vacation rental home`)
         }
 
         const verifyAvailability = new VerifyAvailability();
 
+        let fee: Fees;
+        let fees: Fees[] = [];
+
         verifyAvailability.available_status = response["available"];
         verifyAvailability.booking_code = response["quoteHandle"];
         verifyAvailability.net_price = response["totalPrice"]["amountAfterTax"];
+
         verifyAvailability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(verifyAvailability.net_price, markUpDetails));
         let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 0);
 
@@ -510,6 +516,31 @@ export class Monaker implements StrategyVacationRental {
             verifyAvailability.secondary_selling_price = 0;
         }
         verifyAvailability.instalment_details = instalmentDetails;
+        if (response["totalPrice"]["ratePlanCode"] == "ThisUnitTypeHasMandatoryAddonsPaidOnArrival") {
+            for (let i = 0; i < response["fees"].length; i++) {
+                fee = new Fees();
+                if (response["fees"][i]["mandatoryInd"] == true) {
+                    fee.message = `(Mandtory and pay on arrival) ${response["fees"][i]["description"]}`
+                    // verifyAvailability.fees.push({ "message": `(Mandtory and pay on arrival)+ ${response["fees"][i]["description"]}` })
+                }
+                fees.push(fee);
+            }
+        } else {
+            for (let i = 0; i < response["fees"].length; i++) {
+                fee = new Fees();
+                if (response["fees"][i]["mandatoryInd"] == true) {
+                    fee.message = `(Included in price) ${response["fees"][i]["description"]}`
+                    // verifyAvailability.fees.push({ "message": `(Mandtory and pay on arrival)+ ${response["fees"][i]["description"]}` })
+                }
+                if (response["fees"][i]["mandatoryInd"] == false) {
+                    fee.message = `(Optional) ${response["fees"][i]["description"]}`
+                    // verifyAvailability.fees.push({ "message": `(Mandtory and pay on arrival)+ ${response["fees"][i]["description"]}` })
+                }
+                fees.push(fee);
+            }
+        }
+
+        verifyAvailability.fees = fees;
 
         return verifyAvailability;
 

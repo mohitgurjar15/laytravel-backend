@@ -101,7 +101,7 @@ export class HttpRequest {
         catch (e) {
             let error = e.response.data
             
-            console.log("===================>>>>>>>>>>>>>", error);
+            console.log("===================>>>>>>>>>>>>>", e);
             
             if(error.hasOwnProperty("CheckInDate")){
                 throw new NotAcceptableException(`${error["CheckInDate"][0]}`)
