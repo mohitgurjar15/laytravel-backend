@@ -140,7 +140,7 @@ export class CronJobsService {
 				var responce: any = await this.flightService.ticketFlight(element.supplierBookingId);
 			} catch (error) {
 				console.log(error);
-				const filename = `update-pending-flight-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() +'.json'
+				const filename = `update-pending-flight-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() + '.json'
 
 				Activity.createlogFile(filename, JSON.stringify(result[index]) + '-----------------------error-----------------------' + JSON.stringify(error), 'flight')
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/flight/${filename}</p> <br/>`
@@ -212,7 +212,7 @@ export class CronJobsService {
 
 		var failedlogArray = '';
 		for await (const instalment of data) {
-			
+
 			try {
 
 				console.log('installment amount', instalment.amount);
@@ -384,7 +384,7 @@ export class CronJobsService {
 				}
 			} catch (error) {
 				console.log(error);
-				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() +'.json'
+				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(instalment) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
 				failedlogArray += `<p>instalmentId:- ${instalment.id}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
 			}
@@ -541,7 +541,7 @@ export class CronJobsService {
 				}
 			} catch (error) {
 				console.log(error);
-				const filename = `daily-booking-price-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() +'.json'
+				const filename = `daily-booking-price-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(result[index]) + '-----------------------error-----------------------' + JSON.stringify(error), 'booking')
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`
 			}
@@ -589,7 +589,7 @@ export class CronJobsService {
 					this.sendFlightFailerMail(booking.user.email, booking.laytripBookingId)
 
 					PushNotification.sendNotificationTouser(booking.user.userId,
-						{  //you can send only notification or only data(or include both)
+						{
 							module_name: 'booking',
 							task: 'booking_failed',
 							bookingId: booking.laytripBookingId
@@ -846,6 +846,7 @@ export class CronJobsService {
 				"booking.netRate",
 				"booking.usdFactor",
 				"booking.isTicketd",
+				"booking.laytripBookingId",
 				"currency.id",
 				"currency.code",
 				"currency.liveRate",
@@ -884,6 +885,8 @@ export class CronJobsService {
 				{  //you can send only notification or only data(or include both)
 					module_name: 'payment',
 					task: 'payment_reminder',
+					bookingId: installment.booking.laytripBookingId,
+					instalmentId: installment.id
 				},
 				{
 					title: 'Payment Reminder',
