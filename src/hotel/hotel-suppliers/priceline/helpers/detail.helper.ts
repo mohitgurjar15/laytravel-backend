@@ -110,6 +110,8 @@ export class DetailHelper {
             amenities,
             thumbnail,
             rating: Math.ceil(hotel.star_rating),
+            review_rating: hotel.review_rating,
+            review_rating_desc: hotel.review_rating_desc,
             geocodes: hotel.geo,
             hotel_chain: {
                 code: hotel.hotel_chain.code,

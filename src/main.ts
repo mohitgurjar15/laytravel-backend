@@ -51,7 +51,6 @@ async function bootstrap() {
 		.addBearerAuth()
 		.setTitle("Lay Trip")
 		.setDescription("")
-		.setBasePath('./')
 		.setVersion("1.0")
 		.build();
 	const document = SwaggerModule.createDocument(app, options);
