@@ -283,7 +283,7 @@ export class PaymentService {
 				headers: headers,
 			});
 
-			
+
 			let logData = {};
 			logData['url'] = url
 			logData['requestBody'] = requestBody
@@ -300,36 +300,43 @@ export class PaymentService {
 			logData['responce'] = error;
 			let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
 			Activity.createlogFile(fileName, logData, 'payment');
-			
-			if (typeof error.response !== "undefined") {
-				switch (error.response.status) {
-					case 404:
-						throw new NotFoundException(error.response.message);
-					case 409:
-						throw new ConflictException(error.response.message);
-					case 422:
-						throw new BadRequestException(error.response.message);
-					case 403:
-						throw new ForbiddenException(error.response.message);
-					case 402:
-						throw new ForbiddenException(error.response.message);
-					case 500:
-						throw new InternalServerErrorException(error.response.message);
-					case 406:
-						throw new NotAcceptableException(error.response.message);
-					case 404:
-						throw new NotFoundException(error.response.message);
-					case 401:
-						throw new UnauthorizedException(error.response.message);
-					default:
-						throw new InternalServerErrorException(
-							`${error.message}&&&id&&&${error.Message}`
-						);
-				}
+			console.log(error.response.status);
+
+			return {
+				transaction: { succeeded: false },
+				logFile : fileName,
+				meta_data: error.responce
+				
 			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
+			// if (typeof error.response !== "undefined") {
+			// 	switch (error.response.status) {
+			// 		case 404:
+			// 			throw new NotFoundException(error.response.message);
+			// 		case 409:
+			// 			throw new ConflictException(error.response.message);
+			// 		case 422:
+			// 			return {transaction:{succeeded:false}}
+			// 		case 403:
+			// 			return {transaction:{succeeded:false}}
+			// 		case 402:
+			// 			return {transaction:{succeeded:false}}
+			// 		case 500:
+			// 			throw new InternalServerErrorException(error.response.message);
+			// 		case 406:
+			// 			throw new NotAcceptableException(error.response.message);
+			// 		case 404:
+			// 			throw new NotFoundException(error.response.message);
+			// 		case 401:
+			// 			throw new UnauthorizedException(error.response.message);
+			// 		default:
+			// 			throw new InternalServerErrorException(
+			// 				`${error.message}&&&id&&&${error.Message}`
+			// 			);
+			// 	}
+			// }
+			// throw new InternalServerErrorException(
+			// 	`${error.message}&&&id&&&${errorMessage}`
+			// );
 		}
 	}
 
@@ -354,6 +361,7 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment');
+		console.log(authResult);
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
@@ -361,6 +369,8 @@ export class PaymentService {
 				meta_data: authResult,
 			};
 		} else {
+			console.log(authResult);
+
 			return {
 				status: false,
 				meta_data: authResult,
