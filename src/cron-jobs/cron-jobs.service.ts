@@ -33,6 +33,9 @@ import { PushNotification } from "src/utility/push-notification.utility";
 import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 const AWS = require('aws-sdk');
+var assert = require('assert');
+var fs = require('fs');
+var spawn = require('child_process').spawn;
 
 
 
@@ -229,12 +232,13 @@ export class CronJobsService {
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
+					console.log(transaction)
 
 					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.paymentInfo = transaction.meta_data;
 					instalment.transactionToken = transaction.token;
 					instalment.paymentCaptureDate = new Date();
-					instalment.attempt = (instalment.attempt || 0) + 1;
+					instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
 					instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.comment = `Get Payment by cron on ${currentDate}`
 					await instalment.save()
@@ -264,7 +268,7 @@ export class CronJobsService {
 							available_try: availableTry,
 							payment_dates: nextDate
 						}
-						if (instalment.attempt == 3) {
+						if (instalment.attempt >= 3 ) {
 							await getConnection()
 								.createQueryBuilder()
 								.update(Booking)
@@ -383,7 +387,7 @@ export class CronJobsService {
 					await this.checkAllinstallmentPaid(instalment.bookingId)
 				}
 			} catch (error) {
-				console.log(error);
+				
 				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(instalment) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
 				failedlogArray += `<p>instalmentId:- ${instalment.id}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
@@ -939,4 +943,72 @@ export class CronJobsService {
 		return paidAmount[0].total_amount
 	}
 
+	async backupDatabase() {
+		const AWSconfig = config.get('AWS');
+		const dbConfig = config.get('db');
+
+		const {execute} = require('@getvim/execute');
+
+		var dbName = process.env.RDS_Database || dbConfig.database;
+
+		var host = process.env.RDS_Host || dbConfig.host
+		var port = process.env.RDS_Port || dbConfig.port
+		var username = process.env.RDS_Username || dbConfig.username
+		var password = process.env.RDS_Password || dbConfig.password
+
+		var S3_BUCKET = 'laytrip/logs/';
+		var s3AccessKeyId = process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId;
+		var s3SecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || AWSconfig.secretAccessKey
+
+		process.env.AWS_ACCESS_KEY_ID = s3AccessKeyId;
+		process.env.AWS_SECRET_ACCESS_KEY = s3SecretAccessKey;
+
+
+		// Determine our filename
+		//   20170312.011924.307000000.sql.gz
+		var timestamp = (new Date()).toISOString()
+			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
+		var filepath = '/var/www/html/logs/database/'+timestamp + '.sql.gz';
+
+		if (!fs.existsSync('/var/www/html/logs/database/')) {
+			fs.mkdirSync('/var/www/html/logs/database/');
+		}
+		var s3 = new AWS.S3();
+
+		// Dump our database to a file so we can collect its length
+		// DEV: We output `stderr` to `process.stderr`
+		// DEV: We write to disk so S3 client can calculate `Content-Length` of final result before uploading
+		console.log('Dumping `pg_dump` into `gzip`');
+		
+		await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
+			console.log("Finito");
+			console.log('Uploading "' + filepath + '" to S3');
+			s3.putObject({
+				Bucket: S3_BUCKET,
+				Key: filepath,
+				ACL: 'private',
+				ContentType: 'text/plain',
+				ContentEncoding: 'gzip',
+				Body: fs.createReadStream(filepath)
+			}, function handlePutObject(err, data) {
+				// If there was an error, throw it
+				if (err) {
+					throw err;
+					return err
+				} else {
+					console.log('Successfully uploaded "' + filepath + '"');
+					return {message:'Successfully uploaded "' + filepath + '"'}
+				}
+			});
+		}).catch(err => {
+			console.log(err);
+			return err
+		})
+
+			// Upload our gzip stream into S3
+			// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
+			
+
+	
+	}
 }
