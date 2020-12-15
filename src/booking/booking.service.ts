@@ -32,6 +32,7 @@ import { ExportBookingDto } from "./dto/export-booking.dto";
 import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { User } from "src/entity/user.entity";
+import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 
 @Injectable()
 export class BookingService {
@@ -42,7 +43,8 @@ export class BookingService {
 		public readonly mailerService: MailerService
 	) { }
 
-	async resendBookingEmail(bookingId: string): Promise<{ message: any }> {
+	async resendBookingEmail(bookingDetail: getBookingDetailsDto): Promise<{ message: any }> {
+		const {bookingId} = bookingDetail
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 
 		if (!bookingData) {
@@ -240,9 +242,8 @@ export class BookingService {
 
 			for (let i in result.data) {
 				if (result.data[i].bookingInstalments.length > 0) {
-					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+					result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
 
-					result.data[i].bookingInstalments.reverse()
 				}
 
 				for (let instalment of result.data[i].bookingInstalments) {
@@ -322,9 +323,9 @@ export class BookingService {
 				let pandinginstallment = 0;
 
 				if (result.data[i].bookingInstalments.length > 0) {
-					result.data[i].bookingInstalments.sort((a, b) => b.id - a.id)
+					result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
 
-					result.data[i].bookingInstalments.reverse()
+					//result.data[i].bookingInstalments.reverse()
 				}
 
 				for (let instalment of result.data[i].bookingInstalments) {
@@ -406,9 +407,9 @@ export class BookingService {
 			//console.log(result);
 
 			if (result.bookingInstalments.length > 0) {
-				result.bookingInstalments.sort((a, b) => b.id - a.id)
+				result.bookingInstalments.sort((a, b) => a.id - b.id)
 
-				result.bookingInstalments.reverse()
+				//result.bookingInstalments.reverse()
 			}
 			for (let instalment of result.bookingInstalments) {
 				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
@@ -481,6 +482,11 @@ export class BookingService {
 
 
 		for (let i = 0; i < result.data.length; i++) {
+			if (result.data[i].bookingInstalments.length > 0) {
+				result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
+	
+				//result.data[i].bookingInstalments.reverse()
+			}
 			let paidAmount = 0;
 			for (let instalment of result.data[i].bookingInstalments) {
 				if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
@@ -610,7 +616,9 @@ export class BookingService {
 				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
-				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date
+				console.log(bookingData.laytripBookingId);
+					
+				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				predictiveBookingData['module_name'] = bookingData.module.name;
@@ -679,7 +687,8 @@ export class BookingService {
 				}
 				else {
 					const paidAmount = await this.paidAmountByUser(booking.id)
-
+					console.log(booking.laytripBookingId);
+					console.log('booking.laytripBookingId');
 					const predictiveBookingData: any = {}
 					predictiveBookingData['booking_id'] = booking.id
 					predictiveBookingData['net_price'] = null
@@ -692,7 +701,7 @@ export class BookingService {
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 					predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(booking.totalAmount)
 					predictiveBookingData['booking_status'] = booking.bookingStatus;
-					predictiveBookingData['departure_date'] = booking.moduleInfo[0].departure_date
+					predictiveBookingData['departure_date'] = booking.moduleInfo[0].departure_date || ''
 					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
 					predictiveBookingData['bookIt'] = false;
 
@@ -912,12 +921,13 @@ export class BookingService {
 	}
 
 
-	async shareBooking(bookingId: string, shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+	async shareBooking( shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+		const { emails , bookingId } = shareBookingDto
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 		if (bookingData.userId != user.userId) {
 			throw new NotAcceptableException(`given booking not found`)
 		}
-		const { emails } = shareBookingDto
+		
 		if (!bookingData) {
 			throw new NotFoundException(
 				"Given booking id not found&&&booking_id&&&Given booking id not found"

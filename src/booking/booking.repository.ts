@@ -115,7 +115,9 @@ export class BookingRepository extends Repository<Booking> {
 
 		//console.log(result);
 
-
+		if (result.bookingInstalments.length > 0) {
+			result.bookingInstalments.sort((a, b) => a.id - b.id)
+		}
 
 		delete result.user.updatedDate;
 		delete result.user.salt;
@@ -143,6 +145,7 @@ export class BookingRepository extends Repository<Booking> {
 		//return bookingDetails;
 	}
 
+
 	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;
 
@@ -163,6 +166,11 @@ export class BookingRepository extends Repository<Booking> {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 
+		if (data.bookingInstalments.length > 0) {
+			data.bookingInstalments.sort((a, b) =>  a.id - b.id )
+
+			
+		}
 		return data;
 	}
 
@@ -430,7 +438,7 @@ export class BookingRepository extends Repository<Booking> {
 				"moduleData.id"
 			])
 
-			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}'`)
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id = 1`)
 
 
 		const [data, count] = await query.getManyAndCount();

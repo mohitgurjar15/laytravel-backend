@@ -39,12 +39,7 @@ export const EmailFooter = `<!-- footer section -->
                         <img src="${BaseUrl}assets/images/email/icons/pinterest.png" alt="pinterest" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
                       </a>
                     </td>
-                    <td width="24" style="width: 24px;">&nbsp;</td>
-                    <td align="left" valign="middle">
-                      <a href="#" target="_blank" style="text-decoration: none;">
-                        <img src="${BaseUrl}assets/images/email/icons/link.png" alt="link" width="25" height="25" border="0" style="display: block; max-width:25px; font-family:'Poppins', Arial, sans-serif; font-size: 14px; line-height: 25px; color: #ffffff; " />
-                      </a>
-                    </td>
+                    
                   </tr>
                 </tbody>
               </table>
@@ -57,7 +52,7 @@ export const EmailFooter = `<!-- footer section -->
                   <td align="center" valign="top" style="padding: 8px 0 20px; font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000; font-weight: 400; font-style: italic;">Copyright &copy; Laytrip, All rights reserved.</td>
                 </tr>
                 <tr>
-                  <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000; padding: 0 0 20px;">Want to chang how you receive these emails?<br/>You can <a href="javascrip:void(0);" style="text-decoration: underline;">update your preferences</a> or <a href="javascrip:void(0);" style="text-decoration: underline;">unsubscribe from this list</a>.</td>
+                  <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000; padding: 0 0 20px;">Want to change how you receive these emails?<br/>You can <a href="javascrip:void(0);" style="text-decoration: underline;">update your preferences</a> or <a href="javascrip:void(0);" style="text-decoration: underline;">unsubscribe from this list</a>.</td>
                 </tr>
                 <tr>
                   <td align="center" valign="top" style=" font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000;">

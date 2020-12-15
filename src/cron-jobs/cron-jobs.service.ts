@@ -32,7 +32,11 @@ import { Generic } from "src/utility/generic.utility";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
+import { DateTime } from "src/utility/datetime.utility";
 const AWS = require('aws-sdk');
+var assert = require('assert');
+var fs = require('fs');
+var spawn = require('child_process').spawn;
 
 
 
@@ -140,7 +144,7 @@ export class CronJobsService {
 				var responce: any = await this.flightService.ticketFlight(element.supplierBookingId);
 			} catch (error) {
 				console.log(error);
-				const filename = `update-pending-flight-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() +'.json'
+				const filename = `update-pending-flight-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() + '.json'
 
 				Activity.createlogFile(filename, JSON.stringify(result[index]) + '-----------------------error-----------------------' + JSON.stringify(error), 'flight')
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/flight/${filename}</p> <br/>`
@@ -166,8 +170,6 @@ export class CronJobsService {
 		nextDate = nextDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
-
-		console.log(nextDate);
 
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
@@ -212,7 +214,7 @@ export class CronJobsService {
 
 		var failedlogArray = '';
 		for await (const instalment of data) {
-			
+
 			try {
 
 				console.log('installment amount', instalment.amount);
@@ -229,14 +231,15 @@ export class CronJobsService {
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
+					console.log(transaction)
 
 					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.paymentInfo = transaction.meta_data;
 					instalment.transactionToken = transaction.token;
 					instalment.paymentCaptureDate = new Date();
-					instalment.attempt = (instalment.attempt || 0) + 1;
+					instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
 					instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-					instalment.comment = `Get Payment by cron on ${currentDate}`
+					instalment.comment = `try to get Payment by cron on ${currentDate}`
 					await instalment.save()
 
 					console.log(transaction.status);
@@ -259,16 +262,17 @@ export class CronJobsService {
 						}
 
 						let param = {
-							date: instalment.instalmentDate,
+							date: DateTime.convertDateFormat(instalment.instalmentDate, 'yyyy-mm-dd', 'MM/DD/YYYY'),
 							amount: amount,
 							available_try: availableTry,
-							payment_dates: nextDate
+							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							currency: instalment.currency.symbol
 						}
-						if (instalment.attempt == 3) {
+						if (instalment.attempt >= 3) {
 							await getConnection()
 								.createQueryBuilder()
 								.update(Booking)
-								.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+								.set({ bookingStatus: BookingStatus.NOTCOMPLETED , paymentStatus : PaymentStatus.FAILED})
 								.where("id = :id", { id: instalment.bookingId })
 								.execute();
 							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
@@ -282,6 +286,9 @@ export class CronJobsService {
 									title: 'booking Cancelled',
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
 								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+
+							instalment.paymentStatus = PaymentStatus.FAILED
+							await instalment.save()
 						}
 						this.mailerService
 							.sendMail({
@@ -317,34 +324,35 @@ export class CronJobsService {
 
 					}
 					else {
-						console.log('nextDate');
+						//console.log('nextDate');
 
-						const nextDate = await getManager()
+						const nextInstalmentDate = await getManager()
 							.createQueryBuilder(BookingInstalments, "BookingInstalments")
 							.select(['BookingInstalments.instalmentDate'])
-							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
+							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'AND "BookingInstalments"."id" > ${instalment.id}`)
 							.orderBy(`"BookingInstalments"."id"`)
 							.getOne()
-						console.log(nextDate);
+
+						// console.log(nextDate);
 
 
 						await getConnection()
 							.createQueryBuilder()
 							.update(Booking)
-							.set({ nextInstalmentDate: nextDate.instalmentDate })
+							.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
 							.where("id = :id", { id: instalment.bookingId })
 							.execute();
 
 						let param = {
-							date: instalment.instalmentDate,
+							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
 							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
 							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
 							cardNo: transaction.meta_data.transaction.payment_method.number,
 							orderId: instalment.booking.laytripBookingId,
-							amount: parseFloat(instalment.amount),
+							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							installmentId: instalment.id,
 							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
-							totalAmount: parseFloat(instalment.booking.totalAmount)
+							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount))
 						}
 
 						this.mailerService
@@ -383,8 +391,8 @@ export class CronJobsService {
 					await this.checkAllinstallmentPaid(instalment.bookingId)
 				}
 			} catch (error) {
-				console.log(error);
-				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() +'.json'
+
+				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(instalment) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
 				failedlogArray += `<p>instalmentId:- ${instalment.id}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
 			}
@@ -541,7 +549,7 @@ export class CronJobsService {
 				}
 			} catch (error) {
 				console.log(error);
-				const filename = `daily-booking-price-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() +'.json'
+				const filename = `daily-booking-price-cron-failed-` + result[index].laytripBookingId + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(result[index]) + '-----------------------error-----------------------' + JSON.stringify(error), 'booking')
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`
 			}
@@ -589,7 +597,7 @@ export class CronJobsService {
 					this.sendFlightFailerMail(booking.user.email, booking.laytripBookingId)
 
 					PushNotification.sendNotificationTouser(booking.user.userId,
-						{  //you can send only notification or only data(or include both)
+						{
 							module_name: 'booking',
 							task: 'booking_failed',
 							bookingId: booking.laytripBookingId
@@ -661,7 +669,7 @@ export class CronJobsService {
 				to: email,
 				from: mailConfig.from,
 				cc: mailConfig.BCC,
-				subject: "Booking Failer Mail",
+				subject: "Booking Failure Mail",
 				html: BookingFailerMail({
 					error: error,
 				}, bookingId),
@@ -815,7 +823,7 @@ export class CronJobsService {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 		var fromDate = new Date();
-		fromDate.setDate(fromDate.getDate() + 2);
+		fromDate.setDate(fromDate.getDate() + 3);
 		var toDate = fromDate.toISOString();
 		toDate = toDate
 			.replace(/T/, " ") // replace T with a space
@@ -846,6 +854,7 @@ export class CronJobsService {
 				"booking.netRate",
 				"booking.usdFactor",
 				"booking.isTicketd",
+				"booking.laytripBookingId",
 				"currency.id",
 				"currency.code",
 				"currency.liveRate",
@@ -862,8 +871,8 @@ export class CronJobsService {
 		for await (const installment of data) {
 			const param = {
 				userName: installment.user.firstName,
-				amount: installment.currency.symbol + installment.amount,
-				date: installment.instalmentDate
+				amount: installment.currency.symbol + `${Generic.formatPriceDecimal(parseFloat(installment.amount))}`,
+				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY')
 			}
 			this.mailerService
 				.sendMail({
@@ -884,6 +893,8 @@ export class CronJobsService {
 				{  //you can send only notification or only data(or include both)
 					module_name: 'payment',
 					task: 'payment_reminder',
+					bookingId: installment.booking.laytripBookingId,
+					instalmentId: installment.id
 				},
 				{
 					title: 'Payment Reminder',
@@ -936,4 +947,72 @@ export class CronJobsService {
 		return paidAmount[0].total_amount
 	}
 
+	async backupDatabase() {
+		const AWSconfig = config.get('AWS');
+		const dbConfig = config.get('db');
+
+		const { execute } = require('@getvim/execute');
+
+		var dbName = process.env.RDS_Database || dbConfig.database;
+
+		var host = process.env.RDS_Host || dbConfig.host
+		var port = process.env.RDS_Port || dbConfig.port
+		var username = process.env.RDS_Username || dbConfig.username
+		var password = process.env.RDS_Password || dbConfig.password
+
+		var S3_BUCKET = 'laytrip/logs/';
+		var s3AccessKeyId = process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId;
+		var s3SecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || AWSconfig.secretAccessKey
+
+		process.env.AWS_ACCESS_KEY_ID = s3AccessKeyId;
+		process.env.AWS_SECRET_ACCESS_KEY = s3SecretAccessKey;
+
+
+		// Determine our filename
+		//   20170312.011924.307000000.sql.gz
+		var timestamp = (new Date()).toISOString()
+			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
+		var filepath = '/var/www/html/logs/database/' + timestamp + '.sql.gz';
+
+		if (!fs.existsSync('/var/www/html/logs/database/')) {
+			fs.mkdirSync('/var/www/html/logs/database/');
+		}
+		var s3 = new AWS.S3();
+
+		// Dump our database to a file so we can collect its length
+		// DEV: We output `stderr` to `process.stderr`
+		// DEV: We write to disk so S3 client can calculate `Content-Length` of final result before uploading
+		console.log('Dumping `pg_dump` into `gzip`');
+
+		await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
+			console.log("Finito");
+			console.log('Uploading "' + filepath + '" to S3');
+			s3.putObject({
+				Bucket: S3_BUCKET,
+				Key: filepath,
+				ACL: 'private',
+				ContentType: 'text/plain',
+				ContentEncoding: 'gzip',
+				Body: fs.createReadStream(filepath)
+			}, function handlePutObject(err, data) {
+				// If there was an error, throw it
+				if (err) {
+					throw err;
+					return err
+				} else {
+					console.log('Successfully uploaded "' + filepath + '"');
+					return { message: 'Successfully uploaded "' + filepath + '"' }
+				}
+			});
+		}).catch(err => {
+			console.log(err);
+			return err
+		})
+
+		// Upload our gzip stream into S3
+		// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
+
+
+
+	}
 }
