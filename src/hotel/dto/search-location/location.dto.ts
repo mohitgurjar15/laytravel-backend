@@ -1,7 +1,3 @@
-export interface Locations {
-    Location;
-}
-
 export class Location {
     title: string;
     city: string;

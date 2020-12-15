@@ -27,4 +27,10 @@ export class DateTime{
 
        return  moment(date, currentFormat).format(newFormat)
     }
+    
+    static convertFormat(date: string, format: string = 'YYYY-MM-DD hh:mm:ss') {
+        
+        return moment(date).format(format);
+
+    }
 }

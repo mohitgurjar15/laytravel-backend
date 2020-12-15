@@ -32,7 +32,13 @@ import { Generic } from "src/utility/generic.utility";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
+import { DateTime } from "src/utility/datetime.utility";
+import { ModulesName } from "src/enum/module.enum";
+import { Translation } from "src/utility/translation.utility";
 const AWS = require('aws-sdk');
+var assert = require('assert');
+var fs = require('fs');
+var spawn = require('child_process').spawn;
 
 
 
@@ -120,7 +126,8 @@ export class CronJobsService {
 			.createQueryBuilder(Booking, "booking")
 			.select([
 				"booking.supplierBookingId",
-				"booking.id"
+				"booking.id",
+				"booking.laytripBookingId"
 			])
 			.where(
 				`"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
@@ -166,8 +173,6 @@ export class CronJobsService {
 		nextDate = nextDate
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
-
-		console.log(nextDate);
 
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
@@ -229,14 +234,15 @@ export class CronJobsService {
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
+					console.log(transaction)
 
 					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.paymentInfo = transaction.meta_data;
 					instalment.transactionToken = transaction.token;
 					instalment.paymentCaptureDate = new Date();
-					instalment.attempt = (instalment.attempt || 0) + 1;
+					instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
 					instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-					instalment.comment = `Get Payment by cron on ${currentDate}`
+					instalment.comment = `try to get Payment by cron on ${currentDate}`
 					await instalment.save()
 
 					console.log(transaction.status);
@@ -259,16 +265,17 @@ export class CronJobsService {
 						}
 
 						let param = {
-							date: instalment.instalmentDate,
+							date: DateTime.convertDateFormat(instalment.instalmentDate, 'yyyy-mm-dd', 'MM/DD/YYYY'),
 							amount: amount,
 							available_try: availableTry,
-							payment_dates: nextDate
+							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							currency: instalment.currency.symbol
 						}
-						if (instalment.attempt == 3) {
+						if (instalment.attempt >= 3) {
 							await getConnection()
 								.createQueryBuilder()
 								.update(Booking)
-								.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+								.set({ bookingStatus: BookingStatus.NOTCOMPLETED, paymentStatus: PaymentStatus.FAILED })
 								.where("id = :id", { id: instalment.bookingId })
 								.execute();
 							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
@@ -282,6 +289,9 @@ export class CronJobsService {
 									title: 'booking Cancelled',
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
 								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+
+							instalment.paymentStatus = PaymentStatus.FAILED
+							await instalment.save()
 						}
 						this.mailerService
 							.sendMail({
@@ -317,34 +327,35 @@ export class CronJobsService {
 
 					}
 					else {
-						console.log('nextDate');
+						//console.log('nextDate');
 
-						const nextDate = await getManager()
+						const nextInstalmentDate = await getManager()
 							.createQueryBuilder(BookingInstalments, "BookingInstalments")
 							.select(['BookingInstalments.instalmentDate'])
-							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
+							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'AND "BookingInstalments"."id" > ${instalment.id}`)
 							.orderBy(`"BookingInstalments"."id"`)
 							.getOne()
-						console.log(nextDate);
+
+						// console.log(nextDate);
 
 
 						await getConnection()
 							.createQueryBuilder()
 							.update(Booking)
-							.set({ nextInstalmentDate: nextDate.instalmentDate })
+							.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
 							.where("id = :id", { id: instalment.bookingId })
 							.execute();
 
 						let param = {
-							date: instalment.instalmentDate,
+							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
 							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
 							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
 							cardNo: transaction.meta_data.transaction.payment_method.number,
 							orderId: instalment.booking.laytripBookingId,
-							amount: parseFloat(instalment.amount),
+							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							installmentId: instalment.id,
 							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
-							totalAmount: parseFloat(instalment.booking.totalAmount)
+							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount))
 						}
 
 						this.mailerService
@@ -383,7 +394,7 @@ export class CronJobsService {
 					await this.checkAllinstallmentPaid(instalment.bookingId)
 				}
 			} catch (error) {
-				console.log(error);
+
 				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(instalment) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
 				failedlogArray += `<p>instalmentId:- ${instalment.id}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
@@ -430,114 +441,16 @@ export class CronJobsService {
 		var failedlogArray = ''
 		for (let index = 0; index < result.length; index++) {
 			try {
-				var bookingData = result[index];
-				let flights: any = null;
-				if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
-					var bookingType = bookingData.locationInfo['journey_type']
+				switch (result[index].moduleId) {
+					case ModulesName.FLIGHT:
+						await this.getDailyPriceOfFlight(result[index], Headers)
+						break;
+					case ModulesName.VACATION_RENTEL:
+						await this.getDailyPriceOfFlight(result[index], Headers)
+						break;
+					default:
 
-					let travelers = [];
-
-					for await (const traveler of bookingData.travelers) {
-						travelers.push({
-							traveler_id: traveler.userId
-						})
-					}
-
-					if (bookingType == 'oneway') {
-						Headers['currency'] = bookingData.currency2.code
-						Headers['language'] = 'en'
-
-						let dto = {
-							"source_location": bookingData.moduleInfo[0].departure_code,
-							"destination_location": bookingData.moduleInfo[0].arrival_code,
-							"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-							"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-							"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-							"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-							"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
-						}
-
-						flights = await this.flightService.searchOneWayZipFlight(dto, Headers, bookingData.user);
-
-					}
-					else {
-						Headers['currency'] = bookingData.currency2.code
-						Headers['language'] = 'en'
-
-						let dto = {
-							"source_location": bookingData.moduleInfo[0].departure_code,
-							"destination_location": bookingData.moduleInfo[0].arrival_code,
-							"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-							"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-							"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-							"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-							"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
-							"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
-						}
-
-						flights = await this.flightService.searchRoundTripZipFlight(dto, Headers, bookingData.user);
-					}
-					if (flights.items && flights.items.length) {
-						for await (const flight of flights.items) {
-							if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
-
-								const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
-
-								const savedDate = new Date(bookingData.predectedBookingDate);
-								var predictedDate = savedDate.toISOString();
-								predictedDate = predictedDate
-									.replace(/T/, " ") // replace T with a space
-									.replace(/\..+/, "");
-
-								const bookingDto = new BookFlightDto
-								bookingDto.travelers = travelers
-								bookingDto.payment_type = `${bookingData.bookingType}`;
-								bookingDto.instalment_type = `${bookingData.bookingType}`
-								bookingDto.route_code = flight.route_code;
-								bookingDto.additional_amount = 0
-								bookingDto.laycredit_points = 0
-
-								const user = bookingData.user
-
-
-
-								const bookingId = bookingData.laytripBookingId;
-
-								const date = new Date();
-								var todayDate = date.toISOString();
-								todayDate = todayDate
-									.replace(/T/, " ") // replace T with a space
-									.replace(/\..+/, "");
-								let query = await getManager()
-									.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
-									.leftJoinAndSelect("predictiveBookingData.booking", "booking")
-									.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
-									.getOne();
-								if (query) {
-									query.bookingId = bookingData.id
-									query.netPrice = flight.net_rate
-									query.date = new Date();
-									query.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
-									query.remainSeat = flight.routes[0].stops[0].remaining_seat
-									query.price = flight.selling_price
-									await query.save();
-								}
-								else {
-									const predictiveBookingData = new PredictiveBookingData
-									predictiveBookingData.bookingId = bookingData.id
-									predictiveBookingData.netPrice = flight.net_rate
-									predictiveBookingData.date = new Date();
-									predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
-									predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
-									predictiveBookingData.price = flight.selling_price
-									console.log(flight);
-									//predictiveBookingData.bookIt = false;
-									await predictiveBookingData.save()
-								}
-
-							}
-						}
-					}
+						break;
 				}
 			} catch (error) {
 				console.log(error);
@@ -644,7 +557,9 @@ export class CronJobsService {
 				//if TicketStatus = TktInProgress call it again
 			}
 		}
-		return { message: `pending booking updated successfully` }
+		return {
+			message: Translation.Translater('ES', 'responce', 'update_booking_cron')
+		}
 	}
 
 	async getDataTimefromString(dateTime) {
@@ -661,7 +576,7 @@ export class CronJobsService {
 				to: email,
 				from: mailConfig.from,
 				cc: mailConfig.BCC,
-				subject: "Booking Failer Mail",
+				subject: "Booking Failure Mail",
 				html: BookingFailerMail({
 					error: error,
 				}, bookingId),
@@ -815,7 +730,7 @@ export class CronJobsService {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 		var fromDate = new Date();
-		fromDate.setDate(fromDate.getDate() + 2);
+		fromDate.setDate(fromDate.getDate() + 3);
 		var toDate = fromDate.toISOString();
 		toDate = toDate
 			.replace(/T/, " ") // replace T with a space
@@ -863,8 +778,8 @@ export class CronJobsService {
 		for await (const installment of data) {
 			const param = {
 				userName: installment.user.firstName,
-				amount: installment.currency.symbol + installment.amount,
-				date: installment.instalmentDate
+				amount: installment.currency.symbol + `${Generic.formatPriceDecimal(parseFloat(installment.amount))}`,
+				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY')
 			}
 			this.mailerService
 				.sendMail({
@@ -939,4 +854,183 @@ export class CronJobsService {
 		return paidAmount[0].total_amount
 	}
 
+	async backupDatabase() {
+		const AWSconfig = config.get('AWS');
+		const dbConfig = config.get('db');
+
+		const { execute } = require('@getvim/execute');
+
+		var dbName = process.env.RDS_Database || dbConfig.database;
+
+		var host = process.env.RDS_Host || dbConfig.host
+		var port = process.env.RDS_Port || dbConfig.port
+		var username = process.env.RDS_Username || dbConfig.username
+		var password = process.env.RDS_Password || dbConfig.password
+
+		var S3_BUCKET = 'laytrip/logs/';
+		var s3AccessKeyId = process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId;
+		var s3SecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || AWSconfig.secretAccessKey
+
+		process.env.AWS_ACCESS_KEY_ID = s3AccessKeyId;
+		process.env.AWS_SECRET_ACCESS_KEY = s3SecretAccessKey;
+
+
+		// Determine our filename
+		//   20170312.011924.307000000.sql.gz
+		var timestamp = (new Date()).toISOString()
+			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
+		var filepath = '/var/www/html/logs/database/' + timestamp + '.sql.gz';
+
+		if (!fs.existsSync('/var/www/html/logs/database/')) {
+			fs.mkdirSync('/var/www/html/logs/database/');
+		}
+		var s3 = new AWS.S3();
+
+		// Dump our database to a file so we can collect its length
+		// DEV: We output `stderr` to `process.stderr`
+		// DEV: We write to disk so S3 client can calculate `Content-Length` of final result before uploading
+		console.log('Dumping `pg_dump` into `gzip`');
+
+		await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
+			console.log("Finito");
+			console.log('Uploading "' + filepath + '" to S3');
+			s3.putObject({
+				Bucket: S3_BUCKET,
+				Key: filepath,
+				ACL: 'private',
+				ContentType: 'text/plain',
+				ContentEncoding: 'gzip',
+				Body: fs.createReadStream(filepath)
+			}, function handlePutObject(err, data) {
+				// If there was an error, throw it
+				if (err) {
+					throw err;
+					return err
+				} else {
+					console.log('Successfully uploaded "' + filepath + '"');
+					return { message: 'Successfully uploaded "' + filepath + '"' }
+				}
+			});
+		}).catch(err => {
+			console.log(err);
+			return err
+		})
+
+		// Upload our gzip stream into S3
+		// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
+
+
+
+	}
+
+	async getDailyPriceOfFlight(bookingData: Booking, Headers) {
+		let flights: any = null;
+		if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+			var bookingType = bookingData.locationInfo['journey_type']
+
+			let travelers = [];
+
+			for await (const traveler of bookingData.travelers) {
+				travelers.push({
+					traveler_id: traveler.userId
+				})
+			}
+
+			if (bookingType == 'oneway') {
+				Headers['currency'] = bookingData.currency2.code
+				Headers['language'] = 'en'
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+				}
+
+				flights = await this.flightService.searchOneWayZipFlight(dto, Headers, bookingData.user);
+
+			}
+			else {
+				Headers['currency'] = bookingData.currency2.code
+				Headers['language'] = 'en'
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+				}
+
+				flights = await this.flightService.searchRoundTripZipFlight(dto, Headers, bookingData.user);
+			}
+			if (flights.items && flights.items.length) {
+				for await (const flight of flights.items) {
+					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+
+						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+
+						const savedDate = new Date(bookingData.predectedBookingDate);
+						var predictedDate = savedDate.toISOString();
+						predictedDate = predictedDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+
+						const bookingDto = new BookFlightDto
+						bookingDto.travelers = travelers
+						bookingDto.payment_type = `${bookingData.bookingType}`;
+						bookingDto.instalment_type = `${bookingData.bookingType}`
+						bookingDto.route_code = flight.route_code;
+						bookingDto.additional_amount = 0
+						bookingDto.laycredit_points = 0
+
+						const user = bookingData.user
+
+
+
+						const bookingId = bookingData.laytripBookingId;
+
+						const date = new Date();
+						var todayDate = date.toISOString();
+						todayDate = todayDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+						let query = await getManager()
+							.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+							.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+							.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
+							.getOne();
+						if (query) {
+							query.bookingId = bookingData.id
+							query.netPrice = flight.net_rate
+							query.date = new Date();
+							query.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+							query.remainSeat = flight.routes[0].stops[0].remaining_seat
+							query.price = flight.selling_price
+							await query.save();
+						}
+						else {
+							const predictiveBookingData = new PredictiveBookingData
+							predictiveBookingData.bookingId = bookingData.id
+							predictiveBookingData.netPrice = flight.net_rate
+							predictiveBookingData.date = new Date();
+							predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+							predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
+							predictiveBookingData.price = flight.selling_price
+							console.log(flight);
+							//predictiveBookingData.bookIt = false;
+							await predictiveBookingData.save()
+						}
+
+					}
+				}
+			}
+		}
+	}
 }

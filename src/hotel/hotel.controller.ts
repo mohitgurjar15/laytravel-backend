@@ -51,8 +51,11 @@ export class HotelController {
     @Post('rooms')
     @HttpCode(200)
     rooms(
-        @Body() roomsReqDto: RoomsReqDto
+        @Body() roomsReqDto: RoomsReqDto,
+        @Headers() hotelHeaderDto: HotelHeaderDto
     ) {
+        roomsReqDto.token = hotelHeaderDto.token;
+        
         return this.hotelService.rooms(roomsReqDto);
     }
 

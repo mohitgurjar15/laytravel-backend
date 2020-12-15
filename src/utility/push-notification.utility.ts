@@ -37,30 +37,62 @@ export class PushNotification {
 			.where(`"userDeviceDetails"."user_id" = '${userId}'`)
 			.getMany()
 		if (devices.length) {
-			var tokens = []
+			var iosTokens = []
+			var androidTokens = []
+
 			for await (const device of devices) {
 				if (device.deviceToken) {
-					tokens.push(device.deviceToken)
+					if (device.deviceType == 1) {
+						androidTokens.push(device.deviceToken)
+					}
+					else {
+						iosTokens.push(device.deviceToken)
+					}
+
 				}
 			}
 			try {
 				var fcm = new FCM(fcmServerKey);
 
-				let message = {
+				if (iosTokens.length) {
+					let message = {
 
-					registration_ids: tokens,
-					data: data,
-					notification: pushData,
-					priority: 'high',
-				};
+						registration_ids: iosTokens,
+						data: data,
+						notification: pushData,
+						priority: 'high',
+					};
+					fcm.send(message, function (err, response) {
+						if (err) {
+							console.log(err);
+						} else {
+							console.log("Successfully sent with response: ", response);
+						}
+					});
 
-				fcm.send(message, function (err, response) {
-					if (err) {
-						console.log(err);
-					} else {
-						console.log("Successfully sent with response: ", response);
-					}
-				});
+
+				}
+
+				if (androidTokens.length) {
+					let message = {
+						registration_ids: androidTokens,
+						data: {
+							data: data,
+							notification: pushData,
+							priority: 'high',
+							to: "ffEseX6vwcM:APA91bF8m7wOF MY FCM ID 07j1aPUb"
+						}
+					};
+					fcm.send(message, function (err, response) {
+						if (err) {
+							console.log(err);
+						} else {
+							console.log("Successfully sent with response: ", response);
+						}
+					});
+				}
+
+
 
 				const notification = new Notification
 

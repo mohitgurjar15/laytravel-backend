@@ -27,22 +27,22 @@ export class AutoComplete{
                     
                     let geoCodes = sub['coordinate'].split(',');
                     let type = sub['type'];
-                    let country = null;
-                    let city = null;
-                    let state = null;
-                    let line = null;
-                    let hotel_id = null;
+                    let country = "";
+                    let city = "";
+                    let state = "";
+                    let line = "";
+                    let hotel_id = "";
 
                     switch (type) {
                         case 'city':
                             country = sub['country'];
                             city = sub['city'];
-                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : null;
+                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : "";
                             break;
                         
                         case 'airport':
                             country = sub['country_code'];
-                            state = this.detailHelper.isset(sub['state_code']) ? sub['state_code'] : null;
+                            state = this.detailHelper.isset(sub['state_code']) ? sub['state_code'] : "";
                             city = sub['city'];
                             line = sub['icao']+' - '+sub['airport'];
                             break;
@@ -53,7 +53,7 @@ export class AutoComplete{
                                 
                         case 'poi':
                             line = sub['poi_name'];
-                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : null;
+                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : "";
                             city = sub['city'];
                             country = sub['country'];
                             break;
