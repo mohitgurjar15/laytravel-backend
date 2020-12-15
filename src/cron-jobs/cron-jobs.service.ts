@@ -32,6 +32,7 @@ import { Generic } from "src/utility/generic.utility";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
+import { DateTime } from "src/utility/datetime.utility";
 const AWS = require('aws-sdk');
 var assert = require('assert');
 var fs = require('fs');
@@ -170,8 +171,6 @@ export class CronJobsService {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 
-		console.log(nextDate);
-
 		let query = getManager()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
@@ -240,7 +239,7 @@ export class CronJobsService {
 					instalment.paymentCaptureDate = new Date();
 					instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
 					instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-					instalment.comment = `Get Payment by cron on ${currentDate}`
+					instalment.comment = `try to get Payment by cron on ${currentDate}`
 					await instalment.save()
 
 					console.log(transaction.status);
@@ -263,12 +262,12 @@ export class CronJobsService {
 						}
 
 						let param = {
-							date: instalment.instalmentDate,
+							date: DateTime.convertDateFormat(instalment.instalmentDate, 'yyyy-mm-dd', 'MM/DD/YYYY'),
 							amount: amount,
 							available_try: availableTry,
-							payment_dates: nextDate
+							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
 						}
-						if (instalment.attempt >= 3 ) {
+						if (instalment.attempt >= 3) {
 							await getConnection()
 								.createQueryBuilder()
 								.update(Booking)
@@ -286,6 +285,9 @@ export class CronJobsService {
 									title: 'booking Cancelled',
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
 								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+
+							instalment.paymentStatus = PaymentStatus.FAILED
+							await instalment.save()
 						}
 						this.mailerService
 							.sendMail({
@@ -321,34 +323,35 @@ export class CronJobsService {
 
 					}
 					else {
-						console.log('nextDate');
+						//console.log('nextDate');
 
-						const nextDate = await getManager()
+						const nextInstalmentDate = await getManager()
 							.createQueryBuilder(BookingInstalments, "BookingInstalments")
 							.select(['BookingInstalments.instalmentDate'])
-							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'`)
+							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'AND "BookingInstalments"."id" > ${instalment.id}`)
 							.orderBy(`"BookingInstalments"."id"`)
 							.getOne()
-						console.log(nextDate);
+
+						// console.log(nextDate);
 
 
 						await getConnection()
 							.createQueryBuilder()
 							.update(Booking)
-							.set({ nextInstalmentDate: nextDate.instalmentDate })
+							.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
 							.where("id = :id", { id: instalment.bookingId })
 							.execute();
 
 						let param = {
-							date: instalment.instalmentDate,
+							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
 							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
 							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
 							cardNo: transaction.meta_data.transaction.payment_method.number,
 							orderId: instalment.booking.laytripBookingId,
-							amount: parseFloat(instalment.amount),
+							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							installmentId: instalment.id,
 							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
-							totalAmount: parseFloat(instalment.booking.totalAmount)
+							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount))
 						}
 
 						this.mailerService
@@ -387,7 +390,7 @@ export class CronJobsService {
 					await this.checkAllinstallmentPaid(instalment.bookingId)
 				}
 			} catch (error) {
-				
+
 				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() + '.json'
 				Activity.createlogFile(filename, JSON.stringify(instalment) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
 				failedlogArray += `<p>instalmentId:- ${instalment.id}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
@@ -819,7 +822,7 @@ export class CronJobsService {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 		var fromDate = new Date();
-		fromDate.setDate(fromDate.getDate() + 2);
+		fromDate.setDate(fromDate.getDate() + 3);
 		var toDate = fromDate.toISOString();
 		toDate = toDate
 			.replace(/T/, " ") // replace T with a space
@@ -867,8 +870,8 @@ export class CronJobsService {
 		for await (const installment of data) {
 			const param = {
 				userName: installment.user.firstName,
-				amount: installment.currency.symbol + installment.amount,
-				date: installment.instalmentDate
+				amount: installment.currency.symbol + `${Generic.formatPriceDecimal(parseFloat(installment.amount))}`,
+				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY')
 			}
 			this.mailerService
 				.sendMail({
@@ -947,7 +950,7 @@ export class CronJobsService {
 		const AWSconfig = config.get('AWS');
 		const dbConfig = config.get('db');
 
-		const {execute} = require('@getvim/execute');
+		const { execute } = require('@getvim/execute');
 
 		var dbName = process.env.RDS_Database || dbConfig.database;
 
@@ -968,7 +971,7 @@ export class CronJobsService {
 		//   20170312.011924.307000000.sql.gz
 		var timestamp = (new Date()).toISOString()
 			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
-		var filepath = '/var/www/html/logs/database/'+timestamp + '.sql.gz';
+		var filepath = '/var/www/html/logs/database/' + timestamp + '.sql.gz';
 
 		if (!fs.existsSync('/var/www/html/logs/database/')) {
 			fs.mkdirSync('/var/www/html/logs/database/');
@@ -979,7 +982,7 @@ export class CronJobsService {
 		// DEV: We output `stderr` to `process.stderr`
 		// DEV: We write to disk so S3 client can calculate `Content-Length` of final result before uploading
 		console.log('Dumping `pg_dump` into `gzip`');
-		
+
 		await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
 			console.log("Finito");
 			console.log('Uploading "' + filepath + '" to S3');
@@ -997,7 +1000,7 @@ export class CronJobsService {
 					return err
 				} else {
 					console.log('Successfully uploaded "' + filepath + '"');
-					return {message:'Successfully uploaded "' + filepath + '"'}
+					return { message: 'Successfully uploaded "' + filepath + '"' }
 				}
 			});
 		}).catch(err => {
@@ -1005,10 +1008,10 @@ export class CronJobsService {
 			return err
 		})
 
-			// Upload our gzip stream into S3
-			// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
-			
+		// Upload our gzip stream into S3
+		// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
 
-	
+
+
 	}
 }

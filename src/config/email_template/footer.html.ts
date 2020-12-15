@@ -52,7 +52,7 @@ export const EmailFooter = `<!-- footer section -->
                   <td align="center" valign="top" style="padding: 8px 0 20px; font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000; font-weight: 400; font-style: italic;">Copyright &copy; Laytrip, All rights reserved.</td>
                 </tr>
                 <tr>
-                  <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000; padding: 0 0 20px;">Want to chang how you receive these emails?<br/>You can <a href="javascrip:void(0);" style="text-decoration: underline;">update your preferences</a> or <a href="javascrip:void(0);" style="text-decoration: underline;">unsubscribe from this list</a>.</td>
+                  <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000; padding: 0 0 20px;">Want to change how you receive these emails?<br/>You can <a href="javascrip:void(0);" style="text-decoration: underline;">update your preferences</a> or <a href="javascrip:void(0);" style="text-decoration: underline;">unsubscribe from this list</a>.</td>
                 </tr>
                 <tr>
                   <td align="center" valign="top" style=" font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000000;">
