@@ -6,7 +6,8 @@ export function missedPaymentInstallmentMail(param: {
     date: string,
     amount: number,
     available_try: string,
-    payment_dates: string
+    payment_dates: string,
+    currency:string
 }) {
     const content = `<!-- header Text section start -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
@@ -34,7 +35,7 @@ export function missedPaymentInstallmentMail(param: {
                                                     </tr>
                                                     
                                                     <tr>
-                                                        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">Unfortunately, we couldn’t collect your installment payment that was scheduled for ${param.date} for ${param.amount}<br/> Some possible reasons might be:</td>
+                                                        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">Unfortunately, we couldn’t collect your installment payment that was scheduled for ${param.date} for ${param.currency}${param.amount}<br/> Some possible reasons might be:</td>
                                                     </tr>
                                                     <tr>
                                                         <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
