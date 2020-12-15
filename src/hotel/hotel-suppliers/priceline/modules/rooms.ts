@@ -9,7 +9,7 @@ export class Rooms{
         this.roomHelper = new RoomHelper();
     }
 
-    processRoomsResult(res, parameters) {
+    processRoomsResult(res, roomsReqDto) {
         
         let results = res.data['getHotelExpress.MultiContract'];
         
@@ -20,8 +20,8 @@ export class Rooms{
         if (results.results.status && results.results.status === "Success") {
             
             let hotel = results.results.hotel_data[0];
-
-            let rooms = this.roomHelper.processRoom(hotel);
+            // return hotel;
+            let rooms = this.roomHelper.processRoom(hotel, roomsReqDto);
 
             return rooms;
 
