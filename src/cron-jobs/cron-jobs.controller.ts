@@ -126,13 +126,13 @@ export class CronJobsController {
 		return await this.cronJobsService.uploadLogIntoS3Bucket('payment');
 	}
 
-	@Get('payment-reminder')
-	@ApiOperation({ summary: "give notification to cusrtemer 2 days ago to we collect the payment" })
+	@Get('database-backup')
+	@ApiOperation({ summary: "upload database backup file on s3 bucket" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async paymentReminder(
-		
+	async databaseBackup(
 	){
-		return await this.cronJobsService.paymentReminder();
+		return await this.cronJobsService.backupDatabase();
 	}
+
 }
