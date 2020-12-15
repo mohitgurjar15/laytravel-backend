@@ -266,6 +266,7 @@ export class CronJobsService {
 							amount: amount,
 							available_try: availableTry,
 							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							currency: instalment.currency.symbol
 						}
 						if (instalment.attempt >= 3) {
 							await getConnection()
@@ -668,7 +669,7 @@ export class CronJobsService {
 				to: email,
 				from: mailConfig.from,
 				cc: mailConfig.BCC,
-				subject: "Booking Failer Mail",
+				subject: "Booking Failure Mail",
 				html: BookingFailerMail({
 					error: error,
 				}, bookingId),
