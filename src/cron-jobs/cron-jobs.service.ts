@@ -272,7 +272,7 @@ export class CronJobsService {
 							await getConnection()
 								.createQueryBuilder()
 								.update(Booking)
-								.set({ bookingStatus: BookingStatus.NOTCOMPLETED })
+								.set({ bookingStatus: BookingStatus.NOTCOMPLETED , paymentStatus : PaymentStatus.FAILED})
 								.where("id = :id", { id: instalment.bookingId })
 								.execute();
 							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
