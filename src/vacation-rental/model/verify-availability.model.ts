@@ -7,7 +7,13 @@ export class VerifyAvailability {
     secondary_start_price: number;
     secondary_selling_price: number;
     instalment_details: {};
-    fees:Fees[] =[];
+    feesType:FeesType;
+}
+
+export class FeesType{
+    mandtory_fee_already_paid:Fees[] =[];
+    mandtory_fee_due_at_check_in:Fees[] =[];
+    optiona_fee:Fees[] =[];
 }
 
 export class Fees{

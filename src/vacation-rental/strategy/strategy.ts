@@ -8,8 +8,8 @@ export class MonakerStrategy{
         this.strategyVacationRental = searchVacationRental;
     }
 
-    async checkAllavaiability(param1,param2){
-        const data = await this.strategyVacationRental.checkAllavaiability(param1,param2);
+    async checkAllavaiability(param1,param2,param3){
+        const data = await this.strategyVacationRental.checkAllavaiability(param1,param2,param3);
         return data;
     }
     

@@ -17,7 +17,7 @@ import { HotelView } from "src/entity/hotel-view.entity";
 import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
 import { HttpRequest } from "src/utility/http.utility";
-import { Fees, VerifyAvailability } from "../model/verify-availability.model";
+import { Fees, FeesType, VerifyAvailability } from "../model/verify-availability.model";
 import { check } from "prettier";
 
 export class Monaker implements StrategyVacationRental {
@@ -86,7 +86,7 @@ export class Monaker implements StrategyVacationRental {
         return amenities;
     }
 
-    async checkAllavaiability(availability: AvailabilityDto, user) {
+    async checkAllavaiability(availability: AvailabilityDto, user, flag) {
 
         const { id, type, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availability;
         let hotelIds;
@@ -264,9 +264,17 @@ export class Monaker implements StrategyVacationRental {
             }
         }
 
+
         if (hotelDetails.length == 0) {
-            return { message: "hotel not found" }
+            if (flag == true) {
+                return { message: "hotel not found" }
+            } else {
+                throw new NotFoundException(`Not found any home rental`)
+
+            }
         }
+
+
 
         let hotels = new HotelSearchResult();
         hotels.items = hotelDetails;
@@ -491,8 +499,9 @@ export class Monaker implements StrategyVacationRental {
 
         const verifyAvailability = new VerifyAvailability();
 
-        let fee: Fees;
-        let fees: Fees[] = [];
+        let feesType: FeesType;
+        // let fees: Fees[] = [];
+        let fees;
 
         verifyAvailability.available_status = response["available"];
         verifyAvailability.booking_code = response["quoteHandle"];
@@ -517,34 +526,35 @@ export class Monaker implements StrategyVacationRental {
         }
         verifyAvailability.instalment_details = instalmentDetails;
         if (response["totalPrice"]["ratePlanCode"] == "ThisUnitTypeHasMandatoryAddonsPaidOnArrival") {
+            feesType = new FeesType();
             for (let i = 0; i < response["fees"].length; i++) {
-                fee = new Fees();
+                fees = new Fees();
                 if (response["fees"][i]["mandatoryInd"] == true) {
-                    fee.message = `(Mandtory and pay on arrival) ${response["fees"][i]["description"]}`
-                    // verifyAvailability.fees.push({ "message": `(Mandtory and pay on arrival)+ ${response["fees"][i]["description"]}` })
+                    fees.message = response["fees"][i]["description"];
+
+                    feesType.mandtory_fee_due_at_check_in.push(fees);
                 }
-                fees.push(fee);
             }
         } else {
+            feesType = new FeesType();
             for (let i = 0; i < response["fees"].length; i++) {
-                fee = new Fees();
+                let fees = new Fees();
                 if (response["fees"][i]["mandatoryInd"] == true) {
-                    fee.message = `(Included in price) ${response["fees"][i]["description"]}`
-                    // verifyAvailability.fees.push({ "message": `(Mandtory and pay on arrival)+ ${response["fees"][i]["description"]}` })
+                    fees.message = response["fees"][i]["description"];
+                    feesType.mandtory_fee_already_paid.push(fees);
                 }
                 if (response["fees"][i]["mandatoryInd"] == false) {
-                    fee.message = `(Optional) ${response["fees"][i]["description"]}`
-                    // verifyAvailability.fees.push({ "message": `(Mandtory and pay on arrival)+ ${response["fees"][i]["description"]}` })
+                    fees.message = response["fees"][i]["description"];
+                    feesType.optiona_fee.push(fees);              
                 }
-                fees.push(fee);
             }
         }
 
-        verifyAvailability.fees = fees;
+        verifyAvailability.feesType = feesType;
 
         return verifyAvailability;
-
     }
+
 
     async booking(bookingDto: BookingDto, travelers, booking_code, selling_price) {
         const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = bookingDto;
