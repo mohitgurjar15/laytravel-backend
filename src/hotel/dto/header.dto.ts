@@ -1,14 +1,14 @@
-import { ApiHeader } from "@nestjs/swagger";
-import { Expose } from "class-transformer";
-import { IsDefined, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString } from "class-validator";
 
 export class HotelHeaderDto{
-    // @ApiHeader({
-    //     name: 'token',
-    //     description: 'Hotel ID for which details are required'
-    // })
-    @IsDefined()
-    @Expose({ name: 'token' })
+    
+    @IsString()
+    @ApiProperty({
+        name: 'token',
+        type: String,
+        description: 'Token which was generated during Hotel Search API'
+    })
     @IsString()
     token: string;
 }

@@ -40,7 +40,7 @@ export class HotelService{
         
         /* This should return pure hotel response (Directly from supplier's and as per our decided structure) */
         let hotels = await this.hotel.search(searchReqDto);
-        
+        // return hotels;
         /* Add any type of Business logic for hotel object's */
         hotels = collect(hotels).map((item: any) => {
 
@@ -114,7 +114,27 @@ export class HotelService{
         roomsReqDto.ppn_bundle = hotel['bundle'];
         roomsReqDto.rooms = details.occupancies.length;
 
-        return this.hotel.rooms(roomsReqDto);
+        let rooms = await this.hotel.rooms(roomsReqDto);
+
+        /* Add any type of Business logic for hotel object's */
+        rooms = collect(rooms).map((room: any) => {
+
+            let instalment = RateHelper.getInstalmentBreakup(room.selling.total, details.check_in);
+
+            room.instalment_details = instalment.detail;
+            room.start_price = instalment.start_price;
+            room.secondary_start_price = instalment.secondary_start_price;
+
+            return room;
+
+        });
+
+        let response = {
+            data: rooms,
+            message: rooms.count() ? 'Rooms found' : 'No Room Found'
+        };
+
+        return response;
 
     }
 

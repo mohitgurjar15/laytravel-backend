@@ -36,7 +36,7 @@ export class RoomHelper{
                     retail,
                     selling,
                     saving_percent,
-                    amenities: rate.rate_amenity_data,
+                    amenities: rate.rate_amenity_data ?? [],
                     supplier_id: rate.source,
                     distribution_type: rate.distribution_type,
                     payment_type: rate.payment_type,
@@ -62,7 +62,7 @@ export class RoomHelper{
                 before: DateTime.convertFormat(item.date_before),
                 cancellation_fee: item.display_cancellation_fee,
                 refund: item.display_refund,
-                total: item.display_total_charges,
+                total_charges: item.display_total_charges,
             }
         });
 
