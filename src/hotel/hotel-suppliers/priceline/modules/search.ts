@@ -60,21 +60,5 @@ export class Search{
             throw new InternalServerErrorException(results.error.status);
         }
     }
-    getRates() {
-        
-        let retail = this.detailHelper.getPublicPriceBreakUp(this.rate, this.searchParameters);
 
-        let selling = this.detailHelper.getSellingPriceBreakUp(this.rate);
-        
-        let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
-        
-        let markup = 0;
-
-        return {
-            retail,
-            selling,
-            saving_percent
-        }
-    }
 }
-
