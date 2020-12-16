@@ -6,6 +6,14 @@ export class DetailHelper {
 
     private hotel: any;
 
+    private default_amenities = {
+        "Free Breakfast" : "breakfast",
+        "Free Internet Access" : "wifi",
+        "No Smoking Rooms/Facilities": "no_smoking",
+        "tv": "tv",
+        "ac" : "ac"
+    };
+
     static generateUrl(api: string, parameters: any) {
 
         let ppnConfig = config.get('ppn');
@@ -25,53 +33,6 @@ export class DetailHelper {
     
     isset(ref) {
         return typeof ref !== 'undefined';
-    }
-
-    getPublicPriceBreakUp(rate, searchParameters) {
-        
-        let nights = (rate['price_details']['night_price_data']).length;
-
-        let rooms = searchParameters.rooms;
-
-        let sub_total = 0;
-
-        let publicPrice = sub_total = (rate['benchmark_price_details']['display_price'] * nights) * rooms;
-        
-        let net = rate['price_details'];
-
-        let percent = net['display_taxes'] / net['display_sub_total'];
-        
-        let taxes = +(publicPrice * percent).toFixed(2);
-        
-        let total = +(publicPrice + taxes).toFixed(2);
-
-        return {
-            sub_total,
-            total,
-            taxes
-        };
-    }
-
-    getSellingPriceBreakUp(rate) {
-        
-        let nights = (rate['price_details']['night_price_data']).length;
-
-        let displayRates = rate['price_details'];
-
-        let sub_total = displayRates['display_sub_total'];
-
-        let taxes = displayRates['display_taxes'];
-        
-        let total = displayRates['display_total'];
-
-        let avg_night_price = +(total / nights).toFixed(2);
-        
-        return {
-            sub_total,
-            total,
-            taxes,
-            avg_night_price
-        };
     }
 
     getHotelDetails(hotel: any, type: string = 'detail') {
@@ -133,7 +94,20 @@ export class DetailHelper {
     }
 
     setAmenities() {
-        return collect(this.hotel['amenity_data']).pluck('name').values().toArray();
+        
+        let amenities = collect(this.hotel['amenity_data']).pluck('name');
+        
+        let amenities_array = amenities.values().toArray();
+
+        let combined = amenities.combine(amenities_array);
+        
+        let sorted_amenities = collect(this.default_amenities).intersectByKeys(combined).values().unique().toArray();
+
+        return {
+            list: amenities_array,
+            fixed: sorted_amenities,
+            total: amenities.count()
+        }
     }
 
     setThumbnail() {
