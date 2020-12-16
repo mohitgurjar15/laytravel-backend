@@ -491,7 +491,7 @@ export class Monaker implements StrategyVacationRental {
 
         const response = verifyResult.data;
 
-        console.log("REPONSe", response);
+        // console.log("REPONSe", response);
 
         if (!response["available"]) {
             throw new NotAcceptableException(`Not available vacation rental home`)
