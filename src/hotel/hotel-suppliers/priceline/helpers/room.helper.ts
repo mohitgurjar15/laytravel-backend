@@ -43,6 +43,7 @@ export class RoomHelper{
                     is_refundable: rate.is_cancellable,
                     cancellation_policies,
                     policies: rate.policy_data,
+                    ppn_bundle: rate.ppn_bundle
                 }
                 
             });
