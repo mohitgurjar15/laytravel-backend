@@ -1,7 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
+import { DetailsDto } from "../others/details-res.dto";
 
-export class RoomsReqDto{
+export class RoomsReqDto {
     @ApiProperty({
         description: 'Hotel ID'
     })
@@ -12,9 +13,13 @@ export class RoomsReqDto{
         description: 'Hotel ID'
     })
     @IsString()
-    @IsOptional()
-    token?: string;
 
     @IsOptional()
     ppn_bundle?: string;
+    
+    @IsOptional()
+    token?: string;
+    
+    @IsOptional()
+    rooms?: string;
 }

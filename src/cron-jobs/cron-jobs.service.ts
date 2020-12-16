@@ -35,6 +35,7 @@ import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { DateTime } from "src/utility/datetime.utility";
 import { ModulesName } from "src/enum/module.enum";
 import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
+import { Translation } from "src/utility/translation.utility";
 const AWS = require('aws-sdk');
 var assert = require('assert');
 var fs = require('fs');
@@ -128,7 +129,8 @@ export class CronJobsService {
 			.createQueryBuilder(Booking, "booking")
 			.select([
 				"booking.supplierBookingId",
-				"booking.id"
+				"booking.id",
+				"booking.laytripBookingId"
 			])
 			.where(
 				`"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
@@ -558,7 +560,9 @@ export class CronJobsService {
 				//if TicketStatus = TktInProgress call it again
 			}
 		}
-		return { message: `pending booking updated successfully` }
+		return {
+			message: Translation.Translater('ES', 'responce', 'update_booking_cron')
+		}
 	}
 
 	async getDataTimefromString(dateTime) {

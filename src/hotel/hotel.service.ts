@@ -11,6 +11,9 @@ import { collect } from 'collect.js';
 import { FilterHelper } from './helpers/filter.helper';
 import { FilterReqDto } from './dto/filter/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
+import { Location } from './dto/search-location/location.dto';
+import { classToPlain, deserializeArray, plainToClass } from 'class-transformer';
+import { DetailsDto } from './dto/others/details-res.dto';
 
 @Injectable()
 export class HotelService{
@@ -25,7 +28,7 @@ export class HotelService{
         
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
         
-        locations = JSON.parse(JSON.stringify(locations).replace(/\:null/gi, "\:\"\""));
+        // locations = plainToClass(Location, locations, );
         
         return {
             data: locations,
@@ -100,13 +103,16 @@ export class HotelService{
             throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
         
-        let hotel = collect(cached.hotels).where('id', roomsReqDto.ppn_bundle).first();
+        let hotel = collect(cached.hotels).where('id', roomsReqDto.hotel_id).first();
         
         if (!hotel) {
             throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
 
+        let details = cached.details;
+
         roomsReqDto.ppn_bundle = hotel['bundle'];
+        roomsReqDto.rooms = details.occupancies.length;
 
         return this.hotel.rooms(roomsReqDto);
 
