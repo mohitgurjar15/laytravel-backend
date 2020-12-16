@@ -30,7 +30,7 @@ export class Search{
         }
         
         if (results.results.status && results.results.status === "Success") { 
-            
+            // return results.results.hotel_data;
             let hotels = collect(results.results.hotel_data).map((item) => {
 
                 this.item = item;

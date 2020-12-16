@@ -44,7 +44,7 @@ export class AutoComplete{
                             country = sub['country_code'];
                             state = this.detailHelper.isset(sub['state_code']) ? sub['state_code'] : "";
                             city = sub['city'];
-                            line = sub['icao']+' - '+sub['airport'];
+                            line = sub['airport_spell'].reverse().join(' - ');
                             break;
                             
                         case 'region':
