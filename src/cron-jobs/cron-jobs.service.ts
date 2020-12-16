@@ -33,6 +33,8 @@ import { PushNotification } from "src/utility/push-notification.utility";
 import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { DateTime } from "src/utility/datetime.utility";
+import { ModulesName } from "src/enum/module.enum";
+import { Translation } from "src/utility/translation.utility";
 const AWS = require('aws-sdk');
 var assert = require('assert');
 var fs = require('fs');
@@ -124,7 +126,8 @@ export class CronJobsService {
 			.createQueryBuilder(Booking, "booking")
 			.select([
 				"booking.supplierBookingId",
-				"booking.id"
+				"booking.id",
+				"booking.laytripBookingId"
 			])
 			.where(
 				`"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
@@ -272,7 +275,7 @@ export class CronJobsService {
 							await getConnection()
 								.createQueryBuilder()
 								.update(Booking)
-								.set({ bookingStatus: BookingStatus.NOTCOMPLETED , paymentStatus : PaymentStatus.FAILED})
+								.set({ bookingStatus: BookingStatus.NOTCOMPLETED, paymentStatus: PaymentStatus.FAILED })
 								.where("id = :id", { id: instalment.bookingId })
 								.execute();
 							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
@@ -438,114 +441,16 @@ export class CronJobsService {
 		var failedlogArray = ''
 		for (let index = 0; index < result.length; index++) {
 			try {
-				var bookingData = result[index];
-				let flights: any = null;
-				if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
-					var bookingType = bookingData.locationInfo['journey_type']
+				switch (result[index].moduleId) {
+					case ModulesName.FLIGHT:
+						await this.getDailyPriceOfFlight(result[index], Headers)
+						break;
+					case ModulesName.VACATION_RENTEL:
+						await this.getDailyPriceOfFlight(result[index], Headers)
+						break;
+					default:
 
-					let travelers = [];
-
-					for await (const traveler of bookingData.travelers) {
-						travelers.push({
-							traveler_id: traveler.userId
-						})
-					}
-
-					if (bookingType == 'oneway') {
-						Headers['currency'] = bookingData.currency2.code
-						Headers['language'] = 'en'
-
-						let dto = {
-							"source_location": bookingData.moduleInfo[0].departure_code,
-							"destination_location": bookingData.moduleInfo[0].arrival_code,
-							"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-							"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-							"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-							"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-							"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
-						}
-
-						flights = await this.flightService.searchOneWayZipFlight(dto, Headers, bookingData.user);
-
-					}
-					else {
-						Headers['currency'] = bookingData.currency2.code
-						Headers['language'] = 'en'
-
-						let dto = {
-							"source_location": bookingData.moduleInfo[0].departure_code,
-							"destination_location": bookingData.moduleInfo[0].arrival_code,
-							"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
-							"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
-							"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
-							"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
-							"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
-							"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
-						}
-
-						flights = await this.flightService.searchRoundTripZipFlight(dto, Headers, bookingData.user);
-					}
-					if (flights.items && flights.items.length) {
-						for await (const flight of flights.items) {
-							if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
-
-								const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
-
-								const savedDate = new Date(bookingData.predectedBookingDate);
-								var predictedDate = savedDate.toISOString();
-								predictedDate = predictedDate
-									.replace(/T/, " ") // replace T with a space
-									.replace(/\..+/, "");
-
-								const bookingDto = new BookFlightDto
-								bookingDto.travelers = travelers
-								bookingDto.payment_type = `${bookingData.bookingType}`;
-								bookingDto.instalment_type = `${bookingData.bookingType}`
-								bookingDto.route_code = flight.route_code;
-								bookingDto.additional_amount = 0
-								bookingDto.laycredit_points = 0
-
-								const user = bookingData.user
-
-
-
-								const bookingId = bookingData.laytripBookingId;
-
-								const date = new Date();
-								var todayDate = date.toISOString();
-								todayDate = todayDate
-									.replace(/T/, " ") // replace T with a space
-									.replace(/\..+/, "");
-								let query = await getManager()
-									.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
-									.leftJoinAndSelect("predictiveBookingData.booking", "booking")
-									.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
-									.getOne();
-								if (query) {
-									query.bookingId = bookingData.id
-									query.netPrice = flight.net_rate
-									query.date = new Date();
-									query.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
-									query.remainSeat = flight.routes[0].stops[0].remaining_seat
-									query.price = flight.selling_price
-									await query.save();
-								}
-								else {
-									const predictiveBookingData = new PredictiveBookingData
-									predictiveBookingData.bookingId = bookingData.id
-									predictiveBookingData.netPrice = flight.net_rate
-									predictiveBookingData.date = new Date();
-									predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
-									predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
-									predictiveBookingData.price = flight.selling_price
-									console.log(flight);
-									//predictiveBookingData.bookIt = false;
-									await predictiveBookingData.save()
-								}
-
-							}
-						}
-					}
+						break;
 				}
 			} catch (error) {
 				console.log(error);
@@ -652,7 +557,9 @@ export class CronJobsService {
 				//if TicketStatus = TktInProgress call it again
 			}
 		}
-		return { message: `pending booking updated successfully` }
+		return {
+			message: Translation.Translater('ES', 'responce', 'update_booking_cron')
+		}
 	}
 
 	async getDataTimefromString(dateTime) {
@@ -1014,5 +921,116 @@ export class CronJobsService {
 
 
 
+	}
+
+	async getDailyPriceOfFlight(bookingData: Booking, Headers) {
+		let flights: any = null;
+		if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
+			var bookingType = bookingData.locationInfo['journey_type']
+
+			let travelers = [];
+
+			for await (const traveler of bookingData.travelers) {
+				travelers.push({
+					traveler_id: traveler.userId
+				})
+			}
+
+			if (bookingType == 'oneway') {
+				Headers['currency'] = bookingData.currency2.code
+				Headers['language'] = 'en'
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
+				}
+
+				flights = await this.flightService.searchOneWayZipFlight(dto, Headers, bookingData.user);
+
+			}
+			else {
+				Headers['currency'] = bookingData.currency2.code
+				Headers['language'] = 'en'
+
+				let dto = {
+					"source_location": bookingData.moduleInfo[0].departure_code,
+					"destination_location": bookingData.moduleInfo[0].arrival_code,
+					"departure_date": await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date),
+					"flight_class": bookingData.moduleInfo[0].routes[0].stops[0].cabin_class,
+					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
+					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
+					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
+					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+				}
+
+				flights = await this.flightService.searchRoundTripZipFlight(dto, Headers, bookingData.user);
+			}
+			if (flights.items && flights.items.length) {
+				for await (const flight of flights.items) {
+					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
+
+						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+
+						const savedDate = new Date(bookingData.predectedBookingDate);
+						var predictedDate = savedDate.toISOString();
+						predictedDate = predictedDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+
+						const bookingDto = new BookFlightDto
+						bookingDto.travelers = travelers
+						bookingDto.payment_type = `${bookingData.bookingType}`;
+						bookingDto.instalment_type = `${bookingData.bookingType}`
+						bookingDto.route_code = flight.route_code;
+						bookingDto.additional_amount = 0
+						bookingDto.laycredit_points = 0
+
+						const user = bookingData.user
+
+
+
+						const bookingId = bookingData.laytripBookingId;
+
+						const date = new Date();
+						var todayDate = date.toISOString();
+						todayDate = todayDate
+							.replace(/T/, " ") // replace T with a space
+							.replace(/\..+/, "");
+						let query = await getManager()
+							.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+							.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+							.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
+							.getOne();
+						if (query) {
+							query.bookingId = bookingData.id
+							query.netPrice = flight.net_rate
+							query.date = new Date();
+							query.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+							query.remainSeat = flight.routes[0].stops[0].remaining_seat
+							query.price = flight.selling_price
+							await query.save();
+						}
+						else {
+							const predictiveBookingData = new PredictiveBookingData
+							predictiveBookingData.bookingId = bookingData.id
+							predictiveBookingData.netPrice = flight.net_rate
+							predictiveBookingData.date = new Date();
+							predictiveBookingData.isBelowMinimum = flight.routes[0].stops[0].below_minimum_seat;
+							predictiveBookingData.remainSeat = flight.routes[0].stops[0].remaining_seat
+							predictiveBookingData.price = flight.selling_price
+							console.log(flight);
+							//predictiveBookingData.bookIt = false;
+							await predictiveBookingData.save()
+						}
+
+					}
+				}
+			}
+		}
 	}
 }
