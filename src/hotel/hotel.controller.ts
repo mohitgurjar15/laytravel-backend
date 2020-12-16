@@ -41,8 +41,8 @@ export class HotelController {
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
     @ApiOperation({ summary: "Hotel Search", description: "Search Hotels based on search criteria" })
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     search(
         @Body() searchReqDto: SearchReqDto,
         @LogInUser() user
@@ -54,8 +54,8 @@ export class HotelController {
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
     @ApiOperation({ summary: "Filter Objects", description: "Filter objects for Searched Hotels" })
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     filterObjects(
         @Body() filterReqDto: FilterReqDto
     ) {
@@ -67,8 +67,8 @@ export class HotelController {
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
     @ApiOperation({ summary: "Hotel Details", description: "Get details of Hotel based on Hotel ID" })
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     detail(
         @Body() detailReqDto: DetailReqDto,
         @Headers() hotelHeaderDto: HotelHeaderDto
@@ -81,8 +81,8 @@ export class HotelController {
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
     @ApiOperation({ summary: "Hotel Rooms", description: "Get all available Rooms for Particular Hotel" })
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     rooms(
         @Body() roomsReqDto: RoomsReqDto,
         @Headers() hotelHeaderDto: HotelHeaderDto
