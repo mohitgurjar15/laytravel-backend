@@ -20,6 +20,8 @@ export class RoomsReqDto {
     @IsOptional()
     token?: string;
     
+
+    /* Added this property for Public/retail  */
     @IsOptional()
     rooms?: string;
 }
