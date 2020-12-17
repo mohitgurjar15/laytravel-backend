@@ -49,6 +49,7 @@ import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
 import { resolve } from 'path';
+import { PushNotification } from 'src/utility/push-notification.utility';
 
 const mailConfig = config.get("email");
 
@@ -88,7 +89,7 @@ export class VacationRentalService {
 					"hotel_view.country",
 				])
 				.where("hotel_view.city ILIKE :name", { name: `%${searchLocation}%` })
-				.getMany();
+				.getMany();	
 
 			let location: LocationInfo;
 			let result = [];
@@ -139,7 +140,7 @@ export class VacationRentalService {
 	) {
 		await this.validateHeaders(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
-		const result = new Promise((resolve) => resolve(monaker.checkAllavaiability(availability, user)));
+		const result = new Promise((resolve) => resolve(monaker.checkAllavaiability(availability, user, false)));
 		return result;
 
 	}
@@ -210,13 +211,19 @@ export class VacationRentalService {
 
 		let roomDetails = propertyDetails.rooms.find((data) => data.rate_plan_code == rate_plan_code);
 
-		let moduleData = {
-			propertyName: propertyDetails["property_name"],
-			propertyDesc: propertyDetails["description"],
-			propertyAminities: propertyDetails["amenities"],
-			cancellationPolicy: roomDetails["cancellation_policy"] == false ? `Not refundable` : roomDetails["cancellation_policy"]["penalty_info"].toString(),
-			roomDetails: verifyAvailabilityResult
-		}
+		let moduleData = [
+			{
+				propertyName: propertyDetails["property_name"],
+				propertyDesc: propertyDetails["description"],
+				propertyAminities: propertyDetails["amenities"],
+				cancellationPolicy: roomDetails["cancellation_policy"]["is_refundable"] == false ? `Not refundable` : roomDetails["cancellation_policy"]["penalty_info"].toString(),
+				roomDetails: verifyAvailabilityResult,
+				room_id: room_id,
+				rate_plan_code: rate_plan_code,
+				adult_count: adult_count,
+				chindren_age: number_and_children_ages
+			}
+		];
 
 		let bookingRequestInfo: any = {};
 
@@ -224,38 +231,39 @@ export class VacationRentalService {
 			bookingRequestInfo.adult_count = adult_count,
 				bookingRequestInfo.number_and_children_ages = number_and_children_ages.length != 0 ? number_and_children_ages.length : 0,
 				bookingRequestInfo.net_rate = verifyAvailabilityResult["net_price"];
-		}
-		if (payment_type == PaymentType.INSTALMENT) {
-			bookingRequestInfo.selling_price = verifyAvailabilityResult["selling_price"];
 
-		}
-		else {
-			if (typeof verifyAvailabilityResult["secondary_selling_price"] != 'undefined' && verifyAvailabilityResult["secondary_selling_price"] > 0) {
+			if (payment_type == PaymentType.INSTALMENT) {
+				bookingRequestInfo.selling_price = verifyAvailabilityResult["selling_price"];
 
-				bookingRequestInfo.selling_price = verifyAvailabilityResult["secondary_selling_price"];
 			}
 			else {
-				bookingRequestInfo.selling_price = verifyAvailabilityResult["selling_price"];
+				if (typeof verifyAvailabilityResult["secondary_selling_price"] != 'undefined' && verifyAvailabilityResult["secondary_selling_price"] > 0) {
+
+					bookingRequestInfo.selling_price = verifyAvailabilityResult["secondary_selling_price"];
+				}
+				else {
+					bookingRequestInfo.selling_price = verifyAvailabilityResult["selling_price"];
+				}
 			}
+
+			bookingRequestInfo.check_in_date = DateTime.convertDateFormat(
+				check_in_date,
+				"YYYY-MM-DD",
+				"DD/MM/YYYY"
+			);
+
+			bookingRequestInfo.check_out_date = DateTime.convertDateFormat(
+				check_out_date,
+				"YYYY-MM-DD",
+				"DD/MM/YYYY"
+			);
+
+			bookingRequestInfo.instalment_type = instalment_type;
+			bookingRequestInfo.additional_amount = additional_amount;
+			bookingRequestInfo.booking_through = booking_through;
+			bookingRequestInfo.laycredit_points = laycredit_points;
+			bookingRequestInfo.card_token = card_token;
 		}
-
-		bookingRequestInfo.check_in_date = DateTime.convertDateFormat(
-			check_in_date,
-			"YYYY-MM-DD",
-			"DD/MM/YYYY"
-		);
-
-		bookingRequestInfo.check_out_date = DateTime.convertDateFormat(
-			check_out_date,
-			"YYYY-MM-DD",
-			"DD/MM/YYYY"
-		);
-
-		bookingRequestInfo.instalment_type = instalment_type;
-		bookingRequestInfo.additional_amount = additional_amount;
-		bookingRequestInfo.booking_through = booking_through;
-		bookingRequestInfo.laycredit_points = laycredit_points;
-		bookingRequestInfo.card_token = card_token;
 
 		let {
 			selling_price,
@@ -334,7 +342,7 @@ export class VacationRentalService {
 
 					if (dayDiff <= 90) {
 						const monaker = new MonakerStrategy(new Monaker(headers));
-						bookingResult = await monaker.booking(bookingDto, travelers, booking_code, net_price)
+						bookingResult = await monaker.booking(bookingDto, travelersDetails, booking_code, net_price)
 					}
 
 					let authCardToken = authCardResult.token;
@@ -654,7 +662,7 @@ export class VacationRentalService {
 			predictiveBooking.bookingId = booking.id
 			predictiveBooking.date = new Date()
 			predictiveBooking.netPrice = parseFloat(booking.netRate)
-			predictiveBooking.isBelowMinimum = booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat
+			predictiveBooking.isBelowMinimum = false
 			predictiveBooking.price = parseFloat(booking.totalAmount);
 			predictiveBooking.remainSeat = 0
 			await predictiveBooking.save()
@@ -709,42 +717,6 @@ export class VacationRentalService {
 			hotelInfo.check_in_date = check_in_date;
 			hotelInfo.check_out_date = check_out_date;
 			hotelInfo.cancellation_policy = moduleInfo["cancellationPolicy"]
-
-			// console.log("booking ----->",bookingData.user)
-
-			// for (let index = 0; index < routes.length; index++) {
-			// 	const element = routes[index];
-			// 	var rout = index == 0 ? `${moduleInfo.departure_info.city} To ${moduleInfo.arrival_info.city} (${moduleInfo.routes[0].type})` : `${moduleInfo.arrival_info.city} To ${moduleInfo.departure_info.city} (${moduleInfo.routes[1].type})`;
-			// 	var status = bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
-			// 	var droups = [];
-			// 	for await (const stop of element.stops) {
-			// 		var flight = `${stop.airline}-${stop.flight_number}`;
-			// 		var depature = {
-			// 			code: stop.departure_info.code,
-			// 			name: stop.departure_info.name,
-			// 			city: stop.departure_info.city,
-			// 			country: stop.departure_info.country,
-			// 			date: await this.formatDate(stop.departure_date_time),
-			// 			time: stop.departure_time
-			// 		}
-			// 		var arrival = {
-			// 			code: stop.arrival_info.code,
-			// 			name: stop.arrival_info.name,
-			// 			city: stop.arrival_info.city,
-			// 			country: stop.arrival_info.country,
-			// 			date: await this.formatDate(stop.arrival_date_time),
-			// 			time: stop.arrival_time
-			// 		}
-			// 		droups.push({
-			// 			flight: flight, depature: depature, arrival: arrival, airline: stop.airline_name
-			// 		})
-			// 	}
-			// 	flightData.push({
-			// 		rout: rout,
-			// 		status: status,
-			// 		droups: droups,
-			// 	})
-			// }
 
 			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
@@ -844,35 +816,31 @@ export class VacationRentalService {
 		const startDate = new Date(start_date);
 		const endDate = new Date(end_date);
 
-		console.log("stra date", startDate);
 		const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
 
+		console.log("Diffrence--->", dayDiffrence)
 		var result = [];
 
 		var resultIndex = 0;
 
 		for (let index = 0; index <= dayDiffrence; index++) {
-			// let date = moment(startDate).add(index + 1, 'days');
-			// let checkOutDate = date.toISOString().split('T')[0];
-			// console.log("Checkout days", checkOutDate);
+
 			startDate.setDate(startDate.getDate() + 1);
 			var checkOutDate = startDate.toISOString().split('T')[0];
 			checkOutDate = checkOutDate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 
-			// console.log(moment(checkOutDate).subtract(1,'days').toISOString().split('T')[0]);
 			let dto = {
 				"id": id,
 				"type": type,
 				"check_in_date": start_date,
 				"check_out_date": checkOutDate,
 				"number_and_children_ages": number_and_children_ages,
-				"adult_count": adult_count
-
+				"adult_count": adult_count,
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user)));
 
+			result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
 
 			resultIndex++;
 		}
@@ -1195,111 +1163,217 @@ export class VacationRentalService {
 		return [month, day, year].join('/');
 	}
 
+	async bookPartialBooking(bookingId, header) {
+		const bookingData = await this.bookingRepository.getBookingDetails(bookingId)
+
+		// console.log(bookingData.travelers);
+		let travelers = [];
+		let travelerInfo;
+		if (new Date(await this.changeDateFormat(bookingData.checkInDate)) > new Date()) {
+			travelerInfo = bookingData.travelers;
+			for (let i = 0; i < travelerInfo.length; i++) {
+				if (i == 0) {
+					travelers.push({
+						"is_customer": true,
+						"traveler_id": travelerInfo[i].userId
+					})
+				} else {
+					travelers.push({
+						"is_customer": false,
+						"traveler_id": travelerInfo[i].userId
+					});
+				}
+
+			}
+
+			let bookingDto = {
+				"room_id": bookingData.moduleInfo[0].room_id,
+				"rate_plan_code": bookingData.moduleInfo[0].rate_plan_code,
+				"check_in_date": bookingData.checkInDate,
+				"check_out_date": bookingData.checkOutDate,
+				"adult_count": bookingData.moduleInfo[0].adult_count,
+				"number_and_children_ages": bookingData.moduleInfo[0].chindren_age,
+				"travelers": travelers,
+				"payment_type": bookingData.bookingType,
+				"instalment_type": bookingData.bookingType,
+				"bookingDto.additional_amount": 0,
+				"bookingDto.laycredit_points": 0
+			}
+
+			const user = bookingData.user
+
+			const bookingId = bookingData.laytripBookingId;
+
+			await this.partiallyVacationRentalBook(bookingDto, header, user, bookingId);
+
+		}
+	}
+
+
+	async partiallyVacationRentalBook(bookingDto, header, user, bookingId) {
+		let headerDetails = await this.validateHeaders(header);
+
+		const {
+			room_id,
+			rate_plan_code,
+			check_in_date,
+			check_out_date,
+			adult_count,
+			number_and_children_ages,
+			travelers,
+			payment_type,
+			instalment_type,
+			additional_amount,
+			laycredit_points
+		} = bookingDto;
+
+		console.log(bookingDto)
+
+		const monaker = new MonakerStrategy(new Monaker(header));
+		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(bookingDto, user);
+
+		let booking_code = verifyAvailabilityResult["booking_code"];
+		let net_price = verifyAvailabilityResult["net_price"];
+
+		let bookingRequestInfo: any = {};
+
+		if (verifyAvailabilityResult) {
+			bookingRequestInfo.adult_count = adult_count,
+				bookingRequestInfo.number_and_children_ages = number_and_children_ages.length != 0 ? number_and_children_ages.length : 0,
+				bookingRequestInfo.net_rate = verifyAvailabilityResult["net_price"];
+
+			if (payment_type == PaymentType.INSTALMENT) {
+				bookingRequestInfo.selling_price = verifyAvailabilityResult["selling_price"];
+
+			}
+			else {
+				if (typeof verifyAvailabilityResult["secondary_selling_price"] != 'undefined' && verifyAvailabilityResult["secondary_selling_price"] > 0) {
+
+					bookingRequestInfo.selling_price = verifyAvailabilityResult["secondary_selling_price"];
+				}
+				else {
+					bookingRequestInfo.selling_price = verifyAvailabilityResult["selling_price"];
+				}
+			}
+
+			bookingRequestInfo.check_in_date = DateTime.convertDateFormat(
+				check_in_date,
+				"YYYY-MM-DD",
+				"DD/MM/YYYY"
+			);
+
+			bookingRequestInfo.check_out_date = DateTime.convertDateFormat(
+				check_out_date,
+				"YYYY-MM-DD",
+				"DD/MM/YYYY"
+			);
+
+			bookingRequestInfo.instalment_type = instalment_type;
+			bookingRequestInfo.additional_amount = additional_amount;
+			bookingRequestInfo.laycredit_points = laycredit_points;
+		}
+
+		let travelersDetails = await this.getTravelersInfo(
+			travelers,
+		);
+
+		let currencyId = headerDetails.currency.id;
+		const userId = user.user_id;
+
+		// console.log("------------------------->",travelersDetails);
+		let bookingResult = await monaker.booking(bookingDto, travelersDetails, booking_code, net_price);
+
+		console.log("Booking result", bookingResult);
+
+		if (bookingResult.booking_status == "success") {
+			// console.log(`step - 3 save Booking`, bookingResult);
+			let bookingInfo = {
+				"net_price": net_price
+			};
+
+			let laytripBookingResult = await this.partialyBookingSave(
+				bookingInfo,
+				currencyId,
+				verifyAvailabilityResult,
+				bookingId,
+				bookingResult,
+			);
+
+			PushNotification.sendNotificationTouser(laytripBookingResult.userId,
+				{  //you can send only notification or only data(or include both)
+					module_name: 'booking',
+					task: 'booking_done',
+					bookingId: laytripBookingResult.laytripBookingId
+				},
+				{
+					title: 'Booking',
+					body: `We’re as excited for your trip as you are! please check all the details`
+				},
+				userId)
+
+			//console.log(laytripBookingResult);
+
+			//send email here
+			console.log(`step - 4 mail`);
+			this.sendBookingEmail(laytripBookingResult.laytripBookingId, check_in_date, check_out_date);
+			bookingResult.laytrip_booking_id = laytripBookingResult.id;
+			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+				laytripBookingResult.laytripBookingId
+			);
+			console.log("----------------------------------->", bookingResult);
+			return bookingResult;
+
+		}
+		else {
+			throw new HttpException(bookingResult.error_message, 424)
+		}
+	}
+
+	async partialyBookingSave(
+		bookingDto,
+		currencyId,
+		airRevalidateResult,
+		bookingId,
+		supplierBookingData,
+	) {
+		const {
+			net_price,
+			fare_type
+		} = bookingDto;
+
+		let moduleDetails = await getManager()
+			.createQueryBuilder(Module, "module")
+			.where(`"module"."name"=:name`, { name: "home rental" })
+			.getOne();
+		if (!moduleDetails) {
+			throw new BadRequestException(
+				`Please configure flight module in database&&&module_id&&&${errorMessage}`
+			);
+		}
+
+		let currencyDetails = await getManager()
+			.createQueryBuilder(Currency, "currency")
+			.where(`"currency"."id"=:currencyId and "currency"."status"=true`, {
+				currencyId,
+			})
+			.getOne();
+
+		let booking = await this.bookingRepository.getBookingDetails(bookingId);
+
+		booking.bookingStatus = BookingStatus.CONFIRM;
+		//console.log("Net rate", net_rate)
+
+		booking.netRate = `${net_price}`;
+		booking.usdFactor = `${currencyDetails.liveRate}`;
+		// booking.fareType = fare_type;
+		// booking.isTicketd = fare_type == 'LCC' ? true : false;
+		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
+		booking.moduleInfo = airRevalidateResult;
+		try {
+			let bookingDetails = await booking.save();
+			return await this.bookingRepository.getBookingDetails(bookingDetails.laytripBookingId);
+		} catch (error) {
+			console.log(error);
+		}
+	}
 }
-
-
-// const monaker = new MonakerStrategy(new Monaker(headers));
-// 		const result = new Promise((resolve) => resolve(monaker.booking(bookingDto)));
-
-// 		return result;
-// 		// console.log("RESULT===>", response)
-
-
-// travers ==> [
-// 	User {
-// 	  userId: 'c5944389-53f3-4120-84a4-488fb4e94d87',
-// 	  firstName: 'Victor',
-// 	  lastName: 'Pacheco',
-// 	  email: 'laytrip@gmail.com',
-// 	  phoneNo: '8452456716',
-// 	  zipCode: 'H7623',
-// 	  gender: 'M',
-// 	  countryCode: '91',
-// 	  address: '12 street, las vegas',
-// 	  title: 'MR',
-// 	  cityName: 'AHMEDABAD',
-// 	  dob: '2020-11-10',
-// 	  passportNumber: '23232323',
-// 	  passportExpiry: '2020-02-12',
-// 	  country: Countries { id: 101, name: 'India', iso3: 'IND', iso2: 'IN' },
-// 	  state: States { name: 'Gujarat' }
-// 	}
-//   ]
-
-
-// async fullcalenderRate(searchHomeRental: HomeRentalCalendarDto, header, user) {
-// 	const { id, type, adult_count, number_and_children_ages, start_date, end_date } = searchHomeRental;
-
-// 	const monaker = new MonakerStrategy(new Monaker(header));
-
-// 	const startDate = new Date(start_date);
-// 	const endDate = new Date(end_date);
-
-// 	console.log("stra date", startDate);
-// 	const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
-
-// 	var result = [];
-
-// 	var resultIndex = 0;
-
-// 	for (let index = 0; index < dayDiffrence; index++) {
-// 		let checkOutDate = moment(startDate).add(index,'days');
-// 		let dto = {
-// 			"id": id,
-// 			"type": type,
-// 			"check_in_date": startDate,
-// 			"check_out_date": checkOutDate,
-// 			"number_and_children_ages": number_and_children_ages,
-// 			"adult_count": adult_count
-
-// 		}
-// 		result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user)));
-
-// 		// checkInDate.setDate(checkInDate.getDate() + 1);
-
-// 		resultIndex++;
-// 	}
-
-// 	const response = await Promise.all(result);
-// 	// console.log("RESULT----->", response);
-// 	let returnResponce = [];
-// 	for await (const data of response) {
-// 		var lowestprice = 0;
-// 		var netRate = 0;
-// 		var key = 0;
-// 		var date = '';
-// 		var startPrice =0;
-// 		var secondaryStartPrice = 0;
-// 		for await (const hoteltInfo of data.items) {
-// 			console.log("data", hoteltInfo)
-// 			if (key == 0) {
-// 				netRate = hoteltInfo.net_price;
-// 				lowestprice = hoteltInfo.selling_price
-// 				date = hoteltInfo.check_in_date
-// 				startPrice = hoteltInfo.start_price || 0
-// 				secondaryStartPrice = hoteltInfo.secondary_start_price || 0
-// 			}
-// 			else if (lowestprice > hoteltInfo.selling_price) {
-// 				netRate = hoteltInfo.net_price;
-// 				lowestprice = hoteltInfo.selling_price
-// 				date = hoteltInfo.check_in_date
-// 				startPrice = hoteltInfo.start_price || 0
-// 				secondaryStartPrice = hoteltInfo.secondary_start_price || 0
-// 			}
-// 			key++;
-// 		}
-// 		var output = {
-// 			date: date,
-// 			net_rate: netRate,
-// 			price: lowestprice,
-// 			start_price: startPrice,
-// 			secondary_start_price: secondaryStartPrice
-// 		}
-
-
-// 		returnResponce.push(output)
-// 	}
-
-// 	console.log("------------->", returnResponce)
-// 	return returnResponce;
-// }

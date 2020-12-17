@@ -34,6 +34,7 @@ import { PaymentReminderMail } from "src/config/email_template/payment-reminder.
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { DateTime } from "src/utility/datetime.utility";
 import { ModulesName } from "src/enum/module.enum";
+import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Translation } from "src/utility/translation.utility";
 const AWS = require('aws-sdk');
 var assert = require('assert');
@@ -55,7 +56,9 @@ export class CronJobsService {
 
 		private paymentService: PaymentService,
 
-		private readonly mailerService: MailerService
+		private readonly mailerService: MailerService,
+
+		private vacationRentalService: VacationRentalService
 
 	) { }
 
@@ -446,7 +449,7 @@ export class CronJobsService {
 						await this.getDailyPriceOfFlight(result[index], Headers)
 						break;
 					case ModulesName.VACATION_RENTEL:
-						await this.getDailyPriceOfFlight(result[index], Headers)
+						await this.getDailyPriceofVacationRental(result[index], Headers)
 						break;
 					default:
 
@@ -1031,6 +1034,66 @@ export class CronJobsService {
 					}
 				}
 			}
+		}
+	}
+
+	async getDailyPriceofVacationRental(bookingData: Booking, Headers) {
+		console.log(bookingData);
+		let vacationData;
+		if (new Date(await this.getDataTimefromString(bookingData.checkInDate)) > new Date()) {
+
+			Headers['currency'] = bookingData.currency2.code
+			Headers['language'] = 'en'
+
+			let dto = {
+				"room_id": bookingData.moduleInfo[0].room_id,
+				"rate_plan_code": bookingData.moduleInfo[0].rate_plan_code,
+				"check_in_date": bookingData.checkInDate,
+				"check_out_date": bookingData.checkOutDate,
+				"adult_count": bookingData.moduleInfo[0].adult_count,
+				"number_and_children_ages": bookingData.moduleInfo[0].chindren_age
+			}
+
+
+			vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
+			console.log(vacationData);
+
+
+			const date = new Date();
+			var todayDate = date.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			if (vacationData["available_status"] == true) {
+				let query = await getManager()
+					.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+					.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+					.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
+					.getOne();
+
+				if (query) {
+					query.bookingId = bookingData.id
+					query.netPrice = vacationData.net_price
+					query.date = new Date();
+					query.isBelowMinimum = false;
+					query.remainSeat = 0;
+					query.price = vacationData.selling_price
+					await query.save();
+				}
+				else {
+					const predictiveBookingData = new PredictiveBookingData
+					predictiveBookingData.bookingId = bookingData.id
+					predictiveBookingData.netPrice = vacationData.net_price
+					predictiveBookingData.date = new Date();
+					predictiveBookingData.isBelowMinimum = false;
+					predictiveBookingData.remainSeat = 0;
+					predictiveBookingData.price = vacationData.selling_price;
+					// console.log(flight);
+					//predictiveBookingData.bookIt = false;
+					await predictiveBookingData.save()
+				}
+			}
+
 		}
 	}
 }
