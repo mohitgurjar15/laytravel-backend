@@ -86,6 +86,15 @@ export class Monaker implements StrategyVacationRental {
         return amenities;
     }
 
+    sortItems(hotels) {
+        let data = hotels.sort(this.compare);
+        return data;
+    }
+
+    compare(a, b) {
+        return (a.selling_price - b.selling_price);
+    }
+    
     async checkAllavaiability(availability: AvailabilityDto, user, flag) {
 
         const { id, type, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availability;
@@ -278,7 +287,8 @@ export class Monaker implements StrategyVacationRental {
         }
 
         let hotels = new HotelSearchResult();
-        hotels.items = hotelDetails;
+
+        hotels.items = this.sortItems(hotelDetails);
 
         let priceRange = new PriceRange();
         let priceType = 'selling_price';
@@ -296,6 +306,8 @@ export class Monaker implements StrategyVacationRental {
 
         return hotels;
     }
+
+
 
     async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, user) {
         const { id, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availabilityDetailsDto;
