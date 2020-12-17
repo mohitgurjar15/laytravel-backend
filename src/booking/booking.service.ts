@@ -33,6 +33,7 @@ import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
+import { Generic } from "src/utility/generic.utility";
 
 @Injectable()
 export class BookingService {
@@ -44,7 +45,7 @@ export class BookingService {
 	) { }
 
 	async resendBookingEmail(bookingDetail: getBookingDetailsDto): Promise<{ message: any }> {
-		const {bookingId} = bookingDetail
+		const { bookingId } = bookingDetail
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 
 		if (!bookingData) {
@@ -128,7 +129,7 @@ export class BookingService {
 			else {
 				EmailSubject = "Flight Booking Confirmation";
 				installmentDetail.push({
-					amount: bookingData.currency2.symbol + bookingData.totalAmount,
+					amount: bookingData.currency2.symbol +Generic.formatPriceDecimal (parseFloat (bookingData.totalAmount)),
 					date: await this.formatDate(bookingData.bookingDate),
 					status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 				})
@@ -156,9 +157,9 @@ export class BookingService {
 
 			}
 
-			param.user_name = `${user.firstName}  ${user.firstName}`;
+			param.user_name = `${user.firstName}  ${user.lastName}`;
 			param.flightData = flightData;
-			param.orderId = bookingData.id;
+			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
 
@@ -484,7 +485,7 @@ export class BookingService {
 		for (let i = 0; i < result.data.length; i++) {
 			if (result.data[i].bookingInstalments.length > 0) {
 				result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
-	
+
 				//result.data[i].bookingInstalments.reverse()
 			}
 			let paidAmount = 0;
@@ -551,16 +552,19 @@ export class BookingService {
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
 		const result: any = data;
 		for await (const instalment of result) {
-			let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
+			// if (instalment.booking.moduleInfo[0].) {
+			// 	let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
 
-			for (let index = 0; index < infoDate.length; index++) {
-				const element = infoDate[index];
+			// 	for (let index = 0; index < infoDate.length; index++) {
+			// 		const element = infoDate[index];
 
-				if (element.instalment_date == instalment.instalmentDate) {
-					instalment.installmentNo = index + 1;
-					exit;
-				}
-			}
+			// 		if (element.instalment_date == instalment.instalmentDate) {
+			// 			instalment.installmentNo = index + 1;
+			// 			exit;
+			// 		}
+			// 	}
+			// }
+
 		}
 
 		return {
@@ -617,12 +621,12 @@ export class BookingService {
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				console.log(bookingData.laytripBookingId);
-					
+
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				predictiveBookingData['module_name'] = bookingData.module.name;
-				
+
 
 				predictiveBookingData['profit'] = parseFloat(bookingData.totalAmount) - data.netPrice;
 
@@ -921,13 +925,13 @@ export class BookingService {
 	}
 
 
-	async shareBooking( shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
-		const { emails , bookingId } = shareBookingDto
+	async shareBooking(shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+		const { emails, bookingId } = shareBookingDto
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 		if (bookingData.userId != user.userId) {
 			throw new NotAcceptableException(`given booking not found`)
 		}
-		
+
 		if (!bookingData) {
 			throw new NotFoundException(
 				"Given booking id not found&&&booking_id&&&Given booking id not found"
