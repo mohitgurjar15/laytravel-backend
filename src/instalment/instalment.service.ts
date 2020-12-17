@@ -1,9 +1,9 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InstalmentDto } from './dto/instalment.dto';
 import { InstalmentType } from 'src/enum/instalment-type.enum';
 import { Instalment } from 'src/utility/instalment.utility';
 import { InstalmentAvailabilityDto } from './dto/instalment-availability.dto';
-import { errorMessage } from 'src/config/common.config';
+import { AllInstalmentDto } from './dto/all-instalment.dto';
 
 @Injectable()
 export class InstalmentService {
@@ -12,22 +12,49 @@ export class InstalmentService {
 
         const { 
             instalment_type, amount,
-            checkin_date, booking_date, additional_amount, custom_instalment_no, custom_amount
+            checkin_date, booking_date, additional_amount, down_payment
         } = instalmentDto;
 
-        if(custom_amount && custom_instalment_no){
-
-            throw new BadRequestException(`Please select either custom amount or custom instalment number&&&type&&&${errorMessage}`)
-        }
+        
         if(instalment_type==InstalmentType.WEEKLY){
-            return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,custom_amount,custom_instalment_no);
+            return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
         }
         
         else if(instalment_type==InstalmentType.BIWEEKLY)
-            return Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,custom_amount,custom_instalment_no);
+            return Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
         
         else if(instalment_type==InstalmentType.MONTHLY)
-            return Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,custom_amount,custom_instalment_no);
+            return Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+        
+    }
+
+    async calculateAllInstalemnt(allInstalmentDto:AllInstalmentDto){
+
+        const { 
+            amount,
+            checkin_date, booking_date, additional_amount,down_payment
+        } = allInstalmentDto;
+        
+        let weeklyInstalments = Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+        if(weeklyInstalments.instalment_available==true){
+
+            let biWeeklyInstalments = Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+            let monthlyInstalments = Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+
+            return {
+                instalment_available : true,
+                weekly_instalments : weeklyInstalments.instalment_date,
+                biweekly_instalments : biWeeklyInstalments.instalment_date,
+                monthly_instalments : monthlyInstalments.instalment_date
+            }
+        }
+        else{
+            return {
+                instalment_available : false
+            }
+        }
+        
+        
         
     }
 
