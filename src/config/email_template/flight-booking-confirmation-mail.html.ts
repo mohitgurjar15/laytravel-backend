@@ -28,7 +28,7 @@ export async function FlightBookingConfirmtionMail(
                           </tr>`;
 
   var inventry = `<tr>
-                          <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000;padding: 0 0 5px; text-align: left; font-weight: 700;"> Inventeary </td>
+                          <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000;padding: 0 0 5px; text-align: left; font-weight: 700;"> Inventory </td>
                           </tr>
                           <tr>
                           <td align="center" valign="top" style="border: 1px solid #D9D9D9;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -38,8 +38,8 @@ export async function FlightBookingConfirmtionMail(
                                       <tbody>
                                       <tr>
                                           <td align="left" valign="middle" style="padding: 7px; width: 100px; border-right: 1px solid #D7D7D7; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #FFFFFF; text-transform: capitalize;">Flight</td>
-                                          <td align="left" valign="middle" style="padding: 7px; width: 200px; border-right: 1px solid #D7D7D7; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #FFFFFF; text-transform: capitalize;">Depearts</td>
-                                          <td align="left" valign="middle" style="padding: 7px; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #FFFFFF; text-transform: capitalize;">arrives</td>
+                                          <td align="left" valign="middle" style="padding: 7px; width: 200px; border-right: 1px solid #D7D7D7; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #FFFFFF; text-transform: capitalize;">Departure</td>
+                                          <td align="left" valign="middle" style="padding: 7px; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #FFFFFF; text-transform: capitalize;">Arrival</td>
                                       </tr>
                                       </tbody>
                                   </table></td>`;

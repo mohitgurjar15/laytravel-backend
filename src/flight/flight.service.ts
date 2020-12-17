@@ -1774,7 +1774,7 @@ export class FlightService {
 			else {
 				EmailSubject = "Flight Booking Confirmation"
 				installmentDetail.push({
-					amount: bookingData.currency2.symbol + bookingData.totalAmount,
+					amount: bookingData.currency2.symbol + Generic.formatPriceDecimal (parseFloat (bookingData.totalAmount)),
 					date: await this.formatDate(bookingData.bookingDate),
 					status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 				})
@@ -1802,9 +1802,9 @@ export class FlightService {
 
 			}
 
-			param.user_name = `${user.firstName}  ${user.firstName}`;
+			param.user_name = `${user.firstName}  ${user.lastName}`;
 			param.flightData = flightData;
-			param.orderId = bookingData.id;
+			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
 
