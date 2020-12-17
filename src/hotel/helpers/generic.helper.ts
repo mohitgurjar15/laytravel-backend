@@ -23,4 +23,8 @@ export class Generic{
         })
         return output_string.join("&")
     }
+
+    isset(ref) {
+        return typeof ref !== 'undefined';
+    }
 }

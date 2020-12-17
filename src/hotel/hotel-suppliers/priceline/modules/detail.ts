@@ -20,7 +20,7 @@ export class Detail{
         if (results.results.status && results.results.status === "Success") {
             
             let hotel = results.results.hotel_data[0];
-
+            return hotel;
             let details = this.detailHelper.getHotelDetails(hotel);
 
             return details;

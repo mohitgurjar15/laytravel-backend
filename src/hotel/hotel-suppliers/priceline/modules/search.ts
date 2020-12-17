@@ -26,7 +26,8 @@ export class Search{
         let results = res.data['getHotelExpress.Results'];
         
         if (results.error) {
-            throw new InternalServerErrorException(results.error.status);
+            // results.error.status
+            throw new InternalServerErrorException("No Hotel found");
         }
         
         if (results.results.status && results.results.status === "Success") { 

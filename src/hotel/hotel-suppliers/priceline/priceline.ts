@@ -1,12 +1,14 @@
 import { HttpService, InternalServerErrorException } from "@nestjs/common";
 import { collect } from "collect.js";
 import { map } from "rxjs/operators";
-import { DetailReqDto } from "src/hotel/dto/detail/detail-req.dto";
-import { RoomsReqDto } from "src/hotel/dto/rooms/rooms-req.dto";
-import { SearchReqDto } from "src/hotel/dto/search/search-req.dto";
+import { AvailabilityDto } from "src/hotel/dto/availability-req.dto";
+import { DetailReqDto } from "src/hotel/dto/detail-req.dto";
+import { RoomsReqDto } from "src/hotel/dto/rooms-req.dto";
+import { SearchReqDto } from "src/hotel/dto/search-req.dto";
 import { HotelInterface } from "../hotel.interface";
 import { CommonHelper } from "./helpers/common.helper";
 import { AutoComplete } from "./modules/auto-complete";
+import { Availability } from "./modules/availability";
 import { Detail } from "./modules/detail";
 import { Rooms } from "./modules/rooms";
 import { Search } from "./modules/search";
@@ -72,7 +74,8 @@ export class Priceline implements HotelInterface{
         let parameters = {
             hotel_id : detailReqDto.hotel_id,
             photos : true,
-            image_size : 'large',
+            image_size: 'large',
+            reviews: true
         };
 
         let url = CommonHelper.generateUrl('getHotelDetails', parameters);
@@ -85,7 +88,7 @@ export class Priceline implements HotelInterface{
     async rooms(roomsReqDto: RoomsReqDto) {
 
         let parameters = {
-            ppn_bundle : roomsReqDto.ppn_bundle,
+            ppn_bundle : roomsReqDto.bundle,
         };
 
         let url = CommonHelper.generateUrl('getExpress.MultiContract', parameters);
@@ -93,5 +96,19 @@ export class Priceline implements HotelInterface{
         let res = await this.httpsService.get(url).pipe(map(res => new Rooms().processRoomsResult(res, roomsReqDto))).toPromise();
         
         return res;
+    }
+    
+    async availability(availabilityDto: AvailabilityDto) {
+        
+        let parameters = {
+            ppn_bundle: availabilityDto.bundle
+        };
+    
+        let url = CommonHelper.generateUrl('getExpress.Contract', parameters);
+        
+        let res = await this.httpsService.get(url).pipe(map(res => new Availability().processAvailabilityResult(res, availabilityDto))).toPromise();
+        
+        return res;
+        
     }
 }
