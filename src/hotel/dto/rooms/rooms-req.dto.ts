@@ -9,17 +9,15 @@ export class RoomsReqDto {
     @IsString()
     hotel_id: string;
     
-    @ApiProperty({
-        description: 'Hotel ID'
-    })
     @IsString()
-
     @IsOptional()
     ppn_bundle?: string;
     
     @IsOptional()
     token?: string;
     
+
+    /* Added this property for Public/retail  */
     @IsOptional()
     rooms?: string;
 }

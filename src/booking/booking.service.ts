@@ -44,7 +44,7 @@ export class BookingService {
 	) { }
 
 	async resendBookingEmail(bookingDetail: getBookingDetailsDto): Promise<{ message: any }> {
-		const {bookingId} = bookingDetail
+		const { bookingId } = bookingDetail
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 
 		if (!bookingData) {
@@ -484,7 +484,7 @@ export class BookingService {
 		for (let i = 0; i < result.data.length; i++) {
 			if (result.data[i].bookingInstalments.length > 0) {
 				result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
-	
+
 				//result.data[i].bookingInstalments.reverse()
 			}
 			let paidAmount = 0;
@@ -551,16 +551,19 @@ export class BookingService {
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
 		const result: any = data;
 		for await (const instalment of result) {
-			let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
+			// if (instalment.booking.moduleInfo[0].) {
+			// 	let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
 
-			for (let index = 0; index < infoDate.length; index++) {
-				const element = infoDate[index];
+			// 	for (let index = 0; index < infoDate.length; index++) {
+			// 		const element = infoDate[index];
 
-				if (element.instalment_date == instalment.instalmentDate) {
-					instalment.installmentNo = index + 1;
-					exit;
-				}
-			}
+			// 		if (element.instalment_date == instalment.instalmentDate) {
+			// 			instalment.installmentNo = index + 1;
+			// 			exit;
+			// 		}
+			// 	}
+			// }
+
 		}
 
 		return {
@@ -617,12 +620,12 @@ export class BookingService {
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				console.log(bookingData.laytripBookingId);
-					
+
 				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				predictiveBookingData['module_name'] = bookingData.module.name;
-				
+
 
 				predictiveBookingData['profit'] = parseFloat(bookingData.totalAmount) - data.netPrice;
 
@@ -921,13 +924,13 @@ export class BookingService {
 	}
 
 
-	async shareBooking( shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
-		const { emails , bookingId } = shareBookingDto
+	async shareBooking(shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
+		const { emails, bookingId } = shareBookingDto
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 		if (bookingData.userId != user.userId) {
 			throw new NotAcceptableException(`given booking not found`)
 		}
-		
+
 		if (!bookingData) {
 			throw new NotFoundException(
 				"Given booking id not found&&&booking_id&&&Given booking id not found"
