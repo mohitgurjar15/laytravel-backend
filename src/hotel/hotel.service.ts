@@ -11,6 +11,9 @@ import { collect } from 'collect.js';
 import { FilterHelper } from './helpers/filter.helper';
 import { FilterReqDto } from './dto/filter/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
+import { Location } from './dto/search-location/location.dto';
+import { classToPlain, deserializeArray, plainToClass } from 'class-transformer';
+import { DetailsDto } from './dto/others/details-res.dto';
 
 @Injectable()
 export class HotelService{
@@ -25,7 +28,7 @@ export class HotelService{
         
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
         
-        locations = JSON.parse(JSON.stringify(locations).replace(/\:null/gi, "\:\"\""));
+        // locations = plainToClass(Location, locations, );
         
         return {
             data: locations,
@@ -37,7 +40,7 @@ export class HotelService{
         
         /* This should return pure hotel response (Directly from supplier's and as per our decided structure) */
         let hotels = await this.hotel.search(searchReqDto);
-        
+        // return hotels;
         /* Add any type of Business logic for hotel object's */
         hotels = collect(hotels).map((item: any) => {
 
@@ -100,15 +103,38 @@ export class HotelService{
             throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
         
-        let hotel = collect(cached.hotels).where('id', roomsReqDto.ppn_bundle).first();
+        let hotel = collect(cached.hotels).where('id', roomsReqDto.hotel_id).first();
         
         if (!hotel) {
             throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
 
-        roomsReqDto.ppn_bundle = hotel['bundle'];
+        let details = cached.details;
 
-        return this.hotel.rooms(roomsReqDto);
+        roomsReqDto.ppn_bundle = hotel['bundle'];
+        roomsReqDto.rooms = details.occupancies.length;
+
+        let rooms = await this.hotel.rooms(roomsReqDto);
+
+        /* Add any type of Business logic for hotel object's */
+        rooms = collect(rooms).map((room: any) => {
+
+            let instalment = RateHelper.getInstalmentBreakup(room.selling.total, details.check_in);
+
+            room.instalment_details = instalment.detail;
+            room.start_price = instalment.start_price;
+            room.secondary_start_price = instalment.secondary_start_price;
+
+            return room;
+
+        });
+
+        let response = {
+            data: rooms,
+            message: rooms.count() ? 'Rooms found' : 'No Room Found'
+        };
+
+        return response;
 
     }
 
