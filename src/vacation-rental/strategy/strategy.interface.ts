@@ -1,6 +1,6 @@
 export interface StrategyVacationRental{
 
-   checkAllavaiability(param1,param2);
+   checkAllavaiability(param1,param2,param3);
 
    unitTypeListAvailability(param1,param2);
 
