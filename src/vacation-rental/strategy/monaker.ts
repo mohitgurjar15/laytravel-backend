@@ -249,10 +249,12 @@ export class Monaker implements StrategyVacationRental {
                         hotel.secondary_selling_price = 0;
                     }
                     hotel.instalment_details = instalmentDetails;
-                    let amenities = (hotel_details["amenties"]).replace("{", "").replace("}", "").split(",");
+                    // let amenities = (hotel_details["amenties"]).replace("{", "").replace("}", "").split(",");
+                    let amenities = (hotel_details["amenties"]).split(",");
+
                     let addAmenities: any = [];
                     for (let i = 0; i < amenities.length; i++) {
-                        addAmenities.push(JSON.parse(amenities[i]));
+                        addAmenities.push(amenities[i]);
                     }
                     hotel.amenties = addAmenities
                     hotel.date = check_out_date
@@ -264,7 +266,6 @@ export class Monaker implements StrategyVacationRental {
             }
         }
 
-
         if (hotelDetails.length == 0) {
             if (flag == true) {
                 return { message: "hotel not found" }
@@ -273,8 +274,6 @@ export class Monaker implements StrategyVacationRental {
 
             }
         }
-
-
 
         let hotels = new HotelSearchResult();
         hotels.items = hotelDetails;
@@ -556,7 +555,7 @@ export class Monaker implements StrategyVacationRental {
     }
 
 
-    async booking(bookingDto: BookingDto, travelers, booking_code, selling_price) {
+    async booking(bookingDto: BookingDto, travelers, booking_code, net_price) {
         const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = bookingDto;
         let monakerCredential = await this.getMonakerCredential();
 
@@ -588,7 +587,7 @@ export class Monaker implements StrategyVacationRental {
         let requestBody = {
             "id": room_id,
             "currency": this.headers.currency,
-            "price": selling_price,
+            "price": net_price,
             "quoteHandle": booking_code,
             "ratePlanCode": rate_plan_code,
             "checkInDate": check_in_date,
