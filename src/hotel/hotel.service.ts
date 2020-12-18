@@ -1,26 +1,29 @@
 import { CACHE_MANAGER, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { HotelSearchLocationDto } from './dto/search-location/search-location.dto';
-import { SearchReqDto } from './dto/search/search-req.dto';
+import { HotelSearchLocationDto } from './dto/search-location.dto';
+import { SearchReqDto } from './dto/search-req.dto';
 import { Hotel } from './hotel-suppliers/hotel.manager';
 import { Priceline } from './hotel-suppliers/priceline/priceline';
 import { Cache } from 'cache-manager';
 import { v4 as uuidv4 } from 'uuid';
-import { DetailReqDto } from './dto/detail/detail-req.dto';
-import { RoomsReqDto } from './dto/rooms/rooms-req.dto';
+import { DetailReqDto } from './dto/detail-req.dto';
+import { RoomsReqDto } from './dto/rooms-req.dto';
 import { collect } from 'collect.js';
 import { FilterHelper } from './helpers/filter.helper';
-import { FilterReqDto } from './dto/filter/filter-req.dto';
+import { FilterReqDto } from './dto/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
-import { Location } from './dto/search-location/location.dto';
-import { classToPlain, deserializeArray, plainToClass } from 'class-transformer';
-import { DetailsDto } from './dto/others/details-res.dto';
+import { AvailabilityDto } from './dto/availability-req.dto';
+import { Generic } from './helpers/generic.helper';
 
 @Injectable()
 export class HotelService{
     
     private hotel: Hotel;
 
-    constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
+    constructor(
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+        private genericHelper: Generic,
+        private rateHelper: RateHelper
+    ) {
         this.hotel = new Hotel(new Priceline());
     }
 
@@ -41,18 +44,9 @@ export class HotelService{
         /* This should return pure hotel response (Directly from supplier's and as per our decided structure) */
         let hotels = await this.hotel.search(searchReqDto);
         // return hotels;
+        
         /* Add any type of Business logic for hotel object's */
-        hotels = collect(hotels).map((item: any) => {
-
-            let instalment = RateHelper.getInstalmentBreakup(item.selling.total, searchReqDto.check_in);
-
-            item.instalment_details = instalment.detail;
-            item.start_price = instalment.start_price;
-            item.secondary_start_price = instalment.secondary_start_price;
-
-            return item;
-
-        });
+        hotels = this.rateHelper.generateInstalments(hotels, searchReqDto.check_in);
 
         let token = uuidv4();
 
@@ -63,8 +57,6 @@ export class HotelService{
             details: searchReqDto,
             hotels
         };
-        
-        await this.cacheManager.set(token, toCache, { ttl: 300 });
 
         if (searchReqDto.filter) {
             
@@ -72,9 +64,10 @@ export class HotelService{
 
             toCache['filter_objects'] = filterObjects;
 
-            await this.cacheManager.set(token, toCache, { ttl: 300 });
-
+            
         }
+        
+        this.cacheManager.set(token, toCache, { ttl: 300 });
 
         let response = {
             data: toCache,
@@ -111,23 +104,22 @@ export class HotelService{
 
         let details = cached.details;
 
-        roomsReqDto.ppn_bundle = hotel['bundle'];
+        roomsReqDto.bundle = hotel['bundle'];
         roomsReqDto.rooms = details.occupancies.length;
 
         let rooms = await this.hotel.rooms(roomsReqDto);
-
+        // return rooms;
+        
         /* Add any type of Business logic for hotel object's */
-        rooms = collect(rooms).map((room: any) => {
+        rooms = this.rateHelper.generateInstalments(rooms, details.check_in);
 
-            let instalment = RateHelper.getInstalmentBreakup(room.selling.total, details.check_in);
+        if (this.genericHelper.isset(cached['rooms'])) {
+            rooms = collect(cached['rooms']).union(rooms.values().toArray());
+        }
 
-            room.instalment_details = instalment.detail;
-            room.start_price = instalment.start_price;
-            room.secondary_start_price = instalment.secondary_start_price;
+        cached['rooms'] = rooms;
 
-            return room;
-
-        });
+        this.cacheManager.set(roomsReqDto.token, cached, { ttl: 300 });
 
         let response = {
             data: rooms,
@@ -146,11 +138,53 @@ export class HotelService{
 
         cached['filter_objects'] = filterObjects;
 
-        await this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
+        this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
 
         return {
             data: filterObjects,
             message: "Filter object found"
         }
+    }
+
+    async availability(availabilityDto: AvailabilityDto) {
+
+        let cached = await this.cacheManager.get(availabilityDto.token);
+
+        if (!cached.rooms) {
+            throw new InternalServerErrorException("No record found for Room ID: "+availabilityDto.room_id);
+        }
+        
+        let room = collect(cached.rooms).where('room_id', availabilityDto.room_id).first();
+        
+        if (!room) {
+            throw new InternalServerErrorException("No record found for Room ID: "+availabilityDto.room_id);
+        }
+
+        let details = cached.details;
+        
+        availabilityDto.bundle = room['bundle'];
+        availabilityDto.rooms = details.occupancies.length;
+
+        let availability = await this.hotel.availability(availabilityDto);
+        // return availability;
+
+        /* Add any type of Business logic for Room object's */
+        availability = this.rateHelper.generateInstalments(availability, details.check_in);
+
+        availability = availability.map((item) => {
+
+            item['price_change'] = (item.selling.total != room['selling']['total']);
+
+            return item;
+        });
+
+
+        let response = {
+            data: availability,
+            message: availability.count() ? 'Room\'s are available' : 'Room\'s are not available'
+        };
+
+        return response;
+
     }
 }

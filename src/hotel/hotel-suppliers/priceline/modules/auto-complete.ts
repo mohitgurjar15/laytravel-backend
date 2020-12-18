@@ -1,14 +1,14 @@
 import { InternalServerErrorException, UsePipes, ValidationPipe } from "@nestjs/common";
 import { collect } from "collect.js";
-import { DetailHelper } from "../helpers/detail.helper";
-import { Location } from './../../../dto/search-location/location.dto';
+import { Generic } from "src/hotel/helpers/generic.helper";
 
 @UsePipes(new ValidationPipe({whitelist:true, forbidNonWhitelisted: true}))
 export class AutoComplete{
     
-    private detailHelper: DetailHelper;
+    private genericHelper: Generic;
+    
     constructor() {
-        this.detailHelper = new DetailHelper;
+        this.genericHelper = new Generic;
     }
     
     processSearchLocationResult(res: any) {
@@ -37,12 +37,12 @@ export class AutoComplete{
                         case 'city':
                             country = sub['country'];
                             city = sub['city'];
-                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : "";
+                            state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
                             break;
                         
                         case 'airport':
                             country = sub['country_code'];
-                            state = this.detailHelper.isset(sub['state_code']) ? sub['state_code'] : "";
+                            state = this.genericHelper.isset(sub['state_code']) ? sub['state_code'] : "";
                             city = sub['city'];
                             line = sub['airport_spell'].reverse().join(' - ');
                             break;
@@ -53,7 +53,7 @@ export class AutoComplete{
                                 
                         case 'poi':
                             line = sub['poi_name'];
-                            state = this.detailHelper.isset(sub['state']) ? sub['state'] : "";
+                            state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
                             city = sub['city'];
                             country = sub['country'];
                             break;
