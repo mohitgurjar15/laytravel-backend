@@ -5,8 +5,8 @@ import { IsArray } from "class-validator";
 export class AvailabilityDetailsDto {
 
     @ApiProperty({
-        description:"Enter a property",
-        example:7110442417410
+        description:"Enter a property id",
+        example:42945378320383
     })
     id:number;
 

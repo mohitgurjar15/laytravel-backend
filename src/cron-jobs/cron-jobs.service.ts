@@ -449,7 +449,7 @@ export class CronJobsService {
 						await this.getDailyPriceOfFlight(result[index], Headers)
 						break;
 					case ModulesName.VACATION_RENTEL:
-						await this.getDailyPriceofVacationRental(result[index], Headers)
+						await this.getDailyPriceOfVacationRental(result[index], Headers)
 						break;
 					default:
 
@@ -1037,7 +1037,7 @@ export class CronJobsService {
 		}
 	}
 
-	async getDailyPriceofVacationRental(bookingData: Booking, Headers) {
+	async getDailyPriceOfVacationRental(bookingData: Booking, Headers) {
 		console.log(bookingData);
 		let vacationData;
 		if (new Date(await this.getDataTimefromString(bookingData.checkInDate)) > new Date()) {
@@ -1046,17 +1046,18 @@ export class CronJobsService {
 			Headers['language'] = 'en'
 
 			let dto = {
-				"room_id": bookingData.moduleInfo[0].room_id,
-				"rate_plan_code": bookingData.moduleInfo[0].rate_plan_code,
+				"property_id":bookingData.moduleInfo["property_id"],
+				"room_id": bookingData.moduleInfo["room_id"],
+				"rate_plan_code": bookingData.moduleInfo["rate_plan_code"],
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
-				"adult_count": bookingData.moduleInfo[0].adult_count,
-				"number_and_children_ages": bookingData.moduleInfo[0].chindren_age
+				"adult_count": bookingData.moduleInfo["adult"],
+				"number_and_children_ages": bookingData.moduleInfo["number_and_chidren_age"]
 			}
 
 
 			vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
-			console.log(vacationData);
+			// console.log(vacationData);
 
 
 			const date = new Date();

@@ -231,6 +231,6 @@ export class VacationRentalController {
         @Req() req,
 
     ) {
-        return await this.vacationRentalService.bookPartialBooking(booking_id, req.headers);
+        return await this.vacationRentalService.partiallyBookVacationRental(booking_id, req.headers);
     }
 }
