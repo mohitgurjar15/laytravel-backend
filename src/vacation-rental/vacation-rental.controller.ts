@@ -1,8 +1,8 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth, ApiProperty } from "@nestjs/swagger";
-import { AvailabilityDto } from './dto/availability.dto';
+import { AvailabilityVacationDto } from './dto/availability.dto';
 import { VacationRentalService } from './vacation-rental.service';
-import { AvailabilityDetailsDto } from './dto/availabilty_details.dto';
+import { AvailabilityVacationDetailsDto } from './dto/availabilty_details.dto';
 import { VerifyAvailabilityDto } from './dto/verify_availability.dto';
 import { BookingDto } from './dto/booking.dto';
 import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
@@ -55,14 +55,14 @@ export class VacationRentalController {
     })
     async hotelAvailability(
         @Req() req,
-        @Body() availability: AvailabilityDto,
+        @Body() availability: AvailabilityVacationDto,
         @LogInUser() user
     ): Promise<any> {
         if (moment(availability.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(availability.check_out_date).isAfter(availability.check_in_date))
-            throw new BadRequestException(`Please enter valid checkout date`)
+            throw new BadRequestException(`Check out date needs to be after check in.`)
         return await this.vacationRentalService.availabilityHotel(availability, user, req.headers);
     }
 
@@ -86,14 +86,14 @@ export class VacationRentalController {
     })
     async hotelAvailabilityId(
         @Req() req,
-        @Body() availabilityDetailsDto: AvailabilityDetailsDto,
+        @Body() availabilityDetailsDto: AvailabilityVacationDetailsDto,
         @LogInUser() user
     ) {
         if (moment(availabilityDetailsDto.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(availabilityDetailsDto.check_out_date).isAfter(availabilityDetailsDto.check_in_date))
-            throw new BadRequestException(`Please enter valid checkout date`)
+            throw new BadRequestException(`Check out date needs to be after check in.`)
         return await this.vacationRentalService.unitTypeListAvailability(availabilityDetailsDto, req.headers,user);
     }
 
@@ -124,7 +124,7 @@ export class VacationRentalController {
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(verifyAvailabilityDetailsDto.check_out_date).isAfter(verifyAvailabilityDetailsDto.check_in_date))
-            throw new BadRequestException(`Please enter valid checkout date`)
+            throw new BadRequestException(`Check out date needs to be after check in.`)
         return await this.vacationRentalService.verifyUnitAvailability(verifyAvailabilityDetailsDto, req.headers,user);
     }
 
@@ -157,7 +157,7 @@ export class VacationRentalController {
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(bookingDto.check_out_date).isAfter(bookingDto.check_in_date))
-            throw new BadRequestException(`Please enter valid checkout date`)
+            throw new BadRequestException(`Check out date needs to be after check in.`)
         return await this.vacationRentalService.booking(bookingDto, req.headers,user)
     }
 
@@ -204,7 +204,7 @@ export class VacationRentalController {
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(searchHomeRental.end_date).isAfter(searchHomeRental.start_date))
-            throw new BadRequestException(`Please enter valid checkout date`)
+            throw new BadRequestException(`Check out date needs to be after check in.`)
         return await this.vacationRentalService.fullcalenderRate(searchHomeRental, req.headers, user);
     }
 

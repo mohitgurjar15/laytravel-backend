@@ -2,11 +2,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray } from "class-validator";
 
-export class AvailabilityDetailsDto {
+export class AvailabilityVacationDetailsDto {
 
     @ApiProperty({
         description:"Enter a property id",
-        example:42945378320383
+        example:42945378123775
     })
     id:number;
 

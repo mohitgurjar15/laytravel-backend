@@ -9,19 +9,19 @@ export class BookingDto{
 
     @ApiProperty({
         description:"Enter room id",
-        example:7110442417410
+        example:42945378123775
     })
     property_id:number;
 
     @ApiProperty({
         description:"Enter room id",
-        example:7111514346492
+        example:42945378058257
     })
     room_id:number;
 
     @ApiProperty({
         description:"Enter rate plan selected for price check.",
-        example:'186PNPNX01'
+        example:'ElevnLettrs'
     })
     rate_plan_code:string;
 
