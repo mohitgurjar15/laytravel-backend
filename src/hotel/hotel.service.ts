@@ -64,7 +64,6 @@ export class HotelService{
 
             toCache['filter_objects'] = filterObjects;
 
-            
         }
         
         this.cacheManager.set(token, toCache, { ttl: 300 });
