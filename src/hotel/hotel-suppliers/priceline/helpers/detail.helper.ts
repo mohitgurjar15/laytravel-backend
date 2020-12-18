@@ -12,6 +12,7 @@ export class DetailHelper {
     }
     private default_amenities = {
         "Free Breakfast" : "breakfast",
+        "Restaurant" : "breakfast",
         "Free Internet Access" : "wifi",
         "No Smoking Rooms/Facilities": "no_smoking",
         "tv": "tv",

@@ -25,10 +25,10 @@ export class Availability{
             
             let room = this.roomHelper.processRoom(hotel, availabilityDto);
 
-            room = collect(room).map((item :any) => {
-                item.retail.sub_total = 1000;
-                return item;
-            });
+            // room = collect(room).map((item :any) => {
+            //     item.retail.sub_total = 1000;
+            //     return item;
+            // });
             // room[0].selling.sub_total = 69;
 
             return room;

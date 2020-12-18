@@ -29,7 +29,7 @@ export class HotelController {
     @Post('/search-location')
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Search locations", description:"Search locations for Hotel" })
+    @ApiOperation({ summary: "Search locations", description:"Search locations for Cities, Airports, Hotels, Point of Interest and Region to find a Hotels" })
     suggestion(
         @Body() searchLocationDto: HotelSearchLocationDto
     ) {
@@ -41,7 +41,7 @@ export class HotelController {
     @Post('search')
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Hotel Search", description: "Search Hotels based on search criteria" })
+    @ApiOperation({ summary: "Search Hotels", description: "Search Hotels based on search criteria" })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     search(
@@ -67,7 +67,7 @@ export class HotelController {
     @Post('detail')
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Hotel Details", description: "Get details of Hotel based on Hotel ID" })
+    @ApiOperation({ summary: "Details", description: "Get details of Hotel based on Hotel ID" })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     detail(
@@ -81,7 +81,7 @@ export class HotelController {
     @Post('rooms')
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Hotel Rooms", description: "Get all available Rooms for Particular Hotel" })
+    @ApiOperation({ summary: "Rooms", description: "Get all available Rooms for Particular Hotel ID" })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     rooms(
@@ -96,7 +96,7 @@ export class HotelController {
     @Post('availability')
     @HttpCode(200)
     @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Hotel Rooms", description: "Get all available Rooms for Particular Hotel" })
+    @ApiOperation({ summary: "Room availability", description: "Check for the Room availability based on the selected Room ID" })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     availability(
