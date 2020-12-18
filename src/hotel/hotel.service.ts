@@ -66,7 +66,7 @@ export class HotelService{
 
         }
         
-        this.cacheManager.set(token, toCache, { ttl: 300 });
+        await this.cacheManager.set(token, toCache, { ttl: 300 });
 
         let response = {
             data: toCache,
@@ -118,7 +118,7 @@ export class HotelService{
 
         cached['rooms'] = rooms;
 
-        this.cacheManager.set(roomsReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: 300 });
 
         let response = {
             data: rooms,
@@ -137,7 +137,7 @@ export class HotelService{
 
         cached['filter_objects'] = filterObjects;
 
-        this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
 
         return {
             data: filterObjects,

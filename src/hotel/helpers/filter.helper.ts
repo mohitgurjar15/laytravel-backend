@@ -19,13 +19,15 @@ export class FilterHelper{
         
         let max = sellings.max('total');
         
-        let fixRatings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        let fix_ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
         
-        let ratings = hotels.pluck('rating').countBy().union(fixRatings).map(mapper).values()
+        let fix_refund_policy = { "true": 0, "false": 0 };
         
-        let ameneties = hotels.pluck('amenities').flatten().countBy().map(mapper).values();
+        let ratings = hotels.pluck('rating').countBy().union(fix_ratings).map(mapper).values()
         
-        let refund_policy = hotels.pluck('refundable').countBy().map(mapper).values();
+        let ameneties = hotels.pluck('amenities.list').flatten().countBy().map(mapper).values();
+        
+        let refund_policy = hotels.pluck('refundable').countBy().union(fix_refund_policy).map(mapper).values();
         
         let secondary_price = {
             min: hotels.min('secondary_start_price'),
