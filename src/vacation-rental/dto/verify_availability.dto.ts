@@ -5,16 +5,21 @@ import { errorMessage } from "src/config/common.config";
 
 export class VerifyAvailabilityDto {
 
-    
+    @ApiProperty({
+        description:"Enter a property id",
+        example:42945378320383
+    })
+    property_id:number;
+
     @ApiProperty({
         description:"Enter room id ",
-        example:'7111514346492'
+        example:42945378189361
     })
     room_id:number;
 
     @ApiProperty({
         description:"Enter rate plan selected for price check.  ",
-        example:'186PNPNX01'
+        example:'ThisReservationWillFailOnBooking'
     })
     rate_plan_code:string;
 

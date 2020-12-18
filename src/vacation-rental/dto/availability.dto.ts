@@ -4,7 +4,7 @@ import { Type } from "class-transformer/decorators";
 export class AvailabilityDto {
     @ApiProperty({
         description:"Enter a id",
-        example:19
+        example:19299
     })
     id:number;
 

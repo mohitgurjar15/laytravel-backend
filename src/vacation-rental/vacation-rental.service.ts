@@ -189,9 +189,10 @@ export class VacationRentalService {
 			travelers,
 		} = bookingDto;
 
-
 		const monaker = new MonakerStrategy(new Monaker(headers));
+
 		let verifyDto = {
+			"property_id":property_id,
 			"room_id": room_id,
 			"rate_plan_code": rate_plan_code,
 			"check_in_date": check_in_date,
@@ -199,32 +200,9 @@ export class VacationRentalService {
 			"adult_count": adult_count,
 			"number_and_children_ages": number_and_children_ages
 		};
-		let unitTypeDto = {
-			"id": property_id,
-			"check_in_date": check_in_date,
-			"check_out_date": check_out_date,
-			"adult_count": adult_count,
-			"number_and_children_ages": number_and_children_ages
-		}
+	
 		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(verifyDto, user);
-		const propertyDetails = await monaker.unitTypeListAvailability(unitTypeDto, user);
-
-		let roomDetails = propertyDetails.rooms.find((data) => data.rate_plan_code == rate_plan_code);
-
-		let moduleData = [
-			{
-				propertyName: propertyDetails["property_name"],
-				propertyDesc: propertyDetails["description"],
-				propertyAminities: propertyDetails["amenities"],
-				cancellationPolicy: roomDetails["cancellation_policy"]["is_refundable"] == false ? `Not refundable` : roomDetails["cancellation_policy"]["penalty_info"].toString(),
-				roomDetails: verifyAvailabilityResult,
-				room_id: room_id,
-				rate_plan_code: rate_plan_code,
-				adult_count: adult_count,
-				chindren_age: number_and_children_ages
-			}
-		];
-
+	
 		let bookingRequestInfo: any = {};
 
 		if (verifyAvailabilityResult) {
@@ -278,9 +256,9 @@ export class VacationRentalService {
 		);
 
 		let locationInfo = {
-			display_name: propertyDetails["property_name"],
-			city: propertyDetails["city"],
-			country: propertyDetails["country"]
+			display_name: verifyAvailabilityResult["property_name"],
+			city: verifyAvailabilityResult["city"],
+			country: verifyAvailabilityResult["country"]
 		}
 
 		let booking_code = verifyAvailabilityResult["booking_code"];
@@ -373,7 +351,7 @@ export class VacationRentalService {
 							bookingDate,
 							BookingType.INSTALMENT,
 							userId,
-							moduleData,
+							verifyAvailabilityResult,
 							instalmentDetails,
 							captureCardresult,
 							bookingResult || null,
@@ -442,7 +420,7 @@ export class VacationRentalService {
 							bookingDate,
 							BookingType.NOINSTALMENT,
 							userId,
-							moduleData,
+							verifyAvailabilityResult,
 							null,
 							captureCardresult,
 							bookingResult,
@@ -491,7 +469,7 @@ export class VacationRentalService {
 						bookingDate,
 						BookingType.NOINSTALMENT,
 						userId,
-						moduleData,
+						verifyAvailabilityResult,
 						null,
 						null,
 						bookingResult,
@@ -1163,7 +1141,7 @@ export class VacationRentalService {
 		return [month, day, year].join('/');
 	}
 
-	async bookPartialBooking(bookingId, header) {
+	async partiallyBookVacationRental(bookingId, header) {
 		const bookingData = await this.bookingRepository.getBookingDetails(bookingId)
 
 		// console.log(bookingData.travelers);
@@ -1187,12 +1165,13 @@ export class VacationRentalService {
 			}
 
 			let bookingDto = {
-				"room_id": bookingData.moduleInfo[0].room_id,
-				"rate_plan_code": bookingData.moduleInfo[0].rate_plan_code,
+				"property_id":bookingData.moduleInfo["property_id"],
+				"room_id": bookingData.moduleInfo["room_id"],
+				"rate_plan_code": bookingData.moduleInfo["rate_plan_code"],
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
-				"adult_count": bookingData.moduleInfo[0].adult_count,
-				"number_and_children_ages": bookingData.moduleInfo[0].chindren_age,
+				"adult_count": bookingData.moduleInfo["adult"],
+				"number_and_children_ages": bookingData.moduleInfo["number_and_chidren_age"],
 				"travelers": travelers,
 				"payment_type": bookingData.bookingType,
 				"instalment_type": bookingData.bookingType,
@@ -1214,6 +1193,7 @@ export class VacationRentalService {
 		let headerDetails = await this.validateHeaders(header);
 
 		const {
+			property_id,
 			room_id,
 			rate_plan_code,
 			check_in_date,
@@ -1227,10 +1207,12 @@ export class VacationRentalService {
 			laycredit_points
 		} = bookingDto;
 
-		console.log(bookingDto)
+		// console.log(bookingDto)
 
 		const monaker = new MonakerStrategy(new Monaker(header));
 		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(bookingDto, user);
+
+		// console.log("Verify result",verifyAvailabilityResult);
 
 		let booking_code = verifyAvailabilityResult["booking_code"];
 		let net_price = verifyAvailabilityResult["net_price"];
@@ -1238,8 +1220,8 @@ export class VacationRentalService {
 		let bookingRequestInfo: any = {};
 
 		if (verifyAvailabilityResult) {
-			bookingRequestInfo.adult_count = adult_count,
-				bookingRequestInfo.number_and_children_ages = number_and_children_ages.length != 0 ? number_and_children_ages.length : 0,
+			bookingRequestInfo.adult_count = verifyAvailabilityResult["adult"],
+				bookingRequestInfo.number_and_children_ages = verifyAvailabilityResult["number_and_chidren_age"],
 				bookingRequestInfo.net_rate = verifyAvailabilityResult["net_price"];
 
 			if (payment_type == PaymentType.INSTALMENT) {
@@ -1286,7 +1268,7 @@ export class VacationRentalService {
 		console.log("Booking result", bookingResult);
 
 		if (bookingResult.booking_status == "success") {
-			// console.log(`step - 3 save Booking`, bookingResult);
+			console.log(`step - 3 save Booking`, bookingResult);
 			let bookingInfo = {
 				"net_price": net_price
 			};
@@ -1365,8 +1347,6 @@ export class VacationRentalService {
 
 		booking.netRate = `${net_price}`;
 		booking.usdFactor = `${currencyDetails.liveRate}`;
-		// booking.fareType = fare_type;
-		// booking.isTicketd = fare_type == 'LCC' ? true : false;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
 		booking.moduleInfo = airRevalidateResult;
 		try {
