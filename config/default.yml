@@ -46,3 +46,9 @@ AWS:
     secretAccessKey: '9HkEefV23Vb8liPM6m0t0n0Mr5HnQkyJEhB+IcRZ'
 
 fcmServerKey: "AAAAJAgdxc0:APA91bHvxPQRHIG3uxmbn6GXXjny1kgZuTgootgE1ZuJdeAw1UwnMPIZYJPGIsXasOmK5kGtmA7Ll_WPYYvEu6L4daCwzug1ZdiMgKaDt14DDNfITQbeePZiU6OpqYSKZYzbE0HqYnN7"
+
+webNotificationkeys:
+    publicKey: 'BMWEQPsZU4d0Le2OKMiM7S7ZUvnpaBj5WpJuJuVshYjzHWsCwaFgHjm5FpT2zjexvyqPZyvSTqh_g7pF2fjbS2Q'
+    privateKey: 'pwDOYDpxsPqj2wQq0udzPl20v4R5qub7Z2idsREOWFU'
+    mailTo : 'mailto:example@yourdomain.org'
+    icon : 'assets/main-page-logo-small-hat.png'

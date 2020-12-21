@@ -5,6 +5,8 @@ import { getConnection } from "typeorm";
 import { Notification } from "../entity/notification.entity";
 const fcmServerKey = config.get("fcmServerKey");
 
+
+
 export class PushNotification {
 
 	static sendPushNotification(tokens, data, pushData, deviceType) {
@@ -36,6 +38,7 @@ export class PushNotification {
 			.createQueryBuilder(UserDeviceDetail, "userDeviceDetails")
 			.where(`"userDeviceDetails"."user_id" = '${userId}'`)
 			.getMany()
+		
 		if (devices.length) {
 			var iosTokens = []
 			var androidTokens = []
@@ -110,4 +113,5 @@ export class PushNotification {
 			}
 		}
 	}
+
 }
