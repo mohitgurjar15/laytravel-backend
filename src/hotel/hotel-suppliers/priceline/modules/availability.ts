@@ -1,5 +1,4 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import { collect } from "collect.js";
 import { RoomHelper } from "../helpers/room.helper";
 
 export class Availability{
@@ -24,12 +23,6 @@ export class Availability{
             let hotel = res.hotel_data[0];
             
             let room = this.roomHelper.processRoom(hotel, availabilityDto);
-
-            // room = collect(room).map((item :any) => {
-            //     item.retail.sub_total = 1000;
-            //     return item;
-            // });
-            // room[0].selling.sub_total = 69;
 
             return room;
 
