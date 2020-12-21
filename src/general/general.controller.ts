@@ -2,7 +2,9 @@ import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Detail } from 'src/hotel/hotel-suppliers/priceline/modules/detail';
 import { PushNotification } from 'src/utility/push-notification.utility';
+import { WebNotification } from 'src/utility/web-notification.utility';
 import { PushNotificationDto } from './dto/push-notification.dto';
+import { WebNotificationDto } from './dto/web-notification.dto';
 import { GeneralService } from './general.service';
 
 @ApiTags("Generic")
@@ -86,5 +88,25 @@ export class GeneralController {
         const { userId, body, header } = detail
         PushNotification.sendNotificationTouser(userId, body, header, userId)
         return {message : `Notification send succesfully`}
+    }
+
+    @ApiOperation({ summary: "web notification" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not found!' })
+    @ApiResponse({ status: 500, description: 'Internal server error!' })
+    @Post('web-notification')
+    async webtest(
+        @Body() detail: WebNotificationDto
+    ) {
+        try {
+            const { userId, body, header ,action} = detail
+        await WebNotification.sendNotificationTouser(userId, body, header, userId , action)
+        return {message : `Notification send succesfully`}    
+        } catch (error) {
+            console.log(error);
+            
+        }
+        
     }
 }
