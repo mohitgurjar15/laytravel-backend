@@ -58,6 +58,7 @@ import { OtpDto } from "./dto/otp.dto";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
+import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -494,4 +495,24 @@ export class AuthController {
 		);
 	}
 
+	@Roles(Role.FREE_USER, Role.PAID_USER)
+	@Post(["add-notification-token"])
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "Add web push notification token" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async addWebNotificationUser(
+		@Body() addWebNotificationDto: AddWebNotificationDto,
+		@GetUser() user: User
+	) {
+		return await this.authService.addWebPushNotificationToken(
+			user,
+			addWebNotificationDto
+		);
+	}
 }
