@@ -9,4 +9,6 @@ export interface HotelInterface{
     rooms(request);
     
     availability(request);
+    
+    book(request);
 }

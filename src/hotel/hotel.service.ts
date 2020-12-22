@@ -13,6 +13,8 @@ import { FilterReqDto } from './dto/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { Generic } from './helpers/generic.helper';
+import { BookDto } from './dto/book-req.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class HotelService{
@@ -22,7 +24,8 @@ export class HotelService{
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private genericHelper: Generic,
-        private rateHelper: RateHelper
+        private rateHelper: RateHelper,
+        // private userService: UserService
     ) {
         this.hotel = new Hotel(new Priceline());
     }
@@ -185,5 +188,9 @@ export class HotelService{
 
         return response;
 
+    }
+
+    async book(bookDto: BookDto) {
+        // return await this.userService.getUserData(userId,siteUrl);
     }
 }

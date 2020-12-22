@@ -1,6 +1,7 @@
 import { InternalServerErrorException, UsePipes, ValidationPipe } from "@nestjs/common";
 import { collect } from "collect.js";
 import { Generic } from "src/hotel/helpers/generic.helper";
+import { errorMessage } from "src/config/common.config";
 
 @UsePipes(new ValidationPipe({whitelist:true, forbidNonWhitelisted: true}))
 export class AutoComplete{
@@ -15,7 +16,7 @@ export class AutoComplete{
         let results = res.data.getHotelAutoSuggestV2;
         // return results;
         if (results.error) {
-            throw new InternalServerErrorException(results.error.status);
+            throw new InternalServerErrorException("No search result found &&&term&&&"+errorMessage);
         }
 
         if (results.results.status && results.results.status === "Success") { 

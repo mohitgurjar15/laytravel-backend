@@ -133,6 +133,22 @@ export class DetailHelper {
     }
 
     setReviews() {
-        return this.hotel['review_data'];
+        
+        let reviews = this.hotel['review_data'] ?? [];
+
+        reviews = collect(reviews).map((item: any) => {
+            let new_item = {
+                user_name: item.user_name,
+                rating_star : +(item.average_rating) / 2,
+                average_rating : +item.average_rating,
+                description: '<b>Pros:</b> ' + item.good_description + ' <b>Cons:</b> ' + item.bad_description,
+                average_rating_description: item.average_rating_description,
+                creation_date: item.creation_date
+            };
+            
+            return new_item;
+        });
+
+        return reviews;
     }
 }

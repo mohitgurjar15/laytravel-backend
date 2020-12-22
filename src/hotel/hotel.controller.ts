@@ -13,6 +13,7 @@ import { SearchReqDto } from './dto/search-req.dto';
 import { HotelService } from './hotel.service';
 import { LogInUser } from 'src/auth/get-user.dacorator';
 import { AvailabilityDto } from './dto/availability-req.dto';
+import { BookDto } from './dto/book-req.dto';
 
 
 @ApiTags('Hotel')
@@ -107,6 +108,23 @@ export class HotelController {
         availabilityDto.token = hotelHeaderDto.token;
 
         return this.hotelService.availability(availabilityDto);
+    }
+    
+    
+    @Post('book')
+    @HttpCode(200)
+    @ApiResponse({ status: 200, description: 'Api success' })    
+    @ApiOperation({ summary: "Booking", description: "Hotel booking" })
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    book(
+        @Body() bookDto: BookDto,
+        @Headers() hotelHeaderDto: HotelHeaderDto
+    ) {
+
+        bookDto.token = hotelHeaderDto.token;
+
+        return this.hotelService.book(bookDto);
     }
 
     
