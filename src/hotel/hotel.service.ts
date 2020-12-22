@@ -13,16 +13,20 @@ import { FilterReqDto } from './dto/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { Generic } from './helpers/generic.helper';
+import { BookDto } from './dto/book-req.dto';
 
 @Injectable()
 export class HotelService{
     
     private hotel: Hotel;
 
+    private ttl: number = 3000;
+    
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private genericHelper: Generic,
-        private rateHelper: RateHelper
+        private rateHelper: RateHelper,
+        // private userService: UserService
     ) {
         this.hotel = new Hotel(new Priceline());
     }
@@ -66,7 +70,7 @@ export class HotelService{
 
         }
         
-        await this.cacheManager.set(token, toCache, { ttl: 300 });
+        await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
@@ -78,10 +82,17 @@ export class HotelService{
 
     async detail(detailReqDto: DetailReqDto) {
         
+        let cached = await this.cacheManager.get(detailReqDto.token);
+
         let detail = await this.hotel.detail(detailReqDto);
+        
+        let details = cached.details;
 
         return {
-            data: detail,
+            data: {
+                hotel: detail,
+                details
+            },
             message: "Detail found for " + detailReqDto.hotel_id
         };
 
@@ -118,7 +129,7 @@ export class HotelService{
 
         cached['rooms'] = rooms;
 
-        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: this.ttl });
 
         let response = {
             data: rooms,
@@ -137,7 +148,7 @@ export class HotelService{
 
         cached['filter_objects'] = filterObjects;
 
-        await this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(filterReqDto.token, cached, { ttl: this.ttl });
 
         return {
             data: filterObjects,
@@ -185,5 +196,9 @@ export class HotelService{
 
         return response;
 
+    }
+
+    async book(bookDto: BookDto) {
+        // return await this.userService.getUserData(userId,siteUrl);
     }
 }

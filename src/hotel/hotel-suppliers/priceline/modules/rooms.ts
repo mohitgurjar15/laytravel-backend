@@ -1,5 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { RoomHelper } from "../helpers/room.helper";
+import { errorMessage } from "src/config/common.config";
 
 export class Rooms{
 
@@ -14,7 +15,7 @@ export class Rooms{
         let results = res.data['getHotelExpress.MultiContract'];
         
         if (results.error) {
-            throw new InternalServerErrorException(results.error.status);
+            throw new InternalServerErrorException("No result found &&&rooms&&&"+errorMessage);
         }
 
         if (results.results.status && results.results.status === "Success") {

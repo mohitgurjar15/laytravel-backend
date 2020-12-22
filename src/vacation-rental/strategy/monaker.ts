@@ -1,9 +1,8 @@
 import { getManager } from "typeorm";
-import { AvailabilityDto } from "../dto/availability.dto";
+import { AvailabilityVacationDto } from "../dto/availability.dto";
 import { HotelDetail, HotelSearchResult, PriceRange } from "../model/availability.model";
 import { StrategyVacationRental } from "./strategy.interface";
-import Axios from "axios";
-import { AvailabilityDetailsDto } from "../dto/availabilty_details.dto";
+import { AvailabilityVacationDetailsDto } from "../dto/availabilty_details.dto";
 import { CancellationPolicy, HotelDetails, Images, Room } from "../model/room_details.model";
 import { VerifyAvailabilityDto } from "../dto/verify_availability.dto";
 import { BookingDto } from "../dto/booking.dto";
@@ -18,7 +17,8 @@ import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
 import { HttpRequest } from "src/utility/http.utility";
 import { Fees, FeesType, VerifyAvailability } from "../model/verify-availability.model";
-import { check } from "prettier";
+import collect from "collect.js";
+import { vacationCategoty } from "../vacation-rental.const";
 
 export class Monaker implements StrategyVacationRental {
 
@@ -28,6 +28,15 @@ export class Monaker implements StrategyVacationRental {
     ) {
         this.headers = headers;
     }
+
+    private default_amenities = {
+        "AirConditioning": "ac",
+        "InternetServices": "wifi",
+        "HighSpeedWireless": "wifi",
+        "ComplimentaryWirelessInternet": "wifi",
+        "NonSmokingRooms": "no_smoking",
+        "CoffeeTea": "coffe-tea"
+    };
 
     async getMonakerCredential() {
 
@@ -77,7 +86,7 @@ export class Monaker implements StrategyVacationRental {
     getAminities(hotels) {
         let amenities: any = [];
         hotels.forEach((item) => {
-            item["amenties"].map((e) => {
+            item["amenities"].map((e) => {
                 if (!amenities.includes(e)) {
                     amenities.push(e);
                 }
@@ -95,7 +104,7 @@ export class Monaker implements StrategyVacationRental {
         return (a.selling_price - b.selling_price);
     }
 
-    async checkAllavaiability(availability: AvailabilityDto, user, flag) {
+    async checkAllavaiability(availability: AvailabilityVacationDto, user, flag) {
 
         const { id, type, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availability;
         let hotelIds;
@@ -163,7 +172,7 @@ export class Monaker implements StrategyVacationRental {
                 .select([
                     "hotelView.hotelId"
                 ])
-                .where("hotelView.city = :city", { city: city[0]["city"] })
+                .where("hotelView.city = :city AND hotelView.hotel_category IN(:...category)", { city: city[0]["city"], category: vacationCategoty })
                 .getMany();
 
             if (hotelIds.length == 0) {
@@ -172,7 +181,7 @@ export class Monaker implements StrategyVacationRental {
 
         }
 
-        console.log("hotel ids", hotelIds);
+        // console.log("hotel ids", hotelIds);
 
         let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
         let markUpDetails = markup.markUpDetails;
@@ -267,7 +276,12 @@ export class Monaker implements StrategyVacationRental {
                     for (let i = 0; i < amenities.length; i++) {
                         addAmenities.push(amenities[i]);
                     }
-                    hotel.amenties = addAmenities
+                    hotel.amenities = addAmenities;
+
+                    let amenities1 = collect(hotel.amenities);
+                    let combined = amenities1.combine(hotel.amenities);
+                    let sorted_amenities: any = collect(this.default_amenities).intersectByKeys(combined).values().unique().toArray();
+                    hotel.fixed_amenities = sorted_amenities;
                     hotel.date = check_out_date
                     hotel.display_image = `https://sandbox-images.nexttrip.com${hotel_details["images"].split(',')[0]}`;
                     hotel.latitude = hotel_details["latitude"];
@@ -309,8 +323,8 @@ export class Monaker implements StrategyVacationRental {
 
 
 
-    async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, user) {
-        console.log("------------",availabilityDetailsDto);
+    async unitTypeListAvailability(availabilityDetailsDto: AvailabilityVacationDetailsDto, user) {
+        // console.log("------------",availabilityDetailsDto);
         const { id, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availabilityDetailsDto;
 
         let childrensAges = ``;
@@ -453,7 +467,7 @@ export class Monaker implements StrategyVacationRental {
 
     async verifyUnitTypeAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, user) {
 
-        const {property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
+        const { property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
         let monakerCredential = await this.getMonakerCredential();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let childrensAges = ``;
@@ -503,16 +517,16 @@ export class Monaker implements StrategyVacationRental {
 
         let verifyResult = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"]);
         let dto = {
-                "id": property_id,
-                "check_in_date": check_in_date,
-                "check_out_date": check_out_date,
-                "adult_count": adult_count,
-                "number_and_children_ages": number_and_children_ages
+            "id": property_id,
+            "check_in_date": check_in_date,
+            "check_out_date": check_out_date,
+            "adult_count": adult_count,
+            "number_and_children_ages": number_and_children_ages
         };
 
         // console.log("0000000000000000000",dto);
 
-        let propertyResult = await this.unitTypeListAvailability(dto,user);
+        let propertyResult = await this.unitTypeListAvailability(dto, user);
 
         // console.log("-------------",propertyResult);
 
@@ -633,7 +647,7 @@ export class Monaker implements StrategyVacationRental {
             "guests": travelers.guest
         }
 
-        console.log("REQ------>",requestBody);
+        console.log("REQ------>", requestBody);
 
         let bookingResult = await HttpRequest.monakerRequest(url2, "POST", requestBody, monakerCredential["key"])
 

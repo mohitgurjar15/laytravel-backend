@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer/decorators";
 
-export class AvailabilityDto {
+export class AvailabilityVacationDto {
     @ApiProperty({
         description:"Enter a id",
         example:19299
@@ -20,7 +20,6 @@ export class AvailabilityDto {
     })
     check_in_date:string;
 
-    
     @ApiProperty({
         description:"Enter a check out date",
         example:'2021-01-15'

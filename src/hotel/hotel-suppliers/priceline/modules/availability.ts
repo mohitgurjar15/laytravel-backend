@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { RoomHelper } from "../helpers/room.helper";
-
+import { errorMessage } from "src/config/common.config";
 export class Availability{
     
     private roomHelper: RoomHelper;
@@ -14,7 +14,7 @@ export class Availability{
         let results = res.data['getHotelExpress.Contract'];
         
         if (results.error) {
-            throw new InternalServerErrorException(results.error.status);
+            throw new InternalServerErrorException("No result found &&&availability&&&"+errorMessage);
         }
 
         if (results.results.status && results.results.status === "Success") {
