@@ -6,8 +6,13 @@ export class DetailHelper {
 
     private hotel: any;
 
+    private genericHelper: Generic;
+    constructor() {
+        this.genericHelper = new Generic();
+    }
     private default_amenities = {
         "Free Breakfast" : "breakfast",
+        "Restaurant" : "breakfast",
         "Free Internet Access" : "wifi",
         "No Smoking Rooms/Facilities": "no_smoking",
         "tv": "tv",
@@ -31,9 +36,6 @@ export class DetailHelper {
         return ppnConfig.url+api+'?'+query;
     }
     
-    isset(ref) {
-        return typeof ref !== 'undefined';
-    }
 
     getHotelDetails(hotel: any, type: string = 'detail') {
         
@@ -53,11 +55,14 @@ export class DetailHelper {
 
         if(type == 'detail'){
             
+            let reviews = this.setReviews();
+
             extra = {
                 images : hotel.photo_data,
                 total_images : hotel.photo_data.length,
                 check_in_time : hotel.check_in_time,
-                check_out_time : hotel.check_out_time,
+                check_out_time: hotel.check_out_time,
+                reviews
             };
         }
 
@@ -113,9 +118,9 @@ export class DetailHelper {
     setThumbnail() {
         let thumbnail = '';
     
-        if(this.isset(this.hotel['thumbnail_hq'])) {
+        if(this.genericHelper.isset(this.hotel['thumbnail_hq'])) {
             thumbnail = this.hotel['thumbnail_hq'];
-            thumbnail = this.isset(thumbnail['three_hundred_square']) ? thumbnail['three_hundred_square'] : thumbnail['hundred_fifty_square'];
+            thumbnail = this.genericHelper.isset(thumbnail['three_hundred_square']) ? thumbnail['three_hundred_square'] : thumbnail['hundred_fifty_square'];
         }else{
             thumbnail = this.hotel['thumbnail'];
         }
@@ -127,4 +132,7 @@ export class DetailHelper {
         return this.hotel['distance'] / 1000;
     }
 
+    setReviews() {
+        return this.hotel['review_data'];
+    }
 }

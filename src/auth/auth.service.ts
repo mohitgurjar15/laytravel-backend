@@ -63,6 +63,8 @@ import { MarketingUserData } from "src/entity/marketing-user.entity";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
 import { RewordMode } from "src/enum/reword-mode.enum";
 import { RewordStatus } from "src/enum/reword-status.enum";
+import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
+import { WebPushNotifications } from "src/entity/web-push-notification.entity";
 
 @Injectable()
 export class AuthService {
@@ -1389,6 +1391,74 @@ export class AuthService {
 		}
 		return {
 			message: `user validate successfully`
+		}
+	}
+
+	async addWebPushNotificationToken(user: User, addWebNotificationDto: AddWebNotificationDto) {
+		try {
+
+
+			const { end_point, auth_keys, p256dh_keys } = addWebNotificationDto
+
+			let query = getManager()
+				.createQueryBuilder(WebPushNotifications, "notification")
+				.where(
+					`"notification"."end_point"= '${end_point}' AND "notification"."user_id"= '${user.userId}'`
+				)
+			const result = await query.getOne();
+
+			if (result) {
+				result.endPoint = end_point
+				result.authKeys = auth_keys
+				result.P256dhKeys = p256dh_keys
+				result.isSubscribed = true
+				result.updatedDate = new Date()
+				await result.save()
+			}
+			else {
+				const token = new WebPushNotifications
+
+				token.endPoint = end_point
+				token.authKeys = auth_keys
+				token.P256dhKeys = p256dh_keys
+				token.isSubscribed = true
+				token.userId = user.userId
+				token.createdDate = new Date()
+				await token.save()
+			}
+
+			return {
+				message: `Notification service started successfully`
+			}
+
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 }

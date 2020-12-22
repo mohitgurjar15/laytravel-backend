@@ -33,6 +33,7 @@ import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
+import { Generic } from "src/utility/generic.utility";
 
 @Injectable()
 export class BookingService {
@@ -128,7 +129,7 @@ export class BookingService {
 			else {
 				EmailSubject = "Flight Booking Confirmation";
 				installmentDetail.push({
-					amount: bookingData.currency2.symbol + bookingData.totalAmount,
+					amount: bookingData.currency2.symbol +Generic.formatPriceDecimal (parseFloat (bookingData.totalAmount)),
 					date: await this.formatDate(bookingData.bookingDate),
 					status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 				})
@@ -156,9 +157,9 @@ export class BookingService {
 
 			}
 
-			param.user_name = `${user.firstName}  ${user.firstName}`;
+			param.user_name = `${user.firstName}  ${user.lastName}`;
 			param.flightData = flightData;
-			param.orderId = bookingData.id;
+			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
 
@@ -621,7 +622,7 @@ export class BookingService {
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				console.log(bookingData.laytripBookingId);
 
-				predictiveBookingData['departure_date'] = bookingData.moduleInfo[0].departure_date || ''
+				predictiveBookingData['departure_date'] = bookingData.checkInDate || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				predictiveBookingData['module_name'] = bookingData.module.name;
@@ -704,7 +705,7 @@ export class BookingService {
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 					predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(booking.totalAmount)
 					predictiveBookingData['booking_status'] = booking.bookingStatus;
-					predictiveBookingData['departure_date'] = booking.moduleInfo[0].departure_date || ''
+					predictiveBookingData['departure_date'] = booking.checkInDate || ''
 					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
 					predictiveBookingData['bookIt'] = false;
 

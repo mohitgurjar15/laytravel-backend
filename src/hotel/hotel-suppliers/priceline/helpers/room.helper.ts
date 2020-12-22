@@ -28,6 +28,7 @@ export class RoomHelper{
                 let { retail, selling, saving_percent } = this.rateHelper.getRates(rate, roomsReqDto);
 
                 newItem = {
+                    room_id: rate.room_id,
                     title: rate.title,
                     description: rate.description,
                     beddings,
@@ -43,7 +44,7 @@ export class RoomHelper{
                     is_refundable: rate.is_cancellable,
                     cancellation_policies,
                     policies: rate.policy_data,
-                    ppn_bundle: rate.ppn_bundle
+                    bundle: rate.ppn_bundle
                 }
                 
             });
@@ -68,6 +69,10 @@ export class RoomHelper{
         });
 
         return res;
+    }
+
+    processAvailability(hotel, roomsReqDto) {
+        
     }
     
 }

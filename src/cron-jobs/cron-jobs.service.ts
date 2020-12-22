@@ -34,7 +34,9 @@ import { PaymentReminderMail } from "src/config/email_template/payment-reminder.
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { DateTime } from "src/utility/datetime.utility";
 import { ModulesName } from "src/enum/module.enum";
+import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Translation } from "src/utility/translation.utility";
+import { WebNotification } from "src/utility/web-notification.utility";
 const AWS = require('aws-sdk');
 var assert = require('assert');
 var fs = require('fs');
@@ -55,7 +57,9 @@ export class CronJobsService {
 
 		private paymentService: PaymentService,
 
-		private readonly mailerService: MailerService
+		private readonly mailerService: MailerService,
+
+		private vacationRentalService: VacationRentalService
 
 	) { }
 
@@ -80,6 +84,16 @@ export class CronJobsService {
 				const data = result[index];
 
 				PushNotification.sendNotificationTouser(data.userId,
+					{  //you can send only notification or only data(or include both)
+						module_name: 'user',
+						task: 'user_convert',
+						userId: data.userId
+					},
+					{
+						title: 'We not capture subscription',
+						body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
+					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+				WebNotification.sendNotificationTouser(data.userId,
 					{  //you can send only notification or only data(or include both)
 						module_name: 'user',
 						task: 'user_convert',
@@ -289,6 +303,16 @@ export class CronJobsService {
 									title: 'booking Cancelled',
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
 								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+							WebNotification.sendNotificationTouser(instalment.user.userId,
+								{  //you can send only notification or only data(or include both)
+									module_name: 'booking',
+									task: 'booking_cancelled',
+									bookingId: instalment.booking.laytripBookingId
+								},
+								{
+									title: 'booking Cancelled',
+									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
+								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 
 							instalment.paymentStatus = PaymentStatus.FAILED
 							await instalment.save()
@@ -314,6 +338,17 @@ export class CronJobsService {
 						);
 
 						PushNotification.sendNotificationTouser(instalment.user.userId,
+							{  //you can send only notification or only data(or include both)
+								module_name: 'instalment',
+								task: 'instalment_failed',
+								bookingId: instalment.booking.laytripBookingId,
+								instalmentId: instalment.id
+							},
+							{
+								title: 'Instalment Failed',
+								body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+						WebNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
 								task: 'instalment_failed',
@@ -389,6 +424,17 @@ export class CronJobsService {
 								title: 'Installment Received',
 								body: `We have received your payment of $${instalment.amount}.`
 							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+						WebNotification.sendNotificationTouser(instalment.user.userId,
+							{  //you can send only notification or only data(or include both)
+								module_name: 'instalment',
+								task: 'instalment_received',
+								bookingId: instalment.booking.laytripBookingId,
+								instalmentId: instalment.id
+							},
+							{
+								title: 'Installment Received',
+								body: `We have received your payment of $${instalment.amount}.`
+							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 					}
 
 					await this.checkAllinstallmentPaid(instalment.bookingId)
@@ -446,7 +492,7 @@ export class CronJobsService {
 						await this.getDailyPriceOfFlight(result[index], Headers)
 						break;
 					case ModulesName.VACATION_RENTEL:
-						await this.getDailyPriceOfFlight(result[index], Headers)
+						await this.getDailyPriceOfVacationRental(result[index], Headers)
 						break;
 					default:
 
@@ -511,6 +557,16 @@ export class CronJobsService {
 							title: 'Booking failed',
 							body: `we couldn’t process your booking request.`
 						}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+					WebNotification.sendNotificationTouser(booking.user.userId,
+						{
+							module_name: 'booking',
+							task: 'booking_failed',
+							bookingId: booking.laytripBookingId
+						},
+						{
+							title: 'Booking failed',
+							body: `we couldn’t process your booking request.`
+						}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 				}
 
 
@@ -544,6 +600,17 @@ export class CronJobsService {
 				}
 
 				PushNotification.sendNotificationTouser(booking.user.userId,
+					{  //you can send only notification or only data(or include both)
+						module_name: 'booking',
+						task: 'booking_done',
+						bookingId: booking.laytripBookingId
+					},
+					{
+						title: 'Booking ',
+						body: `We’re as excited for your trip as you are! please check all the details`
+					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+
+				WebNotification.sendNotificationTouser(booking.user.userId,
 					{  //you can send only notification or only data(or include both)
 						module_name: 'booking',
 						task: 'booking_done',
@@ -807,6 +874,17 @@ export class CronJobsService {
 					title: 'Payment Reminder',
 					body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
 				}, '1c17cd17-9432-40c8-a256-10db77b95bca')
+			WebNotification.sendNotificationTouser(installment.user.userId,
+				{  //you can send only notification or only data(or include both)
+					module_name: 'payment',
+					task: 'payment_reminder',
+					bookingId: installment.booking.laytripBookingId,
+					instalmentId: installment.id
+				},
+				{
+					title: 'Payment Reminder',
+					body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+				}, '1c17cd17-9432-40c8-a256-10db77b95bca')
 
 		}
 		return { message: `Payment reminder send successfully` };
@@ -1031,6 +1109,67 @@ export class CronJobsService {
 					}
 				}
 			}
+		}
+	}
+
+	async getDailyPriceOfVacationRental(bookingData: Booking, Headers) {
+		console.log(bookingData);
+		let vacationData;
+		if (new Date(await this.getDataTimefromString(bookingData.checkInDate)) > new Date()) {
+
+			Headers['currency'] = bookingData.currency2.code
+			Headers['language'] = 'en'
+
+			let dto = {
+				"property_id": bookingData.moduleInfo["property_id"],
+				"room_id": bookingData.moduleInfo["room_id"],
+				"rate_plan_code": bookingData.moduleInfo["rate_plan_code"],
+				"check_in_date": bookingData.checkInDate,
+				"check_out_date": bookingData.checkOutDate,
+				"adult_count": bookingData.moduleInfo["adult"],
+				"number_and_children_ages": bookingData.moduleInfo["number_and_chidren_age"]
+			}
+
+
+			vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
+			// console.log(vacationData);
+
+
+			const date = new Date();
+			var todayDate = date.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			if (vacationData["available_status"] == true) {
+				let query = await getManager()
+					.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
+					.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+					.where(`"predictiveBookingData"."created_date" = '${todayDate.split(' ')[0]}' AND "predictiveBookingData"."booking_id" = '${bookingData.id}'`)
+					.getOne();
+
+				if (query) {
+					query.bookingId = bookingData.id
+					query.netPrice = vacationData.net_price
+					query.date = new Date();
+					query.isBelowMinimum = false;
+					query.remainSeat = 0;
+					query.price = vacationData.selling_price
+					await query.save();
+				}
+				else {
+					const predictiveBookingData = new PredictiveBookingData
+					predictiveBookingData.bookingId = bookingData.id
+					predictiveBookingData.netPrice = vacationData.net_price
+					predictiveBookingData.date = new Date();
+					predictiveBookingData.isBelowMinimum = false;
+					predictiveBookingData.remainSeat = 0;
+					predictiveBookingData.price = vacationData.selling_price;
+					// console.log(flight);
+					//predictiveBookingData.bookIt = false;
+					await predictiveBookingData.save()
+				}
+			}
+
 		}
 	}
 }

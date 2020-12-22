@@ -17,7 +17,7 @@ import { HotelView } from "src/entity/hotel-view.entity";
 import { Generic } from "src/utility/generic.utility";
 import { Hotel } from "src/entity/hotel.entity";
 import { HttpRequest } from "src/utility/http.utility";
-import { VerifyAvailability } from "../model/verify-availability.model";
+import { Fees, FeesType, VerifyAvailability } from "../model/verify-availability.model";
 import { check } from "prettier";
 
 export class Monaker implements StrategyVacationRental {
@@ -86,7 +86,16 @@ export class Monaker implements StrategyVacationRental {
         return amenities;
     }
 
-    async checkAllavaiability(availability: AvailabilityDto, user) {
+    sortItems(hotels) {
+        let data = hotels.sort(this.compare);
+        return data;
+    }
+
+    compare(a, b) {
+        return (a.selling_price - b.selling_price);
+    }
+
+    async checkAllavaiability(availability: AvailabilityDto, user, flag) {
 
         const { id, type, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availability;
         let hotelIds;
@@ -197,21 +206,21 @@ export class Monaker implements StrategyVacationRental {
 
 
             let url = `${monakerCredential["url"]}/product/property-availabilities/availability?${queryParams}`
-            console.log("URL", url)
             let availabilityResult = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"])
 
             let result = availabilityResult.data;
-            console.log("result", result);
 
             if (result.length != 0) {
                 let hotelId = result.map((hotel) => {
+                    console.log("hotelID", hotel["propertyId"])
                     return hotel["propertyId"];
                 })
 
                 let data = await getManager()
                     .createQueryBuilder(Hotel, "hotel")
-                    .distinctOn(["hotel_name"])
+                    // .distinctOn(["hotel_name"])
                     .select([
+                        "hotel.id",
                         "hotel.hotelId",
                         "hotel.hotelName",
                         "hotel.city",
@@ -224,9 +233,11 @@ export class Monaker implements StrategyVacationRental {
                     .where("hotel.hotel_id IN(:...hotel_id)", { hotel_id: hotelId })
                     .getMany();
 
+
                 for (let i = 0; i < result.length; i++) {
                     const hotel = new HotelDetail();
                     const hotel_details = data.find((data) => data["hotelId"] == result[i]["propertyId"]);
+                    // console.log("hotel details=====>",hotel_details["hotelId"]);
                     hotel.property_id = hotel_details["hotelId"];
                     hotel.property_name = hotel_details["hotelName"];
                     hotel.city = hotel_details["city"];
@@ -249,10 +260,12 @@ export class Monaker implements StrategyVacationRental {
                         hotel.secondary_selling_price = 0;
                     }
                     hotel.instalment_details = instalmentDetails;
-                    let amenities = (hotel_details["amenties"]).replace("{", "").replace("}", "").split(",");
+                    // let amenities = (hotel_details["amenties"]).replace("{", "").replace("}", "").split(",");
+                    let amenities = (hotel_details["amenties"]).split(",");
+
                     let addAmenities: any = [];
                     for (let i = 0; i < amenities.length; i++) {
-                        addAmenities.push(JSON.parse(amenities[i]));
+                        addAmenities.push(amenities[i]);
                     }
                     hotel.amenties = addAmenities
                     hotel.date = check_out_date
@@ -265,11 +278,17 @@ export class Monaker implements StrategyVacationRental {
         }
 
         if (hotelDetails.length == 0) {
-            return { message: "hotel not found" }
+            if (flag == true) {
+                return { message: "hotel not found" }
+            } else {
+                throw new NotFoundException(`Not found any home rental`)
+
+            }
         }
 
         let hotels = new HotelSearchResult();
-        hotels.items = hotelDetails;
+
+        hotels.items = this.sortItems(hotelDetails);
 
         let priceRange = new PriceRange();
         let priceType = 'selling_price';
@@ -288,7 +307,10 @@ export class Monaker implements StrategyVacationRental {
         return hotels;
     }
 
+
+
     async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, user) {
+        console.log("------------",availabilityDetailsDto);
         const { id, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availabilityDetailsDto;
 
         let childrensAges = ``;
@@ -384,6 +406,10 @@ export class Monaker implements StrategyVacationRental {
                 let data = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k];
                 let policy = ``;
                 let amount_percent = data["amountPercent"]["percent"] != null ? (data["amountPercent"]["percent"] * room.selling_price) : data["amountPercent"]["amount"];
+                cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
+                if (!cancelPolicies.is_refundable) {
+                    policy_info.push(`This is not refundable`)
+                }
                 if (data["deadline"] != null) {
                     if (data["deadline"]["absoluteDeadline"] != null) {
                         let absoluteDeadline = ` ${amount_percent} cancellation fee up to 23:59 on ${data["deadline"]["absoluteDeadline"]} `;
@@ -397,7 +423,6 @@ export class Monaker implements StrategyVacationRental {
                     }
                     policy_info.push(policy);
                 }
-                cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
                 cancelPolicies.penalty_info = policy_info;
                 room.cancellation_policy = cancelPolicies;
             }
@@ -428,7 +453,7 @@ export class Monaker implements StrategyVacationRental {
 
     async verifyUnitTypeAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, user) {
 
-        const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
+        const {property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
         let monakerCredential = await this.getMonakerCredential();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         let childrensAges = ``;
@@ -477,8 +502,23 @@ export class Monaker implements StrategyVacationRental {
         let url = `${monakerCredential["url"]}/product/unit-availabilities/${room_id}/verify-availability?${queryParams}`
 
         let verifyResult = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"]);
+        let dto = {
+                "id": property_id,
+                "check_in_date": check_in_date,
+                "check_out_date": check_out_date,
+                "adult_count": adult_count,
+                "number_and_children_ages": number_and_children_ages
+        };
+
+        // console.log("0000000000000000000",dto);
+
+        let propertyResult = await this.unitTypeListAvailability(dto,user);
+
+        // console.log("-------------",propertyResult);
 
         const response = verifyResult.data;
+
+        // console.log("REPONSe", response);
 
         if (!response["available"]) {
             throw new NotAcceptableException(`Not available vacation rental home`)
@@ -486,9 +526,16 @@ export class Monaker implements StrategyVacationRental {
 
         const verifyAvailability = new VerifyAvailability();
 
+        let feesType: FeesType;
+        let fees;
+        verifyAvailability.property_name = propertyResult["property_name"];
+        verifyAvailability.property_id = property_id;
+        verifyAvailability.room_id = room_id;
+        verifyAvailability.rate_plan_code = rate_plan_code;
         verifyAvailability.available_status = response["available"];
         verifyAvailability.booking_code = response["quoteHandle"];
         verifyAvailability.net_price = response["totalPrice"]["amountAfterTax"];
+
         verifyAvailability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(verifyAvailability.net_price, markUpDetails));
         let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 0);
 
@@ -507,17 +554,48 @@ export class Monaker implements StrategyVacationRental {
             verifyAvailability.secondary_selling_price = 0;
         }
         verifyAvailability.instalment_details = instalmentDetails;
+        if (response["totalPrice"]["ratePlanCode"] == "ThisUnitTypeHasMandatoryAddonsPaidOnArrival") {
+            feesType = new FeesType();
+            for (let i = 0; i < response["fees"].length; i++) {
+                fees = new Fees();
+                if (response["fees"][i]["mandatoryInd"] == true) {
+                    fees.message = response["fees"][i]["description"];
 
+                    feesType.mandtory_fee_due_at_check_in.push(fees);
+                }
+            }
+        } else {
+            feesType = new FeesType();
+            for (let i = 0; i < response["fees"].length; i++) {
+                let fees = new Fees();
+                if (response["fees"][i]["mandatoryInd"] == true) {
+                    fees.message = response["fees"][i]["description"];
+                    feesType.mandtory_fee_already_paid.push(fees);
+                }
+                if (response["fees"][i]["mandatoryInd"] == false) {
+                    fees.message = response["fees"][i]["description"];
+                    feesType.optional_fee.push(fees);
+                }
+            }
+        }
+
+        verifyAvailability.feesType = feesType;
+        let roomDetails = propertyResult.rooms.find((data) => data.rate_plan_code == rate_plan_code);
+        verifyAvailability.cancellation_policy = roomDetails.cancellation_policy;
+        verifyAvailability.city = propertyResult["city"];
+        verifyAvailability.country = propertyResult["country"];
+        verifyAvailability.adult = adult_count;
+        verifyAvailability.number_and_chidren_age = number_and_children_ages;
         return verifyAvailability;
-
     }
 
-    async booking(bookingDto: BookingDto, travelers, booking_code, selling_price) {
+
+    async booking(bookingDto: BookingDto, travelers, booking_code, net_price) {
         const { room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = bookingDto;
         let monakerCredential = await this.getMonakerCredential();
 
-        console.log("travelers customer", travelers.customer)
-        console.log("travelers guest", travelers.guest)
+        // console.log("travelers customer", travelers.customer)
+        // console.log("travelers guest", travelers.guest)
 
         let childrensAges = ``;
         let queryParams = ``;
@@ -544,7 +622,7 @@ export class Monaker implements StrategyVacationRental {
         let requestBody = {
             "id": room_id,
             "currency": this.headers.currency,
-            "price": selling_price,
+            "price": net_price,
             "quoteHandle": booking_code,
             "ratePlanCode": rate_plan_code,
             "checkInDate": check_in_date,
@@ -552,8 +630,10 @@ export class Monaker implements StrategyVacationRental {
             "numberOfAdults": adult_count,
             "numberAndAgeOfChildren": number_and_children_ages.length != 0 ? number_and_children_ages : null,
             "customer": travelers.customer,
-            "Guests": travelers.guest
+            "guests": travelers.guest
         }
+
+        console.log("REQ------>",requestBody);
 
         let bookingResult = await HttpRequest.monakerRequest(url2, "POST", requestBody, monakerCredential["key"])
 

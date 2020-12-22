@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth, ApiProperty } from "@nestjs/swagger";
 import { AvailabilityDto } from './dto/availability.dto';
 import { VacationRentalService } from './vacation-rental.service';
@@ -135,7 +135,8 @@ export class VacationRentalController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     @HttpCode(200)
     @ApiHeader({
         name: 'language',
@@ -199,6 +200,37 @@ export class VacationRentalController {
         @Req() req,
         @LogInUser() user
     ) {
+        if (moment(searchHomeRental.start_date).isBefore(moment().format("YYYY-MM-DD")))
+            throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
+
+        if (!moment(searchHomeRental.end_date).isAfter(searchHomeRental.start_date))
+            throw new BadRequestException(`Please enter valid checkout date`)
         return await this.vacationRentalService.fullcalenderRate(searchHomeRental, req.headers, user);
+    }
+
+    @Put('/book-partially-booking/:booking_id')
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    // @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "book parially booking by the admin" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async bookPartiallyBooking(
+        @Param('booking_id') booking_id: string,
+        @Req() req,
+
+    ) {
+        return await this.vacationRentalService.partiallyBookVacationRental(booking_id, req.headers);
     }
 }

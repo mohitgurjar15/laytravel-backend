@@ -1,4 +1,4 @@
-import { RequestTimeoutException } from '@nestjs/common';
+import { NotAcceptableException, RequestTimeoutException } from '@nestjs/common';
 import Axios from 'axios';
 import * as xml2js from 'xml2js';
 import { Activity } from './activity.utility';
@@ -98,9 +98,20 @@ export class HttpRequest {
             
             return result;
         }
-        catch (error) {
-            console.log("===================", error)
-            throw new RequestTimeoutException(`Connection time out`)
+        catch (e) {
+            let error = e.response.data
+            
+            console.log("===================>>>>>>>>>>>>>", e);
+            
+            if(error.hasOwnProperty("CheckInDate")){
+                throw new NotAcceptableException(`${error["CheckInDate"][0]}`)
+            }else if(error.hasOwnProperty("CheckOutDate")){
+                throw new NotAcceptableException(`${error["CheckOutDate"][0]}`)
+            }else if(error["statusCode"] == 429){
+                throw new NotAcceptableException(`${error["message"]}`)
+            }else{
+                throw new RequestTimeoutException(`Connection time out`)
+            }
         }
 
     }
