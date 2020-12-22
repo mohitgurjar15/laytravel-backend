@@ -14,13 +14,14 @@ import { RateHelper } from './helpers/rate.helper';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { Generic } from './helpers/generic.helper';
 import { BookDto } from './dto/book-req.dto';
-import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class HotelService{
     
     private hotel: Hotel;
 
+    private ttl: number = 3000;
+    
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private genericHelper: Generic,
@@ -69,7 +70,7 @@ export class HotelService{
 
         }
         
-        await this.cacheManager.set(token, toCache, { ttl: 300 });
+        await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
@@ -81,10 +82,17 @@ export class HotelService{
 
     async detail(detailReqDto: DetailReqDto) {
         
+        let cached = await this.cacheManager.get(detailReqDto.token);
+
         let detail = await this.hotel.detail(detailReqDto);
+        
+        let details = cached.details;
 
         return {
-            data: detail,
+            data: {
+                hotel: detail,
+                details
+            },
             message: "Detail found for " + detailReqDto.hotel_id
         };
 
@@ -121,7 +129,7 @@ export class HotelService{
 
         cached['rooms'] = rooms;
 
-        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: this.ttl });
 
         let response = {
             data: rooms,
@@ -140,7 +148,7 @@ export class HotelService{
 
         cached['filter_objects'] = filterObjects;
 
-        await this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(filterReqDto.token, cached, { ttl: this.ttl });
 
         return {
             data: filterObjects,

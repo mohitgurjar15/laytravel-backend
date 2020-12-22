@@ -75,7 +75,9 @@ export class HotelController {
         @Body() detailReqDto: DetailReqDto,
         @Headers() hotelHeaderDto: HotelHeaderDto
     ) {
-
+        
+        detailReqDto.token = hotelHeaderDto.token;
+        
         return this.hotelService.detail(detailReqDto);
     }
     
