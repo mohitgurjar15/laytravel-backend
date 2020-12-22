@@ -2,8 +2,8 @@ import { BadRequestException, HttpException, Injectable, InternalServerErrorExce
 import Axios from "axios";
 import { LocationInfo } from './model/location.model';
 import { getConnection, getManager } from 'typeorm';
-import { AvailabilityDto } from './dto/availability.dto';
-import { AvailabilityDetailsDto } from './dto/availabilty_details.dto';
+import { AvailabilityVacationDto } from './dto/availability.dto';
+import { AvailabilityVacationDetailsDto } from './dto/availabilty_details.dto';
 import { VerifyAvailabilityDto } from './dto/verify_availability.dto';
 import { BookingDto } from './dto/booking.dto';
 import { MonakerStrategy } from './strategy/strategy';
@@ -50,6 +50,7 @@ import { RewordStatus } from 'src/enum/reword-status.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
 import { resolve } from 'path';
 import { PushNotification } from 'src/utility/push-notification.utility';
+import { vacationCategoty } from './vacation-rental.const';
 
 const mailConfig = config.get("email");
 
@@ -69,7 +70,7 @@ export class VacationRentalService {
 		try {
 			const hotels = await getManager()
 				.createQueryBuilder(HotelView, "hotel_view")
-				.distinctOn(["hotel_id"])
+				// .distinctOn(["hotel_id"])
 				.select([
 					'hotel_view.hotelId',
 					"hotel_view.id",
@@ -77,7 +78,7 @@ export class VacationRentalService {
 					"hotel_view.city",
 					"hotel_view.country"
 				])
-				.where("hotel_view.hotel_name ILIKE :name", { name: `%${searchLocation}%` })
+				.where("hotel_view.hotel_name ILIKE :name AND hotel_view.hotel_category IN(:...category)", { name: `%${searchLocation}%`, category: vacationCategoty })
 				.getMany();
 
 			const city = await getManager()
@@ -89,7 +90,7 @@ export class VacationRentalService {
 					"hotel_view.country",
 				])
 				.where("hotel_view.city ILIKE :name", { name: `%${searchLocation}%` })
-				.getMany();	
+				.getMany();
 
 			let location: LocationInfo;
 			let result = [];
@@ -134,7 +135,7 @@ export class VacationRentalService {
 	}
 
 	async availabilityHotel(
-		availability: AvailabilityDto,
+		availability: AvailabilityVacationDto,
 		user,
 		headers
 	) {
@@ -145,7 +146,7 @@ export class VacationRentalService {
 
 	}
 
-	async unitTypeListAvailability(availabilityDetailsDto: AvailabilityDetailsDto, headers, user) {
+	async unitTypeListAvailability(availabilityDetailsDto: AvailabilityVacationDetailsDto, headers, user) {
 		await this.validateHeaders(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
 		const result = new Promise((resolve) => resolve(monaker.unitTypeListAvailability(availabilityDetailsDto, user)));
@@ -192,7 +193,7 @@ export class VacationRentalService {
 		const monaker = new MonakerStrategy(new Monaker(headers));
 
 		let verifyDto = {
-			"property_id":property_id,
+			"property_id": property_id,
 			"room_id": room_id,
 			"rate_plan_code": rate_plan_code,
 			"check_in_date": check_in_date,
@@ -200,9 +201,9 @@ export class VacationRentalService {
 			"adult_count": adult_count,
 			"number_and_children_ages": number_and_children_ages
 		};
-	
+
 		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(verifyDto, user);
-	
+
 		let bookingRequestInfo: any = {};
 
 		if (verifyAvailabilityResult) {
@@ -796,7 +797,7 @@ export class VacationRentalService {
 
 		const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
 
-		console.log("Diffrence--->", dayDiffrence)
+		// console.log("Diffrence--->", dayDiffrence)
 		var result = [];
 
 		var resultIndex = 0;
@@ -1165,7 +1166,7 @@ export class VacationRentalService {
 			}
 
 			let bookingDto = {
-				"property_id":bookingData.moduleInfo["property_id"],
+				"property_id": bookingData.moduleInfo["property_id"],
 				"room_id": bookingData.moduleInfo["room_id"],
 				"rate_plan_code": bookingData.moduleInfo["rate_plan_code"],
 				"check_in_date": bookingData.checkInDate,

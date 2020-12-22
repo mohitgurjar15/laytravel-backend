@@ -7,19 +7,19 @@ export class VerifyAvailabilityDto {
 
     @ApiProperty({
         description:"Enter a property id",
-        example:42945378320383
+        example:42945378123775
     })
     property_id:number;
 
     @ApiProperty({
         description:"Enter room id ",
-        example:42945378189361
+        example:42945378058257
     })
     room_id:number;
 
     @ApiProperty({
         description:"Enter rate plan selected for price check.  ",
-        example:'ThisReservationWillFailOnBooking'
+        example:'ElevnLettrs'
     })
     rate_plan_code:string;
 
