@@ -4,6 +4,8 @@ import {
 	NotFoundException,
 	BadRequestException,
 	HttpException,
+	Inject,
+	CACHE_MANAGER,
 } from "@nestjs/common";
 import { Strategy } from "./strategy/strategy";
 import { OneWaySearchFlightDto } from "./dto/oneway-flight.dto";
@@ -66,10 +68,15 @@ import { RewordStatus } from "src/enum/reword-status.enum";
 import { RewordMode } from "src/enum/reword-mode.enum";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { PushNotification } from "src/utility/push-notification.utility";
+import { Cache } from 'cache-manager';
+
+
 
 @Injectable()
 export class FlightService {
 	constructor(
+		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+ 
 		@InjectRepository(AirportRepository)
 		private airportRepository: AirportRepository,
 
@@ -194,7 +201,7 @@ export class FlightService {
 		secondarySellingPrice = Generic.formatPriceDecimal(secondarySellingPrice);
 
 		let response = [];
-		const mystifly = new Strategy(new Mystifly({}));
+		const mystifly = new Strategy(new Mystifly({},this.cacheManager));
 		response[0] = {
 			net_rate: net_rate,
 			selling_price: sellingPrice,
@@ -238,7 +245,7 @@ export class FlightService {
 		user
 	) {
 		await this.validateHeaders(headers);
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.oneWaySearch(searchFlightDto, user))
 		);
@@ -247,7 +254,7 @@ export class FlightService {
 
 	async searchOneWayZipFlight(searchFlightDto, headers, user) {
 		await this.validateHeaders(headers);
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.oneWaySearchZip(searchFlightDto, user))
 		);
@@ -255,7 +262,7 @@ export class FlightService {
 	}
 
 	async tripDetails(tripId) {
-		const mystifly = new Strategy(new Mystifly({}));
+		const mystifly = new Strategy(new Mystifly({},this.cacheManager));
 		const result = new Promise((resolve) => resolve(mystifly.tripDetails(tripId))
 		);
 		return result;
@@ -263,7 +270,7 @@ export class FlightService {
 
 	async searchRoundTripZipFlight(searchFlightDto, headers, user) {
 		await this.validateHeaders(headers);
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.roundTripSearchZip(searchFlightDto, user))
 		);
@@ -276,7 +283,7 @@ export class FlightService {
 	async preductBookingDate(serchFlightDto: PreductBookingDateDto, headers, user: User) {
 		await this.validateHeaders(headers);
 
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 
 		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count, unique_token, isRoundtrip, arrivale_date } = serchFlightDto;
 
@@ -439,7 +446,7 @@ export class FlightService {
 	async flexibleDateRate(serchFlightDto: OneWaySearchFlightDto, headers, user: User) {
 		await this.validateHeaders(headers);
 
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 
 		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count } = serchFlightDto;
 
@@ -566,7 +573,7 @@ export class FlightService {
 	async fullcalenderRate(serchFlightDto: FullCalenderRateDto, headers, user: User) {
 		await this.validateHeaders(headers);
 
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 
 		const { source_location, destination_location, start_date, end_date, flight_class, adult_count, child_count, infant_count, isRoundtrip, arrivale_date } = serchFlightDto;
 
@@ -685,7 +692,7 @@ export class FlightService {
 	async flexibleDateRateForRoundTrip(serchFlightDto: RoundtripSearchFlightDto, headers, user: User) {
 		await this.validateHeaders(headers);
 
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 
 		const { source_location, destination_location, departure_date, flight_class, adult_count, child_count, infant_count, arrival_date } = serchFlightDto;
 
@@ -810,7 +817,7 @@ export class FlightService {
 	}
 
 	async baggageDetails(routeIdDto: RouteIdsDto) {
-		const mystifly = new Strategy(new Mystifly({}));
+		const mystifly = new Strategy(new Mystifly({},this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.baggageDetails(routeIdDto))
 		);
@@ -818,7 +825,7 @@ export class FlightService {
 	}
 
 	async cancellationPolicy(routeIdsDto: RouteIdsDto) {
-		const mystifly = new Strategy(new Mystifly({}));
+		const mystifly = new Strategy(new Mystifly({},this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.cancellationPolicy(routeIdsDto))
 		);
@@ -831,7 +838,7 @@ export class FlightService {
 		user
 	) {
 		await this.validateHeaders(headers);
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.roundTripSearch(searchFlightDto, user))
 		);
@@ -840,7 +847,7 @@ export class FlightService {
 
 	async airRevalidate(routeIdDto, headers, user) {
 		await this.validateHeaders(headers);
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.airRevalidate(routeIdDto, user))
 		);
@@ -848,7 +855,7 @@ export class FlightService {
 	}
 
 	async ticketFlight(id) {
-		const mystifly = new Strategy(new Mystifly({}));
+		const mystifly = new Strategy(new Mystifly({},this.cacheManager));
 		const result = await mystifly.ticketFlight(id);
 		if (result.status == 'true') {
 			await getConnection()
@@ -877,7 +884,7 @@ export class FlightService {
 			booking_through
 		} = bookFlightDto;
 
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const airRevalidateResult = await mystifly.airRevalidate(
 			{ route_code },
 			user
@@ -1025,7 +1032,7 @@ export class FlightService {
 					let dayDiff = moment(departure_date).diff(bookingDate, 'days');
 					let bookingResult;
 					if (dayDiff <= 90) {
-						const mystifly = new Strategy(new Mystifly(headers));
+						const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 						bookingResult = await mystifly.bookFlight(
 							bookFlightDto,
 							travelersDetails,
@@ -1110,7 +1117,7 @@ export class FlightService {
 				);
 				if (authCardResult.status == true) {
 
-					const mystifly = new Strategy(new Mystifly(headers));
+					const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 					const bookingResult = await mystifly.bookFlight(
 						bookFlightDto,
 						travelersDetails,
@@ -1162,7 +1169,7 @@ export class FlightService {
 			}
 			else {
 				//for full laycredit rdeem
-				const mystifly = new Strategy(new Mystifly(headers));
+				const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 				const bookingResult = await mystifly.bookFlight(
 					bookFlightDto,
 					travelersDetails,
@@ -1415,7 +1422,7 @@ export class FlightService {
 			laycredit_points,
 		} = bookFlightDto;
 
-		const mystifly = new Strategy(new Mystifly(headers));
+		const mystifly = new Strategy(new Mystifly(headers,this.cacheManager));
 		const airRevalidateResult = await mystifly.airRevalidate(
 			{ route_code },
 			user
@@ -1932,7 +1939,7 @@ export class FlightService {
 
 	async manullyBooking(bookingId: string, manullyBooking: ManullyBookingDto) {
 		const { supplier_booking_id } = manullyBooking
-		const mystifly = new Strategy(new Mystifly({}));
+		const mystifly = new Strategy(new Mystifly({},this.cacheManager));
 		let ticketDetails: any = await mystifly.tripDetails(supplier_booking_id)
 
 		let query = getManager()

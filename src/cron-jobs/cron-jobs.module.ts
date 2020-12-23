@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { CronJobsController } from './cron-jobs.controller';
 import { CronJobsService } from './cron-jobs.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,7 +14,8 @@ import { VacationRentalService } from 'src/vacation-rental/vacation-rental.servi
 @Module({
   imports:[
     TypeOrmModule.forFeature([UserRepository,AirportRepository,BookingRepository]),
-    AuthModule
+    AuthModule,
+    CacheModule.register()
   ],
   controllers: [CronJobsController],
   providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService]
