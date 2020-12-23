@@ -13,16 +13,22 @@ import { FilterReqDto } from './dto/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { Generic } from './helpers/generic.helper';
+import { BookDto } from './dto/book-req.dto';
+import { BookDto as PPNBookDto } from './hotel-suppliers/priceline/dto/book.dto';
+import { UserHelper } from './helpers/user.helper';
 
 @Injectable()
 export class HotelService{
     
     private hotel: Hotel;
 
+    private ttl: number = 3000;
+    
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-        private genericHelper: Generic,
-        private rateHelper: RateHelper
+        private generic: Generic,
+        private rate: RateHelper,
+        private user: UserHelper
     ) {
         this.hotel = new Hotel(new Priceline());
     }
@@ -46,7 +52,7 @@ export class HotelService{
         // return hotels;
         
         /* Add any type of Business logic for hotel object's */
-        hotels = this.rateHelper.generateInstalments(hotels, searchReqDto.check_in);
+        hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
 
         let token = uuidv4();
 
@@ -66,7 +72,7 @@ export class HotelService{
 
         }
         
-        await this.cacheManager.set(token, toCache, { ttl: 300 });
+        await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
@@ -78,10 +84,17 @@ export class HotelService{
 
     async detail(detailReqDto: DetailReqDto) {
         
+        let cached = await this.cacheManager.get(detailReqDto.token);
+
         let detail = await this.hotel.detail(detailReqDto);
+        
+        let details = cached.details;
 
         return {
-            data: detail,
+            data: {
+                hotel: detail,
+                details
+            },
             message: "Detail found for " + detailReqDto.hotel_id
         };
 
@@ -110,15 +123,15 @@ export class HotelService{
         // return rooms;
         
         /* Add any type of Business logic for hotel object's */
-        rooms = this.rateHelper.generateInstalments(rooms, details.check_in);
+        rooms = this.rate.generateInstalments(rooms, details.check_in);
 
-        if (this.genericHelper.isset(cached['rooms'])) {
+        if (this.generic.isset(cached['rooms'])) {
             rooms = collect(cached['rooms']).union(rooms.values().toArray());
         }
 
         cached['rooms'] = rooms;
 
-        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: this.ttl });
 
         let response = {
             data: rooms,
@@ -137,7 +150,7 @@ export class HotelService{
 
         cached['filter_objects'] = filterObjects;
 
-        await this.cacheManager.set(filterReqDto.token, cached, { ttl: 300 });
+        await this.cacheManager.set(filterReqDto.token, cached, { ttl: this.ttl });
 
         return {
             data: filterObjects,
@@ -168,7 +181,7 @@ export class HotelService{
         // return availability;
 
         /* Add any type of Business logic for Room object's */
-        availability = this.rateHelper.generateInstalments(availability, details.check_in);
+        availability = this.rate.generateInstalments(availability, details.check_in);
 
         availability = availability.map((item) => {
 
@@ -185,5 +198,23 @@ export class HotelService{
 
         return response;
 
+    }
+
+    async book(bookDto: BookDto) {
+
+        let primary_guest = await this.user.getUser(bookDto.primary_guest);
+        
+        let bookData = new PPNBookDto({
+            name_first: primary_guest.firstName,
+            name_last: primary_guest.lastName,
+            initials: primary_guest.title,
+            email: primary_guest.email,
+            phone_number: primary_guest.phoneNo,
+            
+        });
+
+        return bookData;
+
+        // let book = await this.hotel.book(bookData);
     }
 }

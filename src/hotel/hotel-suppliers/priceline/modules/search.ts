@@ -2,6 +2,7 @@ import { InternalServerErrorException } from "@nestjs/common";
 import { collect } from "collect.js";
 import { DetailHelper } from "../helpers/detail.helper";
 import { RateHelper } from "../helpers/rate.helper";
+import { errorMessage } from "src/config/common.config";
 
 
 export class Search{
@@ -27,7 +28,7 @@ export class Search{
         
         if (results.error) {
             // results.error.status
-            throw new InternalServerErrorException("No Hotel found");
+            throw new InternalServerErrorException("No result found &&&search&&&"+errorMessage);
         }
         
         if (results.results.status && results.results.status === "Success") { 
