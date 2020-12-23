@@ -47,7 +47,7 @@ export class HotelController {
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     search(
         @Body() searchReqDto: SearchReqDto,
-        @LogInUser() user
+        // @LogInUser() user
     ) {
         return this.hotelService.search(searchReqDto);
     }

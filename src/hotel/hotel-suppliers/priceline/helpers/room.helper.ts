@@ -27,13 +27,15 @@ export class RoomHelper{
 
                 let { retail, selling, saving_percent } = this.rateHelper.getRates(rate, roomsReqDto);
 
+                let board_type = rate.board_type != 'NONE' ? rate.board_type : '';
+
                 newItem = {
                     room_id: rate.room_id,
                     title: rate.title,
                     description: rate.description,
                     beddings,
                     available_rooms: rate.available_rooms,
-                    board_type: rate.board_type,
+                    board_type,
                     retail,
                     selling,
                     saving_percent,
