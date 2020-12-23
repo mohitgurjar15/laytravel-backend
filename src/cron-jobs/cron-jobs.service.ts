@@ -1119,13 +1119,13 @@ export class CronJobsService {
 			Headers['language'] = 'en'
 
 			let dto = {
-				"property_id": bookingData.moduleInfo["property_id"],
-				"room_id": bookingData.moduleInfo["room_id"],
-				"rate_plan_code": bookingData.moduleInfo["rate_plan_code"],
+				"property_id": bookingData.moduleInfo[0]["property_id"],
+				"room_id": bookingData.moduleInfo[0]["room_id"],
+				"rate_plan_code": bookingData.moduleInfo[0]["rate_plan_code"],
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
-				"adult_count": bookingData.moduleInfo["adult"],
-				"number_and_children_ages": bookingData.moduleInfo["number_and_chidren_age"]
+				"adult_count": bookingData.moduleInfo[0]["adult"],
+				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"]
 			}
 
 
