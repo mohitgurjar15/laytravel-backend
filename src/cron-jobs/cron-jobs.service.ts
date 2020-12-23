@@ -38,9 +38,7 @@ import { VacationRentalService } from "src/vacation-rental/vacation-rental.servi
 import { Translation } from "src/utility/translation.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
 const AWS = require('aws-sdk');
-var assert = require('assert');
 var fs = require('fs');
-var spawn = require('child_process').spawn;
 
 
 
