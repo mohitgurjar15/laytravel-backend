@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { FlightController } from './flight.controller';
 import { FlightService } from './flight.service';
 import { AuthModule } from 'src/auth/auth.module';
@@ -14,6 +14,7 @@ import { InstalmentService } from 'src/instalment/instalment.service';
 @Module({
   imports:[
     AuthModule,
+    CacheModule.register(),
     TypeOrmModule.forFeature(
       [
       AirportRepository,BookingRepository

@@ -3,6 +3,7 @@ import { DetailReqDto } from "../dto/detail-req.dto";
 import { RoomsReqDto } from "../dto/rooms-req.dto";
 import { SearchReqDto } from "../dto/search-req.dto";
 import { HotelInterface } from "./hotel.interface";
+import { BookDto } from "./priceline/dto/book.dto";
 
 export class Hotel{
     
@@ -30,5 +31,9 @@ export class Hotel{
     
     availability(availabilityDto: AvailabilityDto) {
         return this.hotel.availability(availabilityDto);
+    }
+    
+    book(bookDto: BookDto) {
+        return this.hotel.book(bookDto);
     }
 }

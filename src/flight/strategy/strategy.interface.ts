@@ -1,6 +1,6 @@
 export interface StrategyAirline{
 
-    oneWaySearch(params1,params2);
+    oneWaySearch(params1,params2,);
 
     oneWaySearchZip(params1,params2);
 

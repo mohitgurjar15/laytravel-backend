@@ -1,6 +1,6 @@
 import { StrategyAirline } from "./strategy.interface";
 import { OneWaySearchFlightDto } from "../dto/oneway-flight.dto";
-import { NotFoundException, InternalServerErrorException } from "@nestjs/common";
+import { NotFoundException, InternalServerErrorException, Inject, CACHE_MANAGER } from "@nestjs/common";
 import { RoundtripSearchFlightDto } from "../dto/roundtrip-flight.dto";
 import * as moment from 'moment';
 import { DateTime } from "src/utility/datetime.utility";
@@ -19,6 +19,7 @@ import { HttpRequest } from "src/utility/http.utility";
 const fs = require('fs').promises;
 import * as zlib from 'zlib';
 import * as md5 from 'md5';
+import { Cache } from 'cache-manager';
 
 export const flightClass = {
     'Economy': 'Y',
@@ -38,10 +39,16 @@ const mealCodes = {
 export class Mystifly implements StrategyAirline {
 
     private headers;
+    private cacheManager;
+    private ttl: number = 1200;
+    private sessionName: string = 'mystifly-session';
     constructor(
-        headers
+        headers,
+        cacheManager
     ) {
+
         this.headers = headers;
+        this.cacheManager = cacheManager;
     }
 
     async getMystiflyCredential() {
@@ -54,7 +61,7 @@ export class Mystifly implements StrategyAirline {
             mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
         }
         //mystiflyConfig = { "account_number": "MCN001506","password": "MWR2018_xml","target": "Test", "user_name": "MWR_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
-       
+
         return mystiflyConfig;
     }
     async createSession() {
@@ -80,23 +87,25 @@ export class Mystifly implements StrategyAirline {
         let sessionResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'CreateSession');
 
         const sessionToken = sessionResult['s:envelope']['s:body'][0].createsessionresponse[0].createsessionresult[0]['a:sessionid'][0];
-        await fs.writeFile("src/flight/mystifly-session.json", JSON.stringify({ sessionToken, created_time: new Date() }))
+        await this.cacheManager.set(this.sessionName, sessionToken, { ttl: this.ttl });
+        //await fs.writeFile("src/flight/mystifly-session.json", JSON.stringify({ sessionToken, created_time: new Date() }))
         return sessionToken;
     }
     async startSession() {
         try {
-            let sessionDetails = await fs.readFile("src/flight/mystifly-session.json", "binary");
-            sessionDetails = JSON.parse(sessionDetails);
-            let currentTime = new Date();
-            let diff = moment(currentTime).diff(sessionDetails.created_time, 'seconds')
-            if (diff > 1200) {
+            let sessionDetails = await this.cacheManager.get(this.sessionName);;
+            //sessionDetails = JSON.parse(sessionDetails);
+            //let currentTime = new Date();
+            //let diff = moment(currentTime).diff(sessionDetails.created_time, 'seconds')
+            if (sessionDetails) {
+
+                return sessionDetails;
+            }
+            else {
 
                 return await this.createSession();
             }
-            else {
-                return sessionDetails.sessionToken;
-            }
-            
+
         }
         catch (e) {
             return await this.createSession();
@@ -265,7 +274,7 @@ export class Mystifly implements StrategyAirline {
                     stop.is_layover = false;
                     stop.airline_name = airlines[flightSegment['a:marketingairlinecode'][0]];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
-                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo'] !== 'undefined' ? otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j] : '');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
                     stop.meal = this.getMealCode(flightSegment['a:mealcode'][0]);
@@ -379,7 +388,7 @@ export class Mystifly implements StrategyAirline {
             source_location,
             destination_location,
             departure_date,
-            
+
             flight_class,
             adult_count,
             child_count,
@@ -482,7 +491,7 @@ export class Mystifly implements StrategyAirline {
 
         let jsonData: any = await Generic.xmlToJson(unCompressedData)
 
-        
+
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
 
 
@@ -542,9 +551,9 @@ export class Mystifly implements StrategyAirline {
 
 
 
-                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo']!=='undefined'?otherSegments['cabinbaggageinfo'][0]['string'][j]:'');
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo'] !== 'undefined' ? otherSegments['cabinbaggageinfo'][0]['string'][j] : '');
                     //stop.cabin_baggage = '';
-                    stop.checkin_baggage =this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
+                    stop.checkin_baggage = this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
 
                     stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
 
@@ -816,9 +825,9 @@ export class Mystifly implements StrategyAirline {
 
 
 
-                    stop.cabin_baggage =this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo']!=='undefined'?otherSegments['cabinbaggageinfo'][0]['string'][j]:'');
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo'] !== 'undefined' ? otherSegments['cabinbaggageinfo'][0]['string'][j] : '');
                     //stop.cabin_baggage = '';
-                    stop.checkin_baggage =this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
+                    stop.checkin_baggage = this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
 
                     stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
 
@@ -915,7 +924,7 @@ export class Mystifly implements StrategyAirline {
         }
 
 
-        
+
     }
 
     async cancelBooking(tripId: string) {
@@ -934,7 +943,7 @@ export class Mystifly implements StrategyAirline {
         let tripDetailsResult = await HttpRequest.mystiflyRequest('http://onepointdemo.myfarebox.com/V2/OnePoint.svc', requestBody, 'TripDetails');
 
         return tripDetailsResult
-        }
+    }
 
     getMinPrice(routes, priceType) {
         return Math.min.apply(null, routes.map(item => item[priceType]))
@@ -1087,7 +1096,7 @@ export class Mystifly implements StrategyAirline {
         })
         return timeSlots;
 
-        
+
     }
 
     async roundTripSearch(searchFlightDto: RoundtripSearchFlightDto, user) {
@@ -1238,9 +1247,9 @@ export class Mystifly implements StrategyAirline {
                     stop.remaining_seat = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0] == 'true' ? true : false;
                     stop.is_layover = false;
-                    stop.cabin_baggage =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo'] !== 'undefined' ? otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j] : '');
                     //stop.cabin_baggage = '';
-                    stop.checkin_baggage =this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
+                    stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
                     stop.meal = this.getMealCode(flightSegment['a:mealcode'][0]);
                     if (stops.length > 0) {
 
@@ -1295,9 +1304,9 @@ export class Mystifly implements StrategyAirline {
                     stop.remaining_seat = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                     stop.below_minimum_seat = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0] == 'true' ? true : false;
                     stop.is_layover = false;
-                    stop.cabin_baggage =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo'] !== 'undefined' ? otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j] : '');
                     //stop.cabin_baggage = '';
-                    stop.checkin_baggage =this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j])
+                    stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j])
                     stop.meal = this.getMealCode(flightSegment['a:mealcode'][0]);
                     if (stops.length > 0) {
 
@@ -1544,7 +1553,7 @@ export class Mystifly implements StrategyAirline {
                     stop.airline_name = airlines[stop.airline];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
-                    stop.cabin_baggage   =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo'] !== 'undefined' ? otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j] : '');
                     if (stops.length > 0) {
 
                         stop.is_layover = true;
@@ -1601,8 +1610,8 @@ export class Mystifly implements StrategyAirline {
                         stop.remaining_seat = parseInt(flightSegment['a:seatsremaining'][0]['a:number'][0]);
                         stop.below_minimum_seat = flightSegment['a:seatsremaining'][0]['a:belowminimum'][0] == 'true' ? true : false;
                         stop.is_layover = false;
-                        stop.checkin_baggage =this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
-                        stop.cabin_baggage   =this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo']!=='undefined'?otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j]:'');
+                        stop.checkin_baggage = this.getBaggageDetails(otherSegments['a:baggageinfo'][0]['a:baggage'][j]);
+                        stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['a:cabinbaggageinfo'] !== 'undefined' ? otherSegments['a:cabinbaggageinfo'][0]['a:cabinbaggage'][j] : '');
                         if (stops.length > 0) {
 
                             stop.is_layover = true;
@@ -2010,15 +2019,15 @@ export class Mystifly implements StrategyAirline {
         return fareBreakDowns;
     }
 
-    getBaggageDetails(code){
+    getBaggageDetails(code) {
 
-        let bags={
-            'SB':'Standard Baggage'
+        let bags = {
+            'SB': 'Standard Baggage'
         }
 
-        if(typeof bags[code]!=='undefined')
+        if (typeof bags[code] !== 'undefined')
             return bags[code]
-        else    
+        else
             return code;
     }
 } 

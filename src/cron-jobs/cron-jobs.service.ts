@@ -38,9 +38,7 @@ import { VacationRentalService } from "src/vacation-rental/vacation-rental.servi
 import { Translation } from "src/utility/translation.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
 const AWS = require('aws-sdk');
-var assert = require('assert');
 var fs = require('fs');
-var spawn = require('child_process').spawn;
 
 
 
@@ -945,7 +943,7 @@ export class CronJobsService {
 		var username = process.env.RDS_Username || dbConfig.username
 		var password = process.env.RDS_Password || dbConfig.password
 
-		var S3_BUCKET = 'laytrip/logs/';
+		var S3_BUCKET = 'laytrip/logs/database';
 		var s3AccessKeyId = process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId;
 		var s3SecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || AWSconfig.secretAccessKey
 
@@ -957,7 +955,8 @@ export class CronJobsService {
 		//   20170312.011924.307000000.sql.gz
 		var timestamp = (new Date()).toISOString()
 			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
-		var filepath = '/var/www/html/logs/database/' + timestamp + '.sql.gz';
+		const fileName = 'laytrip'+ timestamp + '.sql'
+		var filepath = '/var/www/html/logs/database/' + fileName;
 
 		if (!fs.existsSync('/var/www/html/logs/database/')) {
 			fs.mkdirSync('/var/www/html/logs/database/');
@@ -974,10 +973,9 @@ export class CronJobsService {
 			console.log('Uploading "' + filepath + '" to S3');
 			s3.putObject({
 				Bucket: S3_BUCKET,
-				Key: filepath,
-				ACL: 'private',
-				ContentType: 'text/plain',
-				ContentEncoding: 'gzip',
+				Key: fileName,
+				// ACL: 'public',
+				// ContentType: 'text/plain',
 				Body: fs.createReadStream(filepath)
 			}, function handlePutObject(err, data) {
 				// If there was an error, throw it
@@ -997,7 +995,7 @@ export class CronJobsService {
 		// Upload our gzip stream into S3
 		// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
 
-
+		return { message : `database backup uploadsuccefully `}
 
 	}
 
