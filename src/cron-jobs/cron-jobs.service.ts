@@ -168,7 +168,9 @@ export class CronJobsService {
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/>' + failedlogArray, 'update pending flight cron failed')
 		}
-		return { message: `pending flight updated successfully` };
+		throw new NotFoundException('update_booking_cron')
+		return { message: await Translation.Translater('ES', 'responce', 'update_booking_cron') };
+		// message: await Translation.Translater('ES', 'responce', 'update_booking_cron')
 	}
 
 
@@ -623,7 +625,7 @@ export class CronJobsService {
 			}
 		}
 		return {
-			message: Translation.Translater('ES', 'responce', 'update_booking_cron')
+			message: await Translation.Translater('ES', 'responce', 'update_booking_cron')
 		}
 	}
 
