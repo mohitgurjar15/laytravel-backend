@@ -1187,9 +1187,11 @@ export class VacationRentalService {
 
 			console.log("step-1 find vacation rental");
 
-			const query = await this.partiallyVacationRentalBook(bookingDto, header, user, bookingId);
+			const result = await this.partiallyVacationRentalBook(bookingDto, header, user, bookingId);
 
 			this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+
+			return result;
 
 		}
 	}
