@@ -4,7 +4,7 @@ import { Translation } from "./utility/translation.utility";
 
 @Catch(NotFoundException)
 export class NotFoundExceptionFilter implements ExceptionFilter {
-	async catch(exception: NotFoundException, host: ArgumentsHost) {
+	catch(exception: NotFoundException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
 		const errors = this.filterResponse(exception.getResponse()["message"]);
@@ -12,7 +12,7 @@ export class NotFoundExceptionFilter implements ExceptionFilter {
 			.status(404)
 			// you can manipulate the response here
 			.json({
-				message: await Translation.Translater('ES', 'responce', errors[0].display_error),
+				message: errors[0].display_error,
 				developer_errors: errors,
 			});
 	}
