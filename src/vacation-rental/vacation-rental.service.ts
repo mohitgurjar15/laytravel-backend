@@ -51,6 +51,7 @@ import { RewordMode } from 'src/enum/reword-mode.enum';
 import { resolve } from 'path';
 import { PushNotification } from 'src/utility/push-notification.utility';
 import { vacationCategoty } from './vacation-rental.const';
+import { BookingDetailsUpdateMail } from 'src/config/email_template/booking-details-updates.html';
 
 const mailConfig = config.get("email");
 
@@ -593,7 +594,7 @@ export class VacationRentalService {
 		}
 		booking.cardToken = card_token;
 
-		booking.moduleInfo = moduleInfo;
+		booking.moduleInfo = [moduleInfo];
 		booking.checkInDate = await this.changeDateFormat(check_in_date)
 		booking.checkOutDate = await this.changeDateFormat(check_out_date)
 		booking.locationInfo = locationInfo
@@ -1166,13 +1167,13 @@ export class VacationRentalService {
 			}
 
 			let bookingDto = {
-				"property_id": bookingData.moduleInfo["property_id"],
-				"room_id": bookingData.moduleInfo["room_id"],
-				"rate_plan_code": bookingData.moduleInfo["rate_plan_code"],
+				"property_id": bookingData.moduleInfo[0]["property_id"],
+				"room_id": bookingData.moduleInfo[0]["room_id"],
+				"rate_plan_code": bookingData.moduleInfo[0]["rate_plan_code"],
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
-				"adult_count": bookingData.moduleInfo["adult"],
-				"number_and_children_ages": bookingData.moduleInfo["number_and_chidren_age"],
+				"adult_count": bookingData.moduleInfo[0]["adult"],
+				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"],
 				"travelers": travelers,
 				"payment_type": bookingData.bookingType,
 				"instalment_type": bookingData.bookingType,
@@ -1184,7 +1185,11 @@ export class VacationRentalService {
 
 			const bookingId = bookingData.laytripBookingId;
 
-			await this.partiallyVacationRentalBook(bookingDto, header, user, bookingId);
+			console.log("step-1 find vacation rental");
+
+			const query = await this.partiallyVacationRentalBook(bookingDto, header, user, bookingId);
+
+			this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 
 		}
 	}
@@ -1263,10 +1268,16 @@ export class VacationRentalService {
 		let currencyId = headerDetails.currency.id;
 		const userId = user.user_id;
 
-		// console.log("------------------------->",travelersDetails);
-		let bookingResult = await monaker.booking(bookingDto, travelersDetails, booking_code, net_price);
+		console.log("call booking api -2")
 
-		console.log("Booking result", bookingResult);
+		const bookingResult = await monaker.booking(
+			bookingDto,
+			travelersDetails,
+			booking_code,
+			net_price,
+		);
+
+		// console.log("Booking result", bookingResult);
 
 		if (bookingResult.booking_status == "success") {
 			console.log(`step - 3 save Booking`, bookingResult);
@@ -1303,7 +1314,7 @@ export class VacationRentalService {
 			bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
 				laytripBookingResult.laytripBookingId
 			);
-			console.log("----------------------------------->", bookingResult);
+			// console.log("----------------------------------->", bookingResult);
 			return bookingResult;
 
 		}
@@ -1315,7 +1326,7 @@ export class VacationRentalService {
 	async partialyBookingSave(
 		bookingDto,
 		currencyId,
-		airRevalidateResult,
+		moduleInfo,
 		bookingId,
 		supplierBookingData,
 	) {
@@ -1349,12 +1360,29 @@ export class VacationRentalService {
 		booking.netRate = `${net_price}`;
 		booking.usdFactor = `${currencyDetails.liveRate}`;
 		booking.supplierBookingId = supplierBookingData.supplier_booking_id;
-		booking.moduleInfo = airRevalidateResult;
+		booking.moduleInfo = [moduleInfo];
 		try {
 			let bookingDetails = await booking.save();
 			return await this.bookingRepository.getBookingDetails(bookingDetails.laytripBookingId);
 		} catch (error) {
 			console.log(error);
 		}
+	}
+
+	async sendFlightUpdateMail(bookingId, email, userName) {
+		this.mailerService
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: "Booking detail updated",
+				html: BookingDetailsUpdateMail({ username: userName }),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
 	}
 }
