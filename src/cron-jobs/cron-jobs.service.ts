@@ -1007,7 +1007,7 @@ export class CronJobsService {
 			const userName = 'suresh555';
 			const password1 = 'Oneclick1@';
 			// Set up GitHub url like this so no manual entry of user pass needed
-			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
+			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/`;
 			// add local git config like username and email
 			simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
 			simpleGit.addConfig('user.name', 'Suresh Suthar');
