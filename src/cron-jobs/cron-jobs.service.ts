@@ -975,7 +975,7 @@ export class CronJobsService {
 		// DEV: We write to disk so S3 client can calculate `Content-Length` of final result before uploading
 		console.log('Dumping `pg_dump` into `gzip`');
 
-		await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
+		//await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
 			console.log("Finito");
 			console.log('Uploading "' + filepath + '" to S3');
 			// s3.putObject({
@@ -1007,12 +1007,19 @@ export class CronJobsService {
 			const userName = 'suresh555';
 			const password1 = 'Oneclick1@';
 			// Set up GitHub url like this so no manual entry of user pass needed
-			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/`;
+			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
 			// add local git config like username and email
+			
 			simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
+			console.log("step1");
+			
 			simpleGit.addConfig('user.name', 'Suresh Suthar');
+			console.log(("step2"));
+			
 			// Add remore repo url as origin to repo
 			simpleGitPromise.addRemote('origin', gitHubUrl);
+			console.log("step3");
+			
 			// Add all files for commit
 			simpleGitPromise.add('.')
 				.then(
@@ -1038,7 +1045,7 @@ export class CronJobsService {
 				});
 			console.log('Successfully uploaded "' + filepath + '"');
 			return { message: 'Successfully uploaded "' + filepath + '"' }
-		})
+		//})
 		// .catch(err => {
 		// 	console.log(err);
 		// 	return err
