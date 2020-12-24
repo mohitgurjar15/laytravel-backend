@@ -1028,6 +1028,8 @@ export class CronJobsService {
 					}, (failedAdd) => {
 						console.log('adding files failed');
 					});
+					console.log("step4");
+					
 			// Commit files as Initial Commit
 			simpleGitPromise.commit('Intial commit by simplegit')
 				.then(
@@ -1036,6 +1038,7 @@ export class CronJobsService {
 					}, (failed) => {
 						console.log('failed commmit');
 					});
+					console.log("step5");
 			// Finally push to online repository
 			simpleGitPromise.push('origin', 'master')
 				.then((success) => {
@@ -1043,6 +1046,7 @@ export class CronJobsService {
 				}, (failed) => {
 					console.log('repo push failed');
 				});
+				console.log("step5");
 			console.log('Successfully uploaded "' + filepath + '"');
 			return { message: 'Successfully uploaded "' + filepath + '"' }
 		//})
