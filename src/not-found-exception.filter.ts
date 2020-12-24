@@ -12,7 +12,8 @@ export class NotFoundExceptionFilter implements ExceptionFilter {
 			.status(404)
 			// you can manipulate the response here
 			.json({
-				message: errors[0].display_error,
+				message:errors[0].display_error,
+				//message: await Translation.Translater('ES', 'responce', errors[0].display_error),
 				developer_errors: errors,
 			});
 	}
