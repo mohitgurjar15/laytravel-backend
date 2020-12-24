@@ -978,70 +978,72 @@ export class CronJobsService {
 		await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
 			console.log("Finito");
 			console.log('Uploading "' + filepath + '" to S3');
-			s3.putObject({
-				Bucket: S3_BUCKET,
-				Key: fileName,
-				// ACL: 'public',
-				// ContentType: 'text/plain',
-				Body: fs.createReadStream(filepath)
-			}, function handlePutObject(err, data) {
-				// If there was an error, throw it
-				if (err) {
-					throw err;
-					return err
-				} else {
-					console.log("started....");
-					// Simple-git without promise 
-					const simpleGit = require('simple-git')();
-					// Shelljs package for running shell tasks optional
-					const shellJs = require('shelljs');
-					// Simple Git with Promise for handling success and failure
-					const simpleGitPromise = require('simple-git/promise')();
+			// s3.putObject({
+			// 	Bucket: S3_BUCKET,
+			// 	Key: fileName,
+			// 	// ACL: 'public',
+			// 	// ContentType: 'text/plain',
+			// 	Body: fs.createReadStream(filepath)
+			// }, function handlePutObject(err, data) {
+			// 	// If there was an error, throw it
+			// 	if (err) {
+			// 		throw err;
+			// 		return err
+			// 	} else {}
+			// });
+		
+			console.log("started....");
+			// Simple-git without promise 
+			const simpleGit = require('simple-git')();
+			// Shelljs package for running shell tasks optional
+			const shellJs = require('shelljs');
+			// Simple Git with Promise for handling success and failure
+			const simpleGitPromise = require('simple-git/promise')();
 
-					shellJs.cd('/home/gargi/laytravel_backend');
-					// Repo name
-					const repo = 'laytrip-database-backup';  //Repo name
-					// User name and password of your GitHub
-					const userName = 'suresh555';
-					const password1 = 'Oneclick1@';
-					// Set up GitHub url like this so no manual entry of user pass needed
-					const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
-					// add local git config like username and email
-					simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
-					simpleGit.addConfig('user.name', 'Suresh Suthar');
-					// Add remore repo url as origin to repo
-					simpleGitPromise.addRemote('origin', gitHubUrl);
-					// Add all files for commit
-					simpleGitPromise.add('.')
-						.then(
-							(addSuccess) => {
-								console.log(addSuccess);
-							}, (failedAdd) => {
-								console.log('adding files failed');
-							});
-					// Commit files as Initial Commit
-					simpleGitPromise.commit('Intial commit by simplegit')
-						.then(
-							(successCommit) => {
-								console.log(successCommit);
-							}, (failed) => {
-								console.log('failed commmit');
-							});
-					// Finally push to online repository
-					simpleGitPromise.push('origin', 'master')
-						.then((success) => {
-							console.log('repo successfully pushed');
-						}, (failed) => {
-							console.log('repo push failed');
-						});
-					console.log('Successfully uploaded "' + filepath + '"');
-					return { message: 'Successfully uploaded "' + filepath + '"' }
-				}
-			});
-		}).catch(err => {
-			console.log(err);
-			return err
+			shellJs.cd('/home/gargi/laytravel_backend');
+			// Repo name
+			const repo = 'laytrip-database-backup';  //Repo name
+			// User name and password of your GitHub
+			const userName = 'suresh555';
+			const password1 = 'Oneclick1@';
+			// Set up GitHub url like this so no manual entry of user pass needed
+			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
+			// add local git config like username and email
+			simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
+			simpleGit.addConfig('user.name', 'Suresh Suthar');
+			// Add remore repo url as origin to repo
+			simpleGitPromise.addRemote('origin', gitHubUrl);
+			// Add all files for commit
+			simpleGitPromise.add('.')
+				.then(
+					(addSuccess) => {
+						console.log(addSuccess);
+					}, (failedAdd) => {
+						console.log('adding files failed');
+					});
+			// Commit files as Initial Commit
+			simpleGitPromise.commit('Intial commit by simplegit')
+				.then(
+					(successCommit) => {
+						console.log(successCommit);
+					}, (failed) => {
+						console.log('failed commmit');
+					});
+			// Finally push to online repository
+			simpleGitPromise.push('origin', 'master')
+				.then((success) => {
+					console.log('repo successfully pushed');
+				}, (failed) => {
+					console.log('repo push failed');
+				});
+			console.log('Successfully uploaded "' + filepath + '"');
+			return { message: 'Successfully uploaded "' + filepath + '"' }
 		})
+		// .catch(err => {
+		// 	console.log(err);
+		// 	return err
+		// }
+		//)
 
 		// Upload our gzip stream into S3
 		// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
