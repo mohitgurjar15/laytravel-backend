@@ -406,6 +406,7 @@ export class BookingRepository extends Repository<Booking> {
 			.select([
 				"booking.bookingType",
 				"booking.bookingStatus",
+				"booking.checkInDate",
 				"booking.currency",
 				"booking.totalAmount",
 				"booking.netRate",
