@@ -35,7 +35,7 @@ export class Monaker implements StrategyVacationRental {
         "HighSpeedWireless": "wifi",
         "ComplimentaryWirelessInternet": "wifi",
         "NonSmokingRooms": "no_smoking",
-        "CoffeeTea": "coffe-tea"
+        "CoffeeTea": "coffe_tea"
     };
 
     async getMonakerCredential() {
