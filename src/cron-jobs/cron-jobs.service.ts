@@ -959,7 +959,7 @@ export class CronJobsService {
 			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
 		const fileName = 'laytrip' + timestamp + '.sql'
 		//var filepath = '/var/www/html/logs/database/' + fileName;
-		var filepath = '/var/www/html/logs/database/' + fileName;
+		var filepath = __dirname + '/database/' + fileName;
 
 		// if (!fs.existsSync('/var/www/html/logs/database/')) {
 		// 	fs.mkdirSync('/var/www/html/logs/database/');
