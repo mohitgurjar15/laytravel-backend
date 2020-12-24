@@ -959,14 +959,14 @@ export class CronJobsService {
 			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
 		const fileName = 'laytrip' + timestamp + '.sql'
 		//var filepath = '/var/www/html/logs/database/' + fileName;
-		var filepath = '/var/www/html/logs/database' + fileName;
+		var filepath = '/var/www/html/logs/database/' + fileName;
 
 		// if (!fs.existsSync('/var/www/html/logs/database/')) {
 		// 	fs.mkdirSync('/var/www/html/logs/database/');
 		// }
 
-		if (!fs.existsSync('/var/www/html/logs/database')) {
-			 	fs.mkdirSync('/var/www/html/logs/database');
+		if (!fs.existsSync('/var/www/html/logs/database/')) {
+			 	fs.mkdirSync('/var/www/html/logs/database/');
 			 }
 		var s3 = new AWS.S3();
 
@@ -1000,7 +1000,7 @@ export class CronJobsService {
 			// Simple Git with Promise for handling success and failure
 			const simpleGitPromise = require('simple-git/promise')();
 
-			shellJs.cd('/var/www/html/logs/database');
+			shellJs.cd('/var/www/html/logs/database/');
 			// Repo name
 			const repo = 'laytrip-database-backup';  //Repo name
 			// User name and password of your GitHub
