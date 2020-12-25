@@ -60,7 +60,7 @@ const content = `<!-- header Text section start -->
                                                                                                 <tr>
                                                                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 0; text-align: left;">
                                                                                                         <span style="font-weight:bold;">Billed To:</span><br/>
-                                                                                                            ${param.userName} <br/><span style="font-weight:bold;">Order Id :</span>${param.orderId}
+                                                                                                            ${param.userName} <br/><span style="font-weight:bold;">Booking Id :</span>${param.orderId}
                                                                                                     </td>
                                                                                                 </tr>
                                                                                             </tbody>

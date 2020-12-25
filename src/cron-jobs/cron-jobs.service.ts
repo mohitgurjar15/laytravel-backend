@@ -194,30 +194,6 @@ export class CronJobsService {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 
-			// .select([
-			// 	"BookingInstalments.id",
-			// 	"BookingInstalments.bookingId",
-			// 	"BookingInstalments.userId",
-			// 	"BookingInstalments.instalmentType",
-			// 	"BookingInstalments.instalmentDate",
-			// 	"BookingInstalments.currencyId",
-			// 	"BookingInstalments.amount",
-			// 	"BookingInstalments.instalmentStatus",
-			// 	"booking.bookingType",
-			// 	"booking.bookingStatus",
-			// 	"booking.cardToken",
-			// 	"booking.currency",
-			// 	"booking.netRate",
-			// 	"booking.usdFactor",
-			// 	"booking.isTicketd",
-			// 	"currency.id",
-			// 	"currency.code",
-			// 	"currency.liveRate",
-			// 	"User.userId",
-			// 	"User.email",
-			// 	"User.phoneNo",
-			// ])
-
 			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
 		const data = await query.getMany();
@@ -279,8 +255,8 @@ export class CronJobsService {
 						}
 
 						let param = {
-							date: DateTime.convertDateFormat(instalment.instalmentDate, 'yyyy-mm-dd', 'MM/DD/YYYY'),
-							amount: amount,
+							date: DateTime.convertDateFormat(instalment.instalmentDate, 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							available_try: availableTry,
 							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
 							currency: instalment.currency.symbol
@@ -292,6 +268,8 @@ export class CronJobsService {
 								.set({ bookingStatus: BookingStatus.NOTCOMPLETED, paymentStatus: PaymentStatus.FAILED })
 								.where("id = :id", { id: instalment.bookingId })
 								.execute();
+							instalment.paymentStatus = PaymentStatus.FAILED
+							await instalment.save()
 							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
 							PushNotification.sendNotificationTouser(instalment.user.userId,
 								{  //you can send only notification or only data(or include both)
@@ -314,8 +292,7 @@ export class CronJobsService {
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
 								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
 
-							instalment.paymentStatus = PaymentStatus.FAILED
-							await instalment.save()
+
 						}
 						this.mailerService
 							.sendMail({
@@ -957,7 +934,7 @@ export class CronJobsService {
 		//   20170312.011924.307000000.sql.gz
 		var timestamp = (new Date()).toISOString()
 			.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/, '$1$2$3.$4$5$6.$7000000');
-		const fileName = 'laytrip'+ timestamp + '.sql'
+		const fileName = 'laytrip' + timestamp + '.sql'
 		var filepath = '/var/www/html/logs/database/' + fileName;
 
 		if (!fs.existsSync('/var/www/html/logs/database/')) {
@@ -997,7 +974,7 @@ export class CronJobsService {
 		// Upload our gzip stream into S3
 		// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
 
-		return { message : `database backup uploadsuccefully `}
+		return { message: `database backup uploadsuccefully ` }
 
 	}
 
