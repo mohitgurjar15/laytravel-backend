@@ -19,7 +19,8 @@ export class HotelDetail {
     display_image: string;
     amenities:[];
     fixed_amenities:[];
-    date:string;
+    check_in_date:string;
+    check_out_date:string;
     latitude: string;
     longintude: string;
 }

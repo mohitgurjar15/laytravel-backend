@@ -40,7 +40,7 @@ export class HomeRentalCalendarDto{
     })
     @ApiProperty({
         description:`start date`,
-        example:`2020-11-06`
+        example:`2021-03-01`
     })
     start_date : string;
 
@@ -56,7 +56,22 @@ export class HomeRentalCalendarDto{
     })
     @ApiProperty({
         description:`end date`,
-        example:`2020-11-06`
+        example:`2021-03-31`
     })
     end_date : string;
+
+    @IsValidDate('',{
+        message: (args: ValidationArguments) => {
+            if (typeof args.value == "undefined" || args.value == "") {
+                return `Please enter check in date.&&&check_in_date`;
+            } else {
+                return `Please enter valid check in date format(YYYY-MM-DD)&&&check_in_date`;
+            }
+        },
+    })
+    @ApiProperty({
+        description:`check in date`,
+        example:`2021-03-01`
+    })
+    check_in_date : string;
 }
