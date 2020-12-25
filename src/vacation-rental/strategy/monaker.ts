@@ -282,7 +282,8 @@ export class Monaker implements StrategyVacationRental {
                     let combined = amenities1.combine(hotel.amenities);
                     let sorted_amenities: any = collect(this.default_amenities).intersectByKeys(combined).values().unique().toArray();
                     hotel.fixed_amenities = sorted_amenities;
-                    hotel.date = check_out_date
+                    hotel.check_in_date = check_in_date
+                    hotel.check_out_date = check_out_date
                     hotel.display_image = `https://sandbox-images.nexttrip.com${hotel_details["images"].split(',')[0]}`;
                     hotel.latitude = hotel_details["latitude"];
                     hotel.longintude = hotel_details["longitude"];
