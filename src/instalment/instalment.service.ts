@@ -12,19 +12,19 @@ export class InstalmentService {
 
         const { 
             instalment_type, amount,
-            checkin_date, booking_date, additional_amount, down_payment
+            checkin_date, booking_date, additional_amount, down_payment,selected_down_payment
         } = instalmentDto;
 
         
         if(instalment_type==InstalmentType.WEEKLY){
-            return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+            return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
         }
         
         else if(instalment_type==InstalmentType.BIWEEKLY)
-            return Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+            return Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
         
         else if(instalment_type==InstalmentType.MONTHLY)
-            return Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+            return Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
         
     }
 
@@ -32,20 +32,23 @@ export class InstalmentService {
 
         const { 
             amount,
-            checkin_date, booking_date, additional_amount,down_payment
+            checkin_date, booking_date, additional_amount,down_payment,selected_down_payment
         } = allInstalmentDto;
         
-        let weeklyInstalments = Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+        let weeklyInstalments = Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
         if(weeklyInstalments.instalment_available==true){
 
-            let biWeeklyInstalments = Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
-            let monthlyInstalments = Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment);
+            let biWeeklyInstalments = Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
+            let monthlyInstalments = Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
 
             return {
                 instalment_available : true,
                 weekly_instalments : weeklyInstalments.instalment_date,
+                weekly_down_payment : weeklyInstalments.down_payment,
                 biweekly_instalments : biWeeklyInstalments.instalment_date,
-                monthly_instalments : monthlyInstalments.instalment_date
+                bi_weekly_down_payment : biWeeklyInstalments.down_payment,
+                monthly_instalments : monthlyInstalments.instalment_date,
+                monthly_down_payment : monthlyInstalments.down_payment,
             }
         }
         else{

@@ -57,4 +57,10 @@ export class AllInstalmentDto{
         example:3
     })
     down_payment : number;
+
+    @ApiPropertyOptional({
+        description:`Selected Down Amount`,
+        example:3
+    })
+    selected_down_payment : number;
 }

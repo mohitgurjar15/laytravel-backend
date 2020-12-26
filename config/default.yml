@@ -6,7 +6,7 @@
 # my variables are ${myvar1} and ${myvar2}
 #
 server:
-    port: 5050
+    port: 4040
 
 db:
     type: "postgres"
