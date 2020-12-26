@@ -3,7 +3,7 @@ import * as config from 'config';
 
 export class CommonHelper {
     
-    static generateUrl(api: string, parameters: any) {
+    static generateUrl(api: string, parameters: any = {}) {
 
         let ppnConfig = config.get('ppn');
 
