@@ -14,6 +14,7 @@ import { User } from "./user.entity";
 import { Supplier } from "./supplier.entity";
 import { Markup } from "./markup.entity";
 import { Notification } from "./notification.entity";
+import { Cart } from "./cart.entity";
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
 export class Module extends BaseEntity {
@@ -49,6 +50,12 @@ export class Module extends BaseEntity {
     booking => booking.module
   )
   bookings: Booking[];
+
+  @OneToMany(
+    () => Cart,
+    booking => booking.module
+  )
+  cartList: Cart[];
 
   @OneToMany(
     () => BookingInstalments,
