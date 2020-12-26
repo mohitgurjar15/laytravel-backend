@@ -4,7 +4,7 @@ import { Translation } from "./utility/translation.utility";
 
 @Catch(NotFoundException)
 export class NotFoundExceptionFilter implements ExceptionFilter {
-	async catch(exception: NotFoundException, host: ArgumentsHost) {
+	catch(exception: NotFoundException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
 		const errors = this.filterResponse(exception.getResponse()["message"]);
