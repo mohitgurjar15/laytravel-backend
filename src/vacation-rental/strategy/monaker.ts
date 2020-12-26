@@ -111,6 +111,14 @@ export class Monaker implements StrategyVacationRental {
         let city;
         let childrensAges = ``;
 
+        if (adult_count > 4) {
+            throw new NotAcceptableException(`please select 4 or below adult count`);
+        } else if (number_and_children_ages.length != 0) {
+            if (number_and_children_ages.length > 4) {
+                throw new NotAcceptableException(`please select 4 or below children count`);
+            }
+        }
+
         if (number_and_children_ages.length != 0) {
             let check_age = number_and_children_ages.every((age) => {
                 return age <= 17;
@@ -328,6 +336,14 @@ export class Monaker implements StrategyVacationRental {
         // console.log("------------",availabilityDetailsDto);
         const { id, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availabilityDetailsDto;
 
+        if (adult_count > 4) {
+            throw new NotAcceptableException(`please select 4 or below adult count`);
+        } else if (number_and_children_ages.length != 0) {
+            if (number_and_children_ages.length > 4) {
+                throw new NotAcceptableException(`please select 4 or below children count`);
+            }
+        }
+
         let childrensAges = ``;
         let queryParams = ``;
 
@@ -471,6 +487,15 @@ export class Monaker implements StrategyVacationRental {
         const { property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
         let monakerCredential = await this.getMonakerCredential();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+
+        if (adult_count > 4) {
+            throw new NotAcceptableException(`please select 4 or below adult count`);
+        } else if (number_and_children_ages.length != 0) {
+            if (number_and_children_ages.length > 4) {
+                throw new NotAcceptableException(`please select 4 or below children count`);
+            }
+        }
+
         let childrensAges = ``;
         let queryParams = ``;
 
@@ -525,15 +550,9 @@ export class Monaker implements StrategyVacationRental {
             "number_and_children_ages": number_and_children_ages
         };
 
-        // console.log("0000000000000000000",dto);
-
         let propertyResult = await this.unitTypeListAvailability(dto, user);
 
-        // console.log("-------------",propertyResult);
-
         const response = verifyResult.data;
-
-        // console.log("REPONSe", response);
 
         if (!response["available"]) {
             throw new NotAcceptableException(`Not available vacation rental home`)
