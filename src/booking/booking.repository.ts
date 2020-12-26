@@ -75,6 +75,10 @@ export class BookingRepository extends Repository<Booking> {
 			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%') or ("instalments"."transaction_token" ILIKE '%${search}%'))`;
 		}
 
+		if (email) {
+			where += `AND ("User"."email" ILIKE '%${email}%')`;
+		}
+
 		if (trnsaction_token) {
 			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
 		}

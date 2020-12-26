@@ -213,7 +213,7 @@ export class AdminService {
 				user.updatedDate = new Date();
 				await user.save();
 				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`);
-				return { messge: `User deleted successfully` };
+				return { messge: `Admin deleted successfully` };
 			}
 		} catch (error) {
 			if (
