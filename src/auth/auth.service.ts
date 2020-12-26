@@ -65,6 +65,7 @@ import { RewordMode } from "src/enum/reword-mode.enum";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { WebPushNotifications } from "src/entity/web-push-notification.entity";
+import * as moment from 'moment';
 
 @Injectable()
 export class AuthService {
@@ -433,7 +434,7 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
-		// var unixTimestamp = Math.round(new Date().getTime() / 1000);
+		var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
 		// const tokenhash = crypto
 		// 	.createHmac("sha256", unixTimestamp.toString())
@@ -545,7 +546,17 @@ export class AuthService {
 		});
 		if (validate) {
 			console.log(validate);
+			var a = moment(new Date());//now
+			var b = moment(validate.createTime);
+			const diff = a.diff(b, 'minutes');
 
+			console.log(diff)
+
+			if (diff >= 30) {
+				throw new BadRequestException(
+					`OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
+				);
+			}
 			const salt = await bcrypt.genSalt();
 			user.salt = salt;
 			user.password = await this.hashPassword(new_password, salt);
