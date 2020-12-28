@@ -3,22 +3,7 @@ import { InstalmentType } from "src/enum/instalment-type.enum";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
-export class InstalmentDto{
-
-    @IsEnum(InstalmentType,{
-        message : (args: ValidationArguments) => {
-            if (typeof args.value == "undefined" || args.value == "") {
-                return `Please enter instalment type.&&&instalment_type`;
-            } else {
-                return `Please enter valid instalment type(${InstalmentType.WEEKLY},${InstalmentType.BIWEEKLY},${InstalmentType.MONTHLY}).&&&instalment_type`
-            }
-        }
-    })
-    @ApiProperty({
-        description:`Instalment Type`,
-        example:`weekly`
-    })
-    instalment_type : string;
+export class AllInstalmentDto{
 
 
     @IsValidDate('',{

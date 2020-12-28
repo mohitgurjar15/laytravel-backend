@@ -1772,6 +1772,7 @@ export class FlightService {
 				EmailSubject = "Flight Booking Details";
 				for await (const installment of paymentDetail) {
 					installmentDetail.push({
+						
 						amount: bookingData.currency2.symbol + installment.amount,
 						date: await this.formatDate(installment.instalmentDate),
 						status: installment.paymentStatus == 1 ? 'Confirm' : 'Pending'

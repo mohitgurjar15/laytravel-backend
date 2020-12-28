@@ -25,7 +25,9 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id, supplier_id
+			module_id, supplier_id,
+			email, booking_through,trnsaction_token
+			
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -35,6 +37,11 @@ export class BookingRepository extends Repository<Booking> {
 		if (userId) {
 			where += `AND ("booking"."user_id" = '${userId}')`;
 		}
+
+		if (booking_through) {
+			where += `AND ("booking"."booking_through" = '${booking_through}')`;
+		}
+		
 		if (module_id) {
 			where += `AND ("booking"."module_id" = '${module_id}')`;
 		}
@@ -65,7 +72,15 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%') or ("instalments"."transaction_token" ILIKE '%${search}%'))`;
+		}
+
+		if (email) {
+			where += `AND ("User"."email" ILIKE '%${email}%')`;
+		}
+
+		if (trnsaction_token) {
+			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
 		}
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
