@@ -686,17 +686,19 @@ export class VacationRentalService {
 			var param = new HomeRentalBookingParameterModel();
 			const user = bookingData.user;
 			const moduleInfo = bookingData.moduleInfo
-			// const routes = moduleInfo.routes;
 			const travelers = bookingData.travelers
 			let hotelInfo = new hotelData();
 			var status = bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
 
-			hotelInfo.property_name = moduleInfo["property_name"]
-			hotelInfo.city = moduleInfo["city"];
-			hotelInfo.country = moduleInfo["country"]
+			hotelInfo.property_name = moduleInfo[0]["property_name"]
+			// hotelInfo.room_name = moduleInfo[0][""];
+			hotelInfo.city = moduleInfo[0]["city"];
+			hotelInfo.country = moduleInfo[0]["country"]
 			hotelInfo.check_in_date = check_in_date;
 			hotelInfo.check_out_date = check_out_date;
-			hotelInfo.cancellation_policy = moduleInfo["cancellationPolicy"]
+			hotelInfo.cancellation_policy = moduleInfo[0]["cancellation_policy"]
+			
+			console.log("cancellation policy-------------->",hotelInfo.cancellation_policy)
 
 			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
@@ -742,7 +744,8 @@ export class VacationRentalService {
 
 			}
 
-			param.user_name = `${user.firstName}  ${user.firstName}`;
+			param.user_name = `${user.firstName}  ${user.lastName}`;
+			param.booking_status = status;
 			param.hotelData = hotelInfo;
 			param.orderId = bookingData.id;
 			param.paymentDetail = installmentDetail;

@@ -5,6 +5,7 @@ export class VerifyAvailability {
     property_id: number;
     room_id: number;
     rate_plan_code: string;
+    room_name:string;
     available_status: boolean;
     booking_code: string;
     net_price: number;
