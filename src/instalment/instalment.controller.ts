@@ -3,6 +3,7 @@ import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { InstalmentService } from './instalment.service';
 import { InstalmentDto } from './dto/instalment.dto';
 import { InstalmentAvailabilityDto } from './dto/instalment-availability.dto';
+import { AllInstalmentDto } from './dto/all-instalment.dto';
 
 
 @ApiTags('Instalment')
@@ -21,6 +22,18 @@ export class InstalmentController {
         @Body() instalmentDto:InstalmentDto
     ){
         return await this.instalmentService.calculateInstalemnt(instalmentDto);
+    }
+
+    @ApiOperation({ summary: "Calculate instalment based on booking date, checkin date, amount & instalment type" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @Post('calculate-all-instalment')
+    async calculateAllInstalemnt(
+        @Body() allInstalmentDto:AllInstalmentDto
+    ){
+        return await this.instalmentService.calculateAllInstalemnt(allInstalmentDto);
     }
 
     @ApiOperation({ summary: "Check if instament is available" })

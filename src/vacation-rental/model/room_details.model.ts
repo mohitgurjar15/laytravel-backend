@@ -1,3 +1,5 @@
+import { FeesType } from "./verify-availability.model";
+
 export class HotelDetails {
     property_id: number;
     property_name: string;
@@ -15,6 +17,7 @@ export class Room {
     id: number;
     net_price: number;
     rate_plan_code:string;
+    room_name:string;
     selling_price: number;
     start_price: number;
     secondary_start_price:number;
@@ -22,6 +25,8 @@ export class Room {
     instalment_details:{};
     description: string;
     cancellation_policy:CancellationPolicy;
+    deposite_policy:string;
+    feesType: FeesType;
     amenities: [];
     meal_type: string;
 }

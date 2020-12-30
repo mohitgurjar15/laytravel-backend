@@ -35,7 +35,7 @@ export class Monaker implements StrategyVacationRental {
         "HighSpeedWireless": "wifi",
         "ComplimentaryWirelessInternet": "wifi",
         "NonSmokingRooms": "no_smoking",
-        "CoffeeTea": "coffe-tea"
+        "CoffeeTea": "coffe_tea"
     };
 
     async getMonakerCredential() {
@@ -110,6 +110,14 @@ export class Monaker implements StrategyVacationRental {
         let hotelIds;
         let city;
         let childrensAges = ``;
+
+        if (adult_count > 4) {
+            throw new NotAcceptableException(`please select 4 or below adult count`);
+        } else if (number_and_children_ages.length != 0) {
+            if (number_and_children_ages.length > 4) {
+                throw new NotAcceptableException(`please select 4 or below children count`);
+            }
+        }
 
         if (number_and_children_ages.length != 0) {
             let check_age = number_and_children_ages.every((age) => {
@@ -282,7 +290,8 @@ export class Monaker implements StrategyVacationRental {
                     let combined = amenities1.combine(hotel.amenities);
                     let sorted_amenities: any = collect(this.default_amenities).intersectByKeys(combined).values().unique().toArray();
                     hotel.fixed_amenities = sorted_amenities;
-                    hotel.date = check_out_date
+                    hotel.check_in_date = check_in_date
+                    hotel.check_out_date = check_out_date
                     hotel.display_image = `https://sandbox-images.nexttrip.com${hotel_details["images"].split(',')[0]}`;
                     hotel.latitude = hotel_details["latitude"];
                     hotel.longintude = hotel_details["longitude"];
@@ -326,6 +335,14 @@ export class Monaker implements StrategyVacationRental {
     async unitTypeListAvailability(availabilityDetailsDto: AvailabilityVacationDetailsDto, user) {
         // console.log("------------",availabilityDetailsDto);
         const { id, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = availabilityDetailsDto;
+
+        if (adult_count > 4) {
+            throw new NotAcceptableException(`please select 4 or below adult count`);
+        } else if (number_and_children_ages.length != 0) {
+            if (number_and_children_ages.length > 4) {
+                throw new NotAcceptableException(`please select 4 or below children count`);
+            }
+        }
 
         let childrensAges = ``;
         let queryParams = ``;
@@ -384,6 +401,8 @@ export class Monaker implements StrategyVacationRental {
 
         let rooms: Room[] = [];
         let room: Room;
+        let feesType: FeesType;
+        let fees;
 
         for (let i = 0; i < unitTypeResult.length; i++) {
             room = new Room();
@@ -439,7 +458,38 @@ export class Monaker implements StrategyVacationRental {
                 }
                 cancelPolicies.penalty_info = policy_info;
                 room.cancellation_policy = cancelPolicies;
+                room.deposite_policy = unitTypeResult[i]["policyInfo"]["depositPayments"].length != 0 ? unitTypeResult[i]["policyInfo"]["depositPayments"][0]["amountPercent"]["amount"] + " " + unitTypeResult[i]["policyInfo"]["depositPayments"][0]["currency"] + " " + "payable at check in" : '';
             }
+
+            for (let j = 0; j < unitTypeResult[i]["fees"].length; j++) {
+                let response = unitTypeResult[i];
+                if (response["prices"][0]["ratePlanCode"] == "ThisUnitTypeHasMandatoryAddonsPaidOnArrival") {
+                    feesType = new FeesType();
+                    for (let i = 0; i < response["fees"].length; i++) {
+                        fees = new Fees();
+                        if (response["fees"][i]["mandatoryInd"] == true) {
+                            fees.message = response["fees"][i]["description"];
+
+                            feesType.mandtory_fee_due_at_check_in.push(fees);
+                        }
+                    }
+                } else {
+                    feesType = new FeesType();
+                    for (let i = 0; i < response["fees"].length; i++) {
+                        let fees = new Fees();
+                        if (response["fees"][i]["mandatoryInd"] == true) {
+                            fees.message = response["fees"][i]["description"];
+                            feesType.mandtory_fee_already_paid.push(fees);
+                        }
+                        if (response["fees"][i]["mandatoryInd"] == false) {
+                            fees.message = response["fees"][i]["description"];
+                            feesType.optional_fee.push(fees);
+                        }
+                    }
+                }
+                room.feesType = feesType;
+            }
+
             rooms.push(room);
         }
         const hotelDetails = new HotelDetails();
@@ -470,6 +520,15 @@ export class Monaker implements StrategyVacationRental {
         const { property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = verifyAvailabilitydto;
         let monakerCredential = await this.getMonakerCredential();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+
+        if (adult_count > 4) {
+            throw new NotAcceptableException(`please select 4 or below adult count`);
+        } else if (number_and_children_ages.length != 0) {
+            if (number_and_children_ages.length > 4) {
+                throw new NotAcceptableException(`please select 4 or below children count`);
+            }
+        }
+
         let childrensAges = ``;
         let queryParams = ``;
 
@@ -524,15 +583,9 @@ export class Monaker implements StrategyVacationRental {
             "number_and_children_ages": number_and_children_ages
         };
 
-        // console.log("0000000000000000000",dto);
-
         let propertyResult = await this.unitTypeListAvailability(dto, user);
 
-        // console.log("-------------",propertyResult);
-
         const response = verifyResult.data;
-
-        // console.log("REPONSe", response);
 
         if (!response["available"]) {
             throw new NotAcceptableException(`Not available vacation rental home`)
@@ -596,6 +649,7 @@ export class Monaker implements StrategyVacationRental {
         verifyAvailability.feesType = feesType;
         let roomDetails = propertyResult.rooms.find((data) => data.rate_plan_code == rate_plan_code);
         verifyAvailability.cancellation_policy = roomDetails.cancellation_policy;
+        verifyAvailability.room_name = roomDetails.name;
         verifyAvailability.city = propertyResult["city"];
         verifyAvailability.country = propertyResult["country"];
         verifyAvailability.adult = adult_count;

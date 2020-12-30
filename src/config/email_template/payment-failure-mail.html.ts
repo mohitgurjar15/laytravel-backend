@@ -4,7 +4,7 @@ import { BaseUrl } from "../base-url";
 
 export function PaymentFailureMail(param:{ username:string })
 {
-const content = `<!-- header Text section start -->
+var content = `<!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
     <tr>
         <td align="center" valign="top">
@@ -37,14 +37,14 @@ const content = `<!-- header Text section start -->
                                                             <li style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-bottom:5px;">Expired credit card</li>
                                                         </ul>
                                                     </td>
-                                                </tr>
-                                                <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding:25px; text-align: center; background: #fc7e66;">
-                                                        <a href="javascrip:void(0);" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Update Payment Information</a>
-                                                    </td>
-                                                </tr>
+                                                </tr>`
+                                                // <tr>
+                                                //     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding:25px; text-align: center; background: #fc7e66;">
+                                                //         <a href="javascrip:void(0);" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Update Payment Information</a>
+                                                //     </td>
+                                                // </tr>
                                                 
-                                                <tr>
+                                                content += `<tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">No booking is made, until we can successfully bill your credit card. If you have any questions, please contact us at @@ with the “Payment Failure” subject line.</td>
                                                 </tr>
                                                 <tr>

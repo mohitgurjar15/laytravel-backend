@@ -686,17 +686,19 @@ export class VacationRentalService {
 			var param = new HomeRentalBookingParameterModel();
 			const user = bookingData.user;
 			const moduleInfo = bookingData.moduleInfo
-			// const routes = moduleInfo.routes;
 			const travelers = bookingData.travelers
 			let hotelInfo = new hotelData();
 			var status = bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
 
-			hotelInfo.property_name = moduleInfo["property_name"]
-			hotelInfo.city = moduleInfo["city"];
-			hotelInfo.country = moduleInfo["country"]
+			hotelInfo.property_name = moduleInfo[0]["property_name"]
+			// hotelInfo.room_name = moduleInfo[0][""];
+			hotelInfo.city = moduleInfo[0]["city"];
+			hotelInfo.country = moduleInfo[0]["country"]
 			hotelInfo.check_in_date = check_in_date;
 			hotelInfo.check_out_date = check_out_date;
-			hotelInfo.cancellation_policy = moduleInfo["cancellationPolicy"]
+			hotelInfo.cancellation_policy = moduleInfo[0]["cancellation_policy"]
+			
+			console.log("cancellation policy-------------->",hotelInfo.cancellation_policy)
 
 			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
@@ -742,7 +744,8 @@ export class VacationRentalService {
 
 			}
 
-			param.user_name = `${user.firstName}  ${user.firstName}`;
+			param.user_name = `${user.firstName}  ${user.lastName}`;
+			param.booking_status = status;
 			param.hotelData = hotelInfo;
 			param.orderId = bookingData.id;
 			param.paymentDetail = installmentDetail;
@@ -789,40 +792,88 @@ export class VacationRentalService {
 	}
 
 	async fullcalenderRate(searchHomeRental: HomeRentalCalendarDto, header, user) {
-		const { id, type, adult_count, number_and_children_ages, start_date, end_date } = searchHomeRental;
+		const { id, type, adult_count, number_and_children_ages, start_date, end_date, check_in_date } = searchHomeRental;
 
 		const monaker = new MonakerStrategy(new Monaker(header));
 
 		const startDate = new Date(start_date);
+		console.log("Start date===>", startDate);
 		const endDate = new Date(end_date);
+		const checkIndate = new Date(check_in_date);
 
 		const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
 
-		// console.log("Diffrence--->", dayDiffrence)
+		console.log("Diffrence--->", dayDiffrence);
+		var getMonth = new Date(check_in_date).getMonth();
+		var is_leap_year = await this.checkLeapYear(checkIndate.getFullYear());
+
+		console.log("leap year---->", is_leap_year);
 		var result = [];
 
 		var resultIndex = 0;
-
+		var flag = 1;
 		for (let index = 0; index <= dayDiffrence; index++) {
 
-			startDate.setDate(startDate.getDate() + 1);
-			var checkOutDate = startDate.toISOString().split('T')[0];
-			checkOutDate = checkOutDate
+			if (start_date != check_in_date) {
+				if (flag == 1) {
+					startDate.setDate(startDate.getDate());
+				} else {
+					startDate.setDate(startDate.getDate() + 1);
+				}
+
+			} else {
+				startDate.setDate(startDate.getDate() + 1);
+			}
+
+			var check_out_date = startDate.toISOString().split('T')[0];
+			check_out_date = check_out_date
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-
+			console.log("checkout date--->", check_out_date);
 			let dto = {
 				"id": id,
 				"type": type,
-				"check_in_date": start_date,
-				"check_out_date": checkOutDate,
+				"check_in_date": check_in_date,
+				"check_out_date": check_out_date,
 				"number_and_children_ages": number_and_children_ages,
 				"adult_count": adult_count,
 			}
 
-			result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+			var diff = await this.getDifferenceInDays(checkIndate, new Date(check_out_date));
+
+			console.log("difference===>", diff);
+
+
+			// setTimeout(() => { console.log("wait 2s") }, 2000);
+
+			if ((getMonth % 2) != 0) {
+				if (getMonth == 1) {
+					if (is_leap_year) {
+						if (diff <= 28) {
+							result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+							// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+						}
+					} else {
+						if (diff <= 27) {
+							result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+							// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+						}
+					}
+				}
+				else if (diff <= 29) {
+					result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+					// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+				}
+			}
+			else {
+				if (diff <= 30) {
+					// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+					result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+				}
+			}
 
 			resultIndex++;
+			flag = 0;
 		}
 
 		const response = await Promise.all(result);
@@ -833,7 +884,8 @@ export class VacationRentalService {
 				var lowestprice = 0;
 				var netRate = 0;
 				var key = 0;
-				var date = '';
+				var checkin_date = '';
+				var checkout_date = '';
 				var startPrice = 0;
 				var secondaryStartPrice = 0;
 				for await (const hoteltInfo of data.items) {
@@ -841,21 +893,24 @@ export class VacationRentalService {
 					if (key == 0) {
 						netRate = hoteltInfo.net_price;
 						lowestprice = hoteltInfo.selling_price
-						date = hoteltInfo.date
+						checkin_date = hoteltInfo.check_in_date
+						checkout_date = hoteltInfo.check_out_date
 						startPrice = hoteltInfo.start_price || 0
 						secondaryStartPrice = hoteltInfo.secondary_start_price || 0
 					}
 					else if (lowestprice > hoteltInfo.selling_price) {
 						netRate = hoteltInfo.net_price;
 						lowestprice = hoteltInfo.selling_price
-						date = hoteltInfo.date
+						checkin_date = hoteltInfo.check_in_date
+						checkout_date = hoteltInfo.check_out_date
 						startPrice = hoteltInfo.start_price || 0
 						secondaryStartPrice = hoteltInfo.secondary_start_price || 0
 					}
 					key++;
 				}
 				var output = {
-					date: date,
+					check_in_date: checkin_date,
+					check_out_date: checkout_date,
 					net_rate: netRate,
 					price: lowestprice,
 					start_price: startPrice,
@@ -872,6 +927,26 @@ export class VacationRentalService {
 	async getDifferenceInDays(date1, date2) {
 		const diffInMs = Math.abs(date2 - date1);
 		return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+	}
+
+	async checkLeapYear(year) {
+		var result;
+		if (year % 4 == 0) {
+			if (year % 100 == 0) {
+				if (year % 400 == 0) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				return true;
+			}
+		}
+		else {
+			return false;
+		}
 	}
 
 	async deleteBooking(bookingId: string, userId) {
