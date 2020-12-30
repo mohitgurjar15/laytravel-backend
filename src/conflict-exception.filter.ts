@@ -1,18 +1,21 @@
 import { ExceptionFilter, Catch, ArgumentsHost, ConflictException } from "@nestjs/common";
 import {  Response } from "express";
+import { Translation } from "./utility/translation.utility";
 
 @Catch(ConflictException)
 export class ConflictExcepionFilter implements ExceptionFilter {
 	catch(exception: ConflictException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
+		const request = ctx.getRequest();
+        var lang = request.headers['language']
 		const status = exception.getStatus();
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 		response
 			.status(status)
 			// you can manipulate the response here
 			.json({
-				message: errors[0].display_error,
+				message: Translation.Translater(lang || 'en', 'error', errors[0].display_error),
 				developer_errors: errors,
 			});
 	}

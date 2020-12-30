@@ -1,19 +1,21 @@
 import { Catch, UnauthorizedException, ExceptionFilter, ArgumentsHost } from "@nestjs/common";
 import {  Response } from "express";
+import { Translation } from "./utility/translation.utility";
 
 @Catch(UnauthorizedException)
 export class UnauthorizedExceptionFilter implements ExceptionFilter {
 	catch(exception: UnauthorizedException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
-
+		const request = ctx.getRequest();
+        var lang = request.headers['language']
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 
 		response
 			.status(401)
 			// you can manipulate the response here
 			.json({
-				message: errors[0].display_error,
+				message: Translation.Translater(lang || 'en', 'error', errors[0].display_error),
 				developer_errors: errors,
 			});
 	}

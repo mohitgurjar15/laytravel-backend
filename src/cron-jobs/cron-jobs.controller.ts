@@ -1,6 +1,6 @@
 import { Controller , Get, HttpCode, Query, Req } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { getBookingDailyPriceDto } from './dto/get-daily-booking-price.dto';
 
 

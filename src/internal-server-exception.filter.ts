@@ -1,11 +1,15 @@
 import { InternalServerErrorException, Catch, ExceptionFilter, ArgumentsHost } from "@nestjs/common";
 import { Response } from "express";
+import { Translation } from "./utility/translation.utility";
 
 @Catch(InternalServerErrorException)
 export class InternalServerErrorExceptionFilter implements ExceptionFilter {
 	catch(exception: InternalServerErrorException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
+		const request = ctx.getRequest();
+        var lang = request.headers['language']
+		
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 
 		response
@@ -13,7 +17,7 @@ export class InternalServerErrorExceptionFilter implements ExceptionFilter {
 			// you can manipulate the response here
 			.json({
 				statusCode: 500,
-				message: errors[0].display_error,
+				message: Translation.Translater(lang || 'en', 'error', errors[0].display_error),
 				developer_errors: errors,
 			});
 	}

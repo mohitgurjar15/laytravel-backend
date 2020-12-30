@@ -52,7 +52,8 @@ async function bootstrap() {
 		.setTitle("Lay Trip")
 		.setDescription("")
 		.setVersion("1.0")
-		.build();
+		.build()
+
 	const document = SwaggerModule.createDocument(app, options);
 	
 	Sentry.init({
@@ -72,7 +73,8 @@ async function bootstrap() {
 		sortPropsAlphabetically: true,
 		hideDownloadButton: false,
 		hideHostname: false,
-		hideLoading: false
+		hideLoading: false,
+
 	};
 	
 	// Instead of using SwaggerModule.setup() you call this module

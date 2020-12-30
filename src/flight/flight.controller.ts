@@ -21,6 +21,7 @@ import { User } from 'src/entity/user.entity';
 @ApiTags('Flight')
 @Controller('flight')
 @ApiBearerAuth()
+
 export class FlightController {
 
     constructor(

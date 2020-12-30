@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, BadRequestException } from "@nestjs/common";
 import {  Response } from "express";
+import { Translation } from "./utility/translation.utility";
 
 @Catch(BadRequestException)
 export class BadRequestExceptionFilter implements ExceptionFilter {
@@ -7,12 +8,14 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
 		const errors = this.filterResponse(exception.getResponse()["message"]);
-
+		const request = ctx.getRequest();
+        var lang = request.headers['language']
+		
 		response
 			.status(422)
 			// you can manipulate the response here
 			.json({
-				message: errors[0].display_error,
+				message: Translation.Translater(lang || 'en', 'error', errors[0].display_error),
 				developer_errors: errors,
 			});
 	}

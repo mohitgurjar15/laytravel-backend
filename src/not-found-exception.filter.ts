@@ -1,17 +1,20 @@
 import { NotFoundException, Catch, ExceptionFilter, ArgumentsHost } from "@nestjs/common";
 import {  Response } from "express";
+import { Translation } from "./utility/translation.utility";
 
 @Catch(NotFoundException)
 export class NotFoundExceptionFilter implements ExceptionFilter {
 	catch(exception: NotFoundException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
+		const request = ctx.getRequest();
+        var lang = request.headers['language']
 		const response = ctx.getResponse<Response>();
 		const errors = this.filterResponse(exception.getResponse()["message"]);
 		response
 			.status(404)
 			// you can manipulate the response here
 			.json({
-				message: errors[0].display_error,
+				message: Translation.Translater(lang || 'en', 'error', errors[0].display_error),
 				developer_errors: errors,
 			});
 	}
