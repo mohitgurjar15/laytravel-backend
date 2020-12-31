@@ -69,6 +69,7 @@ import { RewordMode } from "src/enum/reword-mode.enum";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { Cache } from 'cache-manager';
+import { max } from "class-validator";
 
 
 
@@ -683,6 +684,26 @@ export class FlightService {
 				// console.log(flightData.unique_code);
 				// console.log(flightData.net_rate);
 				// console.log(flightData.departure_date);
+			}
+		}
+
+		if(returnResponce.length>0){
+			let minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
+			let maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+			let  diff = (maxPrice-minPrice)/3;
+			let priceRange=[minPrice];
+			priceRange.push(minPrice+diff);
+			priceRange.push(minPrice+diff+diff);
+			priceRange.push(maxPrice);
+
+			for(let i in returnResponce){
+
+				if(returnResponce[i].price >= priceRange[0] && returnResponce[i].price <= priceRange[1])
+					returnResponce[i].flag='low';
+				if(returnResponce[i].price > priceRange[1] && returnResponce[i].price <= priceRange[2])
+					returnResponce[i].flag='medium';
+				if(returnResponce[i].price > priceRange[2] && returnResponce[i].price <= priceRange[3])
+					returnResponce[i].flag='high';
 			}
 		}
 		return returnResponce;
