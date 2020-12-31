@@ -37,6 +37,7 @@ import { ModulesName } from "src/enum/module.enum";
 import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Translation } from "src/utility/translation.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
+import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
 const AWS = require('aws-sdk');
 var fs = require('fs');
 
@@ -270,7 +271,8 @@ export class CronJobsService {
 								.execute();
 							instalment.paymentStatus = PaymentStatus.FAILED
 							await instalment.save()
-							await this.sendFlightFailerMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card')
+							await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card',`${param.currency}${param.amount}`)
+
 							PushNotification.sendNotificationTouser(instalment.user.userId,
 								{  //you can send only notification or only data(or include both)
 									module_name: 'booking',
@@ -367,7 +369,10 @@ export class CronJobsService {
 							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							installmentId: instalment.id,
 							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
-							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount))
+							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount)),
+							currencySymbol:instalment.currency.symbol,
+							currency:instalment.currency.code,
+							pendingInstallment:await this.pandingInstalment(instalment.bookingId)
 						}
 
 						this.mailerService
@@ -633,6 +638,26 @@ export class CronJobsService {
 			});
 	}
 
+	async sendFlightIncompleteMail(email, bookingId, error = null,amount) {
+		this.mailerService
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: "Booking Failure Mail",
+				html: IncompleteBookingMail({
+					error: error,
+					amount:amount
+				}, bookingId),
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
+	}
+
 	async addRecurringLaytripPoint() {
 		try {
 			var toDate = new Date();
@@ -823,7 +848,8 @@ export class CronJobsService {
 			const param = {
 				userName: installment.user.firstName,
 				amount: installment.currency.symbol + `${Generic.formatPriceDecimal(parseFloat(installment.amount))}`,
-				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY')
+				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+				bookingId:installment.booking.laytripBookingId
 			}
 			this.mailerService
 				.sendMail({
@@ -1148,5 +1174,13 @@ export class CronJobsService {
 			}
 
 		}
+	}
+
+	async pandingInstalment(bookingId){
+		let query = await getManager()
+					.createQueryBuilder(BookingInstalments, "instalment")
+					.where(`"instalment"."booking_id" = '${bookingId}' AND "instalment"."payment_status" = '${PaymentStatus.PENDING}'`)
+					.getCount();
+		return query
 	}
 }

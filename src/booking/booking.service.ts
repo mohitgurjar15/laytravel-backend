@@ -615,7 +615,7 @@ export class BookingService {
 				predictiveBookingData['date'] = data.date
 				predictiveBookingData['is_below_minimum'] = data.isBelowMinimum
 				predictiveBookingData['remain_seat'] = data.remainSeat
-				predictiveBookingData['selling_price'] = data.price;
+				predictiveBookingData['selling_price'] = bookingData.totalAmount;
 				predictiveBookingData['paid_amount'] = paidAmount.amount;
 				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
@@ -700,7 +700,7 @@ export class BookingService {
 					predictiveBookingData['is_below_minimum'] = false
 					predictiveBookingData['remain_seat'] = 0
 					predictiveBookingData['module_name'] = booking.module.name;
-					predictiveBookingData['selling_price'] = 0
+					predictiveBookingData['selling_price'] = booking.totalAmount
 					predictiveBookingData['paid_amount'] = paidAmount.amount;
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
 					predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(booking.totalAmount)
