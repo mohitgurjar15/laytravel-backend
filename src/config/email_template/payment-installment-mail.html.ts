@@ -11,7 +11,10 @@ export function PaymentInstallmentMail(param:{
     amount: number,
     installmentId : number,
     complitedAmount : number,
-    totalAmount: number
+    totalAmount: number,
+    pendingInstallment:number,
+    currencySymbol:string,
+    currency:string
 })
 {
 const content = `<!-- header Text section start -->
@@ -39,7 +42,7 @@ const content = `<!-- header Text section start -->
 
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                                                        We have received your payment of ${param.amount} With each and every installment made - you are closer to your dream trip! 
+                                                        We have received your payment of ${param.currencySymbol}${param.amount} . You are only ${param.pendingInstallment} installments away from paying for your trip! 
                                                     </td>
                                                 </tr>
 
@@ -118,8 +121,8 @@ const content = `<!-- header Text section start -->
                                                         <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight: 600; padding-top: 3px;">Laytrip Installment Amount</td>
-                                                                    <td align="right" valign="top" style="width:100px;font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:600; padding-top: 3px;">${param.amount}</td>
+                                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight: 600; padding-top: 3px;">${param.currencySymbol}${param.amount} Installment Payment for Booking Number ${param.orderId}</td>
+                                                                    <td align="right" valign="top" style="width:100px;font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:600; padding-top: 3px;"></td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -131,14 +134,14 @@ const content = `<!-- header Text section start -->
                                                         <table align="right" border="0" cellspacing="0" cellpadding="0" style="">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 10px; ">Installment amount: ${param.amount}</td>
+                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 10px; ">Total Booking Price: ${param.currencySymbol}${param.totalAmount}</td>
                                                                     
                                                                 </tr>
                                                                 <tr>
-                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Completed amount: ${param.complitedAmount}</td>
+                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Total Paid to Date: ${param.currencySymbol}${param.complitedAmount}</td>
                                                                 </tr>
                                                                 <tr>
-                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Total price: ${param.totalAmount}</td>
+                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Balance Left to Pay: ${param.currencySymbol}${param.totalAmount - param.complitedAmount}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
