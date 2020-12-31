@@ -35,6 +35,13 @@ export class BookDto extends InternalDto{
     })
     @IsString()
     room_id: string;
+    
+    @ApiProperty({
+        description: 'Hotel ID for which details are required',
+        required:true
+    })
+    @IsString()
+    hotel_id: string;
 
     @IsEnum([PaymentType.INSTALMENT,PaymentType.NOINSTALMENT,PaymentType.FULLPOINTS,PaymentType.PARTIALPOINTS],{
         message : (args: ValidationArguments) => {

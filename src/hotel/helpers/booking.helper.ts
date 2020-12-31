@@ -1,4 +1,4 @@
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, Inject } from "@nestjs/common";
 import { errorMessage } from "src/config/common.config";
 import { Booking } from "src/entity/booking.entity";
 import { Currency } from "src/entity/currency.entity";
@@ -14,9 +14,20 @@ import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { collect } from "collect.js";
 import { Role } from "src/enum/role.enum";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
+import { HotelBookingParam } from "src/config/email_template/model/hotel-booking-param.model";
+import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
+import { MailerService } from "@nestjs-modules/mailer";
+import * as config from "config";
+const mailConfig = config.get("email");
 
 export class BookingHelper{
     
+    constructor(
+        @Inject(MailerService)
+        private readonly mailerService: MailerService
+    ) {
+        
+    }
     async saveBooking(bookDto, bookingData) {
 
         let moduleDetails : any = await this.getModule('hotel');
@@ -132,5 +143,22 @@ export class BookingHelper{
         
         await traRepository.save(guestDetails);
 
+    }
+
+    async sendEmail(booking_details) {
+        this.mailerService
+            .sendMail({
+                to: booking_details.user.email,
+                from: mailConfig.from,
+				cc: mailConfig.BCC,
+				subject: 'Hotel Booking Confirmation',
+                html: await HotelBookingConfirmationMail(new HotelBookingParam(booking_details)),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
     }
 }

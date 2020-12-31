@@ -8,6 +8,8 @@ import { HotelController } from './hotel.controller';
 import { HotelService } from './hotel.service';
 import * as redisStore from 'cache-manager-redis-store';
 import { BookingHelper } from './helpers/booking.helper';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BookingRepository } from 'src/booking/booking.repository';
 
 @Module({
   controllers: [HotelController],
@@ -21,11 +23,15 @@ import { BookingHelper } from './helpers/booking.helper';
   ],
   imports: [
     AuthModule,
-    CacheModule.register({
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
-    })
+    TypeOrmModule.forFeature([
+      BookingRepository
+    ]),
+    CacheModule.register()
+    // CacheModule.register({
+    //   store: redisStore,
+    //   host: 'localhost',
+    //   port: 6379,
+    // })
   ]
 })
 export class HotelModule {}

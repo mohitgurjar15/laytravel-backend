@@ -25,6 +25,11 @@ import { BookingType } from 'src/enum/booking-type.enum';
 import { DateTime } from 'src/utility/datetime.utility';
 import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { BookingStatus } from 'src/enum/booking-status.enum';
+import { BookingRepository } from 'src/booking/booking.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
+import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
+import { HotelBookingParam } from 'src/config/email_template/model/hotel-booking-param.model';
 
 @Injectable()
 export class HotelService{
@@ -40,6 +45,10 @@ export class HotelService{
         private user: UserHelper,
         private booking: BookingHelper,
         private paymentService: PaymentService,
+        
+        @InjectRepository(BookingRepository)
+        private bookingRepository: BookingRepository,
+        
     ) {
         this.hotel = new Hotel(new Priceline());
     }
@@ -226,10 +235,16 @@ export class HotelService{
             throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
         }
         
-        let availability :any = collect(cached.availability).where('room_id', bookDto.room_id).first();
+        let availability: any = collect(cached.availability).where('room_id', bookDto.room_id).first();
         
         if (!availability) {
             throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+        }
+        
+        let hotel: any = collect(cached.hotels).where('id', bookDto.hotel_id).first();
+        
+        if (!hotel) {
+            throw new InternalServerErrorException("No record found for Hotel ID: "+bookDto.hotel_id);
         }
 
         let details = cached.details;
@@ -249,7 +264,7 @@ export class HotelService{
             totalAmount: sellingPrice.toString(),
             netRate: sellingPrice.toString(),
             markupAmount: (sellingPrice - sellingPrice).toString(),
-            moduleInfo: availability,
+            moduleInfo: { details, hotel, room: availability },
             checkInDate: DateTime.convertFormat(details.check_in),
             checkOutDate: DateTime.convertFormat(details.check_out),
             cardToken: bookDto.card_token,
@@ -263,7 +278,7 @@ export class HotelService{
             supplierBookingId: '',
             supplierStatus: 0,
             paymentStatus: PaymentStatus.PENDING,
-            bookingStatus: BookingStatus.CONFIRM,
+            bookingStatus: BookingStatus.PENDING,
         };
 
         if (bookDto.payment_type == PaymentType.INSTALMENT) {
@@ -325,12 +340,12 @@ export class HotelService{
 
                 if (book.status == 'success') {
                     bookingData.supplierStatus = 1;
-                    bookingData.supplierBookingId = book.supplier_book_id;
+                    bookingData.supplierBookingId = book.details.booking_id;
                     bookingData.bookingStatus = BookingStatus.CONFIRM;
                     bookingData.paymentStatus = PaymentStatus.CONFIRM;
                 }
-
-                return book;
+                // return bookingData;
+                // return book;
             }
             
             if (capturePayment) {
@@ -343,22 +358,38 @@ export class HotelService{
                     
                     let saveBookingResult = await this.booking.saveBooking(bookDto, bookingData);
 
-                    if (instalmentDetails) {                        
-                        
-                        let saveInstalmentResult = await this.booking.saveInstalment(instalmentDetails, saveBookingResult, bookDto.instalment_type, captureCardresult.token);
-                        
+                    if (instalmentDetails) {
+                        await this.booking.saveInstalment(instalmentDetails, saveBookingResult, bookDto.instalment_type, captureCardresult.token);
                     }
                     
                     if (bookDto.laycredit_points) { 
                         await this.booking.saveLaytripCredits(saveBookingResult);
                     }
                     
+                    let booking_details = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
+                    
+                    if (!booking_details) {
+                        throw new HttpException({
+                                status: 424,
+                                message: 'bookingResult.error_message',
+                        }, 424);
+                    }
+                    
+                    this.booking.sendEmail(booking_details);
+                    
+                    delete booking_details.card;
+
                     let response = {
-                        data: {},
-                        message: 'Booking confirmed'
+                        success_message: 'Booking is confirmed',
+                        laytrip_booking_id: saveBookingResult.laytripBookingId,
+                        supplier_booking_id: saveBookingResult.supplierBookingId,
+                        booking_status: bookingData.bookingStatus,
+                        booking_details,
+                        error_message: ""
                     };
 
                     return response;
+                    
                 } else {
                     throw new BadRequestException(
                         'Card capture is failed&&&card_token&&&'+errorMessage

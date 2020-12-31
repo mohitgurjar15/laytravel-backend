@@ -173,6 +173,10 @@ export class User extends BaseEntity {
   @Column("date", { name: "passport_expiry", nullable: true })
   passportExpiry: string | null;
 
+  get full_name() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+  
   @OneToMany(
     () => ActivityLog,
     activityLog => activityLog.user

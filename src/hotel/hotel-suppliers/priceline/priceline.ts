@@ -122,7 +122,7 @@ export class Priceline implements HotelInterface{
         
         let parameters = Generic.httpBuildQuery(bookDto);
         
-        let res = await this.httpsService.post(url, parameters).pipe(map(res => new Book().processBookResult(res, bookDto))).toPromise();
+        let res = await this.httpsService.post(url, parameters).pipe(map(res => new Book().processBookResult(res))).toPromise();
 
         return res;
 
