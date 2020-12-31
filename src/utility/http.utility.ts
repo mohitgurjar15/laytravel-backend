@@ -82,34 +82,38 @@ export class HttpRequest {
 
     }
 
-    static async monakerRequest(url,method, requestBody, apiKey) {
+    static async monakerRequest(url, method, requestBody, apiKey) {
+
+        // console.log("requestBody==============>", url);
         
-        // console.log("requestBody==============>",url);
+        let result;
         try {
-            let result = await Axios({
+            result = await Axios({
                 method: method,
                 url: url,
                 data: requestBody,
                 headers: {
-                    'Ocp-Apim-Subscription-Key':apiKey,
+                    'Ocp-Apim-Subscription-Key': apiKey,
                     'Accept-Encoding': 'gzip',
                 }
             })
-            
+
             return result;
         }
         catch (e) {
-            let error = e.response.data
-            
-            console.log("===================>>>>>>>>>>>>>", e);
-            
-            if(error.hasOwnProperty("CheckInDate")){
-                throw new NotAcceptableException(`${error["CheckInDate"][0]}`)
-            }else if(error.hasOwnProperty("CheckOutDate")){
-                throw new NotAcceptableException(`${error["CheckOutDate"][0]}`)
-            }else if(error["statusCode"] == 429){
-                throw new NotAcceptableException(`${error["message"]}`)
-            }else{
+            result = e.response.data
+
+
+            if (result == "The booking request failed. Wrong quote handle.") {
+                return false;
+            }
+            else if (result.hasOwnProperty("CheckInDate")) {
+                throw new NotAcceptableException(`${result["CheckInDate"][0]}`)
+            } else if (result.hasOwnProperty("CheckOutDate")) {
+                throw new NotAcceptableException(`${result["CheckOutDate"][0]}`)
+            } else if (result["statusCode"] == 429) {
+                throw new NotAcceptableException(`${result["message"]}`)
+            } else {
                 throw new RequestTimeoutException(`Connection time out`)
             }
         }

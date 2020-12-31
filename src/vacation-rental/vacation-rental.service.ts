@@ -48,10 +48,10 @@ import { HomeRentalCalendarDto } from './dto/home-rental-calendar.dto';
 import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
-import { resolve } from 'path';
 import { PushNotification } from 'src/utility/push-notification.utility';
 import { vacationCategoty } from './vacation-rental.const';
 import { BookingDetailsUpdateMail } from 'src/config/email_template/booking-details-updates.html';
+import { SearchFullTextDto } from './dto/search-full-text.dto';
 
 const mailConfig = config.get("email");
 
@@ -135,17 +135,24 @@ export class VacationRentalService {
 
 	}
 
-	async availabilityHotel(
-		availability: AvailabilityVacationDto,
-		user,
-		headers
-	) {
+	async getSearchFullText(searchFullTextDto: SearchFullTextDto, user, headers) {
 		await this.validateHeaders(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
-		const result = new Promise((resolve) => resolve(monaker.checkAllavaiability(availability, user, false)));
+		const result = new Promise((resolve) => resolve(monaker.searchFullText(searchFullTextDto, user, false)));
 		return result;
-
 	}
+
+	// async availabilityHotel(
+	// 	availability: AvailabilityVacationDto,
+	// 	user,
+	// 	headers
+	// ) {
+	// 	await this.validateHeaders(headers);
+	// 	const monaker = new MonakerStrategy(new Monaker(headers));
+	// 	const result = new Promise((resolve) => resolve(monaker.checkAllavaiability(availability, user, false)));
+	// 	return result;
+
+	// }
 
 	async unitTypeListAvailability(availabilityDetailsDto: AvailabilityVacationDetailsDto, headers, user) {
 		await this.validateHeaders(headers);
@@ -159,7 +166,7 @@ export class VacationRentalService {
 	async verifyUnitAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, headers, user) {
 		await this.validateHeaders(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
-		const result = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(verifyAvailabilitydto, user)));
+		const result = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(verifyAvailabilitydto, user, false)));
 
 		return result;
 
@@ -178,6 +185,7 @@ export class VacationRentalService {
 			check_out_date,
 			adult_count,
 			number_and_children_ages = [],
+			original_price,
 			additional_amount,
 			booking_through,
 			card_token,
@@ -196,6 +204,7 @@ export class VacationRentalService {
 		let verifyDto = {
 			"property_id": property_id,
 			"room_id": room_id,
+			"original_price":original_price,
 			"rate_plan_code": rate_plan_code,
 			"check_in_date": check_in_date,
 			"check_out_date": check_out_date,
@@ -203,7 +212,7 @@ export class VacationRentalService {
 			"number_and_children_ages": number_and_children_ages
 		};
 
-		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(verifyDto, user);
+		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(verifyDto, user, true);
 
 		let bookingRequestInfo: any = {};
 
@@ -697,8 +706,8 @@ export class VacationRentalService {
 			hotelInfo.check_in_date = check_in_date;
 			hotelInfo.check_out_date = check_out_date;
 			hotelInfo.cancellation_policy = moduleInfo[0]["cancellation_policy"]
-			
-			console.log("cancellation policy-------------->",hotelInfo.cancellation_policy)
+
+			console.log("cancellation policy-------------->", hotelInfo.cancellation_policy)
 
 			var paymentDetail = bookingData.bookingInstalments;
 			var installmentDetail = [];
@@ -792,7 +801,7 @@ export class VacationRentalService {
 	}
 
 	async fullcalenderRate(searchHomeRental: HomeRentalCalendarDto, header, user) {
-		const { id, type, adult_count, number_and_children_ages, start_date, end_date, check_in_date } = searchHomeRental;
+		const { name, type, adult_count, number_and_children_ages, start_date, end_date, check_in_date } = searchHomeRental;
 
 		const monaker = new MonakerStrategy(new Monaker(header));
 
@@ -807,7 +816,7 @@ export class VacationRentalService {
 		var getMonth = new Date(check_in_date).getMonth();
 		var is_leap_year = await this.checkLeapYear(checkIndate.getFullYear());
 
-		console.log("leap year---->", is_leap_year);
+		// console.log("leap year---->", is_leap_year);
 		var result = [];
 
 		var resultIndex = 0;
@@ -831,7 +840,7 @@ export class VacationRentalService {
 				.replace(/\..+/, "");
 			console.log("checkout date--->", check_out_date);
 			let dto = {
-				"id": id,
+				"name": name,
 				"type": type,
 				"check_in_date": check_in_date,
 				"check_out_date": check_out_date,
@@ -850,25 +859,25 @@ export class VacationRentalService {
 				if (getMonth == 1) {
 					if (is_leap_year) {
 						if (diff <= 28) {
-							result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+							result[resultIndex] = await monaker.searchFullText(dto, user, true);
 							// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
 						}
 					} else {
 						if (diff <= 27) {
-							result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+							result[resultIndex] = await monaker.searchFullText(dto, user, true);
 							// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
 						}
 					}
 				}
 				else if (diff <= 29) {
-					result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+					result[resultIndex] = await monaker.searchFullText(dto, user, true);
 					// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
 				}
 			}
 			else {
 				if (diff <= 30) {
 					// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
-					result[resultIndex] = await monaker.checkAllavaiability(dto, user, true);
+					result[resultIndex] = await monaker.searchFullText(dto, user, true);
 				}
 			}
 
@@ -1248,6 +1257,7 @@ export class VacationRentalService {
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
 				"adult_count": bookingData.moduleInfo[0]["adult"],
+				"original_price": bookingData.moduleInfo[0]["net_price"],
 				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"],
 				"travelers": travelers,
 				"payment_type": bookingData.bookingType,
@@ -1283,6 +1293,7 @@ export class VacationRentalService {
 			check_out_date,
 			adult_count,
 			number_and_children_ages,
+			original_price,
 			travelers,
 			payment_type,
 			instalment_type,
@@ -1293,7 +1304,7 @@ export class VacationRentalService {
 		// console.log(bookingDto)
 
 		const monaker = new MonakerStrategy(new Monaker(header));
-		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(bookingDto, user);
+		const verifyAvailabilityResult = await monaker.verifyUnitTypeAvailability(bookingDto, user, true);
 
 		// console.log("Verify result",verifyAvailabilityResult);
 

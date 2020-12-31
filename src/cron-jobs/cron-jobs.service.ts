@@ -37,6 +37,8 @@ import { ModulesName } from "src/enum/module.enum";
 import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Translation } from "src/utility/translation.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
+import { MonakerStrategy } from "src/vacation-rental/strategy/strategy";
+import { Monaker } from "src/vacation-rental/strategy/monaker";
 const AWS = require('aws-sdk');
 var fs = require('fs');
 
@@ -1104,11 +1106,14 @@ export class CronJobsService {
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
 				"adult_count": bookingData.moduleInfo[0]["adult"],
-				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"]
+				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"],
+				"original_price": bookingData.moduleInfo[0]["net_price"]
 			}
 
+			const monaker = new MonakerStrategy(new Monaker(Headers));
+			vacationData = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
 
-			vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
+			// vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
 			// console.log(vacationData);
 
 
