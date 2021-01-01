@@ -1,7 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsNotEmpty } from "class-validator";
-import { errorMessage } from "src/config/common.config";
 
 export class VerifyAvailabilityDto {
 

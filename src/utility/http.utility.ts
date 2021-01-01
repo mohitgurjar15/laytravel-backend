@@ -82,10 +82,10 @@ export class HttpRequest {
 
     }
 
-    static async monakerRequest(url, method, requestBody, apiKey) {
+    static async monakerRequest(url, method, requestBody, apiKey, flag = false) {
 
         // console.log("requestBody==============>", url);
-        
+
         let result;
         try {
             result = await Axios({
@@ -106,6 +106,10 @@ export class HttpRequest {
 
             if (result == "The booking request failed. Wrong quote handle.") {
                 return false;
+            } else if (flag == true) {
+                if (result.hasOwnProperty("CheckOutDate")) {
+                    return false;
+                }
             }
             else if (result.hasOwnProperty("CheckInDate")) {
                 throw new NotAcceptableException(`${result["CheckInDate"][0]}`)

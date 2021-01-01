@@ -7,16 +7,18 @@ import { AddInCartDto } from './dto/add-in-cart.dto';
 import * as moment from 'moment';
 import { Cart } from 'src/entity/cart.entity';
 import { getConnection } from 'typeorm';
+import { VacationRentalService } from 'src/vacation-rental/vacation-rental.service';
 
 @Injectable()
 export class CartService {
 
     constructor(
         private flightService: FlightService,
+        private vacationService: VacationRentalService
     ) { }
 
     async addInCart(addInCartDto: AddInCartDto, user: User, Header) {
-        const { module_id, route_code } = addInCartDto
+        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
         switch (module_id) {
             case ModulesName.HOTEL:
                 break;
@@ -24,7 +26,18 @@ export class CartService {
             case ModulesName.FLIGHT:
                 return await this.addFlightDataInCart(route_code, user, Header);
                 break;
-
+            case ModulesName.VACATION_RENTEL:
+                const dto = {
+                    "property_id": property_id,
+                    "room_id": room_id,
+                    "rate_plan_code": rate_plan_code,
+                    "check_in_date": check_in_date,
+                    "check_out_date": check_out_date,
+                    "adult_count": adult_count,
+                    "number_and_children_ages": number_and_children_ages
+                };
+                return await this.addHomeRentalDataInCart(dto, user, Header);
+                break;
             default:
                 break;
         }
@@ -69,6 +82,38 @@ export class CartService {
         }
     }
 
+    async addHomeRentalDataInCart(dto, user, Header) {
+        let homeInfo = await this.vacationService.homeRentalRevalidate(dto, user, Header);
+        // console.log(homeInfo);
+        if (homeInfo) {
+
+            const check_in_date = homeInfo[0].check_in_date;
+            
+            const formatedCheckinDate = check_in_date;
+
+            const diffrence = moment(formatedCheckinDate).diff(moment(new Date()), 'days');
+
+            const dayAfterDay = new Date();
+            dayAfterDay.setDate(dayAfterDay.getDate() + 2);
+
+            const cart = new Cart
+
+            cart.userId = user.userId
+            cart.moduleId = ModulesName.VACATION_RENTEL
+            cart.moduleInfo = homeInfo
+            cart.expiryDate = diffrence > 2 ? new Date(dayAfterDay) : new Date(formatedCheckinDate);
+            cart.isDeleted = false
+            cart.createdDate = new Date();
+
+            await cart.save();
+
+            return {
+                message: `Home Rental added to cart`
+            }
+        }
+
+    }
+
     async listCart(user: User) {
         var tDate = new Date();
 
@@ -91,31 +136,29 @@ export class CartService {
                 "module.name"])
 
             .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') `)
-            .orderBy(`cart.id`,'DESC')
+            .orderBy(`cart.id`, 'DESC')
 
-        const [result , count] = await query.getManyAndCount();
+        const [result, count] = await query.getManyAndCount();
 
-        if(!result.length)
-        {
+        if (!result.length) {
             throw new NotFoundException(`Cart is empty`)
         }
         return {
-            data : result,
-            count:count
+            data: result,
+            count: count
         }
     }
 
-    async deleteFromCart(id:number,user: User) {
-        
+    async deleteFromCart(id: number, user: User) {
+
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
             .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."id" = ${id})`)
-            
 
-        const cartItem =  await query.getOne();
 
-        if(!cartItem)
-        {
+        const cartItem = await query.getOne();
+
+        if (!cartItem) {
             throw new NotFoundException(`Given item not found`)
         }
         cartItem.isDeleted = true;
@@ -123,7 +166,7 @@ export class CartService {
         cartItem.save();
 
         return {
-            message:`Item removed successfully`
+            message: `Item removed successfully`
         }
     }
 }

@@ -11,4 +11,6 @@ export interface StrategyVacationRental{
    booking(parm1,param2,param3,param4);
 
    deleteBooking(param1);
+
+   homeRentalRevalidate(param1,param2);
 }

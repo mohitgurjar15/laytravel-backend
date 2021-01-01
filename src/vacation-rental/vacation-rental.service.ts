@@ -166,10 +166,16 @@ export class VacationRentalService {
 	async verifyUnitAvailability(verifyAvailabilitydto: VerifyAvailabilityDto, headers, user) {
 		await this.validateHeaders(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
-		const result = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(verifyAvailabilitydto, user, false)));
+		const result = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(verifyAvailabilitydto, user, true)));
 
 		return result;
+	}
 
+	async homeRentalRevalidate(dto,user,header){
+		await this.validateHeaders(header);
+		const monaker = new MonakerStrategy(new Monaker(header));
+		let result = await monaker.homeRentalRevalidate(dto,user);
+		return result;
 	}
 
 	cancellationPolicy(data) {
@@ -813,8 +819,6 @@ export class VacationRentalService {
 		const dayDiffrence = await this.getDifferenceInDays(startDate, endDate)
 
 		console.log("Diffrence--->", dayDiffrence);
-		var getMonth = new Date(check_in_date).getMonth();
-		var is_leap_year = await this.checkLeapYear(checkIndate.getFullYear());
 
 		// console.log("leap year---->", is_leap_year);
 		var result = [];
@@ -850,36 +854,36 @@ export class VacationRentalService {
 
 			var diff = await this.getDifferenceInDays(checkIndate, new Date(check_out_date));
 
-			console.log("difference===>", diff);
-
+			// console.log("difference===>", diff);
+			result[resultIndex] = await monaker.searchFullText(dto, user, true);
 
 			// setTimeout(() => { console.log("wait 2s") }, 2000);
 
-			if ((getMonth % 2) != 0) {
-				if (getMonth == 1) {
-					if (is_leap_year) {
-						if (diff <= 28) {
-							result[resultIndex] = await monaker.searchFullText(dto, user, true);
-							// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
-						}
-					} else {
-						if (diff <= 27) {
-							result[resultIndex] = await monaker.searchFullText(dto, user, true);
-							// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
-						}
-					}
-				}
-				else if (diff <= 29) {
-					result[resultIndex] = await monaker.searchFullText(dto, user, true);
-					// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
-				}
-			}
-			else {
-				if (diff <= 30) {
-					// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
-					result[resultIndex] = await monaker.searchFullText(dto, user, true);
-				}
-			}
+			// if ((getMonth % 2) != 0) {
+			// 	if (getMonth == 1) {
+			// 		if (is_leap_year) {
+			// 			if (diff <= 28) {
+			// 				result[resultIndex] = await monaker.searchFullText(dto, user, true);
+			// 				// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+			// 			}
+			// 		} else {
+			// 			if (diff <= 27) {
+			// 				result[resultIndex] = await monaker.searchFullText(dto, user, true);
+			// 				// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+			// 			}
+			// 		}
+			// 	}
+			// 	else if (diff <= 29) {
+			// 		result[resultIndex] = await monaker.searchFullText(dto, user, true);
+			// 		// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+			// 	}
+			// }
+			// else {
+			// 	if (diff <= 30) {
+			// 		// result[resultIndex] = new Promise((resolve) => resolve(monaker.checkAllavaiability(dto, user, true)));
+			// 		result[resultIndex] = await monaker.searchFullText(dto, user, true);
+			// 	}
+			// }
 
 			resultIndex++;
 			flag = 0;
@@ -936,26 +940,6 @@ export class VacationRentalService {
 	async getDifferenceInDays(date1, date2) {
 		const diffInMs = Math.abs(date2 - date1);
 		return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-	}
-
-	async checkLeapYear(year) {
-		var result;
-		if (year % 4 == 0) {
-			if (year % 100 == 0) {
-				if (year % 400 == 0) {
-					return true;
-				}
-				else {
-					return false;
-				}
-			}
-			else {
-				return true;
-			}
-		}
-		else {
-			return false;
-		}
 	}
 
 	async deleteBooking(bookingId: string, userId) {
@@ -1473,4 +1457,6 @@ export class VacationRentalService {
 				console.log("err", err);
 			});
 	}
+
 }
+

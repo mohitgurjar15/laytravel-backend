@@ -39,4 +39,9 @@ export class MonakerStrategy{
         const data = await this.strategyVacationRental.deleteBooking(param1);
         return data;
     }
+
+    async homeRentalRevalidate(param1,param2){
+        const data = await this.strategyVacationRental.homeRentalRevalidate(param1,param2);
+        return data;
+    }
 }
