@@ -1,4 +1,4 @@
-import { Controller, UseGuards,  Body, Get, Param, Put } from '@nestjs/common';
+import { Controller, UseGuards,  Body, Get, Param, Put, Post, HttpCode } from '@nestjs/common';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
 import { AuthGuard } from '@nestjs/passport';
@@ -41,6 +41,21 @@ export class CmsController {
         @Param('page_type') page_type:string
 	):Promise<Cms>{
 	   return await this.cmsService.cmsPageDetails(page_type)
+	}
+	
+	// @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "Create cms page by super admin and admin"})
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	@Post()
+	async createCms(
+		@Body() updateCmsDto: UpdateCmsDto,
+		@GetUser() user:User
+	){
+	    return await this.cmsService.createCmsPage(updateCmsDto,user)
     }
 
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
