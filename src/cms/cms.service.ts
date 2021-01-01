@@ -24,6 +24,13 @@ export class CmsService {
 
         } = updateCmsDto;
 
+        let iscmsPageExist = await this.cmsRepository.findOne({
+            pageType: page_type
+        });
+        
+        if (iscmsPageExist)
+            throw new NotFoundException(`Page type already exist`);
+
         let cmsPage = new Cms();
         cmsPage.pageType = page_type;
         cmsPage.title = title;
