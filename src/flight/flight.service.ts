@@ -69,6 +69,7 @@ import { RewordMode } from "src/enum/reword-mode.enum";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { Cache } from 'cache-manager';
+import { max } from "class-validator";
 
 
 
@@ -683,6 +684,43 @@ export class FlightService {
 				// console.log(flightData.unique_code);
 				// console.log(flightData.net_rate);
 				// console.log(flightData.departure_date);
+			}
+		}
+
+		if(returnResponce.length>0){
+			let minPrice;let maxPrice;
+			
+			if(returnResponce[0].secondary_start_price>0){
+				minPrice= Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
+				maxPrice= Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
+			}
+			else{
+
+				minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
+				maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+			}
+			let  diff = (maxPrice-minPrice)/3;
+			let priceRange=[minPrice];
+			priceRange.push(minPrice+diff);
+			priceRange.push(minPrice+diff+diff);
+			priceRange.push(maxPrice);
+
+			//console.log(minPrice,maxPrice,priceRange)
+			let price;
+			for(let i in returnResponce){
+				if(returnResponce[i].secondary_start_price>0){
+					price = returnResponce[i].secondary_start_price;
+				}
+				else{
+					price = returnResponce[i].price;
+				}
+
+				if(price >= priceRange[0] && price <= priceRange[1])
+					returnResponce[i].flag='low';
+				if(price > priceRange[1] && price <= priceRange[2])
+					returnResponce[i].flag='medium';
+				if(price > priceRange[2] && price <= priceRange[3])
+					returnResponce[i].flag='high';
 			}
 		}
 		return returnResponce;
