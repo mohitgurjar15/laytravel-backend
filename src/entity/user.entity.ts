@@ -29,6 +29,7 @@ import { Currency } from "./currency.entity";
 import { TravelerInfo } from "./traveler-info.entity";
 import { OtherPayments } from "./other-payment.entity";
 import { Notification } from "./notification.entity";
+import { Deal } from "./deal.entity";
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
 @Index("user_preferred_language", ["preferredLanguage"], {})
@@ -350,6 +351,11 @@ export class User extends BaseEntity {
     traveler => traveler.userData
   )
   traveler: TravelerInfo[];
+
+  @OneToMany(
+    () => Deal,
+    deal => deal.updateBy)
+  deal: Deal[];
 
 
 }
