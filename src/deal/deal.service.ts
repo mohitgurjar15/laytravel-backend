@@ -84,7 +84,9 @@ export class DealService {
         deal.updateBy = user
 
         const dealData = await deal.save();
-        return this.getDeal(dealData.id, siteUrl)
+        return {
+            message : `Deal updated successfully`
+        }
     }
 
 
