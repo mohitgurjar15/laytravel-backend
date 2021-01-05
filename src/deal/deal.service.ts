@@ -25,7 +25,7 @@ export class DealService {
             throw new BadRequestException(`given module id not found`)
         }
 
-        var where = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${module_id})`;
+        var where = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${module_id}) AND ("deal"."status" = true)`;
 
         const dealCount = await getConnection()
             .createQueryBuilder(Deal, 'deal')
@@ -107,7 +107,7 @@ export class DealService {
         }
 
         if (status) {
-            var where2 = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${deal.module.id})`;
+            var where2 = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${deal.module.id}) AND ("deal"."status" = true)`;
             const dealCount = await getConnection()
                 .createQueryBuilder(Deal, 'deal')
                 .where(where2)
