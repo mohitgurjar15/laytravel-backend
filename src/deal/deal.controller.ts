@@ -193,4 +193,21 @@ export class DealController {
 	) {
 		return await this.dealService.listDealForUser(id, siteUrl);
 	}
+
+	@Get("get-deal/:id")
+	@ApiOperation({ summary: "get deal " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Admin not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getDeal(
+		@Param("id") id: number,
+		@SiteUrl() siteUrl: string
+	) {
+		return await this.dealService.getDeal(id, siteUrl);
+	}
 }

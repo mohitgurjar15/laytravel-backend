@@ -27,19 +27,16 @@ export class DealService {
 
         var where = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${module_id})`;
 
-        if (status == true) {
-            const dealCount = await getConnection()
-                .createQueryBuilder(Deal, 'deal')
-                .where(where)
-                .getCount();
+        const dealCount = await getConnection()
+            .createQueryBuilder(Deal, 'deal')
+            .where(where)
+            .getCount();
 
-            if (dealCount > 1) {
-                throw new NotAcceptableException(`Alredy 2 deal available please hide one of them`)
-            }
+        console.log(dealCount);
 
+        if (status && dealCount > 1) {
+            throw new NotAcceptableException(`Alredy 2 deal available please hide one of them`)
         }
-        console.log(files.image == undefined);
-
         if (files.image == undefined) {
             throw new BadRequestException(`please upload image`)
         }
@@ -107,7 +104,7 @@ export class DealService {
             throw new NotAcceptableException(`given deal id is wrong`)
         }
 
-        if (status == true) {
+        if (status) {
             var where2 = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${deal.module.id})`;
             const dealCount = await getConnection()
                 .createQueryBuilder(Deal, 'deal')
@@ -204,7 +201,7 @@ export class DealService {
             .leftJoinAndSelect("deal.module", "module")
             .select(["deal.id", "deal.image", "deal.location", "deal.isDeleted", "deal.status", "deal.createdDate", "deal.updatedDate", "deal.updateBy", "module.id", "module.name"])
             .where(where)
-            .orderBy(`"deal"."id"`,'DESC')
+            .orderBy(`"deal"."id"`, 'DESC')
             .limit(2)
 
 
