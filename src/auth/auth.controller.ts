@@ -22,6 +22,7 @@ import {
 	BadRequestException,
 	Patch,
 	Query,
+	Delete,
 } from "@nestjs/common";
 import { AuthCredentialDto } from "./dto/auth-credentials.dto";
 import { AuthService } from "./auth.service";
@@ -513,6 +514,27 @@ export class AuthController {
 		return await this.authService.addWebPushNotificationToken(
 			user,
 			addWebNotificationDto
+		);
+	}
+
+	@Roles(Role.FREE_USER, Role.PAID_USER)
+	@Delete(["delete-user"])
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "delete user account" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async deleteUser(
+		@GetUser() user: User,
+		@SiteUrl() siteUrl: string
+	) {
+		return await this.authService.deleteUserAccount(
+			user,
+			siteUrl
 		);
 	}
 }
