@@ -43,7 +43,11 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				"log.moduleName",
 				"log.activityName",
 				"log.createdDate",
+				"log.previousValue",
+				"log.currentValue",
+
 			])
+
 			.where(where)
 			.skip(skip)
 			.take(take)
@@ -53,6 +57,16 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 		if (!result.length) {
 			throw new NotFoundException(`No Log found.`);
 		}
+
+		// for await (const raw of result) {
+		// 	if (raw.currentValue['password'] != undefined) {
+		// 		delete (raw.currentValue['password'])
+		// 	}
+
+		// 	if (raw.currentValue['salt'] != undefined) {
+		// 		delete (raw.currentValue['salt'])
+		// 	}
+		// }
 		return { data: result, TotalReseult: count };
 
 	}
@@ -61,7 +75,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 	async exportActivityLog(
 		paginationOption: ExportActivityDto
 	): Promise<{ data: ActivityLog[]; TotalReseult: number }> {
-		const {  search, searchDate, userId } = paginationOption;
+		const { search, searchDate, userId } = paginationOption;
 
 		const keyword = search || "";
 
@@ -91,6 +105,8 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				"log.moduleName",
 				"log.activityName",
 				"log.createdDate",
+				"log.previousValue",
+				"log.currentValue",
 			])
 			.where(where)
 			.orderBy("log.id", "DESC")
@@ -99,7 +115,28 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 		if (!result.length) {
 			throw new NotFoundException(`No Log found.`);
 		}
-		return { data: result, TotalReseult: count };
 
+		for await (const raw of result) {
+			if (raw.currentValue) {
+				if (raw.currentValue['password'] != undefined) {
+					delete (raw.currentValue['password'])
+				}
+
+				if (raw.currentValue['salt'] != undefined) {
+					delete (raw.currentValue['salt'])
+				}
+			}
+
+			if (raw.previousValue) {
+				if (raw.previousValue['password'] != undefined) {
+					delete (raw.previousValue['password'])
+				}
+
+				if (raw.previousValue['salt'] != undefined) {
+					delete (raw.previousValue['salt'])
+				}
+			}
+		}
+		return { data: result, TotalReseult: count };
 	}
 }

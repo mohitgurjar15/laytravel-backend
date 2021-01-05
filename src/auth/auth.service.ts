@@ -305,7 +305,7 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
+		//Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
 		return { message: `Otp send on your email id` };
 	}
 
@@ -362,11 +362,11 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` user is update the Email id ${email} to ${newEmail} `
-		);
+		//Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	` user is update the Email id ${email} to ${newEmail} `
+		// );
 		return { message: `Otp send on your email id` };
 	}
 
@@ -463,11 +463,11 @@ export class AuthService {
 		if (otp < 100000) {
 			otp = otp + 800000;
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` ${email} user is request to forget password using ${otp} otp`
-		);
+		//Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	` ${email} user is request to forget password using ${otp} otp`
+		// );
 		// var resetLink = `https://staging.laytrip.com`;
 		// if (
 		// 	user.roleId == Role.ADMIN ||
@@ -548,11 +548,11 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			`${user.email} is forget password using ${otp} otp`
-		);
+		// Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	`${user.email} is forget password using ${otp} otp`
+		// );
 
 		const validate = await this.forgetPasswordRepository.findOne({
 			where: { email: email, is_used: 0, otp: otp },
@@ -682,11 +682,11 @@ export class AuthService {
 					.catch((err) => {
 						console.log("err", err);
 					});
-				Activity.logActivity(
-					user.userId,
-					`auth`,
-					`${email} user is verify own account`
-				);
+				// Activity.logActivity(
+				// 	user.userId,
+				// 	`auth`,
+				// 	`${email} user is verify own account`
+				// );
 				return { userDetails };
 			} catch (error) {
 				if (typeof error.response !== "undefined") {
@@ -1161,11 +1161,11 @@ export class AuthService {
 				);
 			}
 
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`user ${user.email} is update profile`
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`user ${user.email} is update profile`
+			// );
 			const roleId = [
 				Role.ADMIN,
 				Role.SUPER_ADMIN,
@@ -1244,11 +1244,11 @@ export class AuthService {
 		user.updatedDate = new Date();
 		try {
 			await user.save();
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`prefered Languge Updated By user ${user.email} `
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`prefered Languge Updated By user ${user.email} `
+			// );
 			return { message: "Prefered languge updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -1284,11 +1284,11 @@ export class AuthService {
 		user.updatedDate = new Date();
 		try {
 			await user.save();
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`preffered Currency Updated By user ${user.email}`
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`preffered Currency Updated By user ${user.email}`
+			// );
 			return { message: "Prefered currency updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {

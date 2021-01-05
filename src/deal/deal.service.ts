@@ -35,7 +35,7 @@ export class DealService {
         console.log(dealCount);
 
         if (status && dealCount > 1) {
-            throw new NotAcceptableException(`Alredy 2 deal available please hide one of them`)
+            throw new NotAcceptableException(`Already 2 deal available please hide one of them`)
         }
         if (files.image == undefined) {
             throw new BadRequestException(`please upload image`)
@@ -114,7 +114,7 @@ export class DealService {
                 .getCount();
 
             if (dealCount > 1) {
-                throw new NotAcceptableException(`Alredy 2 deal available please hide one of them`)
+                throw new NotAcceptableException(`Already 2 deal available please hide one of them`)
             }
         }
 
