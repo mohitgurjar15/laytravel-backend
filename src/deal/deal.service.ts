@@ -166,7 +166,7 @@ export class DealService {
 
         if (search) {
             module
-            where += `AND (("deal"."location" ILIKE '%${search}%')or("module"."id" ILIKE '%${search}%')or("module"."name" ILIKE '%${search}%'))`;
+            where += `AND (("deal"."location" ILIKE '%${search}%')or("module"."name" ILIKE '%${search}%'))`;
         }
 
         const query = await getConnection()
