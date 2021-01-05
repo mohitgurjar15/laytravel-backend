@@ -87,7 +87,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "Admin", ` new admin ${userdata.email} created By super admin ${adminId}`);
+			Activity.logActivity(adminId, "Admin", ` new admin ${userdata.email} created By super admin ${adminId}`,null,userdata);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -132,6 +132,9 @@ export class AdminService {
 				where: { userId, isDeleted: 0, roleId: In([2]) },
 			});
 
+			const previousData = userData;
+
+			
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -151,7 +154,9 @@ export class AdminService {
 			delete userData.salt;
 
 			await userData.save();
-			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`);
+			const currentData = userData;
+
+			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`,previousData,currentData);
 			return userData;
 		} catch (error) {
 			if (
@@ -215,11 +220,13 @@ export class AdminService {
 					`You are not allowed to access this resource.`
 				);
 			} else {
+				const previousData = user;
 				user.isDeleted = true;
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`);
+				const currentData = user;
+				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`,previousData,currentData);
 				return { messge: `Admin deleted successfully` };
 			}
 		} catch (error) {
@@ -277,13 +284,14 @@ export class AdminService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
+			const previousData = user;
 			var  statusWord = status === true? 1 : 0 ;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			
-			Activity.logActivity(adminId, `Admin`, `admin status changed ${statusWord}`);
+			const currentData = user;
+			Activity.logActivity(adminId, `Admin`, `admin status changed ${statusWord}`,previousData,currentData);
 			return { messge: `admin status changed` };
 		} catch (error) {
 			if (
