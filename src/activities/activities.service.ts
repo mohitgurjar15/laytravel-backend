@@ -6,6 +6,7 @@ import { ListActivityDto } from "./dto/list-activities.dto";
 import { ActivityLog } from "src/entity/activity-log.entity";
 import { errorMessage } from "src/config/common.config";
 import { LoginLog } from "src/entity/login-log.entity";
+import { ExportActivityDto } from "./dto/activity-export.dto";
 
 @Injectable()
 export class ActivitiesService {
@@ -15,7 +16,7 @@ export class ActivitiesService {
 
 		@InjectRepository(LoginLogRepository)
 		private LoginLogRepository: LoginLogRepository
-	) {}
+	) { }
 
 	async listActivityLog(
 		paginationOption: ListActivityDto,
@@ -34,12 +35,31 @@ export class ActivitiesService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
-    }
-    
+	}
+
+	async exportActivityLog(
+		paginationOption: ExportActivityDto,
+	): Promise<{ data: ActivityLog[]; TotalReseult: number }> {
+		try {
+			return await this.activitylogRepository.exportActivityLog(paginationOption);
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No log Found.&&&id`);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
 
 
 
-    async listloginlog(
+
+	async listloginlog(
 		paginationOption: ListActivityDto,
 	): Promise<{ data: LoginLog[]; TotalReseult: any }> {
 		try {
