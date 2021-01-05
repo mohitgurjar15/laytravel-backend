@@ -522,7 +522,7 @@ export class AdminDashboardService {
         FROM booking `
       );
       response["gross_sales"] =
-      (Math.round(grossSales[0].total_amount * 100) / 100).toFixed(2) || 0;
+        (Math.round(grossSales[0].total_amount * 100) / 100).toFixed(2) || 0;
 
       return response;
     } catch (error) {
@@ -692,6 +692,43 @@ export class AdminDashboardService {
       COUNT(*) < 2`
     );
     response["new_upfront_users"] = newUpfrontUsers.length;
+
+    const totalAccountHolders = await getConnection().query(
+      `SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      GROUP BY
+		  user_id`
+    );
+    response["total_account_holders"] = (Math.round(totalAccountHolders.length * 100) / 100);
+
+    const totalGuestUsers = await getConnection().query(
+      `SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      WHERE
+      is_deleted=false
+      AND
+      is_verified=true
+      AND
+      role_id In (${Role.GUEST_USER})
+      GROUP BY
+		  user_id`
+    );
+    response["total_guest_users"] = (Math.round(totalGuestUsers.length * 100) / 100);
+
+    const totalActiveUsers = await getConnection().query(
+      `SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      WHERE
+      is_deleted=false
+      AND
+      is_verified=true
+      GROUP BY
+		  user_id`
+    );
+    response["total_active_users"] = (Math.round(totalActiveUsers.length * 100) / 100);
 
 
 
