@@ -122,11 +122,11 @@ export class CronJobsService {
 					.catch((err) => {
 						console.log("err", err);
 					});
-				Activity.logActivity(
-					"1c17cd17-9432-40c8-a256-10db77b95bca",
-					"cron",
-					`${data.email} is Convert customer to free user because subscription plan is not done by customer`
-				);
+				// Activity.logActivity(
+				// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+				// 	"cron",
+				// 	`${data.email} is Convert customer to free user because subscription plan is not done by customer`
+				// );
 			}
 
 			console.log(updateQuery);
@@ -312,11 +312,11 @@ export class CronJobsService {
 							.catch((err) => {
 								console.log("err", err);
 							});
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${instalment.id} Payment Failed by Cron`
-						);
+						// Activity.logActivity(
+						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"cron",
+						// 	`${instalment.id} Payment Failed by Cron`
+						// );
 
 						PushNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
@@ -391,11 +391,11 @@ export class CronJobsService {
 							.catch((err) => {
 								console.log("err", err);
 							});
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${instalment.id} Payment successed by Cron`
-						);
+						// Activity.logActivity(
+						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"cron",
+						// 	`${instalment.id} Payment successed by Cron`
+						// );
 
 						PushNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
@@ -717,11 +717,11 @@ export class CronJobsService {
 						// 	.catch((err) => {
 						// 		console.log("err", err);
 						// 	});
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${data.id} recurring laytrip poin added by cron`
-						);
+						// Activity.logActivity(
+						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"cron",
+						// 	`${data.id} recurring laytrip poin added by cron`
+						// );
 					}
 					else {
 						// failed transaction mail

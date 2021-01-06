@@ -123,7 +123,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `);
+			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `,null,user);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -211,6 +211,8 @@ export class UserService {
 				},
 			});
 
+			const previousData = userData
+
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
 			userData.timezone = "";
@@ -233,7 +235,8 @@ export class UserService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
-			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`);
+			const currentData = userData
+			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`,previousData,currentData);
 			return userData;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -288,13 +291,15 @@ export class UserService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
+			const previousData = user
 			var statusWord = status == true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
+			const currentData = user
 
-			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`);
+			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`,previousData,currentData);
 			return { message: `user status changed` };
 		} catch (error) {
 			if (
@@ -416,11 +421,13 @@ export class UserService {
 					`You are not allowed to access this resource.`
 				);
 			} else {
+				const previousData = user
 				user.isDeleted = true;
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`);
+				const currentData = user
+				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`,previousData,currentData);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {

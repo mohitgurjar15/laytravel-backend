@@ -72,7 +72,7 @@ export class CmsService {
         cmsPage.frContent = fr_content;
 
         await this.cmsRepository.update({ pageType: page_type }, cmsPage);
-        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`);
+        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`,iscmsPageExist,cmsPage);
         return cmsPage;
     }
 

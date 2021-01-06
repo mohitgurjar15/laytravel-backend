@@ -123,12 +123,12 @@ export class SubscriptionService {
 
 			await subscribe.save();
 			await userdata.save();
-			Activity.logActivity(
-				userdata.userId,
-				"subscription",
-				`${userdata.email} is subscriped a ${planData.name} plan`
-			);
-			console.log(expiryPlanDate);
+			// Activity.logActivity(
+			// 	userdata.userId,
+			// 	"subscription",
+			// 	`${userdata.email} is subscriped a ${planData.name} plan`
+			// );
+			// console.log(expiryPlanDate);
 			if (expiryPlanDate != null) {
 				await this.addLaytripPoint(planData.amount, userdata.userId);
 			}
@@ -308,11 +308,11 @@ export class SubscriptionService {
 			.catch((err) => {
 				console.log("err", err);
 			});
-		Activity.logActivity(
-			userdata.userId,
-			"subscription",
-			`${userdata.email} is convert customer to free user because subscription plan not subscribed`
-		);
+		// Activity.logActivity(
+		// 	userdata.userId,
+		// 	"subscription",
+		// 	`${userdata.email} is convert customer to free user because subscription plan not subscribed`
+		// );
 	}
 
 	async addLaytripPoint(amount: number, userId: string) {

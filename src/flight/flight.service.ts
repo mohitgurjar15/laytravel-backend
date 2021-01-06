@@ -690,7 +690,7 @@ export class FlightService {
 		if(returnResponce.length>0){
 			let minPrice;let maxPrice;
 			
-			if(returnResponce[0].secondary_start_price>0){
+			/* if(returnResponce[0].secondary_start_price>0){
 				minPrice= Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
 				maxPrice= Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
 			}
@@ -698,22 +698,25 @@ export class FlightService {
 
 				minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
 				maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
-			}
+			} */
+			minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
+			maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
 			let  diff = (maxPrice-minPrice)/3;
 			let priceRange=[minPrice];
 			priceRange.push(minPrice+diff);
 			priceRange.push(minPrice+diff+diff);
 			priceRange.push(maxPrice);
 
-			//console.log(minPrice,maxPrice,priceRange)
+			console.log(minPrice,maxPrice,priceRange)
 			let price;
 			for(let i in returnResponce){
-				if(returnResponce[i].secondary_start_price>0){
+				/* if(returnResponce[i].secondary_start_price>0){
 					price = returnResponce[i].secondary_start_price;
 				}
 				else{
 					price = returnResponce[i].price;
-				}
+				} */
+				price = returnResponce[i].price;
 
 				if(price >= priceRange[0] && price <= priceRange[1])
 					returnResponce[i].flag='low';

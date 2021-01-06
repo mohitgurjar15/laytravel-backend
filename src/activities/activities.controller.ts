@@ -8,6 +8,7 @@ import { ActivitiesService } from './activities.service';
 import { ListActivityDto } from './dto/list-activities.dto';
 import { ActivityLog } from 'src/entity/activity-log.entity';
 import { LoginLog } from 'src/entity/login-log.entity';
+import { ExportActivityDto } from './dto/activity-export.dto';
 
 @ApiTags("Activities")
 @ApiBearerAuth()
@@ -35,6 +36,25 @@ export class ActivitiesController {
 		
 	): Promise<{ data: ActivityLog[]; TotalReseult: number }> {
 		return await this.activitiesService.listActivityLog(paginationOption);
+	}
+	
+
+	@Get('export-activity-log')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "activity logs" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "log not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportActivityLog(
+		@Query() paginationOption: ExportActivityDto,
+		
+	): Promise<{ data: ActivityLog[]; TotalReseult: number }> {
+		return await this.activitiesService.exportActivityLog(paginationOption);
     }
     
 

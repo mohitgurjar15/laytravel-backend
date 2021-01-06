@@ -1,3 +1,10 @@
+/**
+ * @author Parth Virani
+ * @email parthvirani@itoneclick.com
+ * @create date 2021-01-05 00:06:52
+ * @modify date 2021-01-05 00:06:52
+ * @desc [description]
+ */
 /*
  * Created on Tue May 12 2020
  *
@@ -66,6 +73,12 @@ import { RewordStatus } from "src/enum/reword-status.enum";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { WebPushNotifications } from "src/entity/web-push-notification.entity";
 import * as moment from 'moment';
+import { Booking } from "src/entity/booking.entity";
+import { UserCard } from "src/entity/user-card.entity";
+import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { OtherPayments } from "src/entity/other-payment.entity";
+import { PlanSubscription } from "src/entity/plan-subscription.entity";
 
 @Injectable()
 export class AuthService {
@@ -292,7 +305,7 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
+		//Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
 		return { message: `Otp send on your email id` };
 	}
 
@@ -349,11 +362,11 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` user is update the Email id ${email} to ${newEmail} `
-		);
+		//Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	` user is update the Email id ${email} to ${newEmail} `
+		// );
 		return { message: `Otp send on your email id` };
 	}
 
@@ -450,11 +463,11 @@ export class AuthService {
 		if (otp < 100000) {
 			otp = otp + 800000;
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` ${email} user is request to forget password using ${otp} otp`
-		);
+		//Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	` ${email} user is request to forget password using ${otp} otp`
+		// );
 		// var resetLink = `https://staging.laytrip.com`;
 		// if (
 		// 	user.roleId == Role.ADMIN ||
@@ -535,11 +548,11 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			`${user.email} is forget password using ${otp} otp`
-		);
+		// Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	`${user.email} is forget password using ${otp} otp`
+		// );
 
 		const validate = await this.forgetPasswordRepository.findOne({
 			where: { email: email, is_used: 0, otp: otp },
@@ -669,11 +682,11 @@ export class AuthService {
 					.catch((err) => {
 						console.log("err", err);
 					});
-				Activity.logActivity(
-					user.userId,
-					`auth`,
-					`${email} user is verify own account`
-				);
+				// Activity.logActivity(
+				// 	user.userId,
+				// 	`auth`,
+				// 	`${email} user is verify own account`
+				// );
 				return { userDetails };
 			} catch (error) {
 				if (typeof error.response !== "undefined") {
@@ -1148,11 +1161,11 @@ export class AuthService {
 				);
 			}
 
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`user ${user.email} is update profile`
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`user ${user.email} is update profile`
+			// );
 			const roleId = [
 				Role.ADMIN,
 				Role.SUPER_ADMIN,
@@ -1231,11 +1244,11 @@ export class AuthService {
 		user.updatedDate = new Date();
 		try {
 			await user.save();
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`prefered Languge Updated By user ${user.email} `
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`prefered Languge Updated By user ${user.email} `
+			// );
 			return { message: "Prefered languge updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -1271,11 +1284,11 @@ export class AuthService {
 		user.updatedDate = new Date();
 		try {
 			await user.save();
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`preffered Currency Updated By user ${user.email}`
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`preffered Currency Updated By user ${user.email}`
+			// );
 			return { message: "Prefered currency updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -1472,4 +1485,125 @@ export class AuthService {
 			);
 		}
 	}
+
+
+	async deleteUserAccount(user: User, siteUrl) {
+		const userData = this.userRepository.getUserDetails(user.userId, siteUrl, [Role.FREE_USER, Role.PAID_USER])
+		if (userData) {
+			this.createCsv(user.userId, userData, 'user-detail')
+		}
+		const bookingData = await getConnection()
+			.createQueryBuilder(Booking, "booking")
+			.where(
+				`"booking"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+		if (bookingData) {
+			this.createCsv(user.userId, bookingData, 'booking-Data')
+		}
+
+		const travelerData = await getConnection()
+			.createQueryBuilder(User, "user")
+			.where(
+				`"user"."created_by" = '${user.userId}'`
+			)
+			.getMany()
+		if (travelerData) {
+			this.createCsv(user.userId, travelerData, 'travel-data')
+		}
+		const cardDetail = await getConnection()
+			.createQueryBuilder(UserCard, "card")
+			.where(
+				`"card"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+		if (cardDetail) {
+			this.createCsv(user.userId, cardDetail, 'card-detail')
+		}
+		const creditEarn = await getConnection()
+			.createQueryBuilder(LayCreditEarn, "earn")
+			.where(
+				`"earn"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+		if (creditEarn) {
+			this.createCsv(user.userId, creditEarn, 'credit-earn')
+		}
+		const creditReddem = await getConnection()
+			.createQueryBuilder(LayCreditRedeem, "redeem")
+			.where(
+				`"redeem"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+		if (creditReddem) {
+			this.createCsv(user.userId, creditReddem, 'credit-redeem')
+		}
+		const instalment = await getConnection()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.where(
+				`"instalment"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+
+		if (instalment) {
+			this.createCsv(user.userId, instalment, 'installment')
+		}
+		const payments = await getConnection()
+			.createQueryBuilder(OtherPayments, "payments")
+			.where(
+				`"payments"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+
+		if (payments) {
+			this.createCsv(user.userId, payments, 'payment')
+		}
+		const subscription = await getConnection()
+			.createQueryBuilder(PlanSubscription, "subscription")
+			.where(
+				`"subscription"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+		if (subscription) {
+			this.createCsv(user.userId, subscription, 'subscription-detail')
+		}
+		const deviceDetail = await getConnection()
+			.createQueryBuilder(UserDeviceDetail, "device")
+			.where(
+				`"device"."user_id" = '${user.userId}'`
+			)
+			.getMany()
+
+		if (deviceDetail) {
+			this.createCsv(user.userId, deviceDetail, 'device-detail')
+		}
+
+		return {
+			message: `your account deleted succesfully`
+		}
+	}
+
+	async createCsv(userId, data, fileName) {
+		const ObjectsToCsv = require('objects-to-csv')
+
+		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
+
+		const file = path + userId + '_' + fileName + '.csv'
+
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path);
+		}
+
+		const savedData = await new Promise(async (resolve) => {
+			const csv = new ObjectsToCsv(data);
+
+			// Save to file:
+			await csv.toDisk(file);
+
+			// Return the CSV file as string:
+			const rawData = await csv;
+			resolve(rawData);
+		});
+	}
+
 }
