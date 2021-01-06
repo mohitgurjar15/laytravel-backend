@@ -1118,7 +1118,7 @@ export class CronJobsService {
 	}
 
 	async getDailyPriceOfVacationRental(bookingData: Booking, Headers) {
-		console.log(bookingData);
+
 		let vacationData;
 		if (new Date(await this.getDataTimefromString(bookingData.checkInDate)) > new Date()) {
 
@@ -1137,11 +1137,9 @@ export class CronJobsService {
 			}
 
 			const monaker = new MonakerStrategy(new Monaker(Headers));
-			vacationData = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
-
+			vacationData =  await new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
+			// console.log("-------------",vacationData);
 			// vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
-			// console.log(vacationData);
-
 
 			const date = new Date();
 			var todayDate = date.toISOString();
