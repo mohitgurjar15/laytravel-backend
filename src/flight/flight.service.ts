@@ -705,7 +705,7 @@ export class FlightService {
 			priceRange.push(minPrice+diff+diff);
 			priceRange.push(maxPrice);
 
-			//console.log(minPrice,maxPrice,priceRange)
+			console.log(minPrice,maxPrice,priceRange)
 			let price;
 			for(let i in returnResponce){
 				if(returnResponce[i].secondary_start_price>0){
