@@ -822,10 +822,10 @@ export class FlightService {
 		const arivalDate = new Date(arrival_date);
 
 		var dayDiffrence = await this.getDifferenceInDays(depatureDate, new Date())
-		//dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3
+		dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3
 
-		var startDate = dayDiffrence <= 3 ? new Date() :  depatureDate;
-		//startDate.setDate(startDate.getDate() - dayDiffrence);
+		var startDate = new Date(departure_date);
+		startDate.setDate(startDate.getDate() - dayDiffrence);
 
 		var tourDiffrence = await this.getDifferenceInDays(depatureDate, arivalDate)
 
