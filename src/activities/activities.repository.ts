@@ -58,15 +58,27 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 			throw new NotFoundException(`No Log found.`);
 		}
 
-		// for await (const raw of result) {
-		// 	if (raw.currentValue['password'] != undefined) {
-		// 		delete (raw.currentValue['password'])
-		// 	}
+		for await (const raw of result) {
+			if (raw.currentValue) {
+				if (raw.currentValue['password'] != undefined) {
+					delete (raw.currentValue['password'])
+				}
 
-		// 	if (raw.currentValue['salt'] != undefined) {
-		// 		delete (raw.currentValue['salt'])
-		// 	}
-		// }
+				if (raw.currentValue['salt'] != undefined) {
+					delete (raw.currentValue['salt'])
+				}
+			}
+
+			if (raw.previousValue) {
+				if (raw.previousValue['password'] != undefined) {
+					delete (raw.previousValue['password'])
+				}
+
+				if (raw.previousValue['salt'] != undefined) {
+					delete (raw.previousValue['salt'])
+				}
+			}
+		}
 		return { data: result, TotalReseult: count };
 
 	}
