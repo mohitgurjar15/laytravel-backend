@@ -379,10 +379,7 @@ export class Mystifly implements StrategyAirline {
 
     }
 
-    async oneWaySearchZip(searchFlightDto: OneWaySearchFlightDto, user) {
-
-        const mystiflyConfig = await this.getMystiflyCredential();
-        const sessionToken = await this.startSession();
+    async oneWaySearchZip(searchFlightDto: OneWaySearchFlightDto, user, mystiflyConfig , sessionToken,module,currencyDetails) {
 
         const {
             source_location,
@@ -394,17 +391,9 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count
         } = searchFlightDto;
-        let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
-        }
-        const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
-
+        
         let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date, bookingDate);
 
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
@@ -756,7 +745,9 @@ export class Mystifly implements StrategyAirline {
             });
         });
 
+
         let jsonData: any = await Generic.xmlToJson(unCompressedData)
+        // return jsonData
         console.log(jsonData.airlowfaresearchgziprs.success[0]);
         
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {

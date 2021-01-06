@@ -256,8 +256,25 @@ export class FlightService {
 	async searchOneWayZipFlight(searchFlightDto, headers, user) {
 		await this.validateHeaders(headers);
 		const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
+		//console.log(mystiflyConfig);
+		
+		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
+
+		//console.log(sessionToken);
+		
+		let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: 'flight' })
+            .getOne();
+
+        if (!module) {
+            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		}
+		
+		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 		const result = new Promise((resolve) =>
-			resolve(mystifly.oneWaySearchZip(searchFlightDto, user))
+			resolve(mystifly.oneWaySearchZip(searchFlightDto, user,mystiflyConfig,sessionToken,module,currencyDetails))
 		);
 		return result;
 	}
@@ -286,7 +303,9 @@ export class FlightService {
 		}
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 		const result = new Promise((resolve) =>
+			//resolve(mystifly.roundTripSearchZip(searchFlightDto, user))
 			resolve(mystifly.roundTripSearchZip(searchFlightDto, user,mystiflyConfig,sessionToken,module,currencyDetails))
+
 		);
 		return result;
 	}
@@ -353,7 +372,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+				result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
 			}
 
 			weeklylastdate.setDate(weeklylastdate.getDate() - 7);
@@ -500,6 +519,24 @@ export class FlightService {
 
 		previousWeekDates.setDate(previousWeekDates.getDate() - count);
 
+		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
+		//console.log(mystiflyConfig);
+		
+		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
+
+		//console.log(sessionToken);
+		
+		let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: 'flight' })
+            .getOne();
+
+        if (!module) {
+            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		}
+		
+		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
+
 		for (let index = 0; index < count; index++) {
 			var predate = previousWeekDates.toISOString().split('T')[0];
 			predate = predate
@@ -514,7 +551,7 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
 			previousWeekDates.setDate(previousWeekDates.getDate() + 1);
 			resultIndex++;
 		}
@@ -534,7 +571,7 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
 			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 			resultIndex++;
 		}
@@ -620,6 +657,23 @@ export class FlightService {
 		var resultIndex = 0;
 
 
+		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
+		//console.log(mystiflyConfig);
+		
+		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
+
+		//console.log(sessionToken);
+		
+		let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: 'flight' })
+            .getOne();
+
+        if (!module) {
+            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		}
+		
+		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 
 
 		for (let index = 0; index <= dayDiffrence; index++) {
@@ -639,7 +693,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
 			} else {
 				let dto = {
 					"source_location": source_location,
@@ -650,7 +704,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user)));
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
 			}
 
 			startDate.setDate(startDate.getDate() + 1);
@@ -714,33 +768,36 @@ export class FlightService {
 			}
 		}
 
-		if (returnResponce.length > 0) {
-			let minPrice; let maxPrice;
-
-			if (returnResponce[0].secondary_start_price > 0) {
-				minPrice = Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
-				maxPrice = Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
+		if(returnResponce.length>0){
+			let minPrice;let maxPrice;
+			
+			/* if(returnResponce[0].secondary_start_price>0){
+				minPrice= Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
+				maxPrice= Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
 			}
 			else {
 
-				minPrice = Math.min.apply(null, returnResponce.map(item => item.price))
-				maxPrice = Math.max.apply(null, returnResponce.map(item => item.price))
-			}
-			let diff = (maxPrice - minPrice) / 3;
-			let priceRange = [minPrice];
-			priceRange.push(minPrice + diff);
-			priceRange.push(minPrice + diff + diff);
+				minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
+				maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+			} */
+			minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
+			maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+			let  diff = (maxPrice-minPrice)/3;
+			let priceRange=[minPrice];
+			priceRange.push(minPrice+diff);
+			priceRange.push(minPrice+diff+diff);
 			priceRange.push(maxPrice);
 
-			//console.log(minPrice,maxPrice,priceRange)
+			console.log(minPrice,maxPrice,priceRange)
 			let price;
-			for (let i in returnResponce) {
-				if (returnResponce[i].secondary_start_price > 0) {
+			for(let i in returnResponce){
+				/* if(returnResponce[i].secondary_start_price>0){
 					price = returnResponce[i].secondary_start_price;
 				}
 				else {
 					price = returnResponce[i].price;
-				}
+				} */
+				price = returnResponce[i].price;
 
 				if (price >= priceRange[0] && price <= priceRange[1])
 					returnResponce[i].flag = 'low';
@@ -765,10 +822,10 @@ export class FlightService {
 		const arivalDate = new Date(arrival_date);
 
 		var dayDiffrence = await this.getDifferenceInDays(depatureDate, new Date())
-		dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3
+		//dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3
 
-		var startDate = new Date(departure_date);
-		startDate.setDate(startDate.getDate() - dayDiffrence);
+		var startDate = dayDiffrence <= 3 ? new Date() :  new Date(departure_date);
+		//startDate.setDate(startDate.getDate() - dayDiffrence);
 
 		var tourDiffrence = await this.getDifferenceInDays(depatureDate, arivalDate)
 
@@ -787,11 +844,11 @@ export class FlightService {
 
 		var count = await this.getDifferenceInDays(startDate, endDate);
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
-		console.log(mystiflyConfig);
+		//console.log(mystiflyConfig);
 		
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
-		console.log(sessionToken);
+		//console.log(sessionToken);
 		
 		let module = await getManager()
             .createQueryBuilder(Module, "module")
@@ -810,7 +867,7 @@ export class FlightService {
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 
-			const arrival = new Date()
+			const arrival = new Date(depature)
 			arrival.setDate(depature.getDate() + tourDiffrence);
 			var afterDateString = arrival.toISOString().split('T')[0];
 			afterDateString = afterDateString
@@ -828,13 +885,14 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
+			
 			result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
 			depature.setDate(depature.getDate() + 1);
 			resultIndex++;
 		}
 
 		const response = await Promise.all(result);
-		return response;
+		// return response;
 		let returnResponce = [];
 		for await (const data of response) {
 			if (!data.message) {
@@ -844,6 +902,7 @@ export class FlightService {
 				var key = 0;
 				var date;
 				var startPrice = 0;
+				var arrivalDate 
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -851,6 +910,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
+						arrivalDate =flightData.arrival_date
 						startPrice = flightData.start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -866,6 +926,7 @@ export class FlightService {
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 						startPrice = flightData.start_price || 0
+						arrivalDate =flightData.arrival_date	
 					}
 					key++;
 				}
@@ -874,7 +935,8 @@ export class FlightService {
 					net_rate: netRate,
 					price: lowestprice,
 					unique_code: unique_code,
-					start_price: startPrice
+					start_price: startPrice,
+					arrival_date:arrivalDate
 				}
 
 				returnResponce.push(output)

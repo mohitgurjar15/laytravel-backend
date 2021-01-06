@@ -25,9 +25,9 @@ export class Strategy {
         return data;
     }
 
-    async oneWaySearchZip(param1, param2) {
+    async oneWaySearchZip(param1, param2,param3,param4,param5,param6) {
 
-        const data = await this.airline.oneWaySearchZip(param1, param2);
+        const data = await this.airline.oneWaySearchZip(param1, param2,param3,param4,param5,param6);
         return data;
     }
 

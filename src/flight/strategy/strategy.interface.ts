@@ -2,7 +2,7 @@ export interface StrategyAirline{
 
     oneWaySearch(params1,params2);
 
-    oneWaySearchZip(params1,params2);
+    oneWaySearchZip(params1,params2,param3,param4,param5,param6);
 
     baggageDetails(params);
 

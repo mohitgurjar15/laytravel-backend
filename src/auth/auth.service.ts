@@ -1108,6 +1108,10 @@ export class AuthService {
 						`Language id not exist with database.&&&language_id`
 					);
 			}
+			var age = moment(new Date()).diff(moment(dob), 'years');
+			if (age < 16) {
+				throw new BadRequestException(`Less than 16 year old user not allowed on plateform. please contact administaration`)
+			}
 			const user = new User();
 			user.title = title;
 			user.firstName = first_name;
