@@ -1488,96 +1488,90 @@ export class AuthService {
 
 
 	async deleteUserAccount(user: User, siteUrl) {
-		const userData = this.userRepository.getUserDetails(user.userId, siteUrl, [Role.FREE_USER, Role.PAID_USER])
-		if (userData) {
-			this.createCsv(user.userId, userData, 'user-detail')
+		var data = {};
+		var sqlData = '';
+		const userData = await this.getUserData(user.userId)
+
+		if (userData.data) {
+			data['userData'] = userData.data
+			sqlData += userData.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
 		}
-		const bookingData = await getConnection()
-			.createQueryBuilder(Booking, "booking")
-			.where(
-				`"booking"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (bookingData) {
-			this.createCsv(user.userId, bookingData, 'booking-Data')
+		const bookingData = await this.bookingData(user.userId)
+		if (bookingData.data) {
+			data['bookingData'] = bookingData.data
+			sqlData += bookingData.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
 		}
 
-		const travelerData = await getConnection()
-			.createQueryBuilder(User, "user")
-			.where(
-				`"user"."created_by" = '${user.userId}'`
-			)
-			.getMany()
-		if (travelerData) {
-			this.createCsv(user.userId, travelerData, 'travel-data')
-		}
-		const cardDetail = await getConnection()
-			.createQueryBuilder(UserCard, "card")
-			.where(
-				`"card"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (cardDetail) {
-			this.createCsv(user.userId, cardDetail, 'card-detail')
-		}
-		const creditEarn = await getConnection()
-			.createQueryBuilder(LayCreditEarn, "earn")
-			.where(
-				`"earn"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (creditEarn) {
-			this.createCsv(user.userId, creditEarn, 'credit-earn')
-		}
-		const creditReddem = await getConnection()
-			.createQueryBuilder(LayCreditRedeem, "redeem")
-			.where(
-				`"redeem"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (creditReddem) {
-			this.createCsv(user.userId, creditReddem, 'credit-redeem')
-		}
-		const instalment = await getConnection()
-			.createQueryBuilder(BookingInstalments, "instalment")
-			.where(
-				`"instalment"."user_id" = '${user.userId}'`
-			)
-			.getMany()
 
-		if (instalment) {
-			this.createCsv(user.userId, instalment, 'installment')
-		}
-		const payments = await getConnection()
-			.createQueryBuilder(OtherPayments, "payments")
-			.where(
-				`"payments"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-
-		if (payments) {
-			this.createCsv(user.userId, payments, 'payment')
-		}
-		const subscription = await getConnection()
-			.createQueryBuilder(PlanSubscription, "subscription")
-			.where(
-				`"subscription"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (subscription) {
-			this.createCsv(user.userId, subscription, 'subscription-detail')
-		}
-		const deviceDetail = await getConnection()
-			.createQueryBuilder(UserDeviceDetail, "device")
-			.where(
-				`"device"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-
-		if (deviceDetail) {
-			this.createCsv(user.userId, deviceDetail, 'device-detail')
+		const travelerData = await this.travelerData(user.userId)
+		if (travelerData.data) {
+			data['travelerData'] = travelerData.data
+			sqlData += travelerData.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
 		}
 
+		const cardDetail = await this.cardData(user.userId)
+		if (cardDetail.data) {
+			data['cardDetail'] = cardDetail.data
+			sqlData += cardDetail.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+
+		const creditEarn = await this.layCreditEarn(user.userId)
+		if (creditEarn.data) {
+			data['creditEarn'] = creditEarn.data
+			sqlData += creditEarn.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+		const creditRedeem = await this.layCreditRedeem(user.userId)
+		if (creditRedeem.data) {
+			data['creditRedeem'] = creditRedeem.data
+			sqlData += creditRedeem.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+
+		const bookingInstallment = await this.bookingInstallment(user.userId)
+		if (bookingInstallment.data) {
+			data['bookingInstallment'] = bookingInstallment.data
+			sqlData += bookingInstallment.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+
+		const payments = await this.otherPayment(user.userId)
+		if (payments.data) {
+			data['payments'] = payments.data
+			sqlData += payments.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+
+		const subscription = await this.subscriptionData(user.userId)
+		if (subscription.data) {
+			data['subscription'] = subscription.data
+			sqlData += subscription.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+		const deviceDetail = await this.deviceDetail(user.userId)
+		if (deviceDetail.data) {
+			data['deviceDetail'] = deviceDetail.data
+			sqlData += deviceDetail.sql
+			//this.createCsv(user.userId, userData, 'user-detail')
+		}
+
+
+
+		await this.createCsv(user.userId, [data], 'user-detail')
+
+		await this.createSql(user.userId, sqlData, 'user-detail')
+
+		await this.deleteuserData(user.userId)
 		return {
 			message: `your account deleted succesfully`
 		}
@@ -1589,6 +1583,9 @@ export class AuthService {
 		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
 
 		const file = path + userId + '_' + fileName + '.csv'
+		if (!fs.existsSync('/var/www/html/logs/deleteUser/')) {
+			fs.mkdirSync('/var/www/html/logs/deleteUser/');
+		}
 
 		if (!fs.existsSync(path)) {
 			fs.mkdirSync(path);
@@ -1606,4 +1603,336 @@ export class AuthService {
 		});
 	}
 
+	async createSql(userId, sqlData, fileName) {
+
+		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
+
+		const file = path + userId + '_' + fileName + '.sql'
+		if (!fs.existsSync('/var/www/html/logs/deleteUser/')) {
+			fs.mkdirSync('/var/www/html/logs/deleteUser/');
+		}
+
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path);
+		}
+
+		fs.promises.writeFile(file, sqlData)
+	}
+
+	async getUserData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(UserDeviceDetail, "device")
+			.where(
+				`"device"."user_id" = '${userId}'`
+			)
+			.getOne()
+		const sql = await getConnection()
+			.createQueryBuilder()
+			.insert()
+			.into(User)
+			.values(data)
+			.getQuery();
+
+		return {
+			data, sql
+		}
+	}
+
+	async bookingData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(Booking, "booking")
+			.where(
+				`"booking"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(Booking)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async travelerData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(User, "user")
+			.where(
+				`"user"."created_by" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(User)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async cardData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(UserCard, "card")
+			.where(
+				`"card"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(UserCard)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async layCreditEarn(userId) {
+		const data = await await getConnection()
+			.createQueryBuilder(LayCreditEarn, "earn")
+			.where(
+				`"earn"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(LayCreditEarn)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async layCreditRedeem(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(LayCreditRedeem, "redeem")
+			.where(
+				`"redeem"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(LayCreditRedeem)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async bookingInstallment(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.where(
+				`"instalment"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(BookingInstalments)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async otherPayment(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(OtherPayments, "payments")
+			.where(
+				`"payments"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(OtherPayments)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async subscriptionData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(PlanSubscription, "subscription")
+			.where(
+				`"subscription"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(PlanSubscription)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+
+	async deviceDetail(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(UserDeviceDetail, "device")
+			.where(
+				`"device"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(UserDeviceDetail)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async deleteuserData(userId) {
+
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserCard)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(LayCreditEarn)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(LayCreditRedeem)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(BookingInstalments)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(OtherPayments)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(PlanSubscription)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserDeviceDetail)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+		await getConnection().createQueryBuilder()
+			.delete()
+			.from(UserDeviceDetail)
+			.where(
+				`"user_id" = '${userId}'`
+			).execute();
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(Booking)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(User)
+			.where(
+				`"created_by" = '${userId}'`
+			)
+			.execute()
+	}
 }
