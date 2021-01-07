@@ -21,13 +21,27 @@ import { v4 as uuidv4 } from "uuid";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
 import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
-import { In, getManager } from "typeorm";
+import { In, getManager, getConnection } from "typeorm";
 import { ActiveDeactiveDto } from "./dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
 
 import { Countries } from "src/entity/countries.entity";
 import { States } from "src/entity/states.entity";
 import { Activity } from "src/utility/activity.utility";
+import { ListDeleteRequestDto } from "./dto/list-delete-request.dto";
+import { DeleteUserAccountRequest } from "src/entity/delete-user-account-request.entity";
+import { Booking } from "src/entity/booking.entity";
+import { UserCard } from "src/entity/user-card.entity";
+import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
+import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { OtherPayments } from "src/entity/other-payment.entity";
+import { PlanSubscription } from "src/entity/plan-subscription.entity";
+import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
+import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum";
+import { BookingFeedback } from "src/entity/booking-feedback.entity";
+import { TravelerInfo } from "src/entity/traveler-info.entity";
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -117,13 +131,13 @@ export class UserService {
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
-		const roles = [Role.ADMIN,Role.SUPER_ADMIN,Role.FREE_USER]
-		
-		const userdata = await this.userRepository.createUser(user,roles);
+		const roles = [Role.ADMIN, Role.SUPER_ADMIN, Role.FREE_USER]
+
+		const userdata = await this.userRepository.createUser(user, roles);
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `,null,user);
+			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `, null, user);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -236,7 +250,7 @@ export class UserService {
 
 			await userData.save();
 			const currentData = userData
-			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`,previousData,currentData);
+			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, currentData);
 			return userData;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -299,7 +313,7 @@ export class UserService {
 			await user.save();
 			const currentData = user
 
-			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`,previousData,currentData);
+			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`, previousData, currentData);
 			return { message: `user status changed` };
 		} catch (error) {
 			if (
@@ -427,7 +441,7 @@ export class UserService {
 				user.updatedDate = new Date();
 				await user.save();
 				const currentData = user
-				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`,previousData,currentData);
+				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`, previousData, currentData);
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -541,5 +555,649 @@ export class UserService {
 			Role.GUEST_USER,
 			Role.FREE_USER,
 		]);
+	}
+
+	async listDeleteRequest(dto: ListDeleteRequestDto) {
+		const { page_no, search, limit } = dto;
+
+		console.log("error");
+
+		const take = limit || 10;
+		const skip = (page_no - 1) * limit || 0;
+		const keyword = search || "";
+
+		let where;
+		where = `1=1 `
+		if (keyword) {
+			where += `AND ( "req"."email" ILIKE '%${keyword}%')`;
+		}
+
+
+
+		const [result, count] = await getConnection()
+			.createQueryBuilder(DeleteUserAccountRequest, "req")
+			.where(where)
+			.skip(skip)
+			.take(take)
+			.orderBy("req.id", "DESC")
+			.getManyAndCount();
+
+		if (!result.length) {
+			throw new NotFoundException(`No request found.`);
+		}
+
+		return {
+			data: result, count: count
+		}
+	}
+
+
+	async deleteRequestAccept(id, user: User) {
+
+		const where = `"req"."status" = ${DeleteAccountRequestStatus.PENDING} AND "req"."id" = ${id}`
+		const req = await getConnection()
+			.createQueryBuilder(DeleteUserAccountRequest, "req")
+			.where(where)
+			.getOne();
+		if (!req) {
+			throw new NotFoundException(`Given request id not available`)
+		}
+		const userId = req.userId
+		var data = {};
+		var sqlData = '';
+		const userData = await this.userData(userId)
+
+		if (userData.data) {
+			data['userData'] = userData.data
+			sqlData += userData.sql
+			this.createCsv(userId, [userData.data], 'user-detail')
+		}
+
+		const bookingData = await this.bookingData(userId)
+		if (bookingData.data) {
+			data['bookingData'] = bookingData.data
+			sqlData += bookingData.sql
+			this.createCsv(userId, bookingData.data, 'bookingData')
+		}
+		if (bookingData.bookingIds.length) {
+			const bookingTravelerData = await this.bookingTravelerData(bookingData.bookingIds)
+
+			if (bookingTravelerData.data) {
+				data['bookingTravelerData'] = bookingData.data
+				sqlData += bookingData.sql
+				this.createCsv(userId, bookingTravelerData.data, 'booking-traveler-data')
+			}
+		}
+
+
+
+		const travelerData = await this.travelerData(userId)
+		if (travelerData.data) {
+			data['travelerData'] = travelerData.data
+			sqlData += travelerData.sql
+			this.createCsv(userId, travelerData.data, 'traveler-detail')
+		}
+
+		const cardDetail = await this.cardData(userId)
+		if (cardDetail.data) {
+			data['cardDetail'] = cardDetail.data
+			sqlData += cardDetail.sql
+			this.createCsv(userId, cardDetail.data, 'card-detail')
+		}
+
+
+		const creditEarn = await this.layCreditEarn(userId)
+		if (creditEarn.data) {
+			data['creditEarn'] = creditEarn.data
+			sqlData += creditEarn.sql
+			this.createCsv(userId, creditEarn.data, 'credit-earn')
+		}
+
+		const creditRedeem = await this.layCreditRedeem(userId)
+		if (creditRedeem.data) {
+			data['creditRedeem'] = creditRedeem.data
+			sqlData += creditRedeem.sql
+			this.createCsv(userId, creditRedeem.data, 'credit-reedem')
+		}
+
+
+		const bookingInstallment = await this.bookingInstallment(userId)
+		if (bookingInstallment.data) {
+			data['bookingInstallment'] = bookingInstallment.data
+			sqlData += bookingInstallment.sql
+			this.createCsv(userId, bookingInstallment.data, 'booking-installment')
+		}
+
+
+		const payments = await this.otherPayment(userId)
+		if (payments.data) {
+			data['payments'] = payments.data
+			sqlData += payments.sql
+			this.createCsv(userId, payments.data, 'payments')
+		}
+
+
+		const subscription = await this.subscriptionData(userId)
+		if (subscription.data) {
+			data['subscription'] = subscription.data
+			sqlData += subscription.sql
+			this.createCsv(userId, subscription.data, 'subscription')
+		}
+
+		const deviceDetail = await this.deviceDetail(userId)
+		if (deviceDetail.data) {
+			data['deviceDetail'] = deviceDetail.data
+			sqlData += deviceDetail.sql
+			this.createCsv(userId, deviceDetail.data, 'deviceDetail')
+		}
+
+
+		if (req.requestForData) {
+			await this.sendDataToUser(userId, req.email)
+		}
+
+		await this.createSql(userId, sqlData, 'user-detail')
+
+		//await this.deleteuserData(userId, bookingData.bookingIds)
+
+		req.status = DeleteAccountRequestStatus.CONFIRM
+		req.updateBy = user
+		req.updatedDate = new Date()
+
+		req.save()
+
+		return {
+			message: `User ${req.email} deleted succesfully`
+		}
+	}
+
+	async sendDataToUser(userId, email) {
+		var AdmZip = require('adm-zip');
+
+		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
+		var willSendthis;
+		const fileName = path + userId + '.zip'
+		if (!fs.existsSync('/var/www/html/logs/deleteUser/')) {
+			fs.mkdirSync('/var/www/html/logs/deleteUser/');
+		}
+
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path);
+		}
+
+		var zip = new AdmZip();
+
+		await new Promise(async (resolve) => {
+			fs.readdir(path, async function (err, files) {
+				//handling error
+				if (err) {
+					return console.log('Unable to scan directory: ' + err);
+				}
+				//listing all files using forEach
+				for await (const file of files) {
+					zip.addLocalFile(path + file);
+				}
+				willSendthis = zip.toBuffer();
+				zip.writeZip(/*target file name*/fileName);
+				resolve(willSendthis);
+			})
+		});
+
+		const attachment = fs.readFileSync(fileName).toString('base64');
+		console.log(attachment);
+		this.mailerService
+			.sendMail({
+				to: email,
+				from: mailConfig.from,
+				subject: `Your account deleted`,
+				cc: mailConfig.BCC,
+				html: "delete account templete",
+				attachments: [{
+					content: attachment,
+					filename: 'Backup.zip',
+					contentType: 'application/7zip',
+				},],
+			})
+			.then((res) => {
+				console.log("res", res);
+			})
+			.catch((err) => {
+				console.log("err", err);
+			});
+	}
+
+	async deleteRequestReject(id, user: User) {
+		const where = `"req"."status" = ${DeleteAccountRequestStatus.PENDING} AND "req"."id" = ${id}`
+		const req = await getConnection()
+			.createQueryBuilder(DeleteUserAccountRequest, "req")
+			.where(where)
+			.getOne();
+		if (!req) {
+			throw new NotFoundException(`Given request id not available`)
+		}
+		req.status = DeleteAccountRequestStatus.CANCELLED
+		req.updateBy = user
+		req.updatedDate = new Date()
+
+		req.save()
+
+		return {
+			message: `Request rejected successfully`
+		}
+	}
+
+	async createCsv(userId, data, fileName) {
+		const ObjectsToCsv = require('objects-to-csv')
+
+		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
+
+		const file = path + fileName + '.csv'
+		if (!fs.existsSync('/var/www/html/logs/deleteUser/')) {
+			fs.mkdirSync('/var/www/html/logs/deleteUser/');
+		}
+
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path);
+		}
+
+		const savedData = await new Promise(async (resolve) => {
+			const csv = new ObjectsToCsv(data);
+
+			// Save to file:
+			await csv.toDisk(file);
+
+			// Return the CSV file as string:
+			const rawData = await csv;
+			resolve(rawData);
+		});
+	}
+
+	async createSql(userId, sqlData, fileName) {
+
+		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
+
+		const file = path + userId + '_' + fileName + '.sql'
+		if (!fs.existsSync('/var/www/html/logs/deleteUser/')) {
+			fs.mkdirSync('/var/www/html/logs/deleteUser/');
+		}
+
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path);
+		}
+
+		fs.promises.writeFile(file, sqlData)
+	}
+
+	async userData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(User, "user")
+			.where(
+				`"user"."user_id" = '${userId}'`
+			)
+			.getOne()
+		const sql = await getConnection()
+			.createQueryBuilder()
+			.insert()
+			.into(User)
+			.values(data)
+			.getQuery();
+
+		return {
+			data, sql
+		}
+	}
+
+	async bookingData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(Booking, "booking")
+			.where(
+				`"booking"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		var bookingIds = [];
+		if (data.length) {
+			for await (const raw of data) {
+				bookingIds.push(raw.id)
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(Booking)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql, bookingIds
+		}
+	}
+
+	async bookingTravelerData(bookingIds) {
+		const data = await getConnection()
+			.createQueryBuilder(TravelerInfo, "traveler")
+			.where(`"booking_id" in (:...bookingIds) `, {
+				bookingIds
+			})
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(TravelerInfo)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+	async travelerData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(User, "user")
+			.where(
+				`"user"."created_by" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(User)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async cardData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(UserCard, "card")
+			.where(
+				`"card"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(UserCard)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async layCreditEarn(userId) {
+		const data = await await getConnection()
+			.createQueryBuilder(LayCreditEarn, "earn")
+			.where(
+				`"earn"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(LayCreditEarn)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async layCreditRedeem(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(LayCreditRedeem, "redeem")
+			.where(
+				`"redeem"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(LayCreditRedeem)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async bookingInstallment(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.where(
+				`"instalment"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(BookingInstalments)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async otherPayment(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(OtherPayments, "payments")
+			.where(
+				`"payments"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(OtherPayments)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async subscriptionData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(PlanSubscription, "subscription")
+			.where(
+				`"subscription"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(PlanSubscription)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+
+	async deviceDetail(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(UserDeviceDetail, "device")
+			.where(
+				`"device"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(UserDeviceDetail)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
+		}
+	}
+
+	async deleteuserData(userId, bookingIds) {
+
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserCard)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(LayCreditEarn)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(LayCreditRedeem)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(BookingInstalments)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(OtherPayments)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(PlanSubscription)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(UserDeviceDetail)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+		await getConnection().createQueryBuilder()
+			.delete()
+			.from(UserDeviceDetail)
+			.where(
+				`"user_id" = '${userId}'`
+			).execute();
+		console.log(bookingIds)
+		if (bookingIds.length && bookingIds[0]) {
+			await getConnection()
+				.createQueryBuilder()
+				.delete()
+				.from(BookingFeedback)
+				.where(`"booking_id" in (:...bookingIds) `, {
+					bookingIds,
+				})
+				.execute()
+
+			await getConnection()
+				.createQueryBuilder()
+				.delete()
+				.from(TravelerInfo)
+				.where(`"booking_id" in (:...bookingIds) `, {
+					bookingIds,
+				})
+				.execute()
+
+			await getConnection()
+				.createQueryBuilder()
+				.delete()
+				.from(PredictiveBookingData)
+				.where(`"booking_id" in (:...bookingIds) `, {
+					bookingIds,
+				})
+				.execute()
+		}
+
+
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(User)
+			.where(
+				`"created_by" = '${userId}'`
+			)
+			.execute()
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(Booking)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
 	}
 }

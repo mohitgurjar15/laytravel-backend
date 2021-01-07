@@ -30,6 +30,7 @@ import { TravelerInfo } from "./traveler-info.entity";
 import { OtherPayments } from "./other-payment.entity";
 import { Notification } from "./notification.entity";
 import { Deal } from "./deal.entity";
+import { DeleteUserAccountRequest } from "./delete-user-account-request.entity";
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
 @Index("user_preferred_language", ["preferredLanguage"], {})
@@ -356,6 +357,11 @@ export class User extends BaseEntity {
     () => Deal,
     deal => deal.updateBy)
   deal: Deal[];
+
+  @OneToMany(
+    () => DeleteUserAccountRequest,
+    deleteUserAccountRequest => deleteUserAccountRequest.updateBy)
+    deleteUserAccountRequest: DeleteUserAccountRequest[];
 
 
 }

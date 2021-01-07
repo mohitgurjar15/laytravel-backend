@@ -60,6 +60,7 @@ import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
+import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -68,7 +69,7 @@ export class AuthController {
 	constructor(
 		private authService: AuthService,
 		private readonly i18n: I18nService
-	) {}
+	) { }
 
 	@Post("/signup")
 	@ApiOperation({ summary: "Signup frontend user" })
@@ -200,7 +201,7 @@ export class AuthController {
 			Role.FREE_USER,
 			Role.PAID_USER,
 		]
-		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl,roles);
+		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl, roles);
 	}
 
 	@Post("backend-forgot-password")
@@ -220,7 +221,7 @@ export class AuthController {
 			Role.ADMIN,
 			Role.SUPPLIER
 		]
-		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl,roles);
+		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl, roles);
 	}
 
 	@ApiOperation({ summary: "Reset password of user" })
@@ -475,7 +476,7 @@ export class AuthController {
 		);
 		return result;
 	}
-	
+
 
 	@Get("validate-user/:token")
 	@ApiOperation({ summary: "validate user token" })
@@ -489,7 +490,7 @@ export class AuthController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async validateuserToken(
-		@Param('token') token : string
+		@Param('token') token: string
 	) {
 		return await this.authService.validateUser(
 			token
@@ -518,10 +519,10 @@ export class AuthController {
 	}
 
 	@Roles(Role.FREE_USER, Role.PAID_USER)
-	@Delete(["delete-user"])
+	@Delete(["delete-account-request"])
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard())
-	@ApiOperation({ summary: "delete user account" })
+	@ApiOperation({ summary: "request for delete account" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
@@ -530,11 +531,11 @@ export class AuthController {
 	@HttpCode(200)
 	async deleteUser(
 		@GetUser() user: User,
-		@SiteUrl() siteUrl: string
+		@Body() dto: DeleteAccountReqDto
 	) {
 		return await this.authService.deleteUserAccount(
 			user,
-			siteUrl
+			dto
 		);
 	}
 }
