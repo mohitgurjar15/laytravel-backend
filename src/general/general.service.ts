@@ -139,11 +139,11 @@ export class GeneralService {
         //     .getMany();
 
         let emails = [{
-            email: 'parthvirani@itonecick.com'
+            email: 'parthvirani@itoneclick.com'
         }, {
-            email: 'suresh@itonecick.com'
+            email: 'suresh@itoneclick.com'
         }, {
-            email: 'jaymees@itonecick.com'
+            email: 'jaymees@itoneclick.com'
         }]
         var allemail = '';
         for await (const email of emails) {
