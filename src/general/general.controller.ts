@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Role } from 'src/enum/role.enum';
+import { Roles } from 'src/guards/role.decorator';
 import { Detail } from 'src/hotel/hotel-suppliers/priceline/modules/detail';
 import { PushNotification } from 'src/utility/push-notification.utility';
 import { WebNotification } from 'src/utility/web-notification.utility';
 import { PushNotificationDto } from './dto/push-notification.dto';
+import { MassCommunicationDto } from './dto/send-mass-communication.dto';
 import { WebNotificationDto } from './dto/web-notification.dto';
 import { GeneralService } from './general.service';
 
@@ -87,7 +91,7 @@ export class GeneralController {
     ) {
         const { userId, body, header } = detail
         PushNotification.sendNotificationTouser(userId, body, header, userId)
-        return {message : `Notification send succesfully`}
+        return { message: `Notification send succesfully` }
     }
 
     @ApiOperation({ summary: "web notification" })
@@ -100,13 +104,32 @@ export class GeneralController {
         @Body() detail: WebNotificationDto
     ) {
         try {
-            const { userId, body, header ,action} = detail
-        await WebNotification.sendNotificationTouser(userId, body, header, userId , action)
-        return {message : `Notification send succesfully`}    
+            const { userId, body, header, action } = detail
+            await WebNotification.sendNotificationTouser(userId, body, header, userId, action)
+            return { message: `Notification send succesfully` }
         } catch (error) {
             console.log(error);
-            
+
         }
-        
+
+    }
+
+    @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
+    @Post(["mass-communication"])
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard())
+    @ApiOperation({ summary: "Mass communicartion" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async massCommunication(
+        @Body() dto: MassCommunicationDto
+    ) {
+        return await this.generalService.massCommunication(
+            dto
+        );
     }
 }
