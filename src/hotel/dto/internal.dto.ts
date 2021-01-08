@@ -8,8 +8,14 @@ export class InternalDto{
     
     @IsOptional()
     token?: string;
+    
+    @IsOptional()
+    currency?: string;
 
     /* Added this property for Public/retail  */
     @IsOptional()
     rooms?: string;
+
+    @IsOptional()
+    user_id?: string;
 }

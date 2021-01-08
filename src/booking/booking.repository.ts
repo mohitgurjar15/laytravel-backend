@@ -161,6 +161,17 @@ export class BookingRepository extends Repository<Booking> {
 		//return bookingDetails;
 	}
 
+	async getBookDetail(id) {
+
+		let relations = ["user", "currency2", "bookingInstalments", "travelers", "travelers.userData", "card"];
+		
+		let result = this.findOne({
+            where: { laytripBookingId: id },
+            relations 
+		});
+		
+		return result;
+	}
 
 	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;

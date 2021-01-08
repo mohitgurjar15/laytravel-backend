@@ -10,6 +10,9 @@ export class HotelDetails {
     city:string;
     country:string;
     hotel_name:string;
+    additional_description:AdditionalDescription[];
+    documents:DocumentDetails[];
+    additional_details:AdditionalDetail[];
 }
 
 export class Room {
@@ -23,6 +26,8 @@ export class Room {
     secondary_start_price:number;
     secondary_selling_price : number;
     instalment_details:{};
+    bathroom:string;
+    badroom:string;
     description: string;
     cancellation_policy:CancellationPolicy;
     deposite_policy:string;
@@ -38,4 +43,19 @@ export class Images{
 export class CancellationPolicy{
     is_refundable:boolean;
     penalty_info:[]
+}
+
+export class AdditionalDescription{
+    type:string;
+    details:string;
+}
+
+export class DocumentDetails{
+    type:string
+    path:string;
+}
+
+export class AdditionalDetail{
+    type:string;
+    details:string;
 }

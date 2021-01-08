@@ -5,7 +5,8 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToMany
+  OneToMany,
+  OneToOne
 } from "typeorm";
 import { Currency } from "./currency.entity";
 import { PaymentGateway } from "./payment-gateway.entity";
@@ -15,6 +16,8 @@ import { Supplier } from "./supplier.entity";
 import { BookingInstalments } from "./booking-instalments.entity";
 import { TravelerInfo } from "./traveler-info.entity";
 import { PredictiveBookingData } from "./predictive-booking-data.entity";
+import { UserCard } from "./user-card.entity";
+import { type } from "os";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -179,4 +182,8 @@ export class Booking extends BaseEntity {
     predictiveBookingData => predictiveBookingData.booking
   )
   predictiveBookingData: PredictiveBookingData[];
+
+  @OneToOne(() => UserCard)
+  @JoinColumn([{ name: "card_token", referencedColumnName: "cardToken" }])
+  card: UserCard;
 }

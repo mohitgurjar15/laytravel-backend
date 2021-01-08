@@ -857,8 +857,6 @@ export class VacationRentalService {
 			// console.log("difference===>", diff);
 			result[resultIndex] = await monaker.searchFullText(dto, user, true);
 
-			// setTimeout(() => { console.log("wait 2s") }, 2000);
-
 			// if ((getMonth % 2) != 0) {
 			// 	if (getMonth == 1) {
 			// 		if (is_leap_year) {
@@ -902,7 +900,7 @@ export class VacationRentalService {
 				var startPrice = 0;
 				var secondaryStartPrice = 0;
 				for await (const hoteltInfo of data.items) {
-					console.log("data", hoteltInfo)
+					// console.log("data", hoteltInfo)
 					if (key == 0) {
 						netRate = hoteltInfo.net_price;
 						lowestprice = hoteltInfo.selling_price
@@ -934,6 +932,46 @@ export class VacationRentalService {
 				returnResponce.push(output)
 			}
 		}
+
+		if(returnResponce.length>0){
+			let minPrice;let maxPrice;
+			
+			if(returnResponce[0].secondary_start_price>0){
+				minPrice= Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
+				maxPrice= Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
+			}
+			else{
+
+				minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
+				maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+			}
+			let  diff = (maxPrice-minPrice)/3;
+
+			let priceRange=[minPrice];
+			priceRange.push(minPrice+diff);
+			priceRange.push(minPrice+diff+diff);
+			priceRange.push(maxPrice);
+
+			// console.log(minPrice,maxPrice,priceRange)
+		
+			let price;
+			for(let i in returnResponce){
+				if(returnResponce[i].secondary_start_price>0){
+					price = returnResponce[i].secondary_start_price;
+				}
+				else{
+					price = returnResponce[i].price;
+				}
+
+				if(price >= priceRange[0] && price <= priceRange[1])
+					returnResponce[i].flag='low';
+				if(price > priceRange[1] && price <= priceRange[2])
+					returnResponce[i].flag='medium';
+				if(price > priceRange[2] && price <= priceRange[3])
+					returnResponce[i].flag='high';
+			}
+		}
+
 		return returnResponce;
 	}
 

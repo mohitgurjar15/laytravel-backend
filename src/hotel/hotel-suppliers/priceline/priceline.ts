@@ -1,15 +1,18 @@
 import { HttpService, InternalServerErrorException } from "@nestjs/common";
+import Axios from "axios";
 import { collect } from "collect.js";
 import { map } from "rxjs/operators";
 import { AvailabilityDto } from "src/hotel/dto/availability-req.dto";
-import { BookDto } from "src/hotel/dto/book-req.dto";
 import { DetailReqDto } from "src/hotel/dto/detail-req.dto";
 import { RoomsReqDto } from "src/hotel/dto/rooms-req.dto";
 import { SearchReqDto } from "src/hotel/dto/search-req.dto";
+import { Generic } from "src/hotel/helpers/generic.helper";
 import { HotelInterface } from "../hotel.interface";
+import { BookDto, BookDto as PPNBookDto } from "./dto/book.dto";
 import { CommonHelper } from "./helpers/common.helper";
 import { AutoComplete } from "./modules/auto-complete";
 import { Availability } from "./modules/availability";
+import { Book } from "./modules/book";
 import { Detail } from "./modules/detail";
 import { Rooms } from "./modules/rooms";
 import { Search } from "./modules/search";
@@ -114,6 +117,14 @@ export class Priceline implements HotelInterface{
     }
 
     async book(bookDto: BookDto) {
+    
+        let url = CommonHelper.generateUrl('getExpress.Book');
         
+        let parameters = Generic.httpBuildQuery(bookDto);
+        
+        let res = await this.httpsService.post(url, parameters).pipe(map(res => new Book().processBookResult(res))).toPromise();
+
+        return res;
+
     }
 }

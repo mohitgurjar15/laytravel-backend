@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { HotelSearchLocationDto } from './dto/search-location.dto';
 import { SearchReqDto } from './dto/search-req.dto';
 import { Hotel } from './hotel-suppliers/hotel.manager';
@@ -16,6 +16,20 @@ import { Generic } from './helpers/generic.helper';
 import { BookDto } from './dto/book-req.dto';
 import { BookDto as PPNBookDto } from './hotel-suppliers/priceline/dto/book.dto';
 import { UserHelper } from './helpers/user.helper';
+import { PaymentService } from 'src/payment/payment.service';
+import { PaymentType } from 'src/enum/payment-type.enum';
+import * as moment from "moment";
+import { errorMessage } from 'src/config/common.config';
+import { BookingHelper } from './helpers/booking.helper';
+import { BookingType } from 'src/enum/booking-type.enum';
+import { DateTime } from 'src/utility/datetime.utility';
+import { PaymentStatus } from 'src/enum/payment-status.enum';
+import { BookingStatus } from 'src/enum/booking-status.enum';
+import { BookingRepository } from 'src/booking/booking.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
+import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
+import { HotelBookingParam } from 'src/config/email_template/model/hotel-booking-param.model';
 
 @Injectable()
 export class HotelService{
@@ -28,7 +42,13 @@ export class HotelService{
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private generic: Generic,
         private rate: RateHelper,
-        private user: UserHelper
+        private user: UserHelper,
+        private booking: BookingHelper,
+        private paymentService: PaymentService,
+        
+        @InjectRepository(BookingRepository)
+        private bookingRepository: BookingRepository,
+        
     ) {
         this.hotel = new Hotel(new Priceline());
     }
@@ -184,12 +204,19 @@ export class HotelService{
         availability = this.rate.generateInstalments(availability, details.check_in);
 
         availability = availability.map((item) => {
-
+                
             item['price_change'] = (item.selling.total != room['selling']['total']);
 
             return item;
         });
+        
+        if (this.generic.isset(cached['availability'])) {
+            availability = collect(cached['availability']).union(availability.values().toArray());
+        }
+        
+        cached.availability = availability;
 
+        await this.cacheManager.set(availabilityDto.token, cached, { ttl: this.ttl });
 
         let response = {
             data: availability,
@@ -202,19 +229,191 @@ export class HotelService{
 
     async book(bookDto: BookDto) {
 
-        let primary_guest = await this.user.getUser(bookDto.primary_guest);
+        let cached = await this.cacheManager.get(bookDto.token);
         
-        let bookData = new PPNBookDto({
-            name_first: primary_guest.firstName,
-            name_last: primary_guest.lastName,
-            initials: primary_guest.title,
-            email: primary_guest.email,
-            phone_number: primary_guest.phoneNo,
+        if (!cached.availability) {
+            throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+        }
+        
+        let availability: any = collect(cached.availability).where('room_id', bookDto.room_id).first();
+        
+        if (!availability) {
+            throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+        }
+        
+        let hotel: any = collect(cached.hotels).where('id', bookDto.hotel_id).first();
+        
+        if (!hotel) {
+            throw new InternalServerErrorException("No record found for Hotel ID: "+bookDto.hotel_id);
+        }
+
+        let details = cached.details;
+        
+        let sellingPrice = availability.selling.total;
+
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+        
+        let callBookAPI = true;
+        
+        let capturePayment = true;
+        
+        let instalmentDetails: any = null;
+
+        let bookingData: any = {
+            bookingType: BookingType.INSTALMENT,
+            totalAmount: sellingPrice.toString(),
+            netRate: sellingPrice.toString(),
+            markupAmount: (sellingPrice - sellingPrice).toString(),
+            moduleInfo: { details, hotel, room: availability },
+            checkInDate: DateTime.convertFormat(details.check_in),
+            checkOutDate: DateTime.convertFormat(details.check_out),
+            cardToken: bookDto.card_token,
+            userId: bookDto.user_id,
+            layCredit: bookDto.laycredit_points || 0,
+            bookingThrough: bookDto.booking_through || '',
+            bookingDate,
+            totalInstallments: 0,
+            nextInstalmentDate: null,
+            isPredictive: false,
+            supplierBookingId: '',
+            supplierStatus: 0,
+            paymentStatus: PaymentStatus.PENDING,
+            bookingStatus: BookingStatus.PENDING,
+        };
+
+        if (bookDto.payment_type == PaymentType.INSTALMENT) {
             
-        });
+            /* This are the func name's which need to be same as Instalment utility file func name's */
+            let fnEnm = {
+                weekly:'weekly',
+                biweekly:'biWeekly',
+                monthly:'monthly',
+            }
 
-        return bookData;
+            let newAvailability = this.rate.generateInstalments([availability], details.check_in, fnEnm[bookDto.instalment_type]);
+            
+            instalmentDetails = collect(newAvailability).pluck('instalment_details').first();
 
-        // let book = await this.hotel.book(bookData);
+            if (instalmentDetails.instalment_available) {
+                
+                let dayDiff = moment(details.check_in).diff(bookingDate, 'days');
+
+                bookingData.totalInstallments = instalmentDetails.instalment_date.length;
+                bookingData.nextInstalmentDate = (instalmentDetails.instalment_date.length > 1) ? instalmentDetails.instalment_date[1].instalment_date : null;
+			    bookingData.isPredictive = callBookAPI ? false : true;
+
+                sellingPrice = instalmentDetails.instalment_date[0].instalment_amount;
+                
+                /* Call Hotel booking API if checkin date is less 3 months */
+                callBookAPI = (dayDiff <= 90);
+                
+            } else {
+                throw new BadRequestException(
+					'Instalment option is not available for your search criteria'
+				);
+            }
+
+        } else {
+            bookingData.bookingType = BookingType.NOINSTALMENT;
+        }
+
+        
+        let authCardResult = await this.paymentService.authorizeCard(
+            bookDto.card_token,
+            Math.ceil(sellingPrice * 100),
+            "USD"
+        );
+
+        // return authCardResult;
+
+        if (authCardResult.status == true) {
+            
+            let authCardToken = authCardResult.token;
+
+            if (callBookAPI) {
+                
+                bookDto.bundle = availability.bundle;
+                
+                bookDto.primary_guest_detail = await this.user.getUser(bookDto.primary_guest);
+                
+                let bookData = new PPNBookDto(bookDto);
+                
+                let book = await this.hotel.book(bookData);
+
+                if (book.status == 'success') {
+                    bookingData.supplierStatus = 1;
+                    bookingData.supplierBookingId = book.details.booking_id;
+                    bookingData.bookingStatus = BookingStatus.CONFIRM;
+                    bookingData.paymentStatus = PaymentStatus.CONFIRM;
+                }
+                // return bookingData;
+                // return book;
+            }
+            
+            if (capturePayment) {
+                
+                let captureCardresult = await this.paymentService.captureCard(
+                    authCardToken
+                );
+
+                if (captureCardresult.status == true) {
+                    
+                    let saveBookingResult = await this.booking.saveBooking(bookDto, bookingData);
+
+                    if (instalmentDetails) {
+                        await this.booking.saveInstalment(instalmentDetails, saveBookingResult, bookDto.instalment_type, captureCardresult.token);
+                    }
+                    
+                    if (bookDto.laycredit_points) { 
+                        await this.booking.saveLaytripCredits(saveBookingResult);
+                    }
+                    
+                    let booking_details = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
+                    
+                    if (!booking_details) {
+                        throw new HttpException({
+                                status: 424,
+                                message: 'bookingResult.error_message',
+                        }, 424);
+                    }
+                    
+                    this.booking.sendEmail(booking_details);
+                    
+                    delete booking_details.card;
+
+                    let response = {
+                        success_message: 'Booking is confirmed',
+                        laytrip_booking_id: saveBookingResult.laytripBookingId,
+                        supplier_booking_id: saveBookingResult.supplierBookingId,
+                        booking_status: bookingData.bookingStatus,
+                        booking_details,
+                        error_message: ""
+                    };
+
+                    return response;
+                    
+                } else {
+                    throw new BadRequestException(
+                        'Card capture is failed&&&card_token&&&'+errorMessage
+                    );
+                }
+            } else {
+                await this.paymentService.voidCard(authCardToken);
+                throw new HttpException(
+                    {
+                        status: 424,
+                        message: 'bookingResult.error_message',
+                    },
+                    424
+                );
+            }
+        } else {
+            throw new BadRequestException(
+                'Card authorization is failed&&&card_token&&&'+errorMessage
+            );
+        }
+
+        
+        // return book;
     }
 }
