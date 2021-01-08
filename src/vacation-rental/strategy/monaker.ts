@@ -3,7 +3,7 @@ import { AvailabilityVacationDto } from "../dto/availability.dto";
 import { HotelDetail, HotelSearchResult, NearDistance, PriceRange } from "../model/availability.model";
 import { StrategyVacationRental } from "./strategy.interface";
 import { AvailabilityVacationDetailsDto } from "../dto/availabilty_details.dto";
-import { CancellationPolicy, HotelDetails, Images, Room } from "../model/room_details.model";
+import { AdditionalDescription, AdditionalDetail, CancellationPolicy, DocumentDetails, HotelDetails, Images, Room } from "../model/room_details.model";
 import { VerifyAvailabilityDto } from "../dto/verify_availability.dto";
 import { BookingDto } from "../dto/booking.dto";
 import { InternalServerErrorException, NotAcceptableException, NotFoundException, RequestTimeoutException } from "@nestjs/common";
@@ -626,19 +626,32 @@ export class Monaker implements StrategyVacationRental {
         queryParams += `&Currency=${this.headers.currency}`;
 
 
-        let url = `${monakerCredential["url"]}/product/property-availabilities/${id}/availability?${queryParams}`;
-        let unitTypeListResponse = await HttpRequest.monakerRequest(url, "GET", {}, monakerCredential["key"])
+        let unitTypeurl = `${monakerCredential["url"]}/product/property-availabilities/${id}/availability?${queryParams}`;
+        let unitTypeListResponse = await HttpRequest.monakerRequest(unitTypeurl, "GET", {}, monakerCredential["key"])
 
         let unitTypeResult = unitTypeListResponse.data["unitStays"]
 
-        let url2 = `${monakerCredential["url"]}/content/properties/${id}`;
-        let hotelDetailResponse = await HttpRequest.monakerRequest(url2, "GET", {}, monakerCredential["key"]);
+        let contentUrl2 = `${monakerCredential["url"]}/content/properties/${id}`;
+        let contentResponse = await HttpRequest.monakerRequest(contentUrl2, "GET", {}, monakerCredential["key"]);
 
-        const hotelResult = hotelDetailResponse.data;
+        const contentResult = contentResponse.data;
+
+        let documentUrl = `${monakerCredential["url"]}/content/properties/${id}/documents`;
+        let documentResponse = await HttpRequest.monakerRequest(documentUrl, "GET", {}, monakerCredential["key"]);
+
+        const documentResult = documentResponse.data
 
         let rooms: Room[] = [];
         let room: Room;
         let feesType: FeesType;
+        let additional_descriptions: AdditionalDescription[] = []
+        let additional_description: AdditionalDescription;
+        let document_detail: DocumentDetails;
+        let document_details: DocumentDetails[] = [];
+        let additional_detail: AdditionalDetail;
+        let additional_details: AdditionalDetail[] = [];
+
+
         let fees;
 
         for (let i = 0; i < unitTypeResult.length; i++) {
@@ -727,25 +740,67 @@ export class Monaker implements StrategyVacationRental {
                 room.feesType = feesType;
             }
 
+            for (let j = 0; j < contentResult["unitTypes"].length; j++) {
+                let unitType = contentResult["unitTypes"][j];
+                if (unitType["unitTypeCode"] == unitTypeResult[i]["unitTypeCode"]) {
+                    room.badroom = unitType["nbrOfBedrooms"];
+                    room.bathroom = unitType["nbrOfBathrooms"];
+                }
+            }
+
             rooms.push(room);
         }
+
         const hotelDetails = new HotelDetails();
+
         hotelDetails.property_id = id;
-        hotelDetails.property_name = hotelResult["propertyName"];
-        hotelDetails.description = hotelResult["descriptions"][0]["description"];
+        hotelDetails.property_name = contentResult["propertyName"];
+        hotelDetails.description = contentResult["descriptions"][0]["description"];
         let images: Images[] = [];
         let image: Images;
-        for (let j = 0; j < hotelResult["images"].length; j++) {
+        for (let j = 0; j < contentResult["images"].length; j++) {
             image = new Images();
-            if (hotelResult["images"][j]["imageSize"] == 'Medium') {
-                image.url = `https://sandbox-images.nexttrip.com${hotelResult["images"][j]["url"]}`;
+            if (contentResult["images"][j]["imageSize"] == 'Medium') {
+                image.url = `https://sandbox-images.nexttrip.com${contentResult["images"][j]["url"]}`;
                 images.push(image);
             }
         }
         hotelDetails.images = images;
-        hotelDetails.amenities = hotelResult["propertyAmenities"]
-        hotelDetails.city = hotelResult["address"]["city"]
-        hotelDetails.country = hotelResult["address"]["country"]
+        hotelDetails.amenities = contentResult["propertyAmenities"]
+        hotelDetails.city = contentResult["address"]["city"]
+        hotelDetails.country = contentResult["address"]["country"]
+
+        for (let i = 0; i < contentResult["descriptions"].length; i++) {
+            if (contentResult["descriptions"][i]["code"] != "Description" && contentResult["descriptions"][i]["code"] != "ShortDescription") {
+                additional_description = new AdditionalDescription();
+                additional_description.type = contentResult["descriptions"][i]["code"];
+                additional_description.details = contentResult["descriptions"][i]["description"]
+
+                additional_descriptions.push(additional_description);
+            }
+
+        }
+
+        hotelDetails.additional_description = additional_descriptions;
+
+        for (let i = 0; i < contentResult["additionalDetails"].length; i++) {
+            additional_detail = new AdditionalDetail();
+            additional_detail.type = contentResult["additionalDetails"][i]["code"];
+            additional_detail.details = contentResult["additionalDetails"][i]["description"];
+            additional_details.push(additional_detail);
+        }
+
+        hotelDetails.additional_details = additional_details;
+
+        for (let i = 0; i < documentResult.length; i++) {
+            document_detail = new DocumentDetails();
+            document_detail.type = documentResult[i]["type"];
+            document_detail.path = documentResult[i]["path"];
+            document_details.push(document_detail);
+        }
+
+        hotelDetails.documents = document_details;
+
         hotelDetails.rooms = rooms;
         return hotelDetails;
 
