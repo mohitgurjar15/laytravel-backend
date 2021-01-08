@@ -70,6 +70,9 @@ import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { PushNotification } from "src/utility/push-notification.utility";
 import { Cache } from 'cache-manager';
 import { max } from "class-validator";
+import { Activity } from "src/utility/activity.utility";
+import { ModuleTokenFactory } from "@nestjs/core/injector/module-token-factory";
+import { ModulesName } from "src/enum/module.enum";
 
 
 
@@ -250,6 +253,9 @@ export class FlightService {
 		const result = new Promise((resolve) =>
 			resolve(mystifly.oneWaySearch(searchFlightDto, user))
 		);
+
+
+		Activity.addSearchLog(ModulesName.FLIGHT, searchFlightDto, user.user_id)
 		return result;
 	}
 
@@ -258,23 +264,23 @@ export class FlightService {
 		const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
 		//console.log(mystiflyConfig);
-		
+
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
 		//console.log(sessionToken);
-		
-		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		let module = await getManager()
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
+
+		if (!module) {
+			throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
 		}
-		
+
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 		const result = new Promise((resolve) =>
-			resolve(mystifly.oneWaySearchZip(searchFlightDto, user,mystiflyConfig,sessionToken,module,currencyDetails))
+			resolve(mystifly.oneWaySearchZip(searchFlightDto, user, mystiflyConfig, sessionToken, module, currencyDetails))
 		);
 		return result;
 	}
@@ -290,21 +296,21 @@ export class FlightService {
 		await this.validateHeaders(headers);
 		const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
-		
+
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
 		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		if (!module) {
+			throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
 		}
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 		const result = new Promise((resolve) =>
 			//resolve(mystifly.roundTripSearchZip(searchFlightDto, user))
-			resolve(mystifly.roundTripSearchZip(searchFlightDto, user,mystiflyConfig,sessionToken,module,currencyDetails))
+			resolve(mystifly.roundTripSearchZip(searchFlightDto, user, mystiflyConfig, sessionToken, module, currencyDetails))
 
 		);
 		return result;
@@ -330,18 +336,18 @@ export class FlightService {
 
 		var result = [];
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
-		
+
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
 		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		if (!module) {
+			throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
 		}
-		
+
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 
 		for (let index = 0; index <= Math.floor(dayDiffrence / 7); index++) {
@@ -361,7 +367,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[index] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+				result[index] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			} else {
 				let dto = {
 					"source_location": source_location,
@@ -372,7 +378,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+				result[index] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			}
 
 			weeklylastdate.setDate(weeklylastdate.getDate() - 7);
@@ -521,20 +527,20 @@ export class FlightService {
 
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
 		//console.log(mystiflyConfig);
-		
+
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
 		//console.log(sessionToken);
-		
-		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		let module = await getManager()
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
+
+		if (!module) {
+			throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
 		}
-		
+
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 
 		for (let index = 0; index < count; index++) {
@@ -551,7 +557,7 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			previousWeekDates.setDate(previousWeekDates.getDate() + 1);
 			resultIndex++;
 		}
@@ -571,7 +577,7 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 			resultIndex++;
 		}
@@ -659,20 +665,20 @@ export class FlightService {
 
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
 		//console.log(mystiflyConfig);
-		
+
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
 		//console.log(sessionToken);
-		
-		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		let module = await getManager()
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
+
+		if (!module) {
+			throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
 		}
-		
+
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 
 
@@ -693,7 +699,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			} else {
 				let dto = {
 					"source_location": source_location,
@@ -704,7 +710,7 @@ export class FlightService {
 					"child_count": child_count,
 					"infant_count": infant_count
 				}
-				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			}
 
 			startDate.setDate(startDate.getDate() + 1);
@@ -768,30 +774,30 @@ export class FlightService {
 			}
 		}
 
-		if(returnResponce.length>0){
-			let minPrice;let maxPrice;
-			
-			if(returnResponce[0].secondary_start_price>0){
-				minPrice= Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
-				maxPrice= Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
+		if (returnResponce.length > 0) {
+			let minPrice; let maxPrice;
+
+			if (returnResponce[0].secondary_start_price > 0) {
+				minPrice = Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
+				maxPrice = Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
 			}
 			else {
 
-				minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
-				maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+				minPrice = Math.min.apply(null, returnResponce.map(item => item.price))
+				maxPrice = Math.max.apply(null, returnResponce.map(item => item.price))
 			}
 			//minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
 			//maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
-			let  diff = (maxPrice-minPrice)/3;
-			let priceRange=[minPrice];
-			priceRange.push(minPrice+diff);
-			priceRange.push(minPrice+diff+diff);
+			let diff = (maxPrice - minPrice) / 3;
+			let priceRange = [minPrice];
+			priceRange.push(minPrice + diff);
+			priceRange.push(minPrice + diff + diff);
 			priceRange.push(maxPrice);
 
-			console.log(minPrice,maxPrice,priceRange)
+			console.log(minPrice, maxPrice, priceRange)
 			let price;
-			for(let i in returnResponce){
-				if(returnResponce[i].secondary_start_price>0){
+			for (let i in returnResponce) {
+				if (returnResponce[i].secondary_start_price > 0) {
 					price = returnResponce[i].secondary_start_price;
 				}
 				else {
@@ -845,22 +851,22 @@ export class FlightService {
 		var count = await this.getDifferenceInDays(startDate, endDate);
 		const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
 		//console.log(mystiflyConfig);
-		
+
 		const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
 
 		//console.log(sessionToken);
-		
-		let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: 'flight' })
-            .getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+		let module = await getManager()
+			.createQueryBuilder(Module, "module")
+			.where("module.name = :name", { name: 'flight' })
+			.getOne();
+
+		if (!module) {
+			throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
 		}
-		
+
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
-		
+
 		for (let index = 0; index <= count; index++) {
 			var beforeDateString = depature.toISOString().split('T')[0];
 			beforeDateString = beforeDateString
@@ -885,8 +891,8 @@ export class FlightService {
 				"child_count": child_count,
 				"infant_count": infant_count
 			}
-			
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user,mystiflyConfig,sessionToken,module,currencyDetails)));
+
+			result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			depature.setDate(depature.getDate() + 1);
 			resultIndex++;
 		}
@@ -902,7 +908,7 @@ export class FlightService {
 				var key = 0;
 				var date;
 				var startPrice = 0;
-				var arrivalDate 
+				var arrivalDate
 				for await (const flightData of data.items) {
 
 					if (key == 0) {
@@ -910,7 +916,7 @@ export class FlightService {
 						lowestprice = flightData.selling_price
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
-						arrivalDate =flightData.arrival_date
+						arrivalDate = flightData.arrival_date
 						startPrice = flightData.start_price || 0
 					}
 					// else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -926,7 +932,7 @@ export class FlightService {
 						unique_code = flightData.unique_code;
 						date = flightData.departure_date
 						startPrice = flightData.start_price || 0
-						arrivalDate =flightData.arrival_date	
+						arrivalDate = flightData.arrival_date
 					}
 					key++;
 				}
@@ -936,7 +942,7 @@ export class FlightService {
 					price: lowestprice,
 					unique_code: unique_code,
 					start_price: startPrice,
-					arrival_date:arrivalDate
+					arrival_date: arrivalDate
 				}
 
 				returnResponce.push(output)
@@ -973,11 +979,13 @@ export class FlightService {
 		headers,
 		user
 	) {
+
 		await this.validateHeaders(headers);
 		const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 		const result = new Promise((resolve) =>
 			resolve(mystifly.roundTripSearch(searchFlightDto, user))
 		);
+		Activity.addSearchLog(ModulesName.FLIGHT, searchFlightDto,user.user_id)
 		return result;
 	}
 
