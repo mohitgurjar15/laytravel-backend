@@ -185,7 +185,7 @@ export class DealService {
         }
 
         for await (const row of data) {
-            row.image = siteUrl + '/assets/static/' + row.image
+            row.image = siteUrl + '/static/' + row.image
         }
 
         return {
@@ -214,7 +214,7 @@ export class DealService {
         }
 
         for await (const row of data) {
-            row.image = siteUrl + '/assets/static/' + row.image
+            row.image = siteUrl + '/static/' + row.image
         }
 
         return {
@@ -237,7 +237,7 @@ export class DealService {
         if (!data) {
             throw new NotFoundException(`no deal found`)
         }
-        data.image = siteUrl + '/assets/static/' + data.image
+        data.image = siteUrl + '/static/' + data.image
         return data
     }
 
