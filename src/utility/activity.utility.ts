@@ -1,6 +1,8 @@
 import { ActivityLog } from "src/entity/activity-log.entity";
+import { SearchLog } from "src/entity/search-log.entity";
 import { getConnection } from "typeorm";
 const fs = require('fs');
+import { v4 as uuidv4 } from "uuid";
 
 export class Activity {
 
@@ -20,6 +22,24 @@ export class Activity {
             .values(activity)
             .execute();
     }
+
+    static addSearchLog(moduleId: number, searchDto: object, userId: string = null) {
+
+        const activity = new SearchLog();
+        activity.id = uuidv4()
+        activity.userId = userId;
+        activity.moduleId = moduleId;
+        activity.searchLog = searchDto;
+        activity.createdDate = new Date();
+
+        getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(SearchLog)
+            .values(activity)
+            .execute();
+    }
+
 
     static createlogFile(filename, logData, folderName) {
         //console.log(logData);
