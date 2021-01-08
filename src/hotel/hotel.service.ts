@@ -313,7 +313,9 @@ export class HotelService{
 				);
             }
 
-        }        
+        } else {
+            bookingData.bookingType = BookingType.NOINSTALMENT;
+        }
 
         
         let authCardResult = await this.paymentService.authorizeCard(
