@@ -10,6 +10,7 @@ import { BookingRepository } from 'src/booking/booking.repository';
 import { AirportRepository } from 'src/flight/airport.repository';
 import { InstalmentService } from 'src/instalment/instalment.service';
 import { VacationRentalService } from 'src/vacation-rental/vacation-rental.service';
+import { CartService } from 'src/cart/cart.service';
 
 @Module({
   imports:[
@@ -18,6 +19,6 @@ import { VacationRentalService } from 'src/vacation-rental/vacation-rental.servi
     CacheModule.register()
   ],
   controllers: [CronJobsController],
-  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService]
+  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService,CartService]
 })
 export class CronJobsModule {}

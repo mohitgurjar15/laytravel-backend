@@ -8,6 +8,8 @@ import { ActivitiesService } from './activities.service';
 import { ListActivityDto } from './dto/list-activities.dto';
 import { ActivityLog } from 'src/entity/activity-log.entity';
 import { LoginLog } from 'src/entity/login-log.entity';
+import { ExportActivityDto } from './dto/activity-export.dto';
+import { ListSearchLogDto } from './dto/list-search-log.dto';
 
 @ApiTags("Activities")
 @ApiBearerAuth()
@@ -16,10 +18,10 @@ import { LoginLog } from 'src/entity/login-log.entity';
 
 export class ActivitiesController {
 
-    constructor(private activitiesService: ActivitiesService) {}
+	constructor(private activitiesService: ActivitiesService) { }
 
 
-    @Get('activity-log')
+	@Get('activity-log')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "activity logs" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -32,13 +34,32 @@ export class ActivitiesController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listActivityLog(
 		@Query() paginationOption: ListActivityDto,
-		
+
 	): Promise<{ data: ActivityLog[]; TotalReseult: number }> {
 		return await this.activitiesService.listActivityLog(paginationOption);
-    }
-    
+	}
 
-    @Get('login-log')
+
+	@Get('export-activity-log')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "activity logs" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "log not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportActivityLog(
+		@Query() paginationOption: ExportActivityDto,
+
+	): Promise<{ data: ActivityLog[]; TotalReseult: number }> {
+		return await this.activitiesService.exportActivityLog(paginationOption);
+	}
+
+
+	@Get('login-log')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "login logs" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -51,8 +72,27 @@ export class ActivitiesController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
 		@Query() paginationOption: ListActivityDto,
-		
+
 	): Promise<{ data: LoginLog[]; TotalReseult: any }> {
 		return await this.activitiesService.listloginlog(paginationOption);
+	}
+
+	@Get('search-log')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Search logs" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "log not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async searchLog(
+		@Query() paginationOption: ListSearchLogDto,
+	) {
+		console.log(paginationOption);
+		
+		return await this.activitiesService.listSearchLog(paginationOption);
 	}
 }

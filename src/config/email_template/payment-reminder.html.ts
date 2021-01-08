@@ -2,7 +2,7 @@ import { EmailHeader } from "./header.html";
 import { EmailFooter } from "./footer.html";
 import { BaseUrl } from "../base-url";
 
-export function PaymentReminderMail(param: { userName: string, amount: string, date: string }) {
+export function PaymentReminderMail(param: { userName: string, amount: string, date: string , bookingId:string }) {
     const content = `<!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
     <tr>
@@ -23,16 +23,13 @@ export function PaymentReminderMail(param: { userName: string, amount: string, d
                                                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">Hi ${param.userName},</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">We will attempt to collect your ${param.amount} installment payment for booking number ${param.bookingId} on ${param.date}. We want to ensure that you can continue to look forward to your trip so if you anticipate any issues with the payment, please contact us through our chat function or email us at support@laytrip.com, thanks! </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">We’re as excited for your trip as you are and want to ensure that every payment towards your trip goes through as smoothly as possible. However, if you’d like to turn off these payment notifications, please go to your notification settings to do so.</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">Sincerely,</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">Enjoy!</td>
-                                                </tr>
-                                                <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">The Laytrip Team</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">Laytrip Support</td>
                                                 </tr>													
                                             </tbody>
                                         </table>

@@ -42,6 +42,8 @@ import { PredictionFactorMarkupModule } from './prediction-factor-markup/predict
 import { FaqCategoryModule } from './faq-category/faq-category.module';
 import { AppVersionModule } from './app-version/app-version.module';
 import { MarketingModule } from './marketing/marketing.module';
+import { CartModule } from './cart/cart.module';
+import { DealModule } from './deal/deal.module';
 
 
 @Module({
@@ -112,6 +114,8 @@ import { MarketingModule } from './marketing/marketing.module';
     FaqCategoryModule,
     AppVersionModule,
     MarketingModule,
+    CartModule,
+    DealModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

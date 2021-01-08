@@ -4,13 +4,15 @@ const fs = require('fs');
 
 export class Activity {
 
-    static logActivity(userId: string, moduleName: string, activityName: string) {
+    static logActivity(userId: string, moduleName: string, activityName: string, previousValue = null, currentValue = null) {
 
         const activity = new ActivityLog();
         activity.userId = userId;
         activity.moduleName = moduleName;
         activity.activityName = activityName;
         activity.createdDate = new Date();
+        activity.previousValue = previousValue;
+        activity.currentValue = currentValue;
         getConnection()
             .createQueryBuilder()
             .insert()
@@ -19,15 +21,15 @@ export class Activity {
             .execute();
     }
 
-    static createlogFile(filename, logData , folderName) {
+    static createlogFile(filename, logData, folderName) {
         //console.log(logData);
-        
-        const path = '/var/www/html/logs/' + folderName +'/'
+
+        const path = '/var/www/html/logs/' + folderName + '/'
 
         filename = path + filename + '.json'
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path);
         }
-        fs.promises.writeFile(filename,JSON.stringify(logData))
+        fs.promises.writeFile(filename, JSON.stringify(logData))
     }
 }

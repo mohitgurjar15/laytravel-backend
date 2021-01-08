@@ -47,7 +47,7 @@ export class HotelController {
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     search(
         @Body() searchReqDto: SearchReqDto,
-        // @LogInUser() user
+        @LogInUser() user
     ) {
         return this.hotelService.search(searchReqDto);
     }
@@ -121,10 +121,15 @@ export class HotelController {
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     book(
         @Body() bookDto: BookDto,
-        @Headers() hotelHeaderDto: HotelHeaderDto
+        @Headers() hotelHeaderDto: HotelHeaderDto,
+        @LogInUser() user
     ) {
-
-        bookDto.token = hotelHeaderDto.token;
+        // console.log(user);
+        bookDto = {
+            ...bookDto,
+            ...hotelHeaderDto,
+            user_id: user.user_id
+        };
 
         return this.hotelService.book(bookDto);
     }

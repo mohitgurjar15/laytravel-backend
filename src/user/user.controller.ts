@@ -18,6 +18,7 @@ import { SiteUrl } from 'src/decorator/site-url.decorator';
 import { ActiveDeactiveDto } from './dto/active-deactive-user.dto';
 import { ImportUserDto } from './dto/import-user.dto';
 import { csvFileDto } from './dto/csv-file.dto';
+import { ListDeleteRequestDto } from './dto/list-delete-request.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -270,5 +271,61 @@ export class UserController {
 		const file = files.file;
 
 		return await this.userService.importUser(importUserDto,file,userId,siteUrl)
-    }
+	}
+	
+	@Get('delete-account-requests/list')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "list all delete account requests" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listDeleteRequest( 
+		@Query() dto:ListDeleteRequestDto
+	){
+		console.log(dto);
+		
+		return await this.userService.listDeleteRequest(dto);
+	}
+
+	@Patch('delete-account-request/reject/:request_id')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "list all delete account requests" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async rejectRequest( 
+		@GetUser() user:User,
+		@Param('request_id') id : number 
+	){
+		return await this.userService.deleteRequestReject(id,user);
+	}
+
+
+	@Patch('delete-account-request/approve/:request_id')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "list all delete account requests" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async approveRequest( 
+		@GetUser() user:User,
+		@Param('request_id') id : number 
+	){
+		return await this.userService.deleteRequestAccept(id,user);
+	}
 }
