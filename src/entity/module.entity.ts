@@ -15,6 +15,7 @@ import { Supplier } from "./supplier.entity";
 import { Markup } from "./markup.entity";
 import { Notification } from "./notification.entity";
 import { Cart } from "./cart.entity";
+import { SearchLog } from "./search-log.entity";
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
 export class Module extends BaseEntity {
@@ -93,4 +94,10 @@ export class Module extends BaseEntity {
     notification => notification.module
   )
   notifications: Notification[];
+
+  @OneToMany(
+    () => SearchLog,
+    searchLog => searchLog.module
+  )
+  searchLog: SearchLog[];
 }

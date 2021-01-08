@@ -9,10 +9,10 @@ export const card = {
     cvv:'123',
     name: 'Jhone Deo',
     address: {
-        line_one: 'line_one',
-        city: 'city',
-        state_code: 'state_code',
-        country_code: 'country_code',
-        postal_code: 'postal_code'
+        line_one: '800 Connecticut Ave',
+        city: 'Norwalk',
+        state_code: 'CT',
+        country_code: 'US',
+        postal_code: '14139'
     }
 }
