@@ -1,8 +1,8 @@
 export interface StrategyAirline{
 
-    oneWaySearch(params1,params2,);
+    oneWaySearch(params1,params2);
 
-    oneWaySearchZip(params1,params2);
+    oneWaySearchZip(params1,params2,param3,param4,param5,param6);
 
     baggageDetails(params);
 
@@ -10,7 +10,7 @@ export interface StrategyAirline{
 
     roundTripSearch(params1,params2);
 
-    roundTripSearchZip(params1,params2);
+    roundTripSearchZip(params1,params2,param3,param4,param5,param6);
     
     airRevalidate(params1,params2);
 
@@ -21,4 +21,8 @@ export interface StrategyAirline{
     ticketFlight(param1);
 
     tripDetails(param1);
+
+    getMystiflyCredential();
+
+    startSession();
 }

@@ -73,12 +73,9 @@ import { RewordStatus } from "src/enum/reword-status.enum";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { WebPushNotifications } from "src/entity/web-push-notification.entity";
 import * as moment from 'moment';
-import { Booking } from "src/entity/booking.entity";
-import { UserCard } from "src/entity/user-card.entity";
-import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
-import { BookingInstalments } from "src/entity/booking-instalments.entity";
-import { OtherPayments } from "src/entity/other-payment.entity";
-import { PlanSubscription } from "src/entity/plan-subscription.entity";
+import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
+import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum";
+import { DeleteUserAccountRequest } from "src/entity/delete-user-account-request.entity";
 
 @Injectable()
 export class AuthService {
@@ -1108,6 +1105,10 @@ export class AuthService {
 						`Language id not exist with database.&&&language_id`
 					);
 			}
+			var age = moment(new Date()).diff(moment(dob), 'years');
+			if (age < 16) {
+				throw new BadRequestException(`Less than 16 year old user not allowed on plateform. please contact administaration`)
+			}
 			const user = new User();
 			user.title = title;
 			user.firstName = first_name;
@@ -1486,124 +1487,62 @@ export class AuthService {
 		}
 	}
 
+	async deleteUserAccount(
+		user: User,
+		dto: DeleteAccountReqDto
+	) {
+		try {
+			const { requireBackupFile } = dto
+			const where = `"req"."user_id" = '${user.userId}' AND "req"."status" != ${DeleteAccountRequestStatus.CANCELLED}`
+			const req = await getConnection()
+				.createQueryBuilder(DeleteUserAccountRequest, "req")
+				.where(where)
+				.getOne();
+			if (req) {
+				throw new ConflictException(`We have already Requst for delete your account  and it is under process`)
+			}
+			else {
+				const newReq = new DeleteUserAccountRequest
+				newReq.userId = user.userId
+				newReq.status = DeleteAccountRequestStatus.PENDING
+				newReq.createdDate = new Date();
+				newReq.email = user.email
+				newReq.requestForData = requireBackupFile
 
-	async deleteUserAccount(user: User, siteUrl) {
-		const userData = this.userRepository.getUserDetails(user.userId, siteUrl, [Role.FREE_USER, Role.PAID_USER])
-		if (userData) {
-			this.createCsv(user.userId, userData, 'user-detail')
-		}
-		const bookingData = await getConnection()
-			.createQueryBuilder(Booking, "booking")
-			.where(
-				`"booking"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (bookingData) {
-			this.createCsv(user.userId, bookingData, 'booking-Data')
-		}
+				newReq.save()
 
-		const travelerData = await getConnection()
-			.createQueryBuilder(User, "user")
-			.where(
-				`"user"."created_by" = '${user.userId}'`
-			)
-			.getMany()
-		if (travelerData) {
-			this.createCsv(user.userId, travelerData, 'travel-data')
-		}
-		const cardDetail = await getConnection()
-			.createQueryBuilder(UserCard, "card")
-			.where(
-				`"card"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (cardDetail) {
-			this.createCsv(user.userId, cardDetail, 'card-detail')
-		}
-		const creditEarn = await getConnection()
-			.createQueryBuilder(LayCreditEarn, "earn")
-			.where(
-				`"earn"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (creditEarn) {
-			this.createCsv(user.userId, creditEarn, 'credit-earn')
-		}
-		const creditReddem = await getConnection()
-			.createQueryBuilder(LayCreditRedeem, "redeem")
-			.where(
-				`"redeem"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (creditReddem) {
-			this.createCsv(user.userId, creditReddem, 'credit-redeem')
-		}
-		const instalment = await getConnection()
-			.createQueryBuilder(BookingInstalments, "instalment")
-			.where(
-				`"instalment"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-
-		if (instalment) {
-			this.createCsv(user.userId, instalment, 'installment')
-		}
-		const payments = await getConnection()
-			.createQueryBuilder(OtherPayments, "payments")
-			.where(
-				`"payments"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-
-		if (payments) {
-			this.createCsv(user.userId, payments, 'payment')
-		}
-		const subscription = await getConnection()
-			.createQueryBuilder(PlanSubscription, "subscription")
-			.where(
-				`"subscription"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-		if (subscription) {
-			this.createCsv(user.userId, subscription, 'subscription-detail')
-		}
-		const deviceDetail = await getConnection()
-			.createQueryBuilder(UserDeviceDetail, "device")
-			.where(
-				`"device"."user_id" = '${user.userId}'`
-			)
-			.getMany()
-
-		if (deviceDetail) {
-			this.createCsv(user.userId, deviceDetail, 'device-detail')
-		}
-
-		return {
-			message: `your account deleted succesfully`
+				return {
+					message: `We have get your request! In some time your account will Delete.`
+				}
+			}
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
-
-	async createCsv(userId, data, fileName) {
-		const ObjectsToCsv = require('objects-to-csv')
-
-		const path = '/var/www/html/logs/deleteUser/' + userId + '/'
-
-		const file = path + userId + '_' + fileName + '.csv'
-
-		if (!fs.existsSync(path)) {
-			fs.mkdirSync(path);
-		}
-
-		const savedData = await new Promise(async (resolve) => {
-			const csv = new ObjectsToCsv(data);
-
-			// Save to file:
-			await csv.toDisk(file);
-
-			// Return the CSV file as string:
-			const rawData = await csv;
-			resolve(rawData);
-		});
-	}
-
 }
