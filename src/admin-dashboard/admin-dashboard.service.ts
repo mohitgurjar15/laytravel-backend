@@ -730,9 +730,48 @@ export class AdminDashboardService {
     );
     response["total_active_users"] = (Math.round(totalActiveUsers.length * 100) / 100);
 
+    const salesByFullPriceCount = await getConnection().query(
+      `SELECT COUNT(id)
+      FROM
+      "booking"
+      WHERE
+      booking_type In (${BookingType.INSTALMENT})
+      GROUP BY
+		  id`
+    );
+    response["sales_by_full_price_count"] = (Math.round(salesByFullPriceCount.length * 100) / 100);
 
+    const totalBooking = await getConnection().query(`
+                SELECT  count(id) as cnt from booking`);
 
+    const salesByFullPricePercent = salesByFullPriceCount.length * 100 / totalBooking[0].cnt;
+    response["sales_by_full_price_percent"] = (Math.round(salesByFullPricePercent * 100) / 100);
 
+    const salesByFullPriceRevenue = await getConnection().query(`
+    SELECT sum("booking"."markup_amount"/"booking"."usd_factor") as "total_amount" 
+    FROM booking WHERE booking_type In (${BookingType.INSTALMENT}) 
+    `);
+    response["sales_by_full_price_revenue"] = (Math.round(salesByFullPriceRevenue[0].total_amount * 100) / 100);
+
+    const salesByInstallmentCount = await getConnection().query(
+      `SELECT COUNT(id)
+      FROM
+      "booking"
+      WHERE
+      booking_type In (${BookingType.NOINSTALMENT})
+      GROUP BY
+		  id`
+    );
+    response["sales_by_installment_count"] = (Math.round(salesByInstallmentCount.length * 100) / 100);
+
+    const salesByInstallmentPercent = salesByInstallmentCount.length * 100 / totalBooking[0].cnt;
+    response["sales_by_installment_percent"] = (Math.round(salesByInstallmentPercent * 100) / 100);
+
+    const salesByInstallmentRevenue = await getConnection().query(`
+    SELECT sum("booking"."markup_amount"/"booking"."usd_factor") as "total_amount" 
+    FROM booking WHERE booking_type In (${BookingType.NOINSTALMENT}) 
+    `);
+    response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
 
 
     return response;
