@@ -1,27 +1,32 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsNotEmpty } from "class-validator";
-import { errorMessage } from "src/config/common.config";
 
 export class VerifyAvailabilityDto {
 
     @ApiProperty({
         description:"Enter a property id",
-        example:42945378123775
+        example:42945378516991
     })
     property_id:number;
 
     @ApiProperty({
         description:"Enter room id ",
-        example:42945378058257
+        example:42945378451569
     })
     room_id:number;
 
     @ApiProperty({
         description:"Enter rate plan selected for price check.  ",
-        example:'ElevnLettrs'
+        example:'ThisUnitTypeHasDepositsPaidOnArrivalAmount'
     })
     rate_plan_code:string;
+
+    @ApiProperty({
+        description:"Enter price of unit type.",
+        example:612.5
+    })
+    original_price:number;
+     
 
     @ApiProperty({
         description:"Enter a check in date",

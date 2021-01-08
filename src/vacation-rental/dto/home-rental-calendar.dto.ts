@@ -5,10 +5,10 @@ import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
 export class HomeRentalCalendarDto{
     @ApiProperty({
-        description:"Enter a id",
-        example:19
+        description:"Enter a locatio name",
+        example:"Barcelona"
     })
-    id:number;
+    name:string;
 
     @ApiProperty({
         description:"Enter a type city or hotel ",

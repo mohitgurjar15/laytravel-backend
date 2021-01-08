@@ -28,6 +28,12 @@ export class ActivityLog extends BaseEntity {
   @Column("timestamp without time zone", { name: "created_date" })
   createdDate: Date;
 
+  @Column("json", { name: "previous_value", nullable: true })
+  previousValue: object;
+
+  @Column("json", { name: "current_value", nullable: true })
+  currentValue: object;
+
   @ManyToOne(
     () => User,
     user => user.activityLogs

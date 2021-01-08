@@ -68,18 +68,12 @@ export class NewsLettersService {
 				.catch((err) => {
 					console.log("err", err);
 				});
-			return { message: `Email id subscribed successfully` };
+			return { message: `Welcome to laytrip, please check your email for more exiting offers.` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");
 				switch (error.response.statusCode) {
 					case 404:
-						if (
-							error.response.message ==
-							"This user does not exist&&&email&&&This user does not exist"
-						) {
-							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-						}
 						throw new NotFoundException(error.response.message);
 					case 409:
 						throw new ConflictException(error.response.message);

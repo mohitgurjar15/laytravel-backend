@@ -41,7 +41,7 @@ export class PredictionFactorMarkupService {
         let markupDetail = await this.predictionFactorMarkupRepository.findOne();
 
         if (!markupDetail) throw new NotFoundException(`Predaction markup not found`);
-
+        const previousData = markupDetail
         //markupDetail.moduleId = module_id;
         //markupDetail.userType = user_type;
         markupDetail.minInstallmentPercentage = minimum_installment_percentage;
@@ -51,8 +51,9 @@ export class PredictionFactorMarkupService {
 
         try {
             markupDetail.save();
+            const currentData = markupDetail
             // await getConnection().queryResultCache!.remove(["markup"]);
-            Activity.logActivity(user.userId, "prediction factor markup", `prediction Markup Updated by admin`);
+            Activity.logActivity(user.userId, "prediction factor markup", `prediction Markup Updated by admin`,previousData,currentData);
 
             return { message: "Prediction Markup Updated Successfully" };
         } catch (error) {

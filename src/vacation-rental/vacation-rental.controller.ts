@@ -14,6 +14,7 @@ import { HomeRentalCalendarDto } from './dto/home-rental-calendar.dto';
 import { User } from 'src/entity/user.entity';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { SearchFullTextDto } from './dto/search-full-text.dto';
 
 @Controller('vacation-rental')
 @ApiTags("Vacation-Rental")
@@ -22,12 +23,12 @@ export class VacationRentalController {
 
     constructor(private vacationRentalService: VacationRentalService) { }
 
-    @Get('/search-location')
+    @Get('/search-location')                                                                                                                                                                                                                                                                        
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    @ApiOperation({ summary: "Search hotel and vacation rental" })
+    @ApiOperation({ summary: "Search vacation rental" })
     async getData(
         @Query('search_name', MinCharPipe,) searchLocation: string
     ) {
@@ -36,12 +37,11 @@ export class VacationRentalController {
     }
 
     @Post('/availability')
-    @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    @ApiOperation({ summary: "Check list of all available property" })
+    @ApiOperation({ summary: "Search full text vacation rental" })
     @HttpCode(200)
     @ApiHeader({
         name: 'language',
@@ -53,18 +53,44 @@ export class VacationRentalController {
         description: 'Enter currency code(ex. USD)',
         example: 'USD'
     })
-    async hotelAvailability(
+    async getSearchFullText(
+        @Body() searchFullTextDto:SearchFullTextDto,
         @Req() req,
-        @Body() availability: AvailabilityVacationDto,
         @LogInUser() user
-    ): Promise<any> {
-        if (moment(availability.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
-            throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
-
-        if (!moment(availability.check_out_date).isAfter(availability.check_in_date))
-            throw new BadRequestException(`Check out date needs to be after check in.`)
-        return await this.vacationRentalService.availabilityHotel(availability, user, req.headers);
+    ){
+        return await this.vacationRentalService.getSearchFullText(searchFullTextDto,user,req.headers);
     }
+
+    // @Post('/availability')
+    // @ApiBearerAuth()
+    // @ApiResponse({ status: 200, description: 'Api success' })
+    // @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    // @ApiResponse({ status: 404, description: 'Not Found' })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @ApiOperation({ summary: "Check list of all available property" })
+    // @HttpCode(200)
+    // @ApiHeader({
+    //     name: 'language',
+    //     description: 'Enter language code(ex. en)',
+    //     example: 'en'
+    // })
+    // @ApiHeader({
+    //     name: 'currency',
+    //     description: 'Enter currency code(ex. USD)',
+    //     example: 'USD'
+    // })
+    // async hotelAvailability(
+    //     @Req() req,
+    //     @Body() availability: AvailabilityVacationDto,
+    //     @LogInUser() user
+    // ): Promise<any> {
+    //     if (moment(availability.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
+    //         throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
+
+    //     if (!moment(availability.check_out_date).isAfter(availability.check_in_date))
+    //         throw new BadRequestException(`Check out date needs to be after check in.`)
+    //     return await this.vacationRentalService.availabilityHotel(availability, user, req.headers);
+    // }
 
     @Post("/details")
     @ApiBearerAuth()

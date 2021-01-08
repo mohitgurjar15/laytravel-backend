@@ -1,11 +1,13 @@
 import { CancellationPolicy } from "./room_details.model";
 
-export class VerifyAvailability {
+export class HomeRentalRevalidate {
     property_name: string;
     property_id: number;
     room_id: number;
     rate_plan_code: string;
     room_name:string;
+    check_in_date:string;
+    check_out_date:string;
     available_status: boolean;
     booking_code: string;
     net_price: number;

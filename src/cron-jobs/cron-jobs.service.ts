@@ -37,6 +37,8 @@ import { ModulesName } from "src/enum/module.enum";
 import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Translation } from "src/utility/translation.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
+import { MonakerStrategy } from "src/vacation-rental/strategy/strategy";
+import { Monaker } from "src/vacation-rental/strategy/monaker";
 import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
 const AWS = require('aws-sdk');
 var fs = require('fs');
@@ -120,11 +122,11 @@ export class CronJobsService {
 					.catch((err) => {
 						console.log("err", err);
 					});
-				Activity.logActivity(
-					"1c17cd17-9432-40c8-a256-10db77b95bca",
-					"cron",
-					`${data.email} is Convert customer to free user because subscription plan is not done by customer`
-				);
+				// Activity.logActivity(
+				// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+				// 	"cron",
+				// 	`${data.email} is Convert customer to free user because subscription plan is not done by customer`
+				// );
 			}
 
 			console.log(updateQuery);
@@ -310,11 +312,11 @@ export class CronJobsService {
 							.catch((err) => {
 								console.log("err", err);
 							});
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${instalment.id} Payment Failed by Cron`
-						);
+						// Activity.logActivity(
+						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"cron",
+						// 	`${instalment.id} Payment Failed by Cron`
+						// );
 
 						PushNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
@@ -389,11 +391,11 @@ export class CronJobsService {
 							.catch((err) => {
 								console.log("err", err);
 							});
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${instalment.id} Payment successed by Cron`
-						);
+						// Activity.logActivity(
+						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"cron",
+						// 	`${instalment.id} Payment successed by Cron`
+						// );
 
 						PushNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
@@ -715,11 +717,11 @@ export class CronJobsService {
 						// 	.catch((err) => {
 						// 		console.log("err", err);
 						// 	});
-						Activity.logActivity(
-							"1c17cd17-9432-40c8-a256-10db77b95bca",
-							"cron",
-							`${data.id} recurring laytrip poin added by cron`
-						);
+						// Activity.logActivity(
+						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"cron",
+						// 	`${data.id} recurring laytrip poin added by cron`
+						// );
 					}
 					else {
 						// failed transaction mail
@@ -1130,11 +1132,14 @@ export class CronJobsService {
 				"check_in_date": bookingData.checkInDate,
 				"check_out_date": bookingData.checkOutDate,
 				"adult_count": bookingData.moduleInfo[0]["adult"],
-				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"]
+				"number_and_children_ages": bookingData.moduleInfo[0]["number_and_chidren_age"],
+				"original_price": bookingData.moduleInfo[0]["net_price"]
 			}
 
+			const monaker = new MonakerStrategy(new Monaker(Headers));
+			vacationData = new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
 
-			vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
+			// vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
 			// console.log(vacationData);
 
 

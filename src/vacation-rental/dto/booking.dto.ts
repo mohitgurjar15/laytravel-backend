@@ -5,54 +5,60 @@ import { errorMessage } from "src/config/common.config";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { PaymentType } from "src/enum/payment-type.enum";
 
-export class BookingDto{
+export class BookingDto {
 
     @ApiProperty({
-        description:"Enter room id",
-        example:42945378123775
+        description: "Enter room id",
+        example: 42945378516991
     })
-    property_id:number;
+    property_id: number;
 
     @ApiProperty({
-        description:"Enter room id",
-        example:42945378058257
+        description: "Enter room id",
+        example: 42945378451569
     })
-    room_id:number;
+    room_id: number;
 
     @ApiProperty({
-        description:"Enter rate plan selected for price check.",
-        example:'ElevnLettrs'
+        description: "Enter rate plan selected for price check.  ",
+        example: 'ThisUnitTypeHasDepositsPaidOnArrivalAmount'
     })
-    rate_plan_code:string;
+    rate_plan_code: string;
 
     @ApiProperty({
-        description:"Enter a check in date",
-        example:'2021-01-05'
+        description: "Enter price of unit type.",
+        example: 612.5
     })
-    check_in_date:string;
+    original_price: number;
 
-    
     @ApiProperty({
-        description:"Enter a check out date",
-        example:'2021-01-15'
+        description: "Enter a check in date",
+        example: '2021-01-05'
     })
-    check_out_date:string;
+    check_in_date: string;
+
 
     @ApiProperty({
-        description:"Enter a adult count",
+        description: "Enter a check out date",
+        example: '2021-01-15'
+    })
+    check_out_date: string;
+
+    @ApiProperty({
+        description: "Enter a adult count",
         example: 2
     })
-    adult_count:number;
+    adult_count: number;
 
     @Type(() => Number)
     @ApiProperty({
-        description:`Children ages collection`,
-        example:[10,12,15]
+        description: `Children ages collection`,
+        example: [10, 12, 15]
     })
-    number_and_children_ages:Array<Number>;
+    number_and_children_ages: Array<Number>;
 
-    @IsEnum([PaymentType.INSTALMENT,PaymentType.NOINSTALMENT,PaymentType.FULLPOINTS,PaymentType.PARTIALPOINTS],{
-        message : (args: ValidationArguments) => {
+    @IsEnum([PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS], {
+        message: (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "") {
                 return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
             } else {
@@ -61,103 +67,103 @@ export class BookingDto{
         }
     })
     @ApiProperty({
-        description:`Payment type`,
-        example:PaymentType.INSTALMENT
+        description: `Payment type`,
+        example: PaymentType.INSTALMENT
     })
-	payment_type:string;
+    payment_type: string;
 
     @IsOptional()
     @ApiProperty({
-        description:`Laycredit point to redeem`,
-        example:10
+        description: `Laycredit point to redeem`,
+        example: 10
     })
-    laycredit_points:number;
+    laycredit_points: number;
 
     @IsOptional()
     @ApiProperty({
-        description:`Card token`,
-        example:`XXXXXX-XXXXX-XXXXXX`
+        description: `Card token`,
+        example: `XXXXXX-XXXXX-XXXXXX`
     })
-    card_token:string;
+    card_token: string;
 
     @IsOptional({
         message: (args: ValidationArguments) => {
-            if (typeof args.value != "undefined" && ![InstalmentType.WEEKLY,InstalmentType.BIWEEKLY,InstalmentType.MONTHLY].includes(args.value)) {
+            if (typeof args.value != "undefined" && ![InstalmentType.WEEKLY, InstalmentType.BIWEEKLY, InstalmentType.MONTHLY].includes(args.value)) {
                 return `Please enter valid instalment type.&&&instalment_type&&&${errorMessage}`;
             }
         }
     })
     @ApiProperty({
-        description:`Instalment type`,
-        example:`weekly`
+        description: `Instalment type`,
+        example: `weekly`
     })
-    instalment_type:string;
+    instalment_type: string;
 
     @IsOptional()
     @ApiProperty({
-        description:`Additional with payment with instalement`,
-        example:10
+        description: `Additional with payment with instalement`,
+        example: 10
     })
-    additional_amount:number;
+    additional_amount: number;
 
     @IsOptional()
     @ApiProperty({
-        description:`Additional with payment with instalement`,
-        example:null
+        description: `Additional with payment with instalement`,
+        example: null
     })
-    custom_instalment_amount:number | null;
+    custom_instalment_amount: number | null;
 
     @IsOptional()
     @ApiProperty({
-        description:`Additional with payment with instalement`,
-        example:null
+        description: `Additional with payment with instalement`,
+        example: null
     })
-    custom_instalment_no:number | null;
+    custom_instalment_no: number | null;
 
     @IsOptional()
     @ApiProperty({
-        description:`Booking Through (web,android,ios)`,
-        example:`web`
+        description: `Booking Through (web,android,ios)`,
+        example: `web`
     })
-    booking_through:string;
+    booking_through: string;
 
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => Traveler)
     @ApiProperty({
-        description:`Traveler ids`,
-        example:[
+        description: `Traveler ids`,
+        example: [
             {
-                traveler_id : `c5944389-53f3-4120-84a4-488fb4e94d87`,
-                is_customer:true
+                traveler_id: `c5944389-53f3-4120-84a4-488fb4e94d87`,
+                is_customer: true
             },
-			{
-                traveler_id : `3e37b423-f67e-4c92-bd7c-1f62ed134540`,
-                is_customer:false
+            {
+                traveler_id: `3e37b423-f67e-4c92-bd7c-1f62ed134540`,
+                is_customer: false
             }
         ]
     })
-    travelers:Traveler[]
+    travelers: Traveler[]
 }
 
-class Traveler{
+class Traveler {
 
     @IsNotEmpty({
-		message: `Please select traveler.&&&traveler_id&&&${errorMessage}`,
-	})
-    @ApiProperty({
-        description:`Traveler id`,
-        example:`1a600f6e-6775-4266-8dbd-a8a3ad390aed`
+        message: `Please select traveler.&&&traveler_id&&&${errorMessage}`,
     })
-    traveler_id:string
+    @ApiProperty({
+        description: `Traveler id`,
+        example: `1a600f6e-6775-4266-8dbd-a8a3ad390aed`
+    })
+    traveler_id: string
 
     @IsNotEmpty({
-        message:``
+        message: ``
     })
-    
+
     @ApiProperty({
-        description:`select custsomer or not`,
-        example:true
+        description: `select custsomer or not`,
+        example: true
     })
-    is_customer:boolean;
+    is_customer: boolean;
 }
