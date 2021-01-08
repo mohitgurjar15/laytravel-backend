@@ -799,7 +799,7 @@ export class FlightService {
 				}
 				//price = returnResponce[i].price;
 
-				if (price >= priceRange[0] && price <= priceRange[1])
+				if (price >= 0 && price <= priceRange[1])
 					returnResponce[i].flag = 'low';
 				if (price > priceRange[1] && price <= priceRange[2])
 					returnResponce[i].flag = 'medium';
