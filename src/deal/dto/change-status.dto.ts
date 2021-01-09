@@ -3,7 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class ChangeDealStatusDto {
 	@IsNotEmpty({
-		message: `Please enter status`,
+		message: `Please enter status.`,
 	})
 	@ApiProperty({
 		description: `Enter status`,

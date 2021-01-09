@@ -4,7 +4,7 @@ import { IsNotEmpty } from "class-validator";
 export class UpdateDealDto {
 
     @IsNotEmpty({
-        message: `Please enter id&&&subject&&&Please enter id`
+        message: `Please enter id&&&subject&&&Please enter id.`
     })
     @ApiProperty({
         description: 'Enter id',
