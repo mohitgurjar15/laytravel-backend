@@ -27,11 +27,11 @@ import { BookingRepository } from 'src/booking/booking.repository';
       BookingRepository
     ]),
     // CacheModule.register()
-    CacheModule.register({
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
-    })
+    // CacheModule.register({
+    //   store: redisStore,
+    //   host: 'localhost',
+    //   port: 6379,
+    // })
   ]
 })
 export class HotelModule {}
