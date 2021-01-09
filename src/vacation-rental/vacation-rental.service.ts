@@ -52,6 +52,8 @@ import { PushNotification } from 'src/utility/push-notification.utility';
 import { vacationCategoty } from './vacation-rental.const';
 import { BookingDetailsUpdateMail } from 'src/config/email_template/booking-details-updates.html';
 import { SearchFullTextDto } from './dto/search-full-text.dto';
+import { Activity } from 'src/utility/activity.utility';
+import { ModulesName } from 'src/enum/module.enum';
 
 const mailConfig = config.get("email");
 
@@ -139,6 +141,8 @@ export class VacationRentalService {
 		await this.validateHeaders(headers);
 		const monaker = new MonakerStrategy(new Monaker(headers));
 		const result = new Promise((resolve) => resolve(monaker.searchFullText(searchFullTextDto, user, false)));
+
+		Activity.addSearchLog(ModulesName.VACATION_RENTEL,searchFullTextDto,user.user_id);
 		return result;
 	}
 
