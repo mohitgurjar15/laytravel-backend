@@ -121,6 +121,9 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "address", nullable: true, length: 500 })
   address: string | null;
 
+  @Column("character varying", { name: "key", nullable: true, length: 500 })
+  key: string | null;
+
   @Column("integer", { name: "country_id", nullable: true })
   countryId: number | null;
 
