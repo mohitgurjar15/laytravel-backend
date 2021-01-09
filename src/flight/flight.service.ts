@@ -701,29 +701,35 @@ export class FlightService {
 				}
 				result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			} else {
-				let dto = {
-					"source_location": source_location,
-					"destination_location": destination_location,
-					"departure_date": date,
-					"flight_class": flight_class,
-					"adult_count": adult_count,
-					"child_count": child_count,
-					"infant_count": infant_count
+
+				if(moment(new Date(date)).diff(moment(new Date()),"days")>=30){
+					
+					let dto = {
+						"source_location": source_location,
+						"destination_location": destination_location,
+						"departure_date": date,
+						"flight_class": flight_class,
+						"adult_count": adult_count,
+						"child_count": child_count,
+						"infant_count": infant_count
+					}
+					result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 				}
-				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+				
 			}
 
 			startDate.setDate(startDate.getDate() + 1);
 			resultIndex++;
 		}
-
-
-
+		
+		
 		const response = await Promise.all(result);
+		//console.log("response",response)
 
 		let returnResponce = [];
 		for await (const data of response) {
-			if (!data.message) {
+			console.log("data.message",data)
+			if (typeof data?.items!='undefined' && data?.items.length) {
 				var unique_code = '';
 				var lowestprice = 0;
 				var netRate = 0;
@@ -793,8 +799,6 @@ export class FlightService {
 			priceRange.push(minPrice + diff);
 			priceRange.push(minPrice + diff + diff);
 			priceRange.push(maxPrice);
-
-			console.log(minPrice, maxPrice, priceRange)
 			let price;
 			for (let i in returnResponce) {
 				if (returnResponce[i].secondary_start_price > 0) {
