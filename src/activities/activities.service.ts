@@ -87,7 +87,9 @@ export class ActivitiesService {
 	async listSearchLog(
 		paginationOption: ListSearchLogDto
 	) {
-		const { limit, page_no, searchDate, userId, source_location, destination_location, departure_date, arrival_date, flight_class } = paginationOption
+		const { limit, page_no, searchDate, userId, source_location, destination_location, departure_date, arrival_date, flight_class,
+			name, type, check_in_date, check_out_date, adult_count, number_and_children_ages = []
+		} = paginationOption
 
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -123,6 +125,32 @@ export class ActivitiesService {
 			search['flight_class'] = flight_class
 		}
 
+		if (name) {
+			search["name"] = name
+		}
+
+		if (type) {
+			search["type"] = type
+		}
+
+		if (check_in_date) {
+			search["check_in_date"] = check_in_date
+		}
+
+		if (check_out_date) {
+			search["check_out_date"] = check_out_date
+		}
+
+		if (adult_count) {
+			search["adult_count"] = Number(adult_count)
+		}
+
+		if (number_and_children_ages.length != 0) {
+			let age = number_and_children_ages.map((age) => Number(age));
+			search["number_and_children_ages"] = age;
+		}
+
+
 		const query = await getConnection()
 			.createQueryBuilder(SearchLog, "log")
 			.where(where)
@@ -149,7 +177,8 @@ export class ActivitiesService {
 	async exportSearchLog(
 		paginationOption: ExportSearchLogDto
 	) {
-		const { searchDate, userId, source_location, destination_location, departure_date, arrival_date, flight_class } = paginationOption
+		const { searchDate, userId, source_location, destination_location, departure_date, arrival_date, flight_class,
+			name, type, adult_count, number_and_children_ages = [], check_in_date, check_out_date } = paginationOption
 
 
 		let where;
@@ -181,6 +210,31 @@ export class ActivitiesService {
 
 		if (flight_class) {
 			search['flight_class'] = flight_class
+		}
+
+		if (name) {
+			search["name"] = name
+		}
+
+		if (type) {
+			search["type"] = type
+		}
+
+		if (check_in_date) {
+			search["check_in_date"] = check_in_date
+		}
+
+		if (check_out_date) {
+			search["check_out_date"] = check_out_date
+		}
+
+		if (adult_count) {
+			search["adult_count"] = Number(adult_count)
+		}
+
+		if (number_and_children_ages.length != 0) {
+			let age = number_and_children_ages.map((age) => Number(age));
+			search["number_and_children_ages"] = age;
 		}
 
 		const query = await getConnection()
