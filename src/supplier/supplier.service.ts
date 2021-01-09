@@ -99,7 +99,9 @@ export class SupplierService {
 		Activity.logActivity(
 			adminId,
 			"supplier-user",
-			`supplier-user ${user.email} is added by admin`
+			`supplier-user ${user.email} is added by admin`,
+			null,
+			userdata
 		);
 		return this.userRepository.getUserDetails(userdata.userId, siteUrl, [
 			Role.SUPPLIER,
@@ -132,7 +134,7 @@ export class SupplierService {
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([Role.SUPPLIER]) },
 			});
-
+			const previousData = userData
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -144,10 +146,13 @@ export class SupplierService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
+			const currentData = userData
 			Activity.logActivity(
 				adminId,
 				"supplier-user",
-				` ${userData.email} is updated by the admin`
+				` ${userData.email} is updated by the admin`,
+				previousData,
+				currentData
 			);
 			return this.userRepository.getUserDetails(userData.userId, siteUrl, [
 				Role.SUPPLIER,
@@ -212,14 +217,18 @@ export class SupplierService {
 					`You are not allowed to access this resource.`
 				);
 			} else {
+				const previousData = user
 				user.isDeleted = true;
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
+				const currentData = user
 				Activity.logActivity(
 					adminId,
 					"supplier-user",
-					` ${user.email} is deleted by admin`
+					` ${user.email} is deleted by admin`,
+					previousData,
+					currentData
 				);
 				return { messge: `supplier deleted successfully` };
 			}
@@ -442,17 +451,21 @@ export class SupplierService {
 				roleId: In([Role.SUPPLIER]),
 			});
 
+
 			if (!user) throw new NotFoundException(`No supplier user found`);
+			const previousData = user
 			var statusWord = status == true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-
+			const currentData = user
 			Activity.logActivity(
 				adminId,
 				"supplier-user",
-				`${user.email} supplier user status changed by admin`
+				`${user.email} supplier user status changed by admin`,
+				previousData,
+				currentData
 			);
 			return { message: `supplier user status changed` };
 		} catch (error) {

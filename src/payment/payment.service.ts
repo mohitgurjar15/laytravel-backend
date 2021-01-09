@@ -179,7 +179,7 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
-		console.log(authResult)
+		// console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,

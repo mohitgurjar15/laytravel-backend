@@ -1,3 +1,10 @@
+/**
+ * @author Parth Virani
+ * @email parthvirani@itoneclick.com
+ * @create date 2021-01-05 00:06:52
+ * @modify date 2021-01-05 00:06:52
+ * @desc [description]
+ */
 /*
  * Created on Tue May 12 2020
  *
@@ -66,6 +73,10 @@ import { RewordStatus } from "src/enum/reword-status.enum";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { WebPushNotifications } from "src/entity/web-push-notification.entity";
 import { Crypto } from "src/utility/crypto.utility";
+import * as moment from 'moment';
+import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
+import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum";
+import { DeleteUserAccountRequest } from "src/entity/delete-user-account-request.entity";
 
 @Injectable()
 export class AuthService {
@@ -300,7 +311,7 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
+		//Activity.logActivity(user.userId, `auth`, ` ${email} user is signup`);
 		return { message: `Otp send on your email id` };
 	}
 
@@ -357,11 +368,11 @@ export class AuthService {
 		} catch (error) {
 			throw new InternalServerErrorException(error.sqlMessage);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` user is update the Email id ${email} to ${newEmail} `
-		);
+		//Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	` user is update the Email id ${email} to ${newEmail} `
+		// );
 		return { message: `Otp send on your email id` };
 	}
 
@@ -442,7 +453,7 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
-		// var unixTimestamp = Math.round(new Date().getTime() / 1000);
+		var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
 		// const tokenhash = crypto
 		// 	.createHmac("sha256", unixTimestamp.toString())
@@ -458,11 +469,11 @@ export class AuthService {
 		if (otp < 100000) {
 			otp = otp + 800000;
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			` ${email} user is request to forget password using ${otp} otp`
-		);
+		//Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	` ${email} user is request to forget password using ${otp} otp`
+		// );
 		// var resetLink = `https://staging.laytrip.com`;
 		// if (
 		// 	user.roleId == Role.ADMIN ||
@@ -543,18 +554,28 @@ export class AuthService {
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
 		}
-		Activity.logActivity(
-			user.userId,
-			`auth`,
-			`${user.email} is forget password using ${otp} otp`
-		);
+		// Activity.logActivity(
+		// 	user.userId,
+		// 	`auth`,
+		// 	`${user.email} is forget password using ${otp} otp`
+		// );
 
 		const validate = await this.forgetPasswordRepository.findOne({
 			where: { email: email, is_used: 0, otp: otp },
 		});
 		if (validate) {
 			console.log(validate);
+			var a = moment(new Date());//now
+			var b = moment(validate.createTime);
+			const diff = a.diff(b, 'minutes');
 
+			console.log(diff)
+
+			if (diff >= 30) {
+				throw new BadRequestException(
+					`OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
+				);
+			}
 			const salt = await bcrypt.genSalt();
 			user.salt = salt;
 			user.password = await this.hashPassword(new_password, salt);
@@ -667,11 +688,11 @@ export class AuthService {
 					.catch((err) => {
 						console.log("err", err);
 					});
-				Activity.logActivity(
-					user.userId,
-					`auth`,
-					`${email} user is verify own account`
-				);
+				// Activity.logActivity(
+				// 	user.userId,
+				// 	`auth`,
+				// 	`${email} user is verify own account`
+				// );
 				return { userDetails };
 			} catch (error) {
 				if (typeof error.response !== "undefined") {
@@ -1093,6 +1114,10 @@ export class AuthService {
 						`Language id not exist with database.&&&language_id`
 					);
 			}
+			var age = moment(new Date()).diff(moment(dob), 'years');
+			if (age < 16) {
+				throw new BadRequestException(`Age below 16 years are not allowed to signup on Portal.`)
+			}
 			const user = new User();
 			user.title = title;
 			user.firstName = first_name;
@@ -1146,11 +1171,11 @@ export class AuthService {
 				);
 			}
 
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`user ${user.email} is update profile`
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`user ${user.email} is update profile`
+			// );
 			const roleId = [
 				Role.ADMIN,
 				Role.SUPER_ADMIN,
@@ -1229,11 +1254,11 @@ export class AuthService {
 		user.updatedDate = new Date();
 		try {
 			await user.save();
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`prefered Languge Updated By user ${user.email} `
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`prefered Languge Updated By user ${user.email} `
+			// );
 			return { message: "Prefered languge updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -1269,11 +1294,11 @@ export class AuthService {
 		user.updatedDate = new Date();
 		try {
 			await user.save();
-			Activity.logActivity(
-				userId,
-				`auth`,
-				`preffered Currency Updated By user ${user.email}`
-			);
+			// Activity.logActivity(
+			// 	userId,
+			// 	`auth`,
+			// 	`preffered Currency Updated By user ${user.email}`
+			// );
 			return { message: "Prefered currency updated successfully" };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
@@ -1440,6 +1465,65 @@ export class AuthService {
 				message: `Notification service started successfully`
 			}
 
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async deleteUserAccount(
+		user: User,
+		dto: DeleteAccountReqDto
+	) {
+		try {
+			const { requireBackupFile } = dto
+			const where = `"req"."user_id" = '${user.userId}' AND "req"."status" != ${DeleteAccountRequestStatus.CANCELLED}`
+			const req = await getConnection()
+				.createQueryBuilder(DeleteUserAccountRequest, "req")
+				.where(where)
+				.getOne();
+			if (req) {
+				throw new ConflictException(`We have already Requst for delete your account  and it is under process`)
+			}
+			else {
+				const newReq = new DeleteUserAccountRequest
+				newReq.userId = user.userId
+				newReq.status = DeleteAccountRequestStatus.PENDING
+				newReq.createdDate = new Date();
+				newReq.email = user.email
+				newReq.requestForData = requireBackupFile
+
+				newReq.save()
+
+				return {
+					message: `We have get your request! In some time your account will Delete.`
+				}
+			}
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {

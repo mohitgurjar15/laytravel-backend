@@ -31,7 +31,6 @@ export function BookingFailerMail(param: { error: string } , bookingId = null) {
             <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >
                 The reason for booking failure:${param.error}
                     </td>
-                    </br>
                     </tr>`
                         
 
@@ -41,27 +40,14 @@ export function BookingFailerMail(param: { error: string } , bookingId = null) {
         content += `< tr >
                         <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >
                             Booking Id : ${bookingId}
-        </td>
-            < /tr>  `
+        </td></tr>
+         `
     }
     content += `<tr>
         <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >
             Please, proceed to our website to try again(or “We are sorry to let you know that the reservation is no longer available.Please choose a different option for your next trip.”)
 
-    </td>
-        < /tr>
-        < /tbody>
-        < /table>
-        < /td>
-        < /tr>
-        < /tbody>
-        < /table>
-        < /td>
-        < /tr>
-        < /table>
-        < /td>
-        < /tr>
-        < /table>
+    </td></tr></tr></table>
             `;
 return EmailHeader + content + EmailFooter;
 }

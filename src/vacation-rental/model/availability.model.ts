@@ -1,3 +1,6 @@
+import { integer } from "aws-sdk/clients/cloudfront";
+import { double } from "aws-sdk/clients/lightsail";
+
 export class HotelSearchResult{
     items:HotelDetail[];
     price_range : PriceRange;
@@ -19,9 +22,18 @@ export class HotelDetail {
     display_image: string;
     amenities:[];
     fixed_amenities:[];
-    date:string;
+    check_in_date:string;
+    check_out_date:string;
     latitude: string;
     longintude: string;
+    near_distance:NearDistance[];
+}
+
+export class NearDistance{
+    ditance:double;
+    near_by:string;
+    location:string;
+
 }
 
 export class PriceRange{

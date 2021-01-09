@@ -10,6 +10,7 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { ExportBookingDto } from "./dto/export-booking.dto";
 import { BookingType } from "src/enum/booking-type.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
+import { ModulesName } from "src/enum/module.enum";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -25,7 +26,9 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id, supplier_id
+			module_id, supplier_id,
+			email, booking_through, trnsaction_token
+
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -35,6 +38,11 @@ export class BookingRepository extends Repository<Booking> {
 		if (userId) {
 			where += `AND ("booking"."user_id" = '${userId}')`;
 		}
+
+		if (booking_through) {
+			where += `AND ("booking"."booking_through" = '${booking_through}')`;
+		}
+
 		if (module_id) {
 			where += `AND ("booking"."module_id" = '${module_id}')`;
 		}
@@ -65,7 +73,15 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%') or ("instalments"."transaction_token" ILIKE '%${search}%'))`;
+		}
+
+		if (email) {
+			where += `AND ("User"."email" ILIKE '%${email}%')`;
+		}
+
+		if (trnsaction_token) {
+			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
 		}
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
@@ -83,7 +99,7 @@ export class BookingRepository extends Repository<Booking> {
 			.skip(skip)
 			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
-		
+
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
@@ -145,6 +161,17 @@ export class BookingRepository extends Repository<Booking> {
 		//return bookingDetails;
 	}
 
+	async getBookDetail(id) {
+
+		let relations = ["user", "currency2", "bookingInstalments", "travelers", "travelers.userData", "card"];
+		
+		let result = this.findOne({
+            where: { laytripBookingId: id },
+            relations 
+		});
+		
+		return result;
+	}
 
 	async bookingDetail(bookingId: string) {
 		//const { bookingId } = getBookingDetailsDto;
@@ -167,9 +194,9 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (data.bookingInstalments.length > 0) {
-			data.bookingInstalments.sort((a, b) =>  a.id - b.id )
+			data.bookingInstalments.sort((a, b) => a.id - b.id)
 
-			
+
 		}
 		return data;
 	}
@@ -402,10 +429,11 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
 			.leftJoinAndSelect("predictiveBookingData.booking", "booking")
 			.leftJoinAndSelect("booking.module", "moduleData")
-			
+
 			.select([
 				"booking.bookingType",
 				"booking.bookingStatus",
+				"booking.checkInDate",
 				"booking.currency",
 				"booking.totalAmount",
 				"booking.netRate",
@@ -438,7 +466,7 @@ export class BookingRepository extends Repository<Booking> {
 				"moduleData.id"
 			])
 
-			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id = 1`)
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)`, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
 
 
 		const [data, count] = await query.getManyAndCount();
@@ -451,7 +479,7 @@ export class BookingRepository extends Repository<Booking> {
 		return { data, count };
 	}
 
-	async getPendingBooking(){
+	async getPendingBooking() {
 		const date = new Date();
 		var todayDate = date.toISOString();
 		todayDate = todayDate
@@ -460,7 +488,7 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.module", "moduleData")
-			
+
 			// .select([
 			// 	"booking.supplierBookingId",
 			// 	"booking.id"

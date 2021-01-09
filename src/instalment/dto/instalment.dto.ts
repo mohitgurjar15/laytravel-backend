@@ -67,19 +67,15 @@ export class InstalmentDto{
     })
     additional_amount : number;
 
-
     @ApiPropertyOptional({
-        description:`No of custom instalment`,
-        example:null
-    })
-    custom_instalment_no : number;
-
-    @ApiPropertyOptional({
-        description:`Custom Amount`,
+        description:`Down Amount`,
         example:3
     })
-    custom_amount : number;
+    down_payment : number;
 
-    
-
+    @ApiPropertyOptional({
+        description:`Selected Down Amount`,
+        example:3
+    })
+    selected_down_payment : number;
 }

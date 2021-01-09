@@ -6,7 +6,7 @@ export class AvailabilityVacationDetailsDto {
 
     @ApiProperty({
         description:"Enter a property id",
-        example:42945378123775
+        example:42945378516991
     })
     id:number;
 

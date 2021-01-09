@@ -53,6 +53,13 @@ export class BookDto{
 
     
     constructor(book) {
-        Object.assign(this, book);
+
+        this.name_first = book.primary_guest_detail.firstName;
+        this.name_last = book.primary_guest_detail.lastName;
+        this.initials = book.primary_guest_detail.title;
+        this.email = book.primary_guest_detail.email;
+        this.phone_number = book.primary_guest_detail.phoneNo;
+        this.ppn_bundle = book.bundle;
+
     }
 }
