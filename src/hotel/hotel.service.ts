@@ -67,9 +67,8 @@ export class HotelService{
     
     async search(searchReqDto: SearchReqDto) {
         
-        /* This should return pure hotel response (Directly from supplier's and as per our decided structure) */
+        /* This should return direct hotel response (Directly from supplier's and as per our decided structure) */
         let hotels = await this.hotel.search(searchReqDto);
-        // return hotels;
         
         /* Add any type of Business logic for hotel object's */
         hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);

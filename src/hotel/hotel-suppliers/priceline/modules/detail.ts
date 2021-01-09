@@ -1,4 +1,4 @@
-import { InternalServerErrorException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { DetailHelper } from "../helpers/detail.helper";
 import { errorMessage } from "src/config/common.config";
 
@@ -15,7 +15,7 @@ export class Detail{
         let results = res.data['getHotelHotelDetails'];
         
         if (results.error) {
-            throw new InternalServerErrorException("No result found &&&detail&&&"+errorMessage);
+            throw new NotFoundException("No result found &&&detail&&&"+errorMessage);
         }
         
         if (results.results.status && results.results.status === "Success") {

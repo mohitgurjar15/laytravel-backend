@@ -1,4 +1,4 @@
-import { InternalServerErrorException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { collect } from "collect.js";
 import { errorMessage } from "src/config/common.config";
 

@@ -1,4 +1,4 @@
-import { InternalServerErrorException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { collect } from "collect.js";
 import { DetailHelper } from "../helpers/detail.helper";
 import { RateHelper } from "../helpers/rate.helper";
@@ -25,10 +25,10 @@ export class Search{
     processSearchResult(res, parameters) {
         
         let results = res.data['getHotelExpress.Results'];
-        
+
         if (results.error) {
-            // results.error.status
-            throw new InternalServerErrorException("No result found &&&search&&&"+errorMessage);
+
+            throw new NotFoundException("No result found &&&search&&&"+errorMessage);
         }
         
         if (results.results.status && results.results.status === "Success") { 
@@ -59,7 +59,7 @@ export class Search{
             return hotels;
             
         } else {
-            throw new InternalServerErrorException(results.error.status);
+            throw new NotFoundException(results.error.status);
         }
     }
 
