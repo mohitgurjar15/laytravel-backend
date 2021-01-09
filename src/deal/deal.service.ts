@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { response } from 'express';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Deal } from 'src/entity/deal.entity';
 import { Module } from 'src/entity/module.entity';
 import { User } from 'src/entity/user.entity';
+import { airports } from 'src/flight/airports';
 import { getConnection } from 'typeorm';
 import { AddDealDto } from './dto/add-deal.dto';
 import { ChangeDealStatusDto } from './dto/change-status.dto';
@@ -22,7 +22,7 @@ export class DealService {
             .getOne();
 
         if (!module) {
-            throw new BadRequestException(`given module id not found`)
+            throw new BadRequestException(`Given module id not found`)
         }
 
         var where = `("deal"."is_deleted" = false) AND ("deal"."module_id" = ${module_id}) AND ("deal"."status" = true)`;
@@ -34,9 +34,12 @@ export class DealService {
 
         console.log(dealCount);
 
-        if (status && dealCount > 1) {
-            throw new NotAcceptableException(`Already 2 deal available please hide one of them`)
+        if (status) {
+            if (dealCount > 1) {
+                throw new BadRequestException(`Max 2 deal will be available at a time, please deactivate one deal to active new deal.`)
+            }
         }
+
         if (files.image == undefined) {
             throw new BadRequestException(`please upload image`)
         }
@@ -69,7 +72,7 @@ export class DealService {
             .getOne();
 
         if (!deal) {
-            throw new NotAcceptableException(`given deal id is wrong`)
+            throw new BadRequestException(`Given deal id is incorrect.`)
         }
 
         if (files.image != undefined) {
@@ -85,7 +88,7 @@ export class DealService {
 
         const dealData = await deal.save();
         return {
-            message : `Deal updated successfully`
+            message: `Deal updated successfully`
         }
     }
 
@@ -103,7 +106,7 @@ export class DealService {
             .getOne();
 
         if (!deal) {
-            throw new NotAcceptableException(`given deal id is wrong`)
+            throw new BadRequestException(`Given deal id is incorrect.`)
         }
 
         if (status) {
@@ -114,7 +117,7 @@ export class DealService {
                 .getCount();
 
             if (dealCount > 1) {
-                throw new NotAcceptableException(`Already 2 deal available please hide one of them`)
+                throw new BadRequestException(`Max 2 deal will be available at a time, please deactivate one deal to active new deal.`)
             }
         }
 
@@ -139,7 +142,7 @@ export class DealService {
             .getOne();
 
         if (!deal) {
-            throw new NotAcceptableException(`given deal id is wrong`)
+            throw new BadRequestException(`Given deal id is incorrect.`)
         }
 
 
@@ -181,15 +184,20 @@ export class DealService {
         const [data, count] = await query.getManyAndCount();
 
         if (!data.length) {
-            throw new NotFoundException(`no data found`)
+            throw new NotFoundException(`No deal founds.`)
         }
-
+        let deals = [];
+        let deal;
         for await (const row of data) {
             row.image = siteUrl + '/static/' + row.image
+            deal = {};
+            deal = row
+            deal.location_info = airports[row.location]
+            deals.push(deal)
         }
 
         return {
-            data: data, count: count
+            data: deals, count: count
         }
     }
 
@@ -209,16 +217,24 @@ export class DealService {
 
         const [data, count] = await query.getManyAndCount();
 
+        // console.log(data);
+
+
         if (!data.length) {
-            throw new NotFoundException(`no deal found`)
+            throw new NotFoundException(`No deal founds.`)
         }
 
+        let deals = [];
+        let deal
         for await (const row of data) {
-            row.image = siteUrl + '/static/' + row.image
+            deal = {}
+            deal = airports[row.location]
+            deal.image = siteUrl + '/static/' + row.image
+            deals.push(deal)
         }
 
         return {
-            data: data
+            data: deals
         }
     }
 
@@ -235,12 +251,16 @@ export class DealService {
         const data = await query.getOne();
 
         if (!data) {
-            throw new NotFoundException(`no deal found`)
+            throw new NotFoundException(`No deal founds.`)
         }
         data.image = siteUrl + '/static/' + data.image
-        return data
+
+        let deal;
+
+        deal = {};
+        deal = data
+        deal.location_info = airports[data.location]
+
+        return deal
     }
-
-
-
 }
