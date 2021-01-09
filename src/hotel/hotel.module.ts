@@ -26,7 +26,7 @@ import { BookingRepository } from 'src/booking/booking.repository';
     TypeOrmModule.forFeature([
       BookingRepository
     ]),
-    // CacheModule.register()
+    CacheModule.register()
     // CacheModule.register({
     //   store: redisStore,
     //   host: 'localhost',
