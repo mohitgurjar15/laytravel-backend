@@ -50,6 +50,7 @@ export class Search{
                     saving_percent,
                     refundable: this.rate.is_cancellable,
                     card_required: this.rate.cvc_required,
+                    available_rooms: this.rate.available_rooms,
                     bundle: this.rate.ppn_bundle
                 };
 

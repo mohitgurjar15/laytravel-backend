@@ -18,6 +18,7 @@ import { HotelBookingParam } from "src/config/email_template/model/hotel-booking
 import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";
 import * as config from "config";
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 const mailConfig = config.get("email");
 
 export class BookingHelper{
@@ -160,5 +161,16 @@ export class BookingHelper{
             .catch((err) => {
                 console.log("err", err);
             });
+    }
+
+    async savePredictive(booking) {
+        const predictiveBooking = new PredictiveBookingData();
+        predictiveBooking.bookingId = booking.id;
+        predictiveBooking.date = new Date();
+        predictiveBooking.netPrice = parseFloat(booking.netRate);
+        predictiveBooking.isBelowMinimum = false; /* This nned to be 'false' as in hotels we are not getting such parameter */
+        predictiveBooking.price = parseFloat(booking.totalAmount);
+        predictiveBooking.remainSeat = booking.moduleInfo.room.available_rooms ?? 0;
+        await predictiveBooking.save()       
     }
 }
