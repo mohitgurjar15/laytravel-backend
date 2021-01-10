@@ -482,7 +482,7 @@ export class CronJobsService {
 						await this.getDailyPriceOfVacationRental(result[index], Headers)
 						break;
 					case ModulesName.HOTEL:
-						return await this.hotelService.fetchPrice(result[index])
+						await this.hotelService.fetchPrice(result[index])
 						break;
 					default:
 
@@ -495,7 +495,7 @@ export class CronJobsService {
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`
 			}
 		}
-		return;
+		
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/><pre>' + failedlogArray, 'daily booking price cron failed')
 		}
