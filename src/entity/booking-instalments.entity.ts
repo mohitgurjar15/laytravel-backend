@@ -62,6 +62,9 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "instalment_status" })
   instalmentStatus: number;
 
+  @Column("integer", { name: "instalment_no" , nullable : true })
+  instalmentNo: number;
+
   @Column("integer", { name: "payment_gateway_id", nullable: true })
   paymentGatewayId: number | null;
 

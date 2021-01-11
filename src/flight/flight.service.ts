@@ -1488,6 +1488,7 @@ export class FlightService {
 					bookingInstalment.supplierId = 1;
 					bookingInstalment.isPaymentProcessedToSupplier = 0;
 					bookingInstalment.isInvoiceGenerated = 0;
+					bookingInstalment.instalmentNo = i
 					i++;
 					bookingInstalments.push(bookingInstalment);
 				}
