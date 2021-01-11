@@ -837,7 +837,6 @@ export class AdminDashboardService {
     `);
     response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
 
-<<<<<<< HEAD
     
 
     var userRegisteredViaApp = await getConnection().query(`
@@ -850,32 +849,6 @@ export class AdminDashboardService {
       `);
     
     response["user_registered_via_app"] = userRegisteredViaApp[0].cnt || 0;
-=======
-    var userRegisteredViaWeb = await getConnection().query(`
-    SELECT COUNT("user"."user_id") AS "total"
-      FROM
-      "user"
-      WHERE
-      register_via = 'web'
-      OR
-      register_via IS NULL
-      `);
-   
-    response["user_registered_via_web"] = userRegisteredViaWeb[0].total || 0;
-
-    var userRegisteredViaApp = await getConnection().query(`
-    SELECT COUNT("user"."user_id") AS "total"
-    FROM
-    "user"
-    WHERE
-    register_via = 'android'
-    OR
-    register_via = 'ios'
-    `);
-    
-
-    response["user_registered_via_app"] = userRegisteredViaApp[0].total || 0;
->>>>>>> 0d9c2fa74850732debb4dbd4715427081245b121
 
     var userRegisteredViaWeb = await getConnection().query(`
     SELECT COUNT(*) as cnt
