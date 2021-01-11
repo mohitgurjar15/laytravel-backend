@@ -770,7 +770,7 @@ export class FlightService {
 					price: lowestprice,
 					unique_code: unique_code,
 					start_price: startPrice,
-					secondary_start_price: secondaryStartPrice
+					secondary_start_price: secondaryStartPrice >=5?secondaryStartPrice:5
 				}
 
 				returnResponce.push(output)

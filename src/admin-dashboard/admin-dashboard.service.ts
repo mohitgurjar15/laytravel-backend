@@ -462,6 +462,42 @@ export class AdminDashboardService {
 
       response["revenues"] = revenues[0].total_profit || 0;
 
+      var revenueInstallment = await getConnection().query(`
+      SELECT count(id) as confirm_booking,
+      SUM( total_amount * usd_factor) as total_amount,
+      SUM( net_rate * usd_factor) as total_cost,
+      SUM( markup_amount * usd_factor) as total_profit
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+
+      var revenueNoInstallment = await getConnection().query(`
+      SELECT count(id) as confirm_booking,
+      SUM( total_amount * usd_factor) as total_amount,
+      SUM( net_rate * usd_factor) as total_cost,
+      SUM( markup_amount * usd_factor) as total_profit
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+
+      var revenueFromNoInstallment = revenues[0].total_profit - revenueInstallment[0].total_profit;
+      response["revenue_from_full_price"] = (Math.round(revenueFromNoInstallment * 100) / 100).toFixed(2);
+
+      var revenueFromInstallment = revenues[0].total_profit - revenueNoInstallment[0].total_profit;
+      response["revenue_from_installment"] = (Math.round(revenueFromInstallment * 100) / 100).toFixed(2);
+
+      var revenueFromNoInstallmentPercent = revenueFromNoInstallment * 100 / revenues[0].total_profit
+      response["revenue_from_full_price_percentage"] = (Math.round(revenueFromNoInstallmentPercent * 100) / 100).toFixed(2);
+
+      var revenueFromInstallmentPercent = revenueFromInstallment * 100 / revenues[0].total_profit
+      response["revenue_from_installment_percentage"] = (Math.round(revenueFromInstallmentPercent * 100) / 100).toFixed(2);
+
+      var installmentBookingQty = await getConnection().query(`
+      SELECT count(id) as confirm_booking
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+      response["booking_with_installment_qty"] = installmentBookingQty[0].confirm_booking || 0;
+
+      var noInstallmentBookingQty = await getConnection().query(`
+      SELECT count(id) as confirm_booking
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+      response["booking_with_no_installment_qty"] = noInstallmentBookingQty[0].confirm_booking || 0;
+
       var valueOfBooking = await getConnection().query(`
                 SELECT  SUM( total_amount * usd_factor) as total_amount from booking where ${moduleIdCondition} AND ${dateConditon}
 			`);
@@ -475,7 +511,7 @@ export class AdminDashboardService {
       response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;
 
       var valueOfBookingQty = await getConnection().query(`
-      SELECT  count(id) as cnt from booking where "booking"."booking_status" IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM},${BookingStatus.CANCELLED},${BookingStatus.FAILED})
+      SELECT  count(id) as cnt from booking where "booking"."booking_status" IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM},${BookingStatus.CANCELLED},${BookingStatus.FAILED}) AND  ${moduleIdCondition}
       `);
 
       response["value_of_bookings_qyt"] = valueOfBookingQty[0].cnt || 0;
@@ -707,6 +743,17 @@ export class AdminDashboardService {
       FROM
       "user"
       WHERE
+      role_id In (${Role.GUEST_USER})
+      GROUP BY
+		  user_id`
+    );
+    response["total_guest_users"] = (Math.round(totalGuestUsers.length * 100) / 100);
+
+    const activeGuestUsers = await getConnection().query(
+      `SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      WHERE
       is_deleted=false
       AND
       is_verified=true
@@ -715,7 +762,22 @@ export class AdminDashboardService {
       GROUP BY
 		  user_id`
     );
-    response["total_guest_users"] = (Math.round(totalGuestUsers.length * 100) / 100);
+    response["active_guest_users"] = (Math.round(activeGuestUsers.length * 100) / 100);
+
+    const activeFreeUsers = await getConnection().query(
+      `SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      WHERE
+      is_deleted=false
+      AND
+      is_verified=true
+      AND
+      role_id In (${Role.FREE_USER})
+      GROUP BY
+		  user_id`
+    );
+    response["active_free_users"] = (Math.round(activeFreeUsers.length * 100) / 100);
 
     const totalActiveUsers = await getConnection().query(
       `SELECT "user"."user_id", COUNT(*)
@@ -729,6 +791,8 @@ export class AdminDashboardService {
 		  user_id`
     );
     response["total_active_users"] = (Math.round(totalActiveUsers.length * 100) / 100);
+
+    
 
     const salesByFullPriceCount = await getConnection().query(
       `SELECT COUNT(id)
