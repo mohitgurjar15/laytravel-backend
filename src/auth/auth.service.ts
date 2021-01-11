@@ -1107,7 +1107,7 @@ export class AuthService {
 			}
 			var age = moment(new Date()).diff(moment(dob), 'years');
 			if (age < 16) {
-				throw new BadRequestException(`Less than 16 year old user not allowed on plateform. please contact administaration`)
+				throw new BadRequestException(`Age below 16 years are not allowed to signup on Portal.`)
 			}
 			const user = new User();
 			user.title = title;

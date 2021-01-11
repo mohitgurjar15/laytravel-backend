@@ -9596,7 +9596,7 @@ export const airports ={
   },
   "CUN": {
     "code": "CUN",
-    "name": "CancÃºn Intl.",
+    "name": "Cancun Intl.",
     "city": "Cancun",
     "country": "Mexico"
   },
