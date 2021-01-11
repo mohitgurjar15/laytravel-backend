@@ -59,9 +59,11 @@ export class HotelController {
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     filterObjects(
-        @Body() filterReqDto: FilterReqDto
+        @Headers() hotelHeaderDto: HotelHeaderDto
     ) {
-
+        let filterReqDto: FilterReqDto = {
+            token: hotelHeaderDto.token
+        };
         return this.hotelService.filterObjects(filterReqDto);
     }
 

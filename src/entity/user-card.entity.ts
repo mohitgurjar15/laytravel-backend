@@ -4,8 +4,10 @@ import {
   Entity,
   Index,
   JoinColumn,
-  ManyToOne
+  ManyToOne,
+  OneToMany
 } from "typeorm";
+import { Booking } from "./booking.entity";
 import { PaymentGateway } from "./payment-gateway.entity";
 import { User } from "./user.entity";
 @Index("user_card_payment_gateway_id", ["paymentGatewayId"], {})
@@ -58,4 +60,10 @@ export class UserCard extends BaseEntity {
   )
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
+
+  @OneToMany(
+    () => Booking,
+    booking => booking.user
+  )
+  bookings: Booking[];
 }

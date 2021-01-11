@@ -183,7 +183,10 @@ export class Booking extends BaseEntity {
   )
   predictiveBookingData: PredictiveBookingData[];
 
-  @OneToOne(() => UserCard)
+  @ManyToOne(
+    () => UserCard,
+    card => card.bookings
+  )
   @JoinColumn([{ name: "card_token", referencedColumnName: "cardToken" }])
   card: UserCard;
 }

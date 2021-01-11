@@ -42,6 +42,7 @@ import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum"
 import { BookingFeedback } from "src/entity/booking-feedback.entity";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import * as uuidValidator from "uuid-validate"
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -186,7 +187,10 @@ export class UserService {
 				prefer_language
 			} = updateUserDto;
 			const userId = UserId;
-
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			if (country_id) {
 				let countryDetails = await getManager()
 					.createQueryBuilder(Countries, "country")
@@ -285,6 +289,10 @@ export class UserService {
 
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
 		try {
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
 			return await this.userRepository.getUserDetails(userId, siteUrl, roles);
 		} catch (error) {
@@ -299,6 +307,10 @@ export class UserService {
 	) {
 		try {
 			const { status } = activeDeactiveDto;
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			const user = await this.userRepository.findOne({
 				userId,
 				roleId: In([Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER]),
@@ -424,6 +436,10 @@ export class UserService {
 
 	async deleteUser(userId: string, adminId: string) {
 		try {
+			if(!uuidValidator(userId))
+			{
+				throw new NotFoundException('Given id not avilable')
+			}
 			const user = await this.userRepository.findOne({
 				userId,
 				isDeleted: false,

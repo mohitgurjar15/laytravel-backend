@@ -5,7 +5,7 @@ export class HotelHeaderDto{
     
     @ApiProperty({
         name: 'token',
-        description: 'Token which was generated during Hotel Search API'
+        description: 'Token which was generated during Hotel Search API (Object: details.token)'
     })
     @IsString()
     token: string;
