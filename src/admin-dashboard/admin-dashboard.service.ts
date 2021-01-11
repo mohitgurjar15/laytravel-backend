@@ -842,14 +842,11 @@ export class AdminDashboardService {
       FROM
       "user"
       WHERE
-      register_via != 'android'
-      OR
-      register_via != 'ios'
+      register_via = 'web'
       OR
       register_via IS NULL
       `);
-    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaWeb[0].total);
-
+   
     response["user_registered_via_web"] = userRegisteredViaWeb[0].total || 0;
 
     var userRegisteredViaApp = await getConnection().query(`
@@ -861,7 +858,7 @@ export class AdminDashboardService {
     OR
     register_via = 'ios'
     `);
-    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaApp[0].total);
+    
 
     response["user_registered_via_app"] = userRegisteredViaApp[0].total || 0;
 
