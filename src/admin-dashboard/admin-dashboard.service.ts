@@ -837,6 +837,20 @@ export class AdminDashboardService {
     `);
     response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
 
+<<<<<<< HEAD
+    
+
+    var userRegisteredViaApp = await getConnection().query(`
+    SELECT COUNT(*) as cnt
+      FROM
+      "user"
+      WHERE
+      register_via In ('android','ios') AND is_deleted = false
+      AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      `);
+    
+    response["user_registered_via_app"] = userRegisteredViaApp[0].cnt || 0;
+=======
     var userRegisteredViaWeb = await getConnection().query(`
     SELECT COUNT("user"."user_id") AS "total"
       FROM
@@ -861,7 +875,15 @@ export class AdminDashboardService {
     
 
     response["user_registered_via_app"] = userRegisteredViaApp[0].total || 0;
+>>>>>>> 0d9c2fa74850732debb4dbd4715427081245b121
 
+    var userRegisteredViaWeb = await getConnection().query(`
+    SELECT COUNT(*) as cnt
+      FROM
+      "user" where is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      `);
+    
+    response["user_registered_via_web"] = parseInt(userRegisteredViaWeb[0].cnt)-parseInt(userRegisteredViaApp[0].cnt) || 0;
 
     return response;
   }
