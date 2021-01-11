@@ -838,32 +838,32 @@ export class AdminDashboardService {
     response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
 
     var userRegisteredViaWeb = await getConnection().query(`
-    SELECT "user"."user_id", COUNT(*)
+    SELECT COUNT("user"."user_id") AS "total"
       FROM
       "user"
       WHERE
+      register_via != 'android'
+      OR
       register_via != 'ios'
       OR
-      register_via != 'android'
-      GROUP BY
-      user_id`);
-    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaWeb.length);
+      register_via IS NULL
+      `);
+    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaWeb[0].total);
 
-    response["user_registered_via_web"] = userRegisteredViaWeb.length || 0;
+    response["user_registered_via_web"] = userRegisteredViaWeb[0].total || 0;
 
     var userRegisteredViaApp = await getConnection().query(`
-    SELECT "user"."user_id", COUNT(*)
-      FROM
-      "user"
-      WHERE
-      register_via = 'android'
-      OR
-      register_via = 'ios'
-      GROUP BY
-      user_id`);
-    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaApp.length);
+    SELECT COUNT("user"."user_id") AS "total"
+    FROM
+    "user"
+    WHERE
+    register_via = 'android'
+    OR
+    register_via = 'ios'
+    `);
+    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaApp[0].total);
 
-    response["user_registered_via_app"] = userRegisteredViaApp.length || 0;
+    response["user_registered_via_app"] = userRegisteredViaApp[0].total || 0;
 
 
     return response;
