@@ -44,7 +44,7 @@ import { HomeRentalBookingParameterModel, hotelData } from 'src/config/email_tem
 import { HotelBookingConfirmationMail } from 'src/config/email_template/hotel-booking-confirmation-mail.html';
 import { HomeRentalBookingConfirmationMail } from 'src/config/email_template/home-rental-confirmation-mail.html';
 import { CancellationPolicy } from './model/room_details.model';
-import { HomeRentalCalendarDto } from './dto/home-rental-calendar.dto';
+import { HomeRentalFullCalendarDto } from './dto/home-rental-full-calendar.dto';
 import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
 import { RewordStatus } from 'src/enum/reword-status.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
@@ -54,6 +54,7 @@ import { BookingDetailsUpdateMail } from 'src/config/email_template/booking-deta
 import { SearchFullTextDto } from './dto/search-full-text.dto';
 import { Activity } from 'src/utility/activity.utility';
 import { ModulesName } from 'src/enum/module.enum';
+import { HomeRentalFlexibleDayDto } from './dto/home-rental-flexible-day.dto';
 
 const mailConfig = config.get("email");
 
@@ -142,7 +143,7 @@ export class VacationRentalService {
 		const monaker = new MonakerStrategy(new Monaker(headers));
 		const result = new Promise((resolve) => resolve(monaker.searchFullText(searchFullTextDto, user, false)));
 
-		Activity.addSearchLog(ModulesName.VACATION_RENTEL,searchFullTextDto,user.user_id);
+		Activity.addSearchLog(ModulesName.VACATION_RENTEL, searchFullTextDto, user.user_id);
 		return result;
 	}
 
@@ -175,10 +176,10 @@ export class VacationRentalService {
 		return result;
 	}
 
-	async homeRentalRevalidate(dto,user,header){
+	async homeRentalRevalidate(dto, user, header) {
 		await this.validateHeaders(header);
 		const monaker = new MonakerStrategy(new Monaker(header));
-		let result = await monaker.homeRentalRevalidate(dto,user);
+		let result = await monaker.homeRentalRevalidate(dto, user);
 		return result;
 	}
 
@@ -214,7 +215,7 @@ export class VacationRentalService {
 		let verifyDto = {
 			"property_id": property_id,
 			"room_id": room_id,
-			"original_price":original_price,
+			"original_price": original_price,
 			"rate_plan_code": rate_plan_code,
 			"check_in_date": check_in_date,
 			"check_out_date": check_out_date,
@@ -810,7 +811,7 @@ export class VacationRentalService {
 		}
 	}
 
-	async fullcalenderRate(searchHomeRental: HomeRentalCalendarDto, header, user) {
+	async fullcalenderRate(searchHomeRental: HomeRentalFullCalendarDto, header, user) {
 		const { name, type, adult_count, number_and_children_ages, start_date, end_date, check_in_date } = searchHomeRental;
 
 		const monaker = new MonakerStrategy(new Monaker(header));
@@ -937,50 +938,166 @@ export class VacationRentalService {
 			}
 		}
 
-		if(returnResponce.length>0){
-			let minPrice;let maxPrice;
-			
-			if(returnResponce[0].secondary_start_price>0){
-				minPrice= Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
-				maxPrice= Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
-			}
-			else{
+		if (returnResponce.length > 0) {
+			let minPrice; let maxPrice;
 
-				minPrice= Math.min.apply(null, returnResponce.map(item => item.price))
-				maxPrice= Math.max.apply(null, returnResponce.map(item => item.price))
+			if (returnResponce[0].secondary_start_price > 0) {
+				minPrice = Math.min.apply(null, returnResponce.map(item => item.secondary_start_price))
+				maxPrice = Math.max.apply(null, returnResponce.map(item => item.secondary_start_price))
 			}
-			let  diff = (maxPrice-minPrice)/3;
+			else {
 
-			let priceRange=[minPrice];
-			priceRange.push(minPrice+diff);
-			priceRange.push(minPrice+diff+diff);
+				minPrice = Math.min.apply(null, returnResponce.map(item => item.price))
+				maxPrice = Math.max.apply(null, returnResponce.map(item => item.price))
+			}
+			let diff = (maxPrice - minPrice) / 3;
+
+			let priceRange = [minPrice];
+			priceRange.push(minPrice + diff);
+			priceRange.push(minPrice + diff + diff);
 			priceRange.push(maxPrice);
 
 			// console.log(minPrice,maxPrice,priceRange)
-		
+
 			let price;
-			for(let i in returnResponce){
-				if(returnResponce[i].secondary_start_price>0){
+			for (let i in returnResponce) {
+				if (returnResponce[i].secondary_start_price > 0) {
 					price = returnResponce[i].secondary_start_price;
 				}
-				else{
+				else {
 					price = returnResponce[i].price;
 				}
 
-				if(price >= priceRange[0] && price <= priceRange[1])
-					returnResponce[i].flag='low';
-				if(price > priceRange[1] && price <= priceRange[2])
-					returnResponce[i].flag='medium';
-				if(price > priceRange[2] && price <= priceRange[3])
-					returnResponce[i].flag='high';
+				if (price >= priceRange[0] && price <= priceRange[1])
+					returnResponce[i].flag = 'low';
+				if (price > priceRange[1] && price <= priceRange[2])
+					returnResponce[i].flag = 'medium';
+				if (price > priceRange[2] && price <= priceRange[3])
+					returnResponce[i].flag = 'high';
 			}
 		}
 
 		return returnResponce;
 	}
 
+	async flexibleDayRate(searchHomeRental: HomeRentalFlexibleDayDto, header, user) {
+		const monaker = new MonakerStrategy(new Monaker(header));
+
+		const { name, type, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = searchHomeRental;
+
+		const checkInDate = new Date(check_in_date);
+		const checkOutDate = new Date(check_out_date);
+
+		let dayDiffrence = await this.getDifferenceInDays(checkInDate, new Date());
+		console.log(dayDiffrence)
+		dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
+
+		var startDate = new Date(check_in_date);
+		startDate.setDate(startDate.getDate() - dayDiffrence);
+
+		var tourDiffrence = await this.getDifferenceInDays(checkInDate, checkOutDate);
+		// console.log(tourDiffrence);
+
+		const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3
+
+		var endDate = new Date(check_in_date);
+		endDate.setDate(endDate.getDate() + afterDateDiffrence);
+
+		var result = [];
+
+		var resultIndex = 0;
+
+		const checkIn = startDate;
+
+
+		var count = await this.getDifferenceInDays(startDate, endDate);
+		// console.log(count);
+		for (var index = 0; index <= count; index++) {
+			var beforeDateString = checkIn.toISOString().split('T')[0];
+			beforeDateString = beforeDateString
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+
+			const checkOut = new Date(checkIn);
+			checkOut.setDate(checkOut.getDate() + tourDiffrence);
+			console.log(checkOut)
+			var afterDateString = checkOut.toISOString().split('T')[0];
+			afterDateString = afterDateString
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+
+			let dto: any = {};
+
+			dto.name = name,
+				dto.type = type,
+				dto.check_in_date = beforeDateString,
+				dto.check_out_date = afterDateString,
+				dto.adult_count = adult_count
+
+			if (number_and_children_ages.length != 0) {
+				dto.number_and_children_ages = number_and_children_ages
+			}
+
+			// console.log("DTO", dto);
+			result[resultIndex] = await monaker.searchFullText(dto, user, true);
+			checkIn.setDate(checkIn.getDate() + 1);
+			resultIndex++;
+		}
+
+		const response = await Promise.all(result);
+
+		let returnResponce = [];
+		for await (const data of response) {
+			if (!data.message) {
+				var lowestprice = 0;
+				var netRate = 0;
+				var key = 0;
+				var checkin_date = '';
+				var checkout_date = '';
+				var startPrice = 0;
+				var secondaryStartPrice = 0;
+				for await (const hoteltInfo of data.items) {
+					// console.log("data", hoteltInfo)
+					if (key == 0) {
+						netRate = hoteltInfo.net_price;
+						lowestprice = hoteltInfo.selling_price
+						checkin_date = hoteltInfo.check_in_date
+						checkout_date = hoteltInfo.check_out_date
+						startPrice = hoteltInfo.start_price || 0
+						secondaryStartPrice = hoteltInfo.secondary_start_price || 0
+					}
+					else if (lowestprice > hoteltInfo.selling_price) {
+						netRate = hoteltInfo.net_price;
+						lowestprice = hoteltInfo.selling_price
+						checkin_date = hoteltInfo.check_in_date
+						checkout_date = hoteltInfo.check_out_date
+						startPrice = hoteltInfo.start_price || 0
+						secondaryStartPrice = hoteltInfo.secondary_start_price || 0
+					}
+					key++;
+				}
+				var output = {
+					check_in_date: checkin_date,
+					check_out_date: checkout_date,
+					net_rate: netRate,
+					price: lowestprice,
+					start_price: startPrice,
+					secondary_start_price: secondaryStartPrice
+				}
+
+
+				returnResponce.push(output)
+			}
+		}
+		return returnResponce;
+	}
+
 	async getDifferenceInDays(date1, date2) {
+		console.log("date1", date1);
+		console.log("date2", date2);
+
 		const diffInMs = Math.abs(date2 - date1);
+		console.log("diff", Math.floor(diffInMs / (1000 * 60 * 60 * 24)));
 		return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 	}
 
