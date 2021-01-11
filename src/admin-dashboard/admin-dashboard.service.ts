@@ -792,7 +792,7 @@ export class AdminDashboardService {
     );
     response["total_active_users"] = (Math.round(totalActiveUsers.length * 100) / 100);
 
-    
+
 
     const salesByFullPriceCount = await getConnection().query(
       `SELECT COUNT(id)
@@ -836,6 +836,34 @@ export class AdminDashboardService {
     FROM booking WHERE booking_type In (${BookingType.NOINSTALMENT}) 
     `);
     response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
+
+    var userRegisteredViaWeb = await getConnection().query(`
+    SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      WHERE
+      register_via != 'ios'
+      OR
+      register_via != 'android'
+      GROUP BY
+      user_id`);
+    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaWeb.length);
+
+    response["user_registered_via_web"] = userRegisteredViaWeb.length || 0;
+
+    var userRegisteredViaApp = await getConnection().query(`
+    SELECT "user"."user_id", COUNT(*)
+      FROM
+      "user"
+      WHERE
+      register_via = 'android'
+      OR
+      register_via = 'ios'
+      GROUP BY
+      user_id`);
+    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaApp.length);
+
+    response["user_registered_via_app"] = userRegisteredViaApp.length || 0;
 
 
     return response;
