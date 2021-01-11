@@ -378,7 +378,7 @@ export class HotelService{
                     
                     this.booking.sendEmail(booking_details);
                     
-                    delete booking_details.card;
+                    //delete booking_details.card;
 
                     let response = {
                         success_message: 'Booking is confirmed',

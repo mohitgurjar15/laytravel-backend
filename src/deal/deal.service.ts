@@ -41,9 +41,11 @@ export class DealService {
         }
 
         if (files.image == undefined) {
-            throw new BadRequestException(`please upload image`)
+            throw new BadRequestException(`Please upload image`)
         }
-
+        if (!airports[location]) {
+            throw new BadRequestException(`Please enter valid airport location`)
+        }
         const deal = new Deal()
 
         deal.image = files.image[0].filename;
@@ -79,7 +81,12 @@ export class DealService {
             deal.image = files.image[0].filename;
         }
 
+
+
         if (location) {
+            if (!airports[location]) {
+                throw new BadRequestException(`Please enter valid airport location`)
+            }
             deal.location = location
         }
 
