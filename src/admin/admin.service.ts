@@ -181,7 +181,7 @@ export class AdminService {
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [2], siteUrl);
+			return await this.userRepository.listUser(paginationOption, [Role.ADMIN,Role.SUPPORT], siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -198,8 +198,8 @@ export class AdminService {
 
 	//Export user
 	async exportAdmin(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "admin", `${adminId} is export the  all admin data`);
-		return await this.userRepository.exportUser([2]);
+		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
+		return await this.userRepository.exportUser([Role.ADMIN,Role.SUPPORT]);
 	}
 
 	/**
@@ -245,7 +245,7 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
+			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN,Role.SUPPORT])
 			// const user = await this.userRepository.findOne({
 			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
 			// });
