@@ -728,7 +728,7 @@ export class FlightService {
 
 		let returnResponce = [];
 		for await (const data of response) {
-			console.log("data.message",data)
+			
 			if (typeof data?.items!='undefined' && data?.items.length) {
 				var unique_code = '';
 				var lowestprice = 0;

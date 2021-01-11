@@ -129,7 +129,7 @@ export class BookingService {
 			else {
 				EmailSubject = "Flight Booking Confirmation";
 				installmentDetail.push({
-					amount: bookingData.currency2.symbol +Generic.formatPriceDecimal (parseFloat (bookingData.totalAmount)),
+					amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
 					date: await this.formatDate(bookingData.bookingDate),
 					status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 				})
@@ -552,18 +552,18 @@ export class BookingService {
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
 		const result: any = data;
 		for await (const instalment of result) {
-			// if (instalment.booking.moduleInfo[0].) {
-			// 	let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
+			if (instalment.booking?.moduleInfo[0]?.instalment_details?.instalment_date) {
+				let infoDate = instalment.booking.moduleInfo[0].instalment_details.instalment_date;
 
-			// 	for (let index = 0; index < infoDate.length; index++) {
-			// 		const element = infoDate[index];
+				for (let index = 0; index < infoDate.length; index++) {
+					const element = infoDate[index];
 
-			// 		if (element.instalment_date == instalment.instalmentDate) {
-			// 			instalment.installmentNo = index + 1;
-			// 			exit;
-			// 		}
-			// 	}
-			// }
+					if (element.instalment_date == instalment.instalmentDate) {
+						instalment.installmentNo = index + 1;
+						exit;
+					}
+				}
+			}
 
 		}
 

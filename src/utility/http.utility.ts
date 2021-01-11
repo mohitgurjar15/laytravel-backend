@@ -107,7 +107,7 @@ export class HttpRequest {
             if (result == "The booking request failed. Wrong quote handle.") {
                 return false;
             } else if (flag == true) {
-                if (result.hasOwnProperty("CheckOutDate")) {
+                if (result.hasOwnProperty("CheckOutDate") || result.hasOwnProperty("CheckInDate")) {
                     return false;
                 }
             }
