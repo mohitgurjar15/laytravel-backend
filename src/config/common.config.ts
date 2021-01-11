@@ -16,3 +16,10 @@ export const card = {
         postal_code: '14139'
     }
 }
+
+export const CryptoKey = {
+    key: '15ED9F10149D1CAEB27122316D4175D2EC5EC468D544613C995A92C0FE4D52DD',
+    algorithm: 'aes-256-cbc',
+    ivLength: 16,
+    iv: 'B808DF9955761C4A6A03E826EFB4C237'
+  }
