@@ -837,34 +837,26 @@ export class AdminDashboardService {
     `);
     response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
 
-    var userRegisteredViaWeb = await getConnection().query(`
-    SELECT "user"."user_id", COUNT(*)
-      FROM
-      "user"
-      WHERE
-      register_via != 'ios'
-      OR
-      register_via != 'android'
-      GROUP BY
-      user_id`);
-    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaWeb.length);
-
-    response["user_registered_via_web"] = userRegisteredViaWeb.length || 0;
+    
 
     var userRegisteredViaApp = await getConnection().query(`
-    SELECT "user"."user_id", COUNT(*)
+    SELECT COUNT(*) as cnt
       FROM
       "user"
       WHERE
-      register_via = 'android'
-      OR
-      register_via = 'ios'
-      GROUP BY
-      user_id`);
-    console.log("!!@*&*@&*&#^&^@&^^@", userRegisteredViaApp.length);
+      register_via In ('android','ios') AND is_deleted = false
+      AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      `);
+    
+    response["user_registered_via_app"] = userRegisteredViaApp[0].cnt || 0;
 
-    response["user_registered_via_app"] = userRegisteredViaApp.length || 0;
-
+    var userRegisteredViaWeb = await getConnection().query(`
+    SELECT COUNT(*) as cnt
+      FROM
+      "user" where is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      `);
+    
+    response["user_registered_via_web"] = parseInt(userRegisteredViaWeb[0].cnt)-parseInt(userRegisteredViaApp[0].cnt) || 0;
 
     return response;
   }
