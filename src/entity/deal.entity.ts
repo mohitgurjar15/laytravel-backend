@@ -16,7 +16,7 @@ export class Deal extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
-    @Column("character varying", { name: "location", length: 255 })
+    @Column("character varying", { name: "location", length: 255, nullable: true })
     location: string;
 
     @Column("character varying", { name: "image", length: 255 })
