@@ -10,6 +10,7 @@ import { MassCommunicationDto } from './dto/send-mass-communication.dto';
 import { User } from 'src/entity/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
+import { Role } from 'src/enum/role.enum';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -123,8 +124,8 @@ export class GeneralService {
     }
 
     async massCommunication(dto: MassCommunicationDto) {
-        const { subject, email_body, role } = dto
-
+        const { subject, email_body } = dto
+        const role = [Role.FREE_USER,Role.PAID_USER]
         // let emails = await getManager()
         //     .createQueryBuilder(User, "user")
         //     .select([
