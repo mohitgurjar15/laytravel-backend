@@ -21,12 +21,5 @@ export class MassCommunicationDto {
         description: `email body`,
         example: ``
     })
-    email_body: string
-
-
-    @ApiPropertyOptional({
-        description: `role`,
-        example: [6]
-    })
-    role: Role[] 
+    email_body: string 
 }

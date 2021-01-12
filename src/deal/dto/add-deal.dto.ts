@@ -29,12 +29,4 @@ export class AddDealDto {
     })
     location: string;
 
-    @IsNotEmpty({
-        message: `Please enter status &&&subject&&&Please enter status.`
-    })
-    @ApiProperty({
-        description: 'Enter status',
-        example: true
-    })
-    status: Boolean;
 }
