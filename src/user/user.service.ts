@@ -714,7 +714,7 @@ export class UserService {
 
 		await this.createSql(userId, sqlData, 'user-detail')
 
-		//await this.deleteuserData(userId, bookingData.bookingIds)
+		await this.deleteuserData(userId, bookingData.bookingIds)
 
 		req.status = DeleteAccountRequestStatus.CONFIRM
 		req.updateBy = user
