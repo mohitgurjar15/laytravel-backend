@@ -181,7 +181,7 @@ export class AdminService {
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [2], siteUrl);
+			return await this.userRepository.listUser(paginationOption, [Role.ADMIN,Role.SUPPORT], siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -198,8 +198,8 @@ export class AdminService {
 
 	//Export user
 	async exportAdmin(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "admin", `${adminId} is export the  all admin data`);
-		return await this.userRepository.exportUser([2]);
+		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
+		return await this.userRepository.exportUser([Role.ADMIN,Role.SUPPORT]);
 	}
 
 	/**
@@ -245,7 +245,7 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
+			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN,Role.SUPPORT])
 			// const user = await this.userRepository.findOne({
 			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
 			// });
@@ -376,6 +376,7 @@ export class AdminService {
 		const unsuccessRecord = new Array();
 		const csv = require("csvtojson");
 		const array = await csv().fromFile("./" + files[0].path);
+		
 		for (let index = 0; index < array.length; index++) {
 			var row = array[index];
 			if (row) {
@@ -429,22 +430,22 @@ export class AdminService {
 				} else {
 					var error_message = '';
 					if(row.first_name == "")
-					error_message += "First name required";
+					error_message += "First name required. ";
 
 					if(row.email_id == "")
-					error_message += "Email id required";
+					error_message += "Email id required. ";
 
 					if(!isEmail(row.email_id))
-					error_message += "Please enter valid email id";
+					error_message += "Please enter valid email id. ";
 
 					if(row.password == "")
-					error_message += "Password is required";
+					error_message += "Password is required. ";
 
 					if(row.type == "")
-					error_message += "Admin type required";
+					error_message += "Admin type required. ";
 
 					if(parseInt(row.type) != 2)
-					error_message += "Add valid admin type";
+					error_message += "Add valid admin type. ";
 
 					row.error_message = error_message;
 					unsuccessRecord.push(row);

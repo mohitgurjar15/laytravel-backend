@@ -45,6 +45,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				"log.createdDate",
 				"log.previousValue",
 				"log.currentValue",
+				"user.roleId"
 
 			])
 
@@ -119,6 +120,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				"log.createdDate",
 				"log.previousValue",
 				"log.currentValue",
+				"user.roleId"
 			])
 			.where(where)
 			.orderBy("log.id", "DESC")

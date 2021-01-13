@@ -35,7 +35,7 @@ export class UserRepository extends Repository<User> {
 			user.updatedBy = user.userId;
 		} else {
 			throw new BadRequestException(
-				`Your current password doesn't match.&&&old_pasword`
+				`Old password is incorrect.`
 			);
 		}
 
@@ -121,14 +121,14 @@ export class UserRepository extends Repository<User> {
 			.where(where)
 			.skip(skip)
 			.take(take)
-			.orderBy("User.createdDate" , "DESC")
+			.orderBy("User.createdDate", "DESC")
 			.getManyAndCount();
-		
+
 
 		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No data found.`);
 		}
-		result.forEach(function(data) {
+		result.forEach(function (data) {
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
@@ -136,10 +136,10 @@ export class UserRepository extends Repository<User> {
 		return { data: result, TotalReseult: count };
 	}
 
-	async createUser(user: User , roles: Role[]): Promise<User> {
+	async createUser(user: User, roles: Role[]): Promise<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
-			email,isDeleted : false,roleId: In(roles)
+			email, isDeleted: false, roleId: In(roles)
 		});
 		console.log(userExist);
 
@@ -230,9 +230,9 @@ export class UserRepository extends Repository<User> {
 		}
 		var birthDate = new Date(userDetail.dob);
 		console.log(`birthdate ${birthDate}`);
-		
-		var age = moment(new Date()).diff(moment(birthDate),'years');
-		
+
+		var age = moment(new Date()).diff(moment(birthDate), 'years');
+
 		userDetail.age = age
 		if (age < 2) {
 			userDetail.user_type = "infant";
@@ -333,7 +333,7 @@ export class UserRepository extends Repository<User> {
 		// 	);
 		var today = new Date();
 		var birthDate = new Date(userdata.dob);
-		var age = moment(new Date()).diff(moment(birthDate),'years');
+		var age = moment(new Date()).diff(moment(birthDate), 'years');
 		userdata.age = age
 		if (age < 2) {
 			userdata.user_type = "infant";
@@ -462,7 +462,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
-				
+
 			])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`, {
 				userId,
@@ -478,7 +478,7 @@ export class UserRepository extends Repository<User> {
 		}
 		var today = new Date();
 		var birthDate = new Date(userDetail.dob);
-		var age = moment(new Date()).diff(moment(birthDate),'years');
+		var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 		let user: any = {};
 		user.age = age
@@ -509,7 +509,7 @@ export class UserRepository extends Repository<User> {
 		user.preferredLanguage = userDetail.preferredLanguage2 || {};
 		user.passportNumber = userDetail.passportNumber || "";
 		user.passportExpiry = userDetail.passportExpiry || "";
-		user.createdDate = userDetail.createdDate 
+		user.createdDate = userDetail.createdDate
 		user.profilePic = userDetail.profilePic
 			? `${siteUrl}/profile/${userDetail.profilePic}`
 			: "";

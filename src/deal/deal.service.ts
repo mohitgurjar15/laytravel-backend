@@ -15,7 +15,7 @@ export class DealService {
 
     async addDeal(addDealDto: AddDealDto, user: User, files, siteUrl) {
 
-        const { module_id, location, image, status } = addDealDto
+        const { module_id, location, image } = addDealDto
         const module = await getConnection()
             .createQueryBuilder(Module, 'module')
             .where("id =:module_id", { module_id })
@@ -32,13 +32,13 @@ export class DealService {
             .where(where)
             .getCount();
 
-        console.log(dealCount);
+        // console.log(dealCount);
 
-        if (status) {
-            if (dealCount > 1) {
-                throw new BadRequestException(`Max 2 deal will be available at a time, please deactivate one deal to active new deal.`)
-            }
-        }
+        // if (status) {
+        //     if (dealCount > 1) {
+        //         throw new BadRequestException(`Max 2 deal will be available at a time, please deactivate one deal to active new deal.`)
+        //     }
+        // }
 
         if (files.image == undefined) {
             throw new BadRequestException(`Please upload image`)
@@ -52,7 +52,7 @@ export class DealService {
         deal.location = location
         deal.module = module
         deal.isDeleted = false
-        deal.status = status
+        deal.status = false
         deal.createdDate = new Date()
         deal.updatedDate = new Date()
         deal.updateBy = user

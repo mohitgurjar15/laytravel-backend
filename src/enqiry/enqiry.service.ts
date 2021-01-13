@@ -73,7 +73,7 @@ export class EnqiryService {
 				.catch((err) => {
 					console.log("err", err);
 				});
-			return { message: `Enquiry created successfully` };
+			return { message: `Your enquiry is sent successfully to our team. our team will back to you on your query.` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

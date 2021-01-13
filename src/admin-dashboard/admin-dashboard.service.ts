@@ -43,8 +43,7 @@ export class AdminDashboardService {
 
       var totalBookings = await getConnection().query(`
                 SELECT count(id) as total_booking
-                from booking ${
-        moduleId ? `WHERE "module_id" = '${moduleId}'` : ""
+                from booking ${moduleId ? `WHERE "module_id" = '${moduleId}'` : ""
         }
             `);
       if (data[0].total_amount == null) {
@@ -595,14 +594,15 @@ export class AdminDashboardService {
 
   async customerStatistics(filterOption: DashboardFilterDto) {
     var response = {};
+    const userConditon = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) `;
 
     const userDoneBooking90Days = await getConnection().query(
-      `SELECT count(*) as cnt  FROM "user" "User" WHERE DATE_PART('day',(select booking_date from booking where booking.user_id = "User"."user_id" order by booking_date limit 1) - created_date ) < 90`
+      `SELECT count(*) as cnt  FROM "user" "User" WHERE DATE_PART('day',(select booking_date from booking where booking.user_id = "User"."user_id" AND ${userConditon} order by booking_date limit 1) - created_date ) < 90`
     );
     response["user_done_booking_90_days"] = userDoneBooking90Days[0].cnt;
 
     const userDoneBookingAfter90Days = await getConnection().query(
-      ` SELECT  count(*) as "cnt" FROM "user" "User"`
+      ` SELECT  count(*) as "cnt" FROM "user" "User" where ${userConditon}`
     );
     response["user_done_booking_after_90_days"] =
       userDoneBookingAfter90Days[0].cnt - userDoneBooking90Days[0].cnt;
@@ -685,7 +685,7 @@ export class AdminDashboardService {
 		 COUNT("user"."user_id") as user_count
 	   FROM "user" 
       WHERE
-      role_id In (${Role.FREE_USER},${Role.PAID_USER} )`);
+      ${userConditon}`);
 
 
     const grossPerUser = parseFloat(sumOfTotalAmount[0].total_amount) / parseFloat(countOfUserEnum[0].user_count);
@@ -792,7 +792,7 @@ export class AdminDashboardService {
     );
     response["total_active_users"] = (Math.round(totalActiveUsers.length * 100) / 100);
 
-    
+
 
     const salesByFullPriceCount = await getConnection().query(
       `SELECT COUNT(id)
@@ -837,6 +837,26 @@ export class AdminDashboardService {
     `);
     response["sales_by_installment_revenue"] = (Math.round(salesByInstallmentRevenue[0].total_amount * 100) / 100);
 
+
+
+    var userRegisteredViaApp = await getConnection().query(`
+    SELECT COUNT(*) as cnt
+      FROM
+      "user"
+      WHERE
+      register_via In ('android','ios') AND is_deleted = false
+      AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      `);
+
+    response["user_registered_via_app"] = userRegisteredViaApp[0].cnt || 0;
+
+    var userRegisteredViaWeb = await getConnection().query(`
+    SELECT COUNT(*) as cnt
+      FROM
+      "user" where is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      `);
+
+    response["user_registered_via_web"] = parseInt(userRegisteredViaWeb[0].cnt) - parseInt(userRegisteredViaApp[0].cnt) || 0;
 
     return response;
   }
