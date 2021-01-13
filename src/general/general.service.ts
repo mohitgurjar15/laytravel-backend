@@ -11,6 +11,7 @@ import { User } from 'src/entity/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
 import { Role } from 'src/enum/role.enum';
+import { massCommunicationMail } from 'src/config/email_template/mass-communication.html';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -125,7 +126,7 @@ export class GeneralService {
 
     async massCommunication(dto: MassCommunicationDto) {
         const { subject, email_body } = dto
-        const role = [Role.FREE_USER,Role.PAID_USER]
+        const role = [Role.FREE_USER, Role.PAID_USER]
         // let emails = await getManager()
         //     .createQueryBuilder(User, "user")
         //     .select([
@@ -145,6 +146,8 @@ export class GeneralService {
             email: 'suresh@itoneclick.com'
         }, {
             email: 'jaymees@itoneclick.com'
+        }, {
+            email: 'jimeet@itoneclick.com'
         }]
         var allemail = '';
         for await (const email of emails) {
@@ -155,7 +158,7 @@ export class GeneralService {
                     from: mailConfig.from,
                     cc: mailConfig.BCC,
                     subject: subject,
-                    html: email_body,
+                    html: await massCommunicationMail({ header: subject, body: email_body }),
                 })
                 .then((res) => {
                     console.log("res", res);

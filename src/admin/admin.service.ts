@@ -376,6 +376,7 @@ export class AdminService {
 		const unsuccessRecord = new Array();
 		const csv = require("csvtojson");
 		const array = await csv().fromFile("./" + files[0].path);
+		
 		for (let index = 0; index < array.length; index++) {
 			var row = array[index];
 			if (row) {
@@ -429,22 +430,22 @@ export class AdminService {
 				} else {
 					var error_message = '';
 					if(row.first_name == "")
-					error_message += "First name required";
+					error_message += "First name required. ";
 
 					if(row.email_id == "")
-					error_message += "Email id required";
+					error_message += "Email id required. ";
 
 					if(!isEmail(row.email_id))
-					error_message += "Please enter valid email id";
+					error_message += "Please enter valid email id. ";
 
 					if(row.password == "")
-					error_message += "Password is required";
+					error_message += "Password is required. ";
 
 					if(row.type == "")
-					error_message += "Admin type required";
+					error_message += "Admin type required. ";
 
 					if(parseInt(row.type) != 2)
-					error_message += "Add valid admin type";
+					error_message += "Add valid admin type. ";
 
 					row.error_message = error_message;
 					unsuccessRecord.push(row);
