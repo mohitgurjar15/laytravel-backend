@@ -69,6 +69,7 @@
     "simple-git": "^2.31.0",
     "swagger-ui-express": "^4.1.4",
     "typeorm": "^0.2.29",
+    "typeorm-encrypted": "^0.5.6",
     "uniqid": "^5.2.0",
     "uuid": "^8.2.0",
     "uuid-validate": "0.0.3",
