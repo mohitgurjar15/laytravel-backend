@@ -65,7 +65,7 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "password", length: 255, nullable: true })
   password: string | null;
 
-  @Column("character varying", { name: "phone_no", transformer: new EncryptionTransformer(CryptoKey) })
+  @Column("character varying", { name: "phone_no", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   phoneNo: string;
 
   @Column("character varying", {
@@ -175,7 +175,7 @@ export class User extends BaseEntity {
   })
   passportNumber: string | null;
 
-  @Column("date", { name: "passport_expiry", nullable: true ,transformer: new EncryptionTransformer(CryptoKey)})
+  @Column("date", { name: "passport_expiry", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   passportExpiry: string | null;
 
   get full_name() {

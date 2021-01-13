@@ -1,4 +1,6 @@
 import { BaseEntity, Column, Entity } from "typeorm";
+import { EncryptionTransformer } from "typeorm-encrypted";
+import { CryptoKey } from "src/config/common.config";
 
 //@Index("enquiry_pk", ["id"], { unique: true })
 @Entity("enquiry")
@@ -9,7 +11,7 @@ export class Enquiry extends BaseEntity {
   @Column("character varying", { name: "user_name", length: 255 })
   userName: string;
 
-  @Column("character varying", { name: "email", length: 500 })
+  @Column("character varying", { name: "email", length: 500 , transformer: new EncryptionTransformer(CryptoKey)})
   email: string;
 
   @Column("character varying", { name: "phone_no", length: 20 ,nullable:true})
