@@ -109,7 +109,7 @@ export class User extends BaseEntity {
   updatedDate: Date | null;
 
   @Column("character varying", { name: "gender", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
-  gender: string | null;
+  gender: string;
 
   @Column("integer", { name: "role_id", nullable: true })
   roleId: number | null;
@@ -121,8 +121,8 @@ export class User extends BaseEntity {
   })
   countryCode: string | null;
 
-  @Column("character varying", { name: "address", nullable: true, length: 500, transformer: new EncryptionTransformer(CryptoKey) })
-  address: string | null;
+  @Column("text", { name: "address", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  address: string;
 
   @Column("integer", { name: "country_id", nullable: true })
   countryId: number | null;
@@ -131,7 +131,7 @@ export class User extends BaseEntity {
   stateId: number | null;
 
   @Column("character varying", { name: "title", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
-  title: string | null;
+  title: string;
 
   @Column("integer", { name: "preferred_language", nullable: true })
   preferredLanguage: number | null;
@@ -157,26 +157,24 @@ export class User extends BaseEntity {
   @Column("character varying", {
     name: "city_name",
     nullable: true,
-    length: 255,
     transformer: new EncryptionTransformer(CryptoKey)
   })
-  cityName: string | null;
+  cityName: string;
 
 
 
-  @Column("date", { name: "dob", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
-  dob: string | null;
+  @Column("character varying", { name: "dob", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  dob: string;
 
   @Column("character varying", {
     name: "passport_number",
     nullable: true,
-    length: 150,
     transformer: new EncryptionTransformer(CryptoKey)
   })
-  passportNumber: string | null;
+  passportNumber: string;
 
-  @Column("date", { name: "passport_expiry", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
-  passportExpiry: string | null;
+  @Column("character varying", { name: "passport_expiry", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  passportExpiry: string;
 
   get full_name() {
     return `${this.firstName} ${this.lastName}`;
