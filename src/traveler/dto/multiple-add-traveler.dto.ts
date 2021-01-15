@@ -5,14 +5,53 @@ import {
 	IsEnum,
 	ValidateIf,
 	NotContains,
+    IsArray,
+    ValidateNested,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Gender } from "src/enum/gender.enum";
 import { errorMessage } from "src/config/common.config";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 import * as moment from 'moment';
+import { Type } from "class-transformer";
 
-export class SaveTravelerDto {
+export class MultipleTravelersDto{
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => Traveler)
+    @ApiProperty({
+        description:`Travelers`,
+        example:[
+            {
+                "traveler_id": "123-ffacd-dfefefesadsdaw-ww",
+                "first_name": "Jon",
+                "last_name": "Doe",
+                "email": "jon.doe@gmail.com",
+                "dob": "1995-06-22",
+                "gender": "M",
+                "country_code": "1",
+                "phone_no": "91919221212",
+                "passport_number": "S1234X7896",
+                "passport_expiry": "2030-07-20",
+                "country_id": "1"
+              },
+              {
+                "first_name": "Jon",
+                "last_name": "Doe",
+                "email": "jon.doe@gmail.com",
+                "dob": "1995-06-22",
+                "gender": "M",
+                "country_code": "1",
+                "phone_no": "91919221212",
+                "passport_number": "S1234X7896",
+                "passport_expiry": "2030-07-20",
+                "country_id": "1"
+              }
+        ]
+    })
+    travelers:Traveler[]
+}
+class Traveler {
 	// @ApiPropertyOptional({
 	// 	type: "string",
 	// 	description: "parent user id",
@@ -37,6 +76,15 @@ export class SaveTravelerDto {
 	// 	example: `mr`,
 	// })
 	// title: string;
+    @ApiPropertyOptional({
+		type: "string",
+		description: "traveler id",
+	})	
+	@ApiProperty({
+		description: `Enter traveler id`,
+		example: ``,
+	})
+    traveler_id: string;
 
 	@IsNotEmpty({
 		message: `Please enter travelers first name.&&&first_name`,
