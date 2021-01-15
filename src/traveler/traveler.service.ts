@@ -14,7 +14,7 @@ import { SaveTravelerDto } from "./dto/save-traveler.dto";
 import { User } from "src/entity/user.entity";
 import { v4 as uuidv4 } from "uuid";
 import { Role } from "src/enum/role.enum";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { Countries } from "src/entity/countries.entity";
 import { UpdateTravelerDto } from "./dto/update-traveler.dto";
 import { JwtPayload } from "src/auth/jwt-payload.interface";
@@ -23,6 +23,7 @@ import * as moment from "moment";
 import { errorMessage } from "src/config/common.config";
 import { Gender } from "src/enum/gender.enum";
 import * as uuidValidator from "uuid-validate"
+import { MultipleTravelersDto } from "./dto/multiple-add-traveler.dto";
 
 @Injectable()
 export class TravelerService {
@@ -32,6 +33,101 @@ export class TravelerService {
 		private jwtService: JwtService
 	) { }
 
+	async multipleTravelerAdd(
+		TravelerDto: MultipleTravelersDto,
+		parent_user_id: string) {
+		try {
+			console.log(parent_user_id);
+			
+			const { travelers } = TravelerDto
+			const userData = await this.userRepository.getUserData(parent_user_id);
+			if (!userData) {
+				throw new UnauthorizedException(`Please login to continue.`)
+			}
+			for await (const traveler of travelers) {
+				console.log(traveler);
+
+				if (traveler.traveler_id && traveler.traveler_id != userData.userId) {
+
+					const userId = traveler.traveler_id
+					if (!uuidValidator(userId)) {
+						throw new NotFoundException('Given traveler id not avilable')
+					}
+					const travelerData = await this.userRepository.findOne({ userId });
+					if (!travelerData) {
+						throw new NotFoundException(
+							`Traveler not found &&&id&&&Traveler not found`
+						);
+					}
+				} else {
+					let countryDetails = await getConnection()
+						.createQueryBuilder(Countries, "country")
+						.where(`id=:country_id`, { country_id: traveler.country_id })
+						.getOne();
+
+					if (!countryDetails)
+						throw new BadRequestException(
+							`Country code not exist with database.&&&country_id`
+						);
+				}
+			}
+			let responce = [];
+			for await (const traveler of travelers) {
+				console.log(traveler.traveler_id != userData.userId);
+				console.log(traveler.traveler_id);
+				if (traveler.traveler_id == userData.userId) {
+
+					const primaryTraveler = await this.userRepository.getTravelData(traveler.traveler_id);
+					responce.push(primaryTraveler)
+				}
+				else if (traveler.traveler_id && traveler.traveler_id != userData.userId) {
+					const updatedTraveler = await this.updateTraveler(traveler, traveler.traveler_id, parent_user_id)
+					responce.push(updatedTraveler)
+				} else {
+					const newTraveler = await this.createNewtraveller(traveler, parent_user_id)
+					responce.push(newTraveler)
+				}
+			}
+			return {
+				travelers: responce
+			}
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				console.log("m");
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
 	async createNewtraveller(
 		saveTravelerDto: SaveTravelerDto,
 		parent_user_id: string
@@ -102,7 +198,7 @@ export class TravelerService {
 					);
 				}
 				const roles = [Role.TRAVELER_USER]
-				const data = await this.userRepository.createUser(user,roles);
+				const data = await this.userRepository.createUser(user, roles);
 				const payload: JwtPayload = {
 					user_id: data.userId,
 					email: data.email,
@@ -162,8 +258,7 @@ export class TravelerService {
 
 	async listTraveler(userId: string) {
 		try {
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			const where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
@@ -271,13 +366,12 @@ export class TravelerService {
 
 	async getTraveler(userId: string): Promise<User> {
 		try {
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			return await this.userRepository.getTravelData(userId);
 		} catch (error) {
-			
+
 			if (typeof error.response !== "undefined") {
 				console.log("m");
 				switch (error.response.statusCode) {
@@ -321,8 +415,7 @@ export class TravelerService {
 		updateBy: string
 	) {
 		try {
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			//const traveler = await this.userRepository.getTravelData(userId);
@@ -410,8 +503,7 @@ export class TravelerService {
 
 	async deleteTraveler(userId: string, updateBy: string) {
 		try {
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			const traveler = await this.userRepository.getTravelData(userId);
