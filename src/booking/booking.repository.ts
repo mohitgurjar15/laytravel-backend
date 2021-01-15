@@ -343,6 +343,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
 			.select([
+				"BookingInstalments.attempt",
 				"BookingInstalments.id",
 				"BookingInstalments.bookingId",
 				"BookingInstalments.userId",
