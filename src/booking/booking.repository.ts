@@ -473,11 +473,11 @@ export class BookingRepository extends Repository<Booking> {
 
 		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
-		if (!data.length) {
-			throw new NotFoundException(
-				`No booking found`
-			);
-		}
+		// if (!data.length) {
+		// 	throw new NotFoundException(
+		// 		`No booking found`
+		// 	);
+		// }
 		return { data, count };
 	}
 
