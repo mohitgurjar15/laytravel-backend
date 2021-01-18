@@ -73,7 +73,7 @@ var content = `<!-- header Text section start -->
                                                 content += `
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding:25px; text-align: center; background: #fc7e66;">
-															<a href="javascrip:void(0);" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Learn more about the options</a>
+															<a href="javascrip:void(0);" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Your Password is ${password}</a>
 													</td>
 		
                                                 </tr>`

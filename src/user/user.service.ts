@@ -526,29 +526,29 @@ export class UserService {
 								console.log("err", err);
 							});
 					} else {
-						row.error_message = "Email id alredy available";
+						row.error_message = "Email id alredy available. ||";
 						unsuccessRecord.push(row);
 					}
 				} else {
 					var error_message = '';
 					if (row.first_name == "")
-						error_message += "First name required";
+						error_message += "First name required. ||";
 
 					if (row.email_id == "")
-						error_message += "Email id required";
+						error_message += "Email id required. ||";
 
 					if (!isEmail(row.email_id))
-						error_message += "Please enter valid email id";
+						error_message += "Please enter valid email id. ||";
 
 					if (row.password == "")
-						error_message += "Password is required";
+						error_message += "Password is required. ||";
 
 					if (row.type == "")
-						error_message += "user type required";
+						error_message += "user type required. ||";
 
 					if (parseInt(row.type) >= 5 &&
 						parseInt(row.type) <= 7)
-						error_message += "Add valid user type";
+						error_message += "Add valid user type. ||";
 
 					row.error_message = error_message;
 					unsuccessRecord.push(row);
@@ -569,19 +569,24 @@ export class UserService {
 	}
 
 	async listDeleteRequest(dto: ListDeleteRequestDto) {
-		const { page_no, search, limit } = dto;
+		const { page_no, search, limit ,status } = dto;
 
-		console.log("error");
-
+		
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 		const keyword = search || "";
 
 		let where;
 		where = `1=1 `
-		if (keyword) {
-			where += `AND ( "req"."email" ILIKE '%${keyword}%')`;
+		if (status) {
+			where += `AND "req"."status" = ${status}`;
 		}
+		
+		if (keyword) {
+			where += `AND ( "req"."email" ILIKE '%${keyword}%' OR "req"."user_name" ILIKE '%${keyword}%')`;
+		}
+
+		
 
 
 

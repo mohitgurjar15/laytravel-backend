@@ -39,7 +39,7 @@ export function BookingFailerMail(param: { error: string } , bookingId = null) {
     {
         content += `< tr >
                         <td align="left" valign = "top" style = "font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;" >
-                            Booking Id : ${bookingId}
+                            Booking ID : ${bookingId}
         </td></tr>
          `
     }

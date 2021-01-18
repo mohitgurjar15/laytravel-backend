@@ -62,9 +62,9 @@ export class EnqiryService {
 				.sendMail({
 					to: mailConfig.admin,
 					from: mailConfig.from,
-					subject: `New enqiry`,
+					subject: `New Enquiry`,
 					html: EnquiryNotificationHTML({
-						name: name, message: message
+						name: name, message: message , id : enquiry.id
 					})
 				})
 				.then((res) => {
