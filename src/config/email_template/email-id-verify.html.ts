@@ -70,7 +70,7 @@ const content = `<!-- header Text section start -->
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding:25px; text-align: center; background: #fc7e66;">
-                                                        <p  style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Your Otp Is : ${param.otp}</p>
+                                                        <p  style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Your OTP - ${param.otp}</p>
                                                     </td>
                                                 </tr>
                                                 <tr>

@@ -8,17 +8,17 @@ export class Enquiry extends BaseEntity {
   @Column("uuid", { primary: true, name: "id" })
   id: string;
 
-  @Column("character varying", { name: "user_name", length: 255 })
+  @Column("character varying", { name: "user_name",transformer: new EncryptionTransformer(CryptoKey),nullable:true})
   userName: string;
 
-  @Column("character varying", { name: "email", length: 500 , transformer: new EncryptionTransformer(CryptoKey)})
+  @Column("character varying", { name: "email", transformer: new EncryptionTransformer(CryptoKey),nullable:true})
   email: string;
 
-  @Column("character varying", { name: "phone_no", length: 20 ,nullable:true})
+  @Column("character varying", { name: "phone_no", transformer: new EncryptionTransformer(CryptoKey) ,nullable:true})
   phoneNo: string;
 
 
-  @Column("character varying", { name: "country_code", length: 10 ,nullable:true})
+  @Column("character varying", { name: "country_code", transformer: new EncryptionTransformer(CryptoKey) ,nullable:true})
   countryCode: string;
 
   // @Column("text", { name: "location" })

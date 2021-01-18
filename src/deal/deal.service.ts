@@ -135,7 +135,7 @@ export class DealService {
         await deal.save();
 
         return {
-            message: `Deal status changed succesfully`
+            message: `Deal status changed successfully`
         }
 
     }
@@ -159,7 +159,7 @@ export class DealService {
 
         await deal.save();
         return {
-            message: `Deal deleted succesfully`
+            message: `Deal deleted successfully`
         }
     }
 

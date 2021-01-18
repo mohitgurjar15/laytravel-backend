@@ -1509,7 +1509,7 @@ export class AuthService {
 				newReq.createdDate = new Date();
 				newReq.email = user.email
 				newReq.requestForData = requireBackupFile
-
+				newReq.userName = user.full_name || user.firstName + ' ' + user.lastName
 				newReq.save()
 
 				return {

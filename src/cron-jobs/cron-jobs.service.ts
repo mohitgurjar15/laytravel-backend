@@ -220,15 +220,11 @@ export class CronJobsService {
 				let cardToken = instalment.booking.cardToken
 				amount = amount * 100
 				amount = Math.ceil(amount)
-				console.log('amount', amount)
-				console.log('currencyCode', currencyCode)
-				console.log('cardToken', cardToken)
-
+				
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-					console.log(transaction)
-
+					
 					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.paymentInfo = transaction.meta_data;
 					instalment.transactionToken = transaction.token;
@@ -238,8 +234,7 @@ export class CronJobsService {
 					instalment.comment = `try to get Payment by cron on ${currentDate}`
 					await instalment.save()
 
-					console.log(transaction.status);
-
+					
 					if (transaction.status == false) {
 
 						let faildTransaction = new FailedPaymentAttempt()
@@ -258,10 +253,10 @@ export class CronJobsService {
 						}
 
 						let param = {
-							date: DateTime.convertDateFormat(instalment.instalmentDate, 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							date: DateTime.convertDateFormat(instalment.instalmentDate, 'YYYY-MM-DD', 'MMMM Do YYYY'),
 							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							available_try: availableTry,
-							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMMM Do YYYY'),
 							currency: instalment.currency.symbol
 						}
 						if (instalment.attempt >= 3) {
@@ -363,7 +358,7 @@ export class CronJobsService {
 							.execute();
 
 						let param = {
-							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MMMM Do YYYY'),
 							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
 							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
 							cardNo: transaction.meta_data.transaction.payment_method.number,
@@ -627,7 +622,7 @@ export class CronJobsService {
 				to: email,
 				from: mailConfig.from,
 				cc: mailConfig.BCC,
-				subject: "Booking Failure Mail",
+				subject: "Booking Failed Mail",
 				html: BookingFailerMail({
 					error: error,
 				}, bookingId),

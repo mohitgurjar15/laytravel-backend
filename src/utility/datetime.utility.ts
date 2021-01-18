@@ -33,4 +33,5 @@ export class DateTime{
         return moment(date).format(format);
 
     }
+
 }
