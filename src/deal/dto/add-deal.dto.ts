@@ -4,7 +4,7 @@ import { IsNotEmpty } from "class-validator";
 export class AddDealDto {
 
     @IsNotEmpty({
-        message: `Please enter module id&&&subject&&&Please enter module id`
+        message: `Please enter module id&&&subject&&&Please enter module id.`
     })
     @ApiProperty({
         description: 'Enter module id',
@@ -21,7 +21,7 @@ export class AddDealDto {
     image: string;
 
     @IsNotEmpty({
-        message: `Please enter location &&&subject&&&Please enter location`
+        message: `Please enter location &&&subject&&&Please enter location.`
     })
     @ApiProperty({
         description: 'Enter location',
@@ -29,12 +29,4 @@ export class AddDealDto {
     })
     location: string;
 
-    @IsNotEmpty({
-        message: `Please enter status &&&subject&&&Please enter status`
-    })
-    @ApiProperty({
-        description: 'Enter status',
-        example: true
-    })
-    status: boolean;
 }

@@ -10,11 +10,12 @@ import { MinCharPipe } from 'src/flight/pipes/min-char.pipes';
 import * as moment from 'moment';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
-import { HomeRentalCalendarDto } from './dto/home-rental-calendar.dto';
+import { HomeRentalFullCalendarDto } from './dto/home-rental-full-calendar.dto';
 import { User } from 'src/entity/user.entity';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { SearchFullTextDto } from './dto/search-full-text.dto';
+import { HomeRentalFlexibleDayDto } from './dto/home-rental-flexible-day.dto';
 
 @Controller('vacation-rental')
 @ApiTags("Vacation-Rental")
@@ -23,7 +24,7 @@ export class VacationRentalController {
 
     constructor(private vacationRentalService: VacationRentalService) { }
 
-    @Get('/search-location')                                                                                                                                                                                                                                                                        
+    @Get('/search-location')
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 404, description: 'Not Found' })
@@ -54,11 +55,11 @@ export class VacationRentalController {
         example: 'USD'
     })
     async getSearchFullText(
-        @Body() searchFullTextDto:SearchFullTextDto,
+        @Body() searchFullTextDto: SearchFullTextDto,
         @Req() req,
         @LogInUser() user
-    ){
-        return await this.vacationRentalService.getSearchFullText(searchFullTextDto,user,req.headers);
+    ) {
+        return await this.vacationRentalService.getSearchFullText(searchFullTextDto, user, req.headers);
     }
 
     // @Post('/availability')
@@ -120,7 +121,7 @@ export class VacationRentalController {
 
         if (!moment(availabilityDetailsDto.check_out_date).isAfter(availabilityDetailsDto.check_in_date))
             throw new BadRequestException(`Check out date needs to be after check in.`)
-        return await this.vacationRentalService.unitTypeListAvailability(availabilityDetailsDto, req.headers,user);
+        return await this.vacationRentalService.unitTypeListAvailability(availabilityDetailsDto, req.headers, user);
     }
 
     @Post('verify-availability')
@@ -135,7 +136,7 @@ export class VacationRentalController {
         name: 'language',
         description: 'Enter language code(ex. en)',
         example: 'en'
-    })  
+    })
     @ApiHeader({
         name: 'currency',
         description: 'Enter currency code(ex. USD)',
@@ -151,7 +152,7 @@ export class VacationRentalController {
 
         if (!moment(verifyAvailabilityDetailsDto.check_out_date).isAfter(verifyAvailabilityDetailsDto.check_in_date))
             throw new BadRequestException(`Check out date needs to be after check in.`)
-        return await this.vacationRentalService.verifyUnitAvailability(verifyAvailabilityDetailsDto, req.headers,user);
+        return await this.vacationRentalService.verifyUnitAvailability(verifyAvailabilityDetailsDto, req.headers, user);
     }
 
     @Post('/booking')
@@ -178,17 +179,17 @@ export class VacationRentalController {
         @Req() req,
         @Body() bookingDto: BookingDto,
         @LogInUser() user
-        ) {
+    ) {
         if (moment(bookingDto.check_in_date).isBefore(moment().format("YYYY-MM-DD")))
             throw new BadRequestException(`Please enter check in date today or future date.&&&departure_date`)
 
         if (!moment(bookingDto.check_out_date).isAfter(bookingDto.check_in_date))
             throw new BadRequestException(`Check out date needs to be after check in.`)
-        return await this.vacationRentalService.booking(bookingDto, req.headers,user)
+        return await this.vacationRentalService.booking(bookingDto, req.headers, user)
     }
 
     @Delete('/cancel-booking/:booking_id')
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.FREE_USER)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER)
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiOperation({ summary: "cancel booking" })
@@ -222,7 +223,7 @@ export class VacationRentalController {
         description: 'Enter language code(ex. en)',
     })
     async callenderDayRates(
-        @Body() searchHomeRental: HomeRentalCalendarDto,
+        @Body() searchHomeRental: HomeRentalFullCalendarDto,
         @Req() req,
         @LogInUser() user
     ) {
@@ -233,6 +234,32 @@ export class VacationRentalController {
             throw new BadRequestException(`Check out date needs to be after check in.`)
         return await this.vacationRentalService.fullcalenderRate(searchHomeRental, req.headers, user);
     }
+
+    @Post('/flexiable-day-rate')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'It is a return flexible rate between check in and check out date' })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async flexibleDateRate(
+        @Body() searchHomeRental: HomeRentalFlexibleDayDto,
+        @Req() req,
+        @LogInUser() user
+    ) {
+        return await this.vacationRentalService.flexibleDayRate(searchHomeRental, req.headers, user);
+    }
+
 
     @Put('/book-partially-booking/:booking_id')
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)

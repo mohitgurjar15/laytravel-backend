@@ -418,18 +418,18 @@ export class AuthService {
 		}
 	}
 
-	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles) {
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles:Role[]) {
 		const { email } = forgetPasswordDto;
 
-		// const user = await this.userRepository.findOne({
-		// 	email:email,
-		// 	roleId: In(roles),
-		// });
+		const user = await this.userRepository.findOne({
+			email: email,
+			roleId: In(roles)
+		});
 
-		const user = await getManager()
-			.createQueryBuilder(User, "user")
-			.where(`email=:email and role_id  IN (:...role_id)`, { email, role_id: roles })
-			.getOne();
+		// const user = await getConnection()
+		// 	.createQueryBuilder(User, "user")
+		// 	.where(`email=:email and role_id  IN (:...role_id)`, { email, role_id: roles })
+		// 	.getOne();
 
 		if (!user) {
 			throw new NotFoundException(
@@ -443,6 +443,7 @@ export class AuthService {
 			throw new NotAcceptableException(
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
+
 		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
@@ -1107,7 +1108,7 @@ export class AuthService {
 			}
 			var age = moment(new Date()).diff(moment(dob), 'years');
 			if (age < 16) {
-				throw new BadRequestException(`Less than 16 year old user not allowed on plateform. please contact administaration`)
+				throw new BadRequestException(`Age below 16 years are not allowed to signup on Portal.`)
 			}
 			const user = new User();
 			user.title = title;

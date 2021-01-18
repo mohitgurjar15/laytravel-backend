@@ -26,7 +26,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 			where += `AND ("log"."user_id" = '${userId}')`;
 		}
 		if (keyword) {
-			where += `AND (("log"."module_name" ILIKE '%${keyword}%') or ("log"."activity_name" ILIKE '%${keyword}%'))`;
+			where += `AND (("log"."module_name" ILIKE '%${keyword}%') or ("log"."activity_name" ILIKE '%${keyword}%') or ("user"."first_name" ILIKE '%${keyword}%')or ("user"."email" ILIKE '%${keyword}%')or ("user"."last_name" ILIKE '%${keyword}%'))`;
 		}
 
 
@@ -45,6 +45,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				"log.createdDate",
 				"log.previousValue",
 				"log.currentValue",
+				"user.roleId"
 
 			])
 
@@ -119,6 +120,7 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				"log.createdDate",
 				"log.previousValue",
 				"log.currentValue",
+				"user.roleId"
 			])
 			.where(where)
 			.orderBy("log.id", "DESC")

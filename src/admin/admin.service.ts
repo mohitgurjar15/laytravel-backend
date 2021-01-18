@@ -37,6 +37,7 @@ import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
+import { RagisterMail } from "src/config/email_template/register-mail.html";
 
 @Injectable()
 export class AdminService {
@@ -45,7 +46,7 @@ export class AdminService {
 		private userRepository: UserRepository,
 
 		private readonly mailerService: MailerService
-	) {}
+	) { }
 
 	/**
 	 *
@@ -81,18 +82,18 @@ export class AdminService {
 		user.createdDate = new Date();
 		user.updatedDate = new Date();
 		user.password = await this.userRepository.hashPassword(password, salt);
-		const roles = [Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPLIER,Role.SUPPORT]
-		
-		const userdata = await this.userRepository.createUser(user,roles);
+		const roles = [Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPLIER, Role.SUPPORT]
+
+		const userdata = await this.userRepository.createUser(user, roles);
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "Admin", ` new admin ${userdata.email} created By super admin ${adminId}`,null,userdata);
+			Activity.logActivity(adminId, "Admin", ` new admin ${userdata.email} created By super admin ${adminId}`, null, userdata);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
 					from: mailConfig.from,
-					cc:mailConfig.BCC,
+					cc: mailConfig.BCC,
 					subject: `Welcome on board`,
 					template: "welcome.html",
 					context: {
@@ -125,7 +126,7 @@ export class AdminService {
 		adminId: string
 	) {
 		try {
-			const { firstName, middleName, lastName ,gender} = updateAdminDto;
+			const { firstName, middleName, lastName, gender } = updateAdminDto;
 
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
@@ -134,7 +135,7 @@ export class AdminService {
 
 			const previousData = userData;
 
-			
+
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -156,7 +157,7 @@ export class AdminService {
 			await userData.save();
 			const currentData = userData;
 
-			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`,previousData,currentData);
+			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, currentData);
 			return userData;
 		} catch (error) {
 			if (
@@ -181,7 +182,7 @@ export class AdminService {
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [2], siteUrl);
+			return await this.userRepository.listUser(paginationOption, [Role.ADMIN, Role.SUPPORT], siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -198,8 +199,8 @@ export class AdminService {
 
 	//Export user
 	async exportAdmin(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "admin", `${adminId} is export the  all admin data`);
-		return await this.userRepository.exportUser([2]);
+		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
+		return await this.userRepository.exportUser([Role.ADMIN, Role.SUPPORT]);
 	}
 
 	/**
@@ -226,7 +227,7 @@ export class AdminService {
 				user.updatedDate = new Date();
 				await user.save();
 				const currentData = user;
-				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`,previousData,currentData);
+				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`, previousData, currentData);
 				return { messge: `Admin deleted successfully` };
 			}
 		} catch (error) {
@@ -245,7 +246,7 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return await this.userRepository.getUserDetails(userId,siteUrl,[Role.ADMIN])
+			return await this.userRepository.getUserDetails(userId, siteUrl, [Role.ADMIN, Role.SUPPORT])
 			// const user = await this.userRepository.findOne({
 			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
 			// });
@@ -285,13 +286,13 @@ export class AdminService {
 
 			if (!user) throw new NotFoundException(`No user found`);
 			const previousData = user;
-			var  statusWord = status === true? 1 : 0 ;
+			var statusWord = status === true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
 			const currentData = user;
-			Activity.logActivity(adminId, `Admin`, `admin status changed ${statusWord}`,previousData,currentData);
+			Activity.logActivity(adminId, `Admin`, `admin status changed ${statusWord}`, previousData, currentData);
 			return { messge: `admin status changed` };
 		} catch (error) {
 			if (
@@ -355,7 +356,7 @@ export class AdminService {
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
 			const result = await this.userRepository.query(
-				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.ADMIN},${Role.SUPER_ADMIN}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`			);
+				`SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.ADMIN},${Role.SUPER_ADMIN},${Role.SUPPORT}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`);
 			return { result };
 		} catch (error) {
 			if (
@@ -376,79 +377,83 @@ export class AdminService {
 		const unsuccessRecord = new Array();
 		const csv = require("csvtojson");
 		const array = await csv().fromFile("./" + files[0].path);
+
 		for (let index = 0; index < array.length; index++) {
 			var row = array[index];
-			if (row) {
-				if (
-					row.first_name != "" &&
-					row.email_id != "" &&
-					isEmail(row.email_id) &&
-					row.password != "" &&
-					row.type != "" &&
-					parseInt(row.type) == 2
-				) {
-					var data = {
-						firstName: row.first_name,
-						middleName: row.middle_name,
-						lastName: row.last_name,
-						email: row.email_id,
-						contryCode: row.contry_code,
-						phoneNumber: row.phone_number,
-						password: row.password,
-						roleId: row.type,
-						adminId: userId,
-					};
-					var userData = await this.userRepository.insertNewUser(data);
+			try {
+				if (row) {
+					if (
+						row.first_name != "" &&
+						row.email_id != "" &&
+						isEmail(row.email_id) &&
+						row.password != "" &&
+						row.type != "" &&
+						parseInt(row.type) == Role.ADMIN
+					) {
+						var data = {
+							firstName: row.first_name,
+							middleName: row.middle_name,
+							lastName: row.last_name,
+							email: row.email_id,
+							contryCode: row.contry_code,
+							phoneNumber: row.phone_number,
+							password: row.password,
+							roleId: row.type,
+							adminId: userId,
+						};
+						//console.log(data);
 
-					if (userData) {
-						count++;
-						this.mailerService
-							.sendMail({
-								to: data.email,
-								from: mailConfig.from,
-								cc:mailConfig.BCC,
-								subject: `Welcome on board`,
-								template: "welcome.html",
-								context: {
-									// Data to be sent to template files.
-									username: data.firstName + " " + data.lastName,
-									email: data.email,
-									password: data.password,
-								},
-							})
-							.then((res) => {
-								console.log("res", res);
-							})
-							.catch((err) => {
-								console.log("err", err);
-							});
+						var userData = await this.userRepository.insertNewUser(data, [Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT]);
+
+						if (userData) {
+							count++;
+							this.mailerService
+								.sendMail({
+									to: data.email,
+									from: mailConfig.from,
+									cc: mailConfig.BCC,
+									subject: `Welcome on board`,
+									html: RagisterMail({
+										username: data.firstName + " " + data.lastName
+									},data.password)
+								})
+								.then((res) => {
+									console.log("res", res);
+								})
+								.catch((err) => {
+									console.log("err", err);
+								});
+						} else {
+							row.error_message = "Email id alredy available";
+							unsuccessRecord.push(row);
+						}
 					} else {
-						row.error_message = "Email id alredy available";
+						var error_message = '';
+						if (row.first_name == "")
+							error_message += "First name required. ";
+
+						if (row.email_id == "")
+							error_message += "Email id required. ";
+
+						if (!isEmail(row.email_id))
+							error_message += "Please enter valid email id. ";
+
+						if (row.password == "")
+							error_message += "Password is required. ";
+
+						if (row.type == "")
+							error_message += "Admin type required. ";
+
+						if (parseInt(row.type) != 2)
+							error_message += "Add valid admin type. ";
+
+						row.error_message = error_message;
 						unsuccessRecord.push(row);
 					}
-				} else {
-					var error_message = '';
-					if(row.first_name == "")
-					error_message += "First name required";
-
-					if(row.email_id == "")
-					error_message += "Email id required";
-
-					if(!isEmail(row.email_id))
-					error_message += "Please enter valid email id";
-
-					if(row.password == "")
-					error_message += "Password is required";
-
-					if(row.type == "")
-					error_message += "Admin type required";
-
-					if(parseInt(row.type) != 2)
-					error_message += "Add valid admin type";
-
-					row.error_message = error_message;
-					unsuccessRecord.push(row);
 				}
+			} catch (error) {
+				row.error_message = error.message
+							unsuccessRecord.push(row);
 			}
 		}
 		Activity.logActivity(userId, "admin", `import ${count}  admin`);

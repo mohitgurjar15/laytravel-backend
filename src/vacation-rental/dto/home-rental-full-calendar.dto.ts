@@ -3,7 +3,7 @@ import { Type } from "class-transformer/decorators";
 import { ValidationArguments } from "class-validator";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
-export class HomeRentalCalendarDto{
+export class HomeRentalFullCalendarDto{
     @ApiProperty({
         description:"Enter a locatio name",
         example:"Barcelona"

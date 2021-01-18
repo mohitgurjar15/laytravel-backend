@@ -9,7 +9,7 @@ import {
   OneToOne
 } from "typeorm";
 import * as bcrypt from "bcrypt";
-
+import { EncryptionTransformer } from "typeorm-encrypted";
 import { ActivityLog } from "./activity-log.entity";
 import { Booking } from "./booking.entity";
 import { BookingInstalments } from "./booking-instalments.entity";
@@ -31,6 +31,7 @@ import { OtherPayments } from "./other-payment.entity";
 import { Notification } from "./notification.entity";
 import { Deal } from "./deal.entity";
 import { DeleteUserAccountRequest } from "./delete-user-account-request.entity";
+import { CryptoKey } from "src/config/common.config";
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
 @Index("user_preferred_language", ["preferredLanguage"], {})
@@ -43,10 +44,10 @@ export class User extends BaseEntity {
   @Column("uuid", { primary: true, name: "user_id" })
   userId: string;
 
-  @Column("character varying", { name: "first_name", length: 255, nullable: true })
+  @Column("character varying", { name: "first_name", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   firstName: string;
 
-  @Column("character varying", { name: "last_name", length: 255, nullable: true })
+  @Column("character varying", { name: "last_name", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   lastName: string;
 
   @Column("integer", { name: "account_type" })
@@ -55,7 +56,7 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "social_account_id", length: 255 })
   socialAccountId: string;
 
-  @Column("character varying", { name: "email", length: 255, nullable: true })
+  @Column("character varying", { name: "email", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   email: string | null;
 
   @Column("character varying", { name: "salt", length: 255, nullable: true })
@@ -64,7 +65,7 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "password", length: 255, nullable: true })
   password: string | null;
 
-  @Column("character varying", { name: "phone_no", length: 20 })
+  @Column("character varying", { name: "phone_no", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   phoneNo: string;
 
   @Column("character varying", {
@@ -107,8 +108,8 @@ export class User extends BaseEntity {
   @Column("timestamp with time zone", { name: "updated_date", nullable: true })
   updatedDate: Date | null;
 
-  @Column("character varying", { name: "gender", nullable: true, length: 10 })
-  gender: string | null;
+  @Column("character varying", { name: "gender", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  gender: string;
 
   @Column("integer", { name: "role_id", nullable: true })
   roleId: number | null;
@@ -120,8 +121,8 @@ export class User extends BaseEntity {
   })
   countryCode: string | null;
 
-  @Column("character varying", { name: "address", nullable: true, length: 500 })
-  address: string | null;
+  @Column("text", { name: "address", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  address: string;
 
   @Column("integer", { name: "country_id", nullable: true })
   countryId: number | null;
@@ -129,8 +130,8 @@ export class User extends BaseEntity {
   @Column("integer", { name: "state_id", nullable: true })
   stateId: number | null;
 
-  @Column("character varying", { name: "title", nullable: true, length: 10 })
-  title: string | null;
+  @Column("character varying", { name: "title", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  title: string;
 
   @Column("integer", { name: "preferred_language", nullable: true })
   preferredLanguage: number | null;
@@ -156,29 +157,29 @@ export class User extends BaseEntity {
   @Column("character varying", {
     name: "city_name",
     nullable: true,
-    length: 255
+    transformer: new EncryptionTransformer(CryptoKey)
   })
-  cityName: string | null;
+  cityName: string;
 
 
 
-  @Column("date", { name: "dob", nullable: true })
-  dob: string | null;
+  @Column("character varying", { name: "dob", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  dob: string;
 
   @Column("character varying", {
     name: "passport_number",
     nullable: true,
-    length: 150
+    transformer: new EncryptionTransformer(CryptoKey)
   })
-  passportNumber: string | null;
+  passportNumber: string;
 
-  @Column("date", { name: "passport_expiry", nullable: true })
-  passportExpiry: string | null;
+  @Column("character varying", { name: "passport_expiry", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
+  passportExpiry: string;
 
   get full_name() {
     return `${this.firstName} ${this.lastName}`;
   }
-  
+
   @OneToMany(
     () => ActivityLog,
     activityLog => activityLog.user
@@ -365,7 +366,7 @@ export class User extends BaseEntity {
   @OneToMany(
     () => DeleteUserAccountRequest,
     deleteUserAccountRequest => deleteUserAccountRequest.updateBy)
-    deleteUserAccountRequest: DeleteUserAccountRequest[];
+  deleteUserAccountRequest: DeleteUserAccountRequest[];
 
 
 }

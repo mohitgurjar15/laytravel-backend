@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, getManager } from "typeorm";
+import { EntityRepository, Repository, getManager, getConnection } from "typeorm";
 import { Booking } from "src/entity/booking.entity";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { NotFoundException } from "@nestjs/common";
@@ -236,6 +236,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.moduleId",
 				"BookingInstalments.supplierId",
 				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentNo",
 				"BookingInstalments.instalmentDate",
 				"BookingInstalments.currencyId",
 				"BookingInstalments.amount",
@@ -334,7 +335,7 @@ export class BookingRepository extends Repository<Booking> {
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 
-		let query = getManager()
+		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "installment")
@@ -342,12 +343,14 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
 			.select([
+				"BookingInstalments.attempt",
 				"BookingInstalments.id",
 				"BookingInstalments.bookingId",
 				"BookingInstalments.userId",
 				"BookingInstalments.moduleId",
 				"BookingInstalments.supplierId",
 				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentNo",
 				"BookingInstalments.instalmentDate",
 				"BookingInstalments.currencyId",
 				"BookingInstalments.amount",
@@ -471,11 +474,11 @@ export class BookingRepository extends Repository<Booking> {
 
 		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
-		if (!data.length) {
-			throw new NotFoundException(
-				`No booking found`
-			);
-		}
+		// if (!data.length) {
+		// 	throw new NotFoundException(
+		// 		`No booking found`
+		// 	);
+		// }
 		return { data, count };
 	}
 

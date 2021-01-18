@@ -22,6 +22,7 @@ import { In } from "typeorm";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { RagisterMail } from "src/config/email_template/register-mail.html";
 
 @Injectable()
 export class SupplierService {
@@ -282,7 +283,7 @@ export class SupplierService {
 						roleId: row.type,
 						adminId: userId,
 					};
-					var userData = await this.userRepository.insertNewUser(data);
+					var userData = await this.userRepository.insertNewUser(data,[Role.SUPPLIER]);
 
 					if (userData) {
 						count++;
@@ -292,13 +293,9 @@ export class SupplierService {
 								from: mailConfig.from,
 								cc:mailConfig.BCC,
 								subject: `Welcome on board`,
-								template: "welcome.html",
-								context: {
-									// Data to be sent to template files.
-									username: data.firstName + " " + data.lastName,
-									email: data.email,
-									password: data.password,
-								},
+								html: RagisterMail({
+									username: data.firstName + " " + data.lastName
+								},data.password)
 							})
 							.then((res) => {
 								console.log("res", res);

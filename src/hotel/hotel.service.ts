@@ -19,7 +19,7 @@ import { UserHelper } from './helpers/user.helper';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentType } from 'src/enum/payment-type.enum';
 import * as moment from "moment";
-import { errorMessage } from 'src/config/common.config';
+import { errorMessage, invalidToken } from 'src/config/common.config';
 import { BookingHelper } from './helpers/booking.helper';
 import { BookingType } from 'src/enum/booking-type.enum';
 import { DateTime } from 'src/utility/datetime.utility';
@@ -106,6 +106,10 @@ export class HotelService{
         
         let cached = await this.cacheManager.get(detailReqDto.token);
 
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         let detail = await this.hotel.detail(detailReqDto);
         
         let details = cached.details;
@@ -124,14 +128,18 @@ export class HotelService{
 
         let cached = await this.cacheManager.get(roomsReqDto.token);
         
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         if (!cached.hotels) {
-            throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
+            throw new NotFoundException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
         
         let hotel = collect(cached.hotels).where('id', roomsReqDto.hotel_id).first();
         
         if (!hotel) {
-            throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
+            throw new NotFoundException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
 
         let details = cached.details;
@@ -166,6 +174,10 @@ export class HotelService{
         
         let cached = await this.cacheManager.get(filterReqDto.token);
 
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         let filterObjects = await FilterHelper.generateFilterObjects(cached);
 
         cached['filter_objects'] = filterObjects;
@@ -182,14 +194,18 @@ export class HotelService{
 
         let cached = await this.cacheManager.get(availabilityDto.token);
 
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+        
         if (!cached.rooms) {
-            throw new InternalServerErrorException("No record found for Room ID: "+availabilityDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
         }
         
         let room = collect(cached.rooms).where('room_id', availabilityDto.room_id).first();
         
         if (!room) {
-            throw new InternalServerErrorException("No record found for Room ID: "+availabilityDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
         }
 
         let details = cached.details;
@@ -231,20 +247,24 @@ export class HotelService{
 
         let cached = await this.cacheManager.get(bookDto.token);
         
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         if (!cached.availability) {
-            throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+bookDto.room_id);
         }
         
         let availability: any = collect(cached.availability).where('room_id', bookDto.room_id).first();
         
         if (!availability) {
-            throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+bookDto.room_id);
         }
         
         let hotel: any = collect(cached.hotels).where('id', bookDto.hotel_id).first();
         
         if (!hotel) {
-            throw new InternalServerErrorException("No record found for Hotel ID: "+bookDto.hotel_id);
+            throw new NotFoundException("No record found for Hotel ID: "+bookDto.hotel_id);
         }
 
         let details = cached.details;
@@ -385,7 +405,7 @@ export class HotelService{
                         await this.booking.savePredictive(bookingData);
                     }
 
-                    let booking_details = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
+                    let booking_details: any = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
                     
                     if (!booking_details) {
                         throw new HttpException({
@@ -527,7 +547,7 @@ export class HotelService{
 
                             await booking.save();
 
-                            let booking_details = await this.bookingRepository.getBookDetail(booking_id);
+                            let booking_details: any = await this.bookingRepository.getBookDetail(booking_id);
 
                             this.booking.sendEmail(booking_details);
 
