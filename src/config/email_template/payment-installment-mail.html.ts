@@ -1,6 +1,7 @@
 import { EmailHeader } from "./header.html";
 import {  EmailFooter} from "./footer.html";
 import { BaseUrl } from "../base-url";
+import { Generic } from "src/utility/generic.utility";
 
 export function PaymentInstallmentMail(param:{
     date: string,
@@ -141,7 +142,7 @@ const content = `<!-- header Text section start -->
                                                                     <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Total Paid to Date: ${param.currencySymbol}${param.complitedAmount}</td>
                                                                 </tr>
                                                                 <tr>
-                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Balance Left to Pay: ${param.currencySymbol}${param.totalAmount - param.complitedAmount}</td>
+                                                                    <td align="right" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;font-weight:500; padding-top: 5px; ">Balance Left to Pay: ${param.currencySymbol}${Generic.formatPriceDecimal(param.totalAmount - param.complitedAmount)}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
