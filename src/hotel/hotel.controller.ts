@@ -1,4 +1,4 @@
-import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Res, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Put, Res, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/guards/role.decorator';
@@ -126,7 +126,7 @@ export class HotelController {
         @Headers() hotelHeaderDto: HotelHeaderDto,
         @LogInUser() user
     ) {
-        // console.log(user);
+        
         bookDto = {
             ...bookDto,
             ...hotelHeaderDto,
@@ -136,5 +136,17 @@ export class HotelController {
         return this.hotelService.book(bookDto);
     }
 
+    @Put('book-partially-booking/:booking_id')
+    @HttpCode(200)
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiOperation({ summary: "Booking", description: "Partial Hotel booking" })
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+    partialBook(
+        @Param('booking_id') booking_id: string,
+        @Headers() hotelHeaderDto: HotelHeaderDto,
+    ) {
+        return this.hotelService.partialBook(booking_id, hotelHeaderDto);
+    }
     
 }

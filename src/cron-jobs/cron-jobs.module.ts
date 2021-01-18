@@ -11,12 +11,14 @@ import { AirportRepository } from 'src/flight/airport.repository';
 import { InstalmentService } from 'src/instalment/instalment.service';
 import { VacationRentalService } from 'src/vacation-rental/vacation-rental.service';
 import { CartService } from 'src/cart/cart.service';
+import { HotelModule } from 'src/hotel/hotel.module';
 
 @Module({
   imports:[
     TypeOrmModule.forFeature([UserRepository,AirportRepository,BookingRepository]),
     AuthModule,
-    CacheModule.register()
+    CacheModule.register(),
+    HotelModule
   ],
   controllers: [CronJobsController],
   providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService,CartService]
