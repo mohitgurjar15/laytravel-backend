@@ -182,7 +182,7 @@ export async function FlightBookingConfirmtionMail(
                   <tbody>
                     <tr>
                       <td align="center" valign="top" class="oc_w40 oc_f12" style="width: 50px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; font-weight: 400;">${index + 1}</td>
-                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${await Generic.formatPriceDecimal(parseFloat(element.amount)) }</td>
+                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${element.amount}</td>
                       <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${DateTime.convertDateFormat(element.date, 'MM/DD/YYYY', 'MMMM Do YYYY')}</td>
                       <td align="center" valign="top" class="oc_f12" style="padding: 7px 0; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; font-weight: 400; text-transform: capitalize; text-align: center;">${element.status}</td>
                     </tr>
