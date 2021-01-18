@@ -40,6 +40,7 @@ import { WebNotification } from "src/utility/web-notification.utility";
 import { MonakerStrategy } from "src/vacation-rental/strategy/strategy";
 import { Monaker } from "src/vacation-rental/strategy/monaker";
 import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
+import { HotelService } from "src/hotel/hotel.service";
 const AWS = require('aws-sdk');
 var fs = require('fs');
 
@@ -55,6 +56,8 @@ export class CronJobsService {
 		private bookingRepository: BookingRepository,
 
 		private flightService: FlightService,
+
+		private hotelService: HotelService,
 
 		private paymentService: PaymentService,
 
@@ -461,7 +464,7 @@ export class CronJobsService {
 		if (!result.length) {
 			throw new NotFoundException(`No booking found`)
 		}
-
+		// return result;
 		var total = 0;
 		var failedlogArray = ''
 		for (let index = 0; index < result.length; index++) {
@@ -472,6 +475,9 @@ export class CronJobsService {
 						break;
 					case ModulesName.VACATION_RENTEL:
 						await this.getDailyPriceOfVacationRental(result[index], Headers)
+						break;
+					case ModulesName.HOTEL:
+						await this.hotelService.fetchPrice(result[index])
 						break;
 					default:
 
@@ -484,6 +490,7 @@ export class CronJobsService {
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`
 			}
 		}
+		
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/><pre>' + failedlogArray, 'daily booking price cron failed')
 		}

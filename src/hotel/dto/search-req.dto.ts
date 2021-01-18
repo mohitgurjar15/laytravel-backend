@@ -52,6 +52,14 @@ export class SearchReqDto{
     })
     @IsString()
     longitude: string;
+   
+    @ApiProperty({
+        description: 'If search location is of Hotel type than pass the Hotel ID here',
+        example: "700762337",
+    })
+    @IsString()
+    @IsOptional()
+    hotel_id?: string;
     
     @ApiProperty({
         description: 'Number of occupancies for this search',

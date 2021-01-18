@@ -14,7 +14,7 @@ export class RoomHelper{
     processRoom(hotel: any, roomsReqDto: any) {
         
         let roomData = hotel.room_data;
-
+        // return roomData;
         let rooms = collect(roomData).pluck('rate_data').map((rates: any) => {
             
             let newItem: any = {};

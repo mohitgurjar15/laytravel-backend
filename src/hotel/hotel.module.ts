@@ -32,6 +32,9 @@ import { BookingRepository } from 'src/booking/booking.repository';
     //   host: 'localhost',
     //   port: 6379,
     // })
+  ],
+  exports: [
+    HotelService
   ]
 })
 export class HotelModule {}
