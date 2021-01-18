@@ -37,6 +37,7 @@ import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
+import { RagisterMail } from "src/config/email_template/register-mail.html";
 
 @Injectable()
 export class AdminService {
@@ -412,13 +413,9 @@ export class AdminService {
 									from: mailConfig.from,
 									cc: mailConfig.BCC,
 									subject: `Welcome on board`,
-									template: "welcome.html",
-									context: {
-										// Data to be sent to template files.
-										username: data.firstName + " " + data.lastName,
-										email: data.email,
-										password: data.password,
-									},
+									html: RagisterMail({
+										username: data.firstName + " " + data.lastName
+									},data.password)
 								})
 								.then((res) => {
 									console.log("res", res);
