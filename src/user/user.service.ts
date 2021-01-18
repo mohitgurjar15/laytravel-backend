@@ -43,6 +43,7 @@ import { BookingFeedback } from "src/entity/booking-feedback.entity";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import * as uuidValidator from "uuid-validate"
+import { RagisterMail } from "src/config/email_template/register-mail.html";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -482,9 +483,7 @@ export class UserService {
 		const array = await csv().fromFile("./" + files[0].path);
 
 		for (let index = 0; index < array.length; index++) {
-			console.log(index);
 			var row = array[index];
-			console.log(row.first_name);
 			if (row) {
 				if (
 					row.first_name != "" &&
@@ -506,7 +505,7 @@ export class UserService {
 						roleId: row.type,
 						adminId: userId,
 					};
-					var userData = await this.userRepository.insertNewUser(data);
+					var userData = await this.userRepository.insertNewUser(data,[Role.FREE_USER,Role.PAID_USER]);
 
 					if (userData) {
 						count++;
@@ -516,13 +515,9 @@ export class UserService {
 								from: mailConfig.from,
 								cc: mailConfig.BCC,
 								subject: `Welcome on board`,
-								template: "welcome.html",
-								context: {
-									// Data to be sent to template files.
-									username: data.firstName + " " + data.lastName,
-									email: data.email,
-									password: data.password,
-								},
+								html: RagisterMail({
+									username: data.firstName + " " + data.lastName
+								},data.password)
 							})
 							.then((res) => {
 								console.log("res", res);

@@ -356,7 +356,6 @@ export class UserRepository extends Repository<User> {
 			if (!userData) {
 				throw new NotFoundException(`No user found.`);
 			}
-
 			return { data: userData };
 		} catch (error) {
 			if (
@@ -372,7 +371,7 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
-	async insertNewUser(data: any): Promise<boolean> {
+	async insertNewUser(data: any,roleId: number[]): Promise<boolean> {
 		try {
 			const salt = await bcrypt.genSalt();
 			const user = new User();
@@ -405,8 +404,9 @@ export class UserRepository extends Repository<User> {
 			user.updatedDate = new Date();
 			user.password = await this.hashPassword(data.password, salt);
 			const email = user.email;
+
 			const userExist = await this.findOne({
-				email,
+				email, roleId: In(roleId)
 			});
 			if (userExist) {
 				return false;
