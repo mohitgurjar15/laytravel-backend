@@ -61,6 +61,7 @@ import { UpdateEmailId } from "./dto/update-email.dto";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
+import { updateUserPreference } from "./dto/update-user-preference.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -545,7 +546,8 @@ export class AuthController {
 	@ApiOperation({summary : "change the user preference "})
 	async changeUserPreference(
 		@GetUser() user:User,
+		@Body() preferenceDto:updateUserPreference
 	){
-		return await this.authService.changeUserPreference(user);
+		return await this.authService.changeUserPreference(user,preferenceDto);
 	}
 }

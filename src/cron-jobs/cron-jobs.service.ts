@@ -223,11 +223,11 @@ export class CronJobsService {
 				let cardToken = instalment.booking.cardToken
 				amount = amount * 100
 				amount = Math.ceil(amount)
-				
+
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-					
+
 					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.paymentInfo = transaction.meta_data;
 					instalment.transactionToken = transaction.token;
@@ -237,7 +237,7 @@ export class CronJobsService {
 					instalment.comment = `try to get Payment by cron on ${currentDate}`
 					await instalment.save()
 
-					
+
 					if (transaction.status == false) {
 
 						let faildTransaction = new FailedPaymentAttempt()
@@ -271,7 +271,9 @@ export class CronJobsService {
 								.execute();
 							instalment.paymentStatus = PaymentStatus.FAILED
 							await instalment.save()
-							await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card',`${param.currency}${param.amount}`)
+							if (instalment.user.isEmail) {
+								await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
+							}
 
 							PushNotification.sendNotificationTouser(instalment.user.userId,
 								{  //you can send only notification or only data(or include both)
@@ -296,20 +298,23 @@ export class CronJobsService {
 
 
 						}
-						this.mailerService
-							.sendMail({
-								to: instalment.user.email,
-								from: mailConfig.from,
-								cc: mailConfig.BCC,
-								subject: `Payment Failed Notification`,
-								html: missedPaymentInstallmentMail(param),
-							})
-							.then((res) => {
-								console.log("res", res);
-							})
-							.catch((err) => {
-								console.log("err", err);
-							});
+
+						if (instalment.user.isEmail) {
+							this.mailerService
+								.sendMail({
+									to: instalment.user.email,
+									from: mailConfig.from,
+									cc: mailConfig.BCC,
+									subject: `Payment Failed Notification`,
+									html: missedPaymentInstallmentMail(param),
+								})
+								.then((res) => {
+									console.log("res", res);
+								})
+								.catch((err) => {
+									console.log("err", err);
+								});
+						}
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -370,25 +375,27 @@ export class CronJobsService {
 							installmentId: instalment.id,
 							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
 							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount)),
-							currencySymbol:instalment.currency.symbol,
-							currency:instalment.currency.code,
-							pendingInstallment:await this.pandingInstalment(instalment.bookingId)
+							currencySymbol: instalment.currency.symbol,
+							currency: instalment.currency.code,
+							pendingInstallment: await this.pandingInstalment(instalment.bookingId)
 						}
 
-						this.mailerService
-							.sendMail({
-								to: instalment.user.email,
-								from: mailConfig.from,
-								bcc: mailConfig.BCC,
-								subject: `Installment Payment Successed`,
-								html: PaymentInstallmentMail(param),
-							})
-							.then((res) => {
-								console.log("res", res);
-							})
-							.catch((err) => {
-								console.log("err", err);
-							});
+						if (instalment.user.isEmail) {
+							this.mailerService
+								.sendMail({
+									to: instalment.user.email,
+									from: mailConfig.from,
+									bcc: mailConfig.BCC,
+									subject: `Installment Payment Successed`,
+									html: PaymentInstallmentMail(param),
+								})
+								.then((res) => {
+									console.log("res", res);
+								})
+								.catch((err) => {
+									console.log("err", err);
+								});
+						}
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -490,7 +497,7 @@ export class CronJobsService {
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`
 			}
 		}
-		
+
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/><pre>' + failedlogArray, 'daily booking price cron failed')
 		}
@@ -642,7 +649,7 @@ export class CronJobsService {
 			});
 	}
 
-	async sendFlightIncompleteMail(email, bookingId, error = null,amount) {
+	async sendFlightIncompleteMail(email, bookingId, error = null, amount) {
 		this.mailerService
 			.sendMail({
 				to: email,
@@ -651,7 +658,7 @@ export class CronJobsService {
 				subject: "Booking Failure Mail",
 				html: IncompleteBookingMail({
 					error: error,
-					amount:amount
+					amount: amount
 				}, bookingId),
 			})
 			.then((res) => {
@@ -842,7 +849,9 @@ export class CronJobsService {
 				"User.userId",
 				"User.email",
 				"User.phoneNo",
-				"User.firstName"
+				"User.firstName",
+				"User.isEmail",
+				"User.isSMS"
 			])
 			.where(`(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
@@ -853,22 +862,25 @@ export class CronJobsService {
 				userName: installment.user.firstName,
 				amount: installment.currency.symbol + `${Generic.formatPriceDecimal(parseFloat(installment.amount))}`,
 				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
-				bookingId:installment.booking.laytripBookingId
+				bookingId: installment.booking.laytripBookingId
 			}
-			this.mailerService
-				.sendMail({
-					to: installment.user.email,
-					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Payment Reminder",
-					html: PaymentReminderMail(param),
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
+
+			if (installment.user.isEmail) {
+				this.mailerService
+					.sendMail({
+						to: installment.user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: "Payment Reminder",
+						html: PaymentReminderMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+			}
 
 			PushNotification.sendNotificationTouser(installment.user.userId,
 				{  //you can send only notification or only data(or include both)
@@ -968,8 +980,8 @@ export class CronJobsService {
 		var filepath = '/var/www/html/logs/database/' + fileName;
 
 		if (!fs.existsSync('/var/www/html/logs/database/')) {
-			 	fs.mkdirSync('/var/www/html/logs/database/');
-			 }
+			fs.mkdirSync('/var/www/html/logs/database/');
+		}
 		var s3 = new AWS.S3();
 
 		// Dump our database to a file so we can collect its length
@@ -978,79 +990,79 @@ export class CronJobsService {
 		console.log('Dumping `pg_dump` into `gzip`');
 
 		//await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
-			console.log("Finito");
-			console.log('Uploading "' + filepath + '" to S3');
-			// s3.putObject({
-			// 	Bucket: S3_BUCKET,
-			// 	Key: fileName,
-			// 	// ACL: 'public',
-			// 	// ContentType: 'text/plain',
-			// 	Body: fs.createReadStream(filepath)
-			// }, function handlePutObject(err, data) {
-			// 	// If there was an error, throw it
-			// 	if (err) {
-			// 		throw err;
-			// 		return err
-			// 	} else {}
-			// });
-		
-			console.log("started....");
-			// Simple-git without promise 
-			const simpleGit = require('simple-git')();
-			// Shelljs package for running shell tasks optional
-			const shellJs = require('shelljs');
-			// Simple Git with Promise for handling success and failure
-			const simpleGitPromise = require('simple-git/promise')();
+		console.log("Finito");
+		console.log('Uploading "' + filepath + '" to S3');
+		// s3.putObject({
+		// 	Bucket: S3_BUCKET,
+		// 	Key: fileName,
+		// 	// ACL: 'public',
+		// 	// ContentType: 'text/plain',
+		// 	Body: fs.createReadStream(filepath)
+		// }, function handlePutObject(err, data) {
+		// 	// If there was an error, throw it
+		// 	if (err) {
+		// 		throw err;
+		// 		return err
+		// 	} else {}
+		// });
 
-			shellJs.cd('/var/www/html/logs/database/');
-			// Repo name
-			const repo = 'laytrip-database-backup';  //Repo name
-			// User name and password of your GitHub
-			const userName = 'suresh555';
-			const password1 = 'Oneclick1@';
-			// Set up GitHub url like this so no manual entry of user pass needed
-			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
-			// add local git config like username and email
-			
-			simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
-			console.log("step1");
-			
-			simpleGit.addConfig('user.name', 'Suresh Suthar');
-			console.log(("step2"));
-			
-			// Add remore repo url as origin to repo
-			simpleGitPromise.addRemote('origin', gitHubUrl);
-			console.log("step3");
-			
-			// Add all files for commit
-			simpleGitPromise.add('.')
-				.then(
-					(addSuccess) => {
-						console.log(addSuccess);
-					}, (failedAdd) => {
-						console.log('adding files failed');
-					});
-					console.log("step4");
-					
-			// Commit files as Initial Commit
-			simpleGitPromise.commit('Intial commit by simplegit')
-				.then(
-					(successCommit) => {
-						console.log(successCommit);
-					}, (failed) => {
-						console.log('failed commmit');
-					});
-					console.log("step5");
-			// Finally push to online repository
-			simpleGitPromise.push('origin', 'master')
-				.then((success) => {
-					console.log('repo successfully pushed');
-				}, (failed) => {
-					console.log('repo push failed');
+		console.log("started....");
+		// Simple-git without promise 
+		const simpleGit = require('simple-git')();
+		// Shelljs package for running shell tasks optional
+		const shellJs = require('shelljs');
+		// Simple Git with Promise for handling success and failure
+		const simpleGitPromise = require('simple-git/promise')();
+
+		shellJs.cd('/var/www/html/logs/database/');
+		// Repo name
+		const repo = 'laytrip-database-backup';  //Repo name
+		// User name and password of your GitHub
+		const userName = 'suresh555';
+		const password1 = 'Oneclick1@';
+		// Set up GitHub url like this so no manual entry of user pass needed
+		const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
+		// add local git config like username and email
+
+		simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
+		console.log("step1");
+
+		simpleGit.addConfig('user.name', 'Suresh Suthar');
+		console.log(("step2"));
+
+		// Add remore repo url as origin to repo
+		simpleGitPromise.addRemote('origin', gitHubUrl);
+		console.log("step3");
+
+		// Add all files for commit
+		simpleGitPromise.add('.')
+			.then(
+				(addSuccess) => {
+					console.log(addSuccess);
+				}, (failedAdd) => {
+					console.log('adding files failed');
 				});
-				console.log("step5");
-			console.log('Successfully uploaded "' + filepath + '"');
-			return { message: 'Successfully uploaded "' + filepath + '"' }
+		console.log("step4");
+
+		// Commit files as Initial Commit
+		simpleGitPromise.commit('Intial commit by simplegit')
+			.then(
+				(successCommit) => {
+					console.log(successCommit);
+				}, (failed) => {
+					console.log('failed commmit');
+				});
+		console.log("step5");
+		// Finally push to online repository
+		simpleGitPromise.push('origin', 'master')
+			.then((success) => {
+				console.log('repo successfully pushed');
+			}, (failed) => {
+				console.log('repo push failed');
+			});
+		console.log("step5");
+		console.log('Successfully uploaded "' + filepath + '"');
+		return { message: 'Successfully uploaded "' + filepath + '"' }
 		//})
 		// .catch(err => {
 		// 	console.log(err);
@@ -1196,7 +1208,7 @@ export class CronJobsService {
 			}
 
 			const monaker = new MonakerStrategy(new Monaker(Headers));
-			vacationData =  await new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
+			vacationData = await new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
 			// console.log("-------------",vacationData);
 			// vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
 
@@ -1238,11 +1250,11 @@ export class CronJobsService {
 		}
 	}
 
-	async pandingInstalment(bookingId){
+	async pandingInstalment(bookingId) {
 		let query = await getManager()
-					.createQueryBuilder(BookingInstalments, "instalment")
-					.where(`"instalment"."booking_id" = '${bookingId}' AND "instalment"."payment_status" = '${PaymentStatus.PENDING}'`)
-					.getCount();
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.where(`"instalment"."booking_id" = '${bookingId}' AND "instalment"."payment_status" = '${PaymentStatus.PENDING}'`)
+			.getCount();
 		return query
 	}
 }
