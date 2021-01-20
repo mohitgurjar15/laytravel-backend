@@ -18,13 +18,13 @@ export class CartService {
     ) { }
 
     async addInCart(addInCartDto: AddInCartDto, user: User, Header) {
-        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
+        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [], payment_type, instalment_type, travelers } = addInCartDto
         switch (module_id) {
             case ModulesName.HOTEL:
                 break;
 
             case ModulesName.FLIGHT:
-                return await this.addFlightDataInCart(route_code, user, Header);
+                return await this.addFlightDataInCart(route_code, user, Header,payment_type, instalment_type, travelers);
                 break;
             case ModulesName.VACATION_RENTEL:
                 const dto = {
@@ -43,19 +43,14 @@ export class CartService {
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header) {
+    async addFlightDataInCart(route_code: string, user: User, Header,payment_type :string, instalment_type : string, travelers) {
         const flightInfo: any = await this.flightService.airRevalidate({ route_code: route_code }, Header, user);
 
         if (flightInfo) {
-            console.log(flightInfo[0].departure_date);
 
             const depatureDate = flightInfo[0].departure_date;
 
-            console.log(depatureDate);
-
             const formatedDepatureDate = DateTime.convertDateFormat(depatureDate, 'DD/MM/YYYY', 'YYYY-MM-DD')
-
-            console.log(formatedDepatureDate);
 
             const diffrence = moment(formatedDepatureDate).diff(moment(new Date()), 'days');
 
@@ -70,6 +65,8 @@ export class CartService {
             cart.expiryDate = diffrence > 2 ? new Date(dayAfterDay) : new Date(formatedDepatureDate);
             cart.isDeleted = false
             cart.createdDate = new Date();
+            cart.instalmentType = instalment_type;
+            cart.paymentType = payment_type
 
             await cart.save();
 
@@ -88,7 +85,7 @@ export class CartService {
         if (homeInfo) {
 
             const check_in_date = homeInfo[0].check_in_date;
-            
+
             const formatedCheckinDate = check_in_date;
 
             const diffrence = moment(formatedCheckinDate).diff(moment(new Date()), 'days');
@@ -132,6 +129,8 @@ export class CartService {
                 "cart.expiryDate",
                 "cart.isDeleted",
                 "cart.createdDate",
+                "cart.paymentType",
+                "cart.instalmentType",
                 "module.id",
                 "module.name"])
 
