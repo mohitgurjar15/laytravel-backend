@@ -11,10 +11,8 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
 
         const query = getConnection()
             .createQueryBuilder(BookingFeedback, "feedback")
-            .leftJoinAndSelect("feedback.booking", "booking")
-            .leftJoinAndSelect("booking.module", "module")
             .leftJoinAndSelect("feedback.user", "user")
-            .select(["feedback.id", "feedback.bookingId", "booking.bookingDate", "feedback.rating", "feedback.message", "module.name", "module.id", "user.firstName", "user.lastName", "user.email", "user.profilePic", "booking.laytripBookingId"])
+            .select(["feedback.id", "feedback.rating", "feedback.message", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
             .where(where)
             .limit(take)
             .offset(skip)
@@ -101,7 +99,22 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
 
 
         const average_count = await getConnection().query(`select  ROUND(AVG(rating)) as rating from booking_feedback `)
-        return { data: data, total_count: count, rating_count: rating_count, average_count: average_count[0], totalFeedbackCount:reviewCount  };
+        return { data: data, total_count: count, rating_count: rating_count, average_count: average_count[0], totalFeedbackCount: reviewCount };
     }
 
+    async listFeedbackForUser(where: string, limit: number, page_no: number) {
+        const take = limit || 10;
+        const skip = (page_no - 1) * limit || 0;
+
+        const query = getConnection()
+            .createQueryBuilder(BookingFeedback, "feedback")
+            .leftJoinAndSelect("feedback.user", "user")
+            .select(["feedback.id", "feedback.rating", "feedback.message", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
+            .where(where)
+            .limit(take)
+            .offset(skip)
+        const [data, count] = await query.getManyAndCount();
+
+        return { data: data, total_count: count };
+    }
 }
