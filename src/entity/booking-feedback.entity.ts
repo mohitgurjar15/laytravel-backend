@@ -2,7 +2,7 @@ import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGenera
 import { Booking } from "./booking.entity";
 import { User } from "./user.entity";
 
-@Index("booking_id_idx", ["bookingId"], {})
+//@Index("booking_id_idx", ["bookingId"], {})
 @Index("user_id_idx", ["userId"], {})
 // @Index("property_id_idx", ["propertyId"], {})
 
