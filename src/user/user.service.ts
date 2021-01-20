@@ -1168,14 +1168,14 @@ export class UserService {
 			).execute();
 		console.log(bookingIds)
 		if (bookingIds.length && bookingIds[0]) {
-			await getConnection()
-				.createQueryBuilder()
-				.delete()
-				.from(BookingFeedback)
-				.where(`"booking_id" in (:...bookingIds) `, {
-					bookingIds,
-				})
-				.execute()
+			// await getConnection()
+			// 	.createQueryBuilder()
+			// 	.delete()
+			// 	.from(BookingFeedback)
+			// 	.where(`"booking_id" in (:...bookingIds) `, {
+			// 		bookingIds,
+			// 	})
+			// 	.execute()
 
 			await getConnection()
 				.createQueryBuilder()
