@@ -1546,4 +1546,14 @@ export class AuthService {
 			);
 		}
 	}
+
+	async changeUserPreference(user: User) {
+		const { userId } = user;
+
+		const userDetail = await this.userRepository.findOne({ userId });
+
+		console.log("userDetails",userDetail);
+
+
+	}
 }

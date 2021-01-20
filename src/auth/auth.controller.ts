@@ -538,4 +538,14 @@ export class AuthController {
 			dto
 		);
 	}
+
+	@Put('user-preference')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiOperation({summary : "change the user preference "})
+	async changeUserPreference(
+		@GetUser() user:User,
+	){
+		return await this.authService.changeUserPreference(user);
+	}
 }
