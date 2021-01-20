@@ -180,6 +180,12 @@ export class User extends BaseEntity {
     return `${this.firstName} ${this.lastName}`;
   }
 
+  @Column("boolean", { name: "is_email", default: true })
+  isEmail: boolean;
+
+  @Column("boolean", { name: "is_sms", default: true })
+  isSMS: boolean;
+
   @OneToMany(
     () => ActivityLog,
     activityLog => activityLog.user
