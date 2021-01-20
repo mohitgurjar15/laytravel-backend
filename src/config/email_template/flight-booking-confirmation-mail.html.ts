@@ -153,7 +153,7 @@ export async function FlightBookingConfirmtionMail(
 <td align="center" valign="top" style="padding-top: 20px;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tbody>
       <tr>
-        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; padding-bottom: 15px;">Booking id : <span style="font-weight: 700;">${param.orderId}</span></td>
+        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; padding-bottom: 15px;">Booking ID : <span style="font-weight: 700;">${param.orderId}</span></td>
       </tr>`;
   var paymentDetail = `<tr>
       <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; background: #D0D0D0; padding: 10px 15px; font-weight: 700;">Payment details</td>
@@ -204,8 +204,8 @@ export async function FlightBookingConfirmtionMail(
                   <tr>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 55px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">No</td>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Name</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Email</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Type</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 300px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Email</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Type</td>
                   </tr>
                 </tbody>
               </table></td>
@@ -220,8 +220,8 @@ export async function FlightBookingConfirmtionMail(
                   <tr>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 55px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${index + 1}</td>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.name}</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.email}</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.type}</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 300px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.email}</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.type}</td>
                   </tr>
                 </tbody>
               </table></td>
