@@ -8,6 +8,9 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm";
 import { User } from "./user.entity";
+import { EncryptionTransformer } from "typeorm-encrypted";
+import { CryptoKey } from "src/config/common.config";
+
 @Index("user_device_detail_user_id", ["userId"], {})
 //@Index("user_device_detail_pk", ["id"], { unique: true })
 @Entity("user_device_detail")
@@ -37,10 +40,9 @@ export class UserDeviceDetail extends BaseEntity {
 
   @Column("character varying", {
     name: "os_version",
-    nullable: true,
-    length: 10
+    nullable: true, transformer: new EncryptionTransformer(CryptoKey)
   })
-  osVersion: string | null;
+  osVersion: string;
 
   @Column("timestamp with time zone", { name: "created_date", nullable: true })
   createdDate: Date | null;
@@ -53,10 +55,9 @@ export class UserDeviceDetail extends BaseEntity {
 
   @Column("character varying", {
     name: "device_model",
-    nullable: true,
-    length: 255
+    nullable: true, transformer: new EncryptionTransformer(CryptoKey)
   })
-  deviceModel: string | null;
+  deviceModel: string ;
 
   @ManyToOne(
     () => User,
