@@ -25,6 +25,9 @@ export class CartTravelers extends BaseEntity {
     @Column("uuid", { name: "user_id" })
     userId: string;
 
+    @Column("character varying", { name: "baggage_service_code", nullable: true })
+    baggageServiceCode: string;
+
     @ManyToOne(
         () => User,
         User => User.traveler
