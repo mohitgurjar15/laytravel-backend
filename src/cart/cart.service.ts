@@ -142,7 +142,8 @@ export class CartService {
             // }
 
             return {
-                message: `Flight added to cart`
+                message: `Flight added to cart`,
+                data:savedCart
             }
         }
         else {
