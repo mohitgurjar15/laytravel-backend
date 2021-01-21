@@ -268,8 +268,8 @@ export class CartService {
             newCart['expiryDate'] = cart.expiryDate
             newCart['isDeleted'] = cart.isDeleted
             newCart['createdDate'] = cart.createdDate
-            newCart['createdDate'] = cart.module.id
-            newCart['createdDate'] = cart.module.name
+            newCart['moduleId'] = cart.module.id
+            newCart['moduleName'] = cart.module.name
             newCart['travelers'] = cart.travelers
             responce.push(newCart)
         }
