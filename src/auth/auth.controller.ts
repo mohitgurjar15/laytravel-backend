@@ -540,10 +540,10 @@ export class AuthController {
 		);
 	}
 
-	@Put('user-preference')
+	@Put('preference')
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard())
-	@ApiOperation({summary : "change the user preference "})
+	@ApiOperation({summary : "change the preference value "})
 	async changeUserPreference(
 		@GetUser() user:User,
 		@Body() preferenceDto:updateUserPreference
