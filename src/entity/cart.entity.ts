@@ -18,6 +18,12 @@ export class Cart extends BaseEntity {
     @Column("integer", { name: "module_id" })
     moduleId: number;
 
+    @Column("character varying", { name: "payment_type" , nullable: true})
+    paymentType: string;
+
+    @Column("character varying", { name: "instalment_type", length: 30 , nullable: true})
+    instalmentType: string;
+
     @Column("timestamp with time zone", { name: "created_date", nullable: true })
     createdDate: Date | null;
 
