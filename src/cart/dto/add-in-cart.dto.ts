@@ -44,21 +44,6 @@ export class AddInCartDto {
 	// })
 	// instalment_type: string;
 
-	@IsArray()
-	@ValidateNested({ each: true })
-	@Type(() => Traveler)
-	@ApiProperty({
-		description: `Traveler ids`,
-		example: [
-			{
-				traveler_id: `c5944389-53f3-4120-84a4-488fb4e94d87`
-			},
-			{
-				traveler_id: `3e37b423-f67e-4c92-bd7c-1f62ed134540`
-			}
-		]
-	})
-	travelers: Traveler[]
 
 	@ValidateIf((o) => o.module_id == ModulesName.FLIGHT)
 	@IsNotEmpty({
@@ -121,16 +106,4 @@ export class AddInCartDto {
 		example: [10, 12, 15]
 	})
 	number_and_children_ages: Array<Number>;
-}
-
-class Traveler {
-
-	@IsNotEmpty({
-		message: `Please select traveler.&&&traveler_id&&&${errorMessage}`,
-	})
-	@ApiProperty({
-		description: `Traveler id`,
-		example: `1a600f6e-6775-4266-8dbd-a8a3ad390aed`
-	})
-	traveler_id: string
 }

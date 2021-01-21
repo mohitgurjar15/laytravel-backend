@@ -12,6 +12,7 @@ import { Role } from 'src/enum/role.enum';
 import * as uuidValidator from "uuid-validate"
 import { CartTravelers } from 'src/entity/cart-traveler.entity';
 import { BookFlightDto } from 'src/flight/dto/book-flight.dto';
+import { UpdateCartDto } from './dto/update-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -22,7 +23,7 @@ export class CartService {
     ) { }
 
     async addInCart(addInCartDto: AddInCartDto, user: User, Header) {
-        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [], travelers } = addInCartDto
+        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
 
         var tDate = new Date();
 
@@ -40,30 +41,30 @@ export class CartService {
             throw new BadRequestException(`In your cart you have add maximum 5 item.`)
         }
 
-        let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
+        // let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
 
-        for await (const traveler of travelers) {
-            if (!traveler.traveler_id || !uuidValidator(traveler.traveler_id)) {
-                throw new BadRequestException('Given traveler is not valid')
-            }
+        // for await (const traveler of travelers) {
+        //     if (!traveler.traveler_id || !uuidValidator(traveler.traveler_id)) {
+        //         throw new BadRequestException('Given traveler is not valid')
+        //     }
 
-            let where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role})) AND ("User"."user_id" = '${traveler.traveler_id}')`;
-            let travelerAvailable = await getConnection()
-                .createQueryBuilder(User, "User")
-                .where(where)
-                .getCount()
+        //     let where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role})) AND ("User"."user_id" = '${traveler.traveler_id}')`;
+        //     let travelerAvailable = await getConnection()
+        //         .createQueryBuilder(User, "User")
+        //         .where(where)
+        //         .getCount()
 
-            if (!travelerAvailable) {
-                throw new BadRequestException('Given traveler is not available')
-            }
-        }
+        //     if (!travelerAvailable) {
+        //         throw new BadRequestException('Given traveler is not available')
+        //     }
+        // }
 
         switch (module_id) {
             case ModulesName.HOTEL:
                 break;
 
             case ModulesName.FLIGHT:
-                return await this.addFlightDataInCart(route_code, user, Header, travelers);
+                return await this.addFlightDataInCart(route_code, user, Header);
                 break;
             case ModulesName.VACATION_RENTEL:
                 const dto = {
@@ -82,7 +83,7 @@ export class CartService {
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header, travelers) {
+    async addFlightDataInCart(route_code: string, user: User, Header) {
 
         const flightInfo: any = await this.flightService.airRevalidate({ route_code: route_code }, Header, user);
 
@@ -102,8 +103,8 @@ export class CartService {
 
             // console.log(travelersCount);
             // console.log(travelers.length);
-            
-            
+
+
             // if (travelersCount != travelers.length) {
             //     if (travelersCount > travelers.length) {
             //         throw new BadRequestException('Please add traveler')
@@ -133,12 +134,12 @@ export class CartService {
 
             let savedCart = await cart.save();
 
-            for await (const traveler of travelers) {
-                let cartTraveler = new CartTravelers()
-                cartTraveler.cartId = savedCart.id
-                cartTraveler.userId = traveler.traveler_id
-                await cartTraveler.save();
-            }
+            // for await (const traveler of travelers) {
+            //     let cartTraveler = new CartTravelers()
+            //     cartTraveler.cartId = savedCart.id
+            //     cartTraveler.userId = traveler.traveler_id
+            //     await cartTraveler.save();
+            // }
 
             return {
                 message: `Flight added to cart`
@@ -146,6 +147,31 @@ export class CartService {
         }
         else {
             throw new NotFoundException(`flight not available`)
+        }
+    }
+
+    async updateCart(updateCartDto: UpdateCartDto, user: User) {
+        const { cart_id, travelers } = updateCartDto
+
+        let query = getConnection()
+            .createQueryBuilder(Cart, "cart")
+            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."id" = '${cart_id}') `)
+        const result = await query.getOne();
+
+        if (!result) {
+            throw new BadRequestException(`Given cart item not found.`)
+        }
+
+        for await (const traveler of travelers) {
+            let cartTraveler = new CartTravelers()
+            cartTraveler.cartId = result.id
+            cartTraveler.userId = traveler.traveler_id
+            cartTraveler.baggageServiceCode = traveler.baggage_service_code
+            await cartTraveler.save();
+        }
+
+        return {
+            message: `Cart item updated successfully`
         }
     }
 
@@ -181,7 +207,7 @@ export class CartService {
 
     }
 
-    async listCart(user: User,headers) {
+    async listCart(user: User, headers) {
         var tDate = new Date();
 
         var todayDate = tDate.toISOString().split(' ')[0];
@@ -192,6 +218,8 @@ export class CartService {
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
             .leftJoinAndSelect("cart.module", "module")
+            .leftJoinAndSelect("cart.travelers", "travelers")
+            .leftJoinAndSelect("travelers.userData", "userData")
             .select(["cart.id",
                 "cart.userId",
                 "cart.moduleId",
@@ -200,7 +228,13 @@ export class CartService {
                 "cart.isDeleted",
                 "cart.createdDate",
                 "module.id",
-                "module.name"])
+                "module.name",
+                "travelers.id",
+                "travelers.baggageServiceCode",
+                "userData.roleId",
+                "userData.email",
+                "userData.firstName",
+                "userData.middleName"])
 
             .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') `)
             .orderBy(`cart.id`, 'DESC')
@@ -216,14 +250,14 @@ export class CartService {
             newCart['oldModuleInfo'] = cart.moduleInfo
             const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
             newCart['bookingType'] = bookingType
-            const value = await this.flightAvailiblity(bookingType, cart, user,headers)
+            const value = await this.flightAvailiblity(bookingType, cart, user, headers)
             if (typeof value.message == undefined) {
                 newCart['moduleInfo'] = value
                 newCart['is_available'] = true
                 cart.moduleInfo = [value]
                 await cart.save()
             }
-            else{
+            else {
                 newCart['is_available'] = false
             }
             newCart['id'] = cart.id
@@ -235,6 +269,7 @@ export class CartService {
             newCart['createdDate'] = cart.createdDate
             newCart['createdDate'] = cart.module.id
             newCart['createdDate'] = cart.module.name
+            newCart['travelers'] = cart.travelers
             responce.push(newCart)
         }
         return {
@@ -243,7 +278,7 @@ export class CartService {
         }
     }
 
-    async flightAvailiblity(bookingType, cart, user,headers) {
+    async flightAvailiblity(bookingType, cart, user, headers) {
         let flights: any = null;
 
         if (bookingType == 'oneway') {
