@@ -1676,19 +1676,29 @@ export class Mystifly implements StrategyAirline {
                         route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
                     }
                 }
+                console.log('1');
+
                 let eService: any;
                 let outBoundExtraService = [];
                 let inBoundExtraService = [];
-                let decodedBaggae = {};
+                
                 if (extraServices.length > 0) {
                     for (let service of extraServices[0]['b:services'][0]['b:service']) {
-                        decodedBaggae = {};
+                        console.log(2);
+
                         if (service['b:type'][0] !== 'Meal') {
-                            decodedBaggae = this.decodeExtraBaggae(service['b:description'][0])
-                            if (decodedBaggae != false) {
+                            console.log(3);
+
+                            let decodedBaggae = await this.decodeExtraBaggae(service['b:description'][0])
+                            console.log(4);
+                            console.log(decodedBaggae);
+                            
+                            if (decodedBaggae) {
                                 eService = {};
                                 eService['type'] = service['b:type'][0];
-                                eService['bag_type'] = decodedBaggae['type'];
+                                console.log(5);
+
+                                eService['bag_type'] = decodedBaggae.type ? decodedBaggae['type'] : '';
                                 eService['checkin_type'] = service['b:checkintype'][0];
                                 eService['description'] = decodedBaggae;
                                 eService['cost'] = Number(service['b:servicecost'][0]['a:amount'][0]);
@@ -1720,67 +1730,67 @@ export class Mystifly implements StrategyAirline {
 
     }
 
-    decodeExtraBaggae(description){
-        
+    decodeExtraBaggae(description) {
+
         let descArray = description.split("||");
-        if(descArray.length==2){
+        if (descArray.length == 2) {
 
             let descArrayDetails = descArray[0].split("-");
-            if(descArrayDetails.length==2){
+            if (descArrayDetails.length == 2) {
 
                 let weight = this.decodeWeight(descArrayDetails[1]);
-                if(descArrayDetails[0].includes("Total Weight: 1 bags")){
+                if (descArrayDetails[0].includes("Total Weight: 1 bags")) {
                     console.log("innnn")
                     return {
-                        
-                        title : "1 Bag",
-                        type : 'one_bag',
-                        weight : weight
+
+                        title: "1 Bag",
+                        type: 'one_bag',
+                        weight: weight
                     }
                 }
-                else if(descArray[0].includes("Total Weight: 2 bags")){
+                else if (descArray[0].includes("Total Weight: 2 bags")) {
                     return {
-                        
-                        title : "2 Bag",
-                        type : 'two_bag',
-                        weight : weight
+
+                        title: "2 Bag",
+                        type: 'two_bag',
+                        weight: weight
                     }
                 }
-                else if(descArray[0].includes("Total Weight: 3 bags")){
+                else if (descArray[0].includes("Total Weight: 3 bags")) {
                     return {
-                        
-                        title : "3 Bag",
-                        type : 'three_bag',
-                        weight : weight
+
+                        title: "3 Bag",
+                        type: 'three_bag',
+                        weight: weight
                     }
                 }
-                else if(descArray[0].includes("Total Weight: 4 bags")){
+                else if (descArray[0].includes("Total Weight: 4 bags")) {
                     return {
-                        
-                        title : "4 Bag",
-                        type : 'four_bag',
-                        weight : weight
+
+                        title: "4 Bag",
+                        type: 'four_bag',
+                        weight: weight
                     }
                 }
             }
         }
-        else{
+        else {
             return false;
         }
     }
 
-    decodeWeight(description){
-        let weightDescription =  description.trim();
+    decodeWeight(description) {
+        let weightDescription = description.trim();
         let weightDescriptionArray = weightDescription.split("+");
-        
-        let weightInLb='';
-        for(let weight of weightDescriptionArray){
-            
-          let weightWithoutkg = Number(weight.replace("Kg",''));
-          weightInLb+= Generic.convertKGtoLB(weightWithoutkg)+'LB+'
-          
+
+        let weightInLb = '';
+        for (let weight of weightDescriptionArray) {
+
+            let weightWithoutkg = Number(weight.replace("Kg", ''));
+            weightInLb += Generic.convertKGtoLB(weightWithoutkg) + 'LB+'
+
         }
-            
+
         return weightInLb.substring(0, weightInLb.length - 1);
     }
 
