@@ -48,10 +48,19 @@ export class CartController {
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
     async listCart(
-        @GetUser() user: User
+        @GetUser() user: User, @Req() req,
     ) {
-        return await this.cartService.listCart(user);
+        return await this.cartService.listCart(user, req.headers);
     }
 
     @Delete('delete/:id')
@@ -64,6 +73,6 @@ export class CartController {
         @GetUser() user: User,
         @Param("id") id: number
     ) {
-        return await this.cartService.deleteFromCart(id,user);
+        return await this.cartService.deleteFromCart(id, user);
     }
 }

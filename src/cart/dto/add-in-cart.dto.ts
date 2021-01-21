@@ -16,33 +16,33 @@ export class AddInCartDto {
 	})
 	module_id: number;
 
-	@IsEnum([PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS], {
-		message: (args: ValidationArguments) => {
-			if (typeof args.value == "undefined" || args.value == "") {
-				return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
-			} else {
-				return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT}').&&&payment_type&&&${errorMessage}`
-			}
-		}
-	})
-	@ApiProperty({
-		description: `Payment type`,
-		example: PaymentType.INSTALMENT
-	})
-	payment_type: string;
+	// @IsEnum([PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS], {
+	// 	message: (args: ValidationArguments) => {
+	// 		if (typeof args.value == "undefined" || args.value == "") {
+	// 			return `Please enter payment type.&&&payment_type&&&${errorMessage}`;
+	// 		} else {
+	// 			return `Please enter valid payment type('${PaymentType.INSTALMENT, PaymentType.NOINSTALMENT}').&&&payment_type&&&${errorMessage}`
+	// 		}
+	// 	}
+	// })
+	// @ApiProperty({
+	// 	description: `Payment type`,
+	// 	example: PaymentType.INSTALMENT
+	// })
+	// payment_type: string;
 
-	@IsOptional({
-		message: (args: ValidationArguments) => {
-			if (typeof args.value != "undefined" && ![InstalmentType.WEEKLY, InstalmentType.BIWEEKLY, InstalmentType.MONTHLY].includes(args.value)) {
-				return `Please enter valid instalment type.&&&instalment_type&&&${errorMessage}`;
-			}
-		}
-	})
-	@ApiProperty({
-		description: `Instalment type`,
-		example: `weekly`
-	})
-	instalment_type: string;
+	// @IsOptional({
+	// 	message: (args: ValidationArguments) => {
+	// 		if (typeof args.value != "undefined" && ![InstalmentType.WEEKLY, InstalmentType.BIWEEKLY, InstalmentType.MONTHLY].includes(args.value)) {
+	// 			return `Please enter valid instalment type.&&&instalment_type&&&${errorMessage}`;
+	// 		}
+	// 	}
+	// })
+	// @ApiProperty({
+	// 	description: `Instalment type`,
+	// 	example: `weekly`
+	// })
+	// instalment_type: string;
 
 	@IsArray()
 	@ValidateNested({ each: true })
