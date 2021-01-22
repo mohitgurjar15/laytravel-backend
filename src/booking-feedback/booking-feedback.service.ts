@@ -55,16 +55,16 @@ export class BookingFeedbackService {
 	{
 		const {limit,page_no,search,rating} = listFeedbackForAdminDto;
 
-		var where = `feedback.is_deleted = false`;
+		var where = `feedback.is_deleted = false `;
 
 		if(rating)
 		{
-			where += `AND (feedback.rating = ${rating})`;
+			where += `AND (feedback.rating = ${rating}) `;
 		}
 
 		if(search)
 		{
-			where += `AND (("user"."first_name" ILIKE '%${search}%')or("user"."email" ILIKE '%${search}%')or("user"."last_name" ILIKE '%${search}%'))`;
+			where += `AND (("user"."first_name" ILIKE '%${search}%')or("user"."email" ILIKE '%${search}%')or("user"."last_name" ILIKE '%${search}%')) `;
 		}
 
 		return await this.bookingFeedbackRepositery.listFeedback(where,limit,page_no);

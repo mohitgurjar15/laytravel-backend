@@ -255,7 +255,7 @@ export class UserService {
 
 			await userData.save();
 			const currentData = userData
-			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, currentData);
+			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, userData);
 			return userData;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -326,7 +326,7 @@ export class UserService {
 			await user.save();
 			const currentData = user
 
-			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`, previousData, currentData);
+			Activity.logActivity(adminId, "user", `User ${user.email}  status changed by admin`, previousData, currentData);
 			return { message: `user status changed` };
 		} catch (error) {
 			if (
@@ -555,12 +555,12 @@ export class UserService {
 				}
 			}
 		}
-		Activity.logActivity(userId, "user", `admin import the  ${count}  users`);
+		Activity.logActivity(userId, "user", `Admin import the  ${count}  users`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
 	async exportUser(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "user", `all user list export by admin`);
+		Activity.logActivity(adminId, "user", `All user list export by admin`);
 		return await this.userRepository.exportUser([
 			Role.PAID_USER,
 			Role.GUEST_USER,

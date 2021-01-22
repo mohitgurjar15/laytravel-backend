@@ -13,10 +13,10 @@ export class NewsLettersRepository extends Repository<NewsLetters> {
         const skip = (page_no-1) * limit || 0
         const keyword = search || ''
         //const statusWord  =  status ? status : true;
-        let where = `1=1`;
+        let where = {};
         
         if(keyword){
-             where =` "email" ILIKE '%${keyword}%'`
+             where['email'] = keyword
         }
         const [result, total] = await this.findAndCount({
             where:where,

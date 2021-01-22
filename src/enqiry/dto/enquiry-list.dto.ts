@@ -22,8 +22,14 @@ export class EnquiryListDto {
     page_no:number;
 
     @ApiPropertyOptional({
-        description:'search',
+        description:'user name',
         example:""
     })
-    search: string;
+    user_name: string;
+
+    @ApiPropertyOptional({
+        description:'email',
+        example:""
+    })
+    email: string;
 }

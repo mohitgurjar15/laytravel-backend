@@ -107,15 +107,15 @@ export class NewsLettersService {
 		try {
 			const { email } = subscribeForNewslatterDto;
 
-			let subscribeData = await getManager()
-				.createQueryBuilder(NewsLetters, "newsLetters")
-				.where(`email=:email `, { email })
-				.orderBy('id', 'DESC')
-				.getOne();
+			let where = {};
+
+			where['email'] = email
+
+			const subscribeData = await this.newsLettersRepository.findOne({
+				where: where
+			});
 			if (!subscribeData) {
-				throw new NotFoundException(
-					`Given email id not found&&&email&&&Given email id not found`
-				);
+				throw new NotFoundException(`No subsciber found.`)
 			}
 
 			if (!subscribeData.isSubscribed) {

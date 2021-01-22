@@ -41,7 +41,7 @@ export class FaqCategoryController {
 
 	@Post()
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Create New Faq Category" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -56,7 +56,7 @@ export class FaqCategoryController {
 
 	@Put("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Update Faq category" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -72,7 +72,7 @@ export class FaqCategoryController {
 
 	@Delete("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Delete Faq Category" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
