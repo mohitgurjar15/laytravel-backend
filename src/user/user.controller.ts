@@ -31,7 +31,7 @@ export class UserController {
     ) { }
 
     @Get()
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
     @ApiOperation({ summary: "List user by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -46,7 +46,7 @@ export class UserController {
     }
 
     @Get('/:id')
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
     @ApiOperation({ summary: "Get user details by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -61,7 +61,7 @@ export class UserController {
     }
 
     @Post()
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
     @ApiConsumes("multipart/form-data")
     @ApiOperation({ summary: "Create new user by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
@@ -101,7 +101,7 @@ export class UserController {
 
 
     @Put('/:id')
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
     @ApiConsumes("multipart/form-data")
     @ApiOperation({ summary: "Update user by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
@@ -141,7 +141,7 @@ export class UserController {
     
 
     @Delete(':id')
-    @Roles(Role.SUPER_ADMIN,Role.ADMIN)
+    @Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
     @ApiOperation({ summary: "Delete user by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -157,7 +157,7 @@ export class UserController {
     }
 
     @Patch("active-deactive-user/:id")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Active-deactive user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -229,7 +229,7 @@ export class UserController {
 
 	@Post("report/import")
 	@ApiConsumes("multipart/form-data")
-	@Roles(Role.SUPER_ADMIN,Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN,Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "import user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

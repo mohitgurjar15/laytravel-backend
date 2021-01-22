@@ -145,6 +145,7 @@ export class UserRepository extends Repository<User> {
 		// 	.orderBy("User.createdDate", "DESC")
 		// 	.getManyAndCount();
 
+
 		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No data found.`);
 		}

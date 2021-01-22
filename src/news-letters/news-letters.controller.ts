@@ -50,7 +50,7 @@ export class NewsLettersController {
 	@Get()
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(),RolesGuard)
-	@Roles(Role.ADMIN,Role.SUPER_ADMIN)
+	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "List Of subscribers" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

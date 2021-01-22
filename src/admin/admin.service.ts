@@ -155,9 +155,8 @@ export class AdminService {
 			delete userData.salt;
 
 			await userData.save();
-			const currentData = userData;
 
-			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, currentData);
+			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, userData);
 			return userData;
 		} catch (error) {
 			if (
@@ -292,7 +291,7 @@ export class AdminService {
 			user.updatedDate = new Date();
 			await user.save();
 			const currentData = user;
-			Activity.logActivity(adminId, `Admin`, `admin status changed ${statusWord}`, previousData, currentData);
+			Activity.logActivity(adminId, `Admin`, `Admin status changed ${statusWord}`, previousData, currentData);
 			return { messge: `admin status changed` };
 		} catch (error) {
 			if (
@@ -456,7 +455,7 @@ export class AdminService {
 							unsuccessRecord.push(row);
 			}
 		}
-		Activity.logActivity(userId, "admin", `import ${count}  admin`);
+		Activity.logActivity(userId, "admin", `Import ${count}  admin`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 }
