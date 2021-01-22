@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/auth/get-user.dacorator';
@@ -8,6 +8,7 @@ import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
+import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
@@ -75,8 +76,9 @@ export class CartController {
     })
     async listCart(
         @GetUser() user: User, @Req() req,
+        @Query() dto: ListCartDto
     ) {
-        return await this.cartService.listCart(user, req.headers);
+        return await this.cartService.listCart(dto, user, req.headers);
     }
 
     @Delete('delete/:id')

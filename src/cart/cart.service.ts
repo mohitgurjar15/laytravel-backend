@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { User } from 'src/entity/user.entity';
 import { ModulesName } from 'src/enum/module.enum';
 import { FlightService } from 'src/flight/flight.service';
@@ -13,13 +13,27 @@ import * as uuidValidator from "uuid-validate"
 import { CartTravelers } from 'src/entity/cart-traveler.entity';
 import { BookFlightDto } from 'src/flight/dto/book-flight.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AirportRepository } from 'src/flight/airport.repository';
+import { ListCartDto } from './dto/list-cart.dto';
+import { Strategy } from 'src/flight/strategy/strategy';
+import { Mystifly } from 'src/flight/strategy/mystifly';
+import { Module } from 'src/entity/module.entity';
+import { Generic } from 'src/utility/generic.utility';
+import { errorMessage } from 'src/config/common.config';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class CartService {
 
     constructor(
         private flightService: FlightService,
-        private vacationService: VacationRentalService
+        private vacationService: VacationRentalService,
+
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+
+        @InjectRepository(AirportRepository)
+        private airportRepository: AirportRepository,
     ) { }
 
     async addInCart(addInCartDto: AddInCartDto, user: User, Header) {
@@ -143,7 +157,7 @@ export class CartService {
 
             return {
                 message: `Flight added to cart`,
-                data:savedCart
+                data: savedCart
             }
         }
         else {
@@ -208,7 +222,8 @@ export class CartService {
 
     }
 
-    async listCart(user: User, headers) {
+    async listCart(dto: ListCartDto, user: User, headers) {
+        const { live_availiblity } = dto
         var tDate = new Date();
 
         var todayDate = tDate.toISOString().split(' ')[0];
@@ -237,29 +252,102 @@ export class CartService {
                 "userData.firstName",
                 "userData.middleName"])
 
-            .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') `)
+            .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`)
             .orderBy(`cart.id`, 'DESC')
-
+            .limit(5)
         const [result, count] = await query.getManyAndCount();
 
         if (!result.length) {
             throw new NotFoundException(`Cart is empty`)
         }
         let responce = []
-        for await (const cart of result) {
+        var flightRequest = [];
+        let flightResponse = [];
+        if (live_availiblity) {
+            await this.flightService.validateHeaders(headers);
+
+            const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+
+            var resultIndex = 0;
+
+            const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
+
+            const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
+
+            let module = await getConnection()
+                .createQueryBuilder(Module, "module")
+                .where("module.name = :name", { name: 'flight' })
+                .getOne();
+
+            if (!module) {
+                throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+            }
+
+            const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
+            for await (const cart of result) {
+                const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
+
+                if (bookingType == 'oneway') {
+
+                    let dto = {
+                        "source_location": cart.moduleInfo[0].departure_code,
+                        "destination_location": cart.moduleInfo[0].arrival_code,
+                        "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
+                        "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+                        "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
+                        "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
+                        "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
+                    }
+                    flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+                }
+                else {
+
+                    let dto = {
+                        "source_location": cart.moduleInfo[0].departure_code,
+                        "destination_location": cart.moduleInfo[0].arrival_code,
+                        "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
+                        "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+                        "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
+                        "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
+                        "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
+                        "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
+                    }
+                    flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+                }
+                resultIndex++;
+            }
+            flightResponse = await Promise.all(flightRequest);
+        }
+
+        for (let index = 0; index < result.length; index++) {
+            const cart = result[index];
+
             let newCart = {}
-            newCart['oldModuleInfo'] = cart.moduleInfo
-            const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
-            newCart['bookingType'] = bookingType
-            const value = await this.flightAvailiblity(bookingType, cart, user, headers)
-            if (typeof value.message == undefined) {
-                newCart['moduleInfo'] = value
-                newCart['is_available'] = true
-                cart.moduleInfo = [value]
-                await cart.save()
+
+            if (live_availiblity) {
+                newCart['oldModuleInfo'] = cart.moduleInfo
+                const value = await this.flightAvailiblity(cart, flightResponse[index])
+                if (typeof value.message == undefined) {
+                    newCart['moduleInfo'] = value
+                    newCart['is_available'] = true
+                    cart.moduleInfo = [value]
+                    await cart.save()
+                }
+                else {
+                    newCart['is_available'] = false
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(Cart)
+                        .where(
+                            `"id" = '${cart.id}'`
+                        )
+                        .execute()
+                }
             }
             else {
-                newCart['is_available'] = false
+                newCart['moduleInfo'] = cart.moduleInfo
+                //newCart['is_available'] = false
             }
             newCart['id'] = cart.id
             newCart['userId'] = cart.userId
@@ -279,38 +367,7 @@ export class CartService {
         }
     }
 
-    async flightAvailiblity(bookingType, cart, user, headers) {
-        let flights: any = null;
-
-        if (bookingType == 'oneway') {
-
-            let dto = {
-                "source_location": cart.moduleInfo[0].departure_code,
-                "destination_location": cart.moduleInfo[0].arrival_code,
-                "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
-                "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-                "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
-                "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
-                "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
-            }
-            console.log('oneway dto', dto)
-            flights = await this.flightService.searchOneWayFlight(dto, headers, user);
-
-        }
-        else {
-
-            let dto = {
-                "source_location": cart.moduleInfo[0].departure_code,
-                "destination_location": cart.moduleInfo[0].arrival_code,
-                "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
-                "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-                "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
-                "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
-                "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
-                "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
-            }
-            flights = await this.flightService.searchOneWayFlight(dto, Headers, user);
-        }
+    async flightAvailiblity(cart, flights) {
         var match = 0;
         for await (const flight of flights.items) {
             if (flight.unique_code == cart.moduleInfo[0].unique_code) {
