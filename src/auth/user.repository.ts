@@ -57,73 +57,93 @@ export class UserRepository extends Repository<User> {
 		role: number[],
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		const { page_no, search, limit } = paginationOption;
+		const { page_no, limit, firstName, lastName, email } = paginationOption;
 
 		const take = limit || 10;
 		const skip = (page_no - 1) * take || 0;
-		const keyword = search || "";
 
-		let where;
-		if (keyword) {
-			where = `("User"."is_deleted" = false) AND ("User"."role_id" IN (${role})) AND (("User"."first_name" ILIKE '%${keyword}%') or ("User"."middle_name" ILIKE '%${keyword}%') or ("User"."last_name" ILIKE '%${keyword}%') or ("User"."email" ILIKE '%${keyword}%'))`;
-		} else {
-			where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role}) ) and 1=1`;
+		// let where;
+		// if (keyword) {
+		// 	where = `("User"."is_deleted" = false) AND ("User"."role_id" IN (${role})) AND (("User"."first_name" ILIKE '%${keyword}%') or ("User"."middle_name" ILIKE '%${keyword}%') or ("User"."last_name" ILIKE '%${keyword}%') or ("User"."email" ILIKE '%${keyword}%'))`;
+		// } else {
+		// 	where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role}) ) and 1=1`;
+		// }
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(role)
 		}
-		const [result, count] = await getManager()
-			.createQueryBuilder(User, "User")
-			.leftJoinAndSelect("User.state", "state")
-			.leftJoinAndSelect("User.country", "countries")
-			.leftJoinAndSelect("User.preferredCurrency2", "currency")
-			.leftJoinAndSelect("User.preferredLanguage2", "language")
-			.select([
-				"User.status",
-				"User.userId",
-				"User.title",
-				"User.dob",
-				"User.firstName",
-				"User.lastName",
-				"User.email",
-				"User.profilePic",
-				"User.dob",
-				"User.gender",
-				"User.roleId",
-				"User.countryCode",
-				"User.phoneNo",
-				"User.cityName",
-				"User.address",
-				"User.zipCode",
-				"User.preferredCurrency2",
-				"User.preferredLanguage2",
-				"User.passportNumber",
-				"User.passportExpiry",
-				"language.id",
-				"language.name",
-				"language.iso_1Code",
-				"language.iso_2Code",
-				"currency.id",
-				"currency.code",
-				"currency.country",
-				"countries.name",
-				"countries.iso2",
-				"countries.iso3",
-				"countries.id",
-				"state.id",
-				"state.name",
-				"state.iso2",
-				"state.country_id",
-				"User.createdDate"
-			])
-			// .addSelect(`CASE
-			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
-			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
-			// 	ELSE 'adult'
-			// END AS "user_type"`,)
-			.where(where)
-			.skip(skip)
-			.take(take)
-			.orderBy("User.createdDate", "DESC")
-			.getManyAndCount();
-
+		if (firstName) {
+			andWhere['firstName'] = firstName
+		}
+		if (lastName) {
+			andWhere['lastName'] = lastName
+		}
+		if (email) {
+			andWhere['email'] = email
+		}
+		const [result, count] = await this.findAndCount(
+			{
+				where: andWhere,
+				relations: ["state", "country", "preferredCurrency2", "preferredLanguage2"],
+				skip: skip,
+				take: take,
+				order: { createdDate: "DESC" }
+			}
+		);
+		// const [result, count] = await getManager()
+		// 	.createQueryBuilder(User, "User")
+		// 	.leftJoinAndSelect("User.state", "state")
+		// 	.leftJoinAndSelect("User.country", "countries")
+		// 	.leftJoinAndSelect("User.preferredCurrency2", "currency")
+		// 	.leftJoinAndSelect("User.preferredLanguage2", "language")
+		// 	.select([
+		// 		"User.status",
+		// 		"User.userId",
+		// 		"User.title",
+		// 		"User.dob",
+		// 		"User.firstName",
+		// 		"User.lastName",
+		// 		"User.email",
+		// 		"User.profilePic",
+		// 		"User.dob",
+		// 		"User.gender",
+		// 		"User.roleId",
+		// 		"User.countryCode",
+		// 		"User.phoneNo",
+		// 		"User.cityName",
+		// 		"User.address",
+		// 		"User.zipCode",
+		// 		"User.preferredCurrency2",
+		// 		"User.preferredLanguage2",
+		// 		"User.passportNumber",
+		// 		"User.passportExpiry",
+		// 		"language.id",
+		// 		"language.name",
+		// 		"language.iso_1Code",
+		// 		"language.iso_2Code",
+		// 		"currency.id",
+		// 		"currency.code",
+		// 		"currency.country",
+		// 		"countries.name",
+		// 		"countries.iso2",
+		// 		"countries.iso3",
+		// 		"countries.id",
+		// 		"state.id",
+		// 		"state.name",
+		// 		"state.iso2",
+		// 		"state.country_id",
+		// 		"User.createdDate"
+		// 	])
+		// 	// .addSelect(`CASE
+		// 	// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
+		// 	// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
+		// 	// 	ELSE 'adult'
+		// 	// END AS "user_type"`,)
+		// 	.where(where)
+		// 	.skip(skip)
+		// 	.take(take)
+		// 	.orderBy("User.createdDate", "DESC")
+		// 	.getManyAndCount();
 
 		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No data found.`);
@@ -371,7 +391,7 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
-	async insertNewUser(data: any,roleId: number[]): Promise<boolean> {
+	async insertNewUser(data: any, roleId: number[]): Promise<boolean> {
 		try {
 			const salt = await bcrypt.genSalt();
 			const user = new User();

@@ -20,10 +20,21 @@ export class ListAdminDto {
         example:1
     })
     page_no:number;
-
     @ApiPropertyOptional({
-        description:'search',
+        description:'first name',
         example:""
     })
-    search: string;
+    firstName: string;
+
+    @ApiPropertyOptional({
+        description:'last name',
+        example:""
+    })
+    lastName: string;
+
+    @ApiPropertyOptional({
+        description:'email',
+        example:""
+    })
+    email: string;
 }
