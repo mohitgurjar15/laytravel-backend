@@ -254,7 +254,7 @@ export class CartService {
 
             .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`)
             .orderBy(`cart.id`, 'DESC')
-
+            .limit(5)
         const [result, count] = await query.getManyAndCount();
 
         if (!result.length) {
