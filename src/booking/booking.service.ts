@@ -682,6 +682,7 @@ export class BookingService {
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
 				predictiveBookingData['bookIt'] = false;
 				predictiveBookingData['module_name'] = bookingData.module.name;
+				predictiveBookingData['booking_time_net_rate'] = bookingData.netRate
 
 
 				predictiveBookingData['profit'] = parseFloat(bookingData.totalAmount) - data.netPrice;
@@ -764,6 +765,7 @@ export class BookingService {
 					predictiveBookingData['departure_date'] = booking.checkInDate || ''
 					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
 					predictiveBookingData['bookIt'] = false;
+					predictiveBookingData['booking_time_net_rate'] = booking.netRate
 
 					predictiveBookingData['profit'] = 0
 
