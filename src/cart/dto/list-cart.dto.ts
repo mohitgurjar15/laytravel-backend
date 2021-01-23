@@ -7,16 +7,7 @@ import { ModulesName } from 'src/enum/module.enum';
 import { PaymentType } from 'src/enum/payment-type.enum';
 export class ListCartDto {
 
-	@IsEnum(['yes', 'no'], {
-		message: (args: ValidationArguments) => {
-			if (typeof args.value == "undefined" || args.value == "") {
-				return `Please select your live aviliblity.&&&live_aviliblity`;
-			} else {
-				return `Please select valid live aviliblity('yes','no').&&&live_aviliblity&&&${errorMessage}`
-			}
-		}
-	})
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "Enter live availiblity",
 		example: 'yes'
 	})
