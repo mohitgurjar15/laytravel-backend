@@ -328,11 +328,12 @@ export class CartService {
                 newCart['oldModuleInfo'] = cart.moduleInfo
                 const value = await this.flightAvailiblity(cart, flightResponse[index])
                 if (typeof value.message == "undefined") {
+                
                     newCart['moduleInfo'] = value
                     newCart['is_available'] = true
                     cart.moduleInfo = [value]
                     await cart.save()
-                } else {
+                }else {
                     newCart['is_available'] = false
                     await getConnection()
                         .createQueryBuilder()
@@ -367,20 +368,29 @@ export class CartService {
     }
 
     async flightAvailiblity(cart, flights) {
+        //console.log('match');
+
         var match = 0;
-        for await (const flight of flights.items) {
-            if (flight.unique_code == cart.moduleInfo[0].unique_code) {
-                match = match + 1
-                return flight;
+        if (flights.items) {
+            for await (const flight of flights.items) {
+                if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
+                    //console.log('match found');
+                    match = match + 1
+                    return flight;
+                }
             }
         }
+        //console.log('loop empty');
+
 
         if (match == 0) {
+            //console.log('match not found');
             return {
                 message: 'Flight is not available'
             }
             //throw new NotFoundException(`Flight is not available`)
         }
+
     }
 
     async deleteFromCart(id: number, user: User) {
