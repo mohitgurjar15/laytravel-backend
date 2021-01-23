@@ -14,12 +14,12 @@ export class Enquiry extends BaseEntity {
   @Column("character varying", { name: "email", transformer: new EncryptionTransformer(CryptoKey),nullable:true})
   email: string;
 
-  @Column("character varying", { name: "phone_no", transformer: new EncryptionTransformer(CryptoKey) ,nullable:true})
-  phoneNo: string;
+  // @Column("character varying", { name: "phone_no", transformer: new EncryptionTransformer(CryptoKey) ,nullable:true})
+  // phoneNo: string;
 
 
-  @Column("character varying", { name: "country_code", transformer: new EncryptionTransformer(CryptoKey) ,nullable:true})
-  countryCode: string;
+  // @Column("character varying", { name: "country_code", transformer: new EncryptionTransformer(CryptoKey) ,nullable:true})
+  // countryCode: string;
 
   // @Column("text", { name: "location" })
   // location: string;

@@ -30,27 +30,27 @@ export class newEnquiryDto {
     email: string;
 
 
-    @ApiPropertyOptional({
-        type: "string",
-        description: "Phone country code",
-    })
-    @ApiProperty({
-        description: `Select phone country code`,
-        example: `+1`
-    })
-    country_code: string;
+    // @ApiPropertyOptional({
+    //     type: "string",
+    //     description: "Phone country code",
+    // })
+    // @ApiProperty({
+    //     description: `Select phone country code`,
+    //     example: `+1`
+    // })
+    // country_code: string;
 
 
 
-    @ApiPropertyOptional({
-        type: "string",
-        description: "phone number",
-    })
-    @ApiProperty({
-        description: `Enter phone number`,
-        example: `8452456712`
-    })
-    phone_no: string;
+    // @ApiPropertyOptional({
+    //     type: "string",
+    //     description: "phone number",
+    // })
+    // @ApiProperty({
+    //     description: `Enter phone number`,
+    //     example: `8452456712`
+    // })
+    // phone_no: string;
 
     @IsNotEmpty({
         message: `Please enter message&&&message&&&Please enter message`
