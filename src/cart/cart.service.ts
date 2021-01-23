@@ -263,7 +263,7 @@ export class CartService {
         let responce = []
         var flightRequest = [];
         let flightResponse = [];
-        if (live_availiblity) {
+        if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
             await this.flightService.validateHeaders(headers);
 
             const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
@@ -324,16 +324,15 @@ export class CartService {
 
             let newCart = {}
 
-            if (live_availiblity) {
+            if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 newCart['oldModuleInfo'] = cart.moduleInfo
                 const value = await this.flightAvailiblity(cart, flightResponse[index])
-                if (typeof value.message == undefined) {
+                if (typeof value.message == "undefined") {
                     newCart['moduleInfo'] = value
                     newCart['is_available'] = true
                     cart.moduleInfo = [value]
                     await cart.save()
-                }
-                else {
+                } else {
                     newCart['is_available'] = false
                     await getConnection()
                         .createQueryBuilder()
@@ -396,9 +395,18 @@ export class CartService {
         if (!cartItem) {
             throw new NotFoundException(`Given item not found`)
         }
-        cartItem.isDeleted = true;
+        // cartItem.isDeleted = true;
 
-        cartItem.save();
+        // cartItem.save();
+
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(Cart)
+            .where(
+                `"id" = '${id}'`
+            )
+            .execute()
 
         return {
             message: `Item removed successfully`
