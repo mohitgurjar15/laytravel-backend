@@ -379,7 +379,7 @@ export class Mystifly implements StrategyAirline {
 
     }
 
-    async oneWaySearchZip(searchFlightDto: OneWaySearchFlightDto, user, mystiflyConfig , sessionToken,module,currencyDetails) {
+    async oneWaySearchZip(searchFlightDto: OneWaySearchFlightDto, user, mystiflyConfig, sessionToken, module, currencyDetails) {
 
         const {
             source_location,
@@ -393,7 +393,7 @@ export class Mystifly implements StrategyAirline {
         } = searchFlightDto;
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 
-        
+
         let isInstalmentAvaible = Instalment.instalmentAvailbility(departure_date, bookingDate);
 
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
@@ -643,7 +643,7 @@ export class Mystifly implements StrategyAirline {
         }
     }
 
-    async roundTripSearchZip(searchFlightDto: RoundtripSearchFlightDto, user , mystiflyConfig , sessionToken,module,currencyDetails) {
+    async roundTripSearchZip(searchFlightDto: RoundtripSearchFlightDto, user, mystiflyConfig, sessionToken, module, currencyDetails) {
         const {
             source_location,
             destination_location,
@@ -656,7 +656,7 @@ export class Mystifly implements StrategyAirline {
         } = searchFlightDto;
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-        
+
         //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
         let markUpDetails = markup.markUpDetails;
@@ -749,7 +749,7 @@ export class Mystifly implements StrategyAirline {
         let jsonData: any = await Generic.xmlToJson(unCompressedData)
         // return jsonData
         console.log(jsonData.airlowfaresearchgziprs.success[0]);
-        
+
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
             let flightRoutes = jsonData.airlowfaresearchgziprs.priceditineraries[0].priceditinerary;
             let stop: Stop;
@@ -1482,6 +1482,8 @@ export class Mystifly implements StrategyAirline {
 
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
             let flightRoutes = airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:priceditineraries'][0]['a:priceditinerary'];
+            let extraServices = typeof airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:extraservices1_1'] != 'undefined' ? airRevalidateResult['s:envelope']['s:body'][0].airrevalidateresponse[0].airrevalidateresult[0]['a:extraservices1_1'] : [];
+
             let stop: Stop;
             let stops: Stop[] = [];
             let routes: Route[] = [];
@@ -1674,10 +1676,50 @@ export class Mystifly implements StrategyAirline {
                         route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
                     }
                 }
+                console.log('1');
 
+                let eService: any;
+                let outBoundExtraService = [];
+                let inBoundExtraService = [];
+                
+                if (extraServices.length > 0) {
+                    for (let service of extraServices[0]['b:services'][0]['b:service']) {
+                        console.log(2);
 
+                        if (service['b:type'][0] !== 'Meal') {
+                            console.log(3);
 
+                            let decodedBaggae = await this.decodeExtraBaggae(service['b:description'][0])
+                            console.log(4);
+                            console.log(decodedBaggae);
+                            
+                            if (decodedBaggae) {
+                                eService = {};
+                                eService['type'] = service['b:type'][0];
+                                console.log(5);
 
+                                eService['bag_type'] = decodedBaggae.type ? decodedBaggae['type'] : '';
+                                eService['checkin_type'] = service['b:checkintype'][0];
+                                eService['description'] = decodedBaggae;
+                                eService['cost'] = Number(service['b:servicecost'][0]['a:amount'][0]);
+                                eService['service_id'] = Number(service['b:serviceid'][0]);
+                                if (service['b:behavior'][0] == 'PER_PAX_OUTBOUND') {
+
+                                    outBoundExtraService.push(eService);
+                                }
+                                else if (service['b:behavior'][0] == 'PER_PAX_INBOUND') {
+                                    inBoundExtraService.push(eService);
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+                route['extra_service'] = {
+                    outbound: outBoundExtraService,
+                    inbound: inBoundExtraService
+                }
                 routes.push(route);
             }
             return routes;
@@ -1687,6 +1729,72 @@ export class Mystifly implements StrategyAirline {
         }
 
     }
+
+    decodeExtraBaggae(description) {
+
+        let descArray = description.split("||");
+        if (descArray.length == 2) {
+
+            let descArrayDetails = descArray[0].split("-");
+            if (descArrayDetails.length == 2) {
+
+                let weight = this.decodeWeight(descArrayDetails[1]);
+                if (descArrayDetails[0].includes("Total Weight: 1 bags")) {
+                    console.log("innnn")
+                    return {
+
+                        title: "1 Bag",
+                        type: 'one_bag',
+                        weight: weight
+                    }
+                }
+                else if (descArray[0].includes("Total Weight: 2 bags")) {
+                    return {
+
+                        title: "2 Bag",
+                        type: 'two_bag',
+                        weight: weight
+                    }
+                }
+                else if (descArray[0].includes("Total Weight: 3 bags")) {
+                    return {
+
+                        title: "3 Bag",
+                        type: 'three_bag',
+                        weight: weight
+                    }
+                }
+                else if (descArray[0].includes("Total Weight: 4 bags")) {
+                    return {
+
+                        title: "4 Bag",
+                        type: 'four_bag',
+                        weight: weight
+                    }
+                }
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    decodeWeight(description) {
+        let weightDescription = description.trim();
+        let weightDescriptionArray = weightDescription.split("+");
+
+        let weightInLb = '';
+        for (let weight of weightDescriptionArray) {
+
+            let weightWithoutkg = Number(weight.replace("Kg", ''));
+            weightInLb += Generic.convertKGtoLB(weightWithoutkg) + 'LB+'
+
+        }
+
+        return weightInLb.substring(0, weightInLb.length - 1);
+    }
+
+
 
     async bookFlight(bookFlightDto, traveles, isPassportRequired) {
 

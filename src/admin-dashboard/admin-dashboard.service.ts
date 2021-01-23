@@ -389,10 +389,10 @@ export class AdminDashboardService {
 
       let dateConditon = `1=1`;
       if (startDate) {
-        dateConditon += `AND DATE ("booking"."booking_date") >= DATE(${startDate})`;
+        dateConditon += `AND DATE ("booking"."booking_date") >= DATE('${startDate}')`;
       }
       if (toDate) {
-        dateConditon += `AND DATE ("booking"."booking_date") <= DATE(${toDate})`;
+        dateConditon += `AND DATE ("booking"."booking_date") <= DATE('${toDate}')`;
       }
       // complited trips :- complite bookings
       const completedTrips = await getConnection().query(

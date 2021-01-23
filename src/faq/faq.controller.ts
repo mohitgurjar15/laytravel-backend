@@ -39,7 +39,7 @@ export class FaqController {
 
 	@Get('list-by-admin')
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "List Of Faq for admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -65,7 +65,7 @@ export class FaqController {
 
 	@Post()
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Create New Faq " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -81,7 +81,7 @@ export class FaqController {
 
 	@Put("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Update Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -98,7 +98,7 @@ export class FaqController {
 
 	@Delete("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Delete Faq" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -114,7 +114,7 @@ export class FaqController {
 
 	@Patch("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Change Faq Status" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -131,7 +131,7 @@ export class FaqController {
 
 	@Get("/:id")
 	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Get Faq By Id" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

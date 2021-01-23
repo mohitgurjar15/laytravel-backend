@@ -20,7 +20,9 @@ export class CreateUserDto {
     })
     signup_via: string;
 
-    
+    @IsNotEmpty({
+        message : `Please enter your first name.&&&first_name`
+    })
     @ApiProperty({
         description: `Enter First Name`,
         example: `Jon`
@@ -28,6 +30,9 @@ export class CreateUserDto {
     first_name: string;
 
     
+    @IsNotEmpty({
+        message : `Please enter your last name.&&&last_name`
+    })
     @ApiProperty({
         description: `Enter Last Name`,
         example: `Doe`

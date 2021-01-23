@@ -5,8 +5,10 @@ import {
     Index,
     JoinColumn,
     ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn
 } from "typeorm";
+import { CartTravelers } from "./cart-traveler.entity";
 import { Module } from "./module.entity";
 import { User } from "./user.entity";
 @Index("cart_user_id", ["userId"], {})
@@ -18,11 +20,11 @@ export class Cart extends BaseEntity {
     @Column("integer", { name: "module_id" })
     moduleId: number;
 
-    @Column("character varying", { name: "payment_type" , nullable: true})
-    paymentType: string;
+    // @Column("character varying", { name: "payment_type", nullable: true })
+    // paymentType: string;
 
-    @Column("character varying", { name: "instalment_type", length: 30 , nullable: true})
-    instalmentType: string;
+    // @Column("character varying", { name: "instalment_type", length: 30, nullable: true })
+    // instalmentType: string;
 
     @Column("timestamp with time zone", { name: "created_date", nullable: true })
     createdDate: Date | null;
@@ -52,4 +54,10 @@ export class Cart extends BaseEntity {
     )
     @JoinColumn([{ name: "module_id", referencedColumnName: "id" }])
     module: Module;
+
+    @OneToMany(
+        () => CartTravelers,
+        (traveler) => traveler.cartData
+    )
+    travelers: CartTravelers[];
 }

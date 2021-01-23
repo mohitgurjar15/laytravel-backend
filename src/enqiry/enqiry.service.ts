@@ -43,15 +43,15 @@ export class EnqiryService {
 		newEnquiryDto: newEnquiryDto
 	) {
 		try {
-			const { message, name, email, country_code, phone_no } = newEnquiryDto
+			const { message, name, email } = newEnquiryDto
 			const enquiry = new Enquiry();
 			enquiry.id = uuidv4();
 			enquiry.email = email;
-			if (phone_no)
-				enquiry.phoneNo = phone_no;
+			// if (phone_no)
+			// 	enquiry.phoneNo = phone_no;
 
-			if (country_code)
-				enquiry.countryCode = country_code;
+			// if (country_code)
+			// 	enquiry.countryCode = country_code;
 
 			enquiry.userName = name;
 			enquiry.message = message;

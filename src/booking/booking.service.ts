@@ -548,7 +548,6 @@ export class BookingService {
 		}
 		if (search) {
 			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
-
 		}
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
 		//const result: any = data;
