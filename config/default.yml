@@ -52,3 +52,10 @@ webNotificationkeys:
     privateKey: 'pwDOYDpxsPqj2wQq0udzPl20v4R5qub7Z2idsREOWFU'
     mailTo : 'mailto:example@yourdomain.org'
     icon : 'assets/main-page-logo-small-hat.png'
+
+twilio:
+    accountSid: "AC5672716ca0bc07f8338ac034b0fa2cf5"
+    authToken: "986d2c0fef0fc08015f89c0475c36f43"
+    smsNumber: "+17145593947"
+
+cronUserId: "839aaa9a-03b2-4c22-a02e-a6a4b067db34"    
