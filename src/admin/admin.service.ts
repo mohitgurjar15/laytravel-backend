@@ -135,7 +135,6 @@ export class AdminService {
 
 			const previousData = userData;
 
-
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
