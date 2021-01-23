@@ -175,7 +175,7 @@ export class UserController {
 	 * export Customer
 	 */
 	@Get('report/export')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "export customer" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -193,7 +193,7 @@ export class UserController {
 	}
 
 	@Get('report/weekly-register')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "Count of register user in current week" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -211,7 +211,7 @@ export class UserController {
 	
 
 	@Get('report/counts')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.SUPPORT)
 	@ApiOperation({ summary: "get-counts Of all user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
