@@ -76,6 +76,8 @@ import * as moment from 'moment';
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum";
 import { DeleteUserAccountRequest } from "src/entity/delete-user-account-request.entity";
+import { updateUserPreference } from "./dto/update-user-preference.dto";
+import { UserPreference } from "src/enum/user-preference.enum";
 
 @Injectable()
 export class AuthService {
@@ -1547,13 +1549,42 @@ export class AuthService {
 		}
 	}
 
-	async changeUserPreference(user: User) {
+	async changeUserPreference(user: User, preferenceDto: updateUserPreference) {
 		const { userId } = user;
+		const { type, value } = preferenceDto;
+		let oppsotiteValue;
 
 		const userDetail = await this.userRepository.findOne({ userId });
 
-		console.log("userDetails",userDetail);
+		if (type == UserPreference.Email) {
+			if (value == userDetail.isEmail) {
+				return { message: "Email Preference value already up to date" }
+			}
+		} else if (type == UserPreference.SMS) {
+			if (value == userDetail.isSMS) {
+				return { message: "SMS Preference value already up to date" }
+			}
+		}
 
+		oppsotiteValue = UserPreference.Email == type ? userDetail.isSMS : userDetail.isEmail;
+
+
+		if (oppsotiteValue == true) {
+			if (type == UserPreference.Email) {
+				userDetail.isEmail = value;
+			} else if (type == UserPreference.SMS) {
+				userDetail.isSMS = value;
+			}
+		} else {
+			throw new ConflictException(`It is mandatory to be one preference value is selected at a time.`)
+		}
+
+		try {
+			userDetail.save();
+			return { message: `${type} Preference value updated successfully` };
+		} catch (e) {
+			throw new BadRequestException(`something went wrong ${e.message}`);
+		}
 
 	}
 }

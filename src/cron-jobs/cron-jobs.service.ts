@@ -41,9 +41,11 @@ import { MonakerStrategy } from "src/vacation-rental/strategy/strategy";
 import { Monaker } from "src/vacation-rental/strategy/monaker";
 import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
 import { HotelService } from "src/hotel/hotel.service";
+import { TwilioSMS } from "src/utility/sms.utility";
+import { InjectTwilio, TwilioClient } from "nestjs-twilio";
 const AWS = require('aws-sdk');
 var fs = require('fs');
-
+const cronUserId = config.get('cronUserId');
 
 
 @Injectable()
@@ -63,7 +65,9 @@ export class CronJobsService {
 
 		private readonly mailerService: MailerService,
 
-		private vacationRentalService: VacationRentalService
+		private vacationRentalService: VacationRentalService,
+		@InjectTwilio() private readonly client: TwilioClient,
+		private twilioSMS: TwilioSMS,
 
 	) { }
 
@@ -82,7 +86,7 @@ export class CronJobsService {
 			console.log(result);
 			const updateQuery = await this.userRepository.query(
 				`UPDATE "user" 
-                SET "role_id"=6 , updated_date='${todayDate}',updated_by = '1c17cd17-9432-40c8-a256-10db77b95bca'  WHERE "role_id" = ${Role.PAID_USER} AND DATE("next_subscription_date") < '${todayDate}'`
+                SET "role_id"=6 , updated_date='${todayDate}',updated_by = ${cronUserId}  WHERE "role_id" = ${Role.PAID_USER} AND DATE("next_subscription_date") < '${todayDate}'`
 			);
 			for (let index = 0; index < result.length; index++) {
 				const data = result[index];
@@ -96,7 +100,7 @@ export class CronJobsService {
 					{
 						title: 'We not capture subscription',
 						body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
-					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+					}, cronUserId)
 				WebNotification.sendNotificationTouser(data.userId,
 					{  //you can send only notification or only data(or include both)
 						module_name: 'user',
@@ -106,7 +110,7 @@ export class CronJobsService {
 					{
 						title: 'We not capture subscription',
 						body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`
-					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+					}, cronUserId)
 
 				this.mailerService
 					.sendMail({
@@ -223,11 +227,11 @@ export class CronJobsService {
 				let cardToken = instalment.booking.cardToken
 				amount = amount * 100
 				amount = Math.ceil(amount)
-				
+
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
-					
+
 					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 					instalment.paymentInfo = transaction.meta_data;
 					instalment.transactionToken = transaction.token;
@@ -237,7 +241,7 @@ export class CronJobsService {
 					instalment.comment = `try to get Payment by cron on ${currentDate}`
 					await instalment.save()
 
-					
+
 					if (transaction.status == false) {
 
 						let faildTransaction = new FailedPaymentAttempt()
@@ -271,7 +275,9 @@ export class CronJobsService {
 								.execute();
 							instalment.paymentStatus = PaymentStatus.FAILED
 							await instalment.save()
-							await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card',`${param.currency}${param.amount}`)
+							if (instalment.user.isEmail) {
+								await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
+							}
 
 							PushNotification.sendNotificationTouser(instalment.user.userId,
 								{  //you can send only notification or only data(or include both)
@@ -282,7 +288,7 @@ export class CronJobsService {
 								{
 									title: 'booking Cancelled',
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
-								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+								}, cronUserId)
 							WebNotification.sendNotificationTouser(instalment.user.userId,
 								{  //you can send only notification or only data(or include both)
 									module_name: 'booking',
@@ -292,24 +298,27 @@ export class CronJobsService {
 								{
 									title: 'booking Cancelled',
 									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
-								}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+								}, cronUserId)
 
 
 						}
-						this.mailerService
-							.sendMail({
-								to: instalment.user.email,
-								from: mailConfig.from,
-								cc: mailConfig.BCC,
-								subject: `Payment Failed Notification`,
-								html: missedPaymentInstallmentMail(param),
-							})
-							.then((res) => {
-								console.log("res", res);
-							})
-							.catch((err) => {
-								console.log("err", err);
-							});
+
+						if (instalment.user.isEmail) {
+							this.mailerService
+								.sendMail({
+									to: instalment.user.email,
+									from: mailConfig.from,
+									cc: mailConfig.BCC,
+									subject: `Payment Failed Notification`,
+									html: missedPaymentInstallmentMail(param),
+								})
+								.then((res) => {
+									console.log("res", res);
+								})
+								.catch((err) => {
+									console.log("err", err);
+								});
+						}
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -326,7 +335,7 @@ export class CronJobsService {
 							{
 								title: 'Instalment Failed',
 								body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+							}, cronUserId)
 						WebNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
@@ -337,7 +346,7 @@ export class CronJobsService {
 							{
 								title: 'Instalment Failed',
 								body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+							}, cronUserId)
 
 					}
 					else {
@@ -370,25 +379,27 @@ export class CronJobsService {
 							installmentId: instalment.id,
 							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
 							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount)),
-							currencySymbol:instalment.currency.symbol,
-							currency:instalment.currency.code,
-							pendingInstallment:await this.pandingInstalment(instalment.bookingId)
+							currencySymbol: instalment.currency.symbol,
+							currency: instalment.currency.code,
+							pendingInstallment: await this.pandingInstalment(instalment.bookingId)
 						}
 
-						this.mailerService
-							.sendMail({
-								to: instalment.user.email,
-								from: mailConfig.from,
-								bcc: mailConfig.BCC,
-								subject: `Installment Payment Successed`,
-								html: PaymentInstallmentMail(param),
-							})
-							.then((res) => {
-								console.log("res", res);
-							})
-							.catch((err) => {
-								console.log("err", err);
-							});
+						if (instalment.user.isEmail) {
+							this.mailerService
+								.sendMail({
+									to: instalment.user.email,
+									from: mailConfig.from,
+									bcc: mailConfig.BCC,
+									subject: `Installment Payment Successed`,
+									html: PaymentInstallmentMail(param),
+								})
+								.then((res) => {
+									console.log("res", res);
+								})
+								.catch((err) => {
+									console.log("err", err);
+								});
+						}
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -405,7 +416,7 @@ export class CronJobsService {
 							{
 								title: 'Installment Received',
 								body: `We have received your payment of $${instalment.amount}.`
-							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+							}, cronUserId)
 						WebNotification.sendNotificationTouser(instalment.user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
@@ -416,7 +427,7 @@ export class CronJobsService {
 							{
 								title: 'Installment Received',
 								body: `We have received your payment of $${instalment.amount}.`
-							}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+							}, cronUserId)
 					}
 
 					await this.checkAllinstallmentPaid(instalment.bookingId)
@@ -490,7 +501,7 @@ export class CronJobsService {
 				failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`
 			}
 		}
-		
+
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/><pre>' + failedlogArray, 'daily booking price cron failed')
 		}
@@ -542,7 +553,7 @@ export class CronJobsService {
 						{
 							title: 'Booking failed',
 							body: `we couldn’t process your booking request.`
-						}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+						}, cronUserId)
 					WebNotification.sendNotificationTouser(booking.user.userId,
 						{
 							module_name: 'booking',
@@ -552,7 +563,7 @@ export class CronJobsService {
 						{
 							title: 'Booking failed',
 							body: `we couldn’t process your booking request.`
-						}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+						}, cronUserId)
 				}
 
 
@@ -594,7 +605,7 @@ export class CronJobsService {
 					{
 						title: 'Booking ',
 						body: `We’re as excited for your trip as you are! please check all the details`
-					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+					}, cronUserId)
 
 				WebNotification.sendNotificationTouser(booking.user.userId,
 					{  //you can send only notification or only data(or include both)
@@ -605,7 +616,7 @@ export class CronJobsService {
 					{
 						title: 'Booking ',
 						body: `We’re as excited for your trip as you are! please check all the details`
-					}, "1c17cd17-9432-40c8-a256-10db77b95bca")
+					}, cronUserId)
 
 				//if TicketStatus = TktInProgress call it again
 			}
@@ -642,7 +653,7 @@ export class CronJobsService {
 			});
 	}
 
-	async sendFlightIncompleteMail(email, bookingId, error = null,amount) {
+	async sendFlightIncompleteMail(email, bookingId, error = null, amount) {
 		this.mailerService
 			.sendMail({
 				to: email,
@@ -651,7 +662,7 @@ export class CronJobsService {
 				subject: "Booking Failure Mail",
 				html: IncompleteBookingMail({
 					error: error,
-					amount:amount
+					amount: amount
 				}, bookingId),
 			})
 			.then((res) => {
@@ -692,7 +703,7 @@ export class CronJobsService {
 						"paidFor": PaidFor.RewordPoint,
 						"note": ""
 					}
-					const payment = await this.paymentService.createTransaction(createTransaction, "1c17cd17-9432-40c8-a256-10db77b95bca")
+					const payment = await this.paymentService.createTransaction(createTransaction, cronUserId)
 
 					if (payment.paymentStatus == PaymentStatus.CONFIRM) {
 
@@ -720,7 +731,7 @@ export class CronJobsService {
 						// 		console.log("err", err);
 						// 	});
 						// Activity.logActivity(
-						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+						// 	"	",
 						// 	"cron",
 						// 	`${data.id} recurring laytrip poin added by cron`
 						// );
@@ -842,7 +853,10 @@ export class CronJobsService {
 				"User.userId",
 				"User.email",
 				"User.phoneNo",
-				"User.firstName"
+				"User.firstName",
+				"User.isEmail",
+				"User.isSMS",
+				"User.countryCode"
 			])
 			.where(`(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
@@ -853,22 +867,39 @@ export class CronJobsService {
 				userName: installment.user.firstName,
 				amount: installment.currency.symbol + `${Generic.formatPriceDecimal(parseFloat(installment.amount))}`,
 				date: DateTime.convertDateFormat(new Date(installment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
-				bookingId:installment.booking.laytripBookingId
+				bookingId: installment.booking.laytripBookingId,
+				phoneNo: `+${installment.user.countryCode}` + installment.user.phoneNo
 			}
-			this.mailerService
-				.sendMail({
-					to: installment.user.email,
-					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Payment Reminder",
-					html: PaymentReminderMail(param),
+
+			if (installment.user.isSMS) {
+				this.twilioSMS.sendSMS(
+					{
+						toSMS: param.phoneNo,
+						message: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} for booking number ${param.bookingId} .Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+					}
+				).then((res) => {
+					console.log('res', res);
+				}).catch((err) => {
+					console.log("error", err);
 				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
+			}
+
+			if (installment.user.isEmail) {
+				this.mailerService
+					.sendMail({
+						to: installment.user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: "Payment Reminder",
+						html: PaymentReminderMail(param),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
+			}
 
 			PushNotification.sendNotificationTouser(installment.user.userId,
 				{  //you can send only notification or only data(or include both)
@@ -880,7 +911,7 @@ export class CronJobsService {
 				{
 					title: 'Payment Reminder',
 					body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
-				}, '1c17cd17-9432-40c8-a256-10db77b95bca')
+				}, cronUserId)
 			WebNotification.sendNotificationTouser(installment.user.userId,
 				{  //you can send only notification or only data(or include both)
 					module_name: 'payment',
@@ -891,7 +922,7 @@ export class CronJobsService {
 				{
 					title: 'Payment Reminder',
 					body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
-				}, '1c17cd17-9432-40c8-a256-10db77b95bca')
+				}, cronUserId)
 
 		}
 		return { message: `Payment reminder send successfully` };
@@ -968,8 +999,8 @@ export class CronJobsService {
 		var filepath = '/var/www/html/logs/database/' + fileName;
 
 		if (!fs.existsSync('/var/www/html/logs/database/')) {
-			 	fs.mkdirSync('/var/www/html/logs/database/');
-			 }
+			fs.mkdirSync('/var/www/html/logs/database/');
+		}
 		var s3 = new AWS.S3();
 
 		// Dump our database to a file so we can collect its length
@@ -978,79 +1009,79 @@ export class CronJobsService {
 		console.log('Dumping `pg_dump` into `gzip`');
 
 		//await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
-			console.log("Finito");
-			console.log('Uploading "' + filepath + '" to S3');
-			// s3.putObject({
-			// 	Bucket: S3_BUCKET,
-			// 	Key: fileName,
-			// 	// ACL: 'public',
-			// 	// ContentType: 'text/plain',
-			// 	Body: fs.createReadStream(filepath)
-			// }, function handlePutObject(err, data) {
-			// 	// If there was an error, throw it
-			// 	if (err) {
-			// 		throw err;
-			// 		return err
-			// 	} else {}
-			// });
-		
-			console.log("started....");
-			// Simple-git without promise 
-			const simpleGit = require('simple-git')();
-			// Shelljs package for running shell tasks optional
-			const shellJs = require('shelljs');
-			// Simple Git with Promise for handling success and failure
-			const simpleGitPromise = require('simple-git/promise')();
+		console.log("Finito");
+		console.log('Uploading "' + filepath + '" to S3');
+		// s3.putObject({
+		// 	Bucket: S3_BUCKET,
+		// 	Key: fileName,
+		// 	// ACL: 'public',
+		// 	// ContentType: 'text/plain',
+		// 	Body: fs.createReadStream(filepath)
+		// }, function handlePutObject(err, data) {
+		// 	// If there was an error, throw it
+		// 	if (err) {
+		// 		throw err;
+		// 		return err
+		// 	} else {}
+		// });
 
-			shellJs.cd('/var/www/html/logs/database/');
-			// Repo name
-			const repo = 'laytrip-database-backup';  //Repo name
-			// User name and password of your GitHub
-			const userName = 'suresh555';
-			const password1 = 'Oneclick1@';
-			// Set up GitHub url like this so no manual entry of user pass needed
-			const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
-			// add local git config like username and email
-			
-			simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
-			console.log("step1");
-			
-			simpleGit.addConfig('user.name', 'Suresh Suthar');
-			console.log(("step2"));
-			
-			// Add remore repo url as origin to repo
-			simpleGitPromise.addRemote('origin', gitHubUrl);
-			console.log("step3");
-			
-			// Add all files for commit
-			simpleGitPromise.add('.')
-				.then(
-					(addSuccess) => {
-						console.log(addSuccess);
-					}, (failedAdd) => {
-						console.log('adding files failed');
-					});
-					console.log("step4");
-					
-			// Commit files as Initial Commit
-			simpleGitPromise.commit('Intial commit by simplegit')
-				.then(
-					(successCommit) => {
-						console.log(successCommit);
-					}, (failed) => {
-						console.log('failed commmit');
-					});
-					console.log("step5");
-			// Finally push to online repository
-			simpleGitPromise.push('origin', 'master')
-				.then((success) => {
-					console.log('repo successfully pushed');
-				}, (failed) => {
-					console.log('repo push failed');
+		console.log("started....");
+		// Simple-git without promise 
+		const simpleGit = require('simple-git')();
+		// Shelljs package for running shell tasks optional
+		const shellJs = require('shelljs');
+		// Simple Git with Promise for handling success and failure
+		const simpleGitPromise = require('simple-git/promise')();
+
+		shellJs.cd('/var/www/html/logs/database/');
+		// Repo name
+		const repo = 'laytrip-database-backup';  //Repo name
+		// User name and password of your GitHub
+		const userName = 'suresh555';
+		const password1 = 'Oneclick1@';
+		// Set up GitHub url like this so no manual entry of user pass needed
+		const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
+		// add local git config like username and email
+
+		simpleGit.addConfig('user.email', 'suresh@itoneclick.com');
+		console.log("step1");
+
+		simpleGit.addConfig('user.name', 'Suresh Suthar');
+		console.log(("step2"));
+
+		// Add remore repo url as origin to repo
+		simpleGitPromise.addRemote('origin', gitHubUrl);
+		console.log("step3");
+
+		// Add all files for commit
+		simpleGitPromise.add('.')
+			.then(
+				(addSuccess) => {
+					console.log(addSuccess);
+				}, (failedAdd) => {
+					console.log('adding files failed');
 				});
-				console.log("step5");
-			console.log('Successfully uploaded "' + filepath + '"');
-			return { message: 'Successfully uploaded "' + filepath + '"' }
+		console.log("step4");
+
+		// Commit files as Initial Commit
+		simpleGitPromise.commit('Intial commit by simplegit')
+			.then(
+				(successCommit) => {
+					console.log(successCommit);
+				}, (failed) => {
+					console.log('failed commmit');
+				});
+		console.log("step5");
+		// Finally push to online repository
+		simpleGitPromise.push('origin', 'master')
+			.then((success) => {
+				console.log('repo successfully pushed');
+			}, (failed) => {
+				console.log('repo push failed');
+			});
+		console.log("step5");
+		console.log('Successfully uploaded "' + filepath + '"');
+		return { message: 'Successfully uploaded "' + filepath + '"' }
 		//})
 		// .catch(err => {
 		// 	console.log(err);
@@ -1196,7 +1227,7 @@ export class CronJobsService {
 			}
 
 			const monaker = new MonakerStrategy(new Monaker(Headers));
-			vacationData =  await new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
+			vacationData = await new Promise((resolve) => resolve(monaker.verifyUnitTypeAvailability(dto, bookingData.user, false)));
 			// console.log("-------------",vacationData);
 			// vacationData = await this.vacationRentalService.verifyUnitAvailability(dto, Headers, bookingData.user);
 
@@ -1238,11 +1269,11 @@ export class CronJobsService {
 		}
 	}
 
-	async pandingInstalment(bookingId){
+	async pandingInstalment(bookingId) {
 		let query = await getManager()
-					.createQueryBuilder(BookingInstalments, "instalment")
-					.where(`"instalment"."booking_id" = '${bookingId}' AND "instalment"."payment_status" = '${PaymentStatus.PENDING}'`)
-					.getCount();
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.where(`"instalment"."booking_id" = '${bookingId}' AND "instalment"."payment_status" = '${PaymentStatus.PENDING}'`)
+			.getCount();
 		return query
 	}
 }

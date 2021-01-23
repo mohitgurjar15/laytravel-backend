@@ -55,6 +55,9 @@ import { SearchFullTextDto } from './dto/search-full-text.dto';
 import { Activity } from 'src/utility/activity.utility';
 import { ModulesName } from 'src/enum/module.enum';
 import { HomeRentalFlexibleDayDto } from './dto/home-rental-flexible-day.dto';
+import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
+import { Twilio } from 'twilio';
+import { TwilioSMS } from 'src/utility/sms.utility';
 
 const mailConfig = config.get("email");
 
@@ -65,12 +68,11 @@ export class VacationRentalService {
 		@InjectRepository(BookingRepository)
 		private bookingRepository: BookingRepository,
 		private paymentService: PaymentService,
-		private readonly mailerService: MailerService
-
+		private readonly mailerService: MailerService,
+		private twilioSMS:TwilioSMS,
 	) { }
 
 	async getSearchLocation(searchLocation) {
-
 		try {
 			const hotels = await getManager()
 				.createQueryBuilder(HotelView, "hotel_view")
