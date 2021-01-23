@@ -44,6 +44,8 @@ import { AppVersionModule } from './app-version/app-version.module';
 import { MarketingModule } from './marketing/marketing.module';
 import { CartModule } from './cart/cart.module';
 import { DealModule } from './deal/deal.module';
+import { TwilioModule } from 'nestjs-twilio';
+const twilio = config.get('twilio');
 
 
 @Module({
@@ -73,6 +75,10 @@ import { DealModule } from './deal/deal.module';
           strict: true,
         },
       },
+    }),
+    TwilioModule.forRoot({
+      accountSid:twilio.accountSid,
+      authToken:twilio.authToken
     }),
     FlightModule,
     VacationRentalModule,

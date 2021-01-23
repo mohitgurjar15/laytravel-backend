@@ -12,6 +12,7 @@ import { InstalmentService } from 'src/instalment/instalment.service';
 import { VacationRentalService } from 'src/vacation-rental/vacation-rental.service';
 import { CartService } from 'src/cart/cart.service';
 import { HotelModule } from 'src/hotel/hotel.module';
+import { TwilioSMS } from 'src/utility/sms.utility';
 
 @Module({
   imports:[
@@ -21,6 +22,6 @@ import { HotelModule } from 'src/hotel/hotel.module';
     HotelModule
   ],
   controllers: [CronJobsController],
-  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService,CartService]
+  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService,CartService,TwilioSMS]
 })
 export class CronJobsModule {}
