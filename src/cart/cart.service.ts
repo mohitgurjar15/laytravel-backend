@@ -104,19 +104,19 @@ export class CartService {
         if (flightInfo) {
 
             // var travelersCount:number = parseInt(flightInfo[0].adult_count)
-            // console.log(flightInfo[0].adult_count);
-            // console.log(travelersCount);
+            // //console.log(flightInfo[0].adult_count);
+            // //console.log(travelersCount);
 
             // const 
             // travelersCount= travelersCount + 
-            // console.log(flightInfo[0].child_count);
-            // console.log(travelersCount);
+            // //console.log(flightInfo[0].child_count);
+            // //console.log(travelersCount);
 
             // travelersCount = travelersCount + flightInfo[0].infant_count ? parseInt(flightInfo[0].infant_count) : 0
-            // console.log(travelersCount);
+            // //console.log(travelersCount);
 
-            // console.log(travelersCount);
-            // console.log(travelers.length);
+            // //console.log(travelersCount);
+            // //console.log(travelers.length);
 
 
             // if (travelersCount != travelers.length) {
@@ -192,7 +192,7 @@ export class CartService {
 
     async addHomeRentalDataInCart(dto, user, Header) {
         let homeInfo = await this.vacationService.homeRentalRevalidate(dto, user, Header);
-        // console.log(homeInfo);
+        // //console.log(homeInfo);
         if (homeInfo) {
 
             const check_in_date = homeInfo[0].check_in_date;
@@ -283,6 +283,8 @@ export class CartService {
                 throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
             }
 
+            //console.log('1');
+
             const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
             for await (const cart of result) {
                 const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
@@ -317,22 +319,27 @@ export class CartService {
                 resultIndex++;
             }
             flightResponse = await Promise.all(flightRequest);
+            //console.log('responce');
+
         }
-
-        for (let index = 0; index < result.length; index++) {
-            const cart = result[index];
-
+        let index = 0
+        for await (const cart of result) {
             let newCart = {}
+            //console.log(typeof live_availiblity);
 
             if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 newCart['oldModuleInfo'] = cart.moduleInfo
                 const value = await this.flightAvailiblity(cart, flightResponse[index])
+                //console.log(typeof value.message);
+
                 if (typeof value.message == "undefined") {
+                    //console.log('it is available');
                     newCart['moduleInfo'] = value
                     newCart['is_available'] = true
                     cart.moduleInfo = [value]
                     await cart.save()
                 } else {
+                    //console.log('it is not available');
                     newCart['is_available'] = false
                     await getConnection()
                         .createQueryBuilder()
@@ -359,6 +366,8 @@ export class CartService {
             newCart['type'] = cart.module.name
             newCart['travelers'] = cart.travelers
             responce.push(newCart)
+            index++;
+
         }
         return {
             data: responce,
@@ -367,20 +376,29 @@ export class CartService {
     }
 
     async flightAvailiblity(cart, flights) {
+        //console.log('match');
+
         var match = 0;
-        for await (const flight of flights.items) {
-            if (flight.unique_code == cart.moduleInfo[0].unique_code) {
-                match = match + 1
-                return flight;
+        if (flights.items) {
+            for await (const flight of flights.items) {
+                if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
+                    //console.log('match found');
+                    match = match + 1
+                    return flight;
+                }
             }
         }
+        //console.log('loop empty');
+
 
         if (match == 0) {
+            //console.log('match not found');
             return {
                 message: 'Flight is not available'
             }
             //throw new NotFoundException(`Flight is not available`)
         }
+
     }
 
     async deleteFromCart(id: number, user: User) {
