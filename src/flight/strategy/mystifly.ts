@@ -439,7 +439,7 @@ export class Mystifly implements StrategyAirline {
         if (infant_count > 0) {
 
             requestBody += `<mys1:PassengerTypeQuantity>`
-            requestBody += `<mys1:Code>INF</mys:Code>`
+            requestBody += `<mys1:Code>INF</mys1:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
@@ -707,7 +707,7 @@ export class Mystifly implements StrategyAirline {
         if (infant_count > 0) {
 
             requestBody += `<mys1:PassengerTypeQuantity>`
-            requestBody += `<mys1:Code>INF</mys:Code>`
+            requestBody += `<mys1:Code>INF</mys1:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
