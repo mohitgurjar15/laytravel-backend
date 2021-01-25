@@ -1101,13 +1101,13 @@ export class CronJobsService {
 		if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
 			var bookingType = bookingData.locationInfo['journey_type']
 
-			let travelers = [];
+			// let travelers = [];
 
-			for await (const traveler of bookingData.travelers) {
-				travelers.push({
-					traveler_id: traveler.userId
-				})
-			}
+			// for await (const traveler of bookingData.travelers) {
+			// 	travelers.push({
+			// 		traveler_id: traveler.userId
+			// 	})
+			// }
 
 			if (bookingType == 'oneway') {
 				Headers['currency'] = bookingData.currency2.code
@@ -1151,28 +1151,9 @@ export class CronJobsService {
 				for await (const flight of flights.items) {
 					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
 
-						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+						//const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
 
-						const savedDate = new Date(bookingData.predectedBookingDate);
-						var predictedDate = savedDate.toISOString();
-						predictedDate = predictedDate
-							.replace(/T/, " ") // replace T with a space
-							.replace(/\..+/, "");
-
-						const bookingDto = new BookFlightDto
-						bookingDto.travelers = travelers
-						bookingDto.payment_type = `${bookingData.bookingType}`;
-						bookingDto.instalment_type = `${bookingData.bookingType}`
-						bookingDto.route_code = flight.route_code;
-						bookingDto.additional_amount = 0
-						bookingDto.laycredit_points = 0
-
-						const user = bookingData.user
-
-
-
-						const bookingId = bookingData.laytripBookingId;
-
+						
 						const date = new Date();
 						var todayDate = date.toISOString();
 						todayDate = todayDate
