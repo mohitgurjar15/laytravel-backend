@@ -47,6 +47,20 @@ export class HttpRequest {
         }
         catch (error) {
             //console.log("===================", error.message)
+            let logData = {};
+            logData['url'] = url
+            logData['requestBody'] = requestBody
+            logData['headers'] = {
+                'content-type': 'text/xml',
+                'Accept-Encoding': 'gzip',
+                'soapaction': `${headerAction}`,
+                'charset': 'UTF-8',
+                'cache-control': 'no-cache'
+            }
+            logData['responce'] = error.response.data;
+            const fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
+            Activity.createlogFile(fileName, logData, 'Mustifly_errors');
+            
             throw new RequestTimeoutException(`Connection time out`)
         }
 
@@ -67,16 +81,44 @@ export class HttpRequest {
                     'cache-control': 'no-cache'
                 }
             })
-
+            let logData = {};
+            logData['url'] = url
+            logData['requestBody'] = requestBody
+            logData['headers'] = {
+                'content-type': 'text/xml',
+                'Accept-Encoding': 'gzip',
+                'soapaction': `${headerAction}`,
+                'charset': 'UTF-8',
+                'cache-control': 'no-cache'
+            }
+            logData['responce'] = result.data;
+            
+            
             result = await xml2js.parseStringPromise(result.data, {
                 normalizeTags: true,
                 ignoreAttrs: true
             });
 
+            //logData['Decripted responce '] = result;
+
+            const fileName = `Flight-mystifly-zip-search-${new Date().getTime()}`;
+            Activity.createlogFile(fileName, logData, 'flights');
             return result;
         }
         catch (error) {
-            console.log(error.message)
+            let logData = {};
+            logData['url'] = url
+            logData['requestBody'] = requestBody
+            logData['headers'] = {
+                'content-type': 'text/xml',
+                'Accept-Encoding': 'gzip',
+                'soapaction': `${headerAction}`,
+                'charset': 'UTF-8',
+                'cache-control': 'no-cache'
+            }
+            logData['responce'] = error.response.data;
+            const fileName = `Flight-mystifly-zip-search-${new Date().getTime()}`;
+            Activity.createlogFile(fileName, logData, 'Mustifly_errors');
             throw new RequestTimeoutException(`Connection time out`)
         }
 
@@ -97,13 +139,10 @@ export class HttpRequest {
                     'Accept-Encoding': 'gzip',
                 }
             })
-
             return result;
         }
         catch (e) {
             result = e.response.data
-
-
             if (result == "The booking request failed. Wrong quote handle.") {
                 return false;
             } else if (flag == true) {
