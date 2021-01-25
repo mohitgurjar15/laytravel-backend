@@ -903,7 +903,7 @@ export class Mystifly implements StrategyAirline {
                 route.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, markUpDetails))
                 route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
-                    route.secondary_fare_break_down = this.getFareBreakDown(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], secondaryMarkUpDetails);
+                    route.secondary_fare_break_down = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
                 
                 
