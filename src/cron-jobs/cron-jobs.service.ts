@@ -1121,6 +1121,8 @@ export class CronJobsService {
 					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0
 				}
 
+				//console.log(dto);
+				
 				flights = await this.flightService.searchOneWayZipFlight(dto, Headers, bookingData.user);
 
 			}
@@ -1136,10 +1138,12 @@ export class CronJobsService {
 					"adult_count": bookingData.moduleInfo[0].adult_count ? bookingData.moduleInfo[0].adult_count : 0,
 					"child_count": bookingData.moduleInfo[0].child_count ? bookingData.moduleInfo[0].child_count : 0,
 					"infant_count": bookingData.moduleInfo[0].infant_count ? bookingData.moduleInfo[0].infant_count : 0,
-					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_code)
+					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_date)
 				}
-
+				//console.log(dto);
+				
 				flights = await this.flightService.searchRoundTripZipFlight(dto, Headers, bookingData.user);
+				//return flights
 			}
 			if (flights.items && flights.items.length) {
 				for await (const flight of flights.items) {

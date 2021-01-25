@@ -309,7 +309,7 @@ export class FlightService {
 		}
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 		const result = new Promise((resolve) =>
-			//resolve(mystifly.roundTripSearchZip(searchFlightDto, user))
+			//resolve(mystifly.roundTripSearch(searchFlightDto, user))
 			resolve(mystifly.roundTripSearchZip(searchFlightDto, user, mystiflyConfig, sessionToken, module, currencyDetails))
 
 		);

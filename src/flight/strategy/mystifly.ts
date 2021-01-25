@@ -67,7 +67,7 @@ export class Mystifly implements StrategyAirline {
     async createSession() {
 
         const mystiflyConfig = await this.getMystiflyCredential();
-        console.log(mystiflyConfig);
+        
 
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
@@ -144,7 +144,7 @@ export class Mystifly implements StrategyAirline {
     async oneWaySearch(searchFlightDto: OneWaySearchFlightDto, user)/* :Promise<FlightSearchResult> */ {
 
         const mystiflyConfig = await this.getMystiflyCredential();
-        console.log("mystiflyConfig", mystiflyConfig)
+        
         const sessionToken = await this.startSession();
         const {
             source_location,
@@ -439,7 +439,7 @@ export class Mystifly implements StrategyAirline {
         if (infant_count > 0) {
 
             requestBody += `<mys1:PassengerTypeQuantity>`
-            requestBody += `<mys1:Code>INF</mys:Code>`
+            requestBody += `<mys1:Code>INF</mys1:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
@@ -469,7 +469,7 @@ export class Mystifly implements StrategyAirline {
 
         let searchResult = await HttpRequest.mystiflyRequestZip(mystiflyConfig.zipSearchUrl, requestBody, 'http://tempuri.org/IOnePointGZip/AirLowFareSearch');
         let compressedResult = searchResult['s:envelope']['s:body'][0].airlowfaresearchresponse[0].airlowfaresearchresult[0];
-        //console.log(compressedResult)
+        //
         let buffer = Buffer.from(compressedResult, 'base64');
 
         const unCompressedData = await new Promise((resolve) => {
@@ -707,7 +707,7 @@ export class Mystifly implements StrategyAirline {
         if (infant_count > 0) {
 
             requestBody += `<mys1:PassengerTypeQuantity>`
-            requestBody += `<mys1:Code>INF</mys:Code>`
+            requestBody += `<mys1:Code>INF</mys1:Code>`
             requestBody += `<mys1:Quantity>${infant_count}</mys1:Quantity>`
             requestBody += `</mys1:PassengerTypeQuantity>`
         }
@@ -720,7 +720,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys:SessionId>${sessionToken}</mys:SessionId>`;
         requestBody += `<mys:Target>${mystiflyConfig.target}</mys:Target>`;
         requestBody += `<mys:TravelPreferences>`;
-        requestBody += `<mys1:AirTripType>Circle</mys1:AirTripType>`;
+        requestBody += `<mys1:AirTripType>Return</mys1:AirTripType>`;
         requestBody += `<mys1:CabinPreference>${this.getFlightClass(flight_class)}</mys1:CabinPreference>`;
         requestBody += `<mys1:MaxStopsQuantity>All</mys1:MaxStopsQuantity>`;
         requestBody += `<mys1:Preferences>`
@@ -747,8 +747,6 @@ export class Mystifly implements StrategyAirline {
 
 
         let jsonData: any = await Generic.xmlToJson(unCompressedData)
-        // return jsonData
-        console.log(jsonData.airlowfaresearchgziprs.success[0]);
 
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
             let flightRoutes = jsonData.airlowfaresearchgziprs.priceditineraries[0].priceditinerary;
@@ -761,16 +759,20 @@ export class Mystifly implements StrategyAirline {
             let stopDuration;
             let otherSegments = []
             let totalDuration;
+            let outBoundflightSegments;
+            let inBoundflightSegments;
             let uniqueCode;
+            let j;
             for (let i = 0; i < flightRoutes.length; i++) {
                 route = new Route;
                 stops = [];
                 totalDuration = 0;
                 uniqueCode = '';
-                flightSegments = flightRoutes[i]['origindestinationoptions'][0]['origindestinationoption'][0]['flightsegments'][0]['flightsegment'];
+                outBoundflightSegments = flightRoutes[i]['origindestinationoptions'][0]['origindestinationoption'][0]['flightsegments'][0]['flightsegment'];
+                inBoundflightSegments = flightRoutes[i]['origindestinationoptions'][0]['origindestinationoption'][1]['flightsegments'][0]['flightsegment'];
                 otherSegments = flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'][0];
 
-                flightSegments.forEach((flightSegment, j) => {
+                outBoundflightSegments.forEach((flightSegment, j) => {
                     totalDuration += flightSegment['journeyduration'][0] * 60;
 
                     stop = new Stop();
@@ -809,9 +811,12 @@ export class Mystifly implements StrategyAirline {
                     stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo'] !== 'undefined' ? otherSegments['cabinbaggageinfo'][0]['string'][j] : '');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
+                    
+                    
+
 
                     stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
-
+                    
 
                     if (stops.length > 0) {
 
@@ -826,49 +831,119 @@ export class Mystifly implements StrategyAirline {
                     uniqueCode += stop.cabin_class;
                     stops.push(stop)
                 });
-
-
                 routeType = new RouteType();
                 routeType.type = 'outbound';
                 routeType.stops = stops;
+                let outBoundDuration = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                routeType.duration = `${outBoundDuration.hours}h ${outBoundDuration.minutes}m`;
                 route.routes[0] = routeType;
-                route.route_code = flightRoutes[i]['airitinerarypricinginfo'][0]['faresourcecode'][0];
+                route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
+                route.departure_date = stops[0].departure_date;
+                route.departure_time = stops[0].departure_time;
+                route.stop_count = stops.length - 1;
+                stops = [];
+                totalDuration = 0;
+                inBoundflightSegments.forEach(flightSegment => {
+                    stop = new Stop();
+                    totalDuration += flightSegment['journeyduration'][0] * 60;
+                    stop.departure_code = flightSegment['departureairportlocationcode'][0];
+                    stop.departure_date = moment(flightSegment['departuredatetime'][0]).format("DD/MM/YYYY")
+                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_date_time = flightSegment['departuredatetime'][0];
+                    stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
+                    stop.arrival_code = flightSegment['arrivalairportlocationcode'][0];
+                    stop.arrival_date = moment(flightSegment['arrivaldatetime'][0]).format("DD/MM/YYYY")
+                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_date_time = flightSegment['arrivaldatetime'][0];
+                    stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
+                    stop.eticket = flightSegment['eticket'][0] == 'true' ? true : false;
+                    stop.flight_number = flightSegment['flightnumber'][0];
+                    stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['cabinclasscode'][0]);
+                    stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['journeyduration'][0] * 60);
+                    stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
+                    stop.airline = flightSegment['marketingairlinecode'][0];
+                    stop.airline_name = airlines[stop.airline];
+                    stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    stop.remaining_seat = parseInt(flightSegment['seatsremaining'][0]['number'][0]);
+                    stop.below_minimum_seat = flightSegment['seatsremaining'][0]['belowminimum'][0] == 'true' ? true : false;
+                    stop.is_layover = false;
+                    stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo'] !== 'undefined' ? otherSegments['cabinbaggageinfo'][0]['string'][j] : '');
+                    //stop.cabin_baggage = '';
+                    stop.checkin_baggage = this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
+                    
+                    
+                    stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
+                    
+                    
+                    if (stops.length > 0) {
 
+                        stop.is_layover = true;
+                        let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds'));
+                        stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`
+                        stop.layover_airport_name = flightSegment['departureairportlocationcode'][0];
+                        totalDuration += moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds');
+                    }
+                    // uniqueCode += stop.departure_time;
+                    // uniqueCode += stop.arrival_time;
+                    uniqueCode += stop.flight_number;
+                    uniqueCode += stop.airline;
+                    uniqueCode += stop.cabin_class;
+                    stops.push(stop)
+                    j++;
+                });
+                routeType = new RouteType();
+                routeType.type = 'inbound';
+                routeType.stops = stops;
+                let inBoundDuration = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                routeType.duration = `${inBoundDuration.hours}h ${inBoundDuration.minutes}m`;
+                route.routes[1] = routeType;
+                route.route_code = flightRoutes[i]['airitinerarypricinginfo'][0]['faresourcecode'][0];
                 route.fare_type = flightRoutes[i]['airitinerarypricinginfo'][0]['faretype'][0] == 'WebFare' ? 'LCC' : 'GDS';
                 route.net_rate = Generic.convertAmountTocurrency(flightRoutes[i]['airitinerarypricinginfo'][0]['itintotalfare'][0]['totalfare'][0]['amount'][0], currencyDetails.liveRate);
-
-                route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
-
                 route.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, markUpDetails))
-
-
-
+                route.fare_break_dwon = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], markUpDetails);
+                if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
+                    route.secondary_fare_break_down = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], secondaryMarkUpDetails);
+                }
+                
+                
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
                 }
                 else {
                     route.start_price = 0;
+                    route.secondary_start_price = 0;
                 }
-                route.stop_count = stops.length - 1;
-                route.is_passport_required = flightRoutes[i]['ispassportmandatory'][0] == "true" ? true : false;
+                
+                if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
+                    route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
+                }
+                else {
+                    route.secondary_selling_price = 0;
+                }
+                route.instalment_details = instalmentDetails;
+                route.inbound_stop_count = stops.length - 1;
                 route.departure_code = source_location;
                 route.arrival_code = destination_location;
-                route.departure_date = stops[0].departure_date;
-                route.departure_time = stops[0].departure_time;
-                route.arrival_date = stops[stops.length - 1].arrival_date;
-                route.arrival_time = stops[stops.length - 1].arrival_time;
                 route.departure_info = typeof airports[source_location] !== 'undefined' ? airports[source_location] : {};
                 route.arrival_info = typeof airports[destination_location] !== 'undefined' ? airports[destination_location] : {};
-                let duration = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
-                route.total_duration = `${duration.hours} h ${duration.minutes} m`;
+                route.arrival_date = stops[stops.length - 1].arrival_date;
+                route.arrival_time = stops[stops.length - 1].arrival_time;
+                let duartion = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+
+                route.total_duration = `${duartion.hours}h ${duartion.minutes}m`;
                 route.airline = stops[0].airline;
                 route.airline_name = airlines[stops[0].airline];
                 route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
+                
+                
                 route.is_refundable = flightRoutes[i]['airitinerarypricinginfo'][0]['isrefundable'][0] == 'Yes' ? true : false;
                 route.unique_code = md5(uniqueCode)
                 routes.push(route);
             }
+            //return routes;
             let flightSearchResult = new FlightSearchResult();
             flightSearchResult.items = routes;
 
@@ -888,15 +963,31 @@ export class Mystifly implements StrategyAirline {
             //return flightSearchResult;
 
             //Get Stops count and minprice
+            
+                
             flightSearchResult.stop_data = this.getStopCounts(routes, 'stop_count');
 
+            
+                
+            //Get Stops count and minprice
+            flightSearchResult.inbound_stop_data = this.getStopCounts(routes, 'inbound_stop_count');
+
+            
+                
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
 
-            //Get Departure time slot
+            
+                
+            //Get outbound Departure time slot
             flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes, 'departure_time', 0)
-            //Get Arrival time slot
+            //Get outbound Arrival time slot
             flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(routes, 'arrival_time', 0)
+
+            //Get inbound Departure time slot
+            flightSearchResult.inbound_depature_time_slot = this.getArrivalDepartureTimeSlot(routes, 'departure_time', 1)
+            //Get inbound Arrival time slot
+            flightSearchResult.inbound_arrival_time_slot = this.getArrivalDepartureTimeSlot(routes, 'arrival_time', 1)
             return flightSearchResult;
         }
         else {
@@ -1462,7 +1553,7 @@ export class Mystifly implements StrategyAirline {
         }
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        // console.log("mystiflyConfig", mystiflyConfig)
+        // 
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
             <soapenv:Body>
@@ -1585,6 +1676,7 @@ export class Mystifly implements StrategyAirline {
                         stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                         stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;
                         stop.flight_number = flightSegment['a:flightnumber'][0];
+                        stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['a:cabinclasscode'][0]);
                         stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0] * 60);
                         stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                         stop.airline = flightSegment['a:marketingairlinecode'][0];
@@ -1664,6 +1756,7 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_fare_break_down = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
                 route.unique_code = md5(uniqueCode)
+                console.log("uniqueCode",uniqueCode)
                 for (let intnery of flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']) {
 
                     if (intnery['a:passengertypequantity'][0]['a:code'] == 'ADT') {
@@ -1676,27 +1769,27 @@ export class Mystifly implements StrategyAirline {
                         route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
                     }
                 }
-                console.log('1');
+                
 
                 let eService: any;
                 let outBoundExtraService = [];
                 let inBoundExtraService = [];
-                
+
                 if (extraServices.length > 0) {
                     for (let service of extraServices[0]['b:services'][0]['b:service']) {
-                        console.log(2);
+                        
 
                         if (service['b:type'][0] !== 'Meal') {
-                            console.log(3);
+                            
 
                             let decodedBaggae = await this.decodeExtraBaggae(service['b:description'][0])
-                            console.log(4);
-                            console.log(decodedBaggae);
                             
+                            
+
                             if (decodedBaggae) {
                                 eService = {};
                                 eService['type'] = service['b:type'][0];
-                                console.log(5);
+                                
 
                                 eService['bag_type'] = decodedBaggae.type ? decodedBaggae['type'] : '';
                                 eService['checkin_type'] = service['b:checkintype'][0];
@@ -1740,7 +1833,7 @@ export class Mystifly implements StrategyAirline {
 
                 let weight = this.decodeWeight(descArrayDetails[1]);
                 if (descArrayDetails[0].includes("Total Weight: 1 bags")) {
-                    console.log("innnn")
+                    
                     return {
 
                         title: "1 Bag",
@@ -1908,7 +2001,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`
 
         let bookResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'BookFlight');
-        console.log(JSON.stringify(bookResult));
+        
 
         let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
         let bookingResponse;
@@ -1937,9 +2030,9 @@ export class Mystifly implements StrategyAirline {
     async tripDetails(tripId) {
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        //console.log(mystiflyConfig);
+        //
 
-        console.log("mystiflyConfig", mystiflyConfig)
+        
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
         requestBody += `<soapenv:Header/>`;
         requestBody += `<soapenv:Body>`;
@@ -1954,7 +2047,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`;
         mystiflyConfig.url = 'http://onepointdemo.myfarebox.com/V2/OnePoint.svc';
         let tripDetailsResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'TripDetails');
-        //console.log("tripDetailsResult", JSON.stringify(tripDetailsResult))
+        //
         if (tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:success"][0] == 'true') {
 
             let travelItinerary = tripDetailsResult["s:envelope"]["s:body"][0]["tripdetailsresponse"][0]["tripdetailsresult"][0]["a:travelitinerary"][0];
@@ -2014,7 +2107,7 @@ export class Mystifly implements StrategyAirline {
 
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        console.log(mystiflyConfig);
+        
 
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
@@ -2113,8 +2206,10 @@ export class Mystifly implements StrategyAirline {
         let bags = {
             'SB': 'Standard Baggage'
         }
+        
 
         if (typeof bags[code] !== 'undefined')
+
             return bags[code]
         else
             return code;
