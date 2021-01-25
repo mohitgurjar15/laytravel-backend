@@ -1676,6 +1676,7 @@ export class Mystifly implements StrategyAirline {
                         stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                         stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;
                         stop.flight_number = flightSegment['a:flightnumber'][0];
+                        stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['a:cabinclasscode'][0]);
                         stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['a:journeyduration'][0] * 60);
                         stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                         stop.airline = flightSegment['a:marketingairlinecode'][0];
@@ -1755,6 +1756,7 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_fare_break_down = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
                 route.unique_code = md5(uniqueCode)
+                console.log("uniqueCode",uniqueCode)
                 for (let intnery of flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']) {
 
                     if (intnery['a:passengertypequantity'][0]['a:code'] == 'ADT') {
