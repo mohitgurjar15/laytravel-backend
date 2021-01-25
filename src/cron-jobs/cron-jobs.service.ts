@@ -42,11 +42,12 @@ import { Monaker } from "src/vacation-rental/strategy/monaker";
 import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
 import { HotelService } from "src/hotel/hotel.service";
 import { TwilioSMS } from "src/utility/sms.utility";
-import { InjectTwilio, TwilioClient } from "nestjs-twilio";
 const AWS = require('aws-sdk');
 var fs = require('fs');
 const cronUserId = config.get('cronUserId');
 
+// const twilio = config.get("twilio");
+// var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
 @Injectable()
 export class CronJobsService {
@@ -66,8 +67,8 @@ export class CronJobsService {
 		private readonly mailerService: MailerService,
 
 		private vacationRentalService: VacationRentalService,
-		@InjectTwilio() private readonly client: TwilioClient,
-		private twilioSMS: TwilioSMS,
+		// @InjectTwilio() private readonly client: TwilioClient,
+		// private twilioSMS: TwilioSMS,
 
 	) { }
 
@@ -872,16 +873,13 @@ export class CronJobsService {
 			}
 
 			if (installment.user.isSMS) {
-				this.twilioSMS.sendSMS(
+				TwilioSMS.sendSMS(
 					{
 						toSMS: param.phoneNo,
 						message: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} for booking number ${param.bookingId} .Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
 					}
-				).then((res) => {
-					console.log('res', res);
-				}).catch((err) => {
-					console.log("error", err);
-				})
+				);
+
 			}
 
 			if (installment.user.isEmail) {

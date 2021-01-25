@@ -69,10 +69,10 @@ export class VacationRentalService {
 		private bookingRepository: BookingRepository,
 		private paymentService: PaymentService,
 		private readonly mailerService: MailerService,
-		private twilioSMS:TwilioSMS,
 	) { }
 
 	async getSearchLocation(searchLocation) {
+
 		try {
 			const hotels = await getManager()
 				.createQueryBuilder(HotelView, "hotel_view")

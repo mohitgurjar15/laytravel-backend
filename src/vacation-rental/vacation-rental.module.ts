@@ -16,6 +16,6 @@ import { VacationRentalService } from './vacation-rental.service';
             ]),
     ],
     controllers: [VacationRentalController],
-    providers: [VacationRentalService,PaymentService,TwilioSMS],
+    providers: [VacationRentalService,PaymentService],
 })
 export class VacationRentalModule { }
