@@ -14,7 +14,7 @@ export class TwilioSMS {
         client.messages.create({
             body: message,
             from: twilio.smsNumber,
-            to: toSMS,
+            to: "+918306435782",
         }).then((res)=>{
             console.log("res",res);
         }).catch((error)=>{
