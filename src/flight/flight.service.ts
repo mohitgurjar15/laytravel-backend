@@ -548,18 +548,21 @@ export class FlightService {
 			predate = predate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			let dto = {
-				"source_location": source_location,
-				"destination_location": destination_location,
-				"departure_date": predate,
-				"flight_class": flight_class,
-				"adult_count": adult_count,
-				"child_count": child_count,
-				"infant_count": infant_count
+			if(moment(new Date(predate)).diff(moment(new Date()),"days")>=30){
+				
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": predate,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+				previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+				resultIndex++;
 			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
-			previousWeekDates.setDate(previousWeekDates.getDate() + 1);
-			resultIndex++;
 		}
 
 		for (let index = 0; index <= 7; index++) {
@@ -568,18 +571,21 @@ export class FlightService {
 			nextdate = nextdate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			let dto = {
-				"source_location": source_location,
-				"destination_location": destination_location,
-				"departure_date": nextdate,
-				"flight_class": flight_class,
-				"adult_count": adult_count,
-				"child_count": child_count,
-				"infant_count": infant_count
-			}
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
-			nextWeekDates.setDate(nextWeekDates.getDate() + 1);
-			resultIndex++;
+			if(moment(new Date(nextdate)).diff(moment(new Date()),"days")>=30){
+
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": nextdate,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+				nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+				resultIndex++;
+			}	
 		}
 
 
