@@ -105,19 +105,19 @@ export class CartService {
         if (flightInfo) {
 
             // var travelersCount:number = parseInt(flightInfo[0].adult_count)
-            // console.log(flightInfo[0].adult_count);
-            // console.log(travelersCount);
+            // //console.log(flightInfo[0].adult_count);
+            // //console.log(travelersCount);
 
             // const 
             // travelersCount= travelersCount + 
-            // console.log(flightInfo[0].child_count);
-            // console.log(travelersCount);
+            // //console.log(flightInfo[0].child_count);
+            // //console.log(travelersCount);
 
             // travelersCount = travelersCount + flightInfo[0].infant_count ? parseInt(flightInfo[0].infant_count) : 0
-            // console.log(travelersCount);
+            // //console.log(travelersCount);
 
-            // console.log(travelersCount);
-            // console.log(travelers.length);
+            // //console.log(travelersCount);
+            // //console.log(travelers.length);
 
 
             // if (travelersCount != travelers.length) {
@@ -193,7 +193,7 @@ export class CartService {
 
     async addHomeRentalDataInCart(dto, user, Header) {
         let homeInfo = await this.vacationService.homeRentalRevalidate(dto, user, Header);
-        // console.log(homeInfo);
+        // //console.log(homeInfo);
         if (homeInfo) {
 
             const check_in_date = homeInfo[0].check_in_date;
@@ -299,7 +299,7 @@ export class CartService {
                         "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
                         "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
                     }
-                    console.log(dto);
+                    //console.log(dto);
 
                     flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
                 }
@@ -315,7 +315,7 @@ export class CartService {
                         "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
                         "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
                     }
-                    console.log(dto);
+                    //console.log(dto);
                     flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
                 }
                 resultIndex++;
@@ -372,29 +372,29 @@ export class CartService {
     }
 
     async flightAvailiblity(cart, flights) {
-        //console.log('match');
+        ////console.log('match');
 
         var match = 0;
-        console.log(flights);
+        //console.log(flights);
 
         if (flights.items) {
-            console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
+            //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
             for await (const flight of flights.items) {
-                console.log("flight?.unique_code", flight.unique_code);
+                //console.log("flight?.unique_code", flight.unique_code);
 
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
-                    //console.log('match found');
+                    ////console.log('match found');
                     match = match + 1
                     return flight;
                 }
             }
         }
-        //console.log('loop empty');
+        ////console.log('loop empty');
 
 
         if (match == 0) {
-            //console.log('match not found');
+            ////console.log('match not found');
             return {
                 message: 'Flight is not available'
             }
@@ -505,11 +505,11 @@ export class CartService {
         const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
         let flightRequest;
         if (bookingType == 'oneway') {
-            console.log(cart.moduleInfo[0].adult_count);
-            console.log(cart.moduleInfo[0].child_count);
-            console.log(cart.moduleInfo[0].infant_count);
+            //console.log(cart.moduleInfo[0].adult_count);
+            //console.log(cart.moduleInfo[0].child_count);
+            //console.log(cart.moduleInfo[0].infant_count);
 
-            console.log(cart.moduleInfo[0]);
+            //console.log(cart.moduleInfo[0]);
 
 
             let dto = {
@@ -521,7 +521,7 @@ export class CartService {
                 "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
                 "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
             }
-            console.log(dto);
+            //console.log(dto);
 
             flightRequest = await this.flightService.searchOneWayZipFlight(dto, Headers, user);
         }
@@ -556,7 +556,7 @@ export class CartService {
                 }
             } else {
                 for await (const traveler of cart.travelers) {
-                    console.log(traveler);
+                    //console.log(traveler);
                     let travelerUser = {
                         traveler_id: traveler.userId
                     }
@@ -574,7 +574,7 @@ export class CartService {
                     card_token,
                     booking_through
                 }
-                console.log(bookingdto);
+                //console.log(bookingdto);
                 newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate)
             }
 
