@@ -45,6 +45,7 @@ import { TwilioSMS } from "src/utility/sms.utility";
 const AWS = require('aws-sdk');
 var fs = require('fs');
 const cronUserId = config.get('cronUserId');
+import * as md5 from 'md5';
 
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
@@ -1126,13 +1127,13 @@ export class CronJobsService {
 		if (new Date(await this.getDataTimefromString(bookingData.moduleInfo[0].departure_date)) > new Date()) {
 			var bookingType = bookingData.locationInfo['journey_type']
 
-			let travelers = [];
+			// let travelers = [];
 
-			for await (const traveler of bookingData.travelers) {
-				travelers.push({
-					traveler_id: traveler.userId
-				})
-			}
+			// for await (const traveler of bookingData.travelers) {
+			// 	travelers.push({
+			// 		traveler_id: traveler.userId
+			// 	})
+			// }
 
 			if (bookingType == 'oneway') {
 				Headers['currency'] = bookingData.currency2.code
@@ -1149,7 +1150,7 @@ export class CronJobsService {
 				}
 
 				//console.log(dto);
-				
+
 				flights = await this.flightService.searchOneWayZipFlight(dto, Headers, bookingData.user);
 
 			}
@@ -1168,7 +1169,7 @@ export class CronJobsService {
 					"arrival_date": await this.getDataTimefromString(bookingData.moduleInfo[0].arrival_date)
 				}
 				//console.log(dto);
-				
+
 				flights = await this.flightService.searchRoundTripZipFlight(dto, Headers, bookingData.user);
 				//return flights
 			}
@@ -1176,27 +1177,8 @@ export class CronJobsService {
 				for await (const flight of flights.items) {
 					if (flight.unique_code == bookingData.moduleInfo[0].unique_code) {
 
-						const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
+						//const markups = await this.flightService.applyPreductionMarkup(bookingData.totalAmount)
 
-						const savedDate = new Date(bookingData.predectedBookingDate);
-						var predictedDate = savedDate.toISOString();
-						predictedDate = predictedDate
-							.replace(/T/, " ") // replace T with a space
-							.replace(/\..+/, "");
-
-						const bookingDto = new BookFlightDto
-						bookingDto.travelers = travelers
-						bookingDto.payment_type = `${bookingData.bookingType}`;
-						bookingDto.instalment_type = `${bookingData.bookingType}`
-						bookingDto.route_code = flight.route_code;
-						bookingDto.additional_amount = 0
-						bookingDto.laycredit_points = 0
-
-						const user = bookingData.user
-
-
-
-						const bookingId = bookingData.laytripBookingId;
 
 						const date = new Date();
 						var todayDate = date.toISOString();
@@ -1305,4 +1287,64 @@ export class CronJobsService {
 			.getCount();
 		return query
 	}
+
+	async updateModuleInfo(Headers) {
+		Headers['language'] = 'en'
+		Headers['currency'] = 'USD'
+		let query = getConnection()
+			.createQueryBuilder(Booking, "booking")
+			.where(
+				`"booking"."module_id"= 1 AND "booking"."booking_status"= 4`
+			)
+
+		const result = await query.getMany();
+
+		if (!result.length) {
+			throw new NotFoundException(`No booking found`)
+		}
+		// return result;
+		var total = 0;
+		for await (const bookingData of result) {
+
+			let unicode = '';
+			let flightClass = '';
+			//console.log(modulInfo.routes[0]['stops']);
+
+			for (let module of bookingData.moduleInfo[0].routes[0]['stops']) {
+				//console.log(module);
+
+				flightClass = module.cabin_class;
+				unicode += module.flight_number + module.airline + flightClass;
+			}
+
+			if (typeof bookingData.moduleInfo[0].routes[1] != "undefined") {
+				for (let module of bookingData.moduleInfo[0].routes[1]['stops']) {
+
+					unicode += module.flight_number + module.airline + flightClass
+				}
+			}
+
+
+			let flightCode = md5(unicode)
+			let moduleInfo = bookingData.moduleInfo
+			moduleInfo[0]['unique_code'] = flightCode
+			//bookingData.moduleInfo = moduleInfo;
+
+			await getConnection()
+				.createQueryBuilder()
+				.update(Booking)
+				.set({ moduleInfo: moduleInfo })
+				.where("id = :id", { id: bookingData.id })
+				.execute();
+			// console.log(unicode);
+			// console.log(flightCode);
+			// console.log(bookingData.moduleInfo[0].unique_code);
+
+
+
+		}
+		return { message: `today booking price added for pending booking` }
+
+	}
+
 }
