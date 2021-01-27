@@ -216,15 +216,16 @@ export class Instalment {
     }
 
     static adjustFractionAmount(totalAmount, instalmentDateWithAmount) {
+        let lastInstalmentLength = instalmentDateWithAmount.length-1;
         let downPayment = instalmentDateWithAmount[0].instalment_amount;
         let remaingAmount = totalAmount - downPayment;
         let newSecondaryPrice = instalmentDateWithAmount[1].instalment_amount;
-        let instalmentAmount = newSecondaryPrice * (instalmentDateWithAmount.length - 1);
-        let adjustDownPayment = downPayment + remaingAmount - instalmentAmount;
+        let instalmentAmount = newSecondaryPrice * lastInstalmentLength;
+        let adjustLastInstalment = instalmentDateWithAmount[lastInstalmentLength].instalment_amount + remaingAmount - instalmentAmount;
 
-        instalmentDateWithAmount[0] = {
-            instalment_date: instalmentDateWithAmount[0].instalment_date,
-            instalment_amount: Generic.formatPriceDecimal(adjustDownPayment)
+        instalmentDateWithAmount[lastInstalmentLength] = {
+            instalment_date: instalmentDateWithAmount[lastInstalmentLength].instalment_date,
+            instalment_amount: Generic.formatPriceDecimal(adjustLastInstalment)
         }
 
         return instalmentDateWithAmount;
