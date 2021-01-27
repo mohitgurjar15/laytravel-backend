@@ -523,7 +523,7 @@ export class CartService {
             }
             console.log(dto);
 
-            flightRequest = await this.flightService.searchOneWayFlight(dto, Headers, user);
+            flightRequest = await this.flightService.searchOneWayZipFlight(dto, Headers, user);
         }
         else {
 
@@ -537,7 +537,7 @@ export class CartService {
                 "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
                 "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
             }
-            flightRequest = await this.flightService.searchRoundTripFlight(dto, Headers, user);
+            flightRequest = await this.flightService.searchRoundTripZipFlight(dto, Headers, user);
         }
         const value = await this.flightAvailiblity(cart, flightRequest)
         let newCart = {}
