@@ -341,6 +341,19 @@ export class Mystifly implements StrategyAirline {
                 route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0] == 'Yes' ? true : false;
                 route.unique_code = md5(uniqueCode)
+
+                for (let intnery of flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']) {
+
+                    if (intnery['a:passengertypequantity'][0]['a:code'] == 'ADT') {
+                        route.adult_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                    if (intnery['a:passengertypequantity'][0]['a:code'] == 'CHD') {
+                        route.child_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                    if (intnery['a:passengertypequantity'][0]['a:code'] == 'INF') {
+                        route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                }
                 routes.push(route);
             }
             let flightSearchResult = new FlightSearchResult();
@@ -1443,6 +1456,19 @@ export class Mystifly implements StrategyAirline {
                 route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:isrefundable'][0] == 'Yes' ? true : false;
                 route.unique_code = md5(uniqueCode)
+
+                for (let intnery of flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']) {
+
+                    if (intnery['a:passengertypequantity'][0]['a:code'] == 'ADT') {
+                        route.adult_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                    if (intnery['a:passengertypequantity'][0]['a:code'] == 'CHD') {
+                        route.child_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                    if (intnery['a:passengertypequantity'][0]['a:code'] == 'INF') {
+                        route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
+                    }
+                }
                 routes.push(route);
             }
             //return routes;

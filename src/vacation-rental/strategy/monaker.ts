@@ -148,7 +148,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markup = await this.getMarkupDetails(check_in_date,bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -613,7 +613,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markup = await this.getMarkupDetails(check_in_date,bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -851,7 +851,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markup = await this.getMarkupDetails(check_in_date, bookingDate,user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -1082,7 +1082,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(bookingDate, check_in_date, user, module);
+        let markup = await this.getMarkupDetails(check_in_date,bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 

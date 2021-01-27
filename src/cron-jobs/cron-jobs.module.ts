@@ -22,6 +22,6 @@ import { TwilioSMS } from 'src/utility/sms.utility';
     HotelModule
   ],
   controllers: [CronJobsController],
-  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService,CartService,TwilioSMS]
+  providers: [CronJobsService,FlightService,PaymentService,BookingRepository,InstalmentService,VacationRentalService,CartService]
 })
 export class CronJobsModule {}

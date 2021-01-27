@@ -42,12 +42,13 @@ import { Monaker } from "src/vacation-rental/strategy/monaker";
 import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
 import { HotelService } from "src/hotel/hotel.service";
 import { TwilioSMS } from "src/utility/sms.utility";
-import { InjectTwilio, TwilioClient } from "nestjs-twilio";
 const AWS = require('aws-sdk');
 var fs = require('fs');
 const cronUserId = config.get('cronUserId');
 import * as md5 from 'md5';
 
+// const twilio = config.get("twilio");
+// var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
 @Injectable()
 export class CronJobsService {
@@ -67,8 +68,8 @@ export class CronJobsService {
 		private readonly mailerService: MailerService,
 
 		private vacationRentalService: VacationRentalService,
-		@InjectTwilio() private readonly client: TwilioClient,
-		private twilioSMS: TwilioSMS,
+		// @InjectTwilio() private readonly client: TwilioClient,
+		// private twilioSMS: TwilioSMS,
 
 	) { }
 
@@ -265,7 +266,9 @@ export class CronJobsService {
 							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							available_try: availableTry,
 							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMMM Do YYYY'),
-							currency: instalment.currency.symbol
+							currency: instalment.currency.symbol,
+							phoneNo: `+${instalment.user.countryCode}` + instalment.user.phoneNo,
+							bookingId: instalment.booking.laytripBookingId,
 						}
 						if (instalment.attempt >= 3) {
 							await getConnection()
@@ -278,6 +281,13 @@ export class CronJobsService {
 							await instalment.save()
 							if (instalment.user.isEmail) {
 								await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
+							}
+
+							if(instalment.user.isSMS){
+								TwilioSMS.sendSMS({
+									toSMS:param.phoneNo,
+									message:`we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`
+								})
 							}
 
 							PushNotification.sendNotificationTouser(instalment.user.userId,
@@ -320,6 +330,14 @@ export class CronJobsService {
 									console.log("err", err);
 								});
 						}
+
+						if(instalment.user.isSMS){
+							TwilioSMS.sendSMS({
+								toSMS:param.phoneNo,
+								message:`We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+							})
+						}
+
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -382,7 +400,9 @@ export class CronJobsService {
 							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount)),
 							currencySymbol: instalment.currency.symbol,
 							currency: instalment.currency.code,
-							pendingInstallment: await this.pandingInstalment(instalment.bookingId)
+							pendingInstallment: await this.pandingInstalment(instalment.bookingId),
+							phoneNo: `+${instalment.user.countryCode}` + instalment.user.phoneNo,
+							bookingId: instalment.booking.laytripBookingId,
 						}
 
 						if (instalment.user.isEmail) {
@@ -401,6 +421,14 @@ export class CronJobsService {
 									console.log("err", err);
 								});
 						}
+						
+						if(instalment.user.isSMS){
+							TwilioSMS.sendSMS({
+								toSMS:param.phoneNo,
+								message:`We have received your payment of $${instalment.amount} for bookingId ${param.bookingId}`
+							})
+						}
+						
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -873,22 +901,19 @@ export class CronJobsService {
 			}
 
 			if (installment.user.isSMS) {
-				this.twilioSMS.sendSMS(
+				TwilioSMS.sendSMS(
 					{
 						toSMS: param.phoneNo,
 						message: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} for booking number ${param.bookingId} .Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
 					}
-				).then((res) => {
-					console.log('res', res);
-				}).catch((err) => {
-					console.log("error", err);
-				})
+				);
+
 			}
 
 			if (installment.user.isEmail) {
 				this.mailerService
 					.sendMail({
-						to: installment.user.email,
+						to:installment.user.email,
 						from: mailConfig.from,
 						bcc: mailConfig.BCC,
 						subject: "Payment Reminder",
