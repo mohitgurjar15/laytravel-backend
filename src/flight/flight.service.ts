@@ -2632,11 +2632,14 @@ export class FlightService {
 					if (authCardResult.status == true) {
 
 						const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-						const bookingResult = await mystifly.bookFlight(
-							bookFlightDto,
-							travelersDetails,
-							isPassportRequired
-						);
+						// const bookingResult = await mystifly.bookFlight(
+						// 	bookFlightDto,
+						// 	travelersDetails,
+						// 	isPassportRequired
+						// );
+						let bookingResult : any = {
+							booking_status : "success"
+						}
 						let authCardToken = authCardResult.token;
 						if (bookingResult.booking_status == "success") {
 							let captureCardresult = await this.paymentService.captureCard(

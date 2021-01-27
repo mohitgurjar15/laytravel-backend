@@ -299,6 +299,8 @@ export class CartService {
                         "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
                         "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
                     }
+                    console.log(dto);
+
                     flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
                 }
                 else {
@@ -313,6 +315,7 @@ export class CartService {
                         "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
                         "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
                     }
+                    console.log(dto);
                     flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
                 }
                 resultIndex++;
@@ -372,8 +375,14 @@ export class CartService {
         //console.log('match');
 
         var match = 0;
+        console.log(flights);
+
         if (flights.items) {
+            console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
+
             for await (const flight of flights.items) {
+                console.log("flight?.unique_code", flight.unique_code);
+
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
                     //console.log('match found');
                     match = match + 1
@@ -428,6 +437,10 @@ export class CartService {
         if (cart.length > 5) {
             throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
         }
+        let cartIds: number[] = []
+        for await (const i of cart) {
+            cartIds.push(i.cart_id)
+        }
 
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
@@ -445,12 +458,13 @@ export class CartService {
                 "module.name",
                 "travelers.id",
                 "travelers.baggageServiceCode",
+                "travelers.userId",
                 "userData.roleId",
                 "userData.email",
                 "userData.firstName",
                 "userData.middleName"])
 
-            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cart}))`)
+            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
             .orderBy(`cart.id`, 'DESC')
             .limit(5)
         const [result, count] = await query.getManyAndCount();
@@ -491,6 +505,12 @@ export class CartService {
         const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
         let flightRequest;
         if (bookingType == 'oneway') {
+            console.log(cart.moduleInfo[0].adult_count);
+            console.log(cart.moduleInfo[0].child_count);
+            console.log(cart.moduleInfo[0].infant_count);
+
+            console.log(cart.moduleInfo[0]);
+
 
             let dto = {
                 "source_location": cart.moduleInfo[0].departure_code,
@@ -501,7 +521,9 @@ export class CartService {
                 "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
                 "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
             }
-            flightRequest = await this.flightService.searchOneWayZipFlight(dto, Headers, user);
+            console.log(dto);
+
+            flightRequest = await this.flightService.searchOneWayFlight(dto, Headers, user);
         }
         else {
 
@@ -515,7 +537,7 @@ export class CartService {
                 "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
                 "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
             }
-            flightRequest = await this.flightService.searchRoundTripZipFlight(dto, Headers, user);
+            flightRequest = await this.flightService.searchRoundTripFlight(dto, Headers, user);
         }
         const value = await this.flightAvailiblity(cart, flightRequest)
         let newCart = {}
@@ -527,38 +549,48 @@ export class CartService {
         newCart['type'] = cart.module.name
         if (typeof value.message == "undefined") {
             let travelers = []
-            for await (const traveler of cart.travelers) {
-                let travelerUser = {
-                    traveler_id: traveler.userId
+            if (!cart.travelers.length) {
+                newCart['responce'] = {
+                    status: 422,
+                    message: `Please update traveler details.`
                 }
-                travelers.push(travelerUser)
+            } else {
+                for await (const traveler of cart.travelers) {
+                    console.log(traveler);
+                    let travelerUser = {
+                        traveler_id: traveler.userId
+                    }
+                    travelers.push(travelerUser)
+                }
+                const bookingdto: BookFlightDto = {
+                    travelers,
+                    payment_type,
+                    instalment_type,
+                    route_code: value.route_code,
+                    additional_amount,
+                    laycredit_points,
+                    custom_instalment_amount: 0,
+                    custom_instalment_no: 0,
+                    card_token,
+                    booking_through
+                }
+                console.log(bookingdto);
+                newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate)
             }
-            const bookingdto: BookFlightDto = {
-                travelers,
-                payment_type,
-                instalment_type,
-                route_code: value.route_code,
-                additional_amount,
-                laycredit_points,
-                custom_instalment_amount: 0,
-                custom_instalment_no: 0,
-                card_token,
-                booking_through
-            }
-            newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate)
+
         } else {
             newCart['responce'] = {
-                message: `Given cart item no longer available`
+                message: value.message
             }
         }
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(Cart)
-            .where(
-                `"id" = '${cart.id}'`
-            )
-            .execute()
+        // await getConnection()
+        //     .createQueryBuilder()
+        //     .delete()
+        //     .from(Cart)
+        //     .where(
+        //         `"id" = '${cart.id}'`
+        //     )
+        //     .execute()
         return newCart
     }
 }

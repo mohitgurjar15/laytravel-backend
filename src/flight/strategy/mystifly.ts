@@ -56,10 +56,10 @@ export class Mystifly implements StrategyAirline {
         const config = await Generic.getCredential('flight');
         let mystiflyConfig = JSON.parse(config.testCredential)
         mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
-        // if (config.mode) {
-        //     mystiflyConfig = JSON.parse(config.liveCredential);
-        //     mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
-        // }
+        if (config.mode) {
+            mystiflyConfig = JSON.parse(config.liveCredential);
+            mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
+        }
         //mystiflyConfig = { "account_number": "MCN001506","password": "MWR2018_xml","target": "Test", "user_name": "MWR_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         console.log(mystiflyConfig);
         
@@ -145,6 +145,7 @@ export class Mystifly implements StrategyAirline {
     async oneWaySearch(searchFlightDto: OneWaySearchFlightDto, user)/* :Promise<FlightSearchResult> */ {
 
         const mystiflyConfig = await this.getMystiflyCredential();
+        console.log(mystiflyConfig);
         
         const sessionToken = await this.startSession();
         const {
@@ -619,6 +620,18 @@ export class Mystifly implements StrategyAirline {
                 route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
                 route.is_refundable = flightRoutes[i]['airitinerarypricinginfo'][0]['isrefundable'][0] == 'Yes' ? true : false;
                 route.unique_code = md5(uniqueCode)
+                for (let intnery of flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown']) {
+
+                    if (intnery['passengertypequantity'][0]['code'] == 'ADT') {
+                        route.adult_count = intnery['passengertypequantity'][0]['quantity'][0];
+                    }
+                    if (intnery['passengertypequantity'][0]['code'] == 'CHD') {
+                        route.child_count = intnery['passengertypequantity'][0]['quantity'][0];
+                    }
+                    if (intnery['passengertypequantity'][0]['code'] == 'INF') {
+                        route.infant_count = intnery['passengertypequantity'][0]['quantity'][0];
+                    }
+                }
                 routes.push(route);
             }
             let flightSearchResult = new FlightSearchResult();
@@ -955,6 +968,18 @@ export class Mystifly implements StrategyAirline {
                 
                 route.is_refundable = flightRoutes[i]['airitinerarypricinginfo'][0]['isrefundable'][0] == 'Yes' ? true : false;
                 route.unique_code = md5(uniqueCode)
+                for (let intnery of flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown']) {
+
+                    if (intnery['passengertypequantity'][0]['code'] == 'ADT') {
+                        route.adult_count = intnery['passengertypequantity'][0]['quantity'][0];
+                    }
+                    if (intnery['passengertypequantity'][0]['code'] == 'CHD') {
+                        route.child_count = intnery['passengertypequantity'][0]['quantity'][0];
+                    }
+                    if (intnery['passengertypequantity'][0]['code'] == 'INF') {
+                        route.infant_count = intnery['passengertypequantity'][0]['quantity'][0];
+                    }
+                }
                 routes.push(route);
             }
             //return routes;
@@ -1579,6 +1604,8 @@ export class Mystifly implements StrategyAirline {
             throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
         }
         const mystiflyConfig = await this.getMystiflyCredential();
+        console.log(mystiflyConfig);
+        
         const sessionToken = await this.startSession();
         // 
         const requestBody =
