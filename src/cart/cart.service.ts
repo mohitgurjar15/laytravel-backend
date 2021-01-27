@@ -22,6 +22,7 @@ import { Module } from 'src/entity/module.entity';
 import { Generic } from 'src/utility/generic.utility';
 import { errorMessage } from 'src/config/common.config';
 import { Cache } from 'cache-manager';
+import { CartBookDto } from './dto/book-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -328,12 +329,12 @@ export class CartService {
                 newCart['oldModuleInfo'] = cart.moduleInfo
                 const value = await this.flightAvailiblity(cart, flightResponse[index])
                 if (typeof value.message == "undefined") {
-                
+
                     newCart['moduleInfo'] = value
                     newCart['is_available'] = true
                     cart.moduleInfo = [value]
                     await cart.save()
-                }else {
+                } else {
                     newCart['is_available'] = false
                     await getConnection()
                         .createQueryBuilder()
@@ -405,9 +406,6 @@ export class CartService {
         if (!cartItem) {
             throw new NotFoundException(`Given item not found`)
         }
-        // cartItem.isDeleted = true;
-
-        // cartItem.save();
 
         await getConnection()
             .createQueryBuilder()
@@ -421,5 +419,146 @@ export class CartService {
         return {
             message: `Item removed successfully`
         }
+    }
+
+
+    async bookCart(bookCart: CartBookDto, user: User, Headers) {
+        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart } = bookCart
+
+        if (cart.length > 5) {
+            throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
+        }
+
+        let query = getConnection()
+            .createQueryBuilder(Cart, "cart")
+            .leftJoinAndSelect("cart.module", "module")
+            .leftJoinAndSelect("cart.travelers", "travelers")
+            .leftJoinAndSelect("travelers.userData", "userData")
+            .select(["cart.id",
+                "cart.userId",
+                "cart.moduleId",
+                "cart.moduleInfo",
+                "cart.expiryDate",
+                "cart.isDeleted",
+                "cart.createdDate",
+                "module.id",
+                "module.name",
+                "travelers.id",
+                "travelers.baggageServiceCode",
+                "userData.roleId",
+                "userData.email",
+                "userData.firstName",
+                "userData.middleName"])
+
+            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cart}))`)
+            .orderBy(`cart.id`, 'DESC')
+            .limit(5)
+        const [result, count] = await query.getManyAndCount();
+
+        if (!result.length) {
+            throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
+        }
+        let smallestDate = ''
+        for await (const item of result) {
+            if (item.moduleId == ModulesName.FLIGHT) {
+                const dipatureDate = await this.flightService.changeDateFormat(item.moduleInfo[0].departure_date)
+                if (smallestDate == '') {
+                    smallestDate = dipatureDate;
+                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                    smallestDate = dipatureDate;
+                }
+            }
+        }
+        let responce = []
+        for await (const item of result) {
+            switch (item.moduleId) {
+                case ModulesName.FLIGHT:
+                    let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate)
+                    responce.push(flightResponce)
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        return {
+            data: responce
+        }
+    }
+
+    async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string) {
+        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through } = bookCart
+        const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
+        let flightRequest;
+        if (bookingType == 'oneway') {
+
+            let dto = {
+                "source_location": cart.moduleInfo[0].departure_code,
+                "destination_location": cart.moduleInfo[0].arrival_code,
+                "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
+                "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+                "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
+                "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
+                "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
+            }
+            flightRequest = await this.flightService.searchOneWayZipFlight(dto, Headers, user);
+        }
+        else {
+
+            let dto = {
+                "source_location": cart.moduleInfo[0].departure_code,
+                "destination_location": cart.moduleInfo[0].arrival_code,
+                "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
+                "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+                "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
+                "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
+                "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
+                "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
+            }
+            flightRequest = await this.flightService.searchRoundTripZipFlight(dto, Headers, user);
+        }
+        const value = await this.flightAvailiblity(cart, flightRequest)
+        let newCart = {}
+        newCart['id'] = cart.id
+        newCart['userId'] = cart.userId
+        newCart['moduleId'] = cart.moduleId
+        newCart['isDeleted'] = cart.isDeleted
+        newCart['createdDate'] = cart.createdDate
+        newCart['type'] = cart.module.name
+        if (typeof value.message == "undefined") {
+            let travelers = []
+            for await (const traveler of cart.travelers) {
+                let travelerUser = {
+                    traveler_id: traveler.userId
+                }
+                travelers.push(travelerUser)
+            }
+            const bookingdto: BookFlightDto = {
+                travelers,
+                payment_type,
+                instalment_type,
+                route_code: value.route_code,
+                additional_amount,
+                laycredit_points,
+                custom_instalment_amount: 0,
+                custom_instalment_no: 0,
+                card_token,
+                booking_through
+            }
+            newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate)
+        } else {
+            newCart['responce'] = {
+                message: `Given cart item no longer available`
+            }
+        }
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(Cart)
+            .where(
+                `"id" = '${cart.id}'`
+            )
+            .execute()
+        return newCart
     }
 }

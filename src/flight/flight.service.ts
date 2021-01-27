@@ -315,10 +315,6 @@ export class FlightService {
 		);
 		return result;
 	}
-
-
-
-
 	async preductBookingDate(serchFlightDto: PreductBookingDateDto, headers, user: User) {
 		await this.validateHeaders(headers);
 
@@ -702,8 +698,8 @@ export class FlightService {
 				result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			} else {
 
-				if(moment(new Date(date)).diff(moment(new Date()),"days")>=30){
-					
+				if (moment(new Date(date)).diff(moment(new Date()), "days") >= 30) {
+
 					let dto = {
 						"source_location": source_location,
 						"destination_location": destination_location,
@@ -715,21 +711,21 @@ export class FlightService {
 					}
 					result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 				}
-				
+
 			}
 
 			startDate.setDate(startDate.getDate() + 1);
 			resultIndex++;
 		}
-		
-		
+
+
 		const response = await Promise.all(result);
 		//console.log("response",response)
 
 		let returnResponce = [];
 		for await (const data of response) {
-			
-			if (typeof data?.items!='undefined' && data?.items.length) {
+
+			if (typeof data?.items != 'undefined' && data?.items.length) {
 				var unique_code = '';
 				var lowestprice = 0;
 				var netRate = 0;
@@ -770,7 +766,7 @@ export class FlightService {
 					price: lowestprice,
 					unique_code: unique_code,
 					start_price: startPrice,
-					secondary_start_price: secondaryStartPrice >=5?secondaryStartPrice:5
+					secondary_start_price: secondaryStartPrice >= 5 ? secondaryStartPrice : 5
 				}
 
 				returnResponce.push(output)
@@ -989,7 +985,7 @@ export class FlightService {
 		const result = new Promise((resolve) =>
 			resolve(mystifly.roundTripSearch(searchFlightDto, user))
 		);
-		Activity.addSearchLog(ModulesName.FLIGHT, searchFlightDto,user.user_id)
+		Activity.addSearchLog(ModulesName.FLIGHT, searchFlightDto, user.user_id)
 		return result;
 	}
 
@@ -2369,6 +2365,361 @@ export class FlightService {
 			});
 	}
 
+	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate) {
+		try {
 
+
+			let headerDetails = await this.validateHeaders(headers);
+
+			let {
+				travelers,
+				payment_type,
+				instalment_type,
+				route_code,
+				additional_amount,
+				custom_instalment_amount,
+				custom_instalment_no,
+				laycredit_points,
+				card_token,
+				booking_through
+			} = bookFlightDto;
+
+			const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+			const airRevalidateResult = await mystifly.airRevalidate(
+				{ route_code },
+				user
+			);
+			let isPassportRequired = false;
+			let bookingRequestInfo: any = {};
+			if (airRevalidateResult) {
+				bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
+				bookingRequestInfo.child_count =
+					typeof airRevalidateResult[0].child_count != "undefined"
+						? airRevalidateResult[0].child_count
+						: 0;
+				bookingRequestInfo.infant_count =
+					typeof airRevalidateResult[0].infant_count != "undefined"
+						? airRevalidateResult[0].infant_count
+						: 0;
+				bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
+				if (payment_type == PaymentType.INSTALMENT) {
+					bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
+				}
+				else {
+
+					if (typeof airRevalidateResult[0].secondary_selling_price != 'undefined' && airRevalidateResult[0].secondary_selling_price > 0) {
+
+						bookingRequestInfo.selling_price = airRevalidateResult[0].secondary_selling_price;
+					}
+					else {
+						bookingRequestInfo.selling_price = airRevalidateResult[0].selling_price;
+					}
+				}
+
+				bookingRequestInfo.departure_date = DateTime.convertDateFormat(
+					airRevalidateResult[0].departure_date,
+					"DD/MM/YYYY",
+					"YYYY-MM-DD"
+				);
+				bookingRequestInfo.arrival_date = DateTime.convertDateFormat(
+					airRevalidateResult[0].arrival_date,
+					"DD/MM/YYYY",
+					"YYYY-MM-DD"
+				);
+
+				bookingRequestInfo.source_location =
+					airRevalidateResult[0].departure_code;
+				bookingRequestInfo.destination_location =
+					airRevalidateResult[0].arrival_code;
+				bookingRequestInfo.flight_class = "Economy";
+				bookingRequestInfo.instalment_type = instalment_type;
+				bookingRequestInfo.additional_amount = additional_amount;
+				bookingRequestInfo.booking_through = booking_through;
+				isPassportRequired = airRevalidateResult[0].is_passport_required;
+				if (airRevalidateResult[0].routes.length == 1) {
+					bookingRequestInfo.journey_type = FlightJourney.ONEWAY;
+				} else {
+					bookingRequestInfo.journey_type = FlightJourney.ROUNDTRIP;
+				}
+				bookingRequestInfo.laycredit_points = laycredit_points;
+				bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
+				bookingRequestInfo.card_token = card_token;
+			}
+			let {
+				selling_price,
+				departure_date,
+				adult_count,
+				child_count,
+				infant_count,
+			} = bookingRequestInfo;
+			let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+			let travelersDetails = await this.getTravelersInfo(
+				travelers,
+				isPassportRequired
+			);
+
+			let currencyId = headerDetails.currency.id;
+			const userId = user.userId;
+			if (adult_count != travelersDetails.adults.length) {
+				return {
+					status: 422,
+					message: `Adults count is not match with search request!`
+				}
+			}
+
+
+
+			if (child_count != travelersDetails.children.length) {
+				return {
+					status: 422,
+					message: `Children count is not match with search request`
+				}
+			}
+
+			if (infant_count != travelersDetails.infants.length) {
+				return {
+					status: 422,
+					message: `Infants count is not match with search request`
+				}
+			}
+			if (payment_type == PaymentType.INSTALMENT) {
+				let instalmentDetails;
+
+				let totalAdditionalAmount = additional_amount || 0;
+				if (laycredit_points > 0) {
+					totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
+				}
+				//save entry for future booking
+				if (instalment_type == InstalmentType.WEEKLY) {
+					instalmentDetails = Instalment.weeklyInstalment(
+						selling_price,
+						smallestDipatureDate,
+						bookingDate,
+						totalAdditionalAmount,
+						custom_instalment_amount,
+						custom_instalment_no
+					);
+				}
+				if (instalment_type == InstalmentType.BIWEEKLY) {
+					instalmentDetails = Instalment.biWeeklyInstalment(
+						selling_price,
+						smallestDipatureDate,
+						bookingDate,
+						totalAdditionalAmount,
+						custom_instalment_amount,
+						custom_instalment_no
+					);
+				}
+				if (instalment_type == InstalmentType.MONTHLY) {
+					instalmentDetails = Instalment.monthlyInstalment(
+						selling_price,
+						smallestDipatureDate,
+						bookingDate,
+						totalAdditionalAmount,
+						custom_instalment_amount,
+						custom_instalment_no
+					);
+				}
+
+				if (instalmentDetails.instalment_available) {
+					let firstInstalemntAmount =
+						instalmentDetails.instalment_date[0].instalment_amount;
+					if (laycredit_points > 0) {
+						firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
+					}
+
+					let authCardResult = await this.paymentService.authorizeCard(
+						card_token,
+						Math.ceil(firstInstalemntAmount * 100),
+						"USD"
+					);
+					if (authCardResult.status == true) {
+
+						/* Call mystifly booking API if checkin date is less 3 months */
+						let dayDiff = moment(departure_date).diff(bookingDate, 'days');
+						let bookingResult;
+						if (dayDiff <= 90) {
+							const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+							bookingResult = await mystifly.bookFlight(
+								bookFlightDto,
+								travelersDetails,
+								isPassportRequired
+							);
+						}
+
+						let authCardToken = authCardResult.token;
+
+						let captureCardresult;
+						if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
+
+							captureCardresult = await this.paymentService.captureCard(
+								authCardToken
+							);
+						}
+						else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
+							await this.paymentService.voidCard(authCardToken);
+
+							return {
+								status: 424,
+								message: bookingResult.error_message,
+							}
+						}
+
+						if (captureCardresult.status == true) {
+
+							let laytripBookingResult = await this.saveBooking(
+								bookingRequestInfo,
+								currencyId,
+								bookingDate,
+								BookingType.INSTALMENT,
+								userId,
+								airRevalidateResult,
+								instalmentDetails,
+								captureCardresult,
+								bookingResult || null,
+								travelers
+							);
+							this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+							return {
+								laytrip_booking_id: laytripBookingResult.id,
+								booking_status: "pending",
+								supplier_booking_id: "",
+								success_message: `Booking is in pending state!`,
+								error_message: "",
+								booking_details: await this.bookingRepository.getBookingDetails(
+									laytripBookingResult.laytripBookingId
+								),
+							};
+						} else {
+							return {
+								status: 422,
+								message: `Card capture is failed&&&card_token`
+							}
+						}
+					} else {
+						return {
+							status: 422,
+							message: `Card authorization is failed&&&card_token`
+						}
+					}
+				} else {
+					return {
+						status: 422,
+						message: `Instalment option is not available for your search criteria`
+					}
+				}
+			}
+			else if (payment_type == PaymentType.NOINSTALMENT) {
+
+				let sellingPrice = selling_price;
+				if (laycredit_points > 0) {
+					sellingPrice = selling_price - laycredit_points
+				}
+
+				if (sellingPrice > 0) {
+
+					let authCardResult = await this.paymentService.authorizeCard(
+						card_token,
+						Math.ceil(sellingPrice * 100),
+						"USD"
+					);
+					if (authCardResult.status == true) {
+
+						const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+						const bookingResult = await mystifly.bookFlight(
+							bookFlightDto,
+							travelersDetails,
+							isPassportRequired
+						);
+						let authCardToken = authCardResult.token;
+						if (bookingResult.booking_status == "success") {
+							let captureCardresult = await this.paymentService.captureCard(
+								authCardToken
+							);
+							let laytripBookingResult = await this.saveBooking(
+								bookingRequestInfo,
+								currencyId,
+								bookingDate,
+								BookingType.NOINSTALMENT,
+								userId,
+								airRevalidateResult,
+								null,
+								captureCardresult,
+								bookingResult,
+								travelers
+							);
+							//send email here
+							this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+							bookingResult.laytrip_booking_id = laytripBookingResult.id;
+							bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+								laytripBookingResult.laytripBookingId
+							);
+
+							if (bookingRequestInfo.fare_type == 'GDS') {
+								this.ticketFlight(bookingResult.supplier_booking_id)
+							}
+							return bookingResult;
+						} else {
+							await this.paymentService.voidCard(authCardToken);
+
+							return {
+								status: 424,
+								message: bookingResult.error_message,
+							}
+						}
+					} else {
+						return {
+							status: 422,
+							message: `Card authorization is failed&&&card_token`
+						}
+
+					}
+				}
+				// else {
+				// 	//for full laycredit rdeem
+				// 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+				// 	const bookingResult = await mystifly.bookFlight(
+				// 		bookFlightDto,
+				// 		travelersDetails,
+				// 		isPassportRequired
+				// 	);
+				// 	if (bookingResult.booking_status == "success") {
+
+				// 		let laytripBookingResult = await this.saveBooking(
+				// 			bookingRequestInfo,
+				// 			currencyId,
+				// 			bookingDate,
+				// 			BookingType.NOINSTALMENT,
+				// 			userId,
+				// 			airRevalidateResult,
+				// 			null,
+				// 			null,
+				// 			bookingResult,
+				// 			travelers
+				// 		);
+				// 		//send email here
+				// 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+				// 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
+
+				// 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+				// 			laytripBookingResult.laytripBookingId
+				// 		);
+				// 		return bookingResult;
+				// 	} else {
+
+				// 			return {
+				// 				status: 424,
+				// 				message: bookingResult.error_message,
+				// 			}
+				// 	}
+				// }
+			}
+		} catch (error) {
+			return {
+				message: errorMessage,
+				error
+			}
+		}
+	}
 
 }

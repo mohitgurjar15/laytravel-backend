@@ -56,12 +56,13 @@ export class Mystifly implements StrategyAirline {
         const config = await Generic.getCredential('flight');
         let mystiflyConfig = JSON.parse(config.testCredential)
         mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
-        if (config.mode) {
-            mystiflyConfig = JSON.parse(config.liveCredential);
-            mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
-        }
+        // if (config.mode) {
+        //     mystiflyConfig = JSON.parse(config.liveCredential);
+        //     mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
+        // }
         //mystiflyConfig = { "account_number": "MCN001506","password": "MWR2018_xml","target": "Test", "user_name": "MWR_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
-
+        console.log(mystiflyConfig);
+        
         return mystiflyConfig;
     }
     async createSession() {

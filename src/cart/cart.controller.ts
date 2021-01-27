@@ -8,6 +8,7 @@ import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
+import { CartBookDto } from './dto/book-cart.dto';
 import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
@@ -92,5 +93,29 @@ export class CartController {
         @Param("id") id: number
     ) {
         return await this.cartService.deleteFromCart(id, user);
+    }
+
+    @Post('book')
+    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiOperation({ summary: "book item from cart" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    @ApiHeader({
+        name: 'currency',
+        description: 'Enter currency code(ex. USD)',
+        example: 'USD'
+    })
+    @ApiHeader({
+        name: 'language',
+        description: 'Enter language code(ex. en)',
+    })
+    async bookCart(
+        @Body() bookCartDto: CartBookDto,
+        @GetUser() user: User,
+        @Req() req,
+    ) {
+        return await this.cartService.bookCart(bookCartDto, user, req.headers);
     }
 }
