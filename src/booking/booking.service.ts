@@ -673,10 +673,10 @@ export class BookingService {
 				predictiveBookingData['remain_seat'] = data.remainSeat
 				predictiveBookingData['selling_price'] = bookingData.totalAmount;
 				predictiveBookingData['paid_amount'] = paidAmount.amount;
-				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
-				predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(bookingData.totalAmount)
+				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt == 1 && paidAmount.paymentStatus == PaymentStatus.CONFIRM ? true : false
+				predictiveBookingData['paid_amount_in_percentage'] = (parseFloat(paidAmount.amount) * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
-				console.log(bookingData.laytripBookingId);
+				// console.log(bookingData.laytripBookingId);
 
 				predictiveBookingData['departure_date'] = bookingData.checkInDate || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
@@ -760,7 +760,7 @@ export class BookingService {
 					predictiveBookingData['selling_price'] = booking.totalAmount
 					predictiveBookingData['paid_amount'] = paidAmount.amount;
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
-					predictiveBookingData['paid_amount_in_percentage'] = (paidAmount.amount * 100) / parseFloat(booking.totalAmount)
+					predictiveBookingData['paid_amount_in_percentage'] = (parseFloat(paidAmount.amount) * 100) / parseFloat(booking.totalAmount)
 					predictiveBookingData['booking_status'] = booking.bookingStatus;
 					predictiveBookingData['departure_date'] = booking.checkInDate || ''
 					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
@@ -821,20 +821,21 @@ export class BookingService {
 				"instalment.paymentStatus",
 				"instalment.attempt"
 			])
-			.where(`booking_id=:bookingId AND payment_status=:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
-			.orderBy(`instalment_date`, "ASC")
-			.getMany();
-		let amount = 0
-		let attempt = 0;
-		for await (const data of query) {
-			amount = amount + parseFloat(data.amount)
-			if (data.paymentStatus == PaymentStatus.CONFIRM) {
-				attempt = data.attempt
-			}
+			.where(`booking_id=:bookingId AND attempt != 0 `, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
+			.orderBy(`id`, "DESC")
+			.getOne();
+		// let amount = 0
+		// let attempt = 0;
+		// //for await (const data of query) {
+		// 	amount = amount + parseFloat(data.amount)
+		// 	attempt = 
+		// 	// if (data.paymentStatus == PaymentStatus.CONFIRM) {
+		// 	// 	attempt = data.attempt
+		// 	// }
 
-		}
+		// // }
 
-		return { amount, attempt }
+		return query
 	}
 
 

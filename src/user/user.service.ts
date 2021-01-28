@@ -1216,4 +1216,20 @@ export class UserService {
 			.execute()
 
 	}
+
+
+	async getUserFirstName(){
+		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
+		return await this.userRepository.getFirstname(roles)		
+	}
+
+	async getUserLastName(){
+		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
+		return await this.userRepository.getLastname(roles)		
+	}
+
+	async getUserEmail(){
+		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
+		return await this.userRepository.getemails(roles)		
+	}
 }
