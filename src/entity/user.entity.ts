@@ -68,6 +68,9 @@ export class User extends BaseEntity {
   @Column("character varying", { name: "phone_no", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   phoneNo: string;
 
+  @Column("character varying", { name: "home_airport", nullable: true})
+  homeAirport: string;
+
   @Column("character varying", {
     name: "profile_pic",
     nullable: true,

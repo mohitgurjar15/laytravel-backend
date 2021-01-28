@@ -179,6 +179,12 @@ export class UpdateProfileDto {
 
     @ApiPropertyOptional({
 		type: "string",
+		description: "home airport",
+	})
+    home_airport: string;
+
+    @ApiPropertyOptional({
+		type: "string",
 		description: "Passport expiry date",
 	})
 	// @ValidateIf((o) => o.passport_expiry)
