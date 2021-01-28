@@ -4,6 +4,7 @@ import { BookingFeedback } from 'src/entity/booking-feedback.entity';
 import { User } from 'src/entity/user.entity';
 import {BookingFeedbackRepositery} from  './booking-feedback.repository';
 import {AddBookingFeedback} from './dto/add-booking-feedback.dto'
+import { AddLaytripBookingFeedback } from './dto/add-laytrip-feedback.dto';
 import { listFeedbackForAdminDto } from './dto/list-feedback-admin.dto';
 import { listFeedbackForUserDto } from './dto/list-feedback-user.dto';
 
@@ -15,21 +16,21 @@ export class BookingFeedbackService {
     ) {}
     
 
-    async addNewFeedback(addBookingFeedback:AddBookingFeedback,user:User)
+    async addNewFeedback(addBookingFeedback:AddBookingFeedback,user)
     {
-        const {rating,message} = addBookingFeedback;
+        const {booking_id, rating,message} = addBookingFeedback;
 
-        // const feedbackExiest = this.bookingFeedbackRepositery.findOne(
-        //     {bookingId,userId:user.userId}
-        // )
+        const feedbackExiest = this.bookingFeedbackRepositery.findOne(
+            {bookingId:booking_id,userId:user.userId}
+        )
 
         const feedback = new BookingFeedback();
 
-        //feedback.bookingId = booking_id;
+        feedback.bookingId = booking_id;
         feedback.userId = user.userId;
         feedback.rating = rating;
-        feedback.message = message;
-        feedback.createdDate = new Date();
+		feedback.message = message;
+		feedback.createdDate = new Date();
 		feedback.isDeleted = false;
 		
 
@@ -86,4 +87,10 @@ export class BookingFeedbackService {
 			message : `feedback deleted successfully`
 		}
 	}    
+
+	// async addLaytripBookingFeedback(addLaytripBookingFeedback: AddLaytripBookingFeedback,user:User){
+	// 	const { rating,message } = addLaytripBookingFeedback;
+	
+		
+	// }
 }

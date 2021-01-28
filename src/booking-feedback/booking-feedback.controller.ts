@@ -7,6 +7,7 @@ import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { BookingFeedbackService } from './booking-feedback.service';
 import { AddBookingFeedback } from './dto/add-booking-feedback.dto';
+import { AddLaytripBookingFeedback } from './dto/add-laytrip-feedback.dto';
 import { listFeedbackForAdminDto } from './dto/list-feedback-admin.dto';
 import { listFeedbackForUserDto } from './dto/list-feedback-user.dto';
 
@@ -85,4 +86,18 @@ export class BookingFeedbackController {
 	async deleteFeedback(@Param("id") id: string) {
 		return await this.bookingFeedbackService.deleteFeedback(id);
 	}
+
+	// @Post()
+	// @ApiOperation({ summary: "Add laytrip new feedback" })
+	// @ApiResponse({ status: 200, description: "Api success" })
+	// @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	// @ApiResponse({ status: 404, description: "not found!" })
+	// @ApiResponse({ status: 500, description: "Internal server error!" })
+	// @HttpCode(200)
+	// async addLaytripFeedback(
+    //     @Body() addLaytripBookingFeedback: AddLaytripBookingFeedback,
+    //     @GetUser() user:User
+	// ) {
+	// 	return await this.bookingFeedbackService.addLaytripBookingFeedback(addLaytripBookingFeedback,user)
+    // }
 }

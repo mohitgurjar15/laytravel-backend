@@ -7,19 +7,13 @@ import { User } from "./user.entity";
 // @Index("property_id_idx", ["propertyId"], {})
 
 
-@Entity("booking_feedback")
+@Entity("laytrip_booking_feedback")
 export class BookingFeedback extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column("character varying", { name: "booking_id"})
-  bookingId: string;
-
   @Column("character varying", { name: "user_id" })
   userId: string;
-
-  // @Column("character varying", { name: "property_id" })
-  // propertyId: string;
 
   @Column("integer", { name: "rating" })
   rating: number;
@@ -36,14 +30,6 @@ export class BookingFeedback extends BaseEntity {
   @Column("boolean", { name: "is_deleted" , default : true})
   isDeleted: boolean;
 
-
-  @ManyToOne(
-    () => Booking,
-    booking => booking.id
-  )
-  @JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
-  booking: Booking;
-
   @ManyToOne(
     () => User,
     user => user.userId
@@ -51,6 +37,4 @@ export class BookingFeedback extends BaseEntity {
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
 
-//   @Column("boolean", { name: "status" , default : true})
-//   status: boolean;
 }
