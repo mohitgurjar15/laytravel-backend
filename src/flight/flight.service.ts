@@ -544,8 +544,8 @@ export class FlightService {
 			predate = predate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			if(moment(new Date(predate)).diff(moment(new Date()),"days")>=30){
-				
+			if (moment(new Date(predate)).diff(moment(new Date()), "days") >= 30) {
+
 				let dto = {
 					"source_location": source_location,
 					"destination_location": destination_location,
@@ -567,7 +567,7 @@ export class FlightService {
 			nextdate = nextdate
 				.replace(/T/, " ") // replace T with a space
 				.replace(/\..+/, "");
-			if(moment(new Date(nextdate)).diff(moment(new Date()),"days")>=30){
+			if (moment(new Date(nextdate)).diff(moment(new Date()), "days") >= 30) {
 
 				let dto = {
 					"source_location": source_location,
@@ -581,7 +581,7 @@ export class FlightService {
 				result[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 				nextWeekDates.setDate(nextWeekDates.getDate() + 1);
 				resultIndex++;
-			}	
+			}
 		}
 
 
@@ -874,33 +874,36 @@ export class FlightService {
 		const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
 
 		for (let index = 0; index <= count; index++) {
-			var beforeDateString = depature.toISOString().split('T')[0];
-			beforeDateString = beforeDateString
-				.replace(/T/, " ") // replace T with a space
-				.replace(/\..+/, "");
 
-			const arrival = new Date(depature)
-			arrival.setDate(depature.getDate() + tourDiffrence);
-			var afterDateString = arrival.toISOString().split('T')[0];
-			afterDateString = afterDateString
-				.replace(/T/, " ") // replace T with a space
-				.replace(/\..+/, "");
-			console.log('seatch dates', beforeDateString, afterDateString);
+			if (moment(new Date(depature)).diff(moment(new Date()), "days") >= 30) {
+				var beforeDateString = depature.toISOString().split('T')[0];
+				beforeDateString = beforeDateString
+					.replace(/T/, " ") // replace T with a space
+					.replace(/\..+/, "");
 
-			let dto = {
-				"source_location": source_location,
-				"destination_location": destination_location,
-				"departure_date": beforeDateString,
-				"arrival_date": afterDateString,
-				"flight_class": flight_class,
-				"adult_count": adult_count,
-				"child_count": child_count,
-				"infant_count": infant_count
+				const arrival = new Date(depature)
+				arrival.setDate(depature.getDate() + tourDiffrence);
+				var afterDateString = arrival.toISOString().split('T')[0];
+				afterDateString = afterDateString
+					.replace(/T/, " ") // replace T with a space
+					.replace(/\..+/, "");
+				console.log('seatch dates', beforeDateString, afterDateString);
+
+				let dto = {
+					"source_location": source_location,
+					"destination_location": destination_location,
+					"departure_date": beforeDateString,
+					"arrival_date": afterDateString,
+					"flight_class": flight_class,
+					"adult_count": adult_count,
+					"child_count": child_count,
+					"infant_count": infant_count
+				}
+
+				result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+				resultIndex++;
 			}
-
-			result[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
 			depature.setDate(depature.getDate() + 1);
-			resultIndex++;
 		}
 
 		const response = await Promise.all(result);
@@ -2637,8 +2640,8 @@ export class FlightService {
 						// 	travelersDetails,
 						// 	isPassportRequired
 						// );
-						let bookingResult : any = {
-							booking_status : "success"
+						let bookingResult: any = {
+							booking_status: "success"
 						}
 						let authCardToken = authCardResult.token;
 						if (bookingResult.booking_status == "success") {

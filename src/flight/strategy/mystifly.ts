@@ -62,13 +62,13 @@ export class Mystifly implements StrategyAirline {
         }
         //mystiflyConfig = { "account_number": "MCN001506","password": "MWR2018_xml","target": "Test", "user_name": "MWR_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         console.log(mystiflyConfig);
-        
+
         return mystiflyConfig;
     }
     async createSession() {
 
         const mystiflyConfig = await this.getMystiflyCredential();
-        
+
 
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">
@@ -146,7 +146,7 @@ export class Mystifly implements StrategyAirline {
 
         const mystiflyConfig = await this.getMystiflyCredential();
         console.log(mystiflyConfig);
-        
+
         const sessionToken = await this.startSession();
         const {
             source_location,
@@ -838,12 +838,12 @@ export class Mystifly implements StrategyAirline {
                     stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo'] !== 'undefined' ? otherSegments['cabinbaggageinfo'][0]['string'][j] : '');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
-                    
-                    
+
+
 
 
                     stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
-                    
+
 
                     if (stops.length > 0) {
 
@@ -897,11 +897,11 @@ export class Mystifly implements StrategyAirline {
                     stop.cabin_baggage = this.getBaggageDetails(typeof otherSegments['cabinbaggageinfo'] !== 'undefined' ? otherSegments['cabinbaggageinfo'][0]['string'][j] : '');
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage = this.getBaggageDetails(otherSegments['baggageinfo'][0]['string'][j]);
-                    
-                    
+
+
                     stop.meal = this.getMealCode(flightSegment['mealcode'][0]);
-                    
-                    
+
+
                     if (stops.length > 0) {
 
                         stop.is_layover = true;
@@ -932,8 +932,8 @@ export class Mystifly implements StrategyAirline {
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_fare_break_down = this.getFareBreakDownForGzip(flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
-                
-                
+
+
                 let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
@@ -943,7 +943,7 @@ export class Mystifly implements StrategyAirline {
                     route.start_price = 0;
                     route.secondary_start_price = 0;
                 }
-                
+
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
                 }
@@ -964,8 +964,8 @@ export class Mystifly implements StrategyAirline {
                 route.airline = stops[0].airline;
                 route.airline_name = airlines[stops[0].airline];
                 route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
-                
-                
+
+
                 route.is_refundable = flightRoutes[i]['airitinerarypricinginfo'][0]['isrefundable'][0] == 'Yes' ? true : false;
                 route.unique_code = md5(uniqueCode)
                 for (let intnery of flightRoutes[i]['airitinerarypricinginfo'][0]['ptc_farebreakdowns'][0]['ptc_farebreakdown']) {
@@ -1002,22 +1002,22 @@ export class Mystifly implements StrategyAirline {
             //return flightSearchResult;
 
             //Get Stops count and minprice
-            
-                
+
+
             flightSearchResult.stop_data = this.getStopCounts(routes, 'stop_count');
 
-            
-                
+
+
             //Get Stops count and minprice
             flightSearchResult.inbound_stop_data = this.getStopCounts(routes, 'inbound_stop_count');
 
-            
-                
+
+
             //Get airline and min price
             flightSearchResult.airline_list = this.getAirlineCounts(routes)
 
-            
-                
+
+
             //Get outbound Departure time slot
             flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(routes, 'departure_time', 0)
             //Get outbound Arrival time slot
@@ -1605,7 +1605,7 @@ export class Mystifly implements StrategyAirline {
         }
         const mystiflyConfig = await this.getMystiflyCredential();
         console.log(mystiflyConfig);
-        
+
         const sessionToken = await this.startSession();
         // 
         const requestBody =
@@ -1810,7 +1810,7 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_fare_break_down = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
                 route.unique_code = md5(uniqueCode)
-                console.log("uniqueCode",uniqueCode)
+                console.log("uniqueCode", uniqueCode)
                 for (let intnery of flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown']) {
 
                     if (intnery['a:passengertypequantity'][0]['a:code'] == 'ADT') {
@@ -1823,7 +1823,7 @@ export class Mystifly implements StrategyAirline {
                         route.infant_count = intnery['a:passengertypequantity'][0]['a:quantity'][0];
                     }
                 }
-                
+
 
                 let eService: any;
                 let outBoundExtraService = [];
@@ -1831,19 +1831,19 @@ export class Mystifly implements StrategyAirline {
 
                 if (extraServices.length > 0) {
                     for (let service of extraServices[0]['b:services'][0]['b:service']) {
-                        
+
 
                         if (service['b:type'][0] !== 'Meal') {
-                            
+
 
                             let decodedBaggae = await this.decodeExtraBaggae(service['b:description'][0])
-                            
-                            
+
+
 
                             if (decodedBaggae) {
                                 eService = {};
                                 eService['type'] = service['b:type'][0];
-                                
+
 
                                 eService['bag_type'] = decodedBaggae.type ? decodedBaggae['type'] : '';
                                 eService['checkin_type'] = service['b:checkintype'][0];
@@ -1887,7 +1887,7 @@ export class Mystifly implements StrategyAirline {
 
                 let weight = this.decodeWeight(descArrayDetails[1]);
                 if (descArrayDetails[0].includes("Total Weight: 1 bags")) {
-                    
+
                     return {
 
                         title: "1 Bag",
@@ -2055,7 +2055,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`
 
         let bookResult = await HttpRequest.mystiflyRequest(mystiflyConfig.url, requestBody, 'BookFlight');
-        
+
 
         let bookResultSegment = bookResult['s:envelope']['s:body'][0]['bookflightresponse'][0]['bookflightresult'][0];
         let bookingResponse;
@@ -2086,7 +2086,7 @@ export class Mystifly implements StrategyAirline {
         const sessionToken = await this.startSession();
         //
 
-        
+
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
         requestBody += `<soapenv:Header/>`;
         requestBody += `<soapenv:Body>`;
@@ -2161,7 +2161,7 @@ export class Mystifly implements StrategyAirline {
 
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        
+
 
         let requestBody = '';
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint">`;
@@ -2260,10 +2260,9 @@ export class Mystifly implements StrategyAirline {
         let bags = {
             'SB': 'Standard Baggage'
         }
-        
 
-        if (typeof bags[code] !== 'undefined')
 
+        if (typeof bags[code] !== 'undefined' && bags[code] !== '0PC')
             return bags[code]
         else
             return code;
