@@ -12,14 +12,14 @@ import { LaytripFeedbackService } from './laytrip-feedback.service';
 
 @ApiTags('Laytrip Feedback')
 @Controller('laytrip-feedback')
-@UseGuards(AuthGuard())
 export class LaytripFeedbackController {
 
     constructor(
-        private laytripFeedbackService:LaytripFeedbackService
-    ){}
+        private laytripFeedbackService: LaytripFeedbackService
+    ) { }
 
     @Post('add-laytrip-feedback')
+    @UseGuards(AuthGuard())
     @ApiBearerAuth()
     @ApiOperation({ summary: "Add laytrip new feedback" })
     @ApiResponse({ status: 200, description: "Api success" })
@@ -36,20 +36,20 @@ export class LaytripFeedbackController {
 
     @Get('list-for-admin')
     @ApiBearerAuth()
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN,Role.FREE_USER)
-	@ApiOperation({ summary: "Booking feedback listing by admin" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listfeedbackAdmin(
-		@Query() paginationOption: ListLaytripFeedbackForAdminDto,
-		
-	) {
-		return await this.laytripFeedbackService.listLaytripFeedbacksForAdmin(paginationOption);
-	}
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiOperation({ summary: "Booking feedback listing by admin" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async listfeedbackAdmin(
+        @Query() paginationOption: ListLaytripFeedbackForAdminDto,
+    ) {
+        return await this.laytripFeedbackService.listLaytripFeedbacksForAdmin(paginationOption);
+    }
 }
