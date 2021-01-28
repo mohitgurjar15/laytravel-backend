@@ -457,4 +457,19 @@ export class AdminService {
 		Activity.logActivity(userId, "admin", `Import ${count}  admin`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
+
+	async getAdminFirstName(){
+		const roles = [Role.ADMIN,Role.SUPPORT,Role.SUPER_ADMIN]
+		return await this.userRepository.getFirstname(roles)		
+	}
+
+	async getAdminLastName(){
+		const roles = [Role.ADMIN,Role.SUPPORT,Role.SUPER_ADMIN]
+		return await this.userRepository.getLastname(roles)		
+	}
+
+	async getAdminEmail(){
+		const roles = [Role.ADMIN,Role.SUPPORT,Role.SUPER_ADMIN]
+		return await this.userRepository.getemails(roles)		
+	}
 }

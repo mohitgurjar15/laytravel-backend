@@ -534,6 +534,87 @@ export class UserRepository extends Repository<User> {
 		user.profilePic = userDetail.profilePic
 			? `${siteUrl}/profile/${userDetail.profilePic}`
 			: "";
+		user.homeAirport = userDetail.homeAirport
 		return user;
+	}
+
+	async getFirstname(roles) {
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(roles)
+		}
+		const result = await this.find(
+			{
+				where: andWhere,
+				order: { createdDate: "DESC" },
+				select: ["firstName"]
+			}
+		);
+
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+
+		let responce = [];
+		for await (const item of result) {
+			if (item.firstName) {
+				responce.push(item.firstName)
+			}
+		}
+		return {
+			data: responce
+		}
+	}
+
+	async getLastname(roles) {
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(roles)
+		}
+		const result = await this.find(
+			{
+				where: andWhere,
+				order: { createdDate: "DESC" },
+				select: ["lastName"]
+			}
+		);
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+		let responce = [];
+		for await (const item of result) {
+			if (item.lastName) {
+				responce.push(item.lastName)
+			}
+		}
+		return {
+			data: responce
+		}
+	}
+
+	async getemails(roles) {
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(roles)
+		}
+		const result = await this.find(
+			{
+				where: andWhere,
+				order: { createdDate: "DESC" },
+				select: ["email"]
+			}
+		);
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+		let responce = [];
+		for await (const item of result) {
+			if (item.email) {
+				responce.push(item.email)
+			}
+		}
+		return {
+			data: responce
+		}
 	}
 }

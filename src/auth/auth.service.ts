@@ -78,6 +78,8 @@ import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum"
 import { DeleteUserAccountRequest } from "src/entity/delete-user-account-request.entity";
 import { updateUserPreference } from "./dto/update-user-preference.dto";
 import { UserPreference } from "src/enum/user-preference.enum";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { airports } from "src/flight/airports";
 
 @Injectable()
 export class AuthService {
@@ -420,7 +422,7 @@ export class AuthService {
 		}
 	}
 
-	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles:Role[]) {
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles: Role[]) {
 		const { email } = forgetPasswordDto;
 
 		const user = await this.userRepository.findOne({
@@ -1030,7 +1032,7 @@ export class AuthService {
 		}
 	}
 	async updateProfile(
-		updateProfileDto,
+		updateProfileDto: UpdateProfileDto,
 		loginUser,
 		files,
 		siteUrl
@@ -1054,6 +1056,7 @@ export class AuthService {
 				gender,
 				language_id,
 				currency_id,
+				home_airport
 			} = updateProfileDto;
 
 			if (country_id) {
@@ -1067,6 +1070,7 @@ export class AuthService {
 						`Country id not exist with database.&&&country_id`
 					);
 			}
+
 
 			if (state_id) {
 				if (!country_id) {
@@ -1113,6 +1117,12 @@ export class AuthService {
 				throw new BadRequestException(`Age below 16 years are not allowed to signup on Portal.`)
 			}
 			const user = new User();
+			if (home_airport) {
+				if (!airports[home_airport]) {
+					throw new BadRequestException(`Please enter valid airport location`)
+				}
+				user.homeAirport = home_airport
+			}
 			user.title = title;
 			user.firstName = first_name;
 			user.lastName = last_name;
