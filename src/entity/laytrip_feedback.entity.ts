@@ -1,14 +1,13 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Booking } from "./booking.entity";
 import { User } from "./user.entity";
 
 //@Index("booking_id_idx", ["bookingId"], {})
-@Index("user_id_idx", ["userId"], {})
+@Index("feedback_user_id_idx", ["userId"], {})
 // @Index("property_id_idx", ["propertyId"], {})
 
 
-@Entity("laytrip_booking_feedback")
-export class BookingFeedback extends BaseEntity {
+@Entity("laytrip_feedback")
+export class LaytripFeedback extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 

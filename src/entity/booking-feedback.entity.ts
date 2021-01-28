@@ -12,7 +12,7 @@ export class BookingFeedback extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column("character varying", { name: "booking_id"})
+  @Column("character varying", { name: "booking_id", nullable : true})
   bookingId: string;
 
   @Column("character varying", { name: "user_id" })
