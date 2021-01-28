@@ -1,34 +1,36 @@
-import { NotFoundException } from '@nestjs/common';
-import { EntityRepository, getConnection, getManager, Repository } from 'typeorm';
-import { BookingFeedback } from '../entity/booking-feedback.entity'
+import { NotFoundException } from "@nestjs/common";
+import { LaytripFeedback } from "src/entity/laytrip_feedback.entity";
+import { EntityRepository, getConnection, getManager, Repository } from "typeorm";
 
-@EntityRepository(BookingFeedback)
-export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
+@EntityRepository(LaytripFeedback)
+export class LaytripFeedbackRepository extends Repository<LaytripFeedback>{
+    
+   async listLaytripFeedbackAdmin(where:string,limit,page_no){
 
-    async listFeedback(where: string, limit: number, page_no: number) {
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
-
+    
         const query = getConnection()
-            .createQueryBuilder(BookingFeedback, "feedback")
+            .createQueryBuilder(LaytripFeedback, "feedback")
             .leftJoinAndSelect("feedback.user", "user")
-            .leftJoinAndSelect("feedback.booking", "booking")
-            .leftJoinAndSelect("booking.module", "module")
-            .select(["feedback.id", "feedback.bookingId","booking.bookingDate","feedback.rating", "feedback.message", "module.name","module.id", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
+            // .leftJoinAndSelect("feedback.booking", "booking")
+            // .leftJoinAndSelect("booking.module", "module")
+            .select(["feedback.id","feedback.rating", "feedback.message", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
             .where(where)
             .limit(take)
             .offset(skip)
         const [data, count] = await query.getManyAndCount();
 
         const   reviewCount = await getConnection()
-            .createQueryBuilder(BookingFeedback, "feedback")
+            .createQueryBuilder(LaytripFeedback, "feedback")
             .getCount()
-        if (!data.length) {
+
+        if(!data.length){
             throw new NotFoundException(`No feedback found.`)
         }
-        const individualCount = await getManager().query(`select count(id) as count , rating from booking_feedback group by rating`)
-
-
+        
+        const individualCount = await getManager().query(`select count(id) as count , rating from laytrip_feedback group by rating`)
+        
         var rating_count = [{
             "one": {
                 "count": "0"
@@ -49,10 +51,9 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
             "five": {
                 "count": "0"
             }
-        }]
+        }];
 
 
-        var totalIndexes = ["one", "two", "three", "four", "five"]
         for await (const value of individualCount) {
             switch (value.rating) {
                 case 1:
@@ -99,24 +100,8 @@ export class BookingFeedbackRepositery extends Repository<BookingFeedback> {
             }
         }
 
-
-        const average_count = await getConnection().query(`select  ROUND(AVG(rating)) as rating from booking_feedback `)
+        const average_count = await getConnection().query(`select  ROUND(AVG(rating)) as rating from laytrip_feedback `)
         return { data: data, total_count: count, rating_count: rating_count, average_count: average_count[0], totalFeedbackCount: reviewCount };
-    }
 
-    async listFeedbackForUser(where: string, limit: number, page_no: number) {
-        const take = limit || 10;
-        const skip = (page_no - 1) * limit || 0;
-
-        const query = getConnection()
-            .createQueryBuilder(BookingFeedback, "feedback")
-            .leftJoinAndSelect("feedback.user", "user")
-            .select(["feedback.id", "feedback.rating", "feedback.message", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
-            .where(where)
-            .limit(take)
-            .offset(skip)
-        const [data, count] = await query.getManyAndCount();
-
-        return { data: data, total_count: count };
-    }
+    }   
 }
