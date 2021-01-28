@@ -1,3 +1,4 @@
+import { LaytripFeedbackModule } from './laytrip-feedback/laytrip-feedback.module';
 import { VacationRentalModule } from './vacation-rental/vacation-rental.module';
 import { Module } from "@nestjs/common";
 import { typeOrmConfig } from "./config/typeorm.config";
@@ -109,6 +110,7 @@ import { DealModule } from './deal/deal.module';
     AdminDashboardModule,
     NewsLettersModule,
     BookingFeedbackModule,
+    LaytripFeedbackModule,
     PredictionFactorMarkupModule,
     FaqCategoryModule,
     AppVersionModule,
