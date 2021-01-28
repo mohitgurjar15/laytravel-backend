@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InstalmentDto } from './dto/instalment.dto';
 import { InstalmentType } from 'src/enum/instalment-type.enum';
 import { Instalment } from 'src/utility/instalment.utility';
@@ -15,7 +15,10 @@ export class InstalmentService {
             checkin_date, booking_date, additional_amount, down_payment,selected_down_payment
         } = instalmentDto;
 
-        
+        if(selected_down_payment >= 3){
+            throw new NotAcceptableException(`selected down payment option must be 2 or below`)
+        }
+
         if(instalment_type==InstalmentType.WEEKLY){
             return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
         }
@@ -34,6 +37,10 @@ export class InstalmentService {
             amount,
             checkin_date, booking_date, additional_amount,down_payment,selected_down_payment
         } = allInstalmentDto;
+
+        if(selected_down_payment >= 3){
+            throw new NotAcceptableException(`selected down payment option must be 2 or below`)
+        }
         
         let weeklyInstalments = Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment);
         if(weeklyInstalments.instalment_available==true){
