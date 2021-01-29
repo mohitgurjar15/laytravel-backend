@@ -9,7 +9,7 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import { SaveCardDto } from "./dto/save-card.dto";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { PaymentGateway } from "src/entity/payment-gateway.entity";
 import { errorMessage } from "src/config/common.config";
 import { UserCard } from "src/entity/user-card.entity";
@@ -22,6 +22,9 @@ import { Generic } from "src/utility/generic.utility";
 import { OtherPayments } from "src/entity/other-payment.entity";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { Activity } from "src/utility/activity.utility";
+import { Booking } from "src/entity/booking.entity";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { BookingType } from "src/enum/booking-type.enum";
 
 
 @Injectable()
@@ -304,9 +307,9 @@ export class PaymentService {
 
 			return {
 				transaction: { succeeded: false },
-				logFile : fileName,
+				logFile: fileName,
 				meta_data: error.responce
-				
+
 			}
 			// if (typeof error.response !== "undefined") {
 			// 	switch (error.response.status) {
@@ -411,5 +414,104 @@ export class PaymentService {
 		const transactionData = await transaction.save();
 
 		return transactionData;
+	}
+
+	async deleteCard(cardId: string, user: User) {
+		let card = await getManager()
+			.createQueryBuilder(UserCard, "user_card")
+			.where(
+				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
+				{ user_id: user.userId, is_deleted: false, cardId }
+			)
+			.getOne();
+
+		if (!card) throw new NotFoundException(`No card founds`);
+
+		let booking = await getManager()
+			.createQueryBuilder(Booking, "booking")
+			.where(`booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus`, {
+				booking_type: BookingType.INSTALMENT,
+				card_token: card.cardToken,
+				today: new Date(),
+				user_id: user.userId,
+				paymentStatus: PaymentStatus.PENDING
+			})
+			.getOne()
+		if (booking) {
+			throw new ConflictException(`Selected card is used for active booking please first update it `)
+		}
+
+		card.isDeleted = true
+		await card.save()
+		return {
+			message: `Your card deleted successfully`
+		}
+	}
+
+
+	async checkCardPendingPayment(cardId: string, user: User) {
+		let card = await getManager()
+			.createQueryBuilder(UserCard, "user_card")
+			.where(
+				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
+				{ user_id: user.userId, is_deleted: false, cardId }
+			)
+			.getOne();
+
+		if (!card) throw new NotFoundException(`Card id not founds`);
+
+		let booking = await getManager()
+			.createQueryBuilder(Booking, "booking")
+			.where(`booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus AND booking_status < ${BookingStatus.FAILED}`, {
+				booking_type: BookingType.INSTALMENT,
+				card_token: card.cardToken,
+				today: new Date(),
+				user_id: user.userId,
+				paymentStatus: PaymentStatus.PENDING
+			})
+			.select(["booking.laytripBookingId"])
+			.getMany()
+		if (booking.length) {
+			return {
+				pendingTransaction: true,
+				bookingIds: booking
+			}
+		}
+
+		return {
+			pendingTransaction: false
+		}
+	}
+
+	async updateCard(cardId, addCardDto: AddCardDto, user: User) {
+		let card = await getManager()
+			.createQueryBuilder(UserCard, "user_card")
+			.where(
+				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
+				{ user_id: user.userId, is_deleted: false, cardId }
+			)
+			.getOne();
+
+		if (!card) throw new NotFoundException(`Card id not founds`);
+		const newCard = await this.addCard(addCardDto, user)
+		await getConnection()
+			.createQueryBuilder()
+			.update(Booking)
+			.set({ cardToken: newCard.cardToken })
+			.where(`booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus AND booking_status < ${BookingStatus.FAILED}`, {
+				booking_type: BookingType.INSTALMENT,
+				card_token: card.cardToken,
+				today: new Date(),
+				user_id: user.userId,
+				paymentStatus: PaymentStatus.PENDING
+			})
+			.execute();
+		card.isDeleted = true
+		await card.save()
+		return {
+			message: `Your card update successfully`,
+			data: newCard
+		}
+
 	}
 }
