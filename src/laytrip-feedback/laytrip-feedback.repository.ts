@@ -4,33 +4,43 @@ import { EntityRepository, getConnection, getManager, Repository } from "typeorm
 
 @EntityRepository(LaytripFeedback)
 export class LaytripFeedbackRepository extends Repository<LaytripFeedback>{
-    
-   async listLaytripFeedbackAdmin(where:string,limit,page_no){
+
+    async listLaytripFeedbackAdmin(andWhere, limit, page_no) {
 
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
-    
-        const query = getConnection()
-            .createQueryBuilder(LaytripFeedback, "feedback")
-            .leftJoinAndSelect("feedback.user", "user")
-            // .leftJoinAndSelect("feedback.booking", "booking")
-            // .leftJoinAndSelect("booking.module", "module")
-            .select(["feedback.id","feedback.rating", "feedback.message", "user.firstName", "user.lastName", "user.email", "user.profilePic"])
-            .where(where)
-            .limit(take)
-            .offset(skip)
-        const [data, count] = await query.getManyAndCount();
 
-        const   reviewCount = await getConnection()
+        // const query = getConnection()
+        //     .createQueryBuilder(LaytripFeedback, "laytrip_feedback")
+        //     .leftJoinAndSelect("laytrip_feedback.user", "User")
+        //     // .leftJoinAndSelect("feedback.booking", "booking")
+        //     // .leftJoinAndSelect("booking.module", "module")
+        //     .select(["laytrip_feedback.id", "laytrip_feedback.rating", "laytrip_feedback.message", "User.firstName", "User.lastName", "User.email", "User.profilePic"])
+        //     .where(` ("laytrip_feedback"."is_deleted" =:is_deleted and "User"."first_name" =:firstName) `, { is_deleted: false, firstName: search })
+        //     .limit(take)
+        //     .offset(skip)
+        // const [data, count] = await query.getManyAndCount();
+
+
+        const [data, count] = await this.findAndCount({
+            relations: ["user"],
+            where: andWhere,
+            skip: skip,
+            take: take
+        });
+
+        console.log(data);
+
+        const reviewCount = await getConnection()
             .createQueryBuilder(LaytripFeedback, "feedback")
             .getCount()
 
-        if(!data.length){
+        if (!data.length) {
             throw new NotFoundException(`No feedback found.`)
         }
-        
+
         const individualCount = await getManager().query(`select count(id) as count , rating from laytrip_feedback group by rating`)
-        
+
         var rating_count = [{
             "one": {
                 "count": "0"
@@ -103,5 +113,5 @@ export class LaytripFeedbackRepository extends Repository<LaytripFeedback>{
         const average_count = await getConnection().query(`select  ROUND(AVG(rating)) as rating from laytrip_feedback `)
         return { data: data, total_count: count, rating_count: rating_count, average_count: average_count[0], totalFeedbackCount: reviewCount };
 
-    }   
+    }
 }
