@@ -37,7 +37,7 @@ export class LaytripFeedbackController {
     @Get('list-for-admin')
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT,Role.FREE_USER)
     @ApiOperation({ summary: "Booking feedback listing by admin" })
     @ApiResponse({ status: 200, description: "Api success" })
     @ApiResponse({ status: 422, description: "Bad Request or API error message" })
