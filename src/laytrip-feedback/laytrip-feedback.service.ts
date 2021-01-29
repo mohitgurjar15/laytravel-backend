@@ -11,12 +11,12 @@ export class LaytripFeedbackService {
 
     constructor(
         @InjectRepository(LaytripFeedbackRepository)
-		private laytripFeedbackRepository: LaytripFeedbackRepository,
-    ){}
+        private laytripFeedbackRepository: LaytripFeedbackRepository,
+    ) { }
 
-    async addLaytripFeedback(addLaytripBookingFeedback: AddLaytripBookingFeedback,user:User){
-		const { rating,message } = addLaytripBookingFeedback;
-    
+    async addLaytripFeedback(addLaytripBookingFeedback: AddLaytripBookingFeedback, user: User) {
+        const { rating, message } = addLaytripBookingFeedback;
+
         const laytripFeedback = new LaytripFeedback();
 
         laytripFeedback.userId = user.userId;
@@ -24,28 +24,34 @@ export class LaytripFeedbackService {
         laytripFeedback.message = message;
         laytripFeedback.createdDate = new Date();
         laytripFeedback.isDeleted = false;
-        
-        try{
+
+        try {
             await laytripFeedback.save();
-            return {message: "laytrip feedback added successfully"}
-        }catch(e){
+            return { message: "laytrip feedback added successfully" }
+        } catch (e) {
             throw new InternalServerErrorException(`something went wrong`);
         }
     }
-    
-    async listLaytripFeedbacksForAdmin(listLaytripFeedbackForAdminDto: ListLaytripFeedbackForAdminDto,){
-        const { limit,page_no,rating,search } = listLaytripFeedbackForAdminDto;
-   
-        let where = `feedback.is_deleted = false `;
-        
-        if(rating){
-			where += `AND (feedback.rating = ${rating}) `;
-		}
 
-		if(search){
-			where += `AND (("user"."first_name" ILIKE '%${search}%')or("user"."email" ILIKE '%${search}%')or("user"."last_name" ILIKE '%${search}%')) `;
-		}
+    async listLaytripFeedbacksForAdmin(listLaytripFeedbackForAdminDto: ListLaytripFeedbackForAdminDto,) {
+        const { limit, page_no, rating, search } = listLaytripFeedbackForAdminDto;
 
-        return await this.laytripFeedbackRepository.listLaytripFeedbackAdmin(where,limit,page_no);
+
+        let andWhere:any = {};
+        andWhere.isDeleted = false;
+
+        if (rating) {
+            andWhere.rating = rating;
+        }
+        console.log(andWhere);
+
+        if (search) {
+            andWhere.user = {
+                first_name :search
+            };
+        }
+        console.log(andWhere);
+
+        return await this.laytripFeedbackRepository.listLaytripFeedbackAdmin(andWhere, limit, page_no);
     }
 }
