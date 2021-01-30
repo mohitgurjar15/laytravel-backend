@@ -39,6 +39,7 @@ export class PaymentService {
 			card_last_digit,
 			card_type,
 			card_token,
+			card_meta
 		} = saveCardDto;
 
 		let paymentGateway = await getManager()
@@ -61,6 +62,7 @@ export class PaymentService {
 		userCard.cardDigits = card_last_digit;
 		userCard.cardToken = card_token;
 		userCard.cardType = card_type;
+		userCard.cardMetaData = card_meta || {};
 		userCard.createdDate = new Date();
 
 		try {
