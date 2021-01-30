@@ -34,6 +34,7 @@ import { BookingStatus } from "src/enum/booking-status.enum";
 import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { Generic } from "src/utility/generic.utility";
+import { BookingFilterDto } from "./dto/booking-filter.dto";
 
 @Injectable()
 export class BookingService {
@@ -396,6 +397,308 @@ export class BookingService {
 			);
 		}
 	}
+
+	async currentBooking(bookingFilterDto: BookingFilterDto, user: User) {
+		try {
+			const { start_date,
+				end_date,
+				booking_id,
+				module_id,
+				supplier_id,
+				booking_through,
+				trnsaction_token } = bookingFilterDto
+
+			const date = new Date();
+			var todayDate = date.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			todayDate = todayDate.split(' ')[0]
+			let where;
+			where = `("booking"."user_id" = '${user.userId}') AND 
+				("booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})) AND
+				("booking"."booking_type" = ${BookingType.INSTALMENT}) AND
+				(DATE("booking"."check_in_date") >= DATE('${todayDate}'))`;
+
+			if (booking_through) {
+				where += `AND ("booking"."booking_through" = '${booking_through}')`;
+			}
+
+			if (module_id) {
+				where += `AND ("booking"."module_id" = '${module_id}')`;
+			}
+
+			if (supplier_id) {
+				where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+			}
+
+			if (start_date) {
+				where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
+			}
+			if (end_date) {
+				where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
+			}
+
+			if (booking_id) {
+				where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+			}
+
+			if (trnsaction_token) {
+				where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+			}
+			const query = getManager()
+				.createQueryBuilder(Booking, "booking")
+				.leftJoinAndSelect("booking.bookingInstalments", "instalments")
+				.leftJoinAndSelect("booking.currency2", "currency")
+				.leftJoinAndSelect("booking.user", "User")
+				.leftJoinAndSelect("booking.travelers", "traveler")
+				.leftJoinAndSelect("traveler.userData", "userData")
+				.leftJoinAndSelect("User.state", "state")
+				.leftJoinAndSelect("User.country", "countries")
+				.leftJoinAndSelect("booking.supplier", "supplier")
+
+				.where(where)
+				.orderBy(`booking.bookingDate`, 'DESC')
+			const [data, count] = await query.getManyAndCount();
+
+			if (!data.length) {
+				throw new NotFoundException(`No booking found&&&id&&&No booking found`);
+			}
+
+			const result = {
+				data: data,
+				count: count
+			}
+
+			for (let i in result.data) {
+				let paidAmount = 0;
+				let remainAmount = 0;
+				let pandinginstallment = 0;
+
+				if (result.data[i].bookingInstalments.length > 0) {
+					result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
+
+					//result.data[i].bookingInstalments.reverse()
+				}
+
+				for (let instalment of result.data[i].bookingInstalments) {
+					if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+						pandinginstallment = pandinginstallment + 1;
+					}
+				}
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? parseFloat(result.data[i].totalAmount) : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+				result.data[i]["pendingInstallment"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : pandinginstallment;
+				delete result.data[i].user.updatedDate;
+				delete result.data[i].user.salt;
+				delete result.data[i].user.password;
+				for (let j in result.data[i].travelers) {
+					delete result.data[i].travelers[j].userData.updatedDate;
+					delete result.data[i].travelers[j].userData.salt;
+					delete result.data[i].travelers[j].userData.password;
+
+					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+					if (age < 2) {
+						result.data[i].travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.data[i].travelers[j].userData.user_type = "child";
+					} else {
+						result.data[i].travelers[j].userData.user_type = "adult";
+					}
+				}
+			}
+			return result;
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
+			);
+		}
+	}
+
+	async completeBooking(bookingFilterDto: BookingFilterDto, user: User) {
+		try {
+			const { start_date,
+				end_date,
+				booking_id,
+				module_id,
+				supplier_id,
+				booking_through,
+				trnsaction_token } = bookingFilterDto
+
+			const date = new Date();
+			var todayDate = date.toISOString();
+			todayDate = todayDate
+				.replace(/T/, " ") // replace T with a space
+				.replace(/\..+/, "");
+			todayDate = todayDate.split(' ')[0]
+			let where;
+			where = `("booking"."user_id" = '${user.userId}') AND 
+				((DATE("booking"."check_in_date") < DATE('${todayDate}')) OR
+				("booking"."booking_type" != ${BookingType.INSTALMENT}))`;
+
+			if (booking_through) {
+				where += `AND ("booking"."booking_through" = '${booking_through}')`;
+			}
+
+			if (module_id) {
+				where += `AND ("booking"."module_id" = '${module_id}')`;
+			}
+
+			if (supplier_id) {
+				where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+			}
+
+			if (start_date) {
+				where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
+			}
+			if (end_date) {
+				where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
+			}
+
+			if (booking_id) {
+				where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+			}
+
+			if (trnsaction_token) {
+				where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+			}
+			const query = getManager()
+				.createQueryBuilder(Booking, "booking")
+				.leftJoinAndSelect("booking.bookingInstalments", "instalments")
+				.leftJoinAndSelect("booking.currency2", "currency")
+				.leftJoinAndSelect("booking.user", "User")
+				.leftJoinAndSelect("booking.travelers", "traveler")
+				.leftJoinAndSelect("traveler.userData", "userData")
+				.leftJoinAndSelect("User.state", "state")
+				.leftJoinAndSelect("User.country", "countries")
+				.leftJoinAndSelect("booking.supplier", "supplier")
+
+				.where(where)
+				.orderBy(`booking.bookingDate`, 'DESC')
+			const [data, count] = await query.getManyAndCount();
+
+			if (!data.length) {
+				throw new NotFoundException(`No booking found&&&id&&&No booking found`);
+			}
+
+			const result = {
+				data: data,
+				count: count
+			}
+
+			for (let i in result.data) {
+				let paidAmount = 0;
+				let remainAmount = 0;
+				let pandinginstallment = 0;
+
+				if (result.data[i].bookingInstalments.length > 0) {
+					result.data[i].bookingInstalments.sort((a, b) => a.id - b.id)
+
+					//result.data[i].bookingInstalments.reverse()
+				}
+
+				for (let instalment of result.data[i].bookingInstalments) {
+					if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
+						paidAmount += parseFloat(instalment.amount);
+					} else {
+						remainAmount += parseFloat(instalment.amount);
+						pandinginstallment = pandinginstallment + 1;
+					}
+				}
+				result.data[i]["paidAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? parseFloat(result.data[i].totalAmount) : paidAmount;
+				result.data[i]["remainAmount"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : remainAmount;
+				result.data[i]["pendingInstallment"] = result.data[i].bookingType == BookingType.NOINSTALMENT && result.data[i].paymentStatus == PaymentStatus.CONFIRM ? 0 : pandinginstallment;
+				delete result.data[i].user.updatedDate;
+				delete result.data[i].user.salt;
+				delete result.data[i].user.password;
+				for (let j in result.data[i].travelers) {
+					delete result.data[i].travelers[j].userData.updatedDate;
+					delete result.data[i].travelers[j].userData.salt;
+					delete result.data[i].travelers[j].userData.password;
+
+					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					var age = moment(new Date()).diff(moment(birthDate), 'years');
+					if (age < 2) {
+						result.data[i].travelers[j].userData.user_type = "infant";
+					} else if (age < 12) {
+						result.data[i].travelers[j].userData.user_type = "child";
+					} else {
+						result.data[i].travelers[j].userData.user_type = "adult";
+					}
+				}
+			}
+			return result;
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new NotFoundException(
+				`${error.message}&&&id&&&${error.message}`
+			);
+		}
+	}
+
 
 
 	async getBookingDetail(bookingId: string) {

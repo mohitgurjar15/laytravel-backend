@@ -12,6 +12,7 @@ import { ExportBookingDto } from "./dto/export-booking.dto";
 import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
+import { BookingFilterDto } from "./dto/booking-filter.dto";
 
 
 @ApiTags("Booking")
@@ -75,6 +76,42 @@ export class BookingController {
 		@GetUser() user: User
 	) {
 		return await this.bookingService.userBookingList(paginationOption, user.userId);
+	}
+
+	@Get('current-bookings')
+	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)
+	@ApiOperation({ summary: "current booking list of user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async currentBooking(
+		@Query() paginationOption: BookingFilterDto,
+		@GetUser() user: User
+	) {
+		return await this.bookingService.currentBooking(paginationOption, user);
+	}
+
+	@Get('complete-bookings')
+	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)
+	@ApiOperation({ summary: "complete booking listing by user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async completeBookingList(
+		@Query() paginationOption: BookingFilterDto,
+		@GetUser() user: User
+	) {
+		return await this.bookingService.completeBooking(paginationOption, user);
 	}
 
 

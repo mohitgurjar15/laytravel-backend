@@ -38,4 +38,10 @@ export class SaveCardDto{
         example:`xxxxxxxxxxxxx`
     })
     card_last_digit:string;
+
+    @ApiProperty({
+        description:`Card meta`,
+        example:`{}`
+    })
+    card_meta:{};
 }
