@@ -425,7 +425,7 @@ export class CronJobsService {
 						if(instalment.user.isSMS){
 							TwilioSMS.sendSMS({
 								toSMS:param.phoneNo,
-								message:`We have received your payment of $${instalment.amount} for bookingId ${param.bookingId}`
+								message:`We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
 							})
 						}
 						
@@ -901,10 +901,11 @@ export class CronJobsService {
 			}
 
 			if (installment.user.isSMS) {
+				let dateWithMonthName = DateTime.getDateWithMonthName(param.date);
 				TwilioSMS.sendSMS(
 					{
 						toSMS: param.phoneNo,
-						message: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} for booking number ${param.bookingId} .Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+						message: `Just a friendly reminder that your installment amount of ${param.amount} will be collected on ${dateWithMonthName} for booking number ${param.bookingId} .Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
 					}
 				);
 

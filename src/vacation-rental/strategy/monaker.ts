@@ -148,7 +148,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(check_in_date,bookingDate, user, module);
+        let markup = await this.getMarkupDetails(check_in_date, bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -613,7 +613,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(check_in_date,bookingDate, user, module);
+        let markup = await this.getMarkupDetails(check_in_date, bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -711,32 +711,26 @@ export class Monaker implements StrategyVacationRental {
                 room.deposite_policy = unitTypeResult[i]["policyInfo"]["depositPayments"].length != 0 ? unitTypeResult[i]["policyInfo"]["depositPayments"][0]["amountPercent"]["amount"] + " " + unitTypeResult[i]["policyInfo"]["depositPayments"][0]["currency"] + " " + "payable at check in" : '';
             }
 
+            feesType = new FeesType();
             for (let j = 0; j < unitTypeResult[i]["fees"].length; j++) {
                 let response = unitTypeResult[i];
-                if (response["prices"][0]["ratePlanCode"] == "ThisUnitTypeHasMandatoryAddonsPaidOnArrival") {
-                    feesType = new FeesType();
-                    for (let i = 0; i < response["fees"].length; i++) {
-                        fees = new Fees();
-                        if (response["fees"][i]["mandatoryInd"] == true) {
-                            fees.message = response["fees"][i]["description"];
 
-                            feesType.mandtory_fee_due_at_check_in.push(fees);
-                        }
+                if (response["fees"][j]["mandatoryInd"] == true) {
+                    if (response["fees"][j]["deadline"]["offsetDropTime"] == "AfterConfirmation" || response["fees"][j]["deadline"]["offsetDropTime"] == "AfterBooking") {
+                        let fees = new Fees();
+                        fees.message = response["fees"][j]["description"];
+                        feesType.mandatory_fee_already_paid.push(fees);
+                    } else {
+                        let fees = new Fees();
+                        fees.message = response["fees"][j]["description"];
+                        feesType.mandatory_fee_due_at_check_in.push(fees);
                     }
                 } else {
-                    feesType = new FeesType();
-                    for (let i = 0; i < response["fees"].length; i++) {
-                        let fees = new Fees();
-                        if (response["fees"][i]["mandatoryInd"] == true) {
-                            fees.message = response["fees"][i]["description"];
-                            feesType.mandtory_fee_already_paid.push(fees);
-                        }
-                        if (response["fees"][i]["mandatoryInd"] == false) {
-                            fees.message = response["fees"][i]["description"];
-                            feesType.optional_fee.push(fees);
-                        }
-                    }
+                    let fees = new Fees();
+                    fees.message = response["fees"][j]["description"];
+                    feesType.optional_fee.push(fees);
                 }
+
                 room.feesType = feesType;
             }
 
@@ -851,7 +845,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(check_in_date, bookingDate,user, module);
+        let markup = await this.getMarkupDetails(check_in_date, bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -922,28 +916,24 @@ export class Monaker implements StrategyVacationRental {
             verifyAvailability.secondary_selling_price = 0;
         }
         verifyAvailability.instalment_details = instalmentDetails;
-        if (response["totalPrice"]["ratePlanCode"] == "ThisUnitTypeHasMandatoryAddonsPaidOnArrival") {
-            feesType = new FeesType();
-            for (let i = 0; i < response["fees"].length; i++) {
-                fees = new Fees();
-                if (response["fees"][i]["mandatoryInd"] == true) {
-                    fees.message = response["fees"][i]["description"];
 
-                    feesType.mandtory_fee_due_at_check_in.push(fees);
+        feesType = new FeesType();
+
+        for (let i = 0; i < response["fees"].length; i++) {
+            if (response["fees"][i]["mandatoryInd"] == true) {
+                if (response["fees"][i]["deadline"]["offsetDropTime"] == "AfterConfirmation" || response["fees"][i]["deadline"]["offsetDropTime"] == "AfterBooking") {
+                    let fees = new Fees();
+                    fees.message = response["fees"][i]["description"];
+                    feesType.mandatory_fee_already_paid.push(fees);
+                } else {
+                    let fees = new Fees();
+                    fees.message = response["fees"][i]["description"];
+                    feesType.mandatory_fee_due_at_check_in.push(fees);
                 }
-            }
-        } else {
-            feesType = new FeesType();
-            for (let i = 0; i < response["fees"].length; i++) {
+            } else {
                 let fees = new Fees();
-                if (response["fees"][i]["mandatoryInd"] == true) {
-                    fees.message = response["fees"][i]["description"];
-                    feesType.mandtory_fee_already_paid.push(fees);
-                }
-                if (response["fees"][i]["mandatoryInd"] == false) {
-                    fees.message = response["fees"][i]["description"];
-                    feesType.optional_fee.push(fees);
-                }
+                fees.message = response["fees"][i]["description"];
+                feesType.optional_fee.push(fees);
             }
         }
 
@@ -1082,7 +1072,7 @@ export class Monaker implements StrategyVacationRental {
             throw new InternalServerErrorException(`home rental module is not configured in database&&&module&&&${errorMessage}`);
         }
 
-        let markup = await this.getMarkupDetails(check_in_date,bookingDate, user, module);
+        let markup = await this.getMarkupDetails(check_in_date, bookingDate, user, module);
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
 
@@ -1154,7 +1144,7 @@ export class Monaker implements StrategyVacationRental {
                 if (response["fees"][i]["mandatoryInd"] == true) {
                     fees.message = response["fees"][i]["description"];
 
-                    feesType.mandtory_fee_due_at_check_in.push(fees);
+                    feesType.mandatory_fee_due_at_check_in.push(fees);
                 }
             }
         } else {
@@ -1163,7 +1153,7 @@ export class Monaker implements StrategyVacationRental {
                 let fees = new Fees();
                 if (response["fees"][i]["mandatoryInd"] == true) {
                     fees.message = response["fees"][i]["description"];
-                    feesType.mandtory_fee_already_paid.push(fees);
+                    feesType.mandatory_fee_already_paid.push(fees);
                 }
                 if (response["fees"][i]["mandatoryInd"] == false) {
                     fees.message = response["fees"][i]["description"];
