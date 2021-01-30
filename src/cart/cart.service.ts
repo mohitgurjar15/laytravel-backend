@@ -236,7 +236,7 @@ export class CartService {
             .createQueryBuilder(Cart, "cart")
             .leftJoinAndSelect("cart.module", "module")
             .leftJoinAndSelect("cart.travelers", "travelers")
-            .leftJoinAndSelect("travelers.userData", "userData")
+            //.leftJoinAndSelect("travelers.userData", "userData")
             .select(["cart.id",
                 "cart.userId",
                 "cart.moduleId",
@@ -248,11 +248,7 @@ export class CartService {
                 "module.name",
                 "travelers.id",
                 "travelers.userId",
-                "travelers.baggageServiceCode",
-                "userData.roleId",
-                "userData.email",
-                "userData.firstName",
-                "userData.middleName"])
+                "travelers.baggageServiceCode"])
 
             .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`)
             .orderBy(`cart.id`, 'DESC')
@@ -343,6 +339,14 @@ export class CartService {
                     await getConnection()
                         .createQueryBuilder()
                         .delete()
+                        .from(CartTravelers)
+                        .where(
+                            `"cart_id" = '${cart.id}'`
+                        )
+                        .execute()
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
                         .from(Cart)
                         .where(
                             `"id" = '${cart.id}'`
@@ -416,7 +420,14 @@ export class CartService {
         if (!cartItem) {
             throw new NotFoundException(`Given item not found`)
         }
-
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" = '${id}'`
+            )
+            .execute()
         await getConnection()
             .createQueryBuilder()
             .delete()
@@ -584,14 +595,22 @@ export class CartService {
                 message: value.message
             }
         }
-        // await getConnection()
-        //     .createQueryBuilder()
-        //     .delete()
-        //     .from(Cart)
-        //     .where(
-        //         `"id" = '${cart.id}'`
-        //     )
-        //     .execute()
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" = '${cart.id}'`
+            )
+            .execute()
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(Cart)
+            .where(
+                `"id" = '${cart.id}'`
+            )
+            .execute()
         return newCart
     }
 }

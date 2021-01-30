@@ -35,53 +35,65 @@ export class BookingRepository extends Repository<Booking> {
 
 		let where;
 		where = `1=1 `;
+		let bookingFilter = {}
+
 		if (userId) {
-			where += `AND ("booking"."user_id" = '${userId}')`;
+			bookingFilter['userId'] = userId;
 		}
 
 		if (booking_through) {
-			where += `AND ("booking"."booking_through" = '${booking_through}')`;
+			bookingFilter['bookingThrough'] = booking_through;
 		}
 
 		if (module_id) {
-			where += `AND ("booking"."module_id" = '${module_id}')`;
+			bookingFilter['moduleId'] = module_id;
+			//where += `AND ("booking"."module_id" = '${module_id}')`;
 		}
 
 		if (supplier_id) {
-			where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+			bookingFilter['supplierId'] = supplier_id;
+			//where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
 		}
 
 		if (start_date) {
-			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
+			bookingFilter['bookingDate'] = `MoreThan('${start_date}')`;
+			//where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
 		}
 		if (end_date) {
-			where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
+			bookingFilter['bookingDate'] = `LessThan('${end_date}')`;
+			//where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
 		}
 		if (booking_status) {
-			where += `AND ("booking"."booking_status" = '${booking_status}')`;
+			bookingFilter['bookingStatus'] = `LessThan(start_date)`;
+			//where += `AND ("booking"."booking_status" = '${booking_status}')`;
 		}
 		if (booking_type) {
-			where += `AND ("booking"."booking_type" = '${booking_type}')`;
+			bookingFilter['bookingType'] = booking_type;
+			//where += `AND ("booking"."booking_type" = '${booking_type}')`;
 		}
 
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+			bookingFilter['laytripBookingId'] = booking_id;
+			//where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
 		}
 
 		if (customer_name) {
-			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
+			bookingFilter['user']['firstName'] = customer_name;
+			//where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
 		}
 
-		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%') or ("instalments"."transaction_token" ILIKE '%${search}%'))`;
-		}
+		// if (search) {
+		// 	where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%') or ("instalments"."transaction_token" ILIKE '%${search}%'))`;
+		// }
 
 		if (email) {
-			where += `AND ("User"."email" ILIKE '%${email}%')`;
+			bookingFilter['user']['email'] = email;
+			//where += `AND ("User"."email" ILIKE '%${email}%')`;
 		}
 
 		if (trnsaction_token) {
-			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+			bookingFilter['instalments']['transaction_token'] = trnsaction_token;
+			//where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
 		}
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")

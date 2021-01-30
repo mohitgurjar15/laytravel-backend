@@ -19,13 +19,13 @@ export class CartTravelers extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
-    @Column("integer", { name: "cart_id" })
+    @Column("integer", { name: "cart_id",nullable:true})
     cartId: number;
 
     @Column("uuid", { name: "user_id" })
     userId: string;
 
-    @Column("character varying", { name: "baggage_service_code", nullable: true })
+    @Column("character varying", { name: "baggage_service_code", nullable: true , default : ''})
     baggageServiceCode: string;
 
     @ManyToOne(
