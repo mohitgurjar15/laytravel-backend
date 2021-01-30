@@ -25,8 +25,8 @@ export class HomeRentalRevalidate {
 }
 
 export class FeesType {
-    mandtory_fee_already_paid: Fees[] = [];
-    mandtory_fee_due_at_check_in: Fees[] = [];
+    mandatory_fee_already_paid: Fees[] = [];
+    mandatory_fee_due_at_check_in: Fees[] = [];
     optional_fee: Fees[] = [];
 }
 

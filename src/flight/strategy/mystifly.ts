@@ -584,7 +584,8 @@ export class Mystifly implements StrategyAirline {
                 routeType.stops = stops;
                 route.routes[0] = routeType;
                 route.route_code = flightRoutes[i]['airitinerarypricinginfo'][0]['faresourcecode'][0];
-
+                let duration1 = DateTime.convertSecondsToHourMinutesSeconds(totalDuration);
+                routeType.duration = `${duration1.hours}h ${duration1.minutes}m`;
                 route.fare_type = flightRoutes[i]['airitinerarypricinginfo'][0]['faretype'][0] == 'WebFare' ? 'LCC' : 'GDS';
                 route.net_rate = Generic.convertAmountTocurrency(flightRoutes[i]['airitinerarypricinginfo'][0]['itintotalfare'][0]['totalfare'][0]['amount'][0], currencyDetails.liveRate);
 
