@@ -21,6 +21,7 @@ import collect from "collect.js";
 import { vacationCategoty } from "../vacation-rental.const";
 import { SearchFullTextDto } from "../dto/search-full-text.dto";
 import { HomeRentalRevalidate } from "../model/homeRevalidate.model";
+import { off } from "process";
 
 export class Monaker implements StrategyVacationRental {
 
@@ -684,28 +685,61 @@ export class Monaker implements StrategyVacationRental {
 
             let off_set_drop_time;
             let off_set_time_unit
+            let policy;
             let off_unit_multiplier;
             for (let k = 0; k < unitTypeResult[i]["policyInfo"]["cancelPolicies"].length; k++) {
+                let totalAmount = unitTypeResult[i]["prices"][0]["amountAfterTax"];
                 let data = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k];
-                let policy = ``;
-                let amount_percent = data["amountPercent"]["percent"] != null ? (data["amountPercent"]["percent"] * room.selling_price) : data["amountPercent"]["amount"];
-                cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
-                if (!cancelPolicies.is_refundable) {
-                    policy_info.push(`This is not refundable`)
-                }
-                if (data["deadline"] != null) {
-                    if (data["deadline"]["absoluteDeadline"] != null) {
-                        let absoluteDeadline = ` ${amount_percent} cancellation fee up to 23:59 on ${data["deadline"]["absoluteDeadline"]} `;
-                        policy = absoluteDeadline;
+                let refundableAmount = data["amountPercent"]["percent"] != null ? (totalAmount - ((data["amountPercent"]["percent"] * 100) * totalAmount) / 100) : (totalAmount - data["amountPercent"]["amount"]);
+
+                off_set_drop_time = data["deadline"]["offsetDropTime"] != null ? data["deadline"]["offsetDropTime"] : '';
+                off_set_time_unit = data["deadline"]["offsetTimeUnit"] != null ? data["deadline"]["offsetTimeUnit"] : '';
+                off_unit_multiplier = data["deadline"]["offsetUnitMultiplier"] != null ? data["deadline"]["offsetUnitMultiplier"] : '';
+                let offset = `${off_unit_multiplier} ${off_set_time_unit} ${off_set_drop_time}`;
+                if (data["deadline"]["absoluteDeadline"] != null) {
+                    if (refundableAmount == totalAmount) {
+                        policy = `Up to ${data["deadline"]["absoluteDeadline"]} the reservation is refundable in full`;
+                    } else {
+                        policy = `Up to ${data["deadline"]["absoluteDeadline"]} the reservation has a ${data["amountPercent"]["amount"]} USD fee. Must be refunded ${refundableAmount} USD`;
                     }
-                    else {
-                        off_set_drop_time = data["deadline"]["offsetDropTime"] != null ? data["deadline"]["offsetDropTime"] : '';
-                        off_set_time_unit = data["deadline"]["offsetTimeUnit"] != null ? data["deadline"]["offsetTimeUnit"] : '';
-                        off_unit_multiplier = data["deadline"]["offsetUnitMultiplier"] != null ? data["deadline"]["offsetUnitMultiplier"] : '';
-                        policy = `${amount_percent} cancellation fee ${off_unit_multiplier} ${off_set_time_unit} ${off_set_drop_time}`;
+                } else if (data["amountPercent"]["amount"] != null) {
+                    if (refundableAmount == totalAmount) {
+                        policy = `Refundable in full up to ${offset}: Expected refund: ${refundableAmount} USD`;
+                    } else if (refundableAmount == 0) {
+                        policy = `Non-refundable ${offset}`
+                    } else {
+                        policy = `Charge ${data["amountPercent"]["amount"]} USD up to ${offset}. Expected refund ${refundableAmount} USD`;
                     }
-                    policy_info.push(policy);
+                } else {
+                    if (refundableAmount == totalAmount) {
+                        policy = `Refundable in full up to ${offset}. Expected refund: ${refundableAmount} USD`;
+                    } else if (refundableAmount == 0) {
+                        policy = `Non-refundable ${offset}. Expected refund ${refundableAmount} USD.`
+                    } else {
+                        policy = `Charge ${data["amountPercent"]["percent"]*100}% up to ${offset}. Expected refund ${refundableAmount} USD`;
+                    }
                 }
+
+                policy_info.push(policy);
+
+
+                // cancelPolicies.is_refundable = unitTypeResult[i]["policyInfo"]["cancelPolicies"][k]["nonRefundable"] == true ? false : true;
+                // if (!cancelPolicies.is_refundable) {
+                //     policy_info.push(`This is not refundable`)
+                // }
+                // if (data["deadline"] != null) {
+                //     if (data["deadline"]["absoluteDeadline"] != null) {
+                //         let absoluteDeadline = ` ${amount_percent} cancellation fee up to 23:59 on ${data["deadline"]["absoluteDeadline"]} `;
+                //         policy = absoluteDeadline;
+                //     }
+                //     else {
+                // off_set_drop_time = data["deadline"]["offsetDropTime"] != null ? data["deadline"]["offsetDropTime"] : '';
+                // off_set_time_unit = data["deadline"]["offsetTimeUnit"] != null ? data["deadline"]["offsetTimeUnit"] : '';
+                // off_unit_multiplier = data["deadline"]["offsetUnitMultiplier"] != null ? data["deadline"]["offsetUnitMultiplier"] : '';
+                //         policy = `${amount_percent} cancellation fee ${off_unit_multiplier} ${off_set_time_unit} ${off_set_drop_time}`;
+                //     }
+                //     policy_info.push(policy);
+                // }
                 cancelPolicies.penalty_info = policy_info;
                 room.cancellation_policy = cancelPolicies;
                 room.deposite_policy = unitTypeResult[i]["policyInfo"]["depositPayments"].length != 0 ? unitTypeResult[i]["policyInfo"]["depositPayments"][0]["amountPercent"]["amount"] + " " + unitTypeResult[i]["policyInfo"]["depositPayments"][0]["currency"] + " " + "payable at check in" : '';
