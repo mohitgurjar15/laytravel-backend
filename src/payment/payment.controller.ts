@@ -152,7 +152,7 @@ export class PaymentController {
 	@Put('/:card_id')
 	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
-	@ApiOperation({ summary: "delete user card" })
+	@ApiOperation({ summary: "update user card" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
