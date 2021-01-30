@@ -247,6 +247,7 @@ export class CartService {
                 "module.id",
                 "module.name",
                 "travelers.id",
+                "travelers.userId",
                 "travelers.baggageServiceCode",
                 "userData.roleId",
                 "userData.email",
