@@ -19,7 +19,7 @@ export class CartTravelers extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
-    @Column("integer", { name: "cart_id",nullable:true})
+    @Column("integer", { name: "cart_id"})
     cartId: number;
 
     @Column("uuid", { name: "user_id" })
