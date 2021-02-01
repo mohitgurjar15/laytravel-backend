@@ -540,10 +540,35 @@ export class AuthController {
 		);
 	}
 
+
+	@Get('get-preference')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiOperation({summary : "change the preference value "})
+	@ApiOperation({ summary: "request for delete account" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getPreference(
+		@GetUser() user: User
+		){
+		return await this.authService.getPreference(user);
+	}
+
+
 	@Put('preference')
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard())
 	@ApiOperation({summary : "change the preference value "})
+	@ApiOperation({ summary: "request for delete account" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
 	async changeUserPreference(
 		@GetUser() user:User,
 		@Body() preferenceDto:updateUserPreference
