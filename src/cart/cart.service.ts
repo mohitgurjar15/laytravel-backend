@@ -177,16 +177,23 @@ export class CartService {
         if (!result) {
             throw new BadRequestException(`Given cart item not found.`)
         }
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" = '${result.id}'`
+            )
+            .execute()
         for (let index = 0; index < travelers.length; index++) {
             const element = travelers[index];
-            if(!uuidValidator(element.traveler_id))
-			{
-				throw new NotFoundException('Traveler id not found please change it')
-			}
-            
+            if (!uuidValidator(element.traveler_id)) {
+                throw new NotFoundException('Traveler id not found please change it')
+            }
+
             for (let i = 0; i < travelers.length; i++) {
                 const traveler = travelers[i];
-                if(i != index && element.traveler_id == traveler.traveler_id){
+                if (i != index && element.traveler_id == traveler.traveler_id) {
                     throw new ConflictException(`Dublicate traveler found in list. please change it.`)
                 }
             }
@@ -265,7 +272,7 @@ export class CartService {
                 "travelers.baggageServiceCode"])
 
             .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`)
-            .orderBy(`cart.id`,'ASC')
+            .orderBy(`cart.id`, 'ASC')
             .limit(5)
         const [result, count] = await query.getManyAndCount();
 
