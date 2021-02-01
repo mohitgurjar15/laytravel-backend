@@ -63,7 +63,7 @@ const content = `<!-- header Text section start -->
                                                                                             <tbody>
                                                                                                 <tr>
                                                                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 0; text-align: left;">
-                                                                                                        <span style="font-weight:bold;">Billed To:</span>${param.userName} <br/><span style="font-weight:bold;">Booking ID:</span>${param.orderId}
+                                                                                                        <span style="font-weight:bold;">Billed To: </span>${param.userName} <br/><span style="font-weight:bold;">Booking ID: </span>${param.orderId}
                                                                                                     </td>
                                                                                                 </tr>
                                                                                             </tbody>
@@ -81,7 +81,7 @@ const content = `<!-- header Text section start -->
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <td class="oc_ptop" align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 0; text-align: left;">
-                                                                                        <span style="font-weight:bold;">Payment Date:</span>${param.date}
+                                                                                        <span style="font-weight:bold;">Payment Date: </span>${param.date}
                                                                                     </td>
                                                                                 </tr>
                                                                                 <!-- <tr>
