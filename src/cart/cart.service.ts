@@ -1,4 +1,4 @@
-import { BadRequestException, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { User } from 'src/entity/user.entity';
 import { ModulesName } from 'src/enum/module.enum';
 import { FlightService } from 'src/flight/flight.service';
@@ -177,6 +177,27 @@ export class CartService {
         if (!result) {
             throw new BadRequestException(`Given cart item not found.`)
         }
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" = '${result.id}'`
+            )
+            .execute()
+        for (let index = 0; index < travelers.length; index++) {
+            const element = travelers[index];
+            if (!uuidValidator(element.traveler_id)) {
+                throw new NotFoundException('Traveler id not found please change it')
+            }
+
+            for (let i = 0; i < travelers.length; i++) {
+                const traveler = travelers[i];
+                if (i != index && element.traveler_id == traveler.traveler_id) {
+                    throw new ConflictException(`Dublicate traveler found in list. please change it.`)
+                }
+            }
+        }
 
         for await (const traveler of travelers) {
             let cartTraveler = new CartTravelers()
@@ -236,7 +257,7 @@ export class CartService {
             .createQueryBuilder(Cart, "cart")
             .leftJoinAndSelect("cart.module", "module")
             .leftJoinAndSelect("cart.travelers", "travelers")
-            .leftJoinAndSelect("travelers.userData", "userData")
+            //.leftJoinAndSelect("travelers.userData", "userData")
             .select(["cart.id",
                 "cart.userId",
                 "cart.moduleId",
@@ -247,14 +268,11 @@ export class CartService {
                 "module.id",
                 "module.name",
                 "travelers.id",
-                "travelers.baggageServiceCode",
-                "userData.roleId",
-                "userData.email",
-                "userData.firstName",
-                "userData.middleName"])
+                "travelers.userId",
+                "travelers.baggageServiceCode"])
 
             .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`)
-            .orderBy(`cart.id`, 'DESC')
+            .orderBy(`cart.id`, 'ASC')
             .limit(5)
         const [result, count] = await query.getManyAndCount();
 
@@ -335,10 +353,25 @@ export class CartService {
 
                     newCart['moduleInfo'] = value
                     newCart['is_available'] = true
-                    cart.moduleInfo = [value]
-                    await cart.save()
+
+                    //cart.moduleInfo = [value]
+                    await getConnection()
+                        .createQueryBuilder()
+                        .update(Cart)
+                        .set({ moduleInfo: [value] })
+                        .where("id = :id", { id: cart.id })
+                        .execute();
+                    // await cart.save()
                 } else {
                     newCart['is_available'] = false
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(CartTravelers)
+                        .where(
+                            `"cart_id" = '${cart.id}'`
+                        )
+                        .execute()
                     await getConnection()
                         .createQueryBuilder()
                         .delete()
@@ -415,7 +448,14 @@ export class CartService {
         if (!cartItem) {
             throw new NotFoundException(`Given item not found`)
         }
-
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" = '${id}'`
+            )
+            .execute()
         await getConnection()
             .createQueryBuilder()
             .delete()
@@ -583,14 +623,22 @@ export class CartService {
                 message: value.message
             }
         }
-        // await getConnection()
-        //     .createQueryBuilder()
-        //     .delete()
-        //     .from(Cart)
-        //     .where(
-        //         `"id" = '${cart.id}'`
-        //     )
-        //     .execute()
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" = '${cart.id}'`
+            )
+            .execute()
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(Cart)
+            .where(
+                `"id" = '${cart.id}'`
+            )
+            .execute()
         return newCart
     }
 }

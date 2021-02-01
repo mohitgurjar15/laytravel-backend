@@ -83,6 +83,7 @@ export class BookingRepository extends Repository<Booking> {
 		if (trnsaction_token) {
 			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
 		}
+
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
