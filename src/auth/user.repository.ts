@@ -617,4 +617,11 @@ export class UserRepository extends Repository<User> {
 			data: responce
 		}
 	}
+
+	async getPreference(user: User) {
+		let result = await this.findOne({ userId: user.userId });
+
+		return { preference_value: { email: result.isEmail, sms: result.isSMS } }
+
+	}
 }

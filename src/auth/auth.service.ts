@@ -1559,6 +1559,11 @@ export class AuthService {
 		}
 	}
 
+	async getPreference(user:User){
+
+		return await this.userRepository.getPreference(user);
+	}
+
 	async changeUserPreference(user: User, preferenceDto: updateUserPreference) {
 		const { userId } = user;
 		const { type, value } = preferenceDto;
@@ -1568,11 +1573,11 @@ export class AuthService {
 
 		if (type == UserPreference.Email) {
 			if (value == userDetail.isEmail) {
-				return { message: "Email Preference value already up to date" }
+				return { message: "Email preference value already up to date" }
 			}
 		} else if (type == UserPreference.SMS) {
 			if (value == userDetail.isSMS) {
-				return { message: "SMS Preference value already up to date" }
+				return { message: "SMS preference value already up to date" }
 			}
 		}
 
@@ -1591,7 +1596,7 @@ export class AuthService {
 
 		try {
 			userDetail.save();
-			return { message: `${type} Preference value updated successfully` };
+			return { message: `${type.charAt(0).toUpperCase() + type.slice(1)} preference value updated successfully` };
 		} catch (e) {
 			throw new BadRequestException(`something went wrong ${e.message}`);
 		}
