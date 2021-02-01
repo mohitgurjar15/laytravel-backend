@@ -103,10 +103,10 @@ export class VacationRentalService {
 
 			for (let i = 0; i < hotels.length; i++) {
 				location = new LocationInfo();
-				location.id = hotels[i]["id"],
-					location.type = "hotel",
-					location.display_name = hotels[i]["hotelName"],
-					location.city = hotels[i]["city"],
+				location.id = hotels[i]["id"]
+					location.type = "hotel"
+					location.display_name = hotels[i]["hotelName"]
+					location.city = hotels[i]["city"]
 					location.country = hotels[i]["country"]
 
 				result.push(location);
@@ -115,9 +115,9 @@ export class VacationRentalService {
 			for (let j = 0; j < city.length; j++) {
 				location = new LocationInfo();
 				location.id = city[j]["id"]
-				location.type = "city",
-					location.display_name = city[j]["city"] + "," + city[j]["country"],
-					location.city = city[j]["city"],
+				location.type = "city"
+					location.display_name = city[j]["city"] + "," + city[j]["country"]
+					location.city = city[j]["city"]
 					location.country = city[j]["country"]
 
 				result.push(location)
@@ -230,8 +230,8 @@ export class VacationRentalService {
 		let bookingRequestInfo: any = {};
 
 		if (verifyAvailabilityResult) {
-			bookingRequestInfo.adult_count = adult_count,
-				bookingRequestInfo.number_and_children_ages = number_and_children_ages.length != 0 ? number_and_children_ages.length : 0,
+			bookingRequestInfo.adult_count = adult_count;
+				bookingRequestInfo.number_and_children_ages = number_and_children_ages.length != 0 ? number_and_children_ages.length : 0;
 				bookingRequestInfo.net_rate = verifyAvailabilityResult["net_price"];
 
 			if (payment_type == PaymentType.INSTALMENT) {
@@ -1031,13 +1031,13 @@ export class VacationRentalService {
 			let dto: any = {};
 
 			dto.name = name,
-				dto.type = type,
-				dto.check_in_date = beforeDateString,
-				dto.check_out_date = afterDateString,
-				dto.adult_count = adult_count
+				dto.type = type;
+				dto.check_in_date = beforeDateString;
+				dto.check_out_date = afterDateString;
+				dto.adult_count = adult_count;
 
 			if (number_and_children_ages.length != 0) {
-				dto.number_and_children_ages = number_and_children_ages
+				dto.number_and_children_ages = number_and_children_ages;
 			}
 
 			// console.log("DTO", dto);
@@ -1459,8 +1459,8 @@ export class VacationRentalService {
 		let bookingRequestInfo: any = {};
 
 		if (verifyAvailabilityResult) {
-			bookingRequestInfo.adult_count = verifyAvailabilityResult["adult"],
-				bookingRequestInfo.number_and_children_ages = verifyAvailabilityResult["number_and_chidren_age"],
+			bookingRequestInfo.adult_count = verifyAvailabilityResult["adult"];
+				bookingRequestInfo.number_and_children_ages = verifyAvailabilityResult["number_and_chidren_age"];
 				bookingRequestInfo.net_rate = verifyAvailabilityResult["net_price"];
 
 			if (payment_type == PaymentType.INSTALMENT) {
