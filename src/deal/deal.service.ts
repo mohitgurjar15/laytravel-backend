@@ -175,7 +175,7 @@ export class DealService {
 
 
         if (search) {
-            module
+            //module
             where += `AND (("deal"."location" ILIKE '%${search}%')or("module"."name" ILIKE '%${search}%'))`;
         }
 

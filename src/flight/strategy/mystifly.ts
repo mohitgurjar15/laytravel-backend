@@ -2262,9 +2262,15 @@ export class Mystifly implements StrategyAirline {
             'SB': 'Standard Baggage'
         }
 
-
-        if (typeof bags[code] !== 'undefined' && bags[code] !== '0PC')
+        //console.log(code);
+        
+        if (typeof bags[code] !== 'undefined' && code !== '0PC')
+        {
             return bags[code]
+        }
+        else if(code == '0PC'){
+            return ''
+        }
         else
             return code;
     }

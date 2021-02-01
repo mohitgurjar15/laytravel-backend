@@ -262,10 +262,10 @@ export class CronJobsService {
 						}
 
 						let param = {
-							date: DateTime.convertDateFormat(instalment.instalmentDate, 'YYYY-MM-DD', 'MMMM Do YYYY'),
+							date: DateTime.convertDateFormat(instalment.instalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY'),
 							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
 							available_try: availableTry,
-							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMMM Do YYYY'),
+							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMM DD, YYYY'),
 							currency: instalment.currency.symbol,
 							phoneNo: `+${instalment.user.countryCode}` + instalment.user.phoneNo,
 							bookingId: instalment.booking.laytripBookingId,
@@ -389,7 +389,7 @@ export class CronJobsService {
 							.execute();
 
 						let param = {
-							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MMMM Do YYYY'),
+							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', ' Do YYYY'),
 							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
 							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
 							cardNo: transaction.meta_data.transaction.payment_method.number,
@@ -688,7 +688,7 @@ export class CronJobsService {
 				to: email,
 				from: mailConfig.from,
 				cc: mailConfig.BCC,
-				subject: "Booking Failure Mail",
+				subject: "Booking Failed Mail",
 				html: IncompleteBookingMail({
 					error: error,
 					amount: amount
