@@ -805,6 +805,9 @@ export class MarketingService {
                     "game.gameName"])
                 .where(`question.is_deleted = false`)
                 .getManyAndCount();
+            for await (const que of result) {
+                que.option = que.option.reverse() 
+            }
             return { result, count };
         } catch (error) {
             if (typeof error.response !== "undefined") {

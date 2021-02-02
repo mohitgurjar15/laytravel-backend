@@ -44,6 +44,7 @@ import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import * as uuidValidator from "uuid-validate"
 import { RagisterMail } from "src/config/email_template/register-mail.html";
+import { ExportUserDto } from "./dto/export-user.dto";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -559,9 +560,9 @@ export class UserService {
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
-	async exportUser(adminId: string): Promise<{ data: User[] }> {
+	async exportUser(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(adminId, "user", `All user list export by admin`);
-		return await this.userRepository.exportUser([
+		return await this.userRepository.exportUser(paginationOption,[
 			Role.PAID_USER,
 			Role.GUEST_USER,
 			Role.FREE_USER,

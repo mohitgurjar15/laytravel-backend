@@ -20,6 +20,7 @@ import { In } from "typeorm";
 import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { Activity } from "src/utility/activity.utility";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -204,8 +205,8 @@ export class SupportUserService {
 	}
 
 	//Export user
-	async exportSupporter(): Promise<{ data: User[] }> {
-		return await this.userRepository.exportUser([3]);
+	async exportSupporter(paginationOption: ExportUserDto): Promise<{ data: User[] }> {
+		return await this.userRepository.exportUser(paginationOption,[3]);
 	}
 
 	async getSupportUserData(userId: string, siteUrl: string): Promise<User> {
