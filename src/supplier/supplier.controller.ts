@@ -46,6 +46,7 @@ import { SiteUrl } from "src/decorator/site-url.decorator";
 import { ImportUserDto } from "src/user/dto/import-user.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Controller("supplier-user")
 @ApiTags("Supplier User")
@@ -269,9 +270,9 @@ export class SupplierController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportSupplier(@GetUser() user: User): Promise<{ data: User[] }> {
+	async exportSupplier(@Query() paginationOption: ExportUserDto,@GetUser() user: User): Promise<{ data: User[] }> {
 		const adminId = user.userId;
-		return await this.supplierService.exportSupplier(adminId);
+		return await this.supplierService.exportSupplier(adminId,paginationOption);
 	}
 
 	@Post("report/import")

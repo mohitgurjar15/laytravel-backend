@@ -54,6 +54,8 @@ import { SiteUrl } from "src/decorator/site-url.decorator";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { ImportUserDto } from "src/user/dto/import-user.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
+import { query } from "express";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -285,9 +287,11 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportAdmin(@GetUser() user: User): Promise<{ data: User[] }> {
+	async exportAdmin(
+		@Query() paginationOption: ExportUserDto,
+		@GetUser() user: User): Promise<{ data: User[] }> {
 		const userId = user.userId;
-		return await this.adminService.exportAdmin(userId);
+		return await this.adminService.exportAdmin(userId,paginationOption);
 	}
 
 	@Post("report/import")

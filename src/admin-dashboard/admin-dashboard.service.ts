@@ -594,7 +594,7 @@ export class AdminDashboardService {
 
   async customerStatistics(filterOption: DashboardFilterDto) {
     var response = {};
-    const userConditon = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) `;
+    const userConditon = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) AND is_deleted = false `;
 
     const userDoneBooking90Days = await getConnection().query(
       `SELECT count(*) as cnt  FROM "user" "User" WHERE DATE_PART('day',(select booking_date from booking where booking.user_id = "User"."user_id" AND ${userConditon} order by booking_date limit 1) - created_date ) < 90`

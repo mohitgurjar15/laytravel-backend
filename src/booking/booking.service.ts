@@ -1316,4 +1316,8 @@ export class BookingService {
 		}
 		return { message: `emails send successfully` };
 	}
+	async getBookingIds(){
+		
+		return await this.bookingRepository.getBookingId()		
+	}
 }
