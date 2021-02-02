@@ -410,7 +410,6 @@ export class AuthService {
 				createdDate: user.createdDate,
 				socialAccountId: user.socialAccountId
 			};
-
 			const accessToken = this.jwtService.sign(payload);
 			const token = { token: accessToken };
 			this.addLoginLog(user.userId, request, "web");
@@ -516,80 +515,119 @@ export class AuthService {
 	}
 
 	async updatePassword(newPasswordDto: NewPasswordDto) {
-		//const { token } = updatePasswordDto;
-		const { email, otp, new_password } = newPasswordDto;
-		// var decoded = jwt_decode(token);
-		// const { email, tokenhash, iat } = decoded;
-		// const unixTimestamp = Math.round(new Date().getTime() / 1000);
-		// const time = unixTimestamp - iat;
-		// if (time >= 900) {
-		// 	throw new BadRequestException(
-		// 		`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
-		// 	);
-		// }
-		var roles = [
-			Role.ADMIN,
-			Role.SUPER_ADMIN,
-			Role.SUPPLIER,
-			Role.FREE_USER,
-			Role.PAID_USER,
-		];
-		// const user = await this.userRepository.findOne({ email , roleId: In(roles) });
+		try {
 
-		const user = await this.userRepository.findOne({
-			where: { email: email, isDeleted: 0, status: 1, roleId: In(roles) },
-		});
 
-		if (!user) {
-			throw new NotFoundException(
-				`Email is not registered with us. Please check the email.&&&email`
-			);
-		}
-		if (!user.isVerified) {
-			throw new NotAcceptableException(
-				`Please verify your email id&&&email&&&Please verify your email id`
-			);
-		}
-		// Activity.logActivity(
-		// 	user.userId,
-		// 	`auth`,
-		// 	`${user.email} is forget password using ${otp} otp`
-		// );
 
-		const validate = await this.forgetPasswordRepository.findOne({
-			where: { email: email, is_used: 0, otp: otp },
-		});
-		if (validate) {
-			console.log(validate);
-			var a = moment(new Date());//now
-			var b = moment(validate.createTime);
-			const diff = a.diff(b, 'minutes');
+			//const { token } = updatePasswordDto;
+			const { email, otp, new_password } = newPasswordDto;
+			// var decoded = jwt_decode(token);
+			// const { email, tokenhash, iat } = decoded;
+			// const unixTimestamp = Math.round(new Date().getTime() / 1000);
+			// const time = unixTimestamp - iat;
+			// if (time >= 900) {
+			// 	throw new BadRequestException(
+			// 		`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
+			// 	);
+			// }
+			var roles = [
+				Role.ADMIN,
+				Role.SUPER_ADMIN,
+				Role.SUPPLIER,
+				Role.FREE_USER,
+				Role.PAID_USER,
+			];
+			// const user = await this.userRepository.findOne({ email , roleId: In(roles) });
 
-			console.log(diff)
+			const user = await this.userRepository.findOne({
+				where: { email: email, isDeleted: 0, status: 1, roleId: In(roles) },
+			});
 
-			if (diff >= 30) {
+			if (!user) {
+				throw new NotFoundException(
+					`Email is not registered with us. Please check the email.&&&email`
+				);
+			}
+			if (!user.isVerified) {
+				throw new NotAcceptableException(
+					`Please verify your email id&&&email&&&Please verify your email id`
+				);
+			}
+			// Activity.logActivity(
+			// 	user.userId,
+			// 	`auth`,
+			// 	`${user.email} is forget password using ${otp} otp`
+			// );
+
+			const validate = await this.forgetPasswordRepository.findOne({
+				where: { email: email, is_used: 0, otp: otp },
+			});
+			if (validate) {
+				console.log(validate);
+				var a = moment(new Date());//now
+				var b = moment(validate.createTime);
+				const diff = a.diff(b, 'minutes');
+
+				console.log(diff)
+
+				if (diff >= 30) {
+					throw new BadRequestException(
+						`OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
+					);
+				}
+				const salt = await bcrypt.genSalt();
+				user.salt = salt;
+				user.password = await this.hashPassword(new_password, salt);
+				validate.is_used = 1;
+				validate.updateTime = new Date();
+				try {
+					await user.save();
+					await validate.save();
+					const res = { message: `Your password has been updated successfully.` };
+					return res;
+				} catch (error) {
+					throw new InternalServerErrorException(
+						`${error.sqlMessage}&&& &&&` + errorMessage
+					);
+				}
+			} else {
 				throw new BadRequestException(
-					`OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
+					`Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
 				);
 			}
-			const salt = await bcrypt.genSalt();
-			user.salt = salt;
-			user.password = await this.hashPassword(new_password, salt);
-			validate.is_used = 1;
-			validate.updateTime = new Date();
-			try {
-				await user.save();
-				await validate.save();
-				const res = { message: `Your password has been updated successfully.` };
-				return res;
-			} catch (error) {
-				throw new InternalServerErrorException(
-					`${error.sqlMessage}&&& &&&` + errorMessage
-				);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-		} else {
-			throw new BadRequestException(
-				`Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
 	}
@@ -1559,7 +1597,7 @@ export class AuthService {
 		}
 	}
 
-	async getPreference(user:User){
+	async getPreference(user: User) {
 
 		return await this.userRepository.getPreference(user);
 	}
