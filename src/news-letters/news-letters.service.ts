@@ -120,8 +120,8 @@ export class NewsLettersService {
 			if (!subscribeData) {
 				throw new NotFoundException(`No subsciber found.`)
 			}
-			console.log(subscribeData);
-			
+			//console.log(subscribeData);
+
 			if (!subscribeData.isSubscribed) {
 				throw new ConflictException(
 					`Given email id is alredy unsubscribed &&&email&&&Given email id is alredy unsubscribed `
@@ -132,7 +132,7 @@ export class NewsLettersService {
 				.createQueryBuilder()
 				.update(NewsLetters)
 				.set({ isSubscribed: false, unSubscribeDate: new Date() })
-				.where("email = :email", { email })
+				.where("id = :id", { id: subscribeData.id })
 				.execute();
 			// subscribeData.isSubscribed = false;
 			// subscribeData.unSubscribeDate = new Date();
