@@ -489,12 +489,12 @@ export class AdminDashboardService {
 
       var installmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where  booking_type = ${BookingType.INSTALMENT} AND ${moduleIdCondition} AND ${dateConditon}`);
       response["booking_with_installment_qty"] = installmentBookingQty[0].confirm_booking || 0;
 
       var noInstallmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.NOINSTALMENT}  AND ${moduleIdCondition} AND ${dateConditon}`);
       response["booking_with_no_installment_qty"] = noInstallmentBookingQty[0].confirm_booking || 0;
 
       var valueOfBooking = await getConnection().query(`
