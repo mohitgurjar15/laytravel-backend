@@ -36,10 +36,13 @@ export class NewsLettersService {
 		try {
 			const { email } = subscribeForNewslatterDto;
 
-			let emailExiest = await getManager()
-				.createQueryBuilder(NewsLetters, "newsLetters")
-				.where(`email=:email`, { email })
-				.getOne();
+			let emailExiest = await this.newsLettersRepository.findOne({
+				email
+			})
+			// let emailExiest = await getManager()
+			// 	.createQueryBuilder(NewsLetters, "newsLetters")
+			// 	.where(`email=:email`, { email })
+			// 	.getOne();
 
 			if (emailExiest && emailExiest.isSubscribed == false) {
 				emailExiest.isSubscribed = true;
@@ -117,7 +120,8 @@ export class NewsLettersService {
 			if (!subscribeData) {
 				throw new NotFoundException(`No subsciber found.`)
 			}
-
+			console.log(subscribeData);
+			
 			if (!subscribeData.isSubscribed) {
 				throw new ConflictException(
 					`Given email id is alredy unsubscribed &&&email&&&Given email id is alredy unsubscribed `
