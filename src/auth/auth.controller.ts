@@ -541,7 +541,7 @@ export class AuthController {
 	}
 
 
-	@Get('get-preference')
+	@Get('preference')
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard())
 	@ApiOperation({summary : "change the preference value "})
