@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import { errorMessage } from "src/config/common.config";
@@ -123,9 +123,16 @@ export class NewsLettersService {
 					`Given email id is alredy unsubscribed &&&email&&&Given email id is alredy unsubscribed `
 				);
 			}
-			subscribeData.isSubscribed = false;
-			subscribeData.unSubscribeDate = new Date();
-			await subscribeData.save();
+
+			await getConnection()
+				.createQueryBuilder()
+				.update(NewsLetters)
+				.set({ isSubscribed: false, unSubscribeDate: new Date() })
+				.where("email = :email", { email })
+				.execute();
+			// subscribeData.isSubscribed = false;
+			// subscribeData.unSubscribeDate = new Date();
+			// await subscribeData.save();
 			// this.mailerService
 			// 	.sendMail({
 			// 		to: email,

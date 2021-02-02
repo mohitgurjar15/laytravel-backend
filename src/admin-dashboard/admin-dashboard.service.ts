@@ -397,7 +397,7 @@ export class AdminDashboardService {
       // complited trips :- complite bookings
       const completedTrips = await getConnection().query(
         `SELECT  count(*) as "cnt"
-				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`
+				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`
       );
 
       response["completed_trips"] = completedTrips[0].cnt;
@@ -406,19 +406,19 @@ export class AdminDashboardService {
         SELECT sum("booking"."usd_factor"*"total_amount") as "total" 
 				FROM booking
 				WHERE "booking"."booking_status" IN (${BookingStatus.CONFIRM})
-        AND ${moduleIdCondition}`);
+        AND ${moduleIdCondition} AND ${dateConditon}`);
 
       response["completed_trips_usd"] = (Math.round(completedTripsUsd[0].total * 100) / 100).toFixed(2) || 0;
 
 
       // open bookings
       const openBookings = await getConnection().query(
-        `SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition}`
+        `SELECT count(*) as "cnt" FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition} AND ${dateConditon}`
       );
       response["open_bookings"] = openBookings[0].cnt;
 
       const openBookingsUsd = await getConnection().query(
-        `SELECT sum("booking"."usd_factor"*"total_amount") as "total"  FROM "booking" WHERE booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition}`
+        `SELECT sum("booking"."usd_factor"*"total_amount") as "total"  FROM "booking" WHERE booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition} AND ${dateConditon}`
       );
       response["open_bookings_usd"] = (Math.round(openBookingsUsd[0].total * 100) / 100).toFixed(2) || 0;
 
@@ -427,7 +427,7 @@ export class AdminDashboardService {
 				FROM booking
 				INNER JOIN booking_instalments
 				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})
-				AND ${moduleIdCondition}`
+				AND ${moduleIdCondition} AND ${dateConditon}`
       );
       response["to_be_paid_by_the_customer"] =
         ToBePaidByTheCustomer[0].total || 0;
@@ -437,17 +437,17 @@ export class AdminDashboardService {
 				FROM booking
 				INNER JOIN booking_instalments
 				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.CONFIRM} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})
-				AND ${moduleIdCondition}`
+				AND ${moduleIdCondition} AND ${dateConditon}`
       );
       //response["paid_by_the_customer"] = paidByTheCustomer[0].total
 
       const uncoveredPreBookings = await getConnection().query(
-        `SELECT count(*) as "cnt" FROM "booking" WHERE booking_status = ${BookingStatus.PENDING} AND ${moduleIdCondition}`
+        `SELECT count(*) as "cnt" FROM "booking" WHERE booking_status = ${BookingStatus.PENDING} AND ${moduleIdCondition} AND ${dateConditon}`
       );
       response["uncovered_Pre_Bookings"] = uncoveredPreBookings[0].cnt || 0;
 
       const uncoveredPreBookingsUsd = await getConnection().query(
-        `SELECT  SUM( total_amount * usd_factor) as total_amount FROM "booking" WHERE booking_status = ${BookingStatus.PENDING} AND ${moduleIdCondition}`
+        `SELECT  SUM( total_amount * usd_factor) as total_amount FROM "booking" WHERE booking_status = ${BookingStatus.PENDING} AND ${moduleIdCondition} AND ${dateConditon}`
       );
       response["uncovered_Pre_Bookings_Usd"] = (Math.round(uncoveredPreBookingsUsd[0].total_amount * 100) / 100).toFixed(2) || 0;
 
@@ -456,7 +456,7 @@ export class AdminDashboardService {
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
                 SUM( markup_amount * usd_factor) as total_profit
-                from booking where check_in_date >= '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}
+                from booking where check_in_date >= '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}
 			`);
 
       response["revenues"] = revenues[0].total_profit || 0;
@@ -466,14 +466,14 @@ export class AdminDashboardService {
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
 
       var revenueNoInstallment = await getConnection().query(`
       SELECT count(id) as confirm_booking,
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
 
       var revenueFromNoInstallment = revenues[0].total_profit - revenueInstallment[0].total_profit;
       response["revenue_from_full_price"] = (Math.round(revenueFromNoInstallment * 100) / 100).toFixed(2);
@@ -489,12 +489,12 @@ export class AdminDashboardService {
 
       var installmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
       response["booking_with_installment_qty"] = installmentBookingQty[0].confirm_booking || 0;
 
       var noInstallmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition}`);
+      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
       response["booking_with_no_installment_qty"] = noInstallmentBookingQty[0].confirm_booking || 0;
 
       var valueOfBooking = await getConnection().query(`
@@ -510,13 +510,13 @@ export class AdminDashboardService {
       response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;
 
       var valueOfBookingQty = await getConnection().query(`
-      SELECT  count(id) as cnt from booking where "booking"."booking_status" IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM},${BookingStatus.CANCELLED},${BookingStatus.FAILED}) AND  ${moduleIdCondition}
+      SELECT  count(id) as cnt from booking where "booking"."booking_status" IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM},${BookingStatus.CANCELLED},${BookingStatus.FAILED}) AND  ${moduleIdCondition} AND ${dateConditon}
       `);
 
       response["value_of_bookings_qyt"] = valueOfBookingQty[0].cnt || 0;
 
       var paidbyCustomerFullPayment = await getConnection().query(`
-                SELECT  SUM( total_amount * usd_factor) as total_amount from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} AND "booking"."payment_status" = ${PaymentStatus.CONFIRM}  
+                SELECT  SUM( total_amount * usd_factor) as total_amount from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} AND "booking"."payment_status" = ${PaymentStatus.CONFIRM}
 			`);
 
       var paidbyCustomerPoint = await getConnection().query(`
@@ -537,7 +537,7 @@ export class AdminDashboardService {
 				FROM booking
 				INNER JOIN booking_instalments
 				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_type" = ${BookingType.INSTALMENT} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} 
-				AND ${moduleIdCondition}
+				AND ${moduleIdCondition} AND ${dateConditon}
 			`);
       response["fully_paid_by_laytrip"] =
         (Math.round(FullyPaidByLayTrip[0].total * 100) / 100).toFixed(2) || 0;
@@ -547,7 +547,7 @@ export class AdminDashboardService {
 	             	FROM booking_instalments
 		            INNER JOIN booking
 		            ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} 
-		            AND ${moduleIdCondition}`);
+		            AND ${moduleIdCondition} AND ${dateConditon}`);
 
       response["customer_credit_at_risk"] =
         (Math.round(custCredAtRisk[0].total * 100) / 100).toFixed(2) || 0;
