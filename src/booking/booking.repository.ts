@@ -615,4 +615,28 @@ export class BookingRepository extends Repository<Booking> {
 		}
 		return { data: data, total_count: count };
 	}
+
+	async getBookingId() {
+		// var andWhere = {
+		// 	isDeleted: false,
+		// 	roleId: In(roles)
+		// }
+		const query = await getConnection()
+			.createQueryBuilder(Booking, "booking")
+			.orderBy(`booking.bookingDate`, 'DESC')
+			.select(["booking.laytripBookingId"])
+			.getMany()
+		if (!query.length) {
+			throw new NotFoundException('no data found')
+		}
+		let responce = [];
+		for await (const item of query) {
+			if (item.laytripBookingId) {
+				responce.push(item.laytripBookingId)
+			}
+		}
+		return {
+			data: responce
+		}
+	}
 }

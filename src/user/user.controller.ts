@@ -19,6 +19,7 @@ import { ActiveDeactiveDto } from './dto/active-deactive-user.dto';
 import { ImportUserDto } from './dto/import-user.dto';
 import { csvFileDto } from './dto/csv-file.dto';
 import { ListDeleteRequestDto } from './dto/list-delete-request.dto';
+import { ExportUserDto } from './dto/export-user.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -185,11 +186,11 @@ export class UserController {
 	})
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportCustomer(@GetUser() user: User
+	async exportCustomer(@Query() paginationOption: ExportUserDto, @GetUser() user: User
 	): Promise<{ data: User[] }> {
 
 		const adminId = user.userId;
-		return await this.userService.exportUser(adminId);
+		return await this.userService.exportUser(adminId,paginationOption);
 	}
 
 	@Get('report/weekly-register')

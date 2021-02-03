@@ -273,4 +273,19 @@ export class BookingController {
 	): Promise<{ message: any }> {
 		return await this.bookingService.shareBooking(shareBookingDto, user);
 	}
+
+	@Get('filter-options/booking-id')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all booking id  for admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getemails() {
+		return await this.bookingService.getBookingIds();
+	}
 }

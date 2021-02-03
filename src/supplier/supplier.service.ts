@@ -23,6 +23,7 @@ import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { RagisterMail } from "src/config/email_template/register-mail.html";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Injectable()
 export class SupplierService {
@@ -247,13 +248,13 @@ export class SupplierService {
 		}
 	}
 	//Export user
-	async exportSupplier(adminId: string): Promise<{ data: User[] }> {
+	async exportSupplier(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(
 			adminId,
 			"supplier-user",
 			`all supplier user list export by admin `
 		);
-		return await this.userRepository.exportUser([Role.SUPPLIER]);
+		return await this.userRepository.exportUser(paginationOption,[Role.SUPPLIER]);
 	}
 
 	async importSupplier(importUserDto, files, userId, siteUrl) {

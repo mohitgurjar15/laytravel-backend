@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import { errorMessage } from "src/config/common.config";
@@ -36,10 +36,13 @@ export class NewsLettersService {
 		try {
 			const { email } = subscribeForNewslatterDto;
 
-			let emailExiest = await getManager()
-				.createQueryBuilder(NewsLetters, "newsLetters")
-				.where(`email=:email`, { email })
-				.getOne();
+			let emailExiest = await this.newsLettersRepository.findOne({
+				email
+			})
+			// let emailExiest = await getManager()
+			// 	.createQueryBuilder(NewsLetters, "newsLetters")
+			// 	.where(`email=:email`, { email })
+			// 	.getOne();
 
 			if (emailExiest && emailExiest.isSubscribed == false) {
 				emailExiest.isSubscribed = true;
@@ -117,15 +120,23 @@ export class NewsLettersService {
 			if (!subscribeData) {
 				throw new NotFoundException(`No subsciber found.`)
 			}
+			//console.log(subscribeData);
 
 			if (!subscribeData.isSubscribed) {
 				throw new ConflictException(
 					`Given email id is alredy unsubscribed &&&email&&&Given email id is alredy unsubscribed `
 				);
 			}
-			subscribeData.isSubscribed = false;
-			subscribeData.unSubscribeDate = new Date();
-			await subscribeData.save();
+
+			await getConnection()
+				.createQueryBuilder()
+				.update(NewsLetters)
+				.set({ isSubscribed: false, unSubscribeDate: new Date() })
+				.where("id = :id", { id: subscribeData.id })
+				.execute();
+			// subscribeData.isSubscribed = false;
+			// subscribeData.unSubscribeDate = new Date();
+			// await subscribeData.save();
 			// this.mailerService
 			// 	.sendMail({
 			// 		to: email,

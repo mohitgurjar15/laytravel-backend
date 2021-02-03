@@ -186,6 +186,7 @@ export class DealService {
             .where(where)
             .limit(take)
             .offset(skip)
+            .orderBy("deal.id",'DESC')
 
 
         const [data, count] = await query.getManyAndCount();

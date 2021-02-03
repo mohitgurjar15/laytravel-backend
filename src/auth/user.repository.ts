@@ -14,6 +14,9 @@ import { errorMessage } from "src/config/common.config";
 import { v4 as uuidv4 } from "uuid";
 import { Role } from "src/enum/role.enum";
 import * as moment from 'moment';
+import { Countries } from "src/entity/countries.entity";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
+import { airports } from "src/flight/airports";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -57,7 +60,7 @@ export class UserRepository extends Repository<User> {
 		role: number[],
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		const { page_no, limit, firstName, lastName, email } = paginationOption;
+		const { page_no, limit, firstName, lastName, email, countryId } = paginationOption;
 
 		const take = limit || 10;
 		const skip = (page_no - 1) * take || 0;
@@ -72,6 +75,14 @@ export class UserRepository extends Repository<User> {
 			isDeleted: false,
 			roleId: In(role)
 		}
+
+		if (countryId) {
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_id`, { country_id: countryId })
+				.getOne();
+			andWhere['countryId'] = countryId
+		}
 		if (firstName) {
 			andWhere['firstName'] = firstName
 		}
@@ -84,7 +95,7 @@ export class UserRepository extends Repository<User> {
 		const [result, count] = await this.findAndCount(
 			{
 				where: andWhere,
-				relations: ["state", "country", "preferredCurrency2", "preferredLanguage2"],
+				relations: ["state", "country", "preferredCurrency2", "preferredLanguage2", "createdBy2"],
 				skip: skip,
 				take: take,
 				order: { createdDate: "DESC" }
@@ -153,6 +164,13 @@ export class UserRepository extends Repository<User> {
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
+
+			if (data.createdBy2) {
+				delete data.createdBy2.updatedDate
+				delete data.createdBy2.salt;
+				delete data.createdBy2.password;
+			}
+
 		});
 		return { data: result, TotalReseult: count };
 	}
@@ -369,13 +387,43 @@ export class UserRepository extends Repository<User> {
 	 * export user
 	 * @param roleId
 	 */
-	async exportUser(roleId: number[]): Promise<{ data: User[] }> {
+	async exportUser(
+		paginationOption: ExportUserDto,
+		role: number[]
+	): Promise<{ data: User[] }> {
 		try {
-			const userData = await this.find({
-				where: { isDeleted: 0, roleId: In(roleId) },
-			});
-			if (!userData) {
-				throw new NotFoundException(`No user found.`);
+			const { firstName, lastName, email, countryId } = paginationOption;
+			var andWhere = {
+				isDeleted: false,
+				roleId: In(role)
+			}
+
+			if (countryId) {
+				let countryDetails = await getManager()
+					.createQueryBuilder(Countries, "country")
+					.where(`id=:country_id`, { country_id: countryId })
+					.getOne();
+				andWhere['countryId'] = countryId
+			}
+			if (firstName) {
+				andWhere['firstName'] = firstName
+			}
+			if (lastName) {
+				andWhere['lastName'] = lastName
+			}
+			if (email) {
+				andWhere['email'] = email
+			}
+
+			const userData = await this.find(
+				{
+					where: andWhere,
+					relations: ["state", "country", "preferredCurrency2", "preferredLanguage2"],
+					order: { createdDate: "DESC" }
+				}
+			);
+			if (!userData.length) {
+				throw new NotFoundException(`No data found.`);
 			}
 			return { data: userData };
 		} catch (error) {
@@ -447,6 +495,7 @@ export class UserRepository extends Repository<User> {
 			.leftJoinAndSelect("user.country", "countries")
 			.leftJoinAndSelect("user.preferredCurrency2", "currency")
 			.leftJoinAndSelect("user.preferredLanguage2", "language")
+			.leftJoinAndSelect("user.createdBy2", "createdBy2")
 			.select([
 				"user.userId",
 				"user.title",
@@ -458,6 +507,7 @@ export class UserRepository extends Repository<User> {
 				"user.dob",
 				"user.gender",
 				"user.roleId",
+				"user.homeAirport",
 				"user.countryCode",
 				"user.phoneNo",
 				"user.cityName",
@@ -483,7 +533,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
-
+				"createdBy2.roleId"
 			])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`, {
 				userId,
@@ -535,6 +585,8 @@ export class UserRepository extends Repository<User> {
 			? `${siteUrl}/profile/${userDetail.profilePic}`
 			: "";
 		user.homeAirport = userDetail.homeAirport
+		user.createdBy2 = userDetail.createdBy2 || {}
+		user.airportInfo = userDetail.homeAirport ? airports[userDetail.homeAirport] : {}
 		return user;
 	}
 

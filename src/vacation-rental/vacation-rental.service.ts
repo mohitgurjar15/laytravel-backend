@@ -1030,7 +1030,7 @@ export class VacationRentalService {
 
 			let dto: any = {};
 
-			dto.name = name,
+			dto.name = name;
 				dto.type = type;
 				dto.check_in_date = beforeDateString;
 				dto.check_out_date = afterDateString;

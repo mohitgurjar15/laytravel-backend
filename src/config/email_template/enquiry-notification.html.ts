@@ -24,14 +24,14 @@ const content = `
 
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
-                                                        <span style="text-decoration: none; color: #000;">${param.name}</span> is add new enguiry
+                                                        <span style="text-decoration: none; color: #000;">${param.name}</span> is add new enquiry
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;"><b>Enquiry ID:-</b>${param.id}</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;"><b>Enquiry ID: </b>${param.id}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;"><b>Message:-</b>${param.message}</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;"><b>Message: </b>${param.message}</td>
                                                 </tr>
 
                                                 
