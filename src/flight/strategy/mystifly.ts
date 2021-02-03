@@ -2263,7 +2263,6 @@ export class Mystifly implements StrategyAirline {
         }
 
         //console.log(code);
-        
         if (typeof bags[code] !== 'undefined' && code !== '0PC')
         {
             return bags[code]
