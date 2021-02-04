@@ -355,12 +355,12 @@ export class CartService {
                     newCart['is_available'] = true
 
                     //cart.moduleInfo = [value]
-                    await getConnection()
-                        .createQueryBuilder()
-                        .update(Cart)
-                        .set({ moduleInfo: [value] })
-                        .where("id = :id", { id: cart.id })
-                        .execute();
+                    // await getConnection()
+                    //     .createQueryBuilder()
+                    //     .update(Cart)
+                    //     .set({ moduleInfo: [value] })
+                    //     .where("id = :id", { id: cart.id })
+                    //     .execute();
                     // await cart.save()
                 } else {
                     newCart['is_available'] = false
