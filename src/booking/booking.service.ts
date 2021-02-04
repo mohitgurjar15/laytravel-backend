@@ -35,6 +35,7 @@ import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { Generic } from "src/utility/generic.utility";
 import { BookingFilterDto } from "./dto/booking-filter.dto";
+import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 
 @Injectable()
 export class BookingService {
@@ -54,7 +55,7 @@ export class BookingService {
 				"Given booking id not found&&&booking_id&&&Given booking id not found"
 			);
 		}
-		console.log(bookingData);
+		//console.log(bookingData);
 		const Data = bookingData;
 		switch (Data.moduleId) {
 			case ModulesName.HOTEL:
@@ -106,7 +107,7 @@ export class BookingService {
 						flight: flight, depature: depature, arrival: arrival, airline: stop.airline_name
 					})
 				}
-				console.log();
+				//console.log();
 				flightData.push({
 					rout: rout,
 					status: status,
@@ -165,8 +166,8 @@ export class BookingService {
 			param.travelers = travelerInfo
 
 
-			console.log(param);
-			// console.log(param.flightData);
+			//console.log(param);
+			// //console.log(param.flightData);
 			if (email != '') {
 				this.mailerService
 					.sendMail({
@@ -178,10 +179,10 @@ export class BookingService {
 						html: await FlightBookingConfirmtionMail(param),
 					})
 					.then((res) => {
-						console.log("res", res);
+						//console.log("res", res);
 					})
 					.catch((err) => {
-						console.log("err", err);
+						//console.log("err", err);
 					});
 			}
 			else {
@@ -194,10 +195,10 @@ export class BookingService {
 						html: await FlightBookingConfirmtionMail(param),
 					})
 					.then((res) => {
-						console.log("res", res);
+						//console.log("res", res);
 					})
 					.catch((err) => {
-						console.log("err", err);
+						//console.log("err", err);
 					});
 			}
 
@@ -219,10 +220,10 @@ export class BookingService {
 
 				})
 				.then((res) => {
-					console.log("res", res);
+					//console.log("res", res);
 				})
 				.catch((err) => {
-					console.log("err", err);
+					//console.log("err", err);
 				});
 		}
 		else {
@@ -240,7 +241,7 @@ export class BookingService {
 			let paidAmount = 0;
 			let remainAmount = 0;
 
-			//console.log(result);
+			////console.log(result);
 
 			for (let i in result.data) {
 				if (result.data[i].bookingInstalments.length > 0) {
@@ -283,7 +284,7 @@ export class BookingService {
 		} catch (error) {
 
 			if (typeof error.response !== "undefined") {
-				console.log('m');
+				//console.log('m');
 				switch (error.response.statusCode) {
 					case 404:
 						throw new NotFoundException(error.response.message);
@@ -708,7 +709,7 @@ export class BookingService {
 			let paidAmount = 0;
 			let remainAmount = 0;
 
-			//console.log(result);
+			////console.log(result);
 
 			if (result.bookingInstalments.length > 0) {
 				result.bookingInstalments.sort((a, b) => a.id - b.id)
@@ -748,7 +749,7 @@ export class BookingService {
 			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
-				console.log("m");
+				//console.log("m");
 				switch (error.response.statusCode) {
 					case 404:
 						throw new NotFoundException(error.response.message);
@@ -862,7 +863,75 @@ export class BookingService {
 		// 		for (let index = 0; index < infoDate.length; index++) {
 		// 			const element = infoDate[index];
 		// 			if (element.instalmentDate == instalment.instalmentDate) {
-		// 				console.log(element.instalmentDate, instalment.instalmentDate, index);
+		// 				//console.log(element.instalmentDate, instalment.instalmentDate, index);
+
+		// 				instalment.installmentNo = index + 1;
+		// 				exit;
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		return {
+			data: data, total_count: total_count
+		};
+	}
+
+	async exportUpcomingPaymentForAdmin(listPaymentAdminDto: ExportPaymentAdminDto) {
+		const {
+			module_id,
+			supplier,
+			status,
+			start_date,
+			end_date,
+			instalment_type,
+			user_id,
+			booking_id,
+			search
+		} = listPaymentAdminDto;
+
+		let where;
+		where = `"BookingInstalments"."attempt" = 0`;
+		if (user_id) {
+			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+		}
+		if (start_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+		}
+
+		if (end_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+		}
+		if (status) {
+			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+		}
+		if (module_id) {
+			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+		}
+		if (supplier) {
+			where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
+		}
+		if (instalment_type) {
+			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+		}
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+		}
+		const { data, total_count } = await this.bookingRepository.exportPayment(where);
+		//const result: any = data;
+
+		// for await (const instalment of result) {
+		// 	if (instalment.bookingInstalments) {
+		// 		let infoDate = instalment.bookingInstalments;
+		// 		infoDate.reverse()
+		// 		for (let index = 0; index < infoDate.length; index++) {
+		// 			const element = infoDate[index];
+		// 			if (element.instalmentDate == instalment.instalmentDate) {
+		// 				//console.log(element.instalmentDate, instalment.instalmentDate, index);
 
 		// 				instalment.installmentNo = index + 1;
 		// 				exit;
@@ -930,6 +999,58 @@ export class BookingService {
 			data: data, total_count: total_count
 		};
 	}
+	async exportActivePaymentForAdmin(listPaymentAdminDto: ExportPaymentAdminDto) {
+		const {
+			module_id,
+			supplier,
+			status,
+			start_date,
+			end_date,
+			instalment_type,
+			user_id,
+			booking_id,
+			search
+		} = listPaymentAdminDto;
+
+		let where;
+		where = `"BookingInstalments"."attempt" > 0`;
+		if (user_id) {
+			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+		}
+		if (start_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+		}
+
+		if (end_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+		}
+		if (status) {
+			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+		}
+		if (module_id) {
+			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+		}
+		if (supplier) {
+			where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
+		}
+		if (instalment_type) {
+			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+		}
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+
+		}
+		const { data, total_count } = await this.bookingRepository.exportPayment(where);
+
+
+		return {
+			data: data, total_count: total_count
+		};
+	}
 
 	async formatDate(date) {
 		var d = new Date(date),
@@ -955,8 +1076,10 @@ export class BookingService {
 				const bookingData = data.booking
 				// booking data
 				const paidAmount = await this.paidAmountByUser(data.bookingId)
+				const totalPaidAmount = await this.totalpaidAmount(data.bookingId)
 				// value of amount paid by user
-
+				//console.log(paidAmount);
+				
 				const markups = await this.getPreductionMarkup()
 				// preduction markup maximum aur minimum value
 
@@ -975,11 +1098,11 @@ export class BookingService {
 				predictiveBookingData['is_below_minimum'] = data.isBelowMinimum
 				predictiveBookingData['remain_seat'] = data.remainSeat
 				predictiveBookingData['selling_price'] = bookingData.totalAmount;
-				predictiveBookingData['paid_amount'] = paidAmount.amount;
+				predictiveBookingData['paid_amount'] = totalPaidAmount;
 				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt == 1 && paidAmount.paymentStatus == PaymentStatus.CONFIRM ? true : false
-				predictiveBookingData['paid_amount_in_percentage'] = (parseFloat(paidAmount.amount) * 100) / parseFloat(bookingData.totalAmount)
+				predictiveBookingData['paid_amount_in_percentage'] = (totalPaidAmount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
-				// console.log(bookingData.laytripBookingId);
+				// //console.log(bookingData.laytripBookingId);
 
 				predictiveBookingData['departure_date'] = bookingData.checkInDate || ''
 				predictiveBookingData['laytrip_booking_id'] = bookingData.laytripBookingId
@@ -1010,23 +1133,23 @@ export class BookingService {
 				//predictiveBookingData['bookingData'] = bookingData;
 
 				if (data.isBelowMinimum == true) {
-					console.log(`rule 1 :- flight below minimum`)
+					//console.log(`rule 1 :- flight below minimum`)
 					predictiveBookingData.bookIt = true;
 				}
 
 				if (net_rate_percentage_variation > markups.minRatePercentage && predictiveBookingData['net_rate_percentage_variation_stage'] == 'DOWN') {
-					console.log(`rule 2 :- flight net rate less than the user book net rate`)
+					//console.log(`rule 2 :- flight net rate less than the user book net rate`)
 					predictiveBookingData.bookIt = true;
 					predictiveBookingData['is_net_rate_price_change_below_threshold'] = true;
 				}
 				else if (net_rate_percentage_variation > markups.maxRatePercentage && predictiveBookingData['net_rate_percentage_variation_stage'] == 'UP') {
-					console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
+					//console.log(`rule 3 :- flight net rate less than the preduction markup max amount`)
 					predictiveBookingData.bookIt = true;
 					predictiveBookingData['is_net_rate_price_change_above_threshold'] = true;
 				}
 
 				// if (predictiveDate <= data.date) {
-				// 	console.log(`rule 4 :- last date for booking`)
+				// 	//console.log(`rule 4 :- last date for booking`)
 				// 	predictiveBookingData.bookIt = true;
 				// 	predictiveBookingData['is_last_date_for_booking'] = true;
 				// }
@@ -1041,18 +1164,19 @@ export class BookingService {
 			}
 			const allBooking = await this.bookingRepository.getPendingBooking()
 			let responce = []
-			console.log(todayPrice);
+			////console.log(todayPrice);
 
 			for await (const booking of allBooking) {
 				if (availableBookingId.indexOf(booking.laytripBookingId) != -1) {
-					//console.log(availableBookingId.indexOf(booking.laytripBookingId));
+					////console.log(availableBookingId.indexOf(booking.laytripBookingId));
 					responce.push(todayPrice[availableBookingId.indexOf(booking.laytripBookingId)])
 
 				}
 				else {
 					const paidAmount = await this.paidAmountByUser(booking.id)
-					console.log(booking.laytripBookingId);
-					console.log('booking.laytripBookingId');
+					const totalPaidAmount = await this.totalpaidAmount(booking.id)
+					//console.log(booking.laytripBookingId);
+					//console.log('booking.laytripBookingId');
 					const predictiveBookingData: any = {}
 					predictiveBookingData['booking_id'] = booking.id
 					predictiveBookingData['net_price'] = null
@@ -1061,9 +1185,9 @@ export class BookingService {
 					predictiveBookingData['remain_seat'] = 0
 					predictiveBookingData['module_name'] = booking.module.name;
 					predictiveBookingData['selling_price'] = booking.totalAmount
-					predictiveBookingData['paid_amount'] = paidAmount.amount;
+					predictiveBookingData['paid_amount'] = totalPaidAmount;
 					predictiveBookingData['is_installation_on_track'] = paidAmount.attempt <= 1 ? true : false
-					predictiveBookingData['paid_amount_in_percentage'] = (parseFloat(paidAmount.amount) * 100) / parseFloat(booking.totalAmount)
+					predictiveBookingData['paid_amount_in_percentage'] = (totalPaidAmount * 100) / parseFloat(booking.totalAmount)
 					predictiveBookingData['booking_status'] = booking.bookingStatus;
 					predictiveBookingData['departure_date'] = booking.checkInDate || ''
 					predictiveBookingData['laytrip_booking_id'] = booking.laytripBookingId
@@ -1115,7 +1239,7 @@ export class BookingService {
 	}
 
 	async paidAmountByUser(bookingId) {
-		console.log(bookingId);
+		////console.log(bookingId);
 
 		let query = await getManager()
 			.createQueryBuilder(BookingInstalments, "instalment")
@@ -1139,6 +1263,25 @@ export class BookingService {
 		// // }
 
 		return query
+	}
+
+	async totalpaidAmount(bookingId) {
+		////console.log(bookingId);
+
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.select([
+				"instalment.amount"
+			])
+			.where(`booking_id=:bookingId AND payment_status =:paymentStatus`, { bookingId, paymentStatus: PaymentStatus.CONFIRM })
+			.orderBy(`id`, "DESC")
+			.getMany();
+		let amount = 0
+		for await (const data of query) {
+			amount = amount + parseFloat(data.amount)
+		}
+
+		return amount
 	}
 
 
@@ -1216,7 +1359,7 @@ export class BookingService {
 			let paidAmount = 0;
 			let remainAmount = 0;
 
-			//console.log(result);
+			////console.log(result);
 
 			for (let i in result.data) {
 				for (let instalment of result.data[i].bookingInstalments) {
@@ -1254,7 +1397,7 @@ export class BookingService {
 		} catch (error) {
 
 			if (typeof error.response !== "undefined") {
-				console.log('m');
+				//console.log('m');
 				switch (error.response.statusCode) {
 					case 404:
 						throw new NotFoundException(error.response.message);
