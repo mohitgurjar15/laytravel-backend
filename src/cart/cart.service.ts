@@ -349,9 +349,10 @@ export class CartService {
             if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 newCart['oldModuleInfo'] = cart.moduleInfo
                 const value = await this.flightAvailiblity(cart, flightResponse[index])
+                //return value
                 if (typeof value.message == "undefined") {
 
-                    newCart['moduleInfo'] = value
+                    newCart['moduleInfo'] = [value]
                     newCart['is_available'] = true
 
                     //cart.moduleInfo = [value]
@@ -383,17 +384,17 @@ export class CartService {
                 }
             }
             else {
+                console.log('else part');
+                
                 newCart['moduleInfo'] = cart.moduleInfo
                 //newCart['is_available'] = false
             }
             newCart['id'] = cart.id
             newCart['userId'] = cart.userId
             newCart['moduleId'] = cart.moduleId
-            newCart['moduleInfo'] = cart.moduleInfo
             newCart['expiryDate'] = cart.expiryDate
             newCart['isDeleted'] = cart.isDeleted
             newCart['createdDate'] = cart.createdDate
-            //newCart['moduleId'] = cart.module.id
             newCart['type'] = cart.module.name
             newCart['travelers'] = cart.travelers
             responce.push(newCart)
