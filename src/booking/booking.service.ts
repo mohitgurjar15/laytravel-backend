@@ -35,6 +35,7 @@ import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { Generic } from "src/utility/generic.utility";
 import { BookingFilterDto } from "./dto/booking-filter.dto";
+import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 
 @Injectable()
 export class BookingService {
@@ -876,6 +877,74 @@ export class BookingService {
 		};
 	}
 
+	async exportUpcomingPaymentForAdmin(listPaymentAdminDto: ExportPaymentAdminDto) {
+		const {
+			module_id,
+			supplier,
+			status,
+			start_date,
+			end_date,
+			instalment_type,
+			user_id,
+			booking_id,
+			search
+		} = listPaymentAdminDto;
+
+		let where;
+		where = `"BookingInstalments"."attempt" = 0`;
+		if (user_id) {
+			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+		}
+		if (start_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+		}
+
+		if (end_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+		}
+		if (status) {
+			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+		}
+		if (module_id) {
+			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+		}
+		if (supplier) {
+			where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
+		}
+		if (instalment_type) {
+			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+		}
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+		}
+		const { data, total_count } = await this.bookingRepository.exportPayment(where);
+		//const result: any = data;
+
+		// for await (const instalment of result) {
+		// 	if (instalment.bookingInstalments) {
+		// 		let infoDate = instalment.bookingInstalments;
+		// 		infoDate.reverse()
+		// 		for (let index = 0; index < infoDate.length; index++) {
+		// 			const element = infoDate[index];
+		// 			if (element.instalmentDate == instalment.instalmentDate) {
+		// 				//console.log(element.instalmentDate, instalment.instalmentDate, index);
+
+		// 				instalment.installmentNo = index + 1;
+		// 				exit;
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		return {
+			data: data, total_count: total_count
+		};
+	}
+
 	async activePaymentForAdmin(listPaymentAdminDto: ListPaymentAdminDto) {
 		const {
 			limit,
@@ -924,6 +993,58 @@ export class BookingService {
 
 		}
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
+
+
+		return {
+			data: data, total_count: total_count
+		};
+	}
+	async exportActivePaymentForAdmin(listPaymentAdminDto: ExportPaymentAdminDto) {
+		const {
+			module_id,
+			supplier,
+			status,
+			start_date,
+			end_date,
+			instalment_type,
+			user_id,
+			booking_id,
+			search
+		} = listPaymentAdminDto;
+
+		let where;
+		where = `"BookingInstalments"."attempt" > 0`;
+		if (user_id) {
+			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+		}
+
+		if (booking_id) {
+			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+		}
+		if (start_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
+		}
+
+		if (end_date) {
+			where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
+		}
+		if (status) {
+			where += `AND ("BookingInstalments"."payment_status" = '${status}')`;
+		}
+		if (module_id) {
+			where += `AND ("BookingInstalments"."module_id" = '${module_id}')`;
+		}
+		if (supplier) {
+			where += `AND ("BookingInstalments"."supplier_id" = '${supplier}') `;
+		}
+		if (instalment_type) {
+			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
+		}
+		if (search) {
+			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+
+		}
+		const { data, total_count } = await this.bookingRepository.exportPayment(where);
 
 
 		return {

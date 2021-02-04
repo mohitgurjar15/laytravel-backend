@@ -421,6 +421,90 @@ export class BookingRepository extends Repository<Booking> {
 		return { data: data, total_count: count };
 	}
 
+	async exportPayment(where: string) {
+		
+		let query = getConnection()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "installment")
+			.leftJoinAndSelect("BookingInstalments.currency", "currency")
+			.leftJoinAndSelect("BookingInstalments.user", "User")
+			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
+			.select([
+				"BookingInstalments.attempt",
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.moduleId",
+				"BookingInstalments.supplierId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentNo",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"BookingInstalments.paymentGatewayId",
+				"BookingInstalments.paymentInfo",
+				"BookingInstalments.paymentStatus",
+				"BookingInstalments.isPaymentProcessedToSupplier",
+				"BookingInstalments.isInvoiceGenerated",
+				"BookingInstalments.transactionToken",
+				"BookingInstalments.comment",
+				"installment.id",
+				"installment.instalmentDate",
+				"installment.currencyId",
+				"installment.amount",
+				"installment.instalmentStatus",
+				"installment.paymentInfo",
+				"installment.paymentStatus",
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.currency",
+				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.locationInfo",
+				"booking.moduleInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.laytripBookingId",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
+				"booking.nextInstalmentDate",
+				"booking.supplierBookingId",
+				"currency.id",
+				"currency.code",
+				"currency.symbol",
+				"currency.liveRate",
+				"User.userId",
+				"User.firstName",
+				"User.lastName",
+				"User.socialAccountId",
+				"User.email",
+				"User.phoneNo",
+				"User.roleId",
+				"moduleData.name",
+			])
+
+			.where(where)
+			.orderBy("BookingInstalments.id", 'DESC')
+		const [data, count] = await query.getManyAndCount();
+		// const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(
+				`Payment record not found&&&id&&&Payment record not found`
+			);
+		}
+		return { data: data, total_count: count };
+	}
 	async getPredictiveBookingDdata() {
 
 		//const {booking_id , below_minimum_seat} = filterOption
