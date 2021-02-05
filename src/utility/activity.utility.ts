@@ -1,4 +1,5 @@
 import { ActivityLog } from "src/entity/activity-log.entity";
+import { CronLog } from "src/entity/cron-log.entity";
 import { SearchLog } from "src/entity/search-log.entity";
 import { getConnection } from "typeorm";
 const fs = require('fs');
@@ -52,4 +53,26 @@ export class Activity {
         }
         fs.promises.writeFile(filename, JSON.stringify(logData))
     }
+
+    static cronActivity(cronName: string) {
+        const log = new CronLog();
+        log.cronName = cronName;
+        log.createdDate = new Date();
+        getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(CronLog)
+            .values(log)
+            .execute();
+    }
+
+    static cronUpdateActivity(cronName: string, logData) {
+        getConnection()
+            .createQueryBuilder()
+            .update(CronLog)
+            .set({ logData: logData })
+            .where("createdDate =:createdDate AND cronName =:cronName", { createdDate: new Date(), cronName })
+            .execute();
+    }
+
 }
