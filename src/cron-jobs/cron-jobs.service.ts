@@ -146,6 +146,7 @@ export class CronJobsService {
 	}
 
 	async checkPandingFlights() {
+		Activity.cronActivity('check pending flights cron');
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.select([
@@ -179,14 +180,17 @@ export class CronJobsService {
 		}
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/>' + failedlogArray, 'update pending flight cron failed')
-		}
+		
 		throw new NotFoundException('update_booking_cron')
+		}
 		return { message: await Translation.Translater('ES', 'responce', 'update_booking_cron') };
 		// message: await Translation.Translater('ES', 'responce', 'update_booking_cron')
+		
 	}
 
 
 	async partialPayment() {
+		Activity.cronActivity('Partial payment cron');
 		const date = new Date();
 		let paidInstallment = [];
 		var currentDate = date.toISOString();
@@ -470,6 +474,7 @@ export class CronJobsService {
 		}
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given installment id please check log files: <br/><pre>' + failedlogArray, 'partial payment cron failed')
+			Activity.cronUpdateActivity('Partial payment cron',failedlogArray);
 		}
 
 
@@ -477,6 +482,7 @@ export class CronJobsService {
 	}
 
 	async partialBookingPrice(Headers, options: getBookingDailyPriceDto) {
+		Activity.cronActivity('Get daily price of booking cron');
 		const { booking_id } = options
 		const date = new Date();
 		var todayDate = date.toISOString();
@@ -539,6 +545,7 @@ export class CronJobsService {
 	}
 
 	async updateFlightBookingInProcess() {
+		Activity.cronActivity('Update flight booking (In process status) cron');
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.user", "User")
@@ -703,7 +710,9 @@ export class CronJobsService {
 	}
 
 	async addRecurringLaytripPoint() {
+		Activity.cronActivity('Add recurring laytrip poin cron');
 		try {
+			
 			var toDate = new Date();
 
 			var todayDate = toDate.toISOString();
@@ -778,6 +787,7 @@ export class CronJobsService {
 	}
 
 	async uploadLogIntoS3Bucket(folderName) {
+		Activity.cronActivity('Upload log file on s3 bucket cron ');
 		const path = require('path');
 		const fs = require('fs');
 		//joining path of directory 
@@ -836,7 +846,7 @@ export class CronJobsService {
 	}
 
 	async paymentReminder() {
-
+		Activity.cronActivity('Payment reminder cron');
 		const date = new Date();
 		var currentDate = date.toISOString();
 		currentDate = currentDate
@@ -998,6 +1008,7 @@ export class CronJobsService {
 	}
 
 	async backupDatabase() {
+		Activity.cronActivity('backup database cron');
 		const AWSconfig = config.get('AWS');
 		const dbConfig = config.get('db');
 

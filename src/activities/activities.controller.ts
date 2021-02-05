@@ -11,6 +11,7 @@ import { LoginLog } from 'src/entity/login-log.entity';
 import { ExportActivityDto } from './dto/activity-export.dto';
 import { ListSearchLogDto } from './dto/list-search-log.dto';
 import { ExportSearchLogDto } from './dto/export-search-log.dto';
+import { ListCronLogDto } from './dto/list-cronLog.dto';
 
 @ApiTags("Activities")
 @ApiBearerAuth()
@@ -76,6 +77,24 @@ export class ActivitiesController {
 
 	): Promise<{ data: LoginLog[]; TotalReseult: any }> {
 		return await this.activitiesService.listloginlog(paginationOption);
+	}
+
+	@Get('cron-log')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "cron logs" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "log not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async cronLog(
+		@Query() paginationOption: ListCronLogDto,
+
+	){
+		return await this.activitiesService.listCronLog(paginationOption);
 	}
 
 	@Get('list-search-log')

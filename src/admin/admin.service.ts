@@ -153,10 +153,10 @@ export class AdminService {
 
 			delete userData.password;
 			delete userData.salt;
-
+			const newData = userData
 			await userData.save();
 
-			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, userData);
+			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, newData);
 			return userData;
 		} catch (error) {
 			if (
