@@ -38,6 +38,7 @@ import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { RagisterMail } from "src/config/email_template/register-mail.html";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Injectable()
 export class AdminService {
@@ -152,10 +153,10 @@ export class AdminService {
 
 			delete userData.password;
 			delete userData.salt;
-
+			const newData = userData
 			await userData.save();
 
-			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, userData);
+			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, newData);
 			return userData;
 		} catch (error) {
 			if (
@@ -196,9 +197,9 @@ export class AdminService {
 	}
 
 	//Export user
-	async exportAdmin(adminId: string): Promise<{ data: User[] }> {
+	async exportAdmin(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
-		return await this.userRepository.exportUser([Role.ADMIN, Role.SUPPORT]);
+		return await this.userRepository.exportUser(paginationOption,[Role.ADMIN, Role.SUPPORT]);
 	}
 
 	/**

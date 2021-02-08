@@ -278,12 +278,13 @@ export class HotelService{
         let capturePayment = true;
         
         let instalmentDetails: any = null;
-
+        let markupAmount = "0";
+        // let markupAmount = (sellingPrice - sellingPrice).toString();
         let bookingData: any = {
             bookingType: BookingType.INSTALMENT,
             totalAmount: sellingPrice.toString(),
             netRate: sellingPrice.toString(),
-            markupAmount: (sellingPrice - sellingPrice).toString(),
+            markupAmount,
             moduleInfo: { details, hotel, room: availability },
             checkInDate: DateTime.convertFormat(details.check_in),
             checkOutDate: DateTime.convertFormat(details.check_out),

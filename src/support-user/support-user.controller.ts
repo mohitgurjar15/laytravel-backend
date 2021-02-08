@@ -35,6 +35,7 @@ import { ListSupporterDto } from "./dto/list-suppoerter.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { UpdateSupporterDto } from "./dto/update-supporter.dto";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Controller("support-user")
 @ApiTags("Support-User")
@@ -180,8 +181,9 @@ export class SupportUserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async exportSuppoerter(
+		@Query() paginationOption: ExportUserDto,
 	): Promise<{ data: User[] }> {
-		return await this.supportUserService.exportSupporter();
+		return await this.supportUserService.exportSupporter(paginationOption);
 	}
 
 	@Get("/:id")

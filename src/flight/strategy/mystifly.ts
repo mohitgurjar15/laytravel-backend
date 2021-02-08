@@ -60,7 +60,7 @@ export class Mystifly implements StrategyAirline {
             mystiflyConfig = JSON.parse(config.liveCredential);
             mystiflyConfig['zipSearchUrl'] = 'http://onepoint.myfarebox.com/V2/OnePointGZip.svc';
         }
-        //mystiflyConfig = { "account_number": "MCN001506","password": "MWR2018_xml","target": "Test", "user_name": "MWR_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
+        //mystiflyConfig = { "account_number": "MCN001714","password": "Lay2020@xml","target": "Test", "user_name": "Laytrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         console.log(mystiflyConfig);
 
         return mystiflyConfig;
@@ -313,10 +313,12 @@ export class Mystifly implements StrategyAirline {
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                    route.no_of_weekly_installment = instalmentDetails.instalment_date.length-1;
                 }
                 else {
                     route.start_price = 0;
                     route.secondary_start_price = 0;
+                    route.no_of_weekly_installment=0;
                 }
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
@@ -325,6 +327,31 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_selling_price = 0;
                 }
                 route.instalment_details = instalmentDetails;
+
+                instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                if (instalmentDetails.instalment_available) {
+                    route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                    route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
+                }
+                else {
+                    route.biweekly_down_payment = 0;
+                    route.biweekly_installment = 0;
+                    route.no_of_biweekly_installment=0;
+                }
+
+                instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                if (instalmentDetails.instalment_available) {
+                    route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                    route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
+                }
+                else {
+                    route.biweekly_down_payment = 0;
+                    route.biweekly_installment = 0;
+                    route.no_of_monthly_installment=0;
+                }
+
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0] == "true" ? true : false;
                 route.departure_code = source_location;
@@ -1454,10 +1481,12 @@ export class Mystifly implements StrategyAirline {
                 if (instalmentDetails.instalment_available) {
                     route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
                     route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                    route.no_of_weekly_installment = instalmentDetails.instalment_date.length-1;
                 }
                 else {
                     route.start_price = 0;
                     route.secondary_start_price = 0;
+                    route.no_of_weekly_installment = 0;
                 }
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
@@ -1467,6 +1496,31 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_selling_price = 0;
                 }
                 route.instalment_details = instalmentDetails;
+
+                instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                if (instalmentDetails.instalment_available) {
+                    route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                    route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
+                }
+                else {
+                    route.biweekly_down_payment = 0;
+                    route.biweekly_installment = 0;
+                    route.no_of_biweekly_installment=0;
+                }
+
+                instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                if (instalmentDetails.instalment_available) {
+                    route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                    route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                    route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
+                }
+                else {
+                    route.biweekly_down_payment = 0;
+                    route.biweekly_installment = 0;
+                    route.no_of_monthly_installment=0;
+                }
+
                 route.inbound_stop_count = stops.length - 1;
                 route.departure_code = source_location;
                 route.arrival_code = destination_location;
@@ -2263,7 +2317,6 @@ export class Mystifly implements StrategyAirline {
         }
 
         //console.log(code);
-        
         if (typeof bags[code] !== 'undefined' && code !== '0PC')
         {
             return bags[code]

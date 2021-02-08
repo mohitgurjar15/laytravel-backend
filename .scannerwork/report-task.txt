@@ -2,5 +2,5 @@ projectKey=laytrip-api
 serverUrl=http://www.oneclicksales.xyz:9000
 serverVersion=8.4.2.36762
 dashboardUrl=http://www.oneclicksales.xyz:9000/dashboard?id=laytrip-api
-ceTaskId=AXYOQtWGEDb2mqlFL6OA
-ceTaskUrl=http://www.oneclicksales.xyz:9000/api/ce/task?id=AXYOQtWGEDb2mqlFL6OA
+ceTaskId=AXdmPGdIVE1H-umfdMfe
+ceTaskUrl=http://www.oneclicksales.xyz:9000/api/ce/task?id=AXdmPGdIVE1H-umfdMfe

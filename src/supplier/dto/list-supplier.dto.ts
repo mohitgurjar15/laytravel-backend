@@ -38,4 +38,10 @@ export class ListSupplierDto {
         example:""
     })
     email: string;
+
+    @ApiPropertyOptional({
+        description:'country id',
+        example:""
+    })
+    countryId: number;
 }

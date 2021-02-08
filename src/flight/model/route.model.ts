@@ -50,6 +50,13 @@ export class Route{
     fare_type               : string;
     instalment_details      :{};
     unique_code             :string;
+    no_of_weekly_installment:number;
+    biweekly_down_payment:number;
+    biweekly_installment:number;
+    no_of_biweekly_installment:number;
+    monthly_down_payment:number;
+    monthly_installment:number;
+    no_of_monthly_installment:number;
 }
 
 export class RouteType{

@@ -1,7 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from "src/config/common.config";
-export class ListUserDto {
+export class ListCronLogDto {
 
     @IsNotEmpty({
         message : `Please enter limit&&&limit&&&${errorMessage}`
@@ -22,27 +22,15 @@ export class ListUserDto {
     page_no:number;
 
     @ApiPropertyOptional({
-        description:'first name',
+        description:'search',
         example:""
     })
-    firstName: string;
+    search: string;
 
     @ApiPropertyOptional({
-        description:'last name',
+        description:'search for date',
         example:""
     })
-    lastName: string;
-
-    @ApiPropertyOptional({
-        description:'email',
-        example:""
-    })
-    email: string;
-
-    @ApiPropertyOptional({
-        description:'country id',
-        example:""
-    })
-    countryId: number;
+    searchDate: Date;
 
 }
