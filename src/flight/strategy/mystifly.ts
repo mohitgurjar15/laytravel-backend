@@ -257,12 +257,12 @@ export class Mystifly implements StrategyAirline {
                     stopDuration = "";
                     stop.departure_code = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['a:departuredatetime'][0];
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['a:arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;
@@ -553,14 +553,14 @@ export class Mystifly implements StrategyAirline {
                     stopDuration = "";
                     stop.departure_code = flightSegment['departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['departuredatetime'][0];
 
 
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['eticket'][0] == 'true' ? true : false;
@@ -834,14 +834,14 @@ export class Mystifly implements StrategyAirline {
                     stopDuration = "";
                     stop.departure_code = flightSegment['departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['departuredatetime'][0];
 
 
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['eticket'][0] == 'true' ? true : false;
@@ -903,12 +903,12 @@ export class Mystifly implements StrategyAirline {
                     totalDuration += flightSegment['journeyduration'][0] * 60;
                     stop.departure_code = flightSegment['departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['departuredatetime'][0];
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['eticket'][0] == 'true' ? true : false;
@@ -1367,12 +1367,12 @@ export class Mystifly implements StrategyAirline {
                     totalDuration += flightSegment['a:journeyduration'][0] * 60;
                     stop.departure_code = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['a:departuredatetime'][0];
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['a:arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;
@@ -1424,12 +1424,12 @@ export class Mystifly implements StrategyAirline {
                     totalDuration += flightSegment['a:journeyduration'][0] * 60;
                     stop.departure_code = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['a:departuredatetime'][0];
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['a:arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;
@@ -1716,12 +1716,12 @@ export class Mystifly implements StrategyAirline {
                     totalDuration += flightSegment['a:journeyduration'][0] * 60;
                     stop.departure_code = flightSegment['a:departureairportlocationcode'][0];
                     stop.departure_date = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
-                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
+                    stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("h:mm A")
                     stop.departure_date_time = flightSegment['a:departuredatetime'][0];
                     stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                     stop.arrival_code = flightSegment['a:arrivalairportlocationcode'][0];
                     stop.arrival_date = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
-                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
+                    stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("h:mm A")
                     stop.arrival_date_time = flightSegment['a:arrivaldatetime'][0];
                     stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                     stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;
@@ -1775,12 +1775,12 @@ export class Mystifly implements StrategyAirline {
                         totalDuration += flightSegment['a:journeyduration'][0] * 60;
                         stop.departure_code = flightSegment['a:departureairportlocationcode'][0];
                         stop.departure_date = moment(flightSegment['a:departuredatetime'][0]).format("DD/MM/YYYY")
-                        stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("hh:mm A")
+                        stop.departure_time = moment(flightSegment['a:departuredatetime'][0]).format("h:mm A")
                         stop.departure_date_time = flightSegment['a:departuredatetime'][0];
                         stop.departure_info = typeof airports[stop.departure_code] !== 'undefined' ? airports[stop.departure_code] : {};
                         stop.arrival_code = flightSegment['a:arrivalairportlocationcode'][0];
                         stop.arrival_date = moment(flightSegment['a:arrivaldatetime'][0]).format("DD/MM/YYYY")
-                        stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("hh:mm A")
+                        stop.arrival_time = moment(flightSegment['a:arrivaldatetime'][0]).format("h:mm A")
                         stop.arrival_date_time = flightSegment['a:arrivaldatetime'][0];
                         stop.arrival_info = typeof airports[stop.arrival_code] !== 'undefined' ? airports[stop.arrival_code] : {};
                         stop.eticket = flightSegment['a:eticket'][0] == 'true' ? true : false;

@@ -180,12 +180,12 @@ export class CronJobsService {
 		}
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/>' + failedlogArray, 'update pending flight cron failed')
-		
-		throw new NotFoundException('update_booking_cron')
+
+			throw new NotFoundException('update_booking_cron')
 		}
 		return { message: await Translation.Translater('ES', 'responce', 'update_booking_cron') };
 		// message: await Translation.Translater('ES', 'responce', 'update_booking_cron')
-		
+
 	}
 
 
@@ -287,10 +287,10 @@ export class CronJobsService {
 								await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
 							}
 
-							if(instalment.user.isSMS){
+							if (instalment.user.isSMS) {
 								TwilioSMS.sendSMS({
-									toSMS:param.phoneNo,
-									message:`we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`
+									toSMS: param.phoneNo,
+									message: `we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`
 								})
 							}
 
@@ -335,10 +335,10 @@ export class CronJobsService {
 								});
 						}
 
-						if(instalment.user.isSMS){
+						if (instalment.user.isSMS) {
 							TwilioSMS.sendSMS({
-								toSMS:param.phoneNo,
-								message:`We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+								toSMS: param.phoneNo,
+								message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
 							})
 						}
 
@@ -425,14 +425,14 @@ export class CronJobsService {
 									console.log("err", err);
 								});
 						}
-						
-						if(instalment.user.isSMS){
+
+						if (instalment.user.isSMS) {
 							TwilioSMS.sendSMS({
-								toSMS:param.phoneNo,
-								message:`We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
+								toSMS: param.phoneNo,
+								message: `We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
 							})
 						}
-						
+
 						// Activity.logActivity(
 						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
 						// 	"cron",
@@ -474,7 +474,7 @@ export class CronJobsService {
 		}
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given installment id please check log files: <br/><pre>' + failedlogArray, 'partial payment cron failed')
-			Activity.cronUpdateActivity('Partial payment cron',failedlogArray);
+			Activity.cronUpdateActivity('Partial payment cron', failedlogArray);
 		}
 
 
@@ -539,6 +539,7 @@ export class CronJobsService {
 
 		if (failedlogArray != '') {
 			this.cronfailedmail('cron fail for given booking id please check log files: <br/><pre>' + failedlogArray, 'daily booking price cron failed')
+			Activity.cronUpdateActivity('Get daily price of booking cron', failedlogArray);
 		}
 
 		return { message: `today booking price added for pending booking` }
@@ -712,7 +713,7 @@ export class CronJobsService {
 	async addRecurringLaytripPoint() {
 		Activity.cronActivity('Add recurring laytrip poin cron');
 		try {
-			
+
 			var toDate = new Date();
 
 			var todayDate = toDate.toISOString();
@@ -924,7 +925,7 @@ export class CronJobsService {
 			if (installment.user.isEmail) {
 				this.mailerService
 					.sendMail({
-						to:installment.user.email,
+						to: installment.user.email,
 						from: mailConfig.from,
 						bcc: mailConfig.BCC,
 						subject: "Payment Reminder",
@@ -1357,6 +1358,19 @@ export class CronJobsService {
 		}
 		return { message: `today booking price added for pending booking` }
 
+	}
+
+	async abc() {
+
+		var x = new Date()
+
+		const y = x
+
+		console.log(y)
+
+		x.setDate(x.getDate() + 5);
+
+		console.log(y)
 	}
 
 }

@@ -146,4 +146,14 @@ export class CronJobsController {
 	) {
 		return await this.cronJobsService.updateModuleInfo(req.headers);
 	}
+
+	@Get('check-testing')
+	@ApiOperation({ summary: "abc" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async abc(
+	) {
+		return await this.cronJobsService.abc();
+	}
 }
