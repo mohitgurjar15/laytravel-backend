@@ -133,27 +133,30 @@ export class AdminService {
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
 			});
+			if(!userData){
+				throw new NotFoundException(`Given id not found.`)
+			}
 
-			const previousData = userData;
+			let previousData =userData;
+			console.log(previousData);
+			console.log(firstName);
 
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
 			userData.updatedBy = adminId;
 			userData.gender = gender;
-			if (typeof files.profile_pic != "undefined")
+			if (typeof files.profile_pic != "undefined") {
 				userData.profilePic = files.profile_pic[0].filename;
-			userData.updatedDate = new Date();
-			/* userData.gender = gender;
-			userData.country = country;
-			userData.state = state;
-			userData.city = city;
-			userData.address = address
-			userData.zipCode = zipCode */
+				userData.updatedDate = new Date();
+			}
 
 			delete userData.password;
 			delete userData.salt;
-			const newData = userData
+			let newData = new User();
+			newData = userData
+			console.log(userData);
+
 			await userData.save();
 
 			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, newData);
@@ -197,9 +200,9 @@ export class AdminService {
 	}
 
 	//Export user
-	async exportAdmin(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
+	async exportAdmin(adminId: string, paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
-		return await this.userRepository.exportUser(paginationOption,[Role.ADMIN, Role.SUPPORT]);
+		return await this.userRepository.exportUser(paginationOption, [Role.ADMIN, Role.SUPPORT]);
 	}
 
 	/**
@@ -414,7 +417,7 @@ export class AdminService {
 									subject: `Welcome on board`,
 									html: RagisterMail({
 										username: data.firstName + " " + data.lastName
-									},data.password)
+									}, data.password)
 								})
 								.then((res) => {
 									console.log("res", res);
@@ -452,25 +455,25 @@ export class AdminService {
 				}
 			} catch (error) {
 				row.error_message = error.message
-							unsuccessRecord.push(row);
+				unsuccessRecord.push(row);
 			}
 		}
 		Activity.logActivity(userId, "admin", `Import ${count}  admin`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 
-	async getAdminFirstName(){
-		const roles = [Role.ADMIN,Role.SUPPORT,Role.SUPER_ADMIN]
-		return await this.userRepository.getFirstname(roles)		
+	async getAdminFirstName() {
+		const roles = [Role.ADMIN, Role.SUPPORT, Role.SUPER_ADMIN]
+		return await this.userRepository.getFirstname(roles)
 	}
 
-	async getAdminLastName(){
-		const roles = [Role.ADMIN,Role.SUPPORT,Role.SUPER_ADMIN]
-		return await this.userRepository.getLastname(roles)		
+	async getAdminLastName() {
+		const roles = [Role.ADMIN, Role.SUPPORT, Role.SUPER_ADMIN]
+		return await this.userRepository.getLastname(roles)
 	}
 
-	async getAdminEmail(){
-		const roles = [Role.ADMIN,Role.SUPPORT,Role.SUPER_ADMIN]
-		return await this.userRepository.getemails(roles)		
+	async getAdminEmail() {
+		const roles = [Role.ADMIN, Role.SUPPORT, Role.SUPER_ADMIN]
+		return await this.userRepository.getemails(roles)
 	}
 }

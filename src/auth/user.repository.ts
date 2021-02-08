@@ -502,6 +502,7 @@ export class UserRepository extends Repository<User> {
 				"user.dob",
 				"user.firstName",
 				"user.lastName",
+				"user.socialAccountId",
 				"user.email",
 				"user.profilePic",
 				"user.dob",
@@ -563,6 +564,7 @@ export class UserRepository extends Repository<User> {
 		user.userId = userDetail.userId;
 		user.firstName = userDetail.firstName;
 		user.lastName = userDetail.lastName || "";
+		user.socialAccountId = userDetail.socialAccountId || "";
 		user.email = userDetail.email;
 		user.gender = userDetail.gender || "";
 		user.roleId = userDetail.roleId;

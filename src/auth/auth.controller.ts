@@ -62,6 +62,7 @@ import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 import { updateUserPreference } from "./dto/update-user-preference.dto";
+import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -385,6 +386,45 @@ export class AuthController {
 		);
 	}
 
+	@Put("/profile/picture")
+	@ApiOperation({ summary: "Update user profile picture" })
+	@ApiConsumes("multipart/form-data")
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 400, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not found!" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	@UseInterceptors(
+		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
+			storage: diskStorage({
+				destination: "./assets/profile",
+				filename: editFileName,
+			}),
+			fileFilter: imageFileFilter,
+			limits: { fileSize: 2097152 },
+		})
+	)
+	async updateProfilePic(
+		@Body() updateProfileDto: UpdateProfilePicDto,
+		@UploadedFiles() files: ProfilePicDto,
+		@Req() req,
+		@GetUser() user: User,
+		@SiteUrl() siteUrl
+	): Promise<any> {
+		if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+		}
+		return await this.authService.updateProfilePic(
+			updateProfileDto,
+			user,
+			files,
+			siteUrl
+		);
+	}
+	
 	@Put("change-password")
 	@ApiOperation({ summary: "Change user password" })
 	@ApiBearerAuth()

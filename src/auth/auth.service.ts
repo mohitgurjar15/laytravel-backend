@@ -80,6 +80,7 @@ import { updateUserPreference } from "./dto/update-user-preference.dto";
 import { UserPreference } from "src/enum/user-preference.enum";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { airports } from "src/flight/airports";
+import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 
 @Injectable()
 export class AuthService {
@@ -1257,6 +1258,94 @@ export class AuthService {
 			const token = accessToken;
 
 			return { data: data, token: token, message: `Your profile has been updated successfully` };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			if (error instanceof BadRequestException) {
+				throw new BadRequestException(error.message);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+	async updateProfilePic(
+		updateProfilePicDto: UpdateProfilePicDto,
+		loginUser,
+		files,
+		siteUrl
+	): Promise<any> {
+		try {
+			const userId = loginUser.userId;
+			const {
+				profile_pic
+			} = updateProfilePicDto
+			const user = new User();
+			var oldProfile = user.profilePic;
+
+			if (typeof files.profile_pic != "undefined") {
+				user.profilePic = files.profile_pic[0].filename;
+			}
+			else {
+				throw new BadRequestException(`please select your image`)
+			}
+			await this.userRepository.update(userId, user);
+
+			if (oldProfile) {
+				await fs.unlink(
+					`/var/www/html/api-staging/assets/profile/${oldProfile}`,
+					function (err) {
+						if (err) {
+							console.log(err);
+						}
+						else {
+							console.log(`${oldProfile} image  deleted!`);
+						}
+						// if no error, file has been deleted successfully
+					}
+				);
+			}
+
+			const roleId = [
+				Role.ADMIN,
+				Role.SUPER_ADMIN,
+				Role.PAID_USER,
+				Role.FREE_USER,
+				Role.GUEST_USER,
+				Role.SUPPLIER,
+				Role.SUPPORT,
+			];
+
+			const data = await this.userRepository.getUserDetails(
+				userId,
+				siteUrl,
+				roleId
+			);
+			const payload: JwtPayload = {
+				user_id: data.userId,
+				email: data.email,
+				username: data.firstName + " " + data.lastName,
+				firstName: data.firstName,
+				phone: data.phoneNo,
+				middleName: data.middleName,
+				lastName: data.lastName,
+				salt: data.salt,
+				createdDate: data.createdDate,
+
+				profilePic: data.profilePic
+					? data.profilePic
+					: "",
+				roleId: data.roleId,
+				socialAccountId: data.socialAccountId
+
+			};
+			const accessToken = this.jwtService.sign(payload);
+			const token = accessToken;
+
+			return { token: token, message: `Your profile pic has been updated successfully` };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
