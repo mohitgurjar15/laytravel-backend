@@ -916,7 +916,7 @@ export class CronJobsService {
 				TwilioSMS.sendSMS(
 					{
 						toSMS: param.phoneNo,
-						message: `Just a friendly reminder that your installment amount of ${param.amount} will be collected on ${dateWithMonthName} for booking number ${param.bookingId} .Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
+						message: `Just a friendly reminder that your installment amount of ${param.amount} will be collected on ${dateWithMonthName} for booking number ${param.bookingId}. Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`
 					}
 				);
 

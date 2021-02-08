@@ -71,7 +71,7 @@ export class NewsLettersService {
 				.catch((err) => {
 					console.log("err", err);
 				});
-			return { message: `Welcome to laytrip, please check your email for more exciting offers.` };
+			return { message: `Thank you for joining our Laytrip community!` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");
