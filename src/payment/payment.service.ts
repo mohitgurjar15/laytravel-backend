@@ -83,6 +83,7 @@ export class PaymentService {
 				"user_card.cardToken",
 				"user_card.cardType",
 				"user_card.status",
+				"user_card.cardMetaData"
 			])
 			.where(
 				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted",
