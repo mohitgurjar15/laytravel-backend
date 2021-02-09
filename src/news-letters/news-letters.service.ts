@@ -18,6 +18,8 @@ import { ListSubscribeUsersDto } from "./dto/list-subscribe-users.dto";
 import { NewsLettersRepository } from "./news-letters.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as config from "config";
+import { NewsLetterMail } from "src/config/new_email_templete/news-letters.html";
+import { ExportSubscribeUsersDto } from "./dto/export-newsLetters.dto";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -63,7 +65,7 @@ export class NewsLettersService {
 					from: mailConfig.from,
 					cc: mailConfig.BCC,
 					subject: "Welcome to Laytrip",
-					html: subscribeForNewsUpdates(),
+					html: await NewsLetterMail(),
 				})
 				.then((res) => {
 					console.log("res", res);
@@ -195,6 +197,44 @@ export class NewsLettersService {
 	) {
 		try {
 			return await this.newsLettersRepository.listSubscriber(paginationOption);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+
+	async exportSubscriber(
+		paginationOption: ExportSubscribeUsersDto
+	) {
+		try {
+			return await this.newsLettersRepository.exportSubscriber(paginationOption);
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 
