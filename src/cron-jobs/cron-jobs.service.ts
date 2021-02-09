@@ -46,6 +46,7 @@ const AWS = require('aws-sdk');
 var fs = require('fs');
 const cronUserId = config.get('cronUserId');
 import * as md5 from 'md5';
+import { CartBooking } from "src/entity/cart-booking.entity";
 
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
@@ -191,6 +192,7 @@ export class CronJobsService {
 
 	async partialPayment() {
 		Activity.cronActivity('Partial payment cron');
+
 		const date = new Date();
 		let paidInstallment = [];
 		var currentDate = date.toISOString();
@@ -204,215 +206,257 @@ export class CronJobsService {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 
-		let query = getManager()
-			.createQueryBuilder(BookingInstalments, "BookingInstalments")
-			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+		let cartBookings = await getConnection()
+			.createQueryBuilder(CartBooking, "cartBooking")
+			.leftJoinAndSelect("cartBooking.bookings", "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
-			.leftJoinAndSelect("BookingInstalments.user", "User")
-
+			.leftJoinAndSelect("booking.user", "User")
 			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
+			.getMany();
+		//return cartBookings
+		//cartBookings[0].bookings[0].user
+		// let query = getManager()
+		// 	.createQueryBuilder(BookingInstalments, "BookingInstalments")
+		// 	.leftJoinAndSelect("BookingInstalments.booking", "booking")
+		// 	.leftJoinAndSelect("BookingInstalments.currency", "currency")
+		// 	.leftJoinAndSelect("BookingInstalments.user", "User")
+		// 	.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 
-		const data = await query.getMany();
+		//const data = await query.getMany();
 		//console.log(data)
 		// const count = await query.getCount();
-		if (!data.length) {
+		if (!cartBookings.length) {
 			throw new NotFoundException(
 				`Partial Payment not available`
 			);
 		}
 
 		var failedlogArray = '';
-		for await (const instalment of data) {
+		for await (const cartBooking of cartBookings) {
 
 			try {
+				let amount: number = 0
+				cartBooking.bookings
+				for await (const booking of cartBooking.bookings) {
 
-				console.log('installment amount', instalment.amount);
+					for await (const instalment of booking.bookingInstalments) {
+						amount += Generic.formatPriceDecimal(parseFloat(instalment.amount))
+					}
+				}
+				console.log('installment amount', amount);
 
-				let amount: number = Generic.formatPriceDecimal(parseFloat(instalment.amount))
-				let currencyCode = instalment.currency.code
-				let cardToken = instalment.booking.cardToken
+				let currencyCode = cartBooking.bookings[0].bookingInstalments[0].currency.code
+				let cardToken = cartBooking.bookings[0].cardToken
+				const cartAmount = amount
 				amount = amount * 100
 				amount = Math.ceil(amount)
+
+				console.log(cartAmount);
+				
 
 				if (cardToken) {
 					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
 
+					for await (const booking of cartBooking.bookings) {
 
-					instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-					instalment.paymentInfo = transaction.meta_data;
-					instalment.transactionToken = transaction.token;
-					instalment.paymentCaptureDate = new Date();
-					instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
-					instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
-					instalment.comment = `try to get Payment by cron on ${currentDate}`
-					await instalment.save()
-
+						for await (const instalment of booking.bookingInstalments) {
+							instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+							instalment.paymentInfo = transaction.meta_data;
+							instalment.transactionToken = transaction.token;
+							instalment.paymentCaptureDate = new Date();
+							instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
+							instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+							instalment.comment = `try to get Payment by cron on ${currentDate}`
+							await instalment.save()
+						}
+					}
 
 					if (transaction.status == false) {
 
 						let faildTransaction = new FailedPaymentAttempt()
-						faildTransaction.instalmentId = instalment.id
+						faildTransaction.instalmentId = cartBooking.bookings[0].bookingInstalments[0].id
 						faildTransaction.paymentInfo = transaction.meta_data
 						faildTransaction.date = new Date();
 
 						await faildTransaction.save()
 						var availableTry = ''
 
-						if (instalment.attempt == 1) {
+						if (cartBooking.bookings[0].bookingInstalments[0].attempt == 1) {
 							availableTry = 'two'
 
 						} else {
-							availableTry = instalment.attempt == 2 ? 'one' : 'zero'
+							availableTry = cartBooking.bookings[0].bookingInstalments[0].attempt == 2 ? 'one' : 'zero'
 						}
 
 						let param = {
-							date: DateTime.convertDateFormat(instalment.instalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY'),
-							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
+							date: DateTime.convertDateFormat(cartBooking.bookings[0].bookingInstalments[0].instalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY'),
+							amount: Generic.formatPriceDecimal(cartAmount),
 							available_try: availableTry,
 							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMM DD, YYYY'),
-							currency: instalment.currency.symbol,
-							phoneNo: `+${instalment.user.countryCode}` + instalment.user.phoneNo,
-							bookingId: instalment.booking.laytripBookingId,
+							currency: cartBooking.bookings[0].bookingInstalments[0].currency.symbol,
+							phoneNo: `+${cartBooking.bookings[0].user.countryCode}` + cartBooking.bookings[0].user.phoneNo,
+							bookingId: cartBooking.laytripCartId,
 						}
-						if (instalment.attempt >= 3) {
-							await getConnection()
-								.createQueryBuilder()
-								.update(Booking)
-								.set({ bookingStatus: BookingStatus.NOTCOMPLETED, paymentStatus: PaymentStatus.FAILED })
-								.where("id = :id", { id: instalment.bookingId })
-								.execute();
-							instalment.paymentStatus = PaymentStatus.FAILED
-							await instalment.save()
-							if (instalment.user.isEmail) {
-								await this.sendFlightIncompleteMail(instalment.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
+						for await (const booking of cartBooking.bookings) {
+
+							for await (const instalment of booking.bookingInstalments) {
+								if (instalment.attempt >= 3) {
+									await getConnection()
+										.createQueryBuilder()
+										.update(Booking)
+										.set({ bookingStatus: BookingStatus.NOTCOMPLETED, paymentStatus: PaymentStatus.FAILED })
+										.where("id = :id", { id: instalment.bookingId })
+										.execute();
+									instalment.paymentStatus = PaymentStatus.FAILED
+									await instalment.save()
+									if (booking.user.isEmail) {
+										await this.sendFlightIncompleteMail(booking.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
+									}
+
+									if (booking.user.isSMS) {
+										TwilioSMS.sendSMS({
+											toSMS: param.phoneNo,
+											message: `we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`
+										})
+									}
+
+									PushNotification.sendNotificationTouser(booking.user.userId,
+										{  //you can send only notification or only data(or include both)
+											module_name: 'booking',
+											task: 'booking_cancelled',
+											bookingId: instalment.booking.laytripBookingId
+										},
+										{
+											title: 'booking Cancelled',
+											body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
+										}, cronUserId)
+									WebNotification.sendNotificationTouser(booking.user.userId,
+										{  //you can send only notification or only data(or include both)
+											module_name: 'booking',
+											task: 'booking_cancelled',
+											bookingId: instalment.booking.laytripBookingId
+										},
+										{
+											title: 'booking Cancelled',
+											body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
+										}, cronUserId)
+
+
+								}
+
+								if (booking.user.isEmail) {
+									this.mailerService
+										.sendMail({
+											to: instalment.user.email,
+											from: mailConfig.from,
+											cc: mailConfig.BCC,
+											subject: `Payment Failed Notification`,
+											html: missedPaymentInstallmentMail(param),
+										})
+										.then((res) => {
+											console.log("res", res);
+										})
+										.catch((err) => {
+											console.log("err", err);
+										});
+								}
+
+								if (booking.user.isSMS) {
+									TwilioSMS.sendSMS({
+										toSMS: param.phoneNo,
+										message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+									})
+								}
+
+								// Activity.logActivity(
+								// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+								// 	"cron",
+								// 	`${instalment.id} Payment Failed by Cron`
+								// );
+
+								PushNotification.sendNotificationTouser(booking.user.userId,
+									{  //you can send only notification or only data(or include both)
+										module_name: 'instalment',
+										task: 'instalment_failed',
+										bookingId: instalment.booking.laytripBookingId,
+										instalmentId: instalment.id
+									},
+									{
+										title: 'Instalment Failed',
+										body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+									}, cronUserId)
+								WebNotification.sendNotificationTouser(booking.user.userId,
+									{  //you can send only notification or only data(or include both)
+										module_name: 'instalment',
+										task: 'instalment_failed',
+										bookingId: instalment.booking.laytripBookingId,
+										instalmentId: instalment.id
+									},
+									{
+										title: 'Instalment Failed',
+										body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+									}, cronUserId)
 							}
-
-							if (instalment.user.isSMS) {
-								TwilioSMS.sendSMS({
-									toSMS: param.phoneNo,
-									message: `we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`
-								})
-							}
-
-							PushNotification.sendNotificationTouser(instalment.user.userId,
-								{  //you can send only notification or only data(or include both)
-									module_name: 'booking',
-									task: 'booking_cancelled',
-									bookingId: instalment.booking.laytripBookingId
-								},
-								{
-									title: 'booking Cancelled',
-									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
-								}, cronUserId)
-							WebNotification.sendNotificationTouser(instalment.user.userId,
-								{  //you can send only notification or only data(or include both)
-									module_name: 'booking',
-									task: 'booking_cancelled',
-									bookingId: instalment.booking.laytripBookingId
-								},
-								{
-									title: 'booking Cancelled',
-									body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
-								}, cronUserId)
-
-
 						}
-
-						if (instalment.user.isEmail) {
-							this.mailerService
-								.sendMail({
-									to: instalment.user.email,
-									from: mailConfig.from,
-									cc: mailConfig.BCC,
-									subject: `Payment Failed Notification`,
-									html: missedPaymentInstallmentMail(param),
-								})
-								.then((res) => {
-									console.log("res", res);
-								})
-								.catch((err) => {
-									console.log("err", err);
-								});
-						}
-
-						if (instalment.user.isSMS) {
-							TwilioSMS.sendSMS({
-								toSMS: param.phoneNo,
-								message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-							})
-						}
-
-						// Activity.logActivity(
-						// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
-						// 	"cron",
-						// 	`${instalment.id} Payment Failed by Cron`
-						// );
-
-						PushNotification.sendNotificationTouser(instalment.user.userId,
-							{  //you can send only notification or only data(or include both)
-								module_name: 'instalment',
-								task: 'instalment_failed',
-								bookingId: instalment.booking.laytripBookingId,
-								instalmentId: instalment.id
-							},
-							{
-								title: 'Instalment Failed',
-								body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-							}, cronUserId)
-						WebNotification.sendNotificationTouser(instalment.user.userId,
-							{  //you can send only notification or only data(or include both)
-								module_name: 'instalment',
-								task: 'instalment_failed',
-								bookingId: instalment.booking.laytripBookingId,
-								instalmentId: instalment.id
-							},
-							{
-								title: 'Instalment Failed',
-								body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-							}, cronUserId)
 
 					}
 					else {
 						//console.log('nextDate');
+						for await (const booking of cartBooking.bookings) {
 
-						const nextInstalmentDate = await getManager()
-							.createQueryBuilder(BookingInstalments, "BookingInstalments")
-							.select(['BookingInstalments.instalmentDate'])
-							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'AND "BookingInstalments"."id" > ${instalment.id}`)
-							.orderBy(`"BookingInstalments"."id"`)
-							.getOne()
+							for await (const instalment of booking.bookingInstalments) {
+								const nextInstalmentDate = await getManager()
+									.createQueryBuilder(BookingInstalments, "BookingInstalments")
+									.select(['BookingInstalments.instalmentDate'])
+									.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${instalment.bookingId}'AND "BookingInstalments"."id" > ${instalment.id}`)
+									.orderBy(`"BookingInstalments"."id"`)
+									.getOne()
+
+								await getConnection()
+									.createQueryBuilder()
+									.update(Booking)
+									.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
+									.where("id = :id", { id: instalment.bookingId })
+									.execute();
+							}
+						}
 
 						// console.log(nextDate);
 
+						let complitedAmount = 0;
+						let totalAmount = 0;
+						let pendingInstallment = 0;
+						for await (const booking of cartBooking.bookings) {
 
-						await getConnection()
-							.createQueryBuilder()
-							.update(Booking)
-							.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
-							.where("id = :id", { id: instalment.bookingId })
-							.execute();
-
-						let param = {
-							date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', ' Do YYYY'),
-							userName: instalment.user.firstName + ' ' + instalment.user.lastName,
-							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
-							cardNo: transaction.meta_data.transaction.payment_method.number,
-							orderId: instalment.booking.laytripBookingId,
-							amount: Generic.formatPriceDecimal(parseFloat(instalment.amount)),
-							installmentId: instalment.id,
-							complitedAmount: parseFloat(await this.totalPaidAmount(instalment.bookingId)),
-							totalAmount: Generic.formatPriceDecimal(parseFloat(instalment.booking.totalAmount)),
-							currencySymbol: instalment.currency.symbol,
-							currency: instalment.currency.code,
-							pendingInstallment: await this.pandingInstalment(instalment.bookingId),
-							phoneNo: `+${instalment.user.countryCode}` + instalment.user.phoneNo,
-							bookingId: instalment.booking.laytripBookingId,
+							complitedAmount += parseFloat(await this.totalPaidAmount(booking.id))
+							totalAmount += Generic.formatPriceDecimal(parseFloat(booking.totalAmount))
+							pendingInstallment += await this.pandingInstalment(booking.id)
+							
 						}
 
-						if (instalment.user.isEmail) {
+
+						let param = {
+							date: DateTime.convertDateFormat(new Date(cartBooking.bookings[0].bookingInstalments[0].instalmentDate), 'YYYY-MM-DD', ' Do YYYY'),
+							userName: cartBooking.bookings[0].user.firstName + ' ' + cartBooking.bookings[0].user.lastName,
+							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+							cardNo: transaction.meta_data.transaction.payment_method.number,
+							orderId: cartBooking.laytripCartId,
+							amount: Generic.formatPriceDecimal(cartAmount),
+							installmentId: cartBooking.bookings[0].bookingInstalments[0].id,
+							complitedAmount: complitedAmount,
+							totalAmount: totalAmount,
+							currencySymbol: cartBooking.bookings[0].bookingInstalments[0].currency.symbol,
+							currency: cartBooking.bookings[0].bookingInstalments[0].currency.code,
+							pendingInstallment: pendingInstallment,
+							phoneNo: `+${cartBooking.bookings[0].user.countryCode}` + cartBooking.bookings[0].user.phoneNo,
+							bookingId: cartBooking.bookings[0].bookingInstalments[0].booking.laytripBookingId,
+						}
+
+						if (cartBooking.bookings[0].bookingInstalments[0].user.isEmail) {
 							this.mailerService
 								.sendMail({
-									to: instalment.user.email,
+									to: cartBooking.bookings[0].user.email,
 									from: mailConfig.from,
 									bcc: mailConfig.BCC,
 									subject: `Installment Payment Successed`,
@@ -426,7 +470,7 @@ export class CronJobsService {
 								});
 						}
 
-						if (instalment.user.isSMS) {
+						if (cartBooking.bookings[0].user.isSMS) {
 							TwilioSMS.sendSMS({
 								toSMS: param.phoneNo,
 								message: `We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
@@ -439,37 +483,38 @@ export class CronJobsService {
 						// 	`${instalment.id} Payment successed by Cron`
 						// );
 
-						PushNotification.sendNotificationTouser(instalment.user.userId,
+						PushNotification.sendNotificationTouser(cartBooking.bookings[0].user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
 								task: 'instalment_received',
-								bookingId: instalment.booking.laytripBookingId,
-								instalmentId: instalment.id
+								bookingId: cartBooking.laytripCartId,
+								instalmentId: cartBooking.bookings[0].bookingInstalments[0].id
 							},
 							{
 								title: 'Installment Received',
-								body: `We have received your payment of $${instalment.amount}.`
+								body: `We have received your payment of $${cartAmount}.`
 							}, cronUserId)
-						WebNotification.sendNotificationTouser(instalment.user.userId,
+						WebNotification.sendNotificationTouser(cartBooking.bookings[0].user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
 								task: 'instalment_received',
-								bookingId: instalment.booking.laytripBookingId,
-								instalmentId: instalment.id
+								bookingId: cartBooking.laytripCartId,
+								instalmentId: cartBooking.bookings[0].bookingInstalments[0].id
 							},
 							{
 								title: 'Installment Received',
-								body: `We have received your payment of $${instalment.amount}.`
+								body: `We have received your payment of $${cartAmount}.`
 							}, cronUserId)
 					}
-
-					await this.checkAllinstallmentPaid(instalment.bookingId)
+					for await (const booking of cartBooking.bookings) {
+						await this.checkAllinstallmentPaid(booking.id)
+					}
 				}
 			} catch (error) {
 
-				const filename = `partial-payment-cron-failed-` + instalment.id + '-' + new Date().getTime() + '.json'
-				Activity.createlogFile(filename, JSON.stringify(instalment) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
-				failedlogArray += `<p>instalmentId:- ${instalment.id}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
+				const filename = `partial-payment-cron-failed-` + cartBooking.laytripCartId + '-' + new Date().getTime() + '.json'
+				Activity.createlogFile(filename, JSON.stringify(cartBooking.laytripCartId) + '-----------------------error-----------------------' + JSON.stringify(error), 'payment')
+				failedlogArray += `<p>instalmentId:- ${cartBooking.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`
 			}
 		}
 		if (failedlogArray != '') {

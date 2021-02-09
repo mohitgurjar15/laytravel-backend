@@ -24,7 +24,7 @@ export class CartBooking extends BaseEntity {
     @Column("integer", { name: "booking_type" })
     bookingType: number;
 
-    @Column("integer", { name: "status" })
+    @Column("integer", { name: "status", default: 0 })
     status: number;
 
     @Column("date", { name: "booking_date" })
@@ -52,7 +52,7 @@ export class CartBooking extends BaseEntity {
 
     @OneToMany(
         () => Booking,
-        booking => booking.cartId
+        booking => booking.cart
     )
     bookings: Booking[];
 

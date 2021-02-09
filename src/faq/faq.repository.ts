@@ -1,5 +1,5 @@
 import { Faq } from "src/entity/faq.entity";
-import { EntityRepository, getManager, Repository } from "typeorm";
+import { EntityRepository, getConnection, getManager, Repository } from "typeorm";
 import { ListFaqDto } from "./dto/list-faq.dto";
 import { NotFoundException } from "@nestjs/common";
 import { FaqCategory } from "src/entity/faq-category.entity";
@@ -37,13 +37,13 @@ export class FaqRepository extends Repository<Faq> {
 
 
     async listFaqforUser(): Promise<{ data: FaqCategory[], TotalReseult: number }> {
-        
-        let where = `"category"."is_deleted" = false AND "faq"."is_deleted" = false`
-        
-        const query = getManager()
+
+        let where = `"category"."is_deleted" = false AND "faq"."is_deleted" = false AND "faq"."status" = true`
+
+        const query = getConnection()
             .createQueryBuilder(FaqCategory, "category")
             .leftJoinAndSelect("category.faqs", "faq")
-            .select (["category.id","category.name","faq.id","faq.question","faq.answer"])
+            .select(["category.id", "category.name", "faq.id", "faq.question", "faq.answer"])
             .orderBy(`category.id`, 'ASC')
             .where(where)
         const [result, total] = await query.getManyAndCount();
