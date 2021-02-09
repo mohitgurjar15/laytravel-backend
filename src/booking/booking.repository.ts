@@ -112,6 +112,7 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
@@ -155,7 +156,8 @@ export class BookingRepository extends Repository<Booking> {
 			} else {
 				result.travelers[j].userData.user_type = "adult";
 			}
-		}
+		}	
+		
 
 		return result;
 

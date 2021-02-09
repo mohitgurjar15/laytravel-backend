@@ -23,6 +23,11 @@ import { Generic } from 'src/utility/generic.utility';
 import { errorMessage } from 'src/config/common.config';
 import { Cache } from 'cache-manager';
 import { CartBookDto } from './dto/book-cart.dto';
+import { v4 as uuidv4 } from "uuid";
+import * as uniqid from 'uniqid';
+import { CartBooking } from "src/entity/cart-booking.entity"
+import { BookingType } from 'src/enum/booking-type.enum';
+import { BookingStatus } from 'src/enum/booking-status.enum';
 
 @Injectable()
 export class CartService {
@@ -385,7 +390,7 @@ export class CartService {
             }
             else {
                 console.log('else part');
-                
+
                 newCart['moduleInfo'] = cart.moduleInfo
                 //newCart['is_available'] = false
             }
@@ -514,6 +519,7 @@ export class CartService {
             throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
         }
         let smallestDate = ''
+        let largestDate = ''
         for await (const item of result) {
             if (item.moduleId == ModulesName.FLIGHT) {
                 const dipatureDate = await this.flightService.changeDateFormat(item.moduleInfo[0].departure_date)
@@ -522,13 +528,32 @@ export class CartService {
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
+                //console.log(item.moduleInfo[0]);
+
+                const arrivalDate = await this.flightService.changeDateFormat(item.moduleInfo[0].arrival_date)
+                if (largestDate == '') {
+                    largestDate = arrivalDate;
+                } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                    largestDate = arrivalDate;
+                }
             }
         }
+        const cartBook = new CartBooking
+        cartBook.id = uuidv4();
+        cartBook.laytripCartId = `LTC${uniqid.time().toUpperCase()}`;
+        cartBook.bookingDate = new Date()
+        cartBook.checkInDate = new Date(smallestDate)
+        cartBook.checkOutDate = new Date(largestDate)
+        cartBook.userId = user.userId
+        cartBook.bookingType = payment_type == "instalment" ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
+        cartBook.status == BookingStatus.PENDING
+        const cartData = await cartBook.save()
+
         let responce = []
         for await (const item of result) {
             switch (item.moduleId) {
                 case ModulesName.FLIGHT:
-                    let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate)
+                    let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
                     responce.push(flightResponce)
                     break;
 
@@ -541,17 +566,11 @@ export class CartService {
         }
     }
 
-    async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string) {
+    async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string, cartData: CartBooking) {
         const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through } = bookCart
         const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
         let flightRequest;
         if (bookingType == 'oneway') {
-            //console.log(cart.moduleInfo[0].adult_count);
-            //console.log(cart.moduleInfo[0].child_count);
-            //console.log(cart.moduleInfo[0].infant_count);
-
-            //console.log(cart.moduleInfo[0]);
-
 
             let dto = {
                 "source_location": cart.moduleInfo[0].departure_code,
@@ -613,33 +632,41 @@ export class CartService {
                     custom_instalment_amount: 0,
                     custom_instalment_no: 0,
                     card_token,
-                    booking_through
+                    booking_through,
                 }
+
+
                 //console.log(bookingdto);
-                newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate)
+                newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id)
             }
 
         } else {
             newCart['responce'] = {
                 message: value.message
             }
+            return newCart
         }
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(CartTravelers)
-            .where(
-                `"cart_id" = '${cart.id}'`
-            )
-            .execute()
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(Cart)
-            .where(
-                `"id" = '${cart.id}'`
-            )
-            .execute()
+        if (!newCart['responce']['status']) {
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(
+                    `"cart_id" = '${cart.id}'`
+                )
+                .execute()
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(
+                    `"id" = '${cart.id}'`
+                )
+                .execute()
+        }
+
+
+
         return newCart
     }
 }
