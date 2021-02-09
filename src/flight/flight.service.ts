@@ -1374,6 +1374,7 @@ export class FlightService {
 		captureCardresult = null,
 		supplierBookingData,
 		travelers,
+		cartId = null
 	) {
 		const {
 			selling_price,
@@ -1416,6 +1417,7 @@ export class FlightService {
 		booking.usdFactor = currencyDetails.liveRate.toString();
 		booking.layCredit = laycredit_points || 0;
 		booking.bookingThrough = booking_through || '';
+		booking.cartId = cartId
 		booking.locationInfo = {
 			journey_type,
 			source_location,
@@ -2374,7 +2376,7 @@ export class FlightService {
 			});
 	}
 
-	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate) {
+	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId) {
 		try {
 
 
@@ -2586,7 +2588,8 @@ export class FlightService {
 								instalmentDetails,
 								captureCardresult,
 								bookingResult || null,
-								travelers
+								travelers,
+								cartId
 							);
 							this.sendBookingEmail(laytripBookingResult.laytripBookingId);
 							return {
@@ -2658,7 +2661,8 @@ export class FlightService {
 								null,
 								captureCardresult,
 								bookingResult,
-								travelers
+								travelers,
+								cartId
 							);
 							//send email here
 							this.sendBookingEmail(laytripBookingResult.laytripBookingId);
@@ -2707,7 +2711,8 @@ export class FlightService {
 				// 			null,
 				// 			null,
 				// 			bookingResult,
-				// 			travelers
+				// 			travelers,
+				//			cartId
 				// 		);
 				// 		//send email here
 				// 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);

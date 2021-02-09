@@ -8,6 +8,7 @@ import { NewsLetters } from 'src/entity/news-letter.entity';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/guards/role.decorator';
 import { Role } from 'src/enum/role.enum';
+import { ExportSubscribeUsersDto } from './dto/export-newsLetters.dto';
 
 @Controller('news-letters')
 @ApiTags("News Letters")
@@ -64,5 +65,24 @@ export class NewsLettersController {
 		@Query() paginationOption: ListSubscribeUsersDto
 	): Promise<{ data: NewsLetters[]; TotalReseult: number }> {
 		return await this.newsLettersService.listSubscriber(paginationOption);
+	}
+
+	@Get('export')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(),RolesGuard)
+	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@ApiOperation({ summary: "export subscribers" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not Found" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportSubscribers(
+		@Query() paginationOption: ExportSubscribeUsersDto
+	): Promise<{ data: NewsLetters[]; TotalReseult: number }> {
+		return await this.newsLettersService.exportSubscriber(paginationOption);
 	}
 }
