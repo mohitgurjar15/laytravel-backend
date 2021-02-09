@@ -15,9 +15,9 @@ import { ExportSubscribeUsersDto } from './dto/export-newsLetters.dto';
 // @ApiBearerAuth()
 // @UseGuards(AuthGuard())
 export class NewsLettersController {
-    constructor(private newsLettersService:NewsLettersService) {}
+	constructor(private newsLettersService: NewsLettersService) { }
 
-    @Post("subscribe")
+	@Post("subscribe")
 	@ApiOperation({ summary: "subscribe email id for news updates" })
 	@HttpCode(200)
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -28,7 +28,7 @@ export class NewsLettersController {
 		description: "not found",
 	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async subscribeForNewsLetters(@Body() subscribeForNewslatterDto:SubscribeForNewslatterDto): Promise<any> {
+	async subscribeForNewsLetters(@Body() subscribeForNewslatterDto: SubscribeForNewslatterDto): Promise<any> {
 		return await this.newsLettersService.subscribeForNewsLetters(subscribeForNewslatterDto);
 	}
 
@@ -43,15 +43,15 @@ export class NewsLettersController {
 		description: "not found",
 	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async unSubscribeForNewsLetters(@Body() subscribeForNewslatterDto:SubscribeForNewslatterDto): Promise<any> {
+	async unSubscribeForNewsLetters(@Body() subscribeForNewslatterDto: SubscribeForNewslatterDto): Promise<any> {
 		return await this.newsLettersService.unSubscribeForNewsLetters(subscribeForNewslatterDto);
 	}
 
 
 	@Get()
 	@ApiBearerAuth()
-	@UseGuards(AuthGuard(),RolesGuard)
-	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "List Of subscribers" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -69,8 +69,8 @@ export class NewsLettersController {
 
 	@Get('export')
 	@ApiBearerAuth()
-	@UseGuards(AuthGuard(),RolesGuard)
-	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "export subscribers" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

@@ -14,7 +14,7 @@ const content = `<tr>
                  <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">We provide Real-time access to Industry-Best Pricing so you would no longer have to shop countless sites and we offer Flexible Layaway Payment Plans to make all your travel now affordable. Choose from customizable installment pay options with no-interest and no credit check at Checkout!</td>
              </tr>
              <tr>
-                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;"><a href="${FrontEndUrl}" target="_blank" style="font-family: 'Poppins', sans-serif; color: #0942ff;padding-top:5px; text-align: left;"><ul>Sign Up</ul></a> now with just your email address to start planning your travel now. We're looking forward to being your one-stop travel LTA (Layway Travel Agency)! </td>
+                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;"><a href="${FrontEndUrl}" target="_blank" style="font-family: 'Poppins', sans-serif; color: #0942ff;padding-top:5px; text-align: left;">Sign Up</a> now with just your email address to start planning your travel now. We're looking forward to being your one-stop travel LTA (Layway Travel Agency)! </td>
              </tr>
          </tbody>
      </table>
