@@ -928,6 +928,8 @@ export class CronJobsService {
 					totalAmount += parseFloat(instalment.amount)
 				}
 				const instalment = booking.bookingStatus[0]
+				console.log(instalment);
+				
 					const param = {
 						userName: booking.user.firstName,
 						amount: instalment.currency.symbol + `${Generic.formatPriceDecimal(totalAmount)}`,
