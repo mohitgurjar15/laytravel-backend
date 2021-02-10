@@ -934,7 +934,21 @@ export class AuthService {
 		if (email) {
 			user.email = email
 		}
-		user.firstName = name || "";
+		const splitName = name.split('')
+		if(splitName.length == 1)
+		{
+			user.firstName = name || "";
+		}
+		else if(splitName.length == 2){
+			user.firstName = splitName[0] || "";
+			user.lastName = splitName[1] || "";
+		}
+		else{
+			user.firstName = splitName[0] || "";
+			user.middleName = splitName[1] || "";
+			user.lastName = splitName[2] || "";
+		}
+		
 
 		if (!userExist) {
 			user.userId = uuidv4();

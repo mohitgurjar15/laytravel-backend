@@ -79,9 +79,9 @@ export class BookingController {
 		return await this.bookingService.userBookingList(paginationOption, user.userId);
 	}
 
-	@Get('current-bookings')
+	@Get('incomplete-bookings')
 	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)
-	@ApiOperation({ summary: "current booking list of user" })
+	@ApiOperation({ summary: "Incomplete booking list of user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
