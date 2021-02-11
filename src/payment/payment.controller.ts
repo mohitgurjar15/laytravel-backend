@@ -10,6 +10,7 @@ import { Role } from 'src/enum/role.enum';
 import { User } from 'src/entity/user.entity';
 import { CreteTransactionDto } from './dto/create-transaction.dto';
 import { RolesGuard } from 'src/guards/role.guard';
+import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
 
 
 @ApiTags("Payment")
@@ -35,7 +36,47 @@ export class PaymentController {
 		@Body() saveCardDto: SaveCardDto,
 		@GetUser() user
 	) {
-		return await this.paymentService.saveCard(saveCardDto, user);
+		return await this.paymentService.saveCard(saveCardDto, user.userId);
+	}
+
+	@Post('user-card/:user_id')
+	@UseGuards(RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Save user Card by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@HttpCode(200)
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async saveUserCard(
+		@Body() saveCardDto: SaveCardDto,
+		@GetUser() user,
+		@Param('user_id') userId : string
+	) {
+		return await this.paymentService.saveCard(saveCardDto, userId);
+	}
+
+	@Get('user-card/:user_id')
+	@UseGuards(RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Get all customer card list by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async listUserCard(
+		@GetUser() user,
+		@Param('user_id') userId : string
+	) {
+		return await this.paymentService.getAllCards(userId);
 	}
 
 	@Get()
@@ -51,7 +92,7 @@ export class PaymentController {
 	async getAllCards(
 		@GetUser() user
 	) {
-		return await this.paymentService.getAllCards(user);
+		return await this.paymentService.getAllCards(user.userId);
 	}
 
 	@Post('add-card')
@@ -163,9 +204,28 @@ export class PaymentController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async updateCard(
 		@Param('card_id') cardId: string,
-		@Body() addCardDto: AddCardDto,		
+		@Body() addCardDto: AddCardDto,
 		@GetUser() user: User
 	) {
-		return await this.paymentService.updateCard(cardId,addCardDto,user);
+		return await this.paymentService.updateCard(cardId, addCardDto, user);
+	}
+
+	@Post('/take-manually')
+	@UseGuards(RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@ApiOperation({ summary: "Manually take payment " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async manuallyPayment(
+		@Body() manullyTakePaymentDto: ManullyTakePaymentDto,
+		@GetUser() user: User
+	) {
+		return await this.paymentService.manuallyTakePayment(manullyTakePaymentDto, user);
 	}
 }
