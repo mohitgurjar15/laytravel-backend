@@ -453,8 +453,8 @@ export class BookingService {
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
 				.leftJoinAndSelect("traveler.userData", "userData")
-				// .leftJoinAndSelect("User.state", "state")
-				// .leftJoinAndSelect("User.country", "countries")
+				.leftJoinAndSelect("userData.state", "state")
+				.leftJoinAndSelect("userData.country", "countries")
 
 				.where(where)
 				.orderBy(`cartBooking.bookingDate`, 'DESC')
@@ -468,6 +468,8 @@ export class BookingService {
 				let paidAmount = 0;
 				let remainAmount = 0;
 				let pandinginstallment = 0
+				let totalAmount = 0
+				let nextInstallmentDate = cart.bookings[0].nextInstalmentDate
 				const currency = cart.bookings[0].currency2
 				const baseBooking = cart.bookings[0].bookingInstalments
 				let cartInstallments = [];
@@ -514,7 +516,7 @@ export class BookingService {
 							pandinginstallment = pandinginstallment + 1;
 						}
 					}
-
+					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
 				}
@@ -531,6 +533,8 @@ export class BookingService {
 				cartResponce['paidAmount'] = paidAmount
 				cartResponce['remainAmount'] = remainAmount
 				cartResponce['pandinginstallment'] = pandinginstallment
+				cartResponce['totalAmount'] = totalAmount
+				cartResponce['nextInstallmentDate'] = nextInstallmentDate
 				cartResponce['currency'] = currency
 				responce.push(cartResponce)
 			}
