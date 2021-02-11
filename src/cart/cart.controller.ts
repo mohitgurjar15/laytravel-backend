@@ -9,6 +9,7 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
+import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
@@ -84,7 +85,7 @@ export class CartController {
 
     @Delete('delete/:id')
     @Roles(Role.FREE_USER, Role.PAID_USER)
-    @ApiOperation({ summary: "list item in cart of user" })
+    @ApiOperation({ summary: "Delete item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
@@ -117,5 +118,30 @@ export class CartController {
         @Req() req,
     ) {
         return await this.cartService.bookCart(bookCartDto, user, req.headers);
+    }
+
+    @Get('installment-detail')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiOperation({ summary: "installment detail of specific cart " })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async cartDetail(
+        @Query() dto: cartInstallmentsDto,
+        @GetUser() user: User,
+    ) {
+        return await this.cartService.cartInstallmentDetail(dto, user);
+    }
+
+    @Delete('empty-cart')
+    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiOperation({ summary: "empty cart " })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async emptyCart(
+        @GetUser() user: User
+    ) {
+        return await this.cartService.emptyCart(user);
     }
 }
