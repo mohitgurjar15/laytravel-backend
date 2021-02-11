@@ -213,7 +213,7 @@ export class CronJobsService {
 			.leftJoinAndSelect("cartBooking.bookings", "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
-			.leftJoinAndSelect("booking.user", "User")
+			.leftJoinAndSelect("cartBooking.user", "User")
 			.where(`(DATE("BookingInstalments".instalment_date) <= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) >= DATE('${nextDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`)
 			.getMany();
 		//return cartBookings
@@ -297,12 +297,10 @@ export class CronJobsService {
 							available_try: availableTry,
 							payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMM DD, YYYY'),
 							currency: cartBooking.bookings[0].bookingInstalments[0].currency.symbol,
-							phoneNo: `+${cartBooking.bookings[0].user.countryCode}` + cartBooking.bookings[0].user.phoneNo,
+							phoneNo: `+${cartBooking.user.countryCode}` + cartBooking.user.phoneNo,
 							bookingId: cartBooking.laytripCartId,
 						}
-						for await (const booking of cartBooking.bookings) {
-
-							for await (const instalment of booking.bookingInstalments) {
+						const instalment = cartBooking.bookings[0].bookingInstalments[0]
 								if (instalment.attempt >= 3) {
 									await getConnection()
 										.createQueryBuilder()
@@ -312,18 +310,18 @@ export class CronJobsService {
 										.execute();
 									instalment.paymentStatus = PaymentStatus.FAILED
 									await instalment.save()
-									if (booking.user.isEmail) {
-										await this.sendFlightIncompleteMail(booking.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
+									if (cartBooking.user.isEmail) {
+										await this.sendFlightIncompleteMail(cartBooking.user.email, instalment.booking.laytripBookingId, 'we not able to get payment from your card', `${param.currency}${param.amount}`)
 									}
 
-									if (booking.user.isSMS) {
+									if (cartBooking.user.isSMS) {
 										TwilioSMS.sendSMS({
 											toSMS: param.phoneNo,
 											message: `we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`
 										})
 									}
 
-									PushNotification.sendNotificationTouser(booking.user.userId,
+									PushNotification.sendNotificationTouser(cartBooking.user.userId,
 										{  //you can send only notification or only data(or include both)
 											module_name: 'booking',
 											task: 'booking_cancelled',
@@ -333,7 +331,7 @@ export class CronJobsService {
 											title: 'booking Cancelled',
 											body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`
 										}, cronUserId)
-									WebNotification.sendNotificationTouser(booking.user.userId,
+									WebNotification.sendNotificationTouser(cartBooking.user.userId,
 										{  //you can send only notification or only data(or include both)
 											module_name: 'booking',
 											task: 'booking_cancelled',
@@ -347,7 +345,7 @@ export class CronJobsService {
 
 								}
 
-								if (booking.user.isEmail) {
+								if (cartBooking.user.isEmail) {
 									this.mailerService
 										.sendMail({
 											to: instalment.user.email,
@@ -364,7 +362,7 @@ export class CronJobsService {
 										});
 								}
 
-								if (booking.user.isSMS) {
+								if (cartBooking.user.isSMS) {
 									TwilioSMS.sendSMS({
 										toSMS: param.phoneNo,
 										message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
@@ -377,7 +375,7 @@ export class CronJobsService {
 								// 	`${instalment.id} Payment Failed by Cron`
 								// );
 
-								PushNotification.sendNotificationTouser(booking.user.userId,
+								PushNotification.sendNotificationTouser(cartBooking.user.userId,
 									{  //you can send only notification or only data(or include both)
 										module_name: 'instalment',
 										task: 'instalment_failed',
@@ -388,7 +386,7 @@ export class CronJobsService {
 										title: 'Instalment Failed',
 										body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
 									}, cronUserId)
-								WebNotification.sendNotificationTouser(booking.user.userId,
+								WebNotification.sendNotificationTouser(cartBooking.user.userId,
 									{  //you can send only notification or only data(or include both)
 										module_name: 'instalment',
 										task: 'instalment_failed',
@@ -399,8 +397,7 @@ export class CronJobsService {
 										title: 'Instalment Failed',
 										body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
 									}, cronUserId)
-							}
-						}
+							
 
 					}
 					else {
@@ -440,7 +437,7 @@ export class CronJobsService {
 
 						let param = {
 							date: DateTime.convertDateFormat(new Date(cartBooking.bookings[0].bookingInstalments[0].instalmentDate), 'YYYY-MM-DD', ' Do YYYY'),
-							userName: cartBooking.bookings[0].user.firstName + ' ' + cartBooking.bookings[0].user.lastName,
+							userName: cartBooking.user.firstName + ' ' + cartBooking.user.lastName,
 							cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
 							cardNo: transaction.meta_data.transaction.payment_method.number,
 							orderId: cartBooking.laytripCartId,
@@ -451,14 +448,14 @@ export class CronJobsService {
 							currencySymbol: cartBooking.bookings[0].bookingInstalments[0].currency.symbol,
 							currency: cartBooking.bookings[0].bookingInstalments[0].currency.code,
 							pendingInstallment: pendingInstallment,
-							phoneNo: `+${cartBooking.bookings[0].user.countryCode}` + cartBooking.bookings[0].user.phoneNo,
+							phoneNo: `+${cartBooking.user.countryCode}` + cartBooking.user.phoneNo,
 							bookingId: cartBooking.bookings[0].bookingInstalments[0].booking.laytripBookingId,
 						}
 
-						if (cartBooking.bookings[0].bookingInstalments[0].user.isEmail) {
+						if (cartBooking.user.isEmail) {
 							this.mailerService
 								.sendMail({
-									to: cartBooking.bookings[0].user.email,
+									to: cartBooking.user.email,
 									from: mailConfig.from,
 									bcc: mailConfig.BCC,
 									subject: `Installment Payment Successed`,
@@ -472,7 +469,7 @@ export class CronJobsService {
 								});
 						}
 
-						if (cartBooking.bookings[0].user.isSMS) {
+						if (cartBooking.user.isSMS) {
 							TwilioSMS.sendSMS({
 								toSMS: param.phoneNo,
 								message: `We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
@@ -485,7 +482,7 @@ export class CronJobsService {
 						// 	`${instalment.id} Payment successed by Cron`
 						// );
 
-						PushNotification.sendNotificationTouser(cartBooking.bookings[0].user.userId,
+						PushNotification.sendNotificationTouser(cartBooking.user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
 								task: 'instalment_received',
@@ -496,7 +493,7 @@ export class CronJobsService {
 								title: 'Installment Received',
 								body: `We have received your payment of $${cartAmount}.`
 							}, cronUserId)
-						WebNotification.sendNotificationTouser(cartBooking.bookings[0].user.userId,
+						WebNotification.sendNotificationTouser(cartBooking.user.userId,
 							{  //you can send only notification or only data(or include both)
 								module_name: 'instalment',
 								task: 'instalment_received',
