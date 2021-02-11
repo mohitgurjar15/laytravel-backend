@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { NewsLetters } from "src/entity/news-letter.entity";
 import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import { errorMessage } from "src/config/common.config";
@@ -18,6 +18,8 @@ import { ListSubscribeUsersDto } from "./dto/list-subscribe-users.dto";
 import { NewsLettersRepository } from "./news-letters.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as config from "config";
+import { NewsLetterMail } from "src/config/new_email_templete/news-letters.html";
+import { ExportSubscribeUsersDto } from "./dto/export-newsLetters.dto";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -36,10 +38,13 @@ export class NewsLettersService {
 		try {
 			const { email } = subscribeForNewslatterDto;
 
-			let emailExiest = await getManager()
-				.createQueryBuilder(NewsLetters, "newsLetters")
-				.where(`email=:email`, { email })
-				.getOne();
+			let emailExiest = await this.newsLettersRepository.findOne({
+				email
+			})
+			// let emailExiest = await getManager()
+			// 	.createQueryBuilder(NewsLetters, "newsLetters")
+			// 	.where(`email=:email`, { email })
+			// 	.getOne();
 
 			if (emailExiest && emailExiest.isSubscribed == false) {
 				emailExiest.isSubscribed = true;
@@ -60,7 +65,7 @@ export class NewsLettersService {
 					from: mailConfig.from,
 					cc: mailConfig.BCC,
 					subject: "Welcome to Laytrip",
-					html: subscribeForNewsUpdates(),
+					html: await NewsLetterMail(),
 				})
 				.then((res) => {
 					console.log("res", res);
@@ -68,7 +73,7 @@ export class NewsLettersService {
 				.catch((err) => {
 					console.log("err", err);
 				});
-			return { message: `Welcome to laytrip, please check your email for more exiting offers.` };
+			return { message: `Thank you for joining our Laytrip community!` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");
@@ -107,25 +112,33 @@ export class NewsLettersService {
 		try {
 			const { email } = subscribeForNewslatterDto;
 
-			let subscribeData = await getManager()
-				.createQueryBuilder(NewsLetters, "newsLetters")
-				.where(`email=:email `, { email })
-				.orderBy('id', 'DESC')
-				.getOne();
+			let where = {};
+
+			where['email'] = email
+
+			const subscribeData = await this.newsLettersRepository.findOne({
+				where: where
+			});
 			if (!subscribeData) {
-				throw new NotFoundException(
-					`Given email id not found&&&email&&&Given email id not found`
-				);
+				throw new NotFoundException(`No subsciber found.`)
 			}
+			//console.log(subscribeData);
 
 			if (!subscribeData.isSubscribed) {
 				throw new ConflictException(
 					`Given email id is alredy unsubscribed &&&email&&&Given email id is alredy unsubscribed `
 				);
 			}
-			subscribeData.isSubscribed = false;
-			subscribeData.unSubscribeDate = new Date();
-			await subscribeData.save();
+
+			await getConnection()
+				.createQueryBuilder()
+				.update(NewsLetters)
+				.set({ isSubscribed: false, unSubscribeDate: new Date() })
+				.where("id = :id", { id: subscribeData.id })
+				.execute();
+			// subscribeData.isSubscribed = false;
+			// subscribeData.unSubscribeDate = new Date();
+			// await subscribeData.save();
 			// this.mailerService
 			// 	.sendMail({
 			// 		to: email,
@@ -184,6 +197,44 @@ export class NewsLettersService {
 	) {
 		try {
 			return await this.newsLettersRepository.listSubscriber(paginationOption);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+
+	async exportSubscriber(
+		paginationOption: ExportSubscribeUsersDto
+	) {
+		try {
+			return await this.newsLettersRepository.exportSubscriber(paginationOption);
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 

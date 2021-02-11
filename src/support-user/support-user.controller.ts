@@ -6,6 +6,7 @@ import {
 	Get,
 	HttpCode,
 	Param,
+	Patch,
 	Post,
 	Put,
 	Query,
@@ -33,13 +34,15 @@ import { ProfilePicDto } from "src/auth/dto/profile-pic.dto";
 import { ListSupporterDto } from "./dto/list-suppoerter.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { UpdateSupporterDto } from "./dto/update-supporter.dto";
+import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Controller("support-user")
 @ApiTags("Support-User")
 @ApiBearerAuth()
 @UseGuards(AuthGuard(), RolesGuard)
 export class SupportUserController {
-	constructor(private supportUserService: SupportUserService) {}
+	constructor(private supportUserService: SupportUserService) { }
 
 	@Post()
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
@@ -74,7 +77,7 @@ export class SupportUserController {
 			throw new BadRequestException(`${req.fileValidationError}`);
 		}
 		const adminId = user.userId;
-		return await this.supportUserService.createSupportUser(saveSupporterDto,files,adminId);
+		return await this.supportUserService.createSupportUser(saveSupporterDto, files, adminId);
 	}
 
 	/**
@@ -158,9 +161,9 @@ export class SupportUserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listAdmin(
-		@Query() paginationOption: ListSupporterDto,@SiteUrl() siteUrl:string,
+		@Query() paginationOption: ListSupporterDto, @SiteUrl() siteUrl: string,
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		return await this.supportUserService.listSupportUser(paginationOption,siteUrl);
+		return await this.supportUserService.listSupportUser(paginationOption, siteUrl);
 	}
 
 	/**
@@ -178,8 +181,9 @@ export class SupportUserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async exportSuppoerter(
-	): Promise<{ data: User[]}> {
-		return await this.supportUserService.exportSupporter();
+		@Query() paginationOption: ExportUserDto,
+	): Promise<{ data: User[] }> {
+		return await this.supportUserService.exportSupporter(paginationOption);
 	}
 
 	@Get("/:id")
@@ -198,5 +202,29 @@ export class SupportUserController {
 		@SiteUrl() siteUrl: string
 	): Promise<User> {
 		return await this.supportUserService.getSupportUserData(userId, siteUrl);
+	}
+
+	@Patch("active-deactive/:id")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Active-deactive support user by super admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Admin not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async activeDeactiveSupporter(
+		@Param("id") user_id: string,
+		@Body() activeDeactiveDto: ActiveDeactiveDto,
+		@GetUser() user: User
+	) {
+		const adminId = user.userId;
+		return await this.supportUserService.activeDeactiveSupporter(
+			user_id,
+			activeDeactiveDto,
+			adminId
+		);
 	}
 }

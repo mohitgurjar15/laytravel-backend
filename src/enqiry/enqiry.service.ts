@@ -43,15 +43,15 @@ export class EnqiryService {
 		newEnquiryDto: newEnquiryDto
 	) {
 		try {
-			const { message, name, email, country_code, phone_no } = newEnquiryDto
+			const { message, name, email } = newEnquiryDto
 			const enquiry = new Enquiry();
 			enquiry.id = uuidv4();
 			enquiry.email = email;
-			if (phone_no)
-				enquiry.phoneNo = phone_no;
+			// if (phone_no)
+			// 	enquiry.phoneNo = phone_no;
 
-			if (country_code)
-				enquiry.countryCode = country_code;
+			// if (country_code)
+			// 	enquiry.countryCode = country_code;
 
 			enquiry.userName = name;
 			enquiry.message = message;
@@ -62,9 +62,9 @@ export class EnqiryService {
 				.sendMail({
 					to: mailConfig.admin,
 					from: mailConfig.from,
-					subject: `New enqiry`,
+					subject: `New Enquiry`,
 					html: EnquiryNotificationHTML({
-						name: name, message: message
+						name: name, message: message , id : enquiry.id
 					})
 				})
 				.then((res) => {
@@ -73,7 +73,7 @@ export class EnqiryService {
 				.catch((err) => {
 					console.log("err", err);
 				});
-			return { message: `Enquiry created successfully` };
+			return { message: `Your enquiry is sent successfully to our team. our team will back to you on your query.` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

@@ -43,6 +43,8 @@ import { BookingFeedback } from "src/entity/booking-feedback.entity";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import * as uuidValidator from "uuid-validate"
+import { RagisterMail } from "src/config/email_template/register-mail.html";
+import { ExportUserDto } from "./dto/export-user.dto";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -254,7 +256,7 @@ export class UserService {
 
 			await userData.save();
 			const currentData = userData
-			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, currentData);
+			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, userData);
 			return userData;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -325,7 +327,7 @@ export class UserService {
 			await user.save();
 			const currentData = user
 
-			Activity.logActivity(adminId, "user", `user ${user.email}  status changed by admin`, previousData, currentData);
+			Activity.logActivity(adminId, "user", `User ${user.email}  status changed by admin`, previousData, currentData);
 			return { message: `user status changed` };
 		} catch (error) {
 			if (
@@ -482,9 +484,7 @@ export class UserService {
 		const array = await csv().fromFile("./" + files[0].path);
 
 		for (let index = 0; index < array.length; index++) {
-			console.log(index);
 			var row = array[index];
-			console.log(row.first_name);
 			if (row) {
 				if (
 					row.first_name != "" &&
@@ -506,7 +506,7 @@ export class UserService {
 						roleId: row.type,
 						adminId: userId,
 					};
-					var userData = await this.userRepository.insertNewUser(data);
+					var userData = await this.userRepository.insertNewUser(data,[Role.FREE_USER,Role.PAID_USER]);
 
 					if (userData) {
 						count++;
@@ -516,13 +516,9 @@ export class UserService {
 								from: mailConfig.from,
 								cc: mailConfig.BCC,
 								subject: `Welcome on board`,
-								template: "welcome.html",
-								context: {
-									// Data to be sent to template files.
-									username: data.firstName + " " + data.lastName,
-									email: data.email,
-									password: data.password,
-								},
+								html: RagisterMail({
+									username: data.firstName + " " + data.lastName
+								},data.password)
 							})
 							.then((res) => {
 								console.log("res", res);
@@ -531,42 +527,42 @@ export class UserService {
 								console.log("err", err);
 							});
 					} else {
-						row.error_message = "Email id alredy available";
+						row.error_message = "Email id alredy available. ||";
 						unsuccessRecord.push(row);
 					}
 				} else {
 					var error_message = '';
 					if (row.first_name == "")
-						error_message += "First name required";
+						error_message += "First name required. ||";
 
 					if (row.email_id == "")
-						error_message += "Email id required";
+						error_message += "Email id required. ||";
 
 					if (!isEmail(row.email_id))
-						error_message += "Please enter valid email id";
+						error_message += "Please enter valid email id. ||";
 
 					if (row.password == "")
-						error_message += "Password is required";
+						error_message += "Password is required. ||";
 
 					if (row.type == "")
-						error_message += "user type required";
+						error_message += "user type required. ||";
 
 					if (parseInt(row.type) >= 5 &&
 						parseInt(row.type) <= 7)
-						error_message += "Add valid user type";
+						error_message += "Add valid user type. ||";
 
 					row.error_message = error_message;
 					unsuccessRecord.push(row);
 				}
 			}
 		}
-		Activity.logActivity(userId, "user", `admin import the  ${count}  users`);
+		Activity.logActivity(userId, "user", `Admin import the  ${count}  users`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
-	async exportUser(adminId: string): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "user", `all user list export by admin`);
-		return await this.userRepository.exportUser([
+	async exportUser(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
+		Activity.logActivity(adminId, "user", `All user list export by admin`);
+		return await this.userRepository.exportUser(paginationOption,[
 			Role.PAID_USER,
 			Role.GUEST_USER,
 			Role.FREE_USER,
@@ -574,19 +570,24 @@ export class UserService {
 	}
 
 	async listDeleteRequest(dto: ListDeleteRequestDto) {
-		const { page_no, search, limit } = dto;
+		const { page_no, search, limit ,status } = dto;
 
-		console.log("error");
-
+		
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 		const keyword = search || "";
 
 		let where;
 		where = `1=1 `
-		if (keyword) {
-			where += `AND ( "req"."email" ILIKE '%${keyword}%')`;
+		if (status) {
+			where += `AND "req"."status" = ${status}`;
 		}
+		
+		if (keyword) {
+			where += `AND ( "req"."email" ILIKE '%${keyword}%' OR "req"."user_name" ILIKE '%${keyword}%')`;
+		}
+
+		
 
 
 
@@ -714,7 +715,7 @@ export class UserService {
 
 		await this.createSql(userId, sqlData, 'user-detail')
 
-		//await this.deleteuserData(userId, bookingData.bookingIds)
+		await this.deleteuserData(userId, bookingData.bookingIds)
 
 		req.status = DeleteAccountRequestStatus.CONFIRM
 		req.updateBy = user
@@ -1168,14 +1169,14 @@ export class UserService {
 			).execute();
 		console.log(bookingIds)
 		if (bookingIds.length && bookingIds[0]) {
-			await getConnection()
-				.createQueryBuilder()
-				.delete()
-				.from(BookingFeedback)
-				.where(`"booking_id" in (:...bookingIds) `, {
-					bookingIds,
-				})
-				.execute()
+			// await getConnection()
+			// 	.createQueryBuilder()
+			// 	.delete()
+			// 	.from(BookingFeedback)
+			// 	.where(`"booking_id" in (:...bookingIds) `, {
+			// 		bookingIds,
+			// 	})
+			// 	.execute()
 
 			await getConnection()
 				.createQueryBuilder()
@@ -1215,5 +1216,21 @@ export class UserService {
 			)
 			.execute()
 
+	}
+
+
+	async getUserFirstName(){
+		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
+		return await this.userRepository.getFirstname(roles)		
+	}
+
+	async getUserLastName(){
+		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
+		return await this.userRepository.getLastname(roles)		
+	}
+
+	async getUserEmail(){
+		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
+		return await this.userRepository.getemails(roles)		
 	}
 }

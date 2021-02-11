@@ -18,6 +18,7 @@ import { TravelerInfo } from "./traveler-info.entity";
 import { PredictiveBookingData } from "./predictive-booking-data.entity";
 import { UserCard } from "./user-card.entity";
 import { type } from "os";
+import { CartBooking } from "./cart-booking.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -55,7 +56,7 @@ export class Booking extends BaseEntity {
   @Column("numeric", { name: "markup_amount", precision: 15, scale: 3 })
   markupAmount: string;
 
-  @Column("numeric", { name: "usd_factor", precision: 15, scale: 3 ,default:1 })
+  @Column("numeric", { name: "usd_factor", precision: 15, scale: 3, default: 1 })
   usdFactor: string;
 
   @Column("date", { name: "booking_date" })
@@ -64,16 +65,19 @@ export class Booking extends BaseEntity {
   @Column("integer", { name: "total_installments" })
   totalInstallments: number;
 
-  @Column("date", { name: "predected_booking_date" ,nullable : true })
+  @Column("uuid", { name: "cart_id", nullable: true })
+  cartId: string;
+
+  @Column("date", { name: "predected_booking_date", nullable: true })
   predectedBookingDate: string;
 
-  @Column("date", { name: "check_in_date" ,nullable : true })
+  @Column("date", { name: "check_in_date", nullable: true })
   checkInDate: string;
 
-  @Column("date", { name: "check_out_date" ,nullable : true })
+  @Column("date", { name: "check_out_date", nullable: true })
   checkOutDate: string;
 
-  @Column("json", { name: "location_info",nullable:true })
+  @Column("json", { name: "location_info", nullable: true })
   locationInfo: object;
 
   @Column("json", { name: "module_info" })
@@ -85,28 +89,28 @@ export class Booking extends BaseEntity {
   @Column("integer", { name: "payment_status" })
   paymentStatus: number;
 
-  @Column("json", { name: "payment_info",nullable:true })
+  @Column("json", { name: "payment_info", nullable: true })
   paymentInfo: object;
 
-  @Column("boolean", { name: "is_predictive", default: () => false})
+  @Column("boolean", { name: "is_predictive", default: () => false })
   isPredictive: boolean;
 
-  @Column("numeric", { name: "lay_credit", precision: 15, scale: 3, nullable:true })
+  @Column("numeric", { name: "lay_credit", precision: 15, scale: 3, nullable: true })
   layCredit: string | null;
 
-  @Column("character varying", { name: "fare_type", length: 20, nullable:true })
-  fareType: string|null;
-  
-  @Column("character varying", { name: "booking_through", length: 20, nullable:true })
-  bookingThrough: string|null;
+  @Column("character varying", { name: "fare_type", length: 20, nullable: true })
+  fareType: string | null;
 
-  @Column("character varying", { name: "card_token", length: 200 , nullable : true})
-  cardToken: string|null;
+  @Column("character varying", { name: "booking_through", length: 20, nullable: true })
+  bookingThrough: string | null;
 
-  @Column("character varying", { name: "laytrip_booking_id", length: 200 , nullable : true})
-  laytripBookingId: string|null;
+  @Column("character varying", { name: "card_token", length: 200, nullable: true })
+  cardToken: string | null;
 
-  @Column("boolean", { name: "is_ticketd", default: () => false})
+  @Column("character varying", { name: "laytrip_booking_id", length: 200, nullable: true })
+  laytripBookingId: string | null;
+
+  @Column("boolean", { name: "is_ticketd", default: () => false })
   isTicketd: boolean;
 
   @Column("numeric", {
@@ -117,7 +121,7 @@ export class Booking extends BaseEntity {
   })
   paymentGatewayProcessingFee: string | null;
 
-  @Column("integer", { name: "supplier_status", nullable:true })
+  @Column("integer", { name: "supplier_status", nullable: true })
   supplierStatus: number;
 
   @Column("integer", { name: "supplier_id", nullable: true })
@@ -126,7 +130,7 @@ export class Booking extends BaseEntity {
   @Column("date", { name: "next_instalment_date", nullable: true })
   nextInstalmentDate: string | null;
 
-  @Column("character varying", { name: "supplier_booking_id", length: 255, nullable:true })
+  @Column("character varying", { name: "supplier_booking_id", length: 255, nullable: true })
   supplierBookingId: string | null;
 
   @ManyToOne(
@@ -164,6 +168,13 @@ export class Booking extends BaseEntity {
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
 
+  @ManyToOne(
+    () => CartBooking,
+    cartBooking => cartBooking.bookings
+  )
+  @JoinColumn([{ name: "cart_id", referencedColumnName: "id" }])
+  cart: CartBooking;
+
   @OneToMany(
     () => BookingInstalments,
     bookingInstalments => bookingInstalments.booking
@@ -172,21 +183,21 @@ export class Booking extends BaseEntity {
 
 
   @OneToMany(
-		() => TravelerInfo,
-		(traveler) => traveler.bookingData
-	)
+    () => TravelerInfo,
+    (traveler) => traveler.bookingData
+  )
   travelers: TravelerInfo[];
-  
+
   @OneToMany(
     () => PredictiveBookingData,
     predictiveBookingData => predictiveBookingData.booking
   )
   predictiveBookingData: PredictiveBookingData[];
 
-  @ManyToOne(
-    () => UserCard,
-    card => card.bookings
-  )
-  @JoinColumn([{ name: "card_token", referencedColumnName: "cardToken" }])
-  card: UserCard;
+  // @ManyToOne(
+  //   () => UserCard,
+  //   card => card.bookings
+  // )
+  // @JoinColumn([{ name: "card_token", referencedColumnName: "cardToken" }])
+  // card: UserCard;
 }

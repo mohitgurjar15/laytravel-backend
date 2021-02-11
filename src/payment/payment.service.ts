@@ -9,7 +9,11 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import { SaveCardDto } from "./dto/save-card.dto";
-import { getManager } from "typeorm";
+import * as config from "config";
+const mailConfig = config.get("email");
+import { MailerService } from "@nestjs-modules/mailer";
+import { getConnection, getManager } from "typeorm";
+import * as uuidValidator from "uuid-validate"
 import { PaymentGateway } from "src/entity/payment-gateway.entity";
 import { errorMessage } from "src/config/common.config";
 import { UserCard } from "src/entity/user-card.entity";
@@ -22,21 +26,40 @@ import { Generic } from "src/utility/generic.utility";
 import { OtherPayments } from "src/entity/other-payment.entity";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { Activity } from "src/utility/activity.utility";
+import { Booking } from "src/entity/booking.entity";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { BookingType } from "src/enum/booking-type.enum";
+import { ManullyTakePaymentDto } from "./dto/manully-take-payment.dto";
+import { CartBooking } from "src/entity/cart-booking.entity";
+import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
+import { DateTime } from "src/utility/datetime.utility";
+import { PushNotification } from "src/utility/push-notification.utility";
+import { WebNotification } from "src/utility/web-notification.utility";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
+import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
+import { TwilioSMS } from "src/utility/sms.utility";
 
 
 @Injectable()
 export class PaymentService {
 	constructor(
+		private readonly mailerService: MailerService,
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
-	async saveCard(saveCardDto: SaveCardDto, user: User) {
+	async saveCard(saveCardDto: SaveCardDto, userId: string) {
 		const {
 			card_holder_name,
 			card_last_digit,
 			card_type,
 			card_token,
+			card_meta
 		} = saveCardDto;
+
+		if (!uuidValidator(userId)) {
+			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+		}
 
 		let paymentGateway = await getManager()
 			.createQueryBuilder(PaymentGateway, "paymentgateway")
@@ -53,11 +76,12 @@ export class PaymentService {
 		let userCard = new UserCard();
 		userCard.id = uuidv4();
 		userCard.paymentGatewayId = paymentGateway.id;
-		userCard.userId = user.userId;
+		userCard.userId = userId;
 		userCard.cardHolderName = card_holder_name;
 		userCard.cardDigits = card_last_digit;
 		userCard.cardToken = card_token;
 		userCard.cardType = card_type;
+		userCard.cardMetaData = card_meta || {};
 		userCard.createdDate = new Date();
 
 		try {
@@ -67,7 +91,10 @@ export class PaymentService {
 		}
 	}
 
-	async getAllCards(user: User) {
+	async getAllCards(userId: string) {
+		if (!uuidValidator(userId)) {
+			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+		}
 		let cardList = await getManager()
 			.createQueryBuilder(UserCard, "user_card")
 			.select([
@@ -78,10 +105,11 @@ export class PaymentService {
 				"user_card.cardToken",
 				"user_card.cardType",
 				"user_card.status",
+				"user_card.cardMetaData"
 			])
 			.where(
 				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted",
-				{ user_id: user.userId, is_deleted: false }
+				{ user_id: userId, is_deleted: false }
 			)
 			.getMany();
 
@@ -90,7 +118,10 @@ export class PaymentService {
 		return cardList;
 	}
 
-	async addCard(addCardDto: AddCardDto, user: User) {
+	async addCard(addCardDto: AddCardDto, userId:string) {
+		if (!uuidValidator(userId)) {
+			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+		}
 		const { first_name, last_name, card_number, card_cvv, expiry } = addCardDto;
 
 		let expiryDate = expiry.split("/");
@@ -120,7 +151,7 @@ export class PaymentService {
 		};
 		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card');
 
-		console.log(cardResult);
+		//console.log(cardResult);
 		if (
 			typeof cardResult != "undefined" &&
 			typeof cardResult.transaction != "undefined" &&
@@ -139,7 +170,7 @@ export class PaymentService {
 			let userCard = new UserCard();
 			userCard.id = uuidv4();
 			userCard.paymentGatewayId = paymentGateway.id;
-			userCard.userId = user.userId;
+			userCard.userId = userId;
 			userCard.cardHolderName = cardResult.transaction.payment_method.full_name;
 			userCard.cardDigits =
 				cardResult.transaction.payment_method.last_four_digits;
@@ -179,7 +210,7 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
-		// console.log(authResult)
+		// //console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
@@ -274,7 +305,7 @@ export class PaymentService {
 	async axiosRequest(url, requestBody, headers, method = null, headerAction = null) {
 
 		method = method || 'POST';
-		console.log("method", method)
+		//console.log("method", method)
 		try {
 			let result = await Axios({
 				method: method,
@@ -300,13 +331,13 @@ export class PaymentService {
 			logData['responce'] = error;
 			let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
 			Activity.createlogFile(fileName, logData, 'payment');
-			console.log(error.response.status);
+			//console.log(error.response.status);
 
 			return {
 				transaction: { succeeded: false },
-				logFile : fileName,
+				logFile: fileName,
 				meta_data: error.responce
-				
+
 			}
 			// if (typeof error.response !== "undefined") {
 			// 	switch (error.response.status) {
@@ -361,7 +392,7 @@ export class PaymentService {
 			},
 		};
 		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment');
-		console.log(authResult);
+		//console.log(authResult);
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
 				status: true,
@@ -369,7 +400,7 @@ export class PaymentService {
 				meta_data: authResult,
 			};
 		} else {
-			console.log(authResult);
+			//console.log(authResult);
 
 			return {
 				status: false,
@@ -412,4 +443,414 @@ export class PaymentService {
 
 		return transactionData;
 	}
+
+	async deleteCard(cardId: string, user: User) {
+		let card = await getManager()
+			.createQueryBuilder(UserCard, "user_card")
+			.where(
+				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
+				{ user_id: user.userId, is_deleted: false, cardId }
+			)
+			.getOne();
+
+		if (!card) throw new NotFoundException(`No card founds`);
+
+		let booking = await getManager()
+			.createQueryBuilder(Booking, "booking")
+			.where(`booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus`, {
+				booking_type: BookingType.INSTALMENT,
+				card_token: card.cardToken,
+				today: new Date(),
+				user_id: user.userId,
+				paymentStatus: PaymentStatus.PENDING
+			})
+			.getOne()
+		if (booking) {
+			throw new ConflictException(`Selected card is used for active booking please first update it `)
+		}
+
+		card.isDeleted = true
+		await card.save()
+		return {
+			message: `Your card deleted successfully`
+		}
+	}
+
+
+	async checkCardPendingPayment(cardId: string, user: User) {
+		let card = await getManager()
+			.createQueryBuilder(UserCard, "user_card")
+			.where(
+				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
+				{ user_id: user.userId, is_deleted: false, cardId }
+			)
+			.getOne();
+
+		if (!card) throw new NotFoundException(`Card id not founds`);
+
+		let booking = await getManager()
+			.createQueryBuilder(Booking, "booking")
+			.where(`booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus AND booking_status < ${BookingStatus.FAILED}`, {
+				booking_type: BookingType.INSTALMENT,
+				card_token: card.cardToken,
+				today: new Date(),
+				user_id: user.userId,
+				paymentStatus: PaymentStatus.PENDING
+			})
+			.select(["booking.laytripBookingId"])
+			.getMany()
+		if (booking.length) {
+			return {
+				pendingTransaction: true,
+				bookingIds: booking
+			}
+		}
+
+		return {
+			pendingTransaction: false
+		}
+	}
+
+	async updateCard(cardId, addCardDto: AddCardDto, user: User) {
+		let card = await getManager()
+			.createQueryBuilder(UserCard, "user_card")
+			.where(
+				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
+				{ user_id: user.userId, is_deleted: false, cardId }
+			)
+			.getOne();
+
+		if (!card) throw new NotFoundException(`Card id not founds`);
+		const newCard = await this.addCard(addCardDto, user.userId)
+		await getConnection()
+			.createQueryBuilder()
+			.update(Booking)
+			.set({ cardToken: newCard.cardToken })
+			.where(`booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus AND booking_status < ${BookingStatus.FAILED}`, {
+				booking_type: BookingType.INSTALMENT,
+				card_token: card.cardToken,
+				today: new Date(),
+				user_id: user.userId,
+				paymentStatus: PaymentStatus.PENDING
+			})
+			.execute();
+		card.isDeleted = true
+		await card.save()
+		return {
+			message: `Your card update successfully`,
+			data: newCard
+		}
+
+	}
+
+	async manuallyTakePayment(manullyTakePaymentDto: ManullyTakePaymentDto, admin: User) {
+		try {
+			const { user_id, cart_id, card_token, installmentDates } = manullyTakePaymentDto
+
+			if (!uuidValidator(user_id)) {
+				throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+			}
+			let instalmentDate = []
+			for await (const record of installmentDates) {
+				instalmentDate.push(record.installment_date)
+			}
+			let cart = await getConnection()
+				.createQueryBuilder(CartBooking, "cart")
+				.leftJoinAndSelect("cart.bookings", "booking")
+				.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
+				.leftJoinAndSelect("booking.currency2", "currency")
+				.leftJoinAndSelect("cart.user", "User")
+				.where(`"BookingInstalments"."instalment_date" in (:...instalmentDate) AND "BookingInstalments"."payment_status" != ${PaymentStatus.CONFIRM} AND "cart"."user_id" = '${user_id}' AND "cart"."laytrip_cart_id" = '${cart_id}' AND "cart"."booking_type" = ${BookingType.INSTALMENT}`, { instalmentDate })
+				.getOne();
+
+			if (!cart) {
+				throw new NotFoundException(`We could not found any installments for given installment dates`);
+			}
+
+			const currency = cart.bookings[0].currency2
+			let totalAmount: number = 0
+			for await (const booking of cart.bookings) {
+				for await (const installment of booking.bookingInstalments) {
+					totalAmount += parseFloat(installment.amount)
+				}
+			}
+			let currencyCode = currency.code
+			let cardToken = card_token
+			const cartAmount = totalAmount
+			totalAmount = totalAmount * 100
+			totalAmount = Math.ceil(totalAmount)
+			const currentDate = new Date()
+			//console.log(cartAmount);
+
+
+			if (cardToken) {
+				let transaction = await this.getPayment(cardToken, totalAmount, currencyCode)
+
+				for await (const booking of cart.bookings) {
+
+					for await (const instalment of booking.bookingInstalments) {
+						instalment.paymentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+						instalment.paymentInfo = transaction.meta_data;
+						instalment.transactionToken = transaction.token;
+						instalment.paymentCaptureDate = new Date();
+						instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
+						instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
+						instalment.comment = `try to get Payment by cron on ${currentDate}`
+						await instalment.save()
+					}
+				}
+
+				if (transaction.status == false) {
+
+					let faildTransaction = new FailedPaymentAttempt()
+					faildTransaction.instalmentId = cart.bookings[0].bookingInstalments[0].id
+					faildTransaction.paymentInfo = transaction.meta_data
+					faildTransaction.date = new Date();
+
+					await faildTransaction.save()
+					var availableTry = ''
+
+					return {
+						message: `We could not able to take your payment please try again.`
+					}
+
+					// let param = {
+					// 	date: DateTime.convertDateFormat(cart.bookings[0].bookingInstalments[0].instalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY'),
+					// 	amount: Generic.formatPriceDecimal(cartAmount),
+					// 	available_try: availableTry,
+					// 	payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMM DD, YYYY'),
+					// 	currency: cart.bookings[0].bookingInstalments[0].currency.symbol,
+					// 	phoneNo: `+${cart.user.countryCode}` + cart.user.phoneNo,
+					// 	bookingId: cart.laytripCartId,
+					// }
+
+					// if (booking.user.isEmail) {
+					// 	this.mailerService
+					// 		.sendMail({
+					// 			to: instalment.user.email,
+					// 			from: mailConfig.from,
+					// 			cc: mailConfig.BCC,
+					// 			subject: `Payment Failed Notification`,
+					// 			html: missedPaymentInstallmentMail(param),
+					// 		})
+					// 		.then((res) => {
+					// 			//console.log("res", res);
+					// 		})
+					// 		.catch((err) => {
+					// 			//console.log("err", err);
+					// 		});
+					// }
+
+					// if (booking.user.isSMS) {
+					// 	TwilioSMS.sendSMS({
+					// 		toSMS: param.phoneNo,
+					// 		message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+					// 	})
+					// }
+
+					// Activity.logActivity(
+					// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+					// 	"cron",
+					// 	`${instalment.id} Payment Failed by Cron`
+					// );
+
+					// PushNotification.sendNotificationTouser(booking.user.userId,
+					// 	{  //you can send only notification or only data(or include both)
+					// 		module_name: 'instalment',
+					// 		task: 'instalment_failed',
+					// 		bookingId: instalment.booking.laytripBookingId,
+					// 		instalmentId: instalment.id
+					// 	},
+					// 	{
+					// 		title: 'Instalment Failed',
+					// 		body: `We were not able on our  time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+					// 	}, cronUserId)
+					// WebNotification.sendNotificationTouser(booking.user.userId,
+					// 	{  //you can send only notification or only data(or include both)
+					// 		module_name: 'instalment',
+					// 		task: 'instalment_failed',
+					// 		bookingId: instalment.booking.laytripBookingId,
+					// 		instalmentId: instalment.id
+					// 	},
+					// 	{
+					// 		title: 'Instalment Failed',
+					// 		body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+					// 	}, cronUserId)
+				}
+				else {
+					for await (const booking of cart.bookings) {
+						//console.log(booking.laytripBookingId);
+
+						const nextInstalmentDate = await getManager()
+							.createQueryBuilder(BookingInstalments, "BookingInstalments")
+							.select(['BookingInstalments.instalmentDate'])
+							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${booking.id}'`)
+							.orderBy(`"BookingInstalments"."id"`)
+							.getOne()
+
+						await getConnection()
+							.createQueryBuilder()
+							.update(Booking)
+							.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
+							.where("id = :id", { id: booking.id })
+							.execute();
+					}
+
+					//console.log('installment');
+
+
+					let complitedAmount = 0;
+					let totalAmount = 0;
+					let pendingInstallment = 0;
+					for await (const booking of cart.bookings) {
+
+						complitedAmount += parseFloat(await this.totalPaidAmount(booking.id))
+						//console.log('ca');
+						totalAmount += Generic.formatPriceDecimal(parseFloat(booking.totalAmount))
+						//console.log('ta');
+						pendingInstallment += await this.pandingInstalment(booking.id)
+						//console.log('pi');
+					}
+
+
+					let param = {
+						date: DateTime.convertDateFormat(new Date(cart.bookings[0].bookingInstalments[0].instalmentDate), 'YYYY-MM-DD', ' Do YYYY'),
+						userName: cart.user.firstName + ' ' + cart.user.lastName,
+						cardHolderName: transaction.meta_data.transaction.payment_method.full_name,
+						cardNo: transaction.meta_data.transaction.payment_method.number,
+						orderId: cart.laytripCartId,
+						amount: Generic.formatPriceDecimal(cartAmount),
+						installmentId: cart.bookings[0].bookingInstalments[0].id,
+						complitedAmount: complitedAmount,
+						totalAmount: totalAmount,
+						currencySymbol: currency.symbol,
+						currency: currency.code,
+						pendingInstallment: pendingInstallment,
+						phoneNo: `+${cart.user.countryCode}` + cart.user.phoneNo,
+						bookingId: cart.laytripCartId,
+					}
+					if (cart.user.isEmail) {
+						this.mailerService
+							.sendMail({
+								to: cart.user.email,
+								from: mailConfig.from,
+								cc: mailConfig.BCC,
+								subject: `Installment Payment Successed`,
+								html: InstallmentRecevied(param),
+							})
+							.then((res) => {
+								//console.log("res", res);
+							})
+							.catch((err) => {
+								//console.log("err", err);
+							});
+					}
+
+					if (cart.user.isSMS) {
+						TwilioSMS.sendSMS({
+							toSMS: param.phoneNo,
+							message: `We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
+						})
+					}
+
+					// Activity.logActivity(
+					// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+					// 	"cron",
+					// 	`${instalment.id} Payment successed by Cron`
+					// );
+
+					PushNotification.sendNotificationTouser(cart.user.userId,
+						{  //you can send only notification or only data(or include both)
+							module_name: 'instalment',
+							task: 'instalment_received',
+							bookingId: cart.laytripCartId,
+							instalmentId: cart.bookings[0].bookingInstalments[0].id
+						},
+						{
+							title: 'Installment Received',
+							body: `We have received your payment of $${cartAmount}.`
+						}, user_id)
+					WebNotification.sendNotificationTouser(cart.user.userId,
+						{  //you can send only notification or only data(or include both)
+							module_name: 'instalment',
+							task: 'instalment_received',
+							bookingId: cart.laytripCartId,
+							instalmentId: cart.bookings[0].bookingInstalments[0].id
+						},
+						{
+							title: 'Installment Received',
+							body: `We have received your payment of $${cartAmount}.`
+						}, user_id)
+				}
+				//console.log('booking Update');
+
+				for await (const booking of cart.bookings) {
+					await this.checkAllinstallmentPaid(booking.id)
+				}
+				Activity.logActivity(admin.userId, "Payment", `Mannully take payment for booking = ${cart_id} , Total amount = ${totalAmount} , installmentDates = ${instalmentDate}`)
+				return {
+					message: `Installment take successfully `
+				}
+			}
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+	async totalPaidAmount(bookingId: string) {
+		var paidAmount = await getConnection().query(`
+                SELECT  SUM( amount) as total_amount from booking_instalments where payment_status = ${PaymentStatus.CONFIRM} AND booking_id = '${bookingId}'  
+			`);
+		return paidAmount[0].total_amount
+	}
+	async pandingInstalment(bookingId) {
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "instalment")
+			.where(`"instalment"."booking_id" = '${bookingId}' AND "instalment"."payment_status" = '${PaymentStatus.PENDING}'`)
+			.getCount();
+		return query
+	}
+	async checkAllinstallmentPaid(bookingId) {
+
+		let query = await getManager()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.where(`booking_id = '${bookingId}' AND payment_status != ${PaymentStatus.CONFIRM}`)
+			.getCount()
+		if (query <= 0) {
+			await getConnection()
+				.createQueryBuilder()
+				.update(Booking)
+				.set({ paymentStatus: PaymentStatus.CONFIRM })
+				.where("id = :id", { id: bookingId })
+				.execute();
+		}
+
+	}
+
+
 }

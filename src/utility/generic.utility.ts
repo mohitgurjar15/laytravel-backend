@@ -64,4 +64,9 @@ export class  Generic{
             .getRawOne();
         return credentail;
     }
+
+    static convertKGtoLB(weight){
+        return  Number((weight*2.20).toFixed(2))
+    }
+
 }

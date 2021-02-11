@@ -1,4 +1,6 @@
 import { Entity, BaseEntity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { EncryptionTransformer } from "typeorm-encrypted";
+import { CryptoKey } from "src/config/common.config";
 
 @Entity("forget_password")
 
@@ -7,11 +9,12 @@ export class forget_password extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "int", name: "id" })
     id: number;
 
-    @Column("varchar", { name: "email", length: 255 })
+    @Column("varchar", { name: "email",nullable : true , transformer: new EncryptionTransformer(CryptoKey) })
     email: string;
 
     @Column("varchar", { name: "token", nullable:true })
     token: string;
+    
     @Column("int", { name: "otp" })
     otp: number;
 

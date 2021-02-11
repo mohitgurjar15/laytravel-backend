@@ -14,6 +14,9 @@ import { errorMessage } from "src/config/common.config";
 import { v4 as uuidv4 } from "uuid";
 import { Role } from "src/enum/role.enum";
 import * as moment from 'moment';
+import { Countries } from "src/entity/countries.entity";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
+import { airports } from "src/flight/airports";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -35,7 +38,7 @@ export class UserRepository extends Repository<User> {
 			user.updatedBy = user.userId;
 		} else {
 			throw new BadRequestException(
-				`Your current password doesn't match.&&&old_pasword`
+				`Old password is incorrect.`
 			);
 		}
 
@@ -57,89 +60,125 @@ export class UserRepository extends Repository<User> {
 		role: number[],
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
-		const { page_no, search, limit } = paginationOption;
+		const { page_no, limit, firstName, lastName, email, countryId } = paginationOption;
 
 		const take = limit || 10;
 		const skip = (page_no - 1) * take || 0;
-		const keyword = search || "";
 
-		let where;
-		if (keyword) {
-			where = `("User"."is_deleted" = false) AND ("User"."role_id" IN (${role})) AND (("User"."first_name" ILIKE '%${keyword}%') or ("User"."middle_name" ILIKE '%${keyword}%') or ("User"."last_name" ILIKE '%${keyword}%') or ("User"."email" ILIKE '%${keyword}%'))`;
-		} else {
-			where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role}) ) and 1=1`;
+		// let where;
+		// if (keyword) {
+		// 	where = `("User"."is_deleted" = false) AND ("User"."role_id" IN (${role})) AND (("User"."first_name" ILIKE '%${keyword}%') or ("User"."middle_name" ILIKE '%${keyword}%') or ("User"."last_name" ILIKE '%${keyword}%') or ("User"."email" ILIKE '%${keyword}%'))`;
+		// } else {
+		// 	where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role}) ) and 1=1`;
+		// }
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(role)
 		}
-		const [result, count] = await getManager()
-			.createQueryBuilder(User, "User")
-			.leftJoinAndSelect("User.state", "state")
-			.leftJoinAndSelect("User.country", "countries")
-			.leftJoinAndSelect("User.preferredCurrency2", "currency")
-			.leftJoinAndSelect("User.preferredLanguage2", "language")
-			.select([
-				"User.status",
-				"User.userId",
-				"User.title",
-				"User.dob",
-				"User.firstName",
-				"User.lastName",
-				"User.email",
-				"User.profilePic",
-				"User.dob",
-				"User.gender",
-				"User.roleId",
-				"User.countryCode",
-				"User.phoneNo",
-				"User.cityName",
-				"User.address",
-				"User.zipCode",
-				"User.preferredCurrency2",
-				"User.preferredLanguage2",
-				"User.passportNumber",
-				"User.passportExpiry",
-				"language.id",
-				"language.name",
-				"language.iso_1Code",
-				"language.iso_2Code",
-				"currency.id",
-				"currency.code",
-				"currency.country",
-				"countries.name",
-				"countries.iso2",
-				"countries.iso3",
-				"countries.id",
-				"state.id",
-				"state.name",
-				"state.iso2",
-				"state.country_id",
-				"User.createdDate"
-			])
-			// .addSelect(`CASE
-			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
-			// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
-			// 	ELSE 'adult'
-			// END AS "user_type"`,)
-			.where(where)
-			.skip(skip)
-			.take(take)
-			.orderBy("User.createdDate" , "DESC")
-			.getManyAndCount();
-		
+
+		if (countryId) {
+			let countryDetails = await getManager()
+				.createQueryBuilder(Countries, "country")
+				.where(`id=:country_id`, { country_id: countryId })
+				.getOne();
+			andWhere['countryId'] = countryId
+		}
+		if (firstName) {
+			andWhere['firstName'] = firstName
+		}
+		if (lastName) {
+			andWhere['lastName'] = lastName
+		}
+		if (email) {
+			andWhere['email'] = email
+		}
+		const [result, count] = await this.findAndCount(
+			{
+				where: andWhere,
+				relations: ["state", "country", "preferredCurrency2", "preferredLanguage2", "createdBy2"],
+				skip: skip,
+				take: take,
+				order: { createdDate: "DESC" }
+			}
+		);
+		// const [result, count] = await getManager()
+		// 	.createQueryBuilder(User, "User")
+		// 	.leftJoinAndSelect("User.state", "state")
+		// 	.leftJoinAndSelect("User.country", "countries")
+		// 	.leftJoinAndSelect("User.preferredCurrency2", "currency")
+		// 	.leftJoinAndSelect("User.preferredLanguage2", "language")
+		// 	.select([
+		// 		"User.status",
+		// 		"User.userId",
+		// 		"User.title",
+		// 		"User.dob",
+		// 		"User.firstName",
+		// 		"User.lastName",
+		// 		"User.email",
+		// 		"User.profilePic",
+		// 		"User.dob",
+		// 		"User.gender",
+		// 		"User.roleId",
+		// 		"User.countryCode",
+		// 		"User.phoneNo",
+		// 		"User.cityName",
+		// 		"User.address",
+		// 		"User.zipCode",
+		// 		"User.preferredCurrency2",
+		// 		"User.preferredLanguage2",
+		// 		"User.passportNumber",
+		// 		"User.passportExpiry",
+		// 		"language.id",
+		// 		"language.name",
+		// 		"language.iso_1Code",
+		// 		"language.iso_2Code",
+		// 		"currency.id",
+		// 		"currency.code",
+		// 		"currency.country",
+		// 		"countries.name",
+		// 		"countries.iso2",
+		// 		"countries.iso3",
+		// 		"countries.id",
+		// 		"state.id",
+		// 		"state.name",
+		// 		"state.iso2",
+		// 		"state.country_id",
+		// 		"User.createdDate"
+		// 	])
+		// 	// .addSelect(`CASE
+		// 	// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 2 THEN 'infant'
+		// 	// 	WHEN date_part('year',age(current_date,"user"."dob")) <= 12 THEN 'child'
+		// 	// 	ELSE 'adult'
+		// 	// END AS "user_type"`,)
+		// 	.where(where)
+		// 	.skip(skip)
+		// 	.take(take)
+		// 	.orderBy("User.createdDate", "DESC")
+		// 	.getManyAndCount();
+
 
 		if (!result.length || count <= skip) {
 			throw new NotFoundException(`No data found.`);
 		}
-		result.forEach(function(data) {
+		result.forEach(function (data) {
 			delete data.updatedDate;
 			delete data.salt;
 			delete data.password;
+
+			if (data.createdBy2) {
+				delete data.createdBy2.updatedDate
+				delete data.createdBy2.salt;
+				delete data.createdBy2.password;
+			}
+
 		});
 		return { data: result, TotalReseult: count };
 	}
 
-	async createUser(user: User , roles: Role[]): Promise<User> {
+	async createUser(user: User, roles: Role[]): Promise<User> {
 		const email = user.email;
 		const userExist = await this.findOne({
-			email,isDeleted : false,roleId: In(roles)
+			email, isDeleted: false, roleId: In(roles)
 		});
 		console.log(userExist);
 
@@ -230,9 +269,9 @@ export class UserRepository extends Repository<User> {
 		}
 		var birthDate = new Date(userDetail.dob);
 		console.log(`birthdate ${birthDate}`);
-		
-		var age = moment(new Date()).diff(moment(birthDate),'years');
-		
+
+		var age = moment(new Date()).diff(moment(birthDate), 'years');
+
 		userDetail.age = age
 		if (age < 2) {
 			userDetail.user_type = "infant";
@@ -333,7 +372,7 @@ export class UserRepository extends Repository<User> {
 		// 	);
 		var today = new Date();
 		var birthDate = new Date(userdata.dob);
-		var age = moment(new Date()).diff(moment(birthDate),'years');
+		var age = moment(new Date()).diff(moment(birthDate), 'years');
 		userdata.age = age
 		if (age < 2) {
 			userdata.user_type = "infant";
@@ -348,15 +387,44 @@ export class UserRepository extends Repository<User> {
 	 * export user
 	 * @param roleId
 	 */
-	async exportUser(roleId: number[]): Promise<{ data: User[] }> {
+	async exportUser(
+		paginationOption: ExportUserDto,
+		role: number[]
+	): Promise<{ data: User[] }> {
 		try {
-			const userData = await this.find({
-				where: { isDeleted: 0, roleId: In(roleId) },
-			});
-			if (!userData) {
-				throw new NotFoundException(`No user found.`);
+			const { firstName, lastName, email, countryId } = paginationOption;
+			var andWhere = {
+				isDeleted: false,
+				roleId: In(role)
 			}
 
+			if (countryId) {
+				let countryDetails = await getManager()
+					.createQueryBuilder(Countries, "country")
+					.where(`id=:country_id`, { country_id: countryId })
+					.getOne();
+				andWhere['countryId'] = countryId
+			}
+			if (firstName) {
+				andWhere['firstName'] = firstName
+			}
+			if (lastName) {
+				andWhere['lastName'] = lastName
+			}
+			if (email) {
+				andWhere['email'] = email
+			}
+
+			const userData = await this.find(
+				{
+					where: andWhere,
+					relations: ["state", "country", "preferredCurrency2", "preferredLanguage2"],
+					order: { createdDate: "DESC" }
+				}
+			);
+			if (!userData.length) {
+				throw new NotFoundException(`No data found.`);
+			}
 			return { data: userData };
 		} catch (error) {
 			if (
@@ -372,7 +440,7 @@ export class UserRepository extends Repository<User> {
 		}
 	}
 
-	async insertNewUser(data: any): Promise<boolean> {
+	async insertNewUser(data: any, roleId: number[]): Promise<boolean> {
 		try {
 			const salt = await bcrypt.genSalt();
 			const user = new User();
@@ -405,8 +473,9 @@ export class UserRepository extends Repository<User> {
 			user.updatedDate = new Date();
 			user.password = await this.hashPassword(data.password, salt);
 			const email = user.email;
+
 			const userExist = await this.findOne({
-				email,
+				email, roleId: In(roleId)
 			});
 			if (userExist) {
 				return false;
@@ -426,17 +495,20 @@ export class UserRepository extends Repository<User> {
 			.leftJoinAndSelect("user.country", "countries")
 			.leftJoinAndSelect("user.preferredCurrency2", "currency")
 			.leftJoinAndSelect("user.preferredLanguage2", "language")
+			.leftJoinAndSelect("user.createdBy2", "createdBy2")
 			.select([
 				"user.userId",
 				"user.title",
 				"user.dob",
 				"user.firstName",
 				"user.lastName",
+				"user.socialAccountId",
 				"user.email",
 				"user.profilePic",
 				"user.dob",
 				"user.gender",
 				"user.roleId",
+				"user.homeAirport",
 				"user.countryCode",
 				"user.phoneNo",
 				"user.cityName",
@@ -462,7 +534,7 @@ export class UserRepository extends Repository<User> {
 				"state.name",
 				"state.iso2",
 				"state.country_id",
-				
+				"createdBy2.roleId"
 			])
 			.where(`("user"."user_id"=:userId and "user"."is_deleted"=:is_deleted)`, {
 				userId,
@@ -478,7 +550,7 @@ export class UserRepository extends Repository<User> {
 		}
 		var today = new Date();
 		var birthDate = new Date(userDetail.dob);
-		var age = moment(new Date()).diff(moment(birthDate),'years');
+		var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 		let user: any = {};
 		user.age = age
@@ -492,6 +564,7 @@ export class UserRepository extends Repository<User> {
 		user.userId = userDetail.userId;
 		user.firstName = userDetail.firstName;
 		user.lastName = userDetail.lastName || "";
+		user.socialAccountId = userDetail.socialAccountId || "";
 		user.email = userDetail.email;
 		user.gender = userDetail.gender || "";
 		user.roleId = userDetail.roleId;
@@ -509,10 +582,100 @@ export class UserRepository extends Repository<User> {
 		user.preferredLanguage = userDetail.preferredLanguage2 || {};
 		user.passportNumber = userDetail.passportNumber || "";
 		user.passportExpiry = userDetail.passportExpiry || "";
-		user.createdDate = userDetail.createdDate 
+		user.createdDate = userDetail.createdDate
 		user.profilePic = userDetail.profilePic
 			? `${siteUrl}/profile/${userDetail.profilePic}`
 			: "";
+		user.homeAirport = userDetail.homeAirport
+		user.createdBy2 = userDetail.createdBy2 || {}
+		user.airportInfo = userDetail.homeAirport ? airports[userDetail.homeAirport] : {}
 		return user;
+	}
+
+	async getFirstname(roles) {
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(roles)
+		}
+		const result = await this.find(
+			{
+				where: andWhere,
+				order: { createdDate: "DESC" },
+				select: ["firstName"]
+			}
+		);
+
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+
+		let responce = [];
+		for await (const item of result) {
+			if (item.firstName) {
+				responce.push(item.firstName)
+			}
+		}
+		return {
+			data: responce
+		}
+	}
+
+	async getLastname(roles) {
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(roles)
+		}
+		const result = await this.find(
+			{
+				where: andWhere,
+				order: { createdDate: "DESC" },
+				select: ["lastName"]
+			}
+		);
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+		let responce = [];
+		for await (const item of result) {
+			if (item.lastName) {
+				responce.push(item.lastName)
+			}
+		}
+		return {
+			data: responce
+		}
+	}
+
+	async getemails(roles) {
+		var andWhere = {
+			isDeleted: false,
+			roleId: In(roles)
+		}
+		const result = await this.find(
+			{
+				where: andWhere,
+				order: { createdDate: "DESC" },
+				select: ["email"]
+			}
+		);
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+		let responce = [];
+		for await (const item of result) {
+			if (item.email) {
+				responce.push(item.email)
+			}
+		}
+		return {
+			data: responce
+		}
+	}
+
+	async getPreference(user: User) {
+		let result = await this.findOne({ userId: user.userId });
+
+		return { preference_value: { email: result.isEmail, sms: result.isSMS } }
+
 	}
 }

@@ -45,10 +45,10 @@ export function missedPaymentInstallmentMail(param: {
                                                         <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">We hope you are able to get this settled so you can continue to plan to make your trip. If it is necessary to discuss, please contact Customer Support through our chat function or email us at support@laytrip.com. Please include your name and booking number so we can best try to help you fix the issue, thanks!</td>
                                                     </tr>
                                                     <tr>
-                                                        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;"><span style="display: block;">Sincerely,                                                    </span></td>
+                                                        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 10px; color: #000;padding-top: 5px; text-align: left;"><span style="display: block;">Sincerely,</span></td>
                                                     </tr>
                                                     <tr>
-                                                        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;"><span style="display: block;">Laytrip Support</span></td>
+                                                        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 10px; color: #000;padding-top: 5px; text-align: left;"><span style="display: block;">Laytrip Support</span></td>
                                                     </tr>
                                                 </tbody>
                                             </table>

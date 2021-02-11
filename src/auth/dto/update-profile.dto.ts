@@ -90,10 +90,6 @@ export class UpdateProfileDto {
 		type: "string",
 		description: "zip code",
 	})    
-    @ApiProperty({
-        description: `Enter your zipcode`,
-        example: `H7623`
-    })
     zip_code: string;
 
     @ApiPropertyOptional({
@@ -108,10 +104,10 @@ export class UpdateProfileDto {
 	// 		}
 	// 	}
 	// })
-    @ApiProperty({
-        description: `Enter your country id`,
-        example: 233
-    })
+    // @ApiProperty({
+    //     description: `Enter your country id`,
+    //     example: 233
+    // })
     country_id: number;
 
     
@@ -127,20 +123,16 @@ export class UpdateProfileDto {
 	// 		}
 	// 	}
 	// })    
-    @ApiProperty({
-        description: `Enter your state id`,
-        example: 1452
-    })
+    // @ApiProperty({
+    //     description: `Enter your state id`,
+    //     example: 1452
+    // })
     state_id: number;
 
     @ApiPropertyOptional({
 		type: "string",
 		description: "city name",
 	})    
-    @ApiProperty({
-        description: `Enter your city name`,
-        example: ``
-    })
     city_name: string;
 
     @IsValidDate('',{
@@ -171,11 +163,13 @@ export class UpdateProfileDto {
 		type: "string",
 		description: "Passport number",
 	})
-    @ApiProperty({
-        description: `Enter your passport number`,
-        example: `S1234X7896`
-    })
     passport_number: string;
+
+    @ApiPropertyOptional({
+		type: "string",
+		description: "home airport",
+	})
+    home_airport: string;
 
     @ApiPropertyOptional({
 		type: "string",
@@ -189,10 +183,10 @@ export class UpdateProfileDto {
 	// 		}
 	// 	},
 	// })
-	@ApiProperty({
-		description: `Enter travelers passport expiry date`,
-		example: `2030-07-20`,
-	})
+	// @ApiProperty({
+	// 	description: `Enter travelers passport expiry date`,
+	// 	example: `2030-07-20`,
+	// })
     passport_expiry: string;
 
 
@@ -200,10 +194,10 @@ export class UpdateProfileDto {
 		type: "string",
 		description: "languge id",
 	})    
-    @ApiProperty({
-        description:'Enter Language ID ',
-        example:'1'
-    })
+    // @ApiProperty({
+    //     description:'Enter Language ID ',
+    //     example:'1'
+    // })
     language_id :number;
 
 
@@ -211,9 +205,9 @@ export class UpdateProfileDto {
 		type: "string",
 		description: "currency id",
 	})    
-    @ApiProperty({
-        description:'Enter currency ID ',
-        example:'1'
-    })
+    // @ApiProperty({
+    //     description:'Enter currency ID ',
+    //     example:'1'
+    // })
     currency_id :number;
 }

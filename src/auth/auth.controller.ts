@@ -61,6 +61,8 @@ import { UpdateEmailId } from "./dto/update-email.dto";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
+import { updateUserPreference } from "./dto/update-user-preference.dto";
+import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -224,6 +226,20 @@ export class AuthController {
 		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl, roles);
 	}
 
+	@Get("find-user-from-email-id")
+	@ApiOperation({ summary: "Forgot password for backend user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not found!" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async userGet(
+		@Query(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
+	) {
+		return await this.authService.getUserFromEmail(forgetPasswordDto);
+	}
+
 	@ApiOperation({ summary: "Reset password of user" })
 	@Post("reset-password/")
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -384,6 +400,45 @@ export class AuthController {
 		);
 	}
 
+	@Put("/profile/picture")
+	@ApiOperation({ summary: "Update user profile picture" })
+	@ApiConsumes("multipart/form-data")
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 400, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not found!" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	@UseInterceptors(
+		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
+			storage: diskStorage({
+				destination: "./assets/profile",
+				filename: editFileName,
+			}),
+			fileFilter: imageFileFilter,
+			limits: { fileSize: 2097152 },
+		})
+	)
+	async updateProfilePic(
+		@Body() updateProfileDto: UpdateProfilePicDto,
+		@UploadedFiles() files: ProfilePicDto,
+		@Req() req,
+		@GetUser() user: User,
+		@SiteUrl() siteUrl
+	): Promise<any> {
+		if (req.fileValidationError) {
+			throw new BadRequestException(`${req.fileValidationError}`);
+		}
+		return await this.authService.updateProfilePic(
+			updateProfileDto,
+			user,
+			files,
+			siteUrl
+		);
+	}
+
 	@Put("change-password")
 	@ApiOperation({ summary: "Change user password" })
 	@ApiBearerAuth()
@@ -537,5 +592,41 @@ export class AuthController {
 			user,
 			dto
 		);
+	}
+
+
+	@Get('preference')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "change the preference value " })
+	@ApiOperation({ summary: "request for delete account" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getPreference(
+		@GetUser() user: User
+	) {
+		return await this.authService.getPreference(user);
+	}
+
+
+	@Put('preference')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "change the preference value " })
+	@ApiOperation({ summary: "request for delete account" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async changeUserPreference(
+		@GetUser() user: User,
+		@Body() preferenceDto: updateUserPreference
+	) {
+		return await this.authService.changeUserPreference(user, preferenceDto);
 	}
 }

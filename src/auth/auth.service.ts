@@ -77,6 +77,11 @@ import * as moment from 'moment';
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum";
 import { DeleteUserAccountRequest } from "src/entity/delete-user-account-request.entity";
+import { updateUserPreference } from "./dto/update-user-preference.dto";
+import { UserPreference } from "src/enum/user-preference.enum";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { airports } from "src/flight/airports";
+import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 
 @Injectable()
 export class AuthService {
@@ -415,7 +420,6 @@ export class AuthService {
 				createdDate: user.createdDate,
 				socialAccountId: user.socialAccountId
 			};
-
 			const accessToken = this.jwtService.sign(payload);
 			const token = { token: accessToken };
 			this.addLoginLog(user.userId, request, "web");
@@ -427,18 +431,18 @@ export class AuthService {
 		}
 	}
 
-	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles) {
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto, siteUrl, roles: Role[]) {
 		const { email } = forgetPasswordDto;
 
-		// const user = await this.userRepository.findOne({
-		// 	email:email,
-		// 	roleId: In(roles),
-		// });
+		const user = await this.userRepository.findOne({
+			email: email,
+			roleId: In(roles)
+		});
 
-		const user = await getManager()
-			.createQueryBuilder(User, "user")
-			.where(`email=:email and role_id  IN (:...role_id)`, { email, role_id: roles })
-			.getOne();
+		// const user = await getConnection()
+		// 	.createQueryBuilder(User, "user")
+		// 	.where(`email=:email and role_id  IN (:...role_id)`, { email, role_id: roles })
+		// 	.getOne();
 
 		if (!user) {
 			throw new NotFoundException(
@@ -452,6 +456,7 @@ export class AuthService {
 			throw new NotAcceptableException(
 				`Please verify your email id&&&email&&&Please verify your email id`
 			);
+
 		}
 		var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
@@ -520,84 +525,131 @@ export class AuthService {
 	}
 
 	async updatePassword(newPasswordDto: NewPasswordDto) {
-		//const { token } = updatePasswordDto;
-		const { email, otp, new_password } = newPasswordDto;
-		// var decoded = jwt_decode(token);
-		// const { email, tokenhash, iat } = decoded;
-		// const unixTimestamp = Math.round(new Date().getTime() / 1000);
-		// const time = unixTimestamp - iat;
-		// if (time >= 900) {
-		// 	throw new BadRequestException(
-		// 		`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
-		// 	);
-		// }
-		var roles = [
-			Role.ADMIN,
-			Role.SUPER_ADMIN,
-			Role.SUPPLIER,
-			Role.FREE_USER,
-			Role.PAID_USER,
-		];
-		// const user = await this.userRepository.findOne({ email , roleId: In(roles) });
+		try {
 
-		const user = await this.userRepository.findOne({
-			where: { email: email, isDeleted: 0, status: 1, roleId: In(roles) },
-		});
 
-		if (!user) {
-			throw new NotFoundException(
-				`Email is not registered with us. Please check the email.&&&email`
-			);
-		}
-		if (!user.isVerified) {
-			throw new NotAcceptableException(
-				`Please verify your email id&&&email&&&Please verify your email id`
-			);
-		}
-		// Activity.logActivity(
-		// 	user.userId,
-		// 	`auth`,
-		// 	`${user.email} is forget password using ${otp} otp`
-		// );
 
-		const validate = await this.forgetPasswordRepository.findOne({
-			where: { email: email, is_used: 0, otp: otp },
-		});
-		if (validate) {
-			console.log(validate);
-			var a = moment(new Date());//now
-			var b = moment(validate.createTime);
-			const diff = a.diff(b, 'minutes');
+			//const { token } = updatePasswordDto;
+			const { email, otp, new_password } = newPasswordDto;
+			// var decoded = jwt_decode(token);
+			// const { email, tokenhash, iat } = decoded;
+			// const unixTimestamp = Math.round(new Date().getTime() / 1000);
+			// const time = unixTimestamp - iat;
+			// if (time >= 900) {
+			// 	throw new BadRequestException(
+			// 		`Token Is Expired. Please Try Again.&&&token&&& ${errorMessage}`
+			// 	);
+			// }
+			var roles = [
+				Role.ADMIN,
+				Role.SUPER_ADMIN,
+				Role.SUPPLIER,
+				Role.FREE_USER,
+				Role.PAID_USER,
+			];
+			// const user = await this.userRepository.findOne({ email , roleId: In(roles) });
 
-			console.log(diff)
+			const user = await this.userRepository.findOne({
+				where: { email: email, isDeleted: 0, status: 1, roleId: In(roles) },
+			});
 
-			if (diff >= 30) {
+			if (!user) {
+				throw new NotFoundException(
+					`Email is not registered with us. Please check the email.&&&email`
+				);
+			}
+			if (!user.isVerified) {
+				throw new NotAcceptableException(
+					`Please verify your email id&&&email&&&Please verify your email id`
+				);
+			}
+			// Activity.logActivity(
+			// 	user.userId,
+			// 	`auth`,
+			// 	`${user.email} is forget password using ${otp} otp`
+			// );
+
+			const validate = await this.forgetPasswordRepository.findOne({
+				where: { email: email, is_used: 0, otp: otp },
+			});
+			if (validate) {
+				console.log(validate);
+				var a = moment(new Date());//now
+				var b = moment(validate.createTime);
+				const diff = a.diff(b, 'minutes');
+
+				console.log(diff)
+
+				if (diff >= 30) {
+					throw new BadRequestException(
+						`OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
+					);
+				}
+				const salt = await bcrypt.genSalt();
+				user.salt = salt;
+				user.password = await this.hashPassword(new_password, salt);
+				validate.is_used = 1;
+				validate.updateTime = new Date();
+				try {
+					await user.save();
+					await validate.save();
+					const res = { message: `Your password has been updated successfully.` };
+					return res;
+				} catch (error) {
+					throw new InternalServerErrorException(
+						`${error.sqlMessage}&&& &&&` + errorMessage
+					);
+				}
+			} else {
 				throw new BadRequestException(
-					`OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
+					`Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
 				);
 			}
-			const salt = await bcrypt.genSalt();
-			user.salt = salt;
-			user.password = await this.hashPassword(new_password, salt);
-			validate.is_used = 1;
-			validate.updateTime = new Date();
-			try {
-				await user.save();
-				await validate.save();
-				const res = { message: `Your password has been updated successfully.` };
-				return res;
-			} catch (error) {
-				throw new InternalServerErrorException(
-					`${error.sqlMessage}&&& &&&` + errorMessage
-				);
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
 			}
-		} else {
-			throw new BadRequestException(
-				`Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
 	}
 
+	async getUserFromEmail(forgetPasswordDto: ForgetPasswordDto) {
+		const { email } = forgetPasswordDto;
+
+		const user = await this.userRepository.findOne({
+			email: email
+		});
+		return user
+	}
 	async VerifyOtp(OtpDto: OtpDto, req, siteUrl: string) {
 		const { otp, email } = OtpDto;
 
@@ -899,7 +951,20 @@ export class AuthService {
 		if (email) {
 			user.email = email
 		}
-		user.firstName = name || "";
+		const splitName = name.split('')
+		if (splitName.length == 1) {
+			user.firstName = name || "";
+		}
+		else if (splitName.length == 2) {
+			user.firstName = splitName[0] || "";
+			user.lastName = splitName[1] || "";
+		}
+		else {
+			user.firstName = splitName[0] || "";
+			user.middleName = splitName[1] || "";
+			user.lastName = splitName[2] || "";
+		}
+
 
 		if (!userExist) {
 			user.userId = uuidv4();
@@ -1036,7 +1101,7 @@ export class AuthService {
 		}
 	}
 	async updateProfile(
-		updateProfileDto,
+		updateProfileDto: UpdateProfileDto,
 		loginUser,
 		files,
 		siteUrl
@@ -1060,6 +1125,7 @@ export class AuthService {
 				gender,
 				language_id,
 				currency_id,
+				home_airport
 			} = updateProfileDto;
 
 			if (country_id) {
@@ -1073,6 +1139,7 @@ export class AuthService {
 						`Country id not exist with database.&&&country_id`
 					);
 			}
+
 
 			if (state_id) {
 				if (!country_id) {
@@ -1119,6 +1186,12 @@ export class AuthService {
 				throw new BadRequestException(`Age below 16 years are not allowed to signup on Portal.`)
 			}
 			const user = new User();
+			if (home_airport) {
+				if (!airports[home_airport]) {
+					throw new BadRequestException(`Please enter valid airport location`)
+				}
+				user.homeAirport = home_airport
+			}
 			user.title = title;
 			user.firstName = first_name;
 			user.lastName = last_name;
@@ -1215,6 +1288,94 @@ export class AuthService {
 			const token = accessToken;
 
 			return { data: data, token: token, message: `Your profile has been updated successfully` };
+		} catch (error) {
+			if (error instanceof NotFoundException) {
+				throw new NotFoundException(`No user Found.&&&id`);
+			}
+
+			if (error instanceof BadRequestException) {
+				throw new BadRequestException(error.message);
+			}
+
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+	async updateProfilePic(
+		updateProfilePicDto: UpdateProfilePicDto,
+		loginUser,
+		files,
+		siteUrl
+	): Promise<any> {
+		try {
+			const userId = loginUser.userId;
+			const {
+				profile_pic
+			} = updateProfilePicDto
+			const user = new User();
+			var oldProfile = user.profilePic;
+
+			if (typeof files.profile_pic != "undefined") {
+				user.profilePic = files.profile_pic[0].filename;
+			}
+			else {
+				throw new BadRequestException(`please select your image`)
+			}
+			await this.userRepository.update(userId, user);
+
+			if (oldProfile) {
+				await fs.unlink(
+					`/var/www/html/api-staging/assets/profile/${oldProfile}`,
+					function (err) {
+						if (err) {
+							console.log(err);
+						}
+						else {
+							console.log(`${oldProfile} image  deleted!`);
+						}
+						// if no error, file has been deleted successfully
+					}
+				);
+			}
+
+			const roleId = [
+				Role.ADMIN,
+				Role.SUPER_ADMIN,
+				Role.PAID_USER,
+				Role.FREE_USER,
+				Role.GUEST_USER,
+				Role.SUPPLIER,
+				Role.SUPPORT,
+			];
+
+			const data = await this.userRepository.getUserDetails(
+				userId,
+				siteUrl,
+				roleId
+			);
+			const payload: JwtPayload = {
+				user_id: data.userId,
+				email: data.email,
+				username: data.firstName + " " + data.lastName,
+				firstName: data.firstName,
+				phone: data.phoneNo,
+				middleName: data.middleName,
+				lastName: data.lastName,
+				salt: data.salt,
+				createdDate: data.createdDate,
+
+				profilePic: data.profilePic
+					? data.profilePic
+					: "",
+				roleId: data.roleId,
+				socialAccountId: data.socialAccountId
+
+			};
+			const accessToken = this.jwtService.sign(payload);
+			const token = accessToken;
+
+			return { token: token, message: `Your profile pic has been updated successfully` };
 		} catch (error) {
 			if (error instanceof NotFoundException) {
 				throw new NotFoundException(`No user Found.&&&id`);
@@ -1517,7 +1678,7 @@ export class AuthService {
 				newReq.createdDate = new Date();
 				newReq.email = user.email
 				newReq.requestForData = requireBackupFile
-
+				newReq.userName = user.full_name || user.firstName + ' ' + user.lastName
 				newReq.save()
 
 				return {
@@ -1553,5 +1714,49 @@ export class AuthService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
+
+	async getPreference(user: User) {
+
+		return await this.userRepository.getPreference(user);
+	}
+
+	async changeUserPreference(user: User, preferenceDto: updateUserPreference) {
+		const { userId } = user;
+		const { type, value } = preferenceDto;
+		let oppsotiteValue;
+
+		const userDetail = await this.userRepository.findOne({ userId });
+
+		if (type == UserPreference.Email) {
+			if (value == userDetail.isEmail) {
+				return { message: "Email preference value already up to date" }
+			}
+		} else if (type == UserPreference.SMS) {
+			if (value == userDetail.isSMS) {
+				return { message: "SMS preference value already up to date" }
+			}
+		}
+
+		oppsotiteValue = UserPreference.Email == type ? userDetail.isSMS : userDetail.isEmail;
+
+
+		if (oppsotiteValue == true) {
+			if (type == UserPreference.Email) {
+				userDetail.isEmail = value;
+			} else if (type == UserPreference.SMS) {
+				userDetail.isSMS = value;
+			}
+		} else {
+			throw new ConflictException(`It is mandatory to be one preference value is selected at a time.`)
+		}
+
+		try {
+			userDetail.save();
+			return { message: `${type.charAt(0).toUpperCase() + type.slice(1)} preference value updated successfully` };
+		} catch (e) {
+			throw new BadRequestException(`something went wrong ${e.message}`);
+		}
+
 	}
 }

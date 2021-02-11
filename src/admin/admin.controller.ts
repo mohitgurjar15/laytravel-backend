@@ -54,6 +54,8 @@ import { SiteUrl } from "src/decorator/site-url.decorator";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { ImportUserDto } from "src/user/dto/import-user.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
+import { query } from "express";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Controller("admin")
 @ApiTags("Admin")
@@ -285,9 +287,11 @@ export class AdminController {
 	})
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async exportAdmin(@GetUser() user: User): Promise<{ data: User[] }> {
+	async exportAdmin(
+		@Query() paginationOption: ExportUserDto,
+		@GetUser() user: User): Promise<{ data: User[] }> {
 		const userId = user.userId;
-		return await this.adminService.exportAdmin(userId);
+		return await this.adminService.exportAdmin(userId,paginationOption);
 	}
 
 	@Post("report/import")
@@ -334,5 +338,50 @@ export class AdminController {
 			userId,
 			siteUrl
 		);
+	}
+
+	@Get('filter-options/first-name')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all first name of admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFirstName() {
+		return await this.adminService.getAdminFirstName();
+	}
+
+	@Get('filter-options/last-name')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all last name of admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getlastName() {
+		return await this.adminService.getAdminLastName();
+	}
+
+	@Get('filter-options/email')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all email of admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getemails() {
+		return await this.adminService.getAdminEmail();
 	}
 }

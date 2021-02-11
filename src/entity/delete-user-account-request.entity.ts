@@ -20,10 +20,13 @@ export class DeleteUserAccountRequest extends BaseEntity {
     @Column("character varying", { name: "email", length: 255 })
     email: string;
 
+    @Column("character varying", { name: "user_name", length: 255, nullable: true })
+    userName: string;
+
     @Column("date", { name: "created_date" })
     createdDate: Date;
 
-    @Column("date", { name: "updated_date" ,nullable: true })
+    @Column("date", { name: "updated_date", nullable: true })
     updatedDate: Date;
 
     @Column("boolean", { name: "request_for_data", default: false })

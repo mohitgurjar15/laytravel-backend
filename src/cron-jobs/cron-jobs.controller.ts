@@ -1,4 +1,4 @@
-import { Controller , Get, HttpCode, Query, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, Put, Query, Req } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { getBookingDailyPriceDto } from './dto/get-daily-booking-price.dto';
@@ -7,9 +7,9 @@ import { getBookingDailyPriceDto } from './dto/get-daily-booking-price.dto';
 @ApiTags("Cron jobs")
 @Controller('cron-jobs')
 export class CronJobsController {
-    constructor(private cronJobsService:CronJobsService) {}
+	constructor(private cronJobsService: CronJobsService) { }
 
-    @Get('convert-customer')
+	@Get('convert-customer')
 	@ApiOperation({ summary: "Convert customer to free user if subscription plan is not done by paid customer" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -20,7 +20,7 @@ export class CronJobsController {
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async convertCustomer(
-	){
+	) {
 		return await this.cronJobsService.convertCustomer();
 	}
 
@@ -35,7 +35,7 @@ export class CronJobsController {
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async updateFlightBooking(
-	){
+	) {
 		return await this.cronJobsService.checkPandingFlights();
 	}
 
@@ -51,7 +51,7 @@ export class CronJobsController {
 	@ApiResponse({ status: 404, description: "Admin not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getPartialPoint(
-	){
+	) {
 		return await this.cronJobsService.partialPayment();
 	}
 
@@ -68,9 +68,9 @@ export class CronJobsController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async partialBookingPrice(
 		@Req() req,
-		@Query() options : getBookingDailyPriceDto
-	){
-		return await this.cronJobsService.partialBookingPrice(req.headers,options);
+		@Query() options: getBookingDailyPriceDto
+	) {
+		return await this.cronJobsService.partialBookingPrice(req.headers, options);
 	}
 
 
@@ -81,7 +81,7 @@ export class CronJobsController {
 	@HttpCode(200)
 	async updateFlightBookingInProcess(
 		@Req() req,
-	){
+	) {
 		return await this.cronJobsService.updateFlightBookingInProcess();
 	}
 
@@ -92,7 +92,7 @@ export class CronJobsController {
 	@HttpCode(200)
 	async addRecurringLaytripPoint(
 		@Req() req,
-	){
+	) {
 		return await this.cronJobsService.addRecurringLaytripPoint();
 	}
 
@@ -102,7 +102,7 @@ export class CronJobsController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async installerReminder(
 		@Req() req,
-	){
+	) {
 		return await this.cronJobsService.paymentReminder();
 	}
 
@@ -112,7 +112,7 @@ export class CronJobsController {
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async uploadFlightLog(
-	){
+	) {
 		return await this.cronJobsService.uploadLogIntoS3Bucket('flights');
 	}
 
@@ -121,8 +121,8 @@ export class CronJobsController {
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async uploadPaymentLog(
-		
-	){
+
+	) {
 		return await this.cronJobsService.uploadLogIntoS3Bucket('payment');
 	}
 
@@ -131,8 +131,19 @@ export class CronJobsController {
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async databaseBackup(
-	){
+	) {
 		return await this.cronJobsService.backupDatabase();
 	}
 
+	@Put('update-module-info')
+	@ApiOperation({ summary: "update cart" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async updateModuleInfo(
+		@Req() req
+	) {
+		return await this.cronJobsService.updateModuleInfo(req.headers);
+	}
 }

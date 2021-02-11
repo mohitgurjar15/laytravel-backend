@@ -52,7 +52,7 @@ export class Priceline implements HotelInterface{
     
     async search(searchReqDto: SearchReqDto) {
         
-        let { latitude, longitude, check_in, check_out } = searchReqDto;
+        let { latitude, longitude, check_in, check_out, hotel_id } = searchReqDto;
 
         let occupancies = collect(searchReqDto.occupancies);
         
@@ -63,17 +63,32 @@ export class Priceline implements HotelInterface{
         let children = occupancies.flatMap((value) => value['children']).count();
         
         let parameters = {
-            latitude,
-            longitude,
             check_in,
             check_out,
             rooms,
             adults,
             children,
         }
+        let extra = {};
+
+        if (hotel_id) {
+            extra = {
+                hotel_ids:hotel_id
+            }
+        } else {
+            extra = {
+                latitude,
+                longitude,
+            }
+        }
+        
+        parameters = {
+            ...parameters,
+            ...extra
+        }
 
         let url = CommonHelper.generateUrl('getExpress.Results', parameters);
-        // return url;
+        
         let res = await this.httpsService.get(url).pipe(
             map(res => new Search().processSearchResult(res, parameters)),
             catchError(err => {

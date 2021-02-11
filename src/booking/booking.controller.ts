@@ -12,6 +12,8 @@ import { ExportBookingDto } from "./dto/export-booking.dto";
 import { ShareBookingDto } from "./dto/share-booking-detail.dto";
 import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
+import { BookingFilterDto } from "./dto/booking-filter.dto";
+import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 
 
 @ApiTags("Booking")
@@ -34,7 +36,7 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async resentEmailId(
-		@Body() shareBookingDto:getBookingDetailsDto
+		@Body() shareBookingDto: getBookingDetailsDto
 	): Promise<{ message: any }> {
 		return await this.bookingService.resendBookingEmail(shareBookingDto);
 	}
@@ -77,6 +79,42 @@ export class BookingController {
 		return await this.bookingService.userBookingList(paginationOption, user.userId);
 	}
 
+	@Get('incomplete-bookings')
+	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)
+	@ApiOperation({ summary: "Incomplete booking list of user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async currentBooking(
+		@Query() paginationOption: BookingFilterDto,
+		@GetUser() user: User
+	) {
+		return await this.bookingService.currentBooking(paginationOption, user);
+	}
+
+	@Get('complete-bookings')
+	@Roles(Role.GUEST_USER, Role.FREE_USER, Role.PAID_USER)
+	@ApiOperation({ summary: "complete booking listing by user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async completeBookingList(
+		@Query() paginationOption: BookingFilterDto,
+		@GetUser() user: User
+	) {
+		return await this.bookingService.completeBooking(paginationOption, user);
+	}
+
 
 
 	@Get('booking-details/:id')
@@ -112,9 +150,9 @@ export class BookingController {
 		return await this.bookingService.getPaymentHistory(user, listPaymentDto);
 	}
 
-	@Get('installment-list')
+	@Get('upcoming-installment-list')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@ApiOperation({ summary: "Payment List For Admin" })
+	@ApiOperation({ summary: "Upcoming payment List For Admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
@@ -123,11 +161,65 @@ export class BookingController {
 	})
 	@ApiResponse({ status: 404, description: "Payment not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async listPaymentForAdmin(
+	async upcomingPaymentForAdmin(
 		@Query() paginationOption: ListPaymentAdminDto,
 
 	) {
-		return await this.bookingService.listPaymentForAdmin(paginationOption);
+		return await this.bookingService.upcomingPaymentForAdmin(paginationOption);
+	}
+
+	@Get('active-installment-list')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Active payment List For Admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async activePaymentForAdmin(
+		@Query() paginationOption: ListPaymentAdminDto,
+
+	) {
+		return await this.bookingService.activePaymentForAdmin(paginationOption);
+	}
+
+	@Get('export/upcoming-installment')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Upcoming payment List For Admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportUpcomingPaymentForAdmin(
+		@Query() paginationOption: ExportPaymentAdminDto,
+
+	) {
+		return await this.bookingService.exportUpcomingPaymentForAdmin(paginationOption);
+	}
+
+	@Get('export/active-installment')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Active payment List For Admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Payment not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportActivePaymentForAdmin(
+		@Query() paginationOption: ExportPaymentAdminDto,
+
+	) {
+		return await this.bookingService.exportActivePaymentForAdmin(paginationOption);
 	}
 
 	@Get('get-all-user-booking/:user_id')
@@ -143,13 +235,13 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getAllBookingId(
 		@Param('user_id') userId: string,
-		@Query() paginationOption: ListBookingDto,		
+		@Query() paginationOption: ListBookingDto,
 	) {
-		return await this.bookingService.userBookingList(paginationOption,userId);
+		return await this.bookingService.userBookingList(paginationOption, userId);
 	}
 
 	@Get('pending-booking')
-	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "It return to day price of the all pending booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -160,13 +252,13 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Booking not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getPredictiveBookingDdata(
-		
+
 	) {
 		return await this.bookingService.getPredictiveBookingDdata();
 	}
 
 	@Get('daily-prices-of-booking/:booking_id')
-	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "It return daily price of the pending booking " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -177,13 +269,13 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Booking not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async dailyPricesOfBooking(
-		@Param('booking_id') bookingId : string
+		@Param('booking_id') bookingId: string
 	) {
 		return await this.bookingService.getDailyPricesOfBooking(bookingId);
 	}
 
 	@Get('export-bookings')
-	@Roles(Role.ADMIN,Role.SUPER_ADMIN,Role.SUPPORT)
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Export all bookings " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -194,14 +286,14 @@ export class BookingController {
 	@ApiResponse({ status: 404, description: "Booking not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async exportBooking(
-		@Query() filterOption : ExportBookingDto
+		@Query() filterOption: ExportBookingDto
 	) {
 		return await this.bookingService.exportBookings(filterOption);
 	}
 
 	@Post("share-booking-detail")
 	@UseGuards(AuthGuard())
-	@Roles(Role.FREE_USER,Role.GUEST_USER,Role.PAID_USER)
+	@Roles(Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER)
 	@ApiOperation({ summary: "share your booking detail" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -213,9 +305,24 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
 	async shareBookingDetail(
-		@Body() shareBookingDto:ShareBookingDto,
-		@GetUser() user : User
+		@Body() shareBookingDto: ShareBookingDto,
+		@GetUser() user: User
 	): Promise<{ message: any }> {
-		return await this.bookingService.shareBooking(shareBookingDto,user);
+		return await this.bookingService.shareBooking(shareBookingDto, user);
+	}
+
+	@Get('filter-options/booking-id')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all booking id  for admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getemails() {
+		return await this.bookingService.getBookingIds();
 	}
 }

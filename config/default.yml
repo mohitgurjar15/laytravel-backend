@@ -35,8 +35,8 @@ email:
     port: 587
     secure: true
     from: '"laytrip" <no-reply@laytrip.com>'
-    BCC:  'suresh@itoneclick.com'
-    admin: 'suresh@itoneclick.com'
+    BCC:  'suresh@itoneclick.com,gaurav@itoneclick.com,hitendra@laytrip.com'
+    admin: 'suresh@itoneclick.com,jimeet@itoneclick.com'
 
 Sentry:
     DSN: "https://ae1830da5d4744fa9a03efeff65d68c7@o399378.ingest.sentry.io/5256424"
@@ -52,3 +52,10 @@ webNotificationkeys:
     privateKey: 'pwDOYDpxsPqj2wQq0udzPl20v4R5qub7Z2idsREOWFU'
     mailTo : 'mailto:example@yourdomain.org'
     icon : 'assets/main-page-logo-small-hat.png'
+
+twilio:
+    accountSid: "AC080cf0989448504dcfafe87401fa32af"
+    authToken: "8e64f879600ab3c26d45e451b0230109"
+    smsNumber: "+12623261171"
+
+cronUserId: "839aaa9a-03b2-4c22-a02e-a6a4b067db34"    

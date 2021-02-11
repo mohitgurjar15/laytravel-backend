@@ -18,6 +18,9 @@ import * as bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { In } from "typeorm";
 import { Role } from "src/enum/role.enum";
+import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { Activity } from "src/utility/activity.utility";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -202,8 +205,8 @@ export class SupportUserService {
 	}
 
 	//Export user
-	async exportSupporter(): Promise<{ data: User[] }> {
-		return await this.userRepository.exportUser([3]);
+	async exportSupporter(paginationOption: ExportUserDto): Promise<{ data: User[] }> {
+		return await this.userRepository.exportUser(paginationOption,[3]);
 	}
 
 	async getSupportUserData(userId: string, siteUrl: string): Promise<User> {
@@ -217,6 +220,42 @@ export class SupportUserService {
 			) {
 				throw new NotFoundException(`No supporter found`);
 			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async activeDeactiveSupporter(
+		userId: string,
+		activeDeactiveDto: ActiveDeactiveDto,
+		adminId: string
+	) {
+		try {
+			const { status } = activeDeactiveDto;
+			const user = await this.userRepository.findOne({
+				userId,
+				roleId: In([Role.SUPPORT]),
+			});
+
+			if (!user) throw new NotFoundException(`No support user found`);
+			const previousData = user;
+			var statusWord = status === true ? 1 : 0;
+			user.status = statusWord;
+			user.updatedBy = adminId;
+			user.updatedDate = new Date();
+			await user.save();
+			const currentData = user;
+			Activity.logActivity(adminId, `support-user`, `support user status changed ${statusWord}`, previousData, currentData);
+			return { messge: `status changed successfully` };
+		} catch (error) {
+			if (
+				typeof error.response !== "undefined" &&
+				error.response.statusCode == 404
+			) {
+				throw new NotFoundException(`No support user  Found.&&&id`);
+			}
+
 			throw new InternalServerErrorException(
 				`${error.message}&&&id&&&${errorMessage}`
 			);

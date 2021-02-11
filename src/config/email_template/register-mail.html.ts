@@ -2,9 +2,9 @@ import { EmailHeader } from "./header.html";
 import {  EmailFooter} from "./footer.html";
 import { BaseUrl } from "../base-url";
 
-export function RagisterMail(param:{ username:string })
+export function RagisterMail(param:{ username:string},password= null)
 {
-const content = `<!-- header Text section start -->
+var content = `<!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
     <tr>
         <td align="center" valign="top">
@@ -66,13 +66,20 @@ const content = `<!-- header Text section start -->
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding: 15px 0; text-align: center;">
                                                         Guest, subscribed user, Tripfluencer
                                                     </td>
-                                                </tr>
+                                                </tr>`
+                                                if(password){
+
+                                                
+                                                content += `
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding:25px; text-align: center; background: #fc7e66;">
-															<a href="javascrip:void(0);" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Learn more about the options</a>
+															<a href="javascrip:void(0);" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #fff; font-weight:bold; text-decoration:underline;">Your Password is ${password}</a>
 													</td>
 		
-                                                </tr>
+                                                </tr>`
+
+                                                }
+                                                content += `
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
                                                         <span style="font-style: italic;">Discover your next destination without stressing your wallet!</span>

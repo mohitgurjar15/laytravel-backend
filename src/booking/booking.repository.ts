@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, getManager } from "typeorm";
+import { EntityRepository, Repository, getManager, getConnection } from "typeorm";
 import { Booking } from "src/entity/booking.entity";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { NotFoundException } from "@nestjs/common";
@@ -83,6 +83,7 @@ export class BookingRepository extends Repository<Booking> {
 		if (trnsaction_token) {
 			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
 		}
+
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
@@ -111,6 +112,7 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
@@ -154,7 +156,8 @@ export class BookingRepository extends Repository<Booking> {
 			} else {
 				result.travelers[j].userData.user_type = "adult";
 			}
-		}
+		}	
+		
 
 		return result;
 
@@ -236,6 +239,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.moduleId",
 				"BookingInstalments.supplierId",
 				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentNo",
 				"BookingInstalments.instalmentDate",
 				"BookingInstalments.currencyId",
 				"BookingInstalments.amount",
@@ -334,7 +338,7 @@ export class BookingRepository extends Repository<Booking> {
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 
-		let query = getManager()
+		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "installment")
@@ -342,12 +346,14 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
 			.select([
+				"BookingInstalments.attempt",
 				"BookingInstalments.id",
 				"BookingInstalments.bookingId",
 				"BookingInstalments.userId",
 				"BookingInstalments.moduleId",
 				"BookingInstalments.supplierId",
 				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentNo",
 				"BookingInstalments.instalmentDate",
 				"BookingInstalments.currencyId",
 				"BookingInstalments.amount",
@@ -417,6 +423,90 @@ export class BookingRepository extends Repository<Booking> {
 		return { data: data, total_count: count };
 	}
 
+	async exportPayment(where: string) {
+		
+		let query = getConnection()
+			.createQueryBuilder(BookingInstalments, "BookingInstalments")
+			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("booking.bookingInstalments", "installment")
+			.leftJoinAndSelect("BookingInstalments.currency", "currency")
+			.leftJoinAndSelect("BookingInstalments.user", "User")
+			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
+			.select([
+				"BookingInstalments.attempt",
+				"BookingInstalments.id",
+				"BookingInstalments.bookingId",
+				"BookingInstalments.userId",
+				"BookingInstalments.moduleId",
+				"BookingInstalments.supplierId",
+				"BookingInstalments.instalmentType",
+				"BookingInstalments.instalmentNo",
+				"BookingInstalments.instalmentDate",
+				"BookingInstalments.currencyId",
+				"BookingInstalments.amount",
+				"BookingInstalments.instalmentStatus",
+				"BookingInstalments.paymentGatewayId",
+				"BookingInstalments.paymentInfo",
+				"BookingInstalments.paymentStatus",
+				"BookingInstalments.isPaymentProcessedToSupplier",
+				"BookingInstalments.isInvoiceGenerated",
+				"BookingInstalments.transactionToken",
+				"BookingInstalments.comment",
+				"installment.id",
+				"installment.instalmentDate",
+				"installment.currencyId",
+				"installment.amount",
+				"installment.instalmentStatus",
+				"installment.paymentInfo",
+				"installment.paymentStatus",
+				"booking.bookingType",
+				"booking.bookingStatus",
+				"booking.currency",
+				"booking.totalAmount",
+				"booking.netRate",
+				"booking.markupAmount",
+				"booking.usdFactor",
+				"booking.bookingDate",
+				"booking.totalInstallments",
+				"booking.locationInfo",
+				"booking.moduleInfo",
+				"booking.paymentGatewayId",
+				"booking.paymentStatus",
+				"booking.paymentInfo",
+				"booking.isPredictive",
+				"booking.layCredit",
+				"booking.fareType",
+				"booking.isTicketd",
+				"booking.laytripBookingId",
+				"booking.paymentGatewayProcessingFee",
+				"booking.supplierId",
+				"booking.nextInstalmentDate",
+				"booking.supplierBookingId",
+				"currency.id",
+				"currency.code",
+				"currency.symbol",
+				"currency.liveRate",
+				"User.userId",
+				"User.firstName",
+				"User.lastName",
+				"User.socialAccountId",
+				"User.email",
+				"User.phoneNo",
+				"User.roleId",
+				"moduleData.name",
+			])
+
+			.where(where)
+			.orderBy("BookingInstalments.id", 'DESC')
+		const [data, count] = await query.getManyAndCount();
+		// const count = await query.getCount();
+		if (!data.length) {
+			throw new NotFoundException(
+				`Payment record not found&&&id&&&Payment record not found`
+			);
+		}
+		return { data: data, total_count: count };
+	}
 	async getPredictiveBookingDdata() {
 
 		//const {booking_id , below_minimum_seat} = filterOption
@@ -471,11 +561,11 @@ export class BookingRepository extends Repository<Booking> {
 
 		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
-		if (!data.length) {
-			throw new NotFoundException(
-				`No booking found`
-			);
-		}
+		// if (!data.length) {
+		// 	throw new NotFoundException(
+		// 		`No booking found`
+		// 	);
+		// }
 		return { data, count };
 	}
 
@@ -610,5 +700,29 @@ export class BookingRepository extends Repository<Booking> {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
 		return { data: data, total_count: count };
+	}
+
+	async getBookingId() {
+		// var andWhere = {
+		// 	isDeleted: false,
+		// 	roleId: In(roles)
+		// }
+		const query = await getConnection()
+			.createQueryBuilder(Booking, "booking")
+			.orderBy(`booking.bookingDate`, 'DESC')
+			.select(["booking.laytripBookingId"])
+			.getMany()
+		if (!query.length) {
+			throw new NotFoundException('no data found')
+		}
+		let responce = [];
+		for await (const item of query) {
+			if (item.laytripBookingId) {
+				responce.push(item.laytripBookingId)
+			}
+		}
+		return {
+			data: responce
+		}
 	}
 }

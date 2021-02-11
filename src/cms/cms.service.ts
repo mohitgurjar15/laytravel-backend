@@ -27,7 +27,7 @@ export class CmsService {
         let iscmsPageExist = await this.cmsRepository.findOne({
             pageType: page_type
         });
-        
+
         if (iscmsPageExist)
             throw new NotFoundException(`Page type already exist`);
 
@@ -72,14 +72,15 @@ export class CmsService {
         cmsPage.frContent = fr_content;
 
         await this.cmsRepository.update({ pageType: page_type }, cmsPage);
-        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`,iscmsPageExist,cmsPage);
+        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`, iscmsPageExist, cmsPage);
         return cmsPage;
     }
 
     async listCmsPage(): Promise<Cms[]> {
 
         const cmsPages = await this.cmsRepository.find({
-            isDeleted: false
+            where: { isDeleted: false },
+            order: { id: 'DESC' }
         });
         if (cmsPages.length)
             return cmsPages

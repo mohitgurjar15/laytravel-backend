@@ -22,6 +22,8 @@ import { In } from "typeorm";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
+import { RagisterMail } from "src/config/email_template/register-mail.html";
+import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Injectable()
 export class SupplierService {
@@ -246,13 +248,13 @@ export class SupplierService {
 		}
 	}
 	//Export user
-	async exportSupplier(adminId: string): Promise<{ data: User[] }> {
+	async exportSupplier(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(
 			adminId,
 			"supplier-user",
 			`all supplier user list export by admin `
 		);
-		return await this.userRepository.exportUser([Role.SUPPLIER]);
+		return await this.userRepository.exportUser(paginationOption,[Role.SUPPLIER]);
 	}
 
 	async importSupplier(importUserDto, files, userId, siteUrl) {
@@ -282,7 +284,7 @@ export class SupplierService {
 						roleId: row.type,
 						adminId: userId,
 					};
-					var userData = await this.userRepository.insertNewUser(data);
+					var userData = await this.userRepository.insertNewUser(data,[Role.SUPPLIER]);
 
 					if (userData) {
 						count++;
@@ -292,13 +294,9 @@ export class SupplierService {
 								from: mailConfig.from,
 								cc:mailConfig.BCC,
 								subject: `Welcome on board`,
-								template: "welcome.html",
-								context: {
-									// Data to be sent to template files.
-									username: data.firstName + " " + data.lastName,
-									email: data.email,
-									password: data.password,
-								},
+								html: RagisterMail({
+									username: data.firstName + " " + data.lastName
+								},data.password)
 							})
 							.then((res) => {
 								console.log("res", res);
@@ -307,28 +305,28 @@ export class SupplierService {
 								console.log("err", err);
 							});
 						} else {
-							row.error_message = "Email id alredy available";
+							row.error_message = "Email id alredy available. ||";
 							unsuccessRecord.push(row);
 						}
 					} else {
 						var error_message = '';
 					if (row.first_name == "")
-						error_message += "First name required";
+						error_message += "First name required. ||";
 
 					if (row.email_id == "")
-						error_message += "Email id required";
+						error_message += "Email id required. ||";
 
 					if (!isEmail(row.email_id))
-						error_message += "Please enter valid email id";
+						error_message += "Please enter valid email id. ||";
 
 					if (row.password == "")
-						error_message += "Password is required";
+						error_message += "Password is required. ||";
 
 					if (row.type == "")
-						error_message += "user type required";
+						error_message += "user type required. ||";
 
 					if (parseInt(row.type) != 4)
-						error_message += "Add valid supplier user type";
+						error_message += "Add valid supplier user type. ||";
 
 					row.error_message = error_message;
 					unsuccessRecord.push(row);

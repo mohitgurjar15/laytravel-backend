@@ -4,6 +4,7 @@ import { BaseUrl } from "../base-url";
 import { FlightBookingEmailParameterModel } from "./model/flight-booking-email-parameter.model";
 import { EmailFooter } from "./footer.html";
 import { Generic } from "src/utility/generic.utility";
+import { DateTime } from "src/utility/datetime.utility";
 
 export async function FlightBookingConfirmtionMail(
   param: FlightBookingEmailParameterModel
@@ -100,7 +101,7 @@ export async function FlightBookingConfirmtionMail(
                                                                                                             <td align="left" class="oc_desknone oc_deskshow" valign="middle" style="background: #012178; padding: 7px;font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #FFFFFF; text-transform: capitalize;">Depature</td>
                                                                                                           </tr>
                                                                                                           <tr>
-                                                                                                            <td align="left" valign="top" style="padding: 7px;font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;" ><span style="font-weight: 600; font-size: 14px; line-height: 20px; display: block;">Airport :- ${flight.depature.code} (${flight.depature.name})</span>City :- ${flight.depature.city} <br> Country:- ${flight.depature.country} <br> Date :- ${flight.depature.date} <br> time :- ${flight.depature.time} </td> 
+                                                                                                            <td align="left" valign="top" style="padding: 7px;font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;" ><span style="font-weight: 600; font-size: 14px; line-height: 20px; display: block;">Airport :- ${flight.depature.code} (${flight.depature.name})</span>City :- ${flight.depature.city} <br> Country:- ${flight.depature.country} <br> Date :- ${DateTime.convertDateFormat(flight.depature.date, 'MM/DD/YYYY', 'MMM DD, YYYY')} <br> time :- ${flight.depature.time} </td> 
                                                                                                           </tr>
                                                                                                         </tbody>
                                                                                                       </table></td>
@@ -152,7 +153,7 @@ export async function FlightBookingConfirmtionMail(
 <td align="center" valign="top" style="padding-top: 20px;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tbody>
       <tr>
-        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; padding-bottom: 15px;">Booking id : <span style="font-weight: 700;">${param.orderId}</span></td>
+        <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; padding-bottom: 15px;">Booking ID : <span style="font-weight: 700;">${param.orderId}</span></td>
       </tr>`;
   var paymentDetail = `<tr>
       <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; background: #D0D0D0; padding: 10px 15px; font-weight: 700;">Payment details</td>
@@ -181,8 +182,8 @@ export async function FlightBookingConfirmtionMail(
                   <tbody>
                     <tr>
                       <td align="center" valign="top" class="oc_w40 oc_f12" style="width: 50px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; font-weight: 400;">${index + 1}</td>
-                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${Generic.formatPriceDecimal(parseFloat(element.amount)) }</td>
-                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.date}</td>
+                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${element.amount}</td>
+                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${DateTime.convertDateFormat(element.date, 'MM/DD/YYYY', 'MMM DD, YYYY')}</td>
                       <td align="center" valign="top" class="oc_f12" style="padding: 7px 0; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; font-weight: 400; text-transform: capitalize; text-align: center;">${element.status}</td>
                     </tr>
                   </tbody>
@@ -203,8 +204,8 @@ export async function FlightBookingConfirmtionMail(
                   <tr>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 55px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">No</td>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Name</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Email</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Type</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 300px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Email</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 700; color: #000000; text-transform: capitalize; text-align: center;">Type</td>
                   </tr>
                 </tbody>
               </table></td>
@@ -219,8 +220,8 @@ export async function FlightBookingConfirmtionMail(
                   <tr>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 55px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${index + 1}</td>
                     <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.name}</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.email}</td>
-                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.type}</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 300px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.email}</td>
+                    <td align="center" class="oc_w85 oc_f12" valign="top" style="padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${element.type}</td>
                   </tr>
                 </tbody>
               </table></td>

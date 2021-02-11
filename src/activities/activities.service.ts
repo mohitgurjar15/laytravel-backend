@@ -11,6 +11,8 @@ import { ListSearchLogDto } from "./dto/list-search-log.dto";
 import { getConnection } from "typeorm";
 import { SearchLog } from "src/entity/search-log.entity";
 import { ExportSearchLogDto } from "./dto/export-search-log.dto";
+import { ListCronLogDto } from "./dto/list-cronLog.dto";
+import { CronLog } from "src/entity/cron-log.entity";
 
 @Injectable()
 export class ActivitiesService {
@@ -256,5 +258,43 @@ export class ActivitiesService {
 		return {
 			data: result, count: count
 		}
+	}
+
+	async listCronLog(paginationOption:ListCronLogDto){
+		const { page_no, search, limit, searchDate } = paginationOption;
+
+		const take = limit || 10;
+		const skip = (page_no - 1) * limit || 0;
+		const keyword = search || "";
+
+		let where;
+		where = `1=1 `
+		if (searchDate) {
+			where += `AND (DATE("log"."created_date") = '${searchDate}') `;
+		}
+		if (keyword) {
+			where += `AND ("log"."cron_name" ILIKE '%${keyword}%') `;
+		}
+
+
+
+		const [result, count] = await getConnection()
+			.createQueryBuilder(CronLog, "log")
+			.select([
+				"log.id",
+				"log.cronName",
+				"log.createdDate",
+				"log.logData",
+			])
+			.where(where)
+			.skip(skip)
+			.take(take)
+			.orderBy("log.id", "DESC")
+			.getManyAndCount();
+
+		if (!result.length) {
+			throw new NotFoundException(`No Log found.`);
+		}
+		return { data: result, TotalReseult: count };
 	}
 }

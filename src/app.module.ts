@@ -1,3 +1,4 @@
+import { LaytripFeedbackModule } from './laytrip-feedback/laytrip-feedback.module';
 import { VacationRentalModule } from './vacation-rental/vacation-rental.module';
 import { Module } from "@nestjs/common";
 import { typeOrmConfig } from "./config/typeorm.config";
@@ -44,7 +45,6 @@ import { AppVersionModule } from './app-version/app-version.module';
 import { MarketingModule } from './marketing/marketing.module';
 import { CartModule } from './cart/cart.module';
 import { DealModule } from './deal/deal.module';
-
 
 @Module({
   imports: [
@@ -110,6 +110,7 @@ import { DealModule } from './deal/deal.module';
     AdminDashboardModule,
     NewsLettersModule,
     BookingFeedbackModule,
+    LaytripFeedbackModule,
     PredictionFactorMarkupModule,
     FaqCategoryModule,
     AppVersionModule,

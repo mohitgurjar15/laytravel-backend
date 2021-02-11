@@ -1,4 +1,4 @@
-import { BadRequestException, CACHE_MANAGER, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { HotelSearchLocationDto } from './dto/search-location.dto';
 import { SearchReqDto } from './dto/search-req.dto';
 import { Hotel } from './hotel-suppliers/hotel.manager';
@@ -19,7 +19,7 @@ import { UserHelper } from './helpers/user.helper';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentType } from 'src/enum/payment-type.enum';
 import * as moment from "moment";
-import { errorMessage } from 'src/config/common.config';
+import { errorMessage, invalidToken } from 'src/config/common.config';
 import { BookingHelper } from './helpers/booking.helper';
 import { BookingType } from 'src/enum/booking-type.enum';
 import { DateTime } from 'src/utility/datetime.utility';
@@ -30,6 +30,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
 import { HotelBookingParam } from 'src/config/email_template/model/hotel-booking-param.model';
+import { Booking } from 'src/entity/booking.entity';
 
 @Injectable()
 export class HotelService{
@@ -69,7 +70,7 @@ export class HotelService{
         
         /* This should return direct hotel response (Directly from supplier's and as per our decided structure) */
         let hotels = await this.hotel.search(searchReqDto);
-        
+        // return hotels;
         /* Add any type of Business logic for hotel object's */
         hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
 
@@ -105,6 +106,10 @@ export class HotelService{
         
         let cached = await this.cacheManager.get(detailReqDto.token);
 
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         let detail = await this.hotel.detail(detailReqDto);
         
         let details = cached.details;
@@ -123,14 +128,18 @@ export class HotelService{
 
         let cached = await this.cacheManager.get(roomsReqDto.token);
         
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         if (!cached.hotels) {
-            throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
+            throw new NotFoundException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
         
         let hotel = collect(cached.hotels).where('id', roomsReqDto.hotel_id).first();
         
         if (!hotel) {
-            throw new InternalServerErrorException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
+            throw new NotFoundException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
         }
 
         let details = cached.details;
@@ -165,6 +174,10 @@ export class HotelService{
         
         let cached = await this.cacheManager.get(filterReqDto.token);
 
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         let filterObjects = await FilterHelper.generateFilterObjects(cached);
 
         cached['filter_objects'] = filterObjects;
@@ -181,14 +194,18 @@ export class HotelService{
 
         let cached = await this.cacheManager.get(availabilityDto.token);
 
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+        
         if (!cached.rooms) {
-            throw new InternalServerErrorException("No record found for Room ID: "+availabilityDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
         }
         
         let room = collect(cached.rooms).where('room_id', availabilityDto.room_id).first();
         
         if (!room) {
-            throw new InternalServerErrorException("No record found for Room ID: "+availabilityDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
         }
 
         let details = cached.details;
@@ -230,20 +247,24 @@ export class HotelService{
 
         let cached = await this.cacheManager.get(bookDto.token);
         
+        if (!cached) {
+            throw new BadRequestException(invalidToken);
+        }
+
         if (!cached.availability) {
-            throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+bookDto.room_id);
         }
         
         let availability: any = collect(cached.availability).where('room_id', bookDto.room_id).first();
         
         if (!availability) {
-            throw new InternalServerErrorException("No record found for Room ID: "+bookDto.room_id);
+            throw new NotFoundException("No record found for Room ID: "+bookDto.room_id);
         }
         
         let hotel: any = collect(cached.hotels).where('id', bookDto.hotel_id).first();
         
         if (!hotel) {
-            throw new InternalServerErrorException("No record found for Hotel ID: "+bookDto.hotel_id);
+            throw new NotFoundException("No record found for Hotel ID: "+bookDto.hotel_id);
         }
 
         let details = cached.details;
@@ -257,12 +278,13 @@ export class HotelService{
         let capturePayment = true;
         
         let instalmentDetails: any = null;
-
+        let markupAmount = "0";
+        // let markupAmount = (sellingPrice - sellingPrice).toString();
         let bookingData: any = {
             bookingType: BookingType.INSTALMENT,
             totalAmount: sellingPrice.toString(),
             netRate: sellingPrice.toString(),
-            markupAmount: (sellingPrice - sellingPrice).toString(),
+            markupAmount,
             moduleInfo: { details, hotel, room: availability },
             checkInDate: DateTime.convertFormat(details.check_in),
             checkOutDate: DateTime.convertFormat(details.check_out),
@@ -279,7 +301,7 @@ export class HotelService{
             paymentStatus: PaymentStatus.PENDING,
             bookingStatus: BookingStatus.PENDING,
         };
-
+        // return bookingData;
         if (bookDto.payment_type == PaymentType.INSTALMENT) {
             
             /* This are the func name's which need to be same as Instalment utility file func name's */
@@ -344,9 +366,19 @@ export class HotelService{
                     bookingData.supplierBookingId = book.details.booking_id;
                     bookingData.bookingStatus = BookingStatus.CONFIRM;
                     bookingData.paymentStatus = PaymentStatus.CONFIRM;
+                } else {
+                    
+                    await this.paymentService.voidCard(authCardToken);
+
+                    return  {
+                        success_message: 'Booking is Failed',
+                        laytrip_booking_id: '',
+                        booking_status: 'failed',
+                        booking_details: {},
+                        error_message: ""
+                    };
                 }
-                // return bookingData;
-                // return book;
+
             }
             
             if (capturePayment) {
@@ -367,7 +399,14 @@ export class HotelService{
                         await this.booking.saveLaytripCredits(saveBookingResult);
                     }
                     
-                    let booking_details = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
+                    if (!callBookAPI) {
+                        /* Store data to predective booking */
+                        bookingData.netRate = sellingPrice;
+                        bookingData.totalAmount = sellingPrice;
+                        await this.booking.savePredictive(bookingData);
+                    }
+
+                    let booking_details: any = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
                     
                     if (!booking_details) {
                         throw new HttpException({
@@ -379,12 +418,12 @@ export class HotelService{
                     this.booking.sendEmail(booking_details);
                     
                     delete booking_details.card;
-
+                    let state = (callBookAPI ? 'confirmed' : 'pending');
                     let response = {
-                        success_message: 'Booking is confirmed',
+                        success_message: 'Booking is in ' + state + 'state',
                         laytrip_booking_id: saveBookingResult.laytripBookingId,
                         supplier_booking_id: saveBookingResult.supplierBookingId,
-                        booking_status: bookingData.bookingStatus,
+                        booking_status: state,
                         booking_details,
                         error_message: ""
                     };
@@ -411,8 +450,125 @@ export class HotelService{
                 'Card authorization is failed&&&card_token&&&'+errorMessage
             );
         }
+ 
+    }
+
+    async fetchPrice(bookingData: Booking) {
 
         
-        // return book;
+        try {
+            let info: any = bookingData.moduleInfo;
+            
+            let searchReqDto: SearchReqDto = info.details;
+            searchReqDto.hotel_id = info.hotel.id;
+
+            /* Search for Hotel */
+            let searchReq: any = await this.search(searchReqDto);
+            let hotel: any = collect(searchReq.data.hotels).first();
+
+            /* Set Room DTO for finding latest rooms rates */
+            let roomsReqDto: RoomsReqDto;
+            
+            roomsReqDto = {
+                hotel_id: hotel.id,
+                bundle: hotel.bundle,
+                rooms: info.details.occupancies.length,
+            };
+
+            let rooms = await this.hotel.rooms(roomsReqDto);
+            
+            let room: any = collect(rooms).where('room_id', info.room.id).first();
+            
+            /* If room data found then store new rate to predictive table */
+            if (room) {
+                bookingData.netRate = room.selling.total;
+                bookingData.totalAmount = room.selling.total;
+                await this.booking.savePredictive(bookingData);
+                return {
+                    data: {
+                        room
+                    },
+                    message: 'Predictive data Stored'
+                }
+            } else {
+                throw new NotFoundException("No rate found for this booking &&&booking&&&" + errorMessage);
+            }
+
+        } catch (err) {
+            throw new NotFoundException(err + " &&&search&&&" + errorMessage);
+        }
+
+    }    
+
+    async partialBook(booking_id, headers) {
+        let booking = await this.bookingRepository.getBookDetail(booking_id);
+
+        if (booking) {
+            try {
+                
+                let priceRes = await this.fetchPrice(booking);
+                
+                if (priceRes) {
+                    let room: any = priceRes.data.room;
+                    
+                    let availabilityDto: AvailabilityDto = {
+                        room_id: room.room_id,
+                        bundle: room.bundle
+                    };
+                    
+                    let availabilityRes = await this.hotel.availability(availabilityDto);
+
+                    if (availabilityRes) {
+                        let availability :any = collect(availabilityRes).first();
+
+                        let bookDto: any = {
+                            bundle: availability.bundle,
+                            primary_guest_detail : await this.user.getUser(booking.userId)
+                        };
+
+                        let bookData = new PPNBookDto(bookDto);
+
+                        let book = await this.hotel.book(bookData);
+                        
+                        let response: any = {
+                            success_message: 'Booking is Failed',
+                            laytrip_booking_id: booking.laytripBookingId,
+                            supplier_booking_id: booking.supplierBookingId,
+                            booking_status: booking.bookingStatus,
+                            error_message: ""
+                        };
+
+                        if (book.status == 'success') {
+                            
+                            booking.supplierBookingId = book.details.booking_id;
+                            booking.supplierStatus = 1;
+                            booking.bookingStatus = BookingStatus.CONFIRM;
+                            booking.netRate = availability.selling.total;
+                            booking.usdFactor = '' + booking.currency2.liveRate;
+
+                            await booking.save();
+
+                            let booking_details: any = await this.bookingRepository.getBookDetail(booking_id);
+
+                            this.booking.sendEmail(booking_details);
+
+                            delete booking_details.card;
+
+                            response = {
+                                success_message: 'Booking is confirmed',
+                                supplier_booking_id: booking_details.supplierBookingId,
+                                booking_status: booking_details.bookingStatus,
+                                booking_details,
+                            };
+                        }
+                        
+                        return response;
+
+                    }
+                }
+            } catch (err) {
+                throw new NotFoundException(err+", No rate found for this booking &&&booking&&&" + errorMessage);
+            }
+        }
     }
 }
