@@ -28,6 +28,8 @@ import * as uniqid from 'uniqid';
 import { CartBooking } from "src/entity/cart-booking.entity"
 import { BookingType } from 'src/enum/booking-type.enum';
 import { BookingStatus } from 'src/enum/booking-status.enum';
+import { PaymentStatus } from 'src/enum/payment-status.enum';
+import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 
 @Injectable()
 export class CartService {
@@ -668,5 +670,100 @@ export class CartService {
 
 
         return newCart
+    }
+
+    async cartInstallmentDetail(Dto: cartInstallmentsDto, user: User) {
+        const { userId, cartId } = Dto
+        if (!uuidValidator(userId)) {
+            throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+        }
+
+        let cart = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
+            .leftJoinAndSelect("BookingInstalments.currency", "currency")
+            .where(`"BookingInstalments"."payment_status" != ${PaymentStatus.CONFIRM} AND "cartBooking"."user_id" = '${userId}' AND "cartBooking"."laytrip_cart_id" = '${cartId}' AND "cartBooking"."booking_type" = ${BookingType.INSTALMENT}`)
+            .getOne();
+
+        if (!cart) {
+            throw new NotFoundException(`Given booking id noy found`);
+        }
+        const currency = cart.bookings[0].currency2
+        const baseBooking = cart.bookings[0].bookingInstalments
+        let cartInstallments = [];
+        if (baseBooking) {
+            for await (const baseInstallments of baseBooking) {
+
+                let amount = parseFloat(baseInstallments.amount);
+
+                if (cart.bookings.length > 1) {
+                    for (let index = 1; index < cart.bookings.length; index++) {
+
+                        for await (const installment of cart.bookings[index].bookingInstalments) {
+                            if (baseInstallments.instalmentDate == installment.instalmentDate) {
+                                amount += parseFloat(installment.amount)
+                            }
+                        }
+                    }
+                }
+                else {
+                    amount = parseFloat(baseInstallments.amount)
+                }
+                const installment = {
+                    instalmentDate: baseInstallments.instalmentDate,
+                    instalmentStatus: baseInstallments.instalmentStatus,
+                    attempt: baseInstallments.attempt,
+                    amount: amount
+                }
+                cartInstallments.push(installment)
+            }
+        }
+
+        return {
+            installments: cartInstallments,
+            currency: currency
+        }
+
+    }
+
+    async emptyCart(user: User) {
+        let carts = await getConnection()
+            .createQueryBuilder(Cart, "cart")
+            .where(`"user_id" = '${user.userId}'`)
+            .getMany()
+
+        if(!carts.length){
+            throw new BadRequestException(`Your cart is alredy empty `)
+        }
+        let cartIds:number[] = []
+        for await (const cart of carts) {
+            cartIds.push(cart.id)
+        }
+
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(CartTravelers)
+            .where(
+                `"cart_id" in (:...cartIds)`,{
+                    cartIds
+                }
+            )
+            .execute()
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(Cart)
+            .where(
+                `"id" in (:...cartIds)`,{
+                    cartIds
+                }
+            )
+            .execute()
+
+        return {
+            message : `Your cart all itenery deleteted successufully `
+        }
     }
 }
