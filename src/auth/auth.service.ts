@@ -72,7 +72,6 @@ import { RewordMode } from "src/enum/reword-mode.enum";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { WebPushNotifications } from "src/entity/web-push-notification.entity";
-import { Crypto } from "src/utility/crypto.utility";
 import * as moment from 'moment';
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 import { DeleteAccountRequestStatus } from "src/enum/delete-account-status.enum";
@@ -109,10 +108,6 @@ export class AuthService {
 		} = createUser;
 
 		let loginvia = "";
-		const key = await bcrypt.genSalt()
-		const cipher_first_name = await Crypto.Encryption(key, first_name)
-		const cipher_last_name = await Crypto.Encryption(key, last_name)
-		// const cipher_email = await Crypto.Encryption(key, email)
 		const roles = [Role.FREE_USER, Role.PAID_USER];
 		const userExist = await this.userRepository.findOne({
 			email: email,
@@ -145,8 +140,8 @@ export class AuthService {
 		user.userId = uuidv4();
 		user.accountType = 1;
 		user.email = email;
-		user.firstName = first_name ? cipher_first_name : '';
-		user.lastName = last_name ? cipher_last_name : '';
+		user.firstName = first_name ? first_name : '';
+		user.lastName = last_name ? last_name : '';
 		user.gender = "";
 		user.salt = salt;
 		user.createdDate = new Date();
@@ -154,7 +149,6 @@ export class AuthService {
 		user.socialAccountId = "";
 		user.roleId = Role.FREE_USER;
 		user.phoneNo = "";
-		user.key = key
 		user.profilePic = "";
 		user.timezone = "";
 		user.status = 1;
@@ -171,9 +165,6 @@ export class AuthService {
 			if (device_type == 1) user.registerVia = "android";
 			else user.registerVia = "ios";
 		}
-
-		console.log(await Crypto.Decryption(key, cipher_first_name));
-		
 		/*user.country = country;
 		user.state = state;
 		user.city = city;
