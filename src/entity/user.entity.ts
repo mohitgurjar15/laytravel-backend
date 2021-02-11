@@ -127,6 +127,9 @@ export class User extends BaseEntity {
   @Column("text", { name: "address", nullable: true, transformer: new EncryptionTransformer(CryptoKey) })
   address: string;
 
+  @Column("character varying", { name: "key", nullable: true, length: 500 })
+  key: string | null;
+
   @Column("integer", { name: "country_id", nullable: true })
   countryId: number | null;
 
