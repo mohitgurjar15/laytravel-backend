@@ -30,7 +30,7 @@ import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
 import { Generic } from "src/utility/generic.utility";
 import { PushNotification } from "src/utility/push-notification.utility";
-import { PaymentReminderMail } from "src/config/email_template/payment-reminder.html";
+import { PaymentReminderMail } from "src/config/new_email_templete/payment-reminder-mail.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { DateTime } from "src/utility/datetime.utility";
 import { ModulesName } from "src/enum/module.enum";
