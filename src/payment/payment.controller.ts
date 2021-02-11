@@ -110,7 +110,27 @@ export class PaymentController {
 		@Body() addCardDto: AddCardDto,
 		@GetUser() user
 	) {
-		return await this.paymentService.addCard(addCardDto, user);
+		return await this.paymentService.addCard(addCardDto, user.userId);
+	}
+	@Post('add-user-card/:user_id')
+	@UseGuards(RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "Save user Card by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@HttpCode(200)
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async addUserCard(
+		@Body() addCardDto: AddCardDto,
+		@GetUser() user,
+		@Param('user_id') userId : string
+	) {
+		return await this.paymentService.addCard(addCardDto, userId);
 	}
 
 	@Put('retain-card/:card_token')

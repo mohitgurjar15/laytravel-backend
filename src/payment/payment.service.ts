@@ -118,7 +118,10 @@ export class PaymentService {
 		return cardList;
 	}
 
-	async addCard(addCardDto: AddCardDto, user: User) {
+	async addCard(addCardDto: AddCardDto, userId:string) {
+		if (!uuidValidator(userId)) {
+			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+		}
 		const { first_name, last_name, card_number, card_cvv, expiry } = addCardDto;
 
 		let expiryDate = expiry.split("/");
@@ -167,7 +170,7 @@ export class PaymentService {
 			let userCard = new UserCard();
 			userCard.id = uuidv4();
 			userCard.paymentGatewayId = paymentGateway.id;
-			userCard.userId = user.userId;
+			userCard.userId = userId;
 			userCard.cardHolderName = cardResult.transaction.payment_method.full_name;
 			userCard.cardDigits =
 				cardResult.transaction.payment_method.last_four_digits;
@@ -518,7 +521,7 @@ export class PaymentService {
 			.getOne();
 
 		if (!card) throw new NotFoundException(`Card id not founds`);
-		const newCard = await this.addCard(addCardDto, user)
+		const newCard = await this.addCard(addCardDto, user.userId)
 		await getConnection()
 			.createQueryBuilder()
 			.update(Booking)
