@@ -633,6 +633,14 @@ export class AuthService {
 		}
 	}
 
+	async getUserFromEmail(forgetPasswordDto: ForgetPasswordDto) {
+		const { email } = forgetPasswordDto;
+
+		const user = await this.userRepository.findOne({
+			email: email
+		});
+		return user
+	}
 	async VerifyOtp(OtpDto: OtpDto, req, siteUrl: string) {
 		const { otp, email } = OtpDto;
 
@@ -935,20 +943,19 @@ export class AuthService {
 			user.email = email
 		}
 		const splitName = name.split('')
-		if(splitName.length == 1)
-		{
+		if (splitName.length == 1) {
 			user.firstName = name || "";
 		}
-		else if(splitName.length == 2){
+		else if (splitName.length == 2) {
 			user.firstName = splitName[0] || "";
 			user.lastName = splitName[1] || "";
 		}
-		else{
+		else {
 			user.firstName = splitName[0] || "";
 			user.middleName = splitName[1] || "";
 			user.lastName = splitName[2] || "";
 		}
-		
+
 
 		if (!userExist) {
 			user.userId = uuidv4();

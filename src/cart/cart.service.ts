@@ -682,7 +682,7 @@ export class CartService {
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
             .leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
-            .leftJoinAndSelect("BookingInstalments.currency", "currency")
+            .leftJoinAndSelect("booking.currency2", "currency")
             .where(`"BookingInstalments"."payment_status" != ${PaymentStatus.CONFIRM} AND "cartBooking"."user_id" = '${userId}' AND "cartBooking"."laytrip_cart_id" = '${cartId}' AND "cartBooking"."booking_type" = ${BookingType.INSTALMENT}`)
             .getOne();
 
