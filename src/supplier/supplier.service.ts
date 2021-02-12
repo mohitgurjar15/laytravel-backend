@@ -101,7 +101,7 @@ export class SupplierService {
 		Activity.logActivity(
 			adminId,
 			"supplier-user",
-			`supplier-user ${user.email} is added by admin`,
+			`Supplier-user ${user.email} is added by admin`,
 			null,
 			userdata
 		);
@@ -252,7 +252,7 @@ export class SupplierService {
 		Activity.logActivity(
 			adminId,
 			"supplier-user",
-			`all supplier user list export by admin `
+			`All supplier user list export by admin `
 		);
 		return await this.userRepository.exportUser(paginationOption,[Role.SUPPLIER]);
 	}
@@ -336,7 +336,7 @@ export class SupplierService {
 		Activity.logActivity(
 			userId,
 			"supplier-user",
-			`admin impport  ${count} supplier user`
+			`Admin impport  ${count} supplier user`
 		);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}

@@ -78,7 +78,7 @@ export class CurrencyService {
 			CurrencyData.save();
 			const correntData = CurrencyData
 			await getConnection().queryResultCache!.remove(["Currency"]);
-			Activity.logActivity(adminId, "currency", `currency rate ${rate} changed by admin`,previousData,correntData);
+			Activity.logActivity(adminId, "currency", `Currency rate ${rate} changed by admin`,previousData,correntData);
 			return { message: "Currency updated successfully" };
 		} catch (error) {
 			if (
@@ -113,7 +113,7 @@ export class CurrencyService {
 			Data.save();
 			const currentData = Data
 			await getConnection().queryResultCache!.remove(["Currency"]);
-			Activity.logActivity(adminId.id, "currency", `currency ${Data.code} status ${status} changed by admin`,previousData,currentData);
+			Activity.logActivity(adminId.id, "currency", `Currency ${Data.code} status ${status} changed by admin`,previousData,currentData);
 			return { message: `${Data.code} currency status changed successfully` };
 		} catch (error) {
 			if (
@@ -174,7 +174,7 @@ export class CurrencyService {
 			CurrencyData.save();
 			const currentData = CurrencyData
 			await getConnection().queryResultCache!.remove(["Currency"]);
-			Activity.logActivity(adminId, "currency", `currency ${CurrencyData.code} Deleted by admin`,previousData,currentData);
+			Activity.logActivity(adminId, "currency", `Currency ${CurrencyData.code} Deleted by admin`,previousData,currentData);
 			return { message: "Currency deleted successfully" };
 		} catch (error) {
 			if (

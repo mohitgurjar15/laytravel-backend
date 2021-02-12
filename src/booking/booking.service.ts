@@ -37,6 +37,7 @@ import { Generic } from "src/utility/generic.utility";
 import { BookingFilterDto } from "./dto/booking-filter.dto";
 import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 import { CartBooking } from "src/entity/cart-booking.entity";
+import { CryptoUtility } from "src/utility/crypto.utility";
 
 @Injectable()
 export class BookingService {
@@ -1019,7 +1020,9 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
 		}
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
 		//const result: any = data;
@@ -1087,7 +1090,8 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
 		}
 		const { data, total_count } = await this.bookingRepository.exportPayment(where);
 		//const result: any = data;
@@ -1157,7 +1161,8 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
 
 		}
 		const { data, total_count } = await this.bookingRepository.listPayment(where, limit, page_no);
@@ -1209,7 +1214,8 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."instalment_type" = '${instalment_type}') `;
 		}
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
 
 		}
 		const { data, total_count } = await this.bookingRepository.exportPayment(where);
