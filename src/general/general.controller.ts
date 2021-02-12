@@ -4,6 +4,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { Detail } from 'src/hotel/hotel-suppliers/priceline/modules/detail';
+import { CryptoUtility } from 'src/utility/crypto.utility';
 import { PushNotification } from 'src/utility/push-notification.utility';
 import { WebNotification } from 'src/utility/web-notification.utility';
 import { PushNotificationDto } from './dto/push-notification.dto';
@@ -42,6 +43,18 @@ export class GeneralController {
         @Param('id') id: number
     ) {
         return await this.generalService.getCountryDetails(id);
+    }
+
+    @ApiOperation({ summary: "test crypto" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not found!' })
+    @ApiResponse({ status: 500, description: 'Internal server error!' })
+    @Get('testCrypto/:id')
+    async testCrypto(
+        @Param('id') id: string
+    ) {
+        return await CryptoUtility.encode(id);
     }
 
     @ApiOperation({ summary: "Get state by country id" })

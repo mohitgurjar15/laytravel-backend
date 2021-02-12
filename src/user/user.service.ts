@@ -140,7 +140,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `, null, user);
+			Activity.logActivity(adminId, "user", `New user ${user.email} created by admin `, null, user);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,

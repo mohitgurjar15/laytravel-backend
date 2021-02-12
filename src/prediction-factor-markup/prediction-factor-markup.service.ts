@@ -53,7 +53,7 @@ export class PredictionFactorMarkupService {
             markupDetail.save();
             const currentData = markupDetail
             // await getConnection().queryResultCache!.remove(["markup"]);
-            Activity.logActivity(user.userId, "prediction factor markup", `prediction Markup Updated by admin`,previousData,currentData);
+            Activity.logActivity(user.userId, "prediction factor markup", `Prediction Markup Updated by admin`,previousData,currentData);
 
             return { message: "Prediction Markup Updated Successfully" };
         } catch (error) {

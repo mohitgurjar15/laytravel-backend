@@ -89,7 +89,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "Admin", ` new admin ${userdata.email} created By super admin ${adminId}`, null, userdata);
+			Activity.logActivity(adminId, "Admin", ` New admin ${userdata.email} created By super admin ${adminId}`, null, userdata);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
