@@ -27,7 +27,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_id,
 			search,
 			module_id, supplier_id,
-			email, booking_through, trnsaction_token
+			email, booking_through, transaction_token
 
 		} = listBookingDto;
 		const take = limit || 10;
@@ -80,8 +80,8 @@ export class BookingRepository extends Repository<Booking> {
 			where += `AND ("User"."email" ILIKE '%${email}%')`;
 		}
 
-		if (trnsaction_token) {
-			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+		if (transaction_token) {
+			where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
 		}
 
 		const query = getManager()

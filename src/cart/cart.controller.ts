@@ -143,5 +143,5 @@ export class CartController {
         @GetUser() user: User
     ) {
         return await this.cartService.emptyCart(user);
-    }
+    }   
 }

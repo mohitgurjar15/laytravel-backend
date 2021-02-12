@@ -85,7 +85,7 @@ export class ListBookingDto {
         description: 'search with transaction token',
         example: ""
     })
-    trnsaction_token: string;
+    transaction_token: string;
 
     @ValidateIf((o) => o.email != "undefined")
 

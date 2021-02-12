@@ -115,7 +115,18 @@ export class BookingController {
 		return await this.bookingService.completeBooking(paginationOption, user);
 	}
 
-
+	@Get('cart-detail/:cart_id')
+    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiOperation({ summary: "get cart detail" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async cartBookingDetail(
+        @GetUser() user: User,
+        @Param('cart_id') cartId: string
+    ) {
+        return await this.bookingService.getCartBookingDetail(cartId, user);
+    }
 
 	@Get('booking-details/:id')
 	@ApiOperation({ summary: "get booking detail" })
