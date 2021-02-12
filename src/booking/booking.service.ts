@@ -408,7 +408,7 @@ export class BookingService {
 				module_id,
 				supplier_id,
 				booking_through,
-				trnsaction_token } = bookingFilterDto
+				transaction_token } = bookingFilterDto
 
 			const date = new Date();
 			var todayDate = date.toISOString();
@@ -442,8 +442,8 @@ export class BookingService {
 			if (booking_id) {
 				where += `AND ("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
 			}
-			if (trnsaction_token) {
-				where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+			if (transaction_token) {
+				where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
 			}
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
@@ -504,9 +504,6 @@ export class BookingService {
 
 				for await (const booking of cart.bookings) {
 
-					if (booking.bookingInstalments.length > 0) {
-						booking.bookingInstalments.sort((a, b) => a.id - b.id)
-					}
 
 					for await (const installment of booking.bookingInstalments) {
 						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
@@ -521,6 +518,15 @@ export class BookingService {
 					delete booking.bookingInstalments
 				}
 
+				if (cartInstallments.length > 0) {
+					//cartInstallments.sort((o) => new Date( o.instalmentDate ) );
+					cartInstallments.sort((a, b) =>{
+						var c = new Date(a.instalmentDate);
+						var d = new Date(b.instalmentDate);
+						return c > d ? 1 : -1;
+					})
+					//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
+				}
 
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
@@ -588,7 +594,7 @@ export class BookingService {
 				module_id,
 				supplier_id,
 				booking_through,
-				trnsaction_token } = bookingFilterDto
+				transaction_token } = bookingFilterDto
 
 			const date = new Date();
 			var todayDate = date.toISOString();
@@ -622,8 +628,8 @@ export class BookingService {
 			if (booking_id) {
 				where += `AND ("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
 			}
-			if (trnsaction_token) {
-				where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+			if (transaction_token) {
+				where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
 			}
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
@@ -699,6 +705,15 @@ export class BookingService {
 					delete booking.bookingInstalments
 				}
 
+				if (cartInstallments.length > 0) {
+					//cartInstallments.sort((o) => new Date( o.instalmentDate ) );
+					cartInstallments.sort((a, b) =>{
+						var c = new Date(a.instalmentDate);
+						var d = new Date(b.instalmentDate);
+						return c > d ? 1 : -1;
+					})
+					//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
+				}
 
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
@@ -755,7 +770,105 @@ export class BookingService {
 		}
 	}
 
+	async getCartBookingDetail(cartId, user: User) {
+        const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
+        const query = getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("booking.bookingInstalments", "instalments")
+            .leftJoinAndSelect("booking.currency2", "currency")
+            //.leftJoinAndSelect("cartBooking.user", "User")
+            .leftJoinAndSelect("booking.travelers", "traveler")
+            .leftJoinAndSelect("traveler.userData", "userData")
+            // .leftJoinAndSelect("User.state", "state")
+            // .leftJoinAndSelect("User.country", "countries")
 
+            .where(where)
+            .orderBy(`cartBooking.bookingDate`, 'DESC')
+        const cart = await query.getOne();
+
+        if (!cart) {
+            throw new NotFoundException(`Given cart booking id not found&&&id&&&Given cart booking id not found`);
+        }
+        let paidAmount = 0;
+        let remainAmount = 0;
+        let pandinginstallment = 0
+        const currency = cart.bookings[0].currency2
+        const baseBooking = cart.bookings[0].bookingInstalments
+        let cartInstallments = [];
+        if (baseBooking) {
+            for await (const baseInstallments of baseBooking) {
+
+                let amount = parseFloat(baseInstallments.amount);
+
+                if (cart.bookings.length > 1) {
+                    for (let index = 1; index < cart.bookings.length; index++) {
+
+                        for await (const installment of cart.bookings[index].bookingInstalments) {
+                            if (baseInstallments.instalmentDate == installment.instalmentDate) {
+                                amount += parseFloat(installment.amount)
+                            }
+                        }
+                    }
+                }
+                else {
+                    amount = parseFloat(baseInstallments.amount)
+                }
+                const installment = {
+                    instalmentDate: baseInstallments.instalmentDate,
+                    instalmentStatus: baseInstallments.instalmentStatus,
+                    attempt: baseInstallments.attempt,
+                    amount: amount
+                }
+                cartInstallments.push(installment)
+            }
+        }
+
+
+        for await (const booking of cart.bookings) {
+
+            if (booking.bookingInstalments.length > 0) {
+                booking.bookingInstalments.sort((a, b) => a.id - b.id)
+            }
+
+            for await (const installment of booking.bookingInstalments) {
+                if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+                    paidAmount += parseFloat(installment.amount);
+                } else {
+                    remainAmount += parseFloat(installment.amount);
+                    pandinginstallment = pandinginstallment + 1;
+                }
+            }
+
+            delete booking.currency2
+            delete booking.bookingInstalments
+        }
+
+        if (cartInstallments.length > 0) {
+            //cartInstallments.sort((o) => new Date( o.instalmentDate ) );
+            cartInstallments.sort((a, b) => {
+                var c = new Date(a.instalmentDate);
+                var d = new Date(b.instalmentDate);
+                return c > d ? 1 : -1;
+            })
+            //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
+        }
+
+        let cartResponce = {}
+        cartResponce['id'] = cart.id
+        cartResponce['checkInDate'] = cart.checkInDate
+        cartResponce['checkOutDate'] = cart.checkOutDate
+        cartResponce['laytripCartId'] = cart.laytripCartId
+        cartResponce['bookingDate'] = cart.bookingDate
+        cartResponce['booking'] = cart.bookings
+        cartResponce['cartInstallments'] = cartInstallments
+        cartResponce['paidAmount'] = paidAmount
+        cartResponce['remainAmount'] = remainAmount
+        cartResponce['pandinginstallment'] = pandinginstallment
+        cartResponce['currency'] = currency
+
+        return cartResponce
+    }
 
 	async getBookingDetail(bookingId: string) {
 		try {
