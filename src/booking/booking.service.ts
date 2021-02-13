@@ -934,7 +934,7 @@ export class BookingService {
 			.createQueryBuilder(UserCard, "cartBooking")
 			.where(`"card_token" = '${transactionTotal}'`)
 			.getOne()
-		console.log(query.cardToken);
+		//console.log(query.cardToken);
 
 		return query
 	}
