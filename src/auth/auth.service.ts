@@ -942,7 +942,7 @@ export class AuthService {
 		if (email) {
 			user.email = email
 		}
-		const splitName = name.split('')
+		const splitName = name.split(' ')
 		if (splitName.length == 1) {
 			user.firstName = name || "";
 		}
