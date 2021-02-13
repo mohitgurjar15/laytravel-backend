@@ -115,6 +115,7 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.module", "module")
 			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
