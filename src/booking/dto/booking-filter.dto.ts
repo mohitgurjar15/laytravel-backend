@@ -48,4 +48,10 @@ export class BookingFilterDto {
         example: ``
     })
     booking_through: string;
+
+    @ApiPropertyOptional({
+        description: `enter search`,
+        example: ``
+    })
+    search: string;
 }
