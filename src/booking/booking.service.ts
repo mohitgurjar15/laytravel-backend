@@ -474,8 +474,9 @@ export class BookingService {
 				let nextInstallmentDate = cart.bookings[0].nextInstalmentDate
 				const currency = cart.bookings[0].currency2
 				const baseBooking = cart.bookings[0].bookingInstalments
+				const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
 				let cartInstallments = [];
-				if (baseBooking.length) {
+				if (baseBooking) {
 					for await (const baseInstallments of baseBooking) {
 
 						let amount = parseFloat(baseInstallments.amount);
@@ -529,7 +530,7 @@ export class BookingService {
 					})
 					//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 				}
-
+				
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
 				cartResponce['checkInDate'] = cart.checkInDate
@@ -544,8 +545,8 @@ export class BookingService {
 				cartResponce['totalAmount'] = totalAmount
 				cartResponce['nextInstallmentDate'] = nextInstallmentDate
 				cartResponce['currency'] = currency
-				if (cart.bookings[0].bookingInstalments[0]?.instalmentType) {
-					cartResponce['installmentType'] = cart.bookings[0].bookingInstalments[0]?.instalmentType
+				if (installmentType) {
+					cartResponce['installmentType'] = installmentType
 				}
 				responce.push(cartResponce)
 			}
@@ -654,8 +655,10 @@ export class BookingService {
 			if (!CartList.length) {
 				throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 			}
+
 			let responce = []
 			for await (const cart of CartList) {
+				const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
 				let paidAmount = 0;
 				let remainAmount = 0;
 				let pandinginstallment = 0
@@ -720,7 +723,7 @@ export class BookingService {
 					})
 					//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 				}
-
+				
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
 				cartResponce['checkInDate'] = cart.checkInDate
@@ -734,8 +737,8 @@ export class BookingService {
 				cartResponce['pandinginstallment'] = pandinginstallment
 				cartResponce['currency'] = currency
 				cartResponce['nextInstallmentDate'] = cart.bookings[0].nextInstalmentDate
-				if (cart.bookings[0].bookingInstalments[0]?.instalmentType) {
-					cartResponce['installmentType'] = cart.bookings[0].bookingInstalments[0]?.instalmentType
+				if (installmentType) {
+					cartResponce['installmentType'] = installmentType
 				}
 				responce.push(cartResponce)
 			}
