@@ -419,9 +419,46 @@ export class BookingService {
 				.replace(/\..+/, "");
 			todayDate = todayDate.split(' ')[0]
 			let where;
+			where = `("cartBooking"."user_id" = '${user.userId}') AND 
+				("booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})) AND
+				(DATE("cartBooking"."check_in_date") >= DATE('${todayDate}'))`;
 
+			if (booking_through) {
+				where += `AND ("booking"."booking_through" = '${booking_through}')`;
+			}
 
+			if (module_id) {
+				where += `AND ("booking"."module_id" = '${module_id}')`;
+			}
 
+			if (supplier_id) {
+				where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
+			}
+
+			if (start_date) {
+				where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
+			}
+			if (end_date) {
+				where += `AND (DATE("booking".booking_date) <= '${end_date}') `;
+			}
+			if (booking_id) {
+				where += `AND ("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
+			}
+			if (transaction_token) {
+				where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
+			}
+
+			if (search) {
+				const source = {
+					source_location: search
+				}
+				const destination = {
+					destination_location: search
+				}
+				where += `AND (("booking"."laytrip_booking_id" ILIKE '%${search}%')
+				OR("cartBooking"."laytrip_cart_id" ILIKE '%${search}%')
+				)`;
+			}
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
 				.leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -433,56 +470,9 @@ export class BookingService {
 				.leftJoinAndSelect("userData.state", "state")
 				.leftJoinAndSelect("userData.country", "countries")
 
-				.where(`"cartBooking"."user_id" = '${user.userId}'`)
+				.where(where)
 				.orderBy(`cartBooking.bookingDate`, 'DESC')
-
-			query.andWhere(`"booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`)
-			query.andWhere(`DATE("cartBooking"."check_in_date") >= DATE('${todayDate}')`)
-
-
-			if (booking_through) {
-				query.andWhere(`"booking"."booking_through" = '${booking_through}'`)
-			}
-
-			if (module_id) {
-				query.andWhere(`"booking"."module_id" = '${module_id}'`)
-
-			}
-
-			if (supplier_id) {
-				query.andWhere(`"booking"."supplier_id" = '${supplier_id}'`)
-
-			}
-
-			if (start_date) {
-				query.andWhere(`DATE("booking".booking_date) >= '${start_date}'`)
-
-			}
-			if (end_date) {
-				query.andWhere(`DATE("booking".booking_date) <= '${end_date}'`)
-			}
-			if (booking_id) {
-				query.andWhere(`"cartBooking"."laytrip_cart_id" =  '${booking_id}'`)
-			}
-			if (transaction_token) {
-				query.andWhere(`"instalments"."transaction_token" ILIKE '%${transaction_token}%'`)
-			}
-			if (search) {
-				const source = {
-					source_location: search
-				}
-				const destination = {
-					destination_location: search
-				}
-				// query.orWhere(`"booking"."laytrip_booking_id" ILIKE '%${search}%'"`)
-				// query.orWhere(`"cartBooking"."laytrip_cart_id" ILIKE '%${search}%'`);
-				// query.orWhere(`"booking"."check_in_date" ILIKE '%${search}%'`);
-				// query.orWhere(`"booking"."check_out_date" ILIKE '%${search}%'`);
-				query.orWhere(`"booking"."location_info" ::jsonb @> :source`, { source });
-				query.orWhere(`"booking"."location_info" ::jsonb @> :destination`, { destination });
-			}
-
-			const CartList = await query.getMany();
+			const [CartList, count] = await query.getManyAndCount();
 
 			if (!CartList.length) {
 				throw new NotFoundException(`No booking found&&&id&&&No booking found`);
@@ -574,7 +564,8 @@ export class BookingService {
 			}
 
 			return {
-				data: responce
+				data: responce,
+				count: count
 			}
 
 		} catch (error) {
@@ -622,7 +613,7 @@ export class BookingService {
 				module_id,
 				supplier_id,
 				booking_through,
-				transaction_token } = bookingFilterDto
+				transaction_token,search } = bookingFilterDto
 
 			const date = new Date();
 			var todayDate = date.toISOString();
@@ -658,6 +649,11 @@ export class BookingService {
 			}
 			if (transaction_token) {
 				where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
+			}
+			if (search) {
+				where += `AND (("booking"."laytrip_booking_id" ILIKE '%${search}%')
+				OR("cartBooking"."laytrip_cart_id" ILIKE '%${search}%')
+				)`;
 			}
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
