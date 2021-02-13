@@ -609,12 +609,15 @@ export class CartService {
         newCart['moduleId'] = cart.moduleId
         newCart['isDeleted'] = cart.isDeleted
         newCart['createdDate'] = cart.createdDate
+        newCart['status'] = BookingStatus.CONFIRM
         newCart['type'] = cart.module.name
         if (typeof value.message == "undefined") {
             let travelers = []
             if (!cart.travelers.length) {
-                newCart['responce'] = {
-                    status: 422,
+                newCart['status'] = BookingStatus.FAILED
+                newCart['detail'] = {
+                    statusCode: 422,
+                    status:BookingStatus.FAILED,
                     message: `Please update traveler details.`
                 }
             } else {
@@ -640,16 +643,17 @@ export class CartService {
 
 
                 //console.log(bookingdto);
-                newCart['responce'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id)
+                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id)
             }
 
         } else {
-            newCart['responce'] = {
+            newCart['detail'] = {
                 message: value.message
             }
+            newCart['status'] = BookingStatus.FAILED
             return newCart
         }
-        if (!newCart['responce']['status']) {
+        if (!newCart['detail']['status']) {
             await getConnection()
                 .createQueryBuilder()
                 .delete()
