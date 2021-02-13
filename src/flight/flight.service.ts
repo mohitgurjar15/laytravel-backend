@@ -2473,7 +2473,7 @@ export class FlightService {
 			const userId = user.userId;
 			if (adult_count != travelersDetails.adults.length) {
 				return {
-					status: 422,
+					statusCode: 422,
 					message: `Adults count is not match with search request!`
 				}
 			}
@@ -2482,14 +2482,14 @@ export class FlightService {
 
 			if (child_count != travelersDetails.children.length) {
 				return {
-					status: 422,
+					statusCode: 422,
 					message: `Children count is not match with search request`
 				}
 			}
 
 			if (infant_count != travelersDetails.infants.length) {
 				return {
-					status: 422,
+					statusCode: 422,
 					message: `Infants count is not match with search request`
 				}
 			}
@@ -2571,7 +2571,7 @@ export class FlightService {
 							await this.paymentService.voidCard(authCardToken);
 
 							return {
-								status: 424,
+								statusCode: 424,
 								message: bookingResult.error_message,
 							}
 						}
@@ -2604,19 +2604,19 @@ export class FlightService {
 							};
 						} else {
 							return {
-								status: 422,
+								statusCode: 422,
 								message: `Card capture is failed&&&card_token`
 							}
 						}
 					} else {
 						return {
-							status: 422,
+							statusCode: 422,
 							message: `Card authorization is failed&&&card_token`
 						}
 					}
 				} else {
 					return {
-						status: 422,
+						statusCode: 422,
 						message: `Instalment option is not available for your search criteria`
 					}
 				}
@@ -2679,13 +2679,13 @@ export class FlightService {
 							await this.paymentService.voidCard(authCardToken);
 
 							return {
-								status: 424,
+								statusCode: 424,
 								message: bookingResult.error_message,
 							}
 						}
 					} else {
 						return {
-							status: 422,
+							statusCode: 422,
 							message: `Card authorization is failed&&&card_token`
 						}
 
