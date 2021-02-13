@@ -1183,7 +1183,10 @@ export class AuthService {
 				}
 				user.homeAirport = home_airport
 			}
-			user.title = title;
+			if(title){
+				user.title = title;
+			}
+			
 			user.firstName = first_name;
 			user.lastName = last_name;
 			user.zipCode = zip_code;
