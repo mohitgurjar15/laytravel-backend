@@ -63,6 +63,7 @@ import { AddWebNotificationDto } from "./dto/add-web-notification-token.dto";
 import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 import { updateUserPreference } from "./dto/update-user-preference.dto";
 import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
+import { GuestUserDto } from "./dto/guest-user.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -83,6 +84,18 @@ export class AuthController {
 	@HttpCode(200)
 	signUp(@Body(ValidationPipe) createUser: CreateUserDto, @Req() req) {
 		return this.authService.signUp(createUser, req);
+	}
+
+	@Post("/guest-user")
+	@ApiOperation({ summary: "Signup guest user" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 404, description: "Not found!" })
+	@ApiResponse({ status: 409, description: "User Already Exist" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async guestUser (@Body() createUser: GuestUserDto) {
+		return this.authService.guestUser(createUser);
 	}
 
 	@Post(["signin"])
