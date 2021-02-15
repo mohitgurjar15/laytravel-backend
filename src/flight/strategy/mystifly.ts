@@ -118,9 +118,9 @@ export class Mystifly implements StrategyAirline {
 
         let markUpDetails;
         let secondaryMarkUpDetails;
-        if (!user.roleId || user.roleId == 7) {
+        if (!user?.roleId || user?.roleId == 7) {
 
-            markUpDetails = await PriceMarkup.getMarkup(module.id, user.roleId, 'no-instalment');
+            markUpDetails = await PriceMarkup.getMarkup(module.id, 7, 'no-instalment');
         }
         else if (isInstalmentAvaible && (user.roleId == 5 || user.roleId == 6)) {
 

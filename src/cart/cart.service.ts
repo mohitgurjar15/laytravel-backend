@@ -44,24 +44,41 @@ export class CartService {
         private airportRepository: AirportRepository,
     ) { }
 
-    async addInCart(addInCartDto: AddInCartDto, user: User, Header) {
-        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
-
+    async addInCart(addInCartDto: AddInCartDto, user, Header) {
+        let userData;
+        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [], guestId } = addInCartDto
         var tDate = new Date();
 
         var todayDate = tDate.toISOString().split(' ')[0];
         todayDate = todayDate
             .replace(/T/, " ") // replace T with a space
             .replace(/\..+/, "");
-
+        let where = `AND ("cart"."user_id" = '${user.user_id}')`
+        if (!user) {
+            if (!uuidValidator(guestId)) {
+                throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
+            }
+            where = `AND ("cart"."guest_user_id" = '${guestId}')`
+        }
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
-            .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') `)
+            .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`)
         const result = await query.getCount();
-
         if (result >= 5) {
             throw new BadRequestException(`In your cart you have add maximum 5 item.`)
         }
+        console.log('user',user);
+        
+        if (user) {
+            userData = await getConnection()
+                .createQueryBuilder(User, "user")
+                .where(`user_id = '${user.user_id}'`)
+                .getOne()
+        }
+
+
+
+
 
         // let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
 
@@ -86,7 +103,7 @@ export class CartService {
                 break;
 
             case ModulesName.FLIGHT:
-                return await this.addFlightDataInCart(route_code, user, Header);
+                return await this.addFlightDataInCart(route_code, userData, Header, guestId);
                 break;
             case ModulesName.VACATION_RENTEL:
                 const dto = {
@@ -98,16 +115,17 @@ export class CartService {
                     "adult_count": adult_count,
                     "number_and_children_ages": number_and_children_ages
                 };
-                return await this.addHomeRentalDataInCart(dto, user, Header);
+                return await this.addHomeRentalDataInCart(dto, userData, Header);
                 break;
             default:
                 break;
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header) {
-
-        const flightInfo: any = await this.flightService.airRevalidate({ route_code: route_code }, Header, user);
+    async addFlightDataInCart(route_code: string, user: User, Header, guestId) {
+        //console.log('validate');
+        
+        const flightInfo: any = await this.flightService.airRevalidate({ route_code: route_code }, Header, user ? user : null);
 
         if (flightInfo) {
 
@@ -145,7 +163,15 @@ export class CartService {
 
             const cart = new Cart
 
-            cart.userId = user.userId
+            if (user) {
+                //console.log(user);
+
+                cart.userId = user.userId
+            } else {
+                //console.log(guestId);
+                cart.guestUserId = guestId
+            }
+
             cart.moduleId = ModulesName.FLIGHT
             cart.moduleInfo = flightInfo
             cart.expiryDate = diffrence > 2 ? new Date(dayAfterDay) : new Date(formatedDepatureDate);
@@ -480,7 +506,8 @@ export class CartService {
 
 
     async bookCart(bookCart: CartBookDto, user: User, Headers) {
-        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart } = bookCart
+        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment } = bookCart
+
 
         if (cart.length > 5) {
             throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
@@ -570,8 +597,9 @@ export class CartService {
     }
 
     async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string, cartData: CartBooking) {
-        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through } = bookCart
+        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, selected_down_payment } = bookCart
         const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
+        const downPayment = selected_down_payment ? selected_down_payment : 0;
         let flightRequest;
         if (bookingType == 'oneway') {
 
@@ -617,7 +645,7 @@ export class CartService {
                 newCart['status'] = BookingStatus.FAILED
                 newCart['detail'] = {
                     statusCode: 422,
-                    status:BookingStatus.FAILED,
+                    status: BookingStatus.FAILED,
                     message: `Please update traveler details.`
                 }
             } else {
@@ -643,7 +671,7 @@ export class CartService {
 
 
                 //console.log(bookingdto);
-                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id)
+                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id, selected_down_payment)
             }
 
         } else {
@@ -772,5 +800,5 @@ export class CartService {
         }
     }
 
-    
+
 }
