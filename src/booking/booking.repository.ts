@@ -298,6 +298,7 @@ export class BookingRepository extends Repository<Booking> {
 				"failedPaymentAttempts.id",
 				"failedPaymentAttempts.instalmentId",
 				"failedPaymentAttempts.date",
+				"cart.laytripCartId"
 			])
 			.take(take)
 			.skip(skip)
@@ -416,6 +417,7 @@ export class BookingRepository extends Repository<Booking> {
 				"User.phoneNo",
 				"User.roleId",
 				"moduleData.name",
+				"cart.laytripCartId"
 			])
 
 			.where(where)
@@ -564,7 +566,8 @@ export class BookingRepository extends Repository<Booking> {
 				"predictiveBookingData.netPrice",
 				"predictiveBookingData.remainSeat",
 				"moduleData.name",
-				"moduleData.id"
+				"moduleData.id",
+				"cart.laytripCartId"
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)`, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
@@ -588,6 +591,7 @@ export class BookingRepository extends Repository<Booking> {
 			.replace(/\..+/, "");
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.module", "moduleData")
 
 			// .select([

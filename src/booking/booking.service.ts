@@ -877,6 +877,10 @@ export class BookingService {
 				totalAmount += parseFloat(booking.totalAmount)
 				delete booking.currency2
 				delete booking.bookingInstalments
+				delete booking.module.liveCredential
+				delete booking.module.testCredential
+				delete booking.module.mode
+				delete booking.module.status
 			}
 
 			if (cartInstallments.length > 0) {
@@ -1352,6 +1356,7 @@ export class BookingService {
 
 				const predictiveBookingData: any = {}
 				predictiveBookingData['booking_id'] = data.bookingId
+				predictiveBookingData['cart_id'] = data.booking.cart.laytripCartId
 				predictiveBookingData['net_price'] = data.netPrice
 				predictiveBookingData['date'] = data.date
 				predictiveBookingData['is_below_minimum'] = data.isBelowMinimum
@@ -1438,6 +1443,7 @@ export class BookingService {
 					//console.log('booking.laytripBookingId');
 					const predictiveBookingData: any = {}
 					predictiveBookingData['booking_id'] = booking.id
+					predictiveBookingData['cart_id'] = booking.cart.laytripCartId
 					predictiveBookingData['net_price'] = null
 					predictiveBookingData['date'] = null
 					predictiveBookingData['is_below_minimum'] = false

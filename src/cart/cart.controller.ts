@@ -10,6 +10,7 @@ import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
+import { DeleteCartDto } from './dto/delete-cart.dto';
 import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
@@ -90,17 +91,16 @@ export class CartController {
 
     @Delete('delete/:id')
     @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "Delete item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteFromCart(
-        @GetUser() user: User,
-        @Param("id") id: number
+        @LogInUser() user,
+        @Param("id") id: number,
+        @Body() deleteCartDto:DeleteCartDto
     ) {
-        return await this.cartService.deleteFromCart(id, user);
+        return await this.cartService.deleteFromCart(id, user,deleteCartDto);
     }
 
     @Post('book')
@@ -146,16 +146,15 @@ export class CartController {
 
     @Delete('empty-cart')
     @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "empty cart " })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async emptyCart(
-        @GetUser() user: User
+        @LogInUser() user,
+        @Body() deleteCartDto:DeleteCartDto
     ) {
-        return await this.cartService.emptyCart(user);
+        return await this.cartService.emptyCart(deleteCartDto,user);
     }
 
     @Patch('map-guest-user/:guest_user_id')
