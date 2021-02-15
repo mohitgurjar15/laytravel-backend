@@ -485,10 +485,12 @@ export class AdminService {
 			roleId: In(roles)
 		});
 		if (userExist) {
-			throw new ConflictException(`Given email id already exiest`)
+			return {
+				is_available: true
+			}
 		}
 		return {
-			message: `Given email id acceptable`
+			is_available: false
 		}
 	}
 }
