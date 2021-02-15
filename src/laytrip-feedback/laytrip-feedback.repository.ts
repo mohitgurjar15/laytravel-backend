@@ -7,7 +7,7 @@ import { ListLaytripFeedbackForAdminDto } from "./dto/list-laytrip-feedback-admi
 @EntityRepository(LaytripFeedback)
 export class LaytripFeedbackRepository extends Repository<LaytripFeedback>{
 
-    async listLaytripFeedbackAdmin(listLaytripFeedbackForAdminDto:ListLaytripFeedbackForAdminDto) {
+    async listLaytripFeedbackAdmin(listLaytripFeedbackForAdminDto: ListLaytripFeedbackForAdminDto) {
         const { limit, page_no, rating, search } = listLaytripFeedbackForAdminDto;
 
         const take = limit || 10;
@@ -20,9 +20,16 @@ export class LaytripFeedbackRepository extends Repository<LaytripFeedback>{
             // .leftJoinAndSelect("feedback.booking", "booking")
             // .leftJoinAndSelect("booking.module", "module")
             .select(["laytrip_feedback.id", "laytrip_feedback.rating", "laytrip_feedback.message", "User.firstName", "User.lastName", "User.email", "User.profilePic"])
-            .where(` ("laytrip_feedback"."is_deleted" =:is_deleted and "User"."first_name" =:firstName) `, { is_deleted: false, firstName: cipher })
+            .where(` "laytrip_feedback"."is_deleted" =:is_deleted  `, { is_deleted: false })
             .limit(take)
             .offset(skip)
+            .orderBy(`"laytrip_feedback"."id"`,'DESC')
+        if (search) {
+            query.andWhere(`"User"."first_name" =:firstName`, { firstName: cipher })
+        }
+        if (rating) {
+            query.andWhere(`"laytrip_feedback"."rating" =:rating`, { rating })
+        }
         const [data, count] = await query.getManyAndCount();
 
 
