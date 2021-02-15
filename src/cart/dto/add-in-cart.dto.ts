@@ -106,4 +106,10 @@ export class AddInCartDto {
 		example: [10, 12, 15]
 	})
 	number_and_children_ages: Array<Number>;
+
+	@ApiProperty({
+		description: "enter guest id ",
+		example: "25f56893-3759-46f1-a845-b90c2c3c488a"
+	})
+	guestId: string;
 }

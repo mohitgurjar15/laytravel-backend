@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetUser } from 'src/auth/get-user.dacorator';
+import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
 import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
@@ -14,14 +14,12 @@ import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
-@ApiBearerAuth()
-@UseGuards(AuthGuard(), RolesGuard)
+
 @Controller('cart')
 export class CartController {
     constructor(private cartService: CartService) { }
 
     @Post('add')
-    @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "add item in cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -36,16 +34,19 @@ export class CartController {
         name: 'language',
         description: 'Enter language code(ex. en)',
     })
-
     async addInCart(
         @Body() addInCartDto: AddInCartDto,
-        @GetUser() user: User,
+        @LogInUser() user,
         @Req() req,
     ) {
+        console.log(user);
+
         return await this.cartService.addInCart(addInCartDto, user, req.headers);
     }
 
     @Put('update')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "update cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -62,6 +63,8 @@ export class CartController {
 
 
     @Get('list')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "list item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -84,6 +87,8 @@ export class CartController {
     }
 
     @Delete('delete/:id')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "Delete item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -97,6 +102,8 @@ export class CartController {
     }
 
     @Post('book')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "book item from cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -121,6 +128,8 @@ export class CartController {
     }
 
     @Get('installment-detail')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiOperation({ summary: "installment detail of specific cart " })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -134,6 +143,8 @@ export class CartController {
     }
 
     @Delete('empty-cart')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "empty cart " })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -143,5 +154,5 @@ export class CartController {
         @GetUser() user: User
     ) {
         return await this.cartService.emptyCart(user);
-    }   
+    }
 }

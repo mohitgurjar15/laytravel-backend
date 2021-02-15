@@ -36,6 +36,13 @@ export class CartBookDto {
     })
     card_token: string;
 
+    @IsOptional()
+    @ApiProperty({
+        description: `selected down payment`,
+        example: 0
+    })
+    selected_down_payment: number
+
     @IsOptional({
         message: (args: ValidationArguments) => {
             if (typeof args.value != "undefined" && ![InstalmentType.WEEKLY, InstalmentType.BIWEEKLY, InstalmentType.MONTHLY].includes(args.value)) {

@@ -2376,7 +2376,7 @@ export class FlightService {
 			});
 	}
 
-	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId) {
+	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId,selected_down_payment:number) {
 		try {
 
 
@@ -2508,7 +2508,8 @@ export class FlightService {
 						bookingDate,
 						totalAdditionalAmount,
 						custom_instalment_amount,
-						custom_instalment_no
+						custom_instalment_no,
+						selected_down_payment
 					);
 				}
 				if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -2518,7 +2519,8 @@ export class FlightService {
 						bookingDate,
 						totalAdditionalAmount,
 						custom_instalment_amount,
-						custom_instalment_no
+						custom_instalment_no,
+						selected_down_payment
 					);
 				}
 				if (instalment_type == InstalmentType.MONTHLY) {
@@ -2528,7 +2530,8 @@ export class FlightService {
 						bookingDate,
 						totalAdditionalAmount,
 						custom_instalment_amount,
-						custom_instalment_no
+						custom_instalment_no,
+						selected_down_payment
 					);
 				}
 
