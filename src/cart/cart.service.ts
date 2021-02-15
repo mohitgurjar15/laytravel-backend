@@ -30,6 +30,7 @@ import { BookingType } from 'src/enum/booking-type.enum';
 import { BookingStatus } from 'src/enum/booking-status.enum';
 import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
+import { DeleteCartDto } from './dto/delete-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -56,7 +57,7 @@ export class CartService {
         let where = `AND ("cart"."user_id" = '${user.user_id}')`
         if (!user) {
             if (!uuidValidator(guest_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
+                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
             where = `AND ("cart"."guest_user_id" = '${guest_id}')`
         }
@@ -201,7 +202,7 @@ export class CartService {
 
     async mapGuestUser(guestUserId, user: User) {
         if (!uuidValidator(guestUserId)) {
-            throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
+            throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
         }
         const result = await getConnection()
             .createQueryBuilder()
@@ -307,7 +308,7 @@ export class CartService {
         let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
         if (!user?.user_id) {
             if (!uuidValidator(guest_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
+                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
             where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
         }
@@ -496,11 +497,19 @@ export class CartService {
 
     }
 
-    async deleteFromCart(id: number, user: User) {
+    async deleteFromCart(id: number, user, deleteCartDto: DeleteCartDto) {
+        const { guest_id } = deleteCartDto
+        let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`
+        if (!user) {
+            if (!uuidValidator(guest_id)) {
+                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+            }
+            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."id" = ${id})`
+        }
 
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
-            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."id" = ${id})`)
+            .where(where)
 
 
         const cartItem = await query.getOne();
@@ -786,10 +795,18 @@ export class CartService {
 
     }
 
-    async emptyCart(user: User) {
+    async emptyCart(deleteCartDto: DeleteCartDto, user) {
+        const { guest_id } = deleteCartDto
+        let where = `"user_id" = '${user?.user_id}'`
+        if (!user) {
+            if (!uuidValidator(guest_id)) {
+                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+            }
+            where = `"guest_user_id" = '${guest_id}'`
+        }
         let carts = await getConnection()
             .createQueryBuilder(Cart, "cart")
-            .where(`"user_id" = '${user.userId}'`)
+            .where(where)
             .getMany()
 
         if (!carts.length) {

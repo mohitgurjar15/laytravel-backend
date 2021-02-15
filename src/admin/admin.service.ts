@@ -18,6 +18,7 @@ import {
 	NotFoundException,
 	InternalServerErrorException,
 	UnauthorizedException,
+	ConflictException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "src/auth/user.repository";
@@ -133,11 +134,11 @@ export class AdminService {
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([2]) },
 			});
-			if(!userData){
+			if (!userData) {
 				throw new NotFoundException(`Given id not found.`)
 			}
 
-			let previousData =userData;
+			let previousData = userData;
 			console.log(previousData);
 			console.log(firstName);
 
@@ -475,5 +476,19 @@ export class AdminService {
 	async getAdminEmail() {
 		const roles = [Role.ADMIN, Role.SUPPORT, Role.SUPER_ADMIN]
 		return await this.userRepository.getemails(roles)
+	}
+
+	async checkEmailExiest(email: string) {
+		const roles = [Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT, Role.SUPPLIER];
+		const userExist = await this.userRepository.findOne({
+			email: email,
+			roleId: In(roles)
+		});
+		if (userExist) {
+			throw new ConflictException(`Given email id already exiest`)
+		}
+		return {
+			message: `Given email id acceptable`
+		}
 	}
 }

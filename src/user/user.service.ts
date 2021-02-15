@@ -1233,4 +1233,18 @@ export class UserService {
 		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
 		return await this.userRepository.getemails(roles)		
 	}
+
+	async checkEmailExiest(email: string) {
+		const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
+		const userExist = await this.userRepository.findOne({
+			email: email,
+			roleId: In(roles)
+		});
+		if (userExist) {
+			throw new ConflictException(`Given email id already exiest`)
+		}
+		return {
+			message: `Given email id acceptable`
+		}
+	}
 }
