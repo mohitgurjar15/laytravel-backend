@@ -58,7 +58,6 @@ export class CartService {
             if (!uuidValidator(guestId)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
             }
-
             where = `AND ("cart"."guest_user_id" = '${guestId}')`
         }
         let query = getConnection()
