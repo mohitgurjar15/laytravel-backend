@@ -46,7 +46,7 @@ export class CartService {
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
         let userData;
-        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [], guestId } = addInCartDto
+        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [], guest_id } = addInCartDto
         var tDate = new Date();
 
         var todayDate = tDate.toISOString().split(' ')[0];
@@ -55,10 +55,10 @@ export class CartService {
             .replace(/\..+/, "");
         let where = `AND ("cart"."user_id" = '${user.user_id}')`
         if (!user) {
-            if (!uuidValidator(guestId)) {
+            if (!uuidValidator(guest_id)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
             }
-            where = `AND ("cart"."guest_user_id" = '${guestId}')`
+            where = `AND ("cart"."guest_user_id" = '${guest_id}')`
         }
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
@@ -67,8 +67,8 @@ export class CartService {
         if (result >= 5) {
             throw new BadRequestException(`In your cart you have add maximum 5 item.`)
         }
-        console.log('user',user);
-        
+        console.log('user', user);
+
         if (user) {
             userData = await getConnection()
                 .createQueryBuilder(User, "user")
@@ -103,7 +103,7 @@ export class CartService {
                 break;
 
             case ModulesName.FLIGHT:
-                return await this.addFlightDataInCart(route_code, userData, Header, guestId);
+                return await this.addFlightDataInCart(route_code, userData, Header, guest_id);
                 break;
             case ModulesName.VACATION_RENTEL:
                 const dto = {
@@ -124,7 +124,7 @@ export class CartService {
 
     async addFlightDataInCart(route_code: string, user: User, Header, guestId) {
         //console.log('validate');
-        
+
         const flightInfo: any = await this.flightService.airRevalidate({ route_code: route_code }, Header, user ? user : null);
 
         if (flightInfo) {
@@ -199,6 +199,22 @@ export class CartService {
         }
     }
 
+    async mapGuestUser(guestUserId, user: User) {
+        if (!uuidValidator(guestUserId)) {
+            throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
+        }
+        const result = await getConnection()
+            .createQueryBuilder()
+            .update(Cart)
+            .set({ userId: user.userId })
+            .where("guest_user_id =:id", { id: guestUserId })
+            .execute();
+        //console.log(result);
+
+        return {
+            message: `Guest user cart successfully maped `
+        }
+    }
     async updateCart(updateCartDto: UpdateCartDto, user: User) {
         const { cart_id, travelers } = updateCartDto
 
@@ -277,15 +293,24 @@ export class CartService {
 
     }
 
-    async listCart(dto: ListCartDto, user: User, headers) {
-        const { live_availiblity } = dto
+    async listCart(dto: ListCartDto, user, headers) {
+        const { live_availiblity, guest_id } = dto
         var tDate = new Date();
+
+        console.log(user);
 
         var todayDate = tDate.toISOString().split(' ')[0];
         todayDate = todayDate
             .replace(/T/, " ") // replace T with a space
             .replace(/\..+/, "");
 
+        let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
+        if (!user?.user_id) {
+            if (!uuidValidator(guest_id)) {
+                throw new NotFoundException(`Please enter guest user id &&&user_id&${errorMessage}`)
+            }
+            where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
+        }
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
             .leftJoinAndSelect("cart.module", "module")
@@ -293,6 +318,7 @@ export class CartService {
             //.leftJoinAndSelect("travelers.userData", "userData")
             .select(["cart.id",
                 "cart.userId",
+                "cart.guestUserId",
                 "cart.moduleId",
                 "cart.moduleInfo",
                 "cart.expiryDate",
@@ -304,7 +330,7 @@ export class CartService {
                 "travelers.userId",
                 "travelers.baggageServiceCode"])
 
-            .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`)
+            .where(where)
             .orderBy(`cart.id`, 'ASC')
             .limit(5)
         const [result, count] = await query.getManyAndCount();
@@ -398,6 +424,7 @@ export class CartService {
                     // await cart.save()
                 } else {
                     newCart['is_available'] = false
+                    newCart['moduleInfo'] = cart.moduleInfo
                     await getConnection()
                         .createQueryBuilder()
                         .delete()
@@ -417,13 +444,12 @@ export class CartService {
                 }
             }
             else {
-                console.log('else part');
-
                 newCart['moduleInfo'] = cart.moduleInfo
                 //newCart['is_available'] = false
             }
             newCart['id'] = cart.id
             newCart['userId'] = cart.userId
+            newCart['guestUserId'] = cart.guestUserId
             newCart['moduleId'] = cart.moduleId
             newCart['expiryDate'] = cart.expiryDate
             newCart['isDeleted'] = cart.isDeleted

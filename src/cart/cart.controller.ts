@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
@@ -19,7 +19,9 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 export class CartController {
     constructor(private cartService: CartService) { }
 
+    
     @Post('add')
+    @ApiBearerAuth()
     @ApiOperation({ summary: "add item in cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -39,8 +41,6 @@ export class CartController {
         @LogInUser() user,
         @Req() req,
     ) {
-        console.log(user);
-
         return await this.cartService.addInCart(addInCartDto, user, req.headers);
     }
 
@@ -64,8 +64,6 @@ export class CartController {
 
     @Get('list')
     @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "list item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -80,9 +78,13 @@ export class CartController {
         description: 'Enter language code(ex. en)',
     })
     async listCart(
-        @GetUser() user: User, @Req() req,
+        @LogInUser() user, @Req() req,
         @Query() dto: ListCartDto
     ) {
+        console.log('user');
+        
+        console.log(user);
+        
         return await this.cartService.listCart(dto, user, req.headers);
     }
 
@@ -155,4 +157,21 @@ export class CartController {
     ) {
         return await this.cartService.emptyCart(user);
     }
+
+    @Patch('map-guest-user/:guest_user_id')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiOperation({ summary: "Map guest user id to existing user" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async mapGuestUserId(
+        @GetUser() user: User,
+        @Param('guest_user_id') guestUserId : string
+    ) {
+        return await this.cartService.mapGuestUser(guestUserId, user);
+    }
+
 }
