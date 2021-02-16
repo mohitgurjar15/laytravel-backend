@@ -1138,8 +1138,8 @@ export class AuthService {
 				salt: "",
 				accessToken: newToken,
 				roleId: userDetail.roleId,
-				createdDate: user.createdDate,
-				socialAccountId: user.socialAccountId
+				createdDate: userDetail.createdDate,
+				socialAccountId: userDetail.socialAccountId
 			};
 
 			const accessToken = this.jwtService.sign(payload);
@@ -1160,7 +1160,7 @@ export class AuthService {
 			let loginvia = device_type == 1 ? "android" : "ios";
 			this.addLoginLog(user.userId, request, loginvia);
 
-			return JSON.parse(JSON.stringify(token).replace(/null/g, '""'));
+			return token;
 		} catch (error) {
 			throw new InternalServerErrorException(errorMessage);
 		}

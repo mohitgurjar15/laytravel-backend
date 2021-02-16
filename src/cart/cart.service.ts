@@ -31,6 +31,7 @@ import { BookingStatus } from 'src/enum/booking-status.enum';
 import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { DeleteCartDto } from './dto/delete-cart.dto';
+import { UserCard } from 'src/entity/user-card.entity';
 
 @Injectable()
 export class CartService {
@@ -204,6 +205,19 @@ export class CartService {
         if (!uuidValidator(guestUserId)) {
             throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
         }
+        await getConnection()
+            .createQueryBuilder()
+            .update(UserCard)
+            .set({ userId: user.userId })
+            .where("guest_user_id =:id", { id: guestUserId })
+            .execute();
+
+            await getConnection()
+            .createQueryBuilder()
+            .update(User)
+            .set({ userId: user.userId })
+            .where("parent_guest_user_id =:id", { id: guestUserId })
+            .execute();
         const result = await getConnection()
             .createQueryBuilder()
             .update(Cart)
