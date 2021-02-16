@@ -81,6 +81,7 @@ import { airports } from "src/flight/airports";
 import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 import { WelcomeBoardMail } from "src/config/new_email_templete/welcome-board-mail.html";
 import { resetPasswordMail } from "src/config/new_email_templete/reset-password-mail.html";
+import { GuestUserDto } from "./dto/guest-user.dto";
 
 @Injectable()
 export class AuthService {
@@ -254,6 +255,93 @@ export class AuthService {
 			}
 		}
 		return { message: `Otp send on your email id` };
+	}
+
+	async guestUser(createUser: GuestUserDto) {
+		const {
+			guest_id
+		} = createUser;
+		if (!uuidValidator(guest_id)) {
+			throw new BadRequestException('Please send valid uuid')
+		}
+		let loginvia = "";
+		const roles = [Role.FREE_USER, Role.PAID_USER];
+		const userExist = await this.userRepository.findOne({
+			userId: guest_id,
+			roleId: In(roles)
+		});
+
+
+
+		if (userExist) {
+			if (userExist.status != 1) {
+				throw new UnauthorizedException(
+					`Your account has been disabled. Please contact administrator person.`
+				);
+			} else if (userExist.isDeleted == true) {
+				throw new UnauthorizedException(
+					`Your account has been deleted. Please contact administrator person.`
+				);
+			} else {
+				throw new ConflictException(
+					`This user id is already registered with us.`
+				);
+			}
+
+
+		}
+
+		const guestUser = await this.userRepository.findOne({
+			userId: guest_id,
+			roleId: Role.GUEST_USER
+		});
+
+		if (!guestUser) {
+			const user = new User();
+			user.userId = guest_id;
+			user.accountType = 1;
+			user.createdDate = new Date();
+			user.updatedDate = new Date();
+			user.socialAccountId = "";
+			user.roleId = Role.GUEST_USER;
+			user.phoneNo = "";
+			user.profilePic = "";
+			user.timezone = "";
+			user.status = 1;
+			user.middleName = "";
+			user.zipCode = "";
+			user.isVerified = true;
+			try {
+				await user.save();
+
+			} catch (error) {
+				throw new InternalServerErrorException(error.sqlMessage);
+			}
+
+		}
+
+		const userData = await this.userRepository.findOne({
+			where: { userId : guest_id},
+		});
+
+		loginvia = "web";
+		const payload: JwtPayload = {
+			user_id: userData.userId,
+			email: userData.email,
+			username: "",
+			phone: userData.phoneNo,
+			firstName: userData.firstName,
+			middleName: userData.middleName,
+			lastName: userData.lastName,
+			salt: userData.salt,
+			profilePic: "",
+			roleId: userData.roleId,
+			createdDate: userData.createdDate,
+			socialAccountId: userData.socialAccountId
+		};
+		const accessToken = this.jwtService.sign(payload);
+		return { accessToken };
+
 	}
 
 	hashPassword(password: string, salt: string): Promise<string> {
@@ -959,7 +1047,7 @@ export class AuthService {
 		if (email) {
 			user.email = email
 		}
-		const splitName = name.split('')
+		const splitName = name.split(' ')
 		if (splitName.length == 1) {
 			user.firstName = name || "";
 		}
@@ -1200,7 +1288,10 @@ export class AuthService {
 				}
 				user.homeAirport = home_airport
 			}
-			user.title = title;
+			if (title) {
+				user.title = title;
+			}
+
 			user.firstName = first_name;
 			user.lastName = last_name;
 			user.zipCode = zip_code;

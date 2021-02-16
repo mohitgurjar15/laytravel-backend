@@ -18,6 +18,8 @@ export const LogInUser = createParamDecorator(
         if (authorization) {
 
             authorization = jwt_decode(authorization);
+            //console.log(authorization);
+            
             const { user_id, iat } = authorization;
 
             // const user = await this.userRepository.findOne({ userId: user_id })

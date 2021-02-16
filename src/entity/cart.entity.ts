@@ -12,6 +12,12 @@ import { CartTravelers } from "./cart-traveler.entity";
 import { Module } from "./module.entity";
 import { User } from "./user.entity";
 @Index("cart_user_id", ["userId"], {})
+@Index("cart_guest_user_id", ["guestUserId"], {})
+@Index("cart_moduleId", ["moduleId"], {})
+@Index("cart_createdDate", ["createdDate"], {})
+@Index("cart_expiryDate", ["expiryDate"], {})
+@Index("cart_isDeleted", ["isDeleted"], {})
+
 @Entity("cart")
 export class Cart extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
@@ -38,8 +44,11 @@ export class Cart extends BaseEntity {
     @Column("json", { name: "module_info" })
     moduleInfo: object;
 
-    @Column("uuid", { name: "user_id" })
+    @Column("uuid", { name: "user_id", nullable: true })
     userId: string;
+
+    @Column("uuid", { name: "guest_user_id", nullable: true })
+    guestUserId: string;
 
     @ManyToOne(
         () => User,

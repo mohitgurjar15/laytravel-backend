@@ -140,7 +140,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `new user ${user.email} created by admin `, null, user);
+			Activity.logActivity(adminId, "user", `New user ${user.email} created by admin `, null, user);
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -189,8 +189,7 @@ export class UserService {
 				prefer_language
 			} = updateUserDto;
 			const userId = UserId;
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			if (country_id) {
@@ -291,8 +290,7 @@ export class UserService {
 
 	async getUserData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
@@ -309,8 +307,7 @@ export class UserService {
 	) {
 		try {
 			const { status } = activeDeactiveDto;
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			const user = await this.userRepository.findOne({
@@ -438,8 +435,7 @@ export class UserService {
 
 	async deleteUser(userId: string, adminId: string) {
 		try {
-			if(!uuidValidator(userId))
-			{
+			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given id not avilable')
 			}
 			const user = await this.userRepository.findOne({
@@ -506,7 +502,7 @@ export class UserService {
 						roleId: row.type,
 						adminId: userId,
 					};
-					var userData = await this.userRepository.insertNewUser(data,[Role.FREE_USER,Role.PAID_USER]);
+					var userData = await this.userRepository.insertNewUser(data, [Role.FREE_USER, Role.PAID_USER]);
 
 					if (userData) {
 						count++;
@@ -518,7 +514,7 @@ export class UserService {
 								subject: `Welcome on board`,
 								html: RagisterMail({
 									username: data.firstName + " " + data.lastName
-								},data.password)
+								}, data.password)
 							})
 							.then((res) => {
 								console.log("res", res);
@@ -560,9 +556,9 @@ export class UserService {
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 	//Export user
-	async exportUser(adminId: string,paginationOption: ExportUserDto): Promise<{ data: User[] }> {
+	async exportUser(adminId: string, paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(adminId, "user", `All user list export by admin`);
-		return await this.userRepository.exportUser(paginationOption,[
+		return await this.userRepository.exportUser(paginationOption, [
 			Role.PAID_USER,
 			Role.GUEST_USER,
 			Role.FREE_USER,
@@ -570,9 +566,9 @@ export class UserService {
 	}
 
 	async listDeleteRequest(dto: ListDeleteRequestDto) {
-		const { page_no, search, limit ,status } = dto;
+		const { page_no, search, limit, status } = dto;
 
-		
+
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
 		const keyword = search || "";
@@ -582,12 +578,12 @@ export class UserService {
 		if (status) {
 			where += `AND "req"."status" = ${status}`;
 		}
-		
+
 		if (keyword) {
 			where += `AND ( "req"."email" ILIKE '%${keyword}%' OR "req"."user_name" ILIKE '%${keyword}%')`;
 		}
 
-		
+
 
 
 
@@ -1219,18 +1215,34 @@ export class UserService {
 	}
 
 
-	async getUserFirstName(){
-		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
-		return await this.userRepository.getFirstname(roles)		
+	async getUserFirstName() {
+		const roles = [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER]
+		return await this.userRepository.getFirstname(roles)
 	}
 
-	async getUserLastName(){
-		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
-		return await this.userRepository.getLastname(roles)		
+	async getUserLastName() {
+		const roles = [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER]
+		return await this.userRepository.getLastname(roles)
 	}
 
-	async getUserEmail(){
-		const roles = [Role.FREE_USER,Role.PAID_USER,Role.GUEST_USER]
-		return await this.userRepository.getemails(roles)		
+	async getUserEmail() {
+		const roles = [Role.FREE_USER, Role.PAID_USER, Role.GUEST_USER]
+		return await this.userRepository.getemails(roles)
+	}
+
+	async checkEmailExiest(email: string) {
+		const roles = [Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER];
+		const userExist = await this.userRepository.findOne({
+			email: email,
+			roleId: In(roles)
+		});
+		if (userExist) {
+			return {
+				is_available: true
+			}
+		}
+		return {
+			is_available: false
+		}
 	}
 }

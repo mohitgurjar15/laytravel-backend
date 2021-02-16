@@ -246,7 +246,7 @@ export class SupportUserService {
 			user.updatedDate = new Date();
 			await user.save();
 			const currentData = user;
-			Activity.logActivity(adminId, `support-user`, `support user status changed ${statusWord}`, previousData, currentData);
+			Activity.logActivity(adminId, `support-user`, `Support user status changed ${statusWord}`, previousData, currentData);
 			return { messge: `status changed successfully` };
 		} catch (error) {
 			if (

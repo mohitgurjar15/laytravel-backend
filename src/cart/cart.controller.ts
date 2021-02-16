@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetUser } from 'src/auth/get-user.dacorator';
+import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
 import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
@@ -10,18 +10,19 @@ import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
+import { DeleteCartDto } from './dto/delete-cart.dto';
 import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
-@ApiBearerAuth()
-@UseGuards(AuthGuard(), RolesGuard)
+
 @Controller('cart')
 export class CartController {
     constructor(private cartService: CartService) { }
 
+    
     @Post('add')
-    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiBearerAuth()
     @ApiOperation({ summary: "add item in cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -36,16 +37,17 @@ export class CartController {
         name: 'language',
         description: 'Enter language code(ex. en)',
     })
-
     async addInCart(
         @Body() addInCartDto: AddInCartDto,
-        @GetUser() user: User,
+        @LogInUser() user,
         @Req() req,
     ) {
         return await this.cartService.addInCart(addInCartDto, user, req.headers);
     }
 
     @Put('update')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "update cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -62,7 +64,7 @@ export class CartController {
 
 
     @Get('list')
-    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiBearerAuth()
     @ApiOperation({ summary: "list item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
@@ -77,26 +79,33 @@ export class CartController {
         description: 'Enter language code(ex. en)',
     })
     async listCart(
-        @GetUser() user: User, @Req() req,
+        @LogInUser() user, @Req() req,
         @Query() dto: ListCartDto
     ) {
+        console.log('user');
+        
+        console.log(user);
+        
         return await this.cartService.listCart(dto, user, req.headers);
     }
 
     @Delete('delete/:id')
-    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiBearerAuth()
     @ApiOperation({ summary: "Delete item in cart of user" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteFromCart(
-        @GetUser() user: User,
-        @Param("id") id: number
+        @LogInUser() user,
+        @Param("id") id: number,
+        @Query() deleteCartDto:DeleteCartDto
     ) {
-        return await this.cartService.deleteFromCart(id, user);
+        return await this.cartService.deleteFromCart(id, user,deleteCartDto);
     }
 
     @Post('book')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "book item from cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -121,6 +130,8 @@ export class CartController {
     }
 
     @Get('installment-detail')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiOperation({ summary: "installment detail of specific cart " })
     @ApiResponse({ status: 200, description: 'Api success' })
@@ -134,14 +145,32 @@ export class CartController {
     }
 
     @Delete('empty-cart')
-    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiBearerAuth()
     @ApiOperation({ summary: "empty cart " })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async emptyCart(
-        @GetUser() user: User
+        @LogInUser() user,
+        @Query() deleteCartDto:DeleteCartDto
     ) {
-        return await this.cartService.emptyCart(user);
+        return await this.cartService.emptyCart(deleteCartDto,user);
     }
+
+    @Patch('map-guest-user/:guest_user_id')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.FREE_USER, Role.PAID_USER)
+    @ApiOperation({ summary: "Map guest user id to existing user" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async mapGuestUserId(
+        @GetUser() user: User,
+        @Param('guest_user_id') guestUserId : string
+    ) {
+        return await this.cartService.mapGuestUser(guestUserId, user);
+    }
+
 }

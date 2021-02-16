@@ -41,11 +41,17 @@ export class BookingFilterDto {
         description: 'search with transaction token',
         example: ""
     })
-    trnsaction_token: string;
+    transaction_token: string;
 
     @ApiPropertyOptional({
         description: `enter valid booking through`,
         example: ``
     })
     booking_through: string;
+
+    @ApiPropertyOptional({
+        description: `enter search`,
+        example: ``
+    })
+    search: string;
 }

@@ -2376,7 +2376,7 @@ export class FlightService {
 			});
 	}
 
-	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId) {
+	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId,selected_down_payment:number) {
 		try {
 
 
@@ -2473,7 +2473,7 @@ export class FlightService {
 			const userId = user.userId;
 			if (adult_count != travelersDetails.adults.length) {
 				return {
-					status: 422,
+					statusCode: 422,
 					message: `Adults count is not match with search request!`
 				}
 			}
@@ -2482,14 +2482,14 @@ export class FlightService {
 
 			if (child_count != travelersDetails.children.length) {
 				return {
-					status: 422,
+					statusCode: 422,
 					message: `Children count is not match with search request`
 				}
 			}
 
 			if (infant_count != travelersDetails.infants.length) {
 				return {
-					status: 422,
+					statusCode: 422,
 					message: `Infants count is not match with search request`
 				}
 			}
@@ -2508,7 +2508,8 @@ export class FlightService {
 						bookingDate,
 						totalAdditionalAmount,
 						custom_instalment_amount,
-						custom_instalment_no
+						custom_instalment_no,
+						selected_down_payment
 					);
 				}
 				if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -2518,7 +2519,8 @@ export class FlightService {
 						bookingDate,
 						totalAdditionalAmount,
 						custom_instalment_amount,
-						custom_instalment_no
+						custom_instalment_no,
+						selected_down_payment
 					);
 				}
 				if (instalment_type == InstalmentType.MONTHLY) {
@@ -2528,7 +2530,8 @@ export class FlightService {
 						bookingDate,
 						totalAdditionalAmount,
 						custom_instalment_amount,
-						custom_instalment_no
+						custom_instalment_no,
+						selected_down_payment
 					);
 				}
 
@@ -2571,7 +2574,7 @@ export class FlightService {
 							await this.paymentService.voidCard(authCardToken);
 
 							return {
-								status: 424,
+								statusCode: 424,
 								message: bookingResult.error_message,
 							}
 						}
@@ -2604,19 +2607,19 @@ export class FlightService {
 							};
 						} else {
 							return {
-								status: 422,
+								statusCode: 422,
 								message: `Card capture is failed&&&card_token`
 							}
 						}
 					} else {
 						return {
-							status: 422,
+							statusCode: 422,
 							message: `Card authorization is failed&&&card_token`
 						}
 					}
 				} else {
 					return {
-						status: 422,
+						statusCode: 422,
 						message: `Instalment option is not available for your search criteria`
 					}
 				}
@@ -2679,13 +2682,13 @@ export class FlightService {
 							await this.paymentService.voidCard(authCardToken);
 
 							return {
-								status: 424,
+								statusCode: 424,
 								message: bookingResult.error_message,
 							}
 						}
 					} else {
 						return {
-							status: 422,
+							statusCode: 422,
 							message: `Card authorization is failed&&&card_token`
 						}
 

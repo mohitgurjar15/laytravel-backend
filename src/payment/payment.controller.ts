@@ -1,8 +1,8 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
-import { GetUser } from 'src/auth/get-user.dacorator';
+import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
 import { AuthGuard } from '@nestjs/passport';
 import { AddCardDto } from './dto/add-card.dto';
 import { Roles } from 'src/guards/role.decorator';
@@ -11,17 +11,17 @@ import { User } from 'src/entity/user.entity';
 import { CreteTransactionDto } from './dto/create-transaction.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
+import { ListUserCardDto } from './dto/list-card.dto';
 
 
 @ApiTags("Payment")
-@ApiBearerAuth()
-@UseGuards(AuthGuard())
 @Controller('payment')
 export class PaymentController {
 
 	constructor(private paymentService: PaymentService) { }
 
 	@Post()
+	@ApiBearerAuth()
 	@ApiOperation({ summary: "Save Card" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -34,14 +34,15 @@ export class PaymentController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async saveCard(
 		@Body() saveCardDto: SaveCardDto,
-		@GetUser() user
+		@LogInUser() user
 	) {
-		return await this.paymentService.saveCard(saveCardDto, user.userId);
+		return await this.paymentService.saveCard(saveCardDto, user.user_id);
 	}
 
 	@Post('user-card/:user_id')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Save user Card by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -55,14 +56,15 @@ export class PaymentController {
 	async saveUserCard(
 		@Body() saveCardDto: SaveCardDto,
 		@GetUser() user,
-		@Param('user_id') userId : string
+		@Param('user_id') userId: string
 	) {
 		return await this.paymentService.saveCard(saveCardDto, userId);
 	}
 
 	@Get('user-card/:user_id')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Get all customer card list by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -74,12 +76,13 @@ export class PaymentController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listUserCard(
 		@GetUser() user,
-		@Param('user_id') userId : string
+		@Param('user_id') userId: string
 	) {
-		return await this.paymentService.getAllCards(userId);
+		return await this.paymentService.getAllCards(userId, { guest_id: '' });
 	}
 
 	@Get()
+	@ApiBearerAuth()
 	@ApiOperation({ summary: "Get all customer card" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -90,12 +93,14 @@ export class PaymentController {
 	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getAllCards(
-		@GetUser() user
+		@LogInUser() user,
+		@Query() listCardDto: ListUserCardDto
 	) {
-		return await this.paymentService.getAllCards(user.userId);
+		return await this.paymentService.getAllCards(user.user_id, listCardDto);
 	}
 
 	@Post('add-card')
+	@ApiBearerAuth()
 	@ApiOperation({ summary: "Add Card" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -108,13 +113,14 @@ export class PaymentController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async addCard(
 		@Body() addCardDto: AddCardDto,
-		@GetUser() user
+		@LogInUser() user
 	) {
-		return await this.paymentService.addCard(addCardDto, user.userId);
+		return await this.paymentService.addCard(addCardDto, user.user_id);
 	}
 	@Post('add-user-card/:user_id')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Save user Card by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -128,12 +134,14 @@ export class PaymentController {
 	async addUserCard(
 		@Body() addCardDto: AddCardDto,
 		@GetUser() user,
-		@Param('user_id') userId : string
+		@Param('user_id') userId: string
 	) {
 		return await this.paymentService.addCard(addCardDto, userId);
 	}
 
 	@Put('retain-card/:card_token')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "Retain card for future use" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -152,8 +160,9 @@ export class PaymentController {
 
 
 	@Post('get-payment')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Get a payment from the user by admin " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 401, description: "Unauthorized access" })
@@ -172,8 +181,9 @@ export class PaymentController {
 	}
 
 	@Get('check-active-payments/:card_id')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "check for payment active for selected card " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -192,8 +202,9 @@ export class PaymentController {
 
 
 	@Delete('/:card_id')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "delete user card" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -211,8 +222,9 @@ export class PaymentController {
 	}
 
 	@Put('/:card_id')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "update user card" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -231,8 +243,9 @@ export class PaymentController {
 	}
 
 	@Post('/take-manually')
-	@UseGuards(RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Manually take payment " })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })

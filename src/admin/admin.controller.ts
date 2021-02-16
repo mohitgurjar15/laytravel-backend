@@ -384,4 +384,22 @@ export class AdminController {
 	async getemails() {
 		return await this.adminService.getAdminEmail();
 	}
+
+	@Get('check-email/:email')
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "Check email exiest or not" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async checkEmail(
+		@Param('email') email : string
+	) {
+		return await this.adminService.checkEmailExiest(email);
+	}
+
 }

@@ -1,5 +1,5 @@
 import { IsNotEmpty } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class SaveCardDto{
 
@@ -44,4 +44,10 @@ export class SaveCardDto{
         example:`{}`
     })
     card_meta:{};
+
+    @ApiPropertyOptional({
+        description:`guest user id`,
+        example:``
+    })
+    guest_id:string;
 }

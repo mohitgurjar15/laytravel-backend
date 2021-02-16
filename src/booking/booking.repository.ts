@@ -11,6 +11,7 @@ import { ExportBookingDto } from "./dto/export-booking.dto";
 import { BookingType } from "src/enum/booking-type.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
+import { CryptoUtility } from "src/utility/crypto.utility";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -27,7 +28,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_id,
 			search,
 			module_id, supplier_id,
-			email, booking_through, trnsaction_token
+			email, booking_through, transaction_token
 
 		} = listBookingDto;
 		const take = limit || 10;
@@ -69,24 +70,27 @@ export class BookingRepository extends Repository<Booking> {
 		}
 
 		if (customer_name) {
-			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
+			const cipher = await CryptoUtility.encode(customer_name)
+			where += `AND (("User"."first_name" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
 		}
 
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%') or ("instalments"."transaction_token" ILIKE '%${search}%'))`;
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}'))or("User"."email" = '${cipher}'))or("User"."last_name" = '${cipher}')) or ("instalments"."transaction_token" = '${cipher}')))`;
 		}
 
 		if (email) {
-			where += `AND ("User"."email" ILIKE '%${email}%')`;
+			where += `AND ("User"."email" = '${await CryptoUtility.encode(email)}')`;
 		}
 
-		if (trnsaction_token) {
-			where += `AND ("instalments"."transaction_token" ILIKE '%${trnsaction_token}%')`;
+		if (transaction_token) {
+			where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
 		}
 
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
@@ -94,7 +98,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("User.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
-
 			.where(where)
 			.take(take)
 			.skip(skip)
@@ -112,11 +115,13 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(Booking, "booking")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
+			.leftJoinAndSelect("booking.module", "module")
 			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.country", "countries")
+			.leftJoinAndSelect("User.state", "state")
 			/* .select([
 			"user.userId","user.title",
 			"user.firstName","user.lastName","user.email",
@@ -182,12 +187,14 @@ export class BookingRepository extends Repository<Booking> {
 		const where = `"booking"."laytrip_booking_id" = '${bookingId}'`;
 		const data = await getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
 			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.country", "countries")
+			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("booking.supplier", "supplier")
 			.where(where)
 			.getOne();
@@ -221,6 +228,7 @@ export class BookingRepository extends Repository<Booking> {
 
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
@@ -290,6 +298,7 @@ export class BookingRepository extends Repository<Booking> {
 				"failedPaymentAttempts.id",
 				"failedPaymentAttempts.instalmentId",
 				"failedPaymentAttempts.date",
+				"cart.laytripCartId"
 			])
 			.take(take)
 			.skip(skip)
@@ -341,6 +350,7 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.bookingInstalments", "installment")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
@@ -407,6 +417,7 @@ export class BookingRepository extends Repository<Booking> {
 				"User.phoneNo",
 				"User.roleId",
 				"moduleData.name",
+				"cart.laytripCartId"
 			])
 
 			.where(where)
@@ -428,6 +439,7 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.bookingInstalments", "installment")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
@@ -518,6 +530,7 @@ export class BookingRepository extends Repository<Booking> {
 		let query = getManager()
 			.createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
 			.leftJoinAndSelect("predictiveBookingData.booking", "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.module", "moduleData")
 
 			.select([
@@ -553,7 +566,8 @@ export class BookingRepository extends Repository<Booking> {
 				"predictiveBookingData.netPrice",
 				"predictiveBookingData.remainSeat",
 				"moduleData.name",
-				"moduleData.id"
+				"moduleData.id",
+				"cart.laytripCartId"
 			])
 
 			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)`, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
@@ -577,6 +591,7 @@ export class BookingRepository extends Repository<Booking> {
 			.replace(/\..+/, "");
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.module", "moduleData")
 
 			// .select([
@@ -600,6 +615,7 @@ export class BookingRepository extends Repository<Booking> {
 			.replace(/\..+/, "");
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.predictiveBookingData", "predictiveBookingData")
 			.select([
 				"booking.laytripBookingId",
@@ -673,14 +689,17 @@ export class BookingRepository extends Repository<Booking> {
 		// 	where += `("booking"."payment_type" = '${payment_type}') AND`;
 		// }
 		if (customer_name) {
-			where += `AND (("User"."first_name" ILIKE '%${customer_name}%')or("User"."last_name" ILIKE '%${customer_name}%'))`;
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
 		}
 
 		if (search) {
-			where += `AND (("User"."first_name" ILIKE '%${search}%')or("User"."email" ILIKE '%${search}%')or("User"."last_name" ILIKE '%${search}%'))`;
+			const cipher = await CryptoUtility.encode(search)
+			where += `AND (("User"."first_name" = '${cipher}'))or("User"."email" = '${cipher}'))or("User"."last_name" = '${cipher}')))`;
 		}
 		const query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.cart", "cart")
 			.leftJoinAndSelect("booking.bookingInstalments", "instalments")
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")

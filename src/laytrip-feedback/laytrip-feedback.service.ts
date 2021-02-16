@@ -33,25 +33,7 @@ export class LaytripFeedbackService {
         }
     }
 
-    async listLaytripFeedbacksForAdmin(listLaytripFeedbackForAdminDto: ListLaytripFeedbackForAdminDto,) {
-        const { limit, page_no, rating, search } = listLaytripFeedbackForAdminDto;
-
-
-        let andWhere:any = {};
-        andWhere.isDeleted = false;
-
-        if (rating) {
-            andWhere.rating = rating;
-        }
-        console.log(andWhere);
-
-        if (search) {
-            andWhere.user = {
-                first_name :search
-            };
-        }
-        console.log(andWhere);
-
-        return await this.laytripFeedbackRepository.listLaytripFeedbackAdmin(andWhere, limit, page_no);
+    async listLaytripFeedbacksForAdmin(listLaytripFeedbackForAdminDto: ListLaytripFeedbackForAdminDto) {
+        return await this.laytripFeedbackRepository.listLaytripFeedbackAdmin(listLaytripFeedbackForAdminDto);
     }
 }
