@@ -205,7 +205,8 @@ export class UserRepository extends Repository<User> {
 				email,
 				isDeleted: false,
 				roleId: Role.TRAVELER_USER,
-				createdBy: user.createdBy,
+				createdBy: user.createdBy ? user.createdBy : '',
+				parentGuestUserId : user.parentGuestUserId ? user.parentGuestUserId : ''
 			});
 			if (userExist) {
 				throw new ConflictException(`This traveler email alredy exist.`);

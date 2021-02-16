@@ -19,7 +19,6 @@ export class TravelerController {
 
 
 	@Post('save')
-	@UseGuards()
 	@ApiOperation({ summary: "Create new traveler by primary user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -34,15 +33,10 @@ export class TravelerController {
 		@Body() saveTravelerDto: SaveTravelerDto,
 		@LogInUser() user,
 	) {
-		const parent_user_id = user.user_id;
-		console.log(user);
-		return await this.travelerService.createNewtraveller(saveTravelerDto, parent_user_id);
+		return await this.travelerService.createNewtraveller(saveTravelerDto, user.user_id, saveTravelerDto.guest_id);
 	}
 
 	@Post('add/multiple-traveler')
-	@UseGuards()
-	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.FREE_USER, Role.PAID_USER)
 	@ApiOperation({ summary: "Create multiple traveler by primary user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -55,10 +49,9 @@ export class TravelerController {
 	@HttpCode(200)
 	async multipleTraveler(
 		@Body() multipleTravelersDto: MultipleTravelersDto,
-		@GetUser() user : User
-	) {
-		console.log('multiple traveler');		
-		const parent_user_id = user.userId;
+		@LogInUser() user) {
+		console.log('multiple traveler');
+		const parent_user_id = user.user_id;
 		return await this.travelerService.multipleTravelerAdd(multipleTravelersDto, parent_user_id);
 	}
 
@@ -132,9 +125,9 @@ export class TravelerController {
 	async updateTraveler(
 		@Param("id") userId: string,
 		@Body() updateTravelerDto: UpdateTravelerDto,
-		@GetUser() user: User,
+		@LogInUser() user,
 	): Promise<User> {
-		return await this.travelerService.updateTraveler(updateTravelerDto, userId, user.userId);
+		return await this.travelerService.updateTraveler(updateTravelerDto, userId, user.user_id, updateTravelerDto.guest_id);
 	}
 
 

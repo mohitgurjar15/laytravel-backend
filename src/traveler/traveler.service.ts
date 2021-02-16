@@ -37,22 +37,29 @@ export class TravelerService {
 		TravelerDto: MultipleTravelersDto,
 		parent_user_id: string) {
 		try {
-			console.log(parent_user_id);
-			
-			const { travelers } = TravelerDto
-			const userData = await this.userRepository.getUserData(parent_user_id);
-			if (!userData) {
-				throw new UnauthorizedException(`Please login to continue.`)
-			}
-			for await (const traveler of travelers) {
-				console.log(traveler);
 
-				if (traveler.traveler_id && traveler.traveler_id != userData.userId) {
+
+			const { travelers, guest_id } = TravelerDto
+			let userData: User
+			if (parent_user_id) {
+				userData = await this.userRepository.getUserData(parent_user_id);
+				if (!userData) {
+					throw new UnauthorizedException(`Please login to continue.`)
+				}
+			} else {
+				if (!uuidValidator(guest_id)) {
+					throw new UnauthorizedException(`Please login to continue.`)
+				}
+			}
+
+			for await (const traveler of travelers) {
+				if (traveler.traveler_id) {
 
 					const userId = traveler.traveler_id
 					if (!uuidValidator(userId)) {
 						throw new NotFoundException('Given traveler id not avilable')
 					}
+
 					const travelerData = await this.userRepository.findOne({ userId });
 					if (!travelerData) {
 						throw new NotFoundException(
@@ -75,16 +82,16 @@ export class TravelerService {
 			for await (const traveler of travelers) {
 				console.log(traveler.traveler_id != userData.userId);
 				console.log(traveler.traveler_id);
-				if (traveler.traveler_id == userData.userId) {
+				if (traveler.traveler_id == userData?.userId) {
 
 					const primaryTraveler = await this.userRepository.getTravelData(traveler.traveler_id);
 					responce.push(primaryTraveler)
 				}
 				else if (traveler.traveler_id && traveler.traveler_id != userData.userId) {
-					const updatedTraveler = await this.updateTraveler(traveler, traveler.traveler_id, parent_user_id)
+					const updatedTraveler = await this.updateTraveler(traveler, traveler.traveler_id, parent_user_id, guest_id)
 					responce.push(updatedTraveler)
 				} else {
-					const newTraveler = await this.createNewtraveller(traveler, parent_user_id)
+					const newTraveler = await this.createNewtraveller(traveler, parent_user_id, guest_id)
 					responce.push(newTraveler)
 				}
 			}
@@ -130,10 +137,10 @@ export class TravelerService {
 	}
 	async createNewtraveller(
 		saveTravelerDto: SaveTravelerDto,
-		parent_user_id: string
+		parent_user_id: string,
+		guest_id: string
 	) {
 		const {
-
 			first_name,
 			last_name,
 			dob,
@@ -155,7 +162,11 @@ export class TravelerService {
 				throw new BadRequestException(
 					`Country code not exist with database.&&&country_id`
 				);
-
+			if (!parent_user_id) {
+				if (!uuidValidator(guest_id)) {
+					throw new UnauthorizedException(`Please login to continue.`)
+				}
+			}
 			const user = new User();
 			user.userId = uuidv4();
 			user.accountType = 1;
@@ -176,7 +187,13 @@ export class TravelerService {
 			user.middleName = "";
 			user.zipCode = "";
 			user.lastName = last_name;
-			user.createdBy = parent_user_id == "" ? null : parent_user_id;
+			if (parent_user_id) {
+				user.createdBy = parent_user_id == "" ? null : parent_user_id;
+			}
+			if (guest_id) {
+				user.parentGuestUserId = guest_id
+			}
+
 			user.isVerified = true;
 			user.createdDate = new Date();
 			user.updatedDate = new Date();
@@ -190,7 +207,10 @@ export class TravelerService {
 					);
 				}
 				return this.userRepository.createtraveler(user);
-			} else {
+			} else if (guest_id) {
+				return this.userRepository.createtraveler(user);
+			}
+			else {
 				user.roleId = Role.GUEST_USER;
 				if (user.email == "") {
 					throw new NotFoundException(
@@ -412,7 +432,8 @@ export class TravelerService {
 	async updateTraveler(
 		updateTravelerDto: UpdateTravelerDto,
 		userId: string,
-		updateBy: string
+		updateBy: string,
+		guest_id : string
 	) {
 		try {
 			if (!uuidValidator(userId)) {
@@ -455,7 +476,7 @@ export class TravelerService {
 			traveler.title = gender == Gender.M ? 'mr' : 'ms';
 			traveler.dob = dob;
 			traveler.gender = gender;
-			traveler.updatedBy = updateBy;
+			traveler.updatedBy = updateBy ? updateBy : guest_id;
 			traveler.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
 			traveler.updatedDate = new Date();
 			traveler.countryId = countryDetails.id;
