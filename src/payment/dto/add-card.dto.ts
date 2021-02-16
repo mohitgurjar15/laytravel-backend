@@ -1,5 +1,5 @@
 import { IsNotEmpty } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class AddCardDto{
 
@@ -47,4 +47,10 @@ export class AddCardDto{
         example:`12/2022`
     })
     expiry:string;
+
+    @ApiPropertyOptional({
+        description: `guest user id`,
+        example: ``
+    })
+    guest_id: string;
 }

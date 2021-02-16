@@ -39,6 +39,7 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
+import { ListUserCardDto } from "./dto/list-card.dto";
 
 
 @Injectable()
@@ -54,12 +55,9 @@ export class PaymentService {
 			card_last_digit,
 			card_type,
 			card_token,
-			card_meta
+			card_meta,
+			guest_id
 		} = saveCardDto;
-
-		if (!uuidValidator(userId)) {
-			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
-		}
 
 		let paymentGateway = await getManager()
 			.createQueryBuilder(PaymentGateway, "paymentgateway")
@@ -76,7 +74,18 @@ export class PaymentService {
 		let userCard = new UserCard();
 		userCard.id = uuidv4();
 		userCard.paymentGatewayId = paymentGateway.id;
-		userCard.userId = userId;
+		if (userId) {
+			if (!uuidValidator(userId)) {
+				throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+			}
+			userCard.userId = userId;
+		} else {
+			if (!uuidValidator(guest_id)) {
+				throw new NotFoundException('Given guest_id not avilable&&&userId&&&' + errorMessage)
+			}
+			userCard.guestUserId = guest_id;
+		}
+
 		userCard.cardHolderName = card_holder_name;
 		userCard.cardDigits = card_last_digit;
 		userCard.cardToken = card_token;
@@ -91,14 +100,26 @@ export class PaymentService {
 		}
 	}
 
-	async getAllCards(userId: string) {
-		if (!uuidValidator(userId)) {
-			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+	async getAllCards(userId: string, listCardDto: ListUserCardDto) {
+		const { guest_id } = listCardDto
+		let where
+		if (userId) {
+			if (!uuidValidator(userId)) {
+				throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+			}
+			where = `user_card.user_id = ${userId} and user_card.is_deleted= false`
+		} else {
+			if (!uuidValidator(guest_id)) {
+				throw new NotFoundException('Given guest_id not avilable&&&userId&&&' + errorMessage)
+			}
+			where = `user_card.guest_user_id = '${guest_id}' and user_card.is_deleted= false`
 		}
+
 		let cardList = await getManager()
 			.createQueryBuilder(UserCard, "user_card")
 			.select([
 				"user_card.userId",
+				"user_card.guestUserId",
 				"user_card.id",
 				"user_card.cardHolderName",
 				"user_card.cardDigits",
@@ -107,10 +128,7 @@ export class PaymentService {
 				"user_card.status",
 				"user_card.cardMetaData"
 			])
-			.where(
-				"user_card.user_id = :user_id and user_card.is_deleted=:is_deleted",
-				{ user_id: userId, is_deleted: false }
-			)
+			.where(where)
 			.getMany();
 
 		if (!cardList.length) throw new NotFoundException(`No card founds`);
@@ -118,11 +136,20 @@ export class PaymentService {
 		return cardList;
 	}
 
-	async addCard(addCardDto: AddCardDto, userId:string) {
-		if (!uuidValidator(userId)) {
-			throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+	async addCard(addCardDto: AddCardDto, userId: string) {
+
+
+		const { first_name, last_name, card_number, card_cvv, expiry, guest_id } = addCardDto;
+
+		if (userId) {
+			if (!uuidValidator(userId)) {
+				throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+			}
+		} else {
+			if (!uuidValidator(guest_id)) {
+				throw new NotFoundException('Given guest_id not avilable&&&userId&&&' + errorMessage)
+			}
 		}
-		const { first_name, last_name, card_number, card_cvv, expiry } = addCardDto;
 
 		let expiryDate = expiry.split("/");
 
@@ -170,7 +197,12 @@ export class PaymentService {
 			let userCard = new UserCard();
 			userCard.id = uuidv4();
 			userCard.paymentGatewayId = paymentGateway.id;
-			userCard.userId = userId;
+			if (userId) {
+				userCard.userId = userId;
+			} else {
+				userCard.guestUserId = guest_id;
+			}
+
 			userCard.cardHolderName = cardResult.transaction.payment_method.full_name;
 			userCard.cardDigits =
 				cardResult.transaction.payment_method.last_four_digits;
