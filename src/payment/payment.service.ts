@@ -107,7 +107,7 @@ export class PaymentService {
 			if (!uuidValidator(userId)) {
 				throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
 			}
-			where = `user_card.user_id = ${userId} and user_card.is_deleted= false`
+			where = `user_card.user_id = '${userId}' and user_card.is_deleted= false`
 		} else {
 			if (!uuidValidator(guest_id)) {
 				throw new NotFoundException('Given guest_id not avilable&&&userId&&&' + errorMessage)

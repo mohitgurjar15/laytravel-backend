@@ -510,7 +510,7 @@ export class AdminDashboardService {
       response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;
 
       var valueOfBookingQty = await getConnection().query(`
-      SELECT  count(id) as cnt from booking where "booking"."booking_status" IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM},${BookingStatus.CANCELLED},${BookingStatus.FAILED}) AND  ${moduleIdCondition} AND ${dateConditon}
+      SELECT  count(id) as cnt from booking where ${moduleIdCondition} AND ${dateConditon}
       `);
 
       response["value_of_bookings_qyt"] = valueOfBookingQty[0].cnt || 0;

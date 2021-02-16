@@ -96,6 +96,9 @@ export class User extends BaseEntity {
   @Column("uuid", { name: "created_by", nullable: true })
   createdBy: string | null;
 
+  @Column("uuid", { name: "parent_guest_user_id", nullable: true })
+  parentGuestUserId: string | null;
+
   @Column("uuid", { name: "updated_by", nullable: true })
   updatedBy: string | null;
 
