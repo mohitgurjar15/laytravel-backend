@@ -11,6 +11,10 @@ import { Booking } from "./booking.entity";
 import { PaymentGateway } from "./payment-gateway.entity";
 import { User } from "./user.entity";
 @Index("user_card_payment_gateway_id", ["paymentGatewayId"], {})
+@Index("user_card_userId", ["userId"], {})
+@Index("user_card_guestUserId", ["guestUserId"], {})
+@Index("user_card_cardToken", ["cardToken"], {})
+@Index("user_card_createdDate", ["createdDate"], {})
 //@Index("user_card_pk", ["id"], { unique: true })
 @Entity("user_card")
 export class UserCard extends BaseEntity {
@@ -18,7 +22,10 @@ export class UserCard extends BaseEntity {
   id: string;
 
   @Column("uuid", { name: "user_id", nullable: true })
-  userId: string | null;
+  userId: string;
+
+  @Column("uuid", { name: "guest_user_id", nullable: true })
+  guestUserId: string;
 
   @Column("integer", { name: "payment_gateway_id", nullable: true })
   paymentGatewayId: number | null;

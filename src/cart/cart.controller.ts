@@ -98,7 +98,7 @@ export class CartController {
     async deleteFromCart(
         @LogInUser() user,
         @Param("id") id: number,
-        @Body() deleteCartDto:DeleteCartDto
+        @Query() deleteCartDto:DeleteCartDto
     ) {
         return await this.cartService.deleteFromCart(id, user,deleteCartDto);
     }
@@ -152,7 +152,7 @@ export class CartController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async emptyCart(
         @LogInUser() user,
-        @Body() deleteCartDto:DeleteCartDto
+        @Query() deleteCartDto:DeleteCartDto
     ) {
         return await this.cartService.emptyCart(deleteCartDto,user);
     }
