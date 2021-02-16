@@ -52,16 +52,14 @@ import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
-import { VerifyEmailIdTemplete } from "src/config/email_template/email-id-verify.html";
+import { VerifyEmailIdTemplete } from "src/config/new_email_templete/email-id-verify-mail.html";
 import { OtpDto } from "./dto/otp.dto";
-
-import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
-import { forgotPasswordMail } from "src/config/email_template/forgot-password-mail.html";
+import { forgotPasswordMail } from "src/config/new_email_templete/forgot-password-mail.html";
 import * as config from "config";
 const mailConfig = config.get("email");
 const jwtConfig = config.get("jwt");
@@ -81,6 +79,8 @@ import { UserPreference } from "src/enum/user-preference.enum";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { airports } from "src/flight/airports";
 import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
+import { WelcomeBoardMail } from "src/config/new_email_templete/welcome-board-mail.html";
+import { resetPasswordMail } from "src/config/new_email_templete/reset-password-mail.html";
 import { GuestUserDto } from "./dto/guest-user.dto";
 
 @Injectable()
@@ -672,6 +672,23 @@ export class AuthService {
 				try {
 					await user.save();
 					await validate.save();
+					this.mailerService
+					.sendMail({
+						to: email,
+						from: mailConfig.from,
+						cc: mailConfig.BCC,
+						sender: "laytrip",
+						subject: "Reset Password",
+						html: resetPasswordMail({
+							username: user.firstName
+						}),
+					})
+					.then((res) => {
+						console.log("res", res);
+					})
+					.catch((err) => {
+						console.log("err", err);
+					});
 					const res = { message: `Your password has been updated successfully.` };
 					return res;
 				} catch (error) {
@@ -809,7 +826,7 @@ export class AuthService {
 						from: mailConfig.from,
 						cc: mailConfig.BCC,
 						subject: "Welcome on board",
-						html: RagisterMail({
+						html: WelcomeBoardMail({
 							username: user.firstName + " " + user.lastName,
 						}),
 					})
