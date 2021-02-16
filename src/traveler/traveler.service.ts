@@ -24,6 +24,7 @@ import { errorMessage } from "src/config/common.config";
 import { Gender } from "src/enum/gender.enum";
 import * as uuidValidator from "uuid-validate"
 import { MultipleTravelersDto } from "./dto/multiple-add-traveler.dto";
+import { ListTravelerDto } from "./dto/list-traveler.dto";
 
 @Injectable()
 export class TravelerService {
@@ -276,12 +277,23 @@ export class TravelerService {
 		}
 	}
 
-	async listTraveler(userId: string) {
+	async listTraveler(userId: string,listTravelerDto :ListTravelerDto) {
 		try {
-			if (!uuidValidator(userId)) {
-				throw new NotFoundException('Given id not avilable')
+			let where
+			const {guest_id} = listTravelerDto
+			if(userId){
+				if (!uuidValidator(userId)) {
+					throw new NotFoundException('Given id not avilable')
+				}
+				 where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
+			}else{
+				if (!uuidValidator(guest_id)) {
+					throw new NotFoundException('Given guest_id not avilable')
+				}
+				 where = ` "user"."is_deleted" = false AND ("user"."parent_guest_user_id" = '${guest_id}')`;
 			}
-			const where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
+			
+			
 			const [result, count] = await getManager()
 				.createQueryBuilder(User, "user")
 				.leftJoinAndSelect("user.state", "state")

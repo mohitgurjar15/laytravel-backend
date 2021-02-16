@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, HttpCode, Body, Get, Param, Put, Delete } from '@nestjs/common';
+import { Controller, UseGuards, Post, HttpCode, Body, Get, Param, Put, Delete, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/guards/role.guard';
@@ -10,6 +10,7 @@ import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { UpdateTravelerDto } from './dto/update-traveler.dto';
 import { MultipleTravelersDto } from './dto/multiple-add-traveler.dto';
+import { ListTravelerDto } from './dto/list-traveler.dto';
 
 @ApiTags("Travelers")
 @ApiBearerAuth()
@@ -74,7 +75,6 @@ export class TravelerController {
 
 
 	@Get('list-traveler')
-	@UseGuards(AuthGuard())
 	@ApiOperation({ summary: "List all traveler of the user" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -85,9 +85,10 @@ export class TravelerController {
 	@ApiResponse({ status: 404, description: "Traveler not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listTraveler(
-		@GetUser() user: User,
+		@LogInUser() user,
+		@Query() listTravelerDto :ListTravelerDto
 	) {
-		return await this.travelerService.listTraveler(user.userId);
+		return await this.travelerService.listTraveler(user.user_id,listTravelerDto);
 	}
 
 	@UseGuards(RolesGuard)
@@ -105,8 +106,9 @@ export class TravelerController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listtraverUsingUserId(
 		@Param("id") userId: string,
+		@Query() listTravelerDto :ListTravelerDto
 	) {
-		return await this.travelerService.listTraveler(userId);
+		return await this.travelerService.listTraveler(userId,listTravelerDto);
 	}
 
 

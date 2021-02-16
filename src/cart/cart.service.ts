@@ -215,7 +215,7 @@ export class CartService {
             await getConnection()
             .createQueryBuilder()
             .update(User)
-            .set({ userId: user.userId })
+            .set({ createdBy: user.userId })
             .where("parent_guest_user_id =:id", { id: guestUserId })
             .execute();
         const result = await getConnection()
