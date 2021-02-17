@@ -24,7 +24,6 @@ import { errorMessage } from "src/config/common.config";
 import { Gender } from "src/enum/gender.enum";
 import * as uuidValidator from "uuid-validate"
 import { MultipleTravelersDto } from "./dto/multiple-add-traveler.dto";
-import { ListTravelerDto } from "./dto/list-traveler.dto";
 
 @Injectable()
 export class TravelerService {
@@ -36,11 +35,11 @@ export class TravelerService {
 
 	async multipleTravelerAdd(
 		TravelerDto: MultipleTravelersDto,
-		parent_user_id: string) {
+		parent_user_id: string, guest_id: string) {
 		try {
 
 
-			const { travelers, guest_id } = TravelerDto
+			const { travelers } = TravelerDto
 			let userData: User
 			if (parent_user_id) {
 				userData = await this.userRepository.getUserData(parent_user_id);
@@ -277,23 +276,22 @@ export class TravelerService {
 		}
 	}
 
-	async listTraveler(userId: string,listTravelerDto :ListTravelerDto) {
+	async listTraveler(userId: string, guest_id) {
 		try {
 			let where
-			const {guest_id} = listTravelerDto
-			if(userId){
+			if (userId) {
 				if (!uuidValidator(userId)) {
 					throw new NotFoundException('Given id not avilable')
 				}
-				 where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
-			}else{
+				where = ` "user"."is_deleted" = false AND ("user"."created_by" = '${userId}' OR "user"."user_id" = '${userId}')`;
+			} else {
 				if (!uuidValidator(guest_id)) {
 					throw new NotFoundException('Given guest_id not avilable')
 				}
-				 where = ` "user"."is_deleted" = false AND ("user"."parent_guest_user_id" = '${guest_id}')`;
+				where = ` "user"."is_deleted" = false AND ("user"."parent_guest_user_id" = '${guest_id}')`;
 			}
-			
-			
+
+
 			const [result, count] = await getManager()
 				.createQueryBuilder(User, "user")
 				.leftJoinAndSelect("user.state", "state")
@@ -445,7 +443,7 @@ export class TravelerService {
 		updateTravelerDto: UpdateTravelerDto,
 		userId: string,
 		updateBy: string,
-		guest_id : string
+		guest_id: string
 	) {
 		try {
 			if (!uuidValidator(userId)) {

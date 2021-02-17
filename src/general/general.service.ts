@@ -12,6 +12,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
 import { Role } from 'src/enum/role.enum';
 import { massCommunicationMail } from 'src/config/email_template/mass-communication.html';
+import { TestTemplete } from 'src/config/new_email_templete/test.html';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -167,6 +168,34 @@ export class GeneralService {
                     console.log("err", err);
                 });
         }
+
+
+        return {
+            message: `email send succesfully`
+        }
+    }
+
+    async testEmail(dto: MassCommunicationDto, email) {
+        const { subject, email_body } = dto
+
+        var allemail = '';
+
+        // allemail += email.email + ','
+        this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                cc: mailConfig.BCC,
+                subject: subject,
+                html: TestTemplete,
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
 
 
         return {

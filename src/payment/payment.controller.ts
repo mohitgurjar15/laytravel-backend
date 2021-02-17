@@ -11,7 +11,6 @@ import { User } from 'src/entity/user.entity';
 import { CreteTransactionDto } from './dto/create-transaction.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
-import { ListUserCardDto } from './dto/list-card.dto';
 
 
 @ApiTags("Payment")
@@ -36,7 +35,9 @@ export class PaymentController {
 		@Body() saveCardDto: SaveCardDto,
 		@LogInUser() user
 	) {
-		return await this.paymentService.saveCard(saveCardDto, user.user_id);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id : '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
+		return await this.paymentService.saveCard(saveCardDto, parent_user_id, guest_id);
 	}
 
 	@Post('user-card/:user_id')
@@ -58,7 +59,9 @@ export class PaymentController {
 		@GetUser() user,
 		@Param('user_id') userId: string
 	) {
-		return await this.paymentService.saveCard(saveCardDto, userId);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id : '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
+		return await this.paymentService.saveCard(saveCardDto, userId, guest_id);
 	}
 
 	@Get('user-card/:user_id')
@@ -93,10 +96,11 @@ export class PaymentController {
 	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getAllCards(
-		@LogInUser() user,
-		@Query() listCardDto: ListUserCardDto
+		@LogInUser() user
 	) {
-		return await this.paymentService.getAllCards(user.user_id, listCardDto);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id : '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
+		return await this.paymentService.getAllCards(parent_user_id, guest_id);
 	}
 
 	@Post('add-card')
@@ -115,7 +119,9 @@ export class PaymentController {
 		@Body() addCardDto: AddCardDto,
 		@LogInUser() user
 	) {
-		return await this.paymentService.addCard(addCardDto, user.user_id);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id : '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
+		return await this.paymentService.addCard(addCardDto,parent_user_id,guest_id);
 	}
 	@Post('add-user-card/:user_id')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
@@ -136,7 +142,7 @@ export class PaymentController {
 		@GetUser() user,
 		@Param('user_id') userId: string
 	) {
-		return await this.paymentService.addCard(addCardDto, userId);
+		return await this.paymentService.addCard(addCardDto, userId,'');
 	}
 
 	@Put('retain-card/:card_token')

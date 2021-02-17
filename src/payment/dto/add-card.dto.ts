@@ -47,10 +47,4 @@ export class AddCardDto{
         example:`12/2022`
     })
     expiry:string;
-
-    @ApiPropertyOptional({
-        description: `guest user id`,
-        example: ``
-    })
-    guest_id: string;
 }
