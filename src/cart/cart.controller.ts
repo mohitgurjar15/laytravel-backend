@@ -47,8 +47,6 @@ export class CartController {
 
     @Put('update')
     @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(Role.FREE_USER, Role.PAID_USER)
     @ApiOperation({ summary: "update cart" })
     @ApiResponse({ status: 200, description: 'Api success' })
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })

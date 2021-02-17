@@ -402,11 +402,8 @@ export class AdminDashboardService {
 
       response["completed_trips"] = completedTrips[0].cnt;
 
-      const completedTripsUsd = await getConnection().query(`
-        SELECT sum("booking"."usd_factor"*"total_amount") as "total" 
-				FROM booking
-				WHERE "booking"."booking_status" IN (${BookingStatus.CONFIRM})
-        AND ${moduleIdCondition} AND ${dateConditon}`);
+      const completedTripsUsd = await getConnection().query(`SELECT  sum(total_amount) as "total"
+      FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
 
       response["completed_trips_usd"] = (Math.round(completedTripsUsd[0].total * 100) / 100).toFixed(2) || 0;
 
@@ -516,15 +513,18 @@ export class AdminDashboardService {
       response["value_of_bookings_qyt"] = valueOfBookingQty[0].cnt || 0;
 
       var paidbyCustomerFullPayment = await getConnection().query(`
-                SELECT  SUM( total_amount * usd_factor) as total_amount from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} AND "booking"."payment_status" = ${PaymentStatus.CONFIRM}
+                SELECT  SUM( total_amount / usd_factor) as total_amount from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" = ${BookingStatus.CONFIRM} AND "booking"."payment_status" = ${PaymentStatus.CONFIRM}
 			`);
 
       var paidbyCustomerPoint = await getConnection().query(`
                 SELECT  SUM( lay_credit) as total_point from booking where "booking"."booking_type" = ${BookingType.NOINSTALMENT} AND "booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING})  
 			`);
+      var paidbyCustomerpartialPoint = await getConnection().query(`
+      select sum(amount) as total_amount from booking_instalments where payment_status = ${PaymentStatus.CONFIRM}  
+			`);
       response["paid_by_customer"] =
-        parseFloat(valueOfBooking[0].total_amount) +
-        parseFloat(paidByTheCustomer[0].total) +
+        parseFloat(paidbyCustomerpartialPoint[0].total_amount) +
+        parseFloat(paidbyCustomerFullPayment[0].total_amount) +
         parseFloat(paidbyCustomerPoint[0].total_point) || 0;
 
       var totalBooking = await getConnection().query(`
