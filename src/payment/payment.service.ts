@@ -209,6 +209,7 @@ export class PaymentService {
 			userCard.cardToken = cardResult.transaction.payment_method.token;
 			userCard.cardType = cardResult.transaction.payment_method.card_type;
 			userCard.createdDate = new Date();
+			userCard.cardMetaData = cardResult
 
 			try {
 				return await userCard.save();
