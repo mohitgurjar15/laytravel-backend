@@ -416,7 +416,7 @@ export class UserService {
 		try {
 			return await this.userRepository.listUser(
 				paginationOption,
-				[Role.PAID_USER, Role.GUEST_USER, Role.FREE_USER],
+				[Role.PAID_USER, Role.FREE_USER],
 				siteUrl
 			);
 		} catch (error) {
@@ -560,7 +560,6 @@ export class UserService {
 		Activity.logActivity(adminId, "user", `All user list export by admin`);
 		return await this.userRepository.exportUser(paginationOption, [
 			Role.PAID_USER,
-			Role.GUEST_USER,
 			Role.FREE_USER,
 		]);
 	}
