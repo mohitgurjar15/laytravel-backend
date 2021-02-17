@@ -420,7 +420,7 @@ export class AdminDashboardService {
       response["open_bookings_usd"] = (Math.round(openBookingsUsd[0].total * 100) / 100).toFixed(2) || 0;
 
       const ToBePaidByTheCustomer = await getConnection().query(
-        `SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total" 
+        `SELECT sum("booking_instalments"."amount") as "total" 
 				FROM booking
 				INNER JOIN booking_instalments
 				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})
@@ -430,7 +430,7 @@ export class AdminDashboardService {
         ToBePaidByTheCustomer[0].total || 0;
 
       const paidByTheCustomer = await getConnection().query(
-        `SELECT sum("booking"."usd_factor"*"booking_instalments"."amount") as "total" 
+        `SELECT sum("booking"."usd_factor"/"booking_instalments"."amount") as "total" 
 				FROM booking
 				INNER JOIN booking_instalments
 				ON booking.id = booking_instalments.booking_id WHERE "booking_instalments"."instalment_status" = ${PaymentStatus.CONFIRM} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})
@@ -452,8 +452,8 @@ export class AdminDashboardService {
                 SELECT count(id) as confirm_booking,
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
-                SUM( markup_amount * usd_factor) as total_profit
-                from booking where check_in_date >= '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}
+                SUM( markup_amount ) as total_profit
+                from booking where  booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}
 			`);
 
       response["revenues"] = revenues[0].total_profit || 0;
@@ -463,14 +463,14 @@ export class AdminDashboardService {
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
 
       var revenueNoInstallment = await getConnection().query(`
       SELECT count(id) as confirm_booking,
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where check_in_date >= '${todayDate}' AND booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
 
       var revenueFromNoInstallment = revenues[0].total_profit - revenueInstallment[0].total_profit;
       response["revenue_from_full_price"] = (Math.round(revenueFromNoInstallment * 100) / 100).toFixed(2);
@@ -554,7 +554,8 @@ export class AdminDashboardService {
 
       const grossSales = await getConnection().query(`
         SELECT sum("booking"."total_amount"/"booking"."usd_factor") as "total_amount" 
-        FROM booking `
+        FROM booking where "booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) 
+        AND ${moduleIdCondition} AND ${dateConditon}`
       );
       response["gross_sales"] =
         (Math.round(grossSales[0].total_amount * 100) / 100).toFixed(2) || 0;
@@ -594,7 +595,7 @@ export class AdminDashboardService {
 
   async customerStatistics(filterOption: DashboardFilterDto) {
     var response = {};
-    const userConditon = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) AND is_deleted = false `;
+    const userConditon = `role_id In (${Role.FREE_USER},${Role.PAID_USER}) AND is_deleted = false `;
 
     const userDoneBooking90Days = await getConnection().query(
       `SELECT count(*) as cnt  FROM "user" "User" WHERE DATE_PART('day',(select booking_date from booking where booking.user_id = "User"."user_id" AND ${userConditon} order by booking_date limit 1) - created_date ) < 90`
