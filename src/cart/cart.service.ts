@@ -30,7 +30,6 @@ import { BookingType } from 'src/enum/booking-type.enum';
 import { BookingStatus } from 'src/enum/booking-status.enum';
 import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
-import { DeleteCartDto } from './dto/delete-cart.dto';
 import { UserCard } from 'src/entity/user-card.entity';
 import { SearchLog } from 'src/entity/search-log.entity';
 
@@ -49,7 +48,7 @@ export class CartService {
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
         let userData;
-        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [], guest_id } = addInCartDto
+        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
         var tDate = new Date();
 
         var todayDate = tDate.toISOString().split(' ')[0];
@@ -57,11 +56,11 @@ export class CartService {
             .replace(/T/, " ") // replace T with a space
             .replace(/\..+/, "");
         let where = `AND ("cart"."user_id" = '${user.user_id}')`
-        if (!user) {
-            if (!uuidValidator(guest_id)) {
+        if (user.roleId == Role.GUEST_USER) {
+            if (!uuidValidator(user.user_id)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
-            where = `AND ("cart"."guest_user_id" = '${guest_id}')`
+            where = `AND ("cart"."guest_user_id" = '${user.user_id}')`
         }
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
@@ -72,12 +71,11 @@ export class CartService {
         }
         console.log('user', user);
 
-        if (user) {
-            userData = await getConnection()
-                .createQueryBuilder(User, "user")
-                .where(`user_id = '${user.user_id}'`)
-                .getOne()
-        }
+        userData = await getConnection()
+            .createQueryBuilder(User, "user")
+            .where(`user_id = '${user.user_id}'`)
+            .getOne()
+
 
 
 
@@ -106,7 +104,7 @@ export class CartService {
                 break;
 
             case ModulesName.FLIGHT:
-                return await this.addFlightDataInCart(route_code, userData, Header, guest_id);
+                return await this.addFlightDataInCart(route_code, userData, Header);
                 break;
             case ModulesName.VACATION_RENTEL:
                 const dto = {
@@ -125,7 +123,7 @@ export class CartService {
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header, guestId) {
+    async addFlightDataInCart(route_code: string, user: User, Header) {
         //console.log('validate');
 
         const flightInfo: any = await this.flightService.airRevalidate({ route_code: route_code }, Header, user ? user : null);
@@ -166,13 +164,13 @@ export class CartService {
 
             const cart = new Cart
 
-            if (user) {
+            if (user.roleId != Role.GUEST_USER) {
                 //console.log(user);
 
                 cart.userId = user.userId
             } else {
                 //console.log(guestId);
-                cart.guestUserId = guestId
+                cart.guestUserId = user.userId
             }
 
             cart.moduleId = ModulesName.FLIGHT
@@ -223,7 +221,7 @@ export class CartService {
         await getConnection()
             .createQueryBuilder()
             .update(SearchLog)
-            .set({ userId : user.userId })
+            .set({ userId: user.userId })
             .where("user_id =:id", { id: guestUserId })
             .execute();
 
@@ -246,17 +244,17 @@ export class CartService {
             message: `Guest user cart successfully maped `
         }
     }
-    async updateCart(updateCartDto: UpdateCartDto, user: User) {
-        const { cart_id, travelers, guest_id } = updateCartDto
+    async updateCart(updateCartDto: UpdateCartDto, user) {
+        const { cart_id, travelers} = updateCartDto
 
         let where
-        if (user) {
-            where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."id" = '${cart_id}') `
+        if (user.roleId != Role.GUEST_USER) {
+            where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."id" = '${cart_id}') `
         } else {
-            if (!uuidValidator(guest_id)) {
+            if (!uuidValidator(user.user_id)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
-            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."id" = '${cart_id}') `
+            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = '${cart_id}') `
         }
 
         let query = getConnection()
@@ -335,10 +333,9 @@ export class CartService {
     }
 
     async listCart(dto: ListCartDto, user, headers) {
-        const { live_availiblity, guest_id } = dto
+        const { live_availiblity} = dto
         var tDate = new Date();
 
-        console.log(user);
 
         var todayDate = tDate.toISOString().split(' ')[0];
         todayDate = todayDate
@@ -346,11 +343,11 @@ export class CartService {
             .replace(/\..+/, "");
 
         let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
-        if (!user?.user_id) {
-            if (!uuidValidator(guest_id)) {
+        if (user.roleId == Role.GUEST_USER) {
+            if (!uuidValidator(user.user_id)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
-            where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
+            where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
         }
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
@@ -537,14 +534,13 @@ export class CartService {
 
     }
 
-    async deleteFromCart(id: number, user, deleteCartDto: DeleteCartDto) {
-        const { guest_id } = deleteCartDto
+    async deleteFromCart(id: number, user) {
         let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`
-        if (!user) {
-            if (!uuidValidator(guest_id)) {
+        if (user.roleId == Role.GUEST_USER) {
+            if (!uuidValidator(user.user_id)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
-            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."id" = ${id})`
+            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = ${id})`
         }
 
         let query = getConnection()
@@ -835,14 +831,13 @@ export class CartService {
 
     }
 
-    async emptyCart(deleteCartDto: DeleteCartDto, user) {
-        const { guest_id } = deleteCartDto
+    async emptyCart(user) {
         let where = `"user_id" = '${user?.user_id}'`
-        if (!user) {
-            if (!uuidValidator(guest_id)) {
+        if (user.roleId == Role.GUEST_USER) {
+            if (!uuidValidator(user.user_id)) {
                 throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
             }
-            where = `"guest_user_id" = '${guest_id}'`
+            where = `"guest_user_id" = '${user.user_id}'`
         }
         let carts = await getConnection()
             .createQueryBuilder(Cart, "cart")

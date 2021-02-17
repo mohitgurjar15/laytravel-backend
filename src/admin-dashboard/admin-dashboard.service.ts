@@ -717,27 +717,22 @@ export class AdminDashboardService {
     response["average_booking_markup_usd"] = (Math.round(avgBookingMarkUpUsd * 100) / 100).toFixed(2);
 
     const newUpfrontUsers = await getConnection().query(
-      `SELECT
-		  user_id, COUNT(*)
-		  FROM
-      booking
+      `SELECT 
+      count(*) as cnt
+      FROM
+        "user" as u
       WHERE
-      booking_type In (${BookingType.NOINSTALMENT})
-		  GROUP BY
-		  user_id
-		  HAVING 
-      COUNT(*) < 2`
+      ${BookingType.NOINSTALMENT} in (select booking_type from booking where user_id = u.user_id order by booking_date limit 1);`
     );
-    response["new_upfront_users"] = newUpfrontUsers.length;
+    response["new_upfront_users"] = newUpfrontUsers[0].cnt;
 
     const totalAccountHolders = await getConnection().query(
-      `SELECT "user"."user_id", COUNT(*)
+      `SELECT 
+      count(*) as cnt
       FROM
-      "user"
-      GROUP BY
-		  user_id`
+        "user" Where ${userConditon}`
     );
-    response["total_account_holders"] = (Math.round(totalAccountHolders.length * 100) / 100);
+    response["total_account_holders"] = totalAccountHolders[0].cnt
 
     const totalGuestUsers = await getConnection().query(
       `SELECT "user"."user_id", COUNT(*)

@@ -10,17 +10,15 @@ import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
-import { DeleteCartDto } from './dto/delete-cart.dto';
 import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
-
 @Controller('cart')
 export class CartController {
     constructor(private cartService: CartService) { }
 
-    
+
     @Post('add')
     @ApiBearerAuth()
     @ApiOperation({ summary: "add item in cart" })
@@ -42,6 +40,7 @@ export class CartController {
         @LogInUser() user,
         @Req() req,
     ) {
+
         return await this.cartService.addInCart(addInCartDto, user, req.headers);
     }
 
@@ -54,7 +53,7 @@ export class CartController {
     @HttpCode(200)
     async updateCart(
         @Body() updateCart: UpdateCartDto,
-        @LogInUser() user: User,
+        @LogInUser() user,
         @Req() req,
     ) {
         return await this.cartService.updateCart(updateCart, user);
@@ -81,9 +80,9 @@ export class CartController {
         @Query() dto: ListCartDto
     ) {
         console.log('user');
-        
+
         console.log(user);
-        
+
         return await this.cartService.listCart(dto, user, req.headers);
     }
 
@@ -95,10 +94,9 @@ export class CartController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteFromCart(
         @LogInUser() user,
-        @Param("id") id: number,
-        @Query() deleteCartDto:DeleteCartDto
+        @Param("id") id: number
     ) {
-        return await this.cartService.deleteFromCart(id, user,deleteCartDto);
+        return await this.cartService.deleteFromCart(id, user);
     }
 
     @Post('book')
@@ -149,10 +147,9 @@ export class CartController {
     @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async emptyCart(
-        @LogInUser() user,
-        @Query() deleteCartDto:DeleteCartDto
+        @LogInUser() user
     ) {
-        return await this.cartService.emptyCart(deleteCartDto,user);
+        return await this.cartService.emptyCart(user);
     }
 
     @Patch('map-guest-user/:guest_user_id')
@@ -166,7 +163,7 @@ export class CartController {
     @HttpCode(200)
     async mapGuestUserId(
         @GetUser() user: User,
-        @Param('guest_user_id') guestUserId : string
+        @Param('guest_user_id') guestUserId: string
     ) {
         return await this.cartService.mapGuestUser(guestUserId, user);
     }

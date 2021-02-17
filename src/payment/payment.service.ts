@@ -39,7 +39,6 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
-import { ListUserCardDto } from "./dto/list-card.dto";
 
 
 @Injectable()
@@ -49,14 +48,13 @@ export class PaymentService {
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
-	async saveCard(saveCardDto: SaveCardDto, userId: string) {
+	async saveCard(saveCardDto: SaveCardDto, userId: string,guest_id) {
 		const {
 			card_holder_name,
 			card_last_digit,
 			card_type,
 			card_token,
-			card_meta,
-			guest_id
+			card_meta
 		} = saveCardDto;
 
 		let paymentGateway = await getManager()
@@ -100,8 +98,7 @@ export class PaymentService {
 		}
 	}
 
-	async getAllCards(userId: string, listCardDto: ListUserCardDto) {
-		const { guest_id } = listCardDto
+	async getAllCards(userId: string,guest_id) {
 		let where
 		if (userId) {
 			if (!uuidValidator(userId)) {
@@ -136,10 +133,10 @@ export class PaymentService {
 		return cardList;
 	}
 
-	async addCard(addCardDto: AddCardDto, userId: string) {
+	async addCard(addCardDto: AddCardDto, userId: string,guest_id) {
 
 
-		const { first_name, last_name, card_number, card_cvv, expiry, guest_id } = addCardDto;
+		const { first_name, last_name, card_number, card_cvv, expiry } = addCardDto;
 
 		if (userId) {
 			if (!uuidValidator(userId)) {
@@ -209,7 +206,7 @@ export class PaymentService {
 			userCard.cardToken = cardResult.transaction.payment_method.token;
 			userCard.cardType = cardResult.transaction.payment_method.card_type;
 			userCard.createdDate = new Date();
-			userCard.cardMetaData = cardResult
+			userCard.cardMetaData = cardResult?.transaction?.payment_method
 
 			try {
 				return await userCard.save();
@@ -554,7 +551,7 @@ export class PaymentService {
 			.getOne();
 
 		if (!card) throw new NotFoundException(`Card id not founds`);
-		const newCard = await this.addCard(addCardDto, user.userId)
+		const newCard = await this.addCard(addCardDto, user.userId,'')
 		await getConnection()
 			.createQueryBuilder()
 			.update(Booking)

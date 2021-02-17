@@ -10,7 +10,7 @@ import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { UpdateTravelerDto } from './dto/update-traveler.dto';
 import { MultipleTravelersDto } from './dto/multiple-add-traveler.dto';
-import { ListTravelerDto } from './dto/list-traveler.dto';
+
 
 @ApiTags("Travelers")
 @ApiBearerAuth()
@@ -34,7 +34,9 @@ export class TravelerController {
 		@Body() saveTravelerDto: SaveTravelerDto,
 		@LogInUser() user,
 	) {
-		return await this.travelerService.createNewtraveller(saveTravelerDto, user.user_id, saveTravelerDto.guest_id);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id: '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id: '';
+		return await this.travelerService.createNewtraveller(saveTravelerDto, parent_user_id, guest_id);
 	}
 
 	@Post('add/multiple-traveler')
@@ -51,9 +53,10 @@ export class TravelerController {
 	async multipleTraveler(
 		@Body() multipleTravelersDto: MultipleTravelersDto,
 		@LogInUser() user) {
-		console.log('multiple traveler');
-		const parent_user_id = user.user_id;
-		return await this.travelerService.multipleTravelerAdd(multipleTravelersDto, parent_user_id);
+		
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id: '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id: '';
+		return await this.travelerService.multipleTravelerAdd(multipleTravelersDto, parent_user_id,guest_id);
 	}
 
 	@Get('get-traveler/:id')
@@ -85,10 +88,11 @@ export class TravelerController {
 	@ApiResponse({ status: 404, description: "Traveler not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listTraveler(
-		@LogInUser() user,
-		@Query() listTravelerDto :ListTravelerDto
+		@LogInUser() user
 	) {
-		return await this.travelerService.listTraveler(user.user_id,listTravelerDto);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id: '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id: '';
+		return await this.travelerService.listTraveler(parent_user_id,guest_id);
 	}
 
 	@UseGuards(RolesGuard)
@@ -105,10 +109,9 @@ export class TravelerController {
 	@ApiResponse({ status: 404, description: "Traveler not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async listtraverUsingUserId(
-		@Param("id") userId: string,
-		@Query() listTravelerDto :ListTravelerDto
+		@Param("id") userId: string
 	) {
-		return await this.travelerService.listTraveler(userId,listTravelerDto);
+		return await this.travelerService.listTraveler(userId,'');
 	}
 
 
@@ -129,7 +132,9 @@ export class TravelerController {
 		@Body() updateTravelerDto: UpdateTravelerDto,
 		@LogInUser() user,
 	): Promise<User> {
-		return await this.travelerService.updateTraveler(updateTravelerDto, userId, user.user_id, updateTravelerDto.guest_id);
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id: '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id: '';
+		return await this.travelerService.updateTraveler(updateTravelerDto, userId, parent_user_id, guest_id);
 	}
 
 

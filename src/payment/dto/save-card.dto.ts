@@ -44,10 +44,4 @@ export class SaveCardDto{
         example:`{}`
     })
     card_meta:{};
-
-    @ApiPropertyOptional({
-        description:`guest user id`,
-        example:``
-    })
-    guest_id:string;
 }
