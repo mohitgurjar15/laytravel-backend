@@ -32,6 +32,7 @@ import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { DeleteCartDto } from './dto/delete-cart.dto';
 import { UserCard } from 'src/entity/user-card.entity';
+import { SearchLog } from 'src/entity/search-log.entity';
 
 @Injectable()
 export class CartService {
@@ -208,34 +209,59 @@ export class CartService {
         await getConnection()
             .createQueryBuilder()
             .update(UserCard)
-            .set({ userId: user.userId })
+            .set({ userId: user.userId, guestUserId: null })
             .where("guest_user_id =:id", { id: guestUserId })
             .execute();
 
-            await getConnection()
+        await getConnection()
             .createQueryBuilder()
             .update(User)
-            .set({ createdBy: user.userId })
+            .set({ createdBy: user.userId, parentGuestUserId: null })
             .where("parent_guest_user_id =:id", { id: guestUserId })
             .execute();
+
+        await getConnection()
+            .createQueryBuilder()
+            .update(SearchLog)
+            .set({ userId : user.userId })
+            .where("user_id =:id", { id: guestUserId })
+            .execute();
+
         const result = await getConnection()
             .createQueryBuilder()
             .update(Cart)
-            .set({ userId: user.userId })
+            .set({ userId: user.userId, guestUserId: null })
             .where("guest_user_id =:id", { id: guestUserId })
             .execute();
         //console.log(result);
-
+        await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(User)
+            .where(
+                `"user_id" = '${guestUserId}'`
+            )
+            .execute()
         return {
             message: `Guest user cart successfully maped `
         }
     }
     async updateCart(updateCartDto: UpdateCartDto, user: User) {
-        const { cart_id, travelers } = updateCartDto
+        const { cart_id, travelers, guest_id } = updateCartDto
+
+        let where
+        if (user) {
+            where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."id" = '${cart_id}') `
+        } else {
+            if (!uuidValidator(guest_id)) {
+                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+            }
+            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${guest_id}') AND ("cart"."id" = '${cart_id}') `
+        }
 
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
-            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."id" = '${cart_id}') `)
+            .where(where)
         const result = await query.getOne();
 
         if (!result) {

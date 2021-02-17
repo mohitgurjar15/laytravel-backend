@@ -56,7 +56,7 @@ export class CartController {
     @HttpCode(200)
     async updateCart(
         @Body() updateCart: UpdateCartDto,
-        @GetUser() user: User,
+        @LogInUser() user: User,
         @Req() req,
     ) {
         return await this.cartService.updateCart(updateCart, user);

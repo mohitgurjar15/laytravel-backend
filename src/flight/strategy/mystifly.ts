@@ -569,7 +569,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment['flightnumber'][0];
                     stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['cabinclasscode'][0]);
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['journeyduration'][0] * 60);
-                    stop.duration = `${stopDuration.hours} h ${stopDuration.minutes} m`
+                    stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`
                     stop.airline = flightSegment['marketingairlinecode'][0];
                     stop.remaining_seat = parseInt(flightSegment['seatsremaining'][0]['number'][0]);
                     stop.below_minimum_seat = flightSegment['seatsremaining'][0]['belowminimum'][0] == 'true' ? true : false;
@@ -850,7 +850,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment['flightnumber'][0];
                     stop.cabin_class = this.getKeyByValue(flightClass, flightSegment['cabinclasscode'][0]);
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(flightSegment['journeyduration'][0] * 60);
-                    stop.duration = `${stopDuration.hours} h ${stopDuration.minutes} m`
+                    stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`
                     stop.airline = flightSegment['marketingairlinecode'][0];
                     stop.remaining_seat = parseInt(flightSegment['seatsremaining'][0]['number'][0]);
                     stop.below_minimum_seat = flightSegment['seatsremaining'][0]['belowminimum'][0] == 'true' ? true : false;
