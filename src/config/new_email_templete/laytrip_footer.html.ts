@@ -1,4 +1,4 @@
-import { NewEmailAssets } from "../base-url";
+import { FacebookSocialLink, InstagramSocialLink, NewEmailAssets, TwitterSocialLink } from "../base-url";
 
 export const LaytripFooter = `<tr>
 <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
@@ -20,19 +20,19 @@ export const LaytripFooter = `<tr>
         <tbody>
             <tr>
                 <td align="left" valign="middle">
-                    <a href="#" target="_blank" style="text-decoration: none;">
+                    <a href="${InstagramSocialLink}" target="_blank" style="text-decoration: none;">
                         <img src="${NewEmailAssets}/instagram.png" alt="instagram" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 14px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
-                    <a href="#" target="_blank" style="text-decoration: none;">
+                    <a href="${TwitterSocialLink}" target="_blank" style="text-decoration: none;">
                         <img src="${NewEmailAssets}/twitter.png" alt="twitter" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 14px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
-                    <a href="#" target="_blank" style="text-decoration: none;">
+                    <a href="${FacebookSocialLink}" target="_blank" style="text-decoration: none;">
                         <img src="${NewEmailAssets}/facebook.png" alt="facebook" width="40" height="40" border="0" style="display: block; max-width:40px;font-size: 14px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
