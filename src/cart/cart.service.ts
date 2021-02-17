@@ -217,6 +217,13 @@ export class CartService {
             .set({ createdBy: user.userId, parentGuestUserId: null })
             .where("parent_guest_user_id =:id", { id: guestUserId })
             .execute();
+        
+            await getConnection()
+            .createQueryBuilder()
+            .update(User)
+            .set({ updatedBy: user.userId, parentGuestUserId: null })
+            .where("updated_by =:id", { id: guestUserId })
+            .execute();
 
         await getConnection()
             .createQueryBuilder()
