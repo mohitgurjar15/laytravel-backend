@@ -13,6 +13,7 @@ import * as config from "config";
 import { Role } from 'src/enum/role.enum';
 import { massCommunicationMail } from 'src/config/email_template/mass-communication.html';
 import { TestTemplete } from 'src/config/new_email_templete/test.html';
+import { LaytripFlightBookingConfirmtionMail } from 'src/config/new_email_templete/flight-booking-confirmation.html';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -187,7 +188,7 @@ export class GeneralService {
                 from: mailConfig.from,
                 cc: mailConfig.BCC,
                 subject: subject,
-                html: TestTemplete,
+                html: 'aa'//await LaytripFlightBookingConfirmtionMail(),
             })
             .then((res) => {
                 console.log("res", res);

@@ -118,28 +118,19 @@ export class BookingService {
 				})
 			}
 
-			var paymentDetail = bookingData.bookingInstalments;
-			var installmentDetail = [];
 			var EmailSubject = '';
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
-				EmailSubject = "Flight Booking Details";
-				for await (const installment of paymentDetail) {
-					installmentDetail.push({
-						amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(installment.amount)),
-						date: await this.formatDate(installment.instalmentDate),
-						status: installment.paymentStatus == 1 ? 'Confirm' : 'Pending'
-					})
-				}
+				EmailSubject = "Flight Booking Details"
 			}
 			else {
 				EmailSubject = "Flight Booking Confirmation";
-				installmentDetail.push({
-					amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
-					date: await this.formatDate(bookingData.bookingDate),
-					status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
-				})
 			}
 
+			const installmentDetail = {
+				amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
+				date: await this.formatDate(bookingData.bookingDate),
+				status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
+			}
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
@@ -167,7 +158,12 @@ export class BookingService {
 			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
-
+			param.cart = {
+				cartId:bookingData.cart.laytripCartId,
+				totalAmount : bookingData.totalAmount
+			}
+			param.bookingType = bookingData.bookingType
+			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM?'confirmed':'pending' 
 
 			//console.log(param);
 			// //console.log(param.flightData);
@@ -510,7 +506,7 @@ export class BookingService {
 							instalmentDate: baseInstallments.instalmentDate,
 							instalmentStatus: baseInstallments.instalmentStatus,
 							attempt: baseInstallments.attempt,
-							amount: amount
+							amount: Generic.formatPriceDecimal(amount)
 						}
 						cartInstallments.push(installment)
 					}
@@ -537,7 +533,7 @@ export class BookingService {
 						traveler.userData.dob = traveler.userData.dob || ''
 					}
 				}
-
+				
 				if (cartInstallments.length > 0) {
 					//cartInstallments.sort((o) => new Date( o.instalmentDate ) );
 					cartInstallments.sort((a, b) => {
@@ -551,16 +547,18 @@ export class BookingService {
 
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
+				const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
+				cartResponce['is_installation_on_track'] = trackReport?.attempt == 1 && trackReport.paymentStatus == PaymentStatus.CONFIRM ? true : false
 				cartResponce['checkInDate'] = cart.checkInDate
 				cartResponce['checkOutDate'] = cart.checkOutDate
 				cartResponce['laytripCartId'] = cart.laytripCartId
 				cartResponce['bookingDate'] = cart.bookingDate
 				cartResponce['booking'] = cart.bookings
 				cartResponce['cartInstallments'] = cartInstallments
-				cartResponce['paidAmount'] = paidAmount
-				cartResponce['remainAmount'] = remainAmount
+				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)
+				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)
 				cartResponce['pandinginstallment'] = pandinginstallment
-				cartResponce['totalAmount'] = totalAmount
+				cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
 				cartResponce['nextInstallmentDate'] = nextInstallmentDate
 				cartResponce['currency'] = currency
 				if (installmentType) {
@@ -619,7 +617,7 @@ export class BookingService {
 				module_id,
 				supplier_id,
 				booking_through,
-				transaction_token,search } = bookingFilterDto
+				transaction_token, search } = bookingFilterDto
 
 			const date = new Date();
 			var todayDate = date.toISOString();
@@ -712,7 +710,7 @@ export class BookingService {
 							instalmentDate: baseInstallments.instalmentDate,
 							instalmentStatus: baseInstallments.instalmentStatus,
 							attempt: baseInstallments.attempt,
-							amount: amount
+							amount: Generic.formatPriceDecimal(amount)
 						}
 						cartInstallments.push(installment)
 					}
@@ -736,6 +734,11 @@ export class BookingService {
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
+					for await (const traveler of booking.travelers) {
+						delete traveler.userData.salt
+						delete traveler.userData.password
+						traveler.userData.dob = traveler.userData.dob || ''
+					}
 				}
 
 				if (cartInstallments.length > 0) {
@@ -750,14 +753,16 @@ export class BookingService {
 
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
+				const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
+				cartResponce['is_installation_on_track'] = trackReport?.attempt == 1 && trackReport.paymentStatus == PaymentStatus.CONFIRM ? true : false
 				cartResponce['checkInDate'] = cart.checkInDate
 				cartResponce['checkOutDate'] = cart.checkOutDate
 				cartResponce['laytripCartId'] = cart.laytripCartId
 				cartResponce['bookingDate'] = cart.bookingDate
 				cartResponce['booking'] = cart.bookings
 				cartResponce['cartInstallments'] = cartInstallments
-				cartResponce['paidAmount'] = paidAmount
-				cartResponce['remainAmount'] = remainAmount
+				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)
+				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)
 				cartResponce['pandinginstallment'] = pandinginstallment
 				cartResponce['currency'] = currency
 				cartResponce['nextInstallmentDate'] = cart.bookings[0].nextInstalmentDate
@@ -859,7 +864,7 @@ export class BookingService {
 						instalmentDate: baseInstallments.instalmentDate,
 						instalmentStatus: baseInstallments.instalmentStatus,
 						attempt: baseInstallments.attempt,
-						amount: amount
+						amount: Generic.formatPriceDecimal(amount)
 					}
 					cartInstallments.push(installment)
 				}
@@ -887,6 +892,11 @@ export class BookingService {
 				delete booking.module.testCredential
 				delete booking.module.mode
 				delete booking.module.status
+				for await (const traveler of booking.travelers) {
+					delete traveler.userData.salt
+					delete traveler.userData.password
+					traveler.userData.dob = traveler.userData.dob || ''
+				}
 			}
 
 			if (cartInstallments.length > 0) {
@@ -901,17 +911,19 @@ export class BookingService {
 
 			let cartResponce = {}
 			cartResponce['id'] = cart.id
+			const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
+				cartResponce['is_installation_on_track'] = trackReport?.attempt == 1 && trackReport.paymentStatus == PaymentStatus.CONFIRM ? true : false
 			cartResponce['checkInDate'] = cart.checkInDate
 			cartResponce['checkOutDate'] = cart.checkOutDate
 			cartResponce['laytripCartId'] = cart.laytripCartId
 			cartResponce['bookingDate'] = cart.bookingDate
 			cartResponce['booking'] = cart.bookings
 			cartResponce['cartInstallments'] = cartInstallments
-			cartResponce['paidAmount'] = paidAmount
-			cartResponce['remainAmount'] = remainAmount
+			cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)
+			cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)
 			cartResponce['pandinginstallment'] = pandinginstallment
 			cartResponce['currency'] = currency
-			cartResponce['totalAmount'] = totalAmount
+			cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
 			if (cart.bookings[0].nextInstalmentDate) {
 				cartResponce['nextInstalmentDate'] = cart.bookings[0].nextInstalmentDate
 			}
@@ -925,12 +937,6 @@ export class BookingService {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
 					case 404:
-						if (
-							error.response.message ==
-							"This user does not exist&&&email&&&This user does not exist"
-						) {
-							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
-						}
 						throw new NotFoundException(error.response.message);
 					case 409:
 						throw new ConflictException(error.response.message);

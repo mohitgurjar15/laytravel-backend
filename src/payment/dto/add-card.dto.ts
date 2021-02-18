@@ -21,12 +21,9 @@ export class AddCardDto{
     })
     first_name:string;
 
-    @IsNotEmpty({
-		message: `Please enter card holder name.&&&last_name&&&Please enter card holder name.`,
-	})
-    @ApiProperty({
-        description:`Card holder name`,
-        example:`Jon Doe`
+    @ApiPropertyOptional({
+        description:`Card holder last name`,
+        example:`Doe`
     })
     last_name:string;
 
