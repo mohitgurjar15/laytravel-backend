@@ -1,4 +1,4 @@
-import { BadRequestException, CACHE_MANAGER, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, ConflictException, ForbiddenException, Inject, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/entity/user.entity';
 import { ModulesName } from 'src/enum/module.enum';
 import { FlightService } from 'src/flight/flight.service';
@@ -47,79 +47,110 @@ export class CartService {
     ) { }
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
-        let userData;
-        const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
-        var tDate = new Date();
+        try {
+            let userData;
+            const { module_id, route_code, property_id, room_id, rate_plan_code, check_in_date, check_out_date, adult_count, number_and_children_ages = [] } = addInCartDto
+            var tDate = new Date();
 
-        var todayDate = tDate.toISOString().split(' ')[0];
-        todayDate = todayDate
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "");
-        let where = `AND ("cart"."user_id" = '${user.user_id}')`
-        if (user.roleId == Role.GUEST_USER) {
-            if (!uuidValidator(user.user_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+            var todayDate = tDate.toISOString().split(' ')[0];
+            todayDate = todayDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            let where = `AND ("cart"."user_id" = '${user.user_id}')`
+            if (user.roleId == Role.GUEST_USER) {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+                }
+                where = `AND ("cart"."guest_user_id" = '${user.user_id}')`
             }
-            where = `AND ("cart"."guest_user_id" = '${user.user_id}')`
-        }
-        let query = getConnection()
-            .createQueryBuilder(Cart, "cart")
-            .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`)
-        const result = await query.getCount();
-        if (result >= 5) {
-            throw new BadRequestException(`In your cart you have add maximum 5 item.`)
-        }
-        console.log('user', user);
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(`(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`)
+            const result = await query.getCount();
+            if (result >= 5) {
+                throw new BadRequestException(`In your cart you have add maximum 5 item.`)
+            }
+            console.log('user', user);
 
-        userData = await getConnection()
-            .createQueryBuilder(User, "user")
-            .where(`user_id = '${user.user_id}'`)
-            .getOne()
+            userData = await getConnection()
+                .createQueryBuilder(User, "user")
+                .where(`user_id = '${user.user_id}'`)
+                .getOne()
 
 
 
 
 
 
-        // let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
+            // let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
 
-        // for await (const traveler of travelers) {
-        //     if (!traveler.traveler_id || !uuidValidator(traveler.traveler_id)) {
-        //         throw new BadRequestException('Given traveler is not valid')
-        //     }
+            // for await (const traveler of travelers) {
+            //     if (!traveler.traveler_id || !uuidValidator(traveler.traveler_id)) {
+            //         throw new BadRequestException('Given traveler is not valid')
+            //     }
 
-        //     let where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role})) AND ("User"."user_id" = '${traveler.traveler_id}')`;
-        //     let travelerAvailable = await getConnection()
-        //         .createQueryBuilder(User, "User")
-        //         .where(where)
-        //         .getCount()
+            //     let where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role})) AND ("User"."user_id" = '${traveler.traveler_id}')`;
+            //     let travelerAvailable = await getConnection()
+            //         .createQueryBuilder(User, "User")
+            //         .where(where)
+            //         .getCount()
 
-        //     if (!travelerAvailable) {
-        //         throw new BadRequestException('Given traveler is not available')
-        //     }
-        // }
+            //     if (!travelerAvailable) {
+            //         throw new BadRequestException('Given traveler is not available')
+            //     }
+            // }
 
-        switch (module_id) {
-            case ModulesName.HOTEL:
-                break;
+            switch (module_id) {
+                case ModulesName.HOTEL:
+                    break;
 
-            case ModulesName.FLIGHT:
-                return await this.addFlightDataInCart(route_code, userData, Header);
-                break;
-            case ModulesName.VACATION_RENTEL:
-                const dto = {
-                    "property_id": property_id,
-                    "room_id": room_id,
-                    "rate_plan_code": rate_plan_code,
-                    "check_in_date": check_in_date,
-                    "check_out_date": check_out_date,
-                    "adult_count": adult_count,
-                    "number_and_children_ages": number_and_children_ages
-                };
-                return await this.addHomeRentalDataInCart(dto, userData, Header);
-                break;
-            default:
-                break;
+                case ModulesName.FLIGHT:
+                    return await this.addFlightDataInCart(route_code, userData, Header);
+                    break;
+                case ModulesName.VACATION_RENTEL:
+                    const dto = {
+                        "property_id": property_id,
+                        "room_id": room_id,
+                        "rate_plan_code": rate_plan_code,
+                        "check_in_date": check_in_date,
+                        "check_out_date": check_out_date,
+                        "adult_count": adult_count,
+                        "number_and_children_ages": number_and_children_ages
+                    };
+                    return await this.addHomeRentalDataInCart(dto, userData, Header);
+                    break;
+                default:
+                    break;
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
     }
 
@@ -201,109 +232,171 @@ export class CartService {
     }
 
     async mapGuestUser(guestUserId, user: User) {
-        if (!uuidValidator(guestUserId)) {
-            throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
-        }
-        await getConnection()
-            .createQueryBuilder()
-            .update(UserCard)
-            .set({ userId: user.userId, guestUserId: null })
-            .where("guest_user_id =:id", { id: guestUserId })
-            .execute();
-
-        await getConnection()
-            .createQueryBuilder()
-            .update(User)
-            .set({ createdBy: user.userId, parentGuestUserId: null })
-            .where("parent_guest_user_id =:id", { id: guestUserId })
-            .execute();
-        
+        try {
+            if (!uuidValidator(guestUserId)) {
+                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+            }
             await getConnection()
-            .createQueryBuilder()
-            .update(User)
-            .set({ updatedBy: user.userId, parentGuestUserId: null })
-            .where("updated_by =:id", { id: guestUserId })
-            .execute();
+                .createQueryBuilder()
+                .update(UserCard)
+                .set({ userId: user.userId, guestUserId: null })
+                .where("guest_user_id =:id", { id: guestUserId })
+                .execute();
 
-        await getConnection()
-            .createQueryBuilder()
-            .update(SearchLog)
-            .set({ userId: user.userId })
-            .where("user_id =:id", { id: guestUserId })
-            .execute();
+            await getConnection()
+                .createQueryBuilder()
+                .update(User)
+                .set({ createdBy: user.userId, parentGuestUserId: null })
+                .where("parent_guest_user_id =:id", { id: guestUserId })
+                .execute();
 
-        const result = await getConnection()
-            .createQueryBuilder()
-            .update(Cart)
-            .set({ userId: user.userId, guestUserId: null })
-            .where("guest_user_id =:id", { id: guestUserId })
-            .execute();
-        //console.log(result);
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(User)
-            .where(
-                `"user_id" = '${guestUserId}'`
-            )
-            .execute()
-        return {
-            message: `Guest user cart successfully maped `
+            await getConnection()
+                .createQueryBuilder()
+                .update(User)
+                .set({ updatedBy: user.userId, parentGuestUserId: null })
+                .where("updated_by =:id", { id: guestUserId })
+                .execute();
+
+            await getConnection()
+                .createQueryBuilder()
+                .update(SearchLog)
+                .set({ userId: user.userId })
+                .where("user_id =:id", { id: guestUserId })
+                .execute();
+
+            const result = await getConnection()
+                .createQueryBuilder()
+                .update(Cart)
+                .set({ userId: user.userId, guestUserId: null })
+                .where("guest_user_id =:id", { id: guestUserId })
+                .execute();
+            //console.log(result);
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(User)
+                .where(
+                    `"user_id" = '${guestUserId}'`
+                )
+                .execute()
+            return {
+                message: `Guest user cart successfully maped `
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
     }
     async updateCart(updateCartDto: UpdateCartDto, user) {
-        const { cart_id, travelers} = updateCartDto
+        try {
+            const { cart_id, travelers } = updateCartDto
 
-        let where
-        if (user.roleId != Role.GUEST_USER) {
-            where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."id" = '${cart_id}') `
-        } else {
-            if (!uuidValidator(user.user_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
-            }
-            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = '${cart_id}') `
-        }
-
-        let query = getConnection()
-            .createQueryBuilder(Cart, "cart")
-            .where(where)
-        const result = await query.getOne();
-
-        if (!result) {
-            throw new BadRequestException(`Given cart item not found.`)
-        }
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(CartTravelers)
-            .where(
-                `"cart_id" = '${result.id}'`
-            )
-            .execute()
-        for (let index = 0; index < travelers.length; index++) {
-            const element = travelers[index];
-            if (!uuidValidator(element.traveler_id)) {
-                throw new NotFoundException('Traveler id not found please change it')
+            let where
+            if (user.roleId != Role.GUEST_USER) {
+                where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."id" = '${cart_id}') `
+            } else {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+                }
+                where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = '${cart_id}') `
             }
 
-            for (let i = 0; i < travelers.length; i++) {
-                const traveler = travelers[i];
-                if (i != index && element.traveler_id == traveler.traveler_id) {
-                    throw new ConflictException(`Dublicate traveler found in list. please change it.`)
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(where)
+            const result = await query.getOne();
+
+            if (!result) {
+                throw new BadRequestException(`Given cart item not found.`)
+            }
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(
+                    `"cart_id" = '${result.id}'`
+                )
+                .execute()
+            for (let index = 0; index < travelers.length; index++) {
+                const element = travelers[index];
+                if (!uuidValidator(element.traveler_id)) {
+                    throw new NotFoundException('Traveler id not found please change it')
+                }
+
+                for (let i = 0; i < travelers.length; i++) {
+                    const traveler = travelers[i];
+                    if (i != index && element.traveler_id == traveler.traveler_id) {
+                        throw new ConflictException(`Dublicate traveler found in list. please change it.`)
+                    }
                 }
             }
-        }
 
-        for await (const traveler of travelers) {
-            let cartTraveler = new CartTravelers()
-            cartTraveler.cartId = result.id
-            cartTraveler.userId = traveler.traveler_id
-            cartTraveler.baggageServiceCode = traveler.baggage_service_code
-            await cartTraveler.save();
-        }
+            for await (const traveler of travelers) {
+                let cartTraveler = new CartTravelers()
+                cartTraveler.cartId = result.id
+                cartTraveler.userId = traveler.traveler_id
+                cartTraveler.baggageServiceCode = traveler.baggage_service_code
+                await cartTraveler.save();
+            }
 
-        return {
-            message: `Cart item updated successfully`
+            return {
+                message: `Cart item updated successfully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
     }
 
@@ -340,172 +433,203 @@ export class CartService {
     }
 
     async listCart(dto: ListCartDto, user, headers) {
-        const { live_availiblity} = dto
-        var tDate = new Date();
+        try {
+            const { live_availiblity } = dto
+            var tDate = new Date();
 
 
-        var todayDate = tDate.toISOString().split(' ')[0];
-        todayDate = todayDate
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "");
+            var todayDate = tDate.toISOString().split(' ')[0];
+            todayDate = todayDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
 
-        let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
-        if (user.roleId == Role.GUEST_USER) {
-            if (!uuidValidator(user.user_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+            let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
+            if (user.roleId == Role.GUEST_USER) {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+                }
+                where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
             }
-            where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
-        }
-        let query = getConnection()
-            .createQueryBuilder(Cart, "cart")
-            .leftJoinAndSelect("cart.module", "module")
-            .leftJoinAndSelect("cart.travelers", "travelers")
-            //.leftJoinAndSelect("travelers.userData", "userData")
-            .select(["cart.id",
-                "cart.userId",
-                "cart.guestUserId",
-                "cart.moduleId",
-                "cart.moduleInfo",
-                "cart.expiryDate",
-                "cart.isDeleted",
-                "cart.createdDate",
-                "module.id",
-                "module.name",
-                "travelers.id",
-                "travelers.userId",
-                "travelers.baggageServiceCode"])
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .leftJoinAndSelect("cart.module", "module")
+                .leftJoinAndSelect("cart.travelers", "travelers")
+                //.leftJoinAndSelect("travelers.userData", "userData")
+                .select(["cart.id",
+                    "cart.userId",
+                    "cart.guestUserId",
+                    "cart.moduleId",
+                    "cart.moduleInfo",
+                    "cart.expiryDate",
+                    "cart.isDeleted",
+                    "cart.createdDate",
+                    "module.id",
+                    "module.name",
+                    "travelers.id",
+                    "travelers.userId",
+                    "travelers.baggageServiceCode"])
 
-            .where(where)
-            .orderBy(`cart.id`, 'ASC')
-            .limit(5)
-        const [result, count] = await query.getManyAndCount();
+                .where(where)
+                .orderBy(`cart.id`, 'ASC')
+                .limit(5)
+            const [result, count] = await query.getManyAndCount();
 
-        if (!result.length) {
-            throw new NotFoundException(`Cart is empty`)
-        }
-        let responce = []
-        var flightRequest = [];
-        let flightResponse = [];
-        if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
-            await this.flightService.validateHeaders(headers);
-
-            const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-
-            var resultIndex = 0;
-
-            const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
-
-            const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
-
-            let module = await getConnection()
-                .createQueryBuilder(Module, "module")
-                .where("module.name = :name", { name: 'flight' })
-                .getOne();
-
-            if (!module) {
-                throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+            if (!result.length) {
+                throw new NotFoundException(`Cart is empty`)
             }
+            let responce = []
+            var flightRequest = [];
+            let flightResponse = [];
+            if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
+                await this.flightService.validateHeaders(headers);
 
-            const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
-            for await (const cart of result) {
-                const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
+                const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 
-                if (bookingType == 'oneway') {
+                var resultIndex = 0;
 
-                    let dto = {
-                        "source_location": cart.moduleInfo[0].departure_code,
-                        "destination_location": cart.moduleInfo[0].arrival_code,
-                        "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
-                        "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-                        "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
-                        "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
-                        "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
+                const mystiflyConfig = await new Promise((resolve) => resolve(mystifly.getMystiflyCredential()))
+
+                const sessionToken = await new Promise((resolve) => resolve(mystifly.startSession()))
+
+                let module = await getConnection()
+                    .createQueryBuilder(Module, "module")
+                    .where("module.name = :name", { name: 'flight' })
+                    .getOne();
+
+                if (!module) {
+                    throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
+                }
+
+                const currencyDetails = await Generic.getAmountTocurrency(headers.currency);
+                for await (const cart of result) {
+                    const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
+
+                    if (bookingType == 'oneway') {
+
+                        let dto = {
+                            "source_location": cart.moduleInfo[0].departure_code,
+                            "destination_location": cart.moduleInfo[0].arrival_code,
+                            "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
+                            "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+                            "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
+                            "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
+                            "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0
+                        }
+                        //console.log(dto);
+
+                        flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
                     }
-                    //console.log(dto);
+                    else {
 
-                    flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.oneWaySearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+                        let dto = {
+                            "source_location": cart.moduleInfo[0].departure_code,
+                            "destination_location": cart.moduleInfo[0].arrival_code,
+                            "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
+                            "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+                            "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
+                            "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
+                            "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
+                            "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
+                        }
+                        //console.log(dto);
+                        flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
+                    }
+                    resultIndex++;
+                }
+                flightResponse = await Promise.all(flightRequest);
+            }
+
+            for (let index = 0; index < result.length; index++) {
+                const cart = result[index];
+
+                let newCart = {}
+
+                if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
+                    newCart['oldModuleInfo'] = cart.moduleInfo
+                    const value = await this.flightAvailiblity(cart, flightResponse[index])
+                    //return value
+                    if (typeof value.message == "undefined") {
+
+                        newCart['moduleInfo'] = [value]
+                        newCart['is_available'] = true
+
+                        //cart.moduleInfo = [value]
+                        // await getConnection()
+                        //     .createQueryBuilder()
+                        //     .update(Cart)
+                        //     .set({ moduleInfo: [value] })
+                        //     .where("id = :id", { id: cart.id })
+                        //     .execute();
+                        // await cart.save()
+                    } else {
+                        newCart['is_available'] = false
+                        newCart['moduleInfo'] = cart.moduleInfo
+                        await getConnection()
+                            .createQueryBuilder()
+                            .delete()
+                            .from(CartTravelers)
+                            .where(
+                                `"cart_id" = '${cart.id}'`
+                            )
+                            .execute()
+                        await getConnection()
+                            .createQueryBuilder()
+                            .delete()
+                            .from(Cart)
+                            .where(
+                                `"id" = '${cart.id}'`
+                            )
+                            .execute()
+                    }
                 }
                 else {
-
-                    let dto = {
-                        "source_location": cart.moduleInfo[0].departure_code,
-                        "destination_location": cart.moduleInfo[0].arrival_code,
-                        "departure_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].departure_date),
-                        "flight_class": cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-                        "adult_count": cart.moduleInfo[0].adult_count ? cart.moduleInfo[0].adult_count : 0,
-                        "child_count": cart.moduleInfo[0].child_count ? cart.moduleInfo[0].child_count : 0,
-                        "infant_count": cart.moduleInfo[0].infant_count ? cart.moduleInfo[0].infant_count : 0,
-                        "arrival_date": await this.flightService.changeDateFormat(cart.moduleInfo[0].arrival_date)
-                    }
-                    //console.log(dto);
-                    flightRequest[resultIndex] = new Promise((resolve) => resolve(mystifly.roundTripSearchZip(dto, user, mystiflyConfig, sessionToken, module, currencyDetails)));
-                }
-                resultIndex++;
-            }
-            flightResponse = await Promise.all(flightRequest);
-        }
-
-        for (let index = 0; index < result.length; index++) {
-            const cart = result[index];
-
-            let newCart = {}
-
-            if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
-                newCart['oldModuleInfo'] = cart.moduleInfo
-                const value = await this.flightAvailiblity(cart, flightResponse[index])
-                //return value
-                if (typeof value.message == "undefined") {
-
-                    newCart['moduleInfo'] = [value]
-                    newCart['is_available'] = true
-
-                    //cart.moduleInfo = [value]
-                    // await getConnection()
-                    //     .createQueryBuilder()
-                    //     .update(Cart)
-                    //     .set({ moduleInfo: [value] })
-                    //     .where("id = :id", { id: cart.id })
-                    //     .execute();
-                    // await cart.save()
-                } else {
-                    newCart['is_available'] = false
                     newCart['moduleInfo'] = cart.moduleInfo
-                    await getConnection()
-                        .createQueryBuilder()
-                        .delete()
-                        .from(CartTravelers)
-                        .where(
-                            `"cart_id" = '${cart.id}'`
-                        )
-                        .execute()
-                    await getConnection()
-                        .createQueryBuilder()
-                        .delete()
-                        .from(Cart)
-                        .where(
-                            `"id" = '${cart.id}'`
-                        )
-                        .execute()
+                    //newCart['is_available'] = false
+                }
+                newCart['id'] = cart.id
+                newCart['userId'] = cart.userId
+                newCart['guestUserId'] = cart.guestUserId
+                newCart['moduleId'] = cart.moduleId
+                newCart['expiryDate'] = cart.expiryDate
+                newCart['isDeleted'] = cart.isDeleted
+                newCart['createdDate'] = cart.createdDate
+                newCart['type'] = cart.module.name
+                newCart['travelers'] = cart.travelers
+                responce.push(newCart)
+            }
+            return {
+                data: responce,
+                count: count
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
                 }
             }
-            else {
-                newCart['moduleInfo'] = cart.moduleInfo
-                //newCart['is_available'] = false
-            }
-            newCart['id'] = cart.id
-            newCart['userId'] = cart.userId
-            newCart['guestUserId'] = cart.guestUserId
-            newCart['moduleId'] = cart.moduleId
-            newCart['expiryDate'] = cart.expiryDate
-            newCart['isDeleted'] = cart.isDeleted
-            newCart['createdDate'] = cart.createdDate
-            newCart['type'] = cart.module.name
-            newCart['travelers'] = cart.travelers
-            responce.push(newCart)
-        }
-        return {
-            data: responce,
-            count: count
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
     }
 
@@ -542,136 +666,198 @@ export class CartService {
     }
 
     async deleteFromCart(id: number, user) {
-        let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`
-        if (user.roleId == Role.GUEST_USER) {
-            if (!uuidValidator(user.user_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+        try {
+            let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`
+            if (user.roleId == Role.GUEST_USER) {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+                }
+                where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = ${id})`
             }
-            where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = ${id})`
-        }
 
-        let query = getConnection()
-            .createQueryBuilder(Cart, "cart")
-            .where(where)
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(where)
 
 
-        const cartItem = await query.getOne();
+            const cartItem = await query.getOne();
 
-        if (!cartItem) {
-            throw new NotFoundException(`Given item not found`)
-        }
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(CartTravelers)
-            .where(
-                `"cart_id" = '${id}'`
-            )
-            .execute()
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(Cart)
-            .where(
-                `"id" = '${id}'`
-            )
-            .execute()
+            if (!cartItem) {
+                throw new NotFoundException(`Given item not found`)
+            }
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(
+                    `"cart_id" = '${id}'`
+                )
+                .execute()
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(
+                    `"id" = '${id}'`
+                )
+                .execute()
 
-        return {
-            message: `Item removed successfully`
+            return {
+                message: `Item removed successfully`
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
     }
 
 
     async bookCart(bookCart: CartBookDto, user: User, Headers) {
-        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment } = bookCart
+        try {
+            const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment } = bookCart
 
 
-        if (cart.length > 5) {
-            throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
-        }
-        let cartIds: number[] = []
-        for await (const i of cart) {
-            cartIds.push(i.cart_id)
-        }
+            if (cart.length > 5) {
+                throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
+            }
+            let cartIds: number[] = []
+            for await (const i of cart) {
+                cartIds.push(i.cart_id)
+            }
 
-        let query = getConnection()
-            .createQueryBuilder(Cart, "cart")
-            .leftJoinAndSelect("cart.module", "module")
-            .leftJoinAndSelect("cart.travelers", "travelers")
-            .leftJoinAndSelect("travelers.userData", "userData")
-            .select(["cart.id",
-                "cart.userId",
-                "cart.moduleId",
-                "cart.moduleInfo",
-                "cart.expiryDate",
-                "cart.isDeleted",
-                "cart.createdDate",
-                "module.id",
-                "module.name",
-                "travelers.id",
-                "travelers.baggageServiceCode",
-                "travelers.userId",
-                "userData.roleId",
-                "userData.email",
-                "userData.firstName",
-                "userData.middleName"])
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .leftJoinAndSelect("cart.module", "module")
+                .leftJoinAndSelect("cart.travelers", "travelers")
+                .leftJoinAndSelect("travelers.userData", "userData")
+                .select(["cart.id",
+                    "cart.userId",
+                    "cart.moduleId",
+                    "cart.moduleInfo",
+                    "cart.expiryDate",
+                    "cart.isDeleted",
+                    "cart.createdDate",
+                    "module.id",
+                    "module.name",
+                    "travelers.id",
+                    "travelers.baggageServiceCode",
+                    "travelers.userId",
+                    "userData.roleId",
+                    "userData.email",
+                    "userData.firstName",
+                    "userData.middleName"])
 
-            .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
-            .orderBy(`cart.id`, 'DESC')
-            .limit(5)
-        const [result, count] = await query.getManyAndCount();
+                .where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
+                .orderBy(`cart.id`, 'DESC')
+                .limit(5)
+            const [result, count] = await query.getManyAndCount();
 
-        if (!result.length) {
-            throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
-        }
-        let smallestDate = ''
-        let largestDate = ''
-        for await (const item of result) {
-            if (item.moduleId == ModulesName.FLIGHT) {
-                const dipatureDate = await this.flightService.changeDateFormat(item.moduleInfo[0].departure_date)
-                if (smallestDate == '') {
-                    smallestDate = dipatureDate;
-                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
-                    smallestDate = dipatureDate;
-                }
-                //console.log(item.moduleInfo[0]);
+            if (!result.length) {
+                throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
+            }
+            let smallestDate = ''
+            let largestDate = ''
+            for await (const item of result) {
+                if (item.moduleId == ModulesName.FLIGHT) {
+                    const dipatureDate = await this.flightService.changeDateFormat(item.moduleInfo[0].departure_date)
+                    if (smallestDate == '') {
+                        smallestDate = dipatureDate;
+                    } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                        smallestDate = dipatureDate;
+                    }
+                    //console.log(item.moduleInfo[0]);
 
-                const arrivalDate = await this.flightService.changeDateFormat(item.moduleInfo[0].arrival_date)
-                if (largestDate == '') {
-                    largestDate = arrivalDate;
-                } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                    largestDate = arrivalDate;
+                    const arrivalDate = await this.flightService.changeDateFormat(item.moduleInfo[0].arrival_date)
+                    if (largestDate == '') {
+                        largestDate = arrivalDate;
+                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                        largestDate = arrivalDate;
+                    }
                 }
             }
-        }
-        const cartBook = new CartBooking
-        cartBook.id = uuidv4();
-        cartBook.laytripCartId = `LTC${uniqid.time().toUpperCase()}`;
-        cartBook.bookingDate = new Date()
-        cartBook.checkInDate = new Date(smallestDate)
-        cartBook.checkOutDate = new Date(largestDate)
-        cartBook.userId = user.userId
-        cartBook.bookingType = payment_type == "instalment" ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
-        cartBook.status == BookingStatus.PENDING
-        const cartData = await cartBook.save()
+            const cartBook = new CartBooking
+            cartBook.id = uuidv4();
+            cartBook.laytripCartId = `LTC${uniqid.time().toUpperCase()}`;
+            cartBook.bookingDate = new Date()
+            cartBook.checkInDate = new Date(smallestDate)
+            cartBook.checkOutDate = new Date(largestDate)
+            cartBook.userId = user.userId
+            cartBook.bookingType = payment_type == "instalment" ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
+            cartBook.status == BookingStatus.PENDING
+            const cartData = await cartBook.save()
 
-        let responce = []
-        for await (const item of result) {
-            switch (item.moduleId) {
-                case ModulesName.FLIGHT:
-                    let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
-                    responce.push(flightResponce)
-                    break;
+            let responce = []
+            for await (const item of result) {
+                switch (item.moduleId) {
+                    case ModulesName.FLIGHT:
+                        let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
+                        responce.push(flightResponce)
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
             }
+            let returnResponce = {}
+            returnResponce = cartData
+            returnResponce['carts'] = responce
+            return returnResponce
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
-        let returnResponce = {}
-        returnResponce = cartData
-        returnResponce['carts'] = responce
-        return returnResponce
     }
 
     async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string, cartData: CartBooking) {
@@ -839,51 +1025,80 @@ export class CartService {
     }
 
     async emptyCart(user) {
-        let where = `"user_id" = '${user?.user_id}'`
-        if (user.roleId == Role.GUEST_USER) {
-            if (!uuidValidator(user.user_id)) {
-                throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+        try {
+            let where = `"user_id" = '${user?.user_id}'`
+            if (user.roleId == Role.GUEST_USER) {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(`Please enter guest user id &&&user_id&&&${errorMessage}`)
+                }
+                where = `"guest_user_id" = '${user.user_id}'`
             }
-            where = `"guest_user_id" = '${user.user_id}'`
-        }
-        let carts = await getConnection()
-            .createQueryBuilder(Cart, "cart")
-            .where(where)
-            .getMany()
+            let carts = await getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(where)
+                .getMany()
 
-        if (!carts.length) {
-            throw new BadRequestException(`Your cart is alredy empty `)
-        }
-        let cartIds: number[] = []
-        for await (const cart of carts) {
-            cartIds.push(cart.id)
-        }
-
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(CartTravelers)
-            .where(
-                `"cart_id" in (:...cartIds)`, {
-                cartIds
+            if (!carts.length) {
+                throw new BadRequestException(`Your cart is alredy empty `)
             }
-            )
-            .execute()
-        await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(Cart)
-            .where(
-                `"id" in (:...cartIds)`, {
-                cartIds
+            let cartIds: number[] = []
+            for await (const cart of carts) {
+                cartIds.push(cart.id)
             }
-            )
-            .execute()
 
-        return {
-            message: `Your cart all itenery deleteted successufully `
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(
+                    `"cart_id" in (:...cartIds)`, {
+                    cartIds
+                }
+                )
+                .execute()
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(
+                    `"id" in (:...cartIds)`, {
+                    cartIds
+                }
+                )
+                .execute()
+
+            return {
+                message: `Your cart all itenery deleteted successufully `
+            }
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(error.response.message);
+                    case 406:
+                        throw new NotAcceptableException(error.response.message);
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
     }
-
-
 }
