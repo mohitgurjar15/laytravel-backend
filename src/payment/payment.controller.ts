@@ -1,5 +1,5 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query, Req } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
 import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
@@ -267,4 +267,32 @@ export class PaymentController {
 	) {
 		return await this.paymentService.manuallyTakePayment(manullyTakePaymentDto, user);
 	}
+
+
+	@Post('/validate')
+	@ApiHeader({
+		name: 'currency',
+		description: 'Enter currency code(ex. USD)',
+		example: 'USD'
+	})
+	@ApiHeader({
+		name: 'language',
+		description: 'Enter language code(ex. en)',
+	})
+	@ApiOperation({ summary: "Validate Booking" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 404, description: 'Flight is not available now' })
+	@HttpCode(200)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+	async validate(
+		@Body() bookDto: any,
+		@Req() req,
+		@LogInUser() user
+	) {
+		return bookDto;
+		// return await this.paymentService.validate(bookDto, req.headers, user);
+	}
+
 }

@@ -218,7 +218,7 @@ export class PaymentService {
 		}
 	}
 
-	async authorizeCard(card_id, amount, currency_code) {
+	async authorizeCard(card_id, amount, currency_code, browser_info?: any, redirection: string = '') {
 
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
@@ -231,13 +231,31 @@ export class PaymentService {
 			Authorization: authorization,
 		}
 
+		let transaction = {
+			payment_method_token: card_id,
+			amount: amount,
+			currency_code: currency_code,
+		};
+
+		if (redirection != '') {
+			let threeDS = {
+				redirect_url: redirection,
+				callback_url: redirection,
+				three_ds_version: "2",
+				attempt_3dsecure: true,
+				browser_info,
+			};
+
+			transaction = {
+				...transaction,
+				...threeDS
+			};
+		};
+
+
 		let url = `https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
 		let requestBody = {
-			transaction: {
-				payment_method_token: card_id,
-				amount: amount,
-				currency_code: currency_code,
-			},
+			transaction
 		};
 		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
 		// //console.log(authResult)
@@ -882,5 +900,35 @@ export class PaymentService {
 
 	}
 
+
+	async validate(bookDto, headers, user) {
+
+		let uuid = uuidv4();
+		let redirection = bookDto.site_url + '/book/charge/' + uuid;
+
+		let response: any = {
+			uuid,
+			redirection,
+			transaction: {}
+		};
+
+		let authCardResult = await this.authorizeCard(
+			bookDto.card_token,
+			3005,
+			// Math.ceil(1 * 100),
+			"USD",
+			bookDto.browser_info,
+			redirection
+		);
+
+		if (authCardResult.meta_data) {
+			let transaction = authCardResult.meta_data.transaction;
+			this.cacheManager.set(uuid, { bookDto, headers, user }, { ttl: 3000 });
+			response.transaction = transaction;
+			response.redirection = redirection + '?transaction_token=' + transaction.token;
+		}
+
+		return response;
+	}
 
 }
