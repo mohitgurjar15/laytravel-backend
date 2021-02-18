@@ -2,8 +2,11 @@ export class FlightBookingEmailParameterModel {
     user_name: string;
     flightData: flightData[];
     orderId: string;
-    paymentDetail: paymentDetail[]
+    paymentDetail: paymentDetail
     travelers: traveler[];
+    bookingType: number;
+    cart: cart;
+    bookingStatus:string;
     // pnr_no: string;
 }
 
@@ -18,6 +21,13 @@ class droups {
     flight: string;
     depature: depature;
     arrival: arrival;
+}
+
+class cart {
+    cartId: string;
+    totalAmount: string;
+    totalPaid?: string;
+    rememberAmount?: string;
 }
 
 class paymentDetail {
@@ -39,7 +49,7 @@ class depature {
     country: string;
     date: string;
     flight: string;
-    time:string;
+    time: string;
 }
 
 class arrival {
@@ -49,5 +59,5 @@ class arrival {
     country: string;
     date: string;
     flight: string;
-    time:string;
+    time: string;
 }

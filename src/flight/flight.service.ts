@@ -1922,26 +1922,19 @@ export class FlightService {
 			}
 
 			var paymentDetail = bookingData.bookingInstalments;
-			var installmentDetail = [];
 			var EmailSubject = '';
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
 				EmailSubject = "Flight Booking Details";
-				for await (const installment of paymentDetail) {
-					installmentDetail.push({
-
-						amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(installment.amount)),
-						date: await this.formatDate(installment.instalmentDate),
-						status: installment.paymentStatus == 1 ? 'Confirm' : 'Pending'
-					})
-				}
+				
 			}
 			else {
 				EmailSubject = "Flight Booking Confirmation"
-				installmentDetail.push({
-					amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
-					date: await this.formatDate(bookingData.bookingDate),
-					status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
-				})
+				
+			}
+			const installmentDetail = {
+				amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
+				date: await this.formatDate(bookingData.bookingDate),
+				status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 			}
 
 			var travelerInfo = [];
@@ -1971,6 +1964,13 @@ export class FlightService {
 			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
+			param.cart = {
+				cartId:bookingData.cart.laytripCartId,
+				totalAmount : bookingData.totalAmount
+			}
+			param.bookingType = bookingData.bookingType
+			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM?'confirmed':'pending' 
+
 
 			this.mailerService
 				.sendMail({
