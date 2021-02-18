@@ -531,6 +531,11 @@ export class BookingService {
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
+					for await (const traveler of booking.travelers) {
+						delete traveler.userData.salt
+						delete traveler.userData.password
+						traveler.userData.dob = traveler.userData.dob || ''
+					}
 				}
 
 				if (cartInstallments.length > 0) {
@@ -542,6 +547,7 @@ export class BookingService {
 					})
 					//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 				}
+				
 
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
