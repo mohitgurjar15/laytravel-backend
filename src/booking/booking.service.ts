@@ -17,7 +17,7 @@ import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-b
 import { ListBookingDto } from "./dto/list-booking.dto";
 import * as moment from 'moment';
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
-import * as config from "config";
+
 import { Booking } from "src/entity/booking.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { BookingType } from "src/enum/booking-type.enum";
@@ -25,6 +25,7 @@ import { exit } from "process";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { getConnection, getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
+import * as config from "config";
 const mailConfig = config.get("email");
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
@@ -56,7 +57,7 @@ export class BookingService {
 	async resendCartEmail(bookingDetail: getBookingDetailsDto) {
 		const { bookingId } = bookingDetail
 		const responce = await CartDataUtility.CartMailModelDataGenerate(bookingId)
-		if (responce.param) {
+		if (responce?.param) {
 			let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`:`BOOKING ID ${responce.param.orderId} CONFIRMATION`
 			this.mailerService
 				.sendMail({
@@ -76,7 +77,9 @@ export class BookingService {
 				message: `Cart booking email send succeessfully`
 			};
 		}else{
-			
+			return {
+				message: `We could not find your booking id please correct it.`
+			};
 		}
 
 
