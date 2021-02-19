@@ -7,6 +7,8 @@ import {
 	ForbiddenException,
 	NotAcceptableException,
 	UnauthorizedException,
+	Inject,
+	CACHE_MANAGER,
 } from "@nestjs/common";
 import { SaveCardDto } from "./dto/save-card.dto";
 import * as config from "config";
@@ -39,12 +41,13 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
-
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class PaymentService {
 	constructor(
 		private readonly mailerService: MailerService,
+		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
@@ -903,6 +906,7 @@ export class PaymentService {
 
 	async validate(bookDto, headers, user) {
 
+    console.log(bookDto, headers, user);
 		let uuid = uuidv4();
 		let redirection = bookDto.site_url + '/book/charge/' + uuid;
 
@@ -911,6 +915,7 @@ export class PaymentService {
 			redirection,
 			transaction: {}
 		};
+		
 
 		let authCardResult = await this.authorizeCard(
 			bookDto.card_token,
@@ -921,6 +926,7 @@ export class PaymentService {
 			redirection
 		);
 
+		// return authCardResult;
 		if (authCardResult.meta_data) {
 			let transaction = authCardResult.meta_data.transaction;
 			this.cacheManager.set(uuid, { bookDto, headers, user }, { ttl: 3000 });

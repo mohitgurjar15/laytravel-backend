@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { BookingRepository } from 'src/booking/booking.repository';
@@ -14,6 +14,7 @@ import { VacationRentalService } from './vacation-rental.service';
             [
                 BookingRepository
             ]),
+        CacheModule.register(),
     ],
     controllers: [VacationRentalController],
     providers: [VacationRentalService,PaymentService],

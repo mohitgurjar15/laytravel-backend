@@ -291,8 +291,8 @@ export class PaymentController {
 		@Req() req,
 		@LogInUser() user
 	) {
-		return bookDto;
-		// return await this.paymentService.validate(bookDto, req.headers, user);
+		// return bookDto;
+		return await this.paymentService.validate(bookDto, req.headers, user);
 	}
 
 }
