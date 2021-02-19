@@ -174,14 +174,13 @@ export async function FlightBookingConfirmtionMail(
                 </table></td>
             </tr>`;
 
-  for (let index = 0; index < param.paymentDetail.length; index++) {
-    const element = param.paymentDetail[index];
+    const element = param.paymentDetail;
 
     paymentDetail += `  <tr>
               <td align="center" valign="top" style="border-bottom: 1px solid #DCDCDC;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
                   <tbody>
                     <tr>
-                      <td align="center" valign="top" class="oc_w40 oc_f12" style="width: 50px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; font-weight: 400;">${index + 1}</td>
+                      <td align="center" valign="top" class="oc_w40 oc_f12" style="width: 50px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; font-weight: 400;">0</td>
                       <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${element.amount}</td>
                       <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${DateTime.convertDateFormat(element.date, 'MM/DD/YYYY', 'MMM DD, YYYY')}</td>
                       <td align="center" valign="top" class="oc_f12" style="padding: 7px 0; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; font-weight: 400; text-transform: capitalize; text-align: center;">${element.status}</td>
@@ -189,8 +188,6 @@ export async function FlightBookingConfirmtionMail(
                   </tbody>
                 </table></td>
             </tr>`
-
-  }
 
   var travelerDetail = `<tr>
     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; background: #D0D0D0; padding: 10px 15px; font-weight: 700;">Traveler details</td>
