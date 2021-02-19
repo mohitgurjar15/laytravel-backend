@@ -1,10 +1,12 @@
 import { BookingType } from "src/enum/booking-type.enum";
-import { FlightBookingEmailParameterModel } from "../email_template/model/flight-booking-email-parameter.model";
+import { ModulesName } from "src/enum/module.enum";
+import { DateTime } from "src/utility/datetime.utility";
+import { CartBookingEmailParameterModel } from "../email_template/model/cart-booking-email.model";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function LaytripFlightBookingConfirmtionMail(
-    param: FlightBookingEmailParameterModel
+export async function LaytripCartBookingConfirmtionMail(
+    param: CartBookingEmailParameterModel
   ) {
     let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
@@ -37,10 +39,12 @@ export async function LaytripFlightBookingConfirmtionMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070; padding-top:10px; padding-bottom:10px; text-align: left;">
-                        <span style="font-weight: 700; padding-right:10px; color: #000000;">Itinerary </span>
+                        <span style="font-weight: 700; padding-right:10px; color: #000000;">Bookings </span>
                     </td>
-                </tr>
-                <tr>
+                </tr>`
+                for await (const booking of param.bookings) {
+                    if(booking.moduleId == ModulesName.FLIGHT){
+                content += `<tr>
                     <td>
                         <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
@@ -61,14 +65,14 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     Arrival
                                 </th>
                             </tr>`
-                            for await (const flight of param.flightData) {
+                            for await (const flight of booking.flighData) {
                                 content +=
                             `<tr>
                                 <td colspan="3"
                                     style="padding: 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
                                         <span>${flight.rout}</span>
-                                        <span>status: ${flight.status}</span>
+                                        <span>Product Id : ${booking.productId}</span>
                                     </div>
                                 </td>
                             </tr>`
@@ -119,81 +123,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                 content +=`</table>
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
-                            id="templateColumns">
-                            <tr>
-                                <td colspan="4"
-                                    style="padding: 10px 0; background-color: #ecf1ff; color: #000000; font-weight: 800; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
-                                        <span>Payment details</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
-                                    width="15%" class="header_txt"
-                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
-                                    ID
-                                </th>
-                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
-                                    width="25%" class="header_txt"
-                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
-                                    Amount
-                                </th>
-                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
-                                    width="25%" class="header_txt"
-                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
-                                    Date
-                                </th>
-                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
-                                    width="35%" class="header_txt"
-                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
-                                    status
-                                </th>
-                            </tr>
-                            <tr>
-                                <td class="templateColumnContainer" width="15%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td valign="top" class="leftColumnContent">
-                                                <span style="display: block;">1</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td class="templateColumnContainer" width="25%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">${param.paymentDetail.amount}</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td class="templateColumnContainer" width="25%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">${param.paymentDetail.date}</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td class="templateColumnContainer" width="35%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">${param.paymentDetail.status}</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
+                
                 <tr>
                     <td>
                         <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
@@ -228,14 +158,14 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     Type
                                 </th>
                             </tr>`
-                            for (let index = 0; index < param.travelers.length; index++) {
-                                const traveler = param.travelers[index];
+                            for (let index = 0; index < booking.travelers.length; index++) {
+                                const traveler = booking.travelers[index];
                                 content += `<tr>
                                 <td class="templateColumnContainer" width="15%">
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">1</span>
+                                                <span style="display: block;">${index+1}</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -244,7 +174,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">viral mithani</span>
+                                                <span style="display: block;">${traveler.name}</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -253,7 +183,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">viral@gmail.com</span>
+                                                <span style="display: block;">${traveler.email}</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -262,25 +192,26 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">adult</span>
+                                                <span style="display: block;">${traveler.type}</span>
                                             </td>
                                         </tr>
                                     </table>
                                 </td>
                             </tr>`
                             }
-                            
-                        content += `    
-                        </table>
+                            content +=`</table>
                     </td>
-                </tr>
-                <tr>
+                </tr><tr><td>   <br/></td></tr>`
+                    }
+                }
+                content +=
+                `<tr>
                     <td>
                         <table border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID:</span></td>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.cartId}</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.orderId}</span></td>
                             </tr>
                             <tr>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price:</span></td>
@@ -301,22 +232,96 @@ export async function LaytripFlightBookingConfirmtionMail(
                     </td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 14px; font-weight: 700; line-height: 20px; color: ${param.bookingStatus == 'confirmed' ? 'green' : 'red'};padding-top:10px; padding-bottom: 20px; text-align: left;">
-                        *Ticket ${param.bookingStatus}
+                    <td>
+                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+                            id="templateColumns">
+                            <tr>
+                                <td colspan="4"
+                                    style="padding: 10px 0; background-color: #ecf1ff; color: #000000; font-weight: 800; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
+                                        <span>Payment details</span>
+                                    </div>
+                                </td>
+                            </tr>`
+                            if(param.paymentDetail.length)
+                            {
+
+                            
+                            content += `<tr>
+                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
+                                    width="15%" class="header_txt"
+                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+                                    ID
+                                </th>
+                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
+                                    width="25%" class="header_txt"
+                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+                                    Amount
+                                </th>
+                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
+                                    width="25%" class="header_txt"
+                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+                                    Date
+                                </th>
+                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
+                                    width="35%" class="header_txt"
+                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+                                    status
+                                </th>
+                            </tr>`
+                            for (let index = 0; index < param.paymentDetail.length; index++) {
+                                const payment = param.paymentDetail[index];
+                                
+                            
+                            
+                            content += `<tr>
+                                <td class="templateColumnContainer" width="15%">
+                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td valign="top" class="leftColumnContent">
+                                                <span style="display: block;">${index+1}</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td class="templateColumnContainer" width="25%">
+                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                                <span style="display: block;">${payment.amount}</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td class="templateColumnContainer" width="25%">
+                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                                <span style="display: block;">${DateTime.convertDateFormat(payment.date, 'YYYY-MM-DD', 'MMM DD, YYYY')}</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td class="templateColumnContainer" width="35%">
+                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                                <span style="display: block;">${payment.status}</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>`
+                            }
+                        }
+                        content +=`</table>
                     </td>
                 </tr>
                 <tr>
-                    <td>
-                        <table border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
-                            id="templateColumns">
-                            <tr>
-                                <td>Refer your eTicket for detailed flight itinerary, fare rules & baggage policy.</td>
-                            </tr>
-                            <tr>
-                                <td style="list-style: disc;">All timings mentioned above are local timings for that particular city/country.</td>
-                            </tr>
-                        </table>
+                    <td align="left" valign="top"
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        You can contact us any time at<span
+                        style="color: #f725c5;"> customerservice@laytrip.com</span>. We hope you have a great trip!
                     </td>
                 </tr>
             </tbody>

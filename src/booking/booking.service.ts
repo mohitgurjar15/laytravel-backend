@@ -17,7 +17,7 @@ import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-b
 import { ListBookingDto } from "./dto/list-booking.dto";
 import * as moment from 'moment';
 import { ListPaymentAdminDto } from "src/booking/dto/list-payment-admin.dto";
-import * as config from "config";
+
 import { Booking } from "src/entity/booking.entity";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { BookingType } from "src/enum/booking-type.enum";
@@ -25,6 +25,7 @@ import { exit } from "process";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { getConnection, getManager } from "typeorm";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
+import * as config from "config";
 const mailConfig = config.get("email");
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { PredictionFactorMarkup } from "src/entity/prediction-factor-markup.entity";
@@ -39,6 +40,10 @@ import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 import { CartBooking } from "src/entity/cart-booking.entity";
 import { CryptoUtility } from "src/utility/crypto.utility";
 import { UserCard } from "src/entity/user-card.entity";
+import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
+import { DateTime } from "src/utility/datetime.utility";
+import { CartDataUtility } from "src/utility/cart-data.utility";
+import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 
 @Injectable()
 export class BookingService {
@@ -49,30 +54,96 @@ export class BookingService {
 		public readonly mailerService: MailerService
 	) { }
 
-	async resendBookingEmail(bookingDetail: getBookingDetailsDto): Promise<{ message: any }> {
+	async resendCartEmail(bookingDetail: getBookingDetailsDto) {
 		const { bookingId } = bookingDetail
-		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
+		const responce = await CartDataUtility.CartMailModelDataGenerate(bookingId)
+		if (responce?.param) {
+			let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`:`BOOKING ID ${responce.param.orderId} CONFIRMATION`
+			this.mailerService
+				.sendMail({
+					to: responce.email,
+					from: mailConfig.from,
+					bcc: mailConfig.BCC,
+					subject: subject,
+					html: await LaytripCartBookingConfirmtionMail(responce.param),
+				})
+				.then((res) => {
+					//console.log("res", res);
+				})
+				.catch((err) => {
+					//console.log("err", err);
+				});
+			return {
+				message: `Cart booking email send succeessfully`
+			};
+		}else{
+			return {
+				message: `We could not find your booking id please correct it.`
+			};
+		}
 
-		if (!bookingData) {
+
+	}
+	async resendBookingEmail(bookingDetail: getBookingDetailsDto): Promise<{ message: any }> {
+		try {
+			const { bookingId } = bookingDetail
+			const bookingData = await this.bookingRepository.bookingDetail(bookingId);
+
+			if (!bookingData) {
+				throw new NotFoundException(
+					"Given booking id not found&&&booking_id&&&Given booking id not found"
+				);
+			}
+			//console.log(bookingData);
+			const Data = bookingData;
+			switch (Data.moduleId) {
+				case ModulesName.HOTEL:
+					break;
+
+				case ModulesName.FLIGHT:
+					await this.flightBookingEmailSend(Data);
+					break;
+
+				default:
+					break;
+			}
+
+			return { message: `Booking information send on ragister user email id ` };
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						if (
+							error.response.message ==
+							"This user does not exist&&&email&&&This user does not exist"
+						) {
+							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+						}
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
 			throw new NotFoundException(
-				"Given booking id not found&&&booking_id&&&Given booking id not found"
+				`${error.message}&&&id&&&${error.message}`
 			);
 		}
-		//console.log(bookingData);
-		const Data = bookingData;
-		switch (Data.moduleId) {
-			case ModulesName.HOTEL:
-				break;
-
-			case ModulesName.FLIGHT:
-				await this.flightBookingEmailSend(Data);
-				break;
-
-			default:
-				break;
-		}
-
-		return { message: `Booking information send on ragister user email id ` };
 	}
 
 	async flightBookingEmailSend(bookingData: Booking, email = '') {
@@ -125,10 +196,10 @@ export class BookingService {
 			else {
 				EmailSubject = "Flight Booking Confirmation";
 			}
-
+			const d = await this.formatDate(bookingData.bookingDate)
 			const installmentDetail = {
 				amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
-				date: await this.formatDate(bookingData.bookingDate),
+				date: DateTime.convertDateFormat(d, 'MM/DD/YYYY', 'MMM DD, YYYY'),
 				status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 			}
 			var travelerInfo = [];
@@ -152,18 +223,29 @@ export class BookingService {
 				})
 
 			}
-
+			const cartData = await CartDataUtility.cartData(bookingData.cartId)
 			param.user_name = `${user.firstName}  ${user.lastName}`;
 			param.flightData = flightData;
 			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
-			param.cart = {
-				cartId:bookingData.cart.laytripCartId,
-				totalAmount : bookingData.totalAmount
+			if (bookingData.bookingType == BookingType.INSTALMENT) {
+				param.cart = {
+					cartId: bookingData.cart.laytripCartId,
+					totalAmount: cartData.totalAmount,
+					totalPaid: cartData.paidAmount,
+					rememberAmount: cartData.remainAmount
+				}
 			}
+			else {
+				param.cart = {
+					cartId: bookingData.cart.laytripCartId,
+					totalAmount: cartData.totalAmount
+				}
+			}
+
 			param.bookingType = bookingData.bookingType
-			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM?'confirmed':'pending' 
+			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM ? 'confirmed' : 'pending'
 
 			//console.log(param);
 			// //console.log(param.flightData);
@@ -175,7 +257,7 @@ export class BookingService {
 						from: mailConfig.from,
 						bcc: mailConfig.BCC,
 						subject: EmailSubject,
-						html: await FlightBookingConfirmtionMail(param),
+						html: await LaytripFlightBookingConfirmtionMail(param),
 					})
 					.then((res) => {
 						//console.log("res", res);
@@ -191,7 +273,7 @@ export class BookingService {
 						from: mailConfig.from,
 						bcc: mailConfig.BCC,
 						subject: EmailSubject,
-						html: await FlightBookingConfirmtionMail(param),
+						html: await LaytripFlightBookingConfirmtionMail(param),
 					})
 					.then((res) => {
 						//console.log("res", res);
@@ -211,7 +293,7 @@ export class BookingService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null,
@@ -533,7 +615,7 @@ export class BookingService {
 						traveler.userData.dob = traveler.userData.dob || ''
 					}
 				}
-				
+
 				if (cartInstallments.length > 0) {
 					//cartInstallments.sort((o) => new Date( o.instalmentDate ) );
 					cartInstallments.sort((a, b) => {
@@ -543,12 +625,12 @@ export class BookingService {
 					})
 					//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 				}
-				
+
 
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
 				const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
-				cartResponce['is_installation_on_track'] = trackReport?.attempt == 1 && trackReport.paymentStatus == PaymentStatus.CONFIRM ? true : false
+				cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport.paymentStatus != PaymentStatus.CONFIRM ? false : true
 				cartResponce['checkInDate'] = cart.checkInDate
 				cartResponce['checkOutDate'] = cart.checkOutDate
 				cartResponce['laytripCartId'] = cart.laytripCartId
@@ -754,7 +836,7 @@ export class BookingService {
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
 				const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
-				cartResponce['is_installation_on_track'] = trackReport?.attempt == 1 && trackReport.paymentStatus == PaymentStatus.CONFIRM ? true : false
+				cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport.paymentStatus != PaymentStatus.CONFIRM ? false : true
 				cartResponce['checkInDate'] = cart.checkInDate
 				cartResponce['checkOutDate'] = cart.checkOutDate
 				cartResponce['laytripCartId'] = cart.laytripCartId
@@ -912,7 +994,7 @@ export class BookingService {
 			let cartResponce = {}
 			cartResponce['id'] = cart.id
 			const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
-				cartResponce['is_installation_on_track'] = trackReport?.attempt == 1 && trackReport.paymentStatus == PaymentStatus.CONFIRM ? true : false
+			cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport.paymentStatus != PaymentStatus.CONFIRM ? false : true
 			cartResponce['checkInDate'] = cart.checkInDate
 			cartResponce['checkOutDate'] = cart.checkOutDate
 			cartResponce['laytripCartId'] = cart.laytripCartId
