@@ -2,7 +2,7 @@ import { Generic } from "src/utility/generic.utility";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export function InstallmentRecevied(param: {
+export function LaytripInstallmentRecevied(param: {
     date: string,
     userName: string,
     cardHolderName: string,

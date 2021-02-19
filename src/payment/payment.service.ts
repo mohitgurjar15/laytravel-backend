@@ -37,7 +37,7 @@ import { PushNotification } from "src/utility/push-notification.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
-import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
+import { LaytripInstallmentRecevied } from "src/config/new_email_templete/laytrip_installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
 
 
@@ -766,7 +766,7 @@ export class PaymentService {
 								from: mailConfig.from,
 								cc: mailConfig.BCC,
 								subject: `Installment Payment Successed`,
-								html: InstallmentRecevied(param),
+								html: LaytripInstallmentRecevied(param),
 							})
 							.then((res) => {
 								//console.log("res", res);
