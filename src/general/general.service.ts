@@ -158,7 +158,7 @@ export class GeneralService {
                 .sendMail({
                     to: email.email,
                     from: mailConfig.from,
-                    cc: mailConfig.BCC,
+                    bcc: mailConfig.BCC,
                     subject: subject,
                     html: await massCommunicationMail({ header: subject, body: email_body }),
                 })
@@ -186,7 +186,7 @@ export class GeneralService {
             .sendMail({
                 to: email,
                 from: mailConfig.from,
-                cc: mailConfig.BCC,
+                bcc: mailConfig.BCC,
                 subject: subject,
                 html: 'aa'//await LaytripFlightBookingConfirmtionMail(),
             })

@@ -293,7 +293,7 @@ export class BookingService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null,

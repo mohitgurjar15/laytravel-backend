@@ -2030,7 +2030,7 @@ export class FlightService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null,
@@ -2401,7 +2401,7 @@ export class FlightService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				subject: "Booking detail updated",
 				html: BookingDetailsUpdateMail({ username: userName }),
 			})

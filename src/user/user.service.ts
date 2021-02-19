@@ -146,7 +146,7 @@ export class UserService {
 					to: userdata.email,
 					from: mailConfig.from,
 					subject: `Welcome on board`,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					template: "welcome.html",
 					context: {
 						// Data to be sent to template files.
@@ -510,7 +510,7 @@ export class UserService {
 							.sendMail({
 								to: data.email,
 								from: mailConfig.from,
-								cc: mailConfig.BCC,
+								bcc: mailConfig.BCC,
 								subject: `Welcome on board`,
 								html: RagisterMail({
 									username: data.firstName + " " + data.lastName
@@ -762,7 +762,7 @@ export class UserService {
 				to: email,
 				from: mailConfig.from,
 				subject: `Your account deleted`,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				html: "delete account templete",
 				attachments: [{
 					content: attachment,

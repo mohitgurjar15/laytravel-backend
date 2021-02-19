@@ -713,7 +713,7 @@ export class PaymentService {
 							.sendMail({
 								to: cart.user.email,
 								from: mailConfig.from,
-								cc: mailConfig.BCC,
+								bcc: mailConfig.BCC,
 								subject: `Installment Payment Successed`,
 								html: InstallmentRecevied(param),
 							})

@@ -110,7 +110,7 @@ export class CartDataUtility {
             .orderBy(`cartBooking.bookingDate`, 'DESC')
         const cart = await query.getOne();
 
-        if (cart.bookings.length) {
+        if (cart?.bookings?.length) {
             const user = await this.userData(cart.userId)
             let param = new CartBookingEmailParameterModel
             param.user_name = user.firstName ? user.firstName : '' + ' ' + user.lastName ? user.lastName : ''
@@ -123,7 +123,7 @@ export class CartDataUtility {
             const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
             let cartInstallments = [];
             let bookingsData = []
-            console.log('1');
+            //console.log('1');
 
             if (baseBooking.length) {
                 for await (const baseInstallments of baseBooking) {
@@ -157,14 +157,14 @@ export class CartDataUtility {
                     cartInstallments.push(installment)
                 }
             }
-            console.log('2');
+            //console.log('2');
 
             for await (const booking of cart.bookings) {
 
                 if (booking.bookingInstalments.length > 0) {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id)
                 }
-                console.log('21');
+                //console.log('21');
                 for await (const installment of booking.bookingInstalments) {
                     if (installment.paymentStatus == PaymentStatus.CONFIRM) {
                         paidAmount += parseFloat(installment.amount);
@@ -173,19 +173,19 @@ export class CartDataUtility {
                         pandinginstallment = pandinginstallment + 1;
                     }
                 }
-                console.log('22');
+                //console.log('22');
                 totalAmount += parseFloat(booking.totalAmount)
                 let flightData = [];
                 const bookingData = booking;
                 const moduleInfo = booking.moduleInfo[0]
                 const routes = moduleInfo.routes;
-                console.log('23');
+                //console.log('23');
                 for (let index = 0; index < routes.length; index++) {
                     const element = routes[index];
                     var rout = index == 0 ? `${moduleInfo.departure_info.city} To ${moduleInfo.arrival_info.city} (${moduleInfo.routes[0].type})` : `${moduleInfo.arrival_info.city} To ${moduleInfo.departure_info.city} (${moduleInfo.routes[1].type})`;
                     var status = bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
                     var droups = [];
-                    console.log('24');
+                    //console.log('24');
                     for await (const stop of element.stops) {
                         var flight = `${stop.airline}-${stop.flight_number}`;
                         var depature = {
@@ -196,7 +196,7 @@ export class CartDataUtility {
                             date: await this.formatDate(stop.departure_date_time),
                             time: stop.departure_time
                         }
-                        console.log('25');
+                        //console.log('25');
                         var arrival = {
                             code: stop.arrival_info.code,
                             name: stop.arrival_info.name,
@@ -205,13 +205,13 @@ export class CartDataUtility {
                             date: await this.formatDate(stop.arrival_date_time),
                             time: stop.arrival_time
                         }
-                        console.log('26');
+                        //console.log('26');
                         droups.push({
                             flight: flight, depature: depature, arrival: arrival, airline: stop.airline_name
                         })
                     }
-                    console.log('27');
-                    //console.log();
+                    //console.log('27');
+                    ////console.log();
                     flightData.push({
                         rout: rout,
                         status: status,
@@ -220,7 +220,7 @@ export class CartDataUtility {
                 }
 
                 let travelers = []
-                console.log('8');
+                //console.log('8');
                 for await (const traveler of booking.travelers) {
                     var birthDate = new Date(traveler.userData.dob);
                     var age = moment(new Date()).diff(moment(birthDate), 'years');
@@ -247,7 +247,7 @@ export class CartDataUtility {
                 }
                 bookingsData.push(b)
             }
-            console.log('3');
+            //console.log('3');
 
             if (cartInstallments.length > 0) {
                 cartInstallments.sort((a, b) => {
@@ -260,9 +260,9 @@ export class CartDataUtility {
             param.bookingType = cart.bookingType
 
             param.cart = {
-                totalAmount: currency.symbol + `${totalAmount}`,
-                totalPaid: currency.symbol + `${paidAmount}`,
-                rememberAmount: currency.symbol + `${remainAmount}`,
+                totalAmount: currency.symbol + `${Generic.formatPriceDecimal(totalAmount)}`,
+                totalPaid: currency.symbol + `${Generic.formatPriceDecimal(paidAmount)}`,
+                rememberAmount: currency.symbol + `${Generic.formatPriceDecimal(remainAmount)}`,
             }
             param.paymentDetail = cartInstallments
             param.bookings = bookingsData
@@ -288,8 +288,7 @@ export class CartDataUtility {
         return [month, day, year].join('/');
     }
 
-    static async userData(userId) 
-    {
+    static async userData(userId) {
         const user = await getConnection()
             .createQueryBuilder(User, "user")
             .where(`user_id = '${userId}'`)

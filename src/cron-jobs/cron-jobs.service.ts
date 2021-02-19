@@ -123,7 +123,7 @@ export class CronJobsService {
 					.sendMail({
 						to: data.email,
 						from: mailConfig.from,
-						cc: mailConfig.BCC,
+						bcc: mailConfig.BCC,
 						subject: `Subscription Expired`,
 						html: ConvertCustomerMail({
 							username: data.first_name + " " + data.last_name,
@@ -348,7 +348,7 @@ export class CronJobsService {
 								.sendMail({
 									to: cartBooking.user.email,
 									from: mailConfig.from,
-									cc: mailConfig.BCC,
+									bcc: mailConfig.BCC,
 									subject: `BOOKING ID ${param.bookingId} NOTICE OF DEFAULT AND CANCELLATION`,
 									html: await LaytripPaymentFailedTemplete(param),
 								})
@@ -712,7 +712,7 @@ export class CronJobsService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				subject: "Booking Failed Mail",
 				html: BookingFailerMail({
 					error: error,
@@ -731,7 +731,7 @@ export class CronJobsService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				subject: "Booking Failed Mail",
 				html: IncompleteBookingMail({
 					error: error,
