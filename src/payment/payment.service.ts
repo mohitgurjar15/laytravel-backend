@@ -48,7 +48,7 @@ export class PaymentService {
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
-	async saveCard(saveCardDto: SaveCardDto, userId: string,guest_id) {
+	async saveCard(saveCardDto: SaveCardDto, userId: string, guest_id) {
 		const {
 			card_holder_name,
 			card_last_digit,
@@ -98,7 +98,7 @@ export class PaymentService {
 		}
 	}
 
-	async getAllCards(userId: string,guest_id) {
+	async getAllCards(userId: string, guest_id) {
 		let where
 		if (userId) {
 			if (!uuidValidator(userId)) {
@@ -133,7 +133,7 @@ export class PaymentService {
 		return cardList;
 	}
 
-	async addCard(addCardDto: AddCardDto, userId: string,guest_id) {
+	async addCard(addCardDto: AddCardDto, userId: string, guest_id) {
 
 
 		const { first_name, last_name, card_number, card_cvv, expiry } = addCardDto;
@@ -496,7 +496,7 @@ export class PaymentService {
 			})
 			.getOne()
 		if (booking) {
-			throw new ConflictException(`Selected card is used for active booking please first update it `)
+			throw new ConflictException(`Sorry you can't delete this card, it's already used in your booking`)
 		}
 
 		card.isDeleted = true
@@ -551,7 +551,7 @@ export class PaymentService {
 			.getOne();
 
 		if (!card) throw new NotFoundException(`Card id not founds`);
-		const newCard = await this.addCard(addCardDto, user.userId,'')
+		const newCard = await this.addCard(addCardDto, user.userId, '')
 		await getConnection()
 			.createQueryBuilder()
 			.update(Booking)
@@ -629,6 +629,9 @@ export class PaymentService {
 						await instalment.save()
 					}
 				}
+				let nextAmount;
+				let nextDate
+
 
 				if (transaction.status == false) {
 
@@ -644,68 +647,6 @@ export class PaymentService {
 						message: `We could not able to take your payment please try again.`
 					}
 
-					// let param = {
-					// 	date: DateTime.convertDateFormat(cart.bookings[0].bookingInstalments[0].instalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY'),
-					// 	amount: Generic.formatPriceDecimal(cartAmount),
-					// 	available_try: availableTry,
-					// 	payment_dates: DateTime.convertDateFormat(new Date(nextDate), 'YYYY-MM-DD', 'MMM DD, YYYY'),
-					// 	currency: cart.bookings[0].bookingInstalments[0].currency.symbol,
-					// 	phoneNo: `+${cart.user.countryCode}` + cart.user.phoneNo,
-					// 	bookingId: cart.laytripCartId,
-					// }
-
-					// if (booking.user.isEmail) {
-					// 	this.mailerService
-					// 		.sendMail({
-					// 			to: instalment.user.email,
-					// 			from: mailConfig.from,
-					// 			cc: mailConfig.BCC,
-					// 			subject: `Payment Failed Notification`,
-					// 			html: missedPaymentInstallmentMail(param),
-					// 		})
-					// 		.then((res) => {
-					// 			//console.log("res", res);
-					// 		})
-					// 		.catch((err) => {
-					// 			//console.log("err", err);
-					// 		});
-					// }
-
-					// if (booking.user.isSMS) {
-					// 	TwilioSMS.sendSMS({
-					// 		toSMS: param.phoneNo,
-					// 		message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-					// 	})
-					// }
-
-					// Activity.logActivity(
-					// 	"1c17cd17-9432-40c8-a256-10db77b95bca",
-					// 	"cron",
-					// 	`${instalment.id} Payment Failed by Cron`
-					// );
-
-					// PushNotification.sendNotificationTouser(booking.user.userId,
-					// 	{  //you can send only notification or only data(or include both)
-					// 		module_name: 'instalment',
-					// 		task: 'instalment_failed',
-					// 		bookingId: instalment.booking.laytripBookingId,
-					// 		instalmentId: instalment.id
-					// 	},
-					// 	{
-					// 		title: 'Instalment Failed',
-					// 		body: `We were not able on our  time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-					// 	}, cronUserId)
-					// WebNotification.sendNotificationTouser(booking.user.userId,
-					// 	{  //you can send only notification or only data(or include both)
-					// 		module_name: 'instalment',
-					// 		task: 'instalment_failed',
-					// 		bookingId: instalment.booking.laytripBookingId,
-					// 		instalmentId: instalment.id
-					// 	},
-					// 	{
-					// 		title: 'Instalment Failed',
-					// 		body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-					// 	}, cronUserId)
 				}
 				else {
 					for await (const booking of cart.bookings) {
@@ -713,17 +654,23 @@ export class PaymentService {
 
 						const nextInstalmentDate = await getManager()
 							.createQueryBuilder(BookingInstalments, "BookingInstalments")
-							.select(['BookingInstalments.instalmentDate'])
+							.select(['BookingInstalments.instalmentDate', 'BookingInstalments.amount'])
 							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${booking.id}'`)
 							.orderBy(`"BookingInstalments"."id"`)
 							.getOne()
+						let update = { nextInstalmentDate: nextInstalmentDate.instalmentDate || null }
+						if (!nextInstalmentDate) {
+							update['paymentStatus'] = PaymentStatus.CONFIRM
+						}
 
 						await getConnection()
 							.createQueryBuilder()
 							.update(Booking)
-							.set({ nextInstalmentDate: nextInstalmentDate.instalmentDate })
+							.set(update)
 							.where("id = :id", { id: booking.id })
 							.execute();
+						nextAmount += nextInstalmentDate.amount ? parseFloat(nextInstalmentDate.amount) : 0
+						nextDate = nextInstalmentDate.instalmentDate
 					}
 
 					//console.log('installment');
@@ -758,6 +705,8 @@ export class PaymentService {
 						pendingInstallment: pendingInstallment,
 						phoneNo: `+${cart.user.countryCode}` + cart.user.phoneNo,
 						bookingId: cart.laytripCartId,
+						nextDate: nextDate,
+						nextAmount: nextAmount,
 					}
 					if (cart.user.isEmail) {
 						this.mailerService

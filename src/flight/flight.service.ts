@@ -73,6 +73,8 @@ import { max } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { ModuleTokenFactory } from "@nestjs/core/injector/module-token-factory";
 import { ModulesName } from "src/enum/module.enum";
+import { CartDataUtility } from "src/utility/cart-data.utility";
+import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
 
 
 
@@ -1880,7 +1882,8 @@ export class FlightService {
 
 	async sendBookingEmail(bookingId) {
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
-		if (bookingData.bookingStatus < 2) {
+		const email = bookingData.user.email
+		if (bookingData.bookingStatus == BookingStatus.CONFIRM || bookingData.bookingStatus == BookingStatus.PENDING) {
 			var param = new FlightBookingEmailParameterModel();
 			const user = bookingData.user;
 			const moduleInfo = bookingData.moduleInfo[0]
@@ -1914,6 +1917,7 @@ export class FlightService {
 						flight: flight, depature: depature, arrival: arrival, airline: stop.airline_name
 					})
 				}
+				//console.log();
 				flightData.push({
 					rout: rout,
 					status: status,
@@ -1921,22 +1925,19 @@ export class FlightService {
 				})
 			}
 
-			var paymentDetail = bookingData.bookingInstalments;
 			var EmailSubject = '';
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
-				EmailSubject = "Flight Booking Details";
-				
+				EmailSubject = "Flight Booking Details"
 			}
 			else {
-				EmailSubject = "Flight Booking Confirmation"
-				
+				EmailSubject = "Flight Booking Confirmation";
 			}
+			const d = await this.formatDate(bookingData.bookingDate)
 			const installmentDetail = {
 				amount: bookingData.currency2.symbol + Generic.formatPriceDecimal(parseFloat(bookingData.totalAmount)),
-				date: await this.formatDate(bookingData.bookingDate),
+				date: DateTime.convertDateFormat(d, 'MM/DD/YYYY', 'MMM DD, YYYY'),
 				status: bookingData.paymentStatus == 1 ? 'Confirm' : 'Pending'
 			}
-
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
@@ -1958,36 +1959,72 @@ export class FlightService {
 				})
 
 			}
-
+			const cartData = await CartDataUtility.cartData(bookingData.cartId)
 			param.user_name = `${user.firstName}  ${user.lastName}`;
 			param.flightData = flightData;
 			param.orderId = bookingData.laytripBookingId;
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
-			param.cart = {
-				cartId:bookingData.cart.laytripCartId,
-				totalAmount : bookingData.totalAmount
+			if(bookingData.bookingType == BookingType.INSTALMENT)
+			{
+				param.cart = {
+					cartId: bookingData.cart.laytripCartId,
+					totalAmount: cartData.totalAmount,
+					totalPaid:cartData.paidAmount,
+					rememberAmount:cartData.remainAmount
+				}
 			}
+			else{
+				param.cart = {
+					cartId: bookingData.cart.laytripCartId,
+					totalAmount: cartData.totalAmount
+				}
+			}
+			
 			param.bookingType = bookingData.bookingType
-			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM?'confirmed':'pending' 
+			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM ? 'confirmed' : 'pending'
 
+			//console.log(param);
+			// //console.log(param.flightData);
+			if (email != '') {
+				this.mailerService
+					.sendMail({
+						to: email,
+						cc: user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: EmailSubject,
+						html: await LaytripFlightBookingConfirmtionMail(param),
+					})
+					.then((res) => {
+						//console.log("res", res);
+					})
+					.catch((err) => {
+						//console.log("err", err);
+					});
+			}
+			else {
+				this.mailerService
+					.sendMail({
+						to: user.email,
+						from: mailConfig.from,
+						bcc: mailConfig.BCC,
+						subject: EmailSubject,
+						html: await LaytripFlightBookingConfirmtionMail(param),
+					})
+					.then((res) => {
+						//console.log("res", res);
+					})
+					.catch((err) => {
+						//console.log("err", err);
+					});
+			}
 
-			this.mailerService
-				.sendMail({
-					to: user.email,
-					from: mailConfig.from,
-					cc: mailConfig.BCC,
-					subject: EmailSubject,
-					html: await FlightBookingConfirmtionMail(param),
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
 		}
-		else if (bookingData.bookingStatus == 2) {
+		else if (bookingData.bookingStatus == BookingStatus.FAILED) {
+			if (email != '') {
+				return ''
+			}
 			var status = "Failed"
 			this.mailerService
 				.sendMail({
@@ -1996,15 +2033,15 @@ export class FlightService {
 					cc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
-						error: null
-					}),
+						error: null,
+					}, bookingData.laytripBookingId),
 
 				})
 				.then((res) => {
-					console.log("res", res);
+					//console.log("res", res);
 				})
 				.catch((err) => {
-					console.log("err", err);
+					//console.log("err", err);
 				});
 		}
 		else {
@@ -2741,5 +2778,7 @@ export class FlightService {
 			}
 		}
 	}
+
+	
 
 }

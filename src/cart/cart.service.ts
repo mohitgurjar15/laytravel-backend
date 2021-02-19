@@ -32,6 +32,7 @@ import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { UserCard } from 'src/entity/user-card.entity';
 import { SearchLog } from 'src/entity/search-log.entity';
+import { CartBookingEmailParameterModel } from 'src/config/email_template/model/cart-booking-email.model';
 
 @Injectable()
 export class CartService {
@@ -813,11 +814,14 @@ export class CartService {
             const cartData = await cartBook.save()
 
             let responce = []
+            let mailResponce = []
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
                         let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
                         responce.push(flightResponce)
+                        flightResponce['cart'] = item 
+                        mailResponce.push(flightResponce)
                         break;
 
                     default:
@@ -827,6 +831,8 @@ export class CartService {
             let returnResponce = {}
             returnResponce = cartData
             returnResponce['carts'] = responce
+            this.cartBookingEmailSend(cartData,mailResponce)
+            
             return returnResponce
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -967,6 +973,11 @@ export class CartService {
 
 
         return newCart
+    }
+
+    async cartBookingEmailSend(cartData :CartBooking,responce){
+        let param = new CartBookingEmailParameterModel
+        
     }
 
     async cartInstallmentDetail(Dto: cartInstallmentsDto, user: User) {

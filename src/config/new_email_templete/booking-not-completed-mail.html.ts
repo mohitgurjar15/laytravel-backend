@@ -2,7 +2,7 @@ import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { BaseUrl } from "../base-url";
 
-export function BookingNotCompletedMail(param:{ username:string,bookingId })
+export function BookingNotCompletedMail(param:{ username:string })
 {
 const content = `<!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">

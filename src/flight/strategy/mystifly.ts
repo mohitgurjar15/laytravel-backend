@@ -594,7 +594,7 @@ export class Mystifly implements StrategyAirline {
                         stop.is_layover = true;
                         let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds'));
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds');
-                        stop.layover_duration = `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`
                         stop.layover_airport_name = flightSegment['departureairportlocationcode'][0];
                     }
                     // uniqueCode += stop.departure_time;
@@ -878,7 +878,7 @@ export class Mystifly implements StrategyAirline {
                         stop.is_layover = true;
                         let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds'));
                         totalDuration += moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds');
-                        stop.layover_duration = `${layOverduration.hours} h ${layOverduration.minutes} m`
+                        stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`
                         stop.layover_airport_name = flightSegment['departureairportlocationcode'][0];
                     }
                     uniqueCode += stop.flight_number;
@@ -1800,7 +1800,7 @@ export class Mystifly implements StrategyAirline {
 
                             stop.is_layover = true;
                             let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds'));
-                            stop.layover_duration = `${layOverduration.hours} h ${layOverduration.minutes} m`
+                            stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`
                             stop.layover_airport_name = flightSegment['a:departureairportlocationcode'][0];
                             totalDuration += moment(stop.departure_date_time).diff(stops[stops.length - 1].arrival_date_time, 'seconds');
                         }

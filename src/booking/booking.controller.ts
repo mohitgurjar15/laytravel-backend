@@ -41,6 +41,24 @@ export class BookingController {
 		return await this.bookingService.resendBookingEmail(shareBookingDto);
 	}
 
+	@Post("cart/re-sent-email")
+	@UseGuards(AuthGuard())
+	@ApiOperation({ summary: "re-sent the email of the cart booking " })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Given booking id not found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async resentCartEmail(
+		@Body() shareBookingDto: getBookingDetailsDto
+	){
+		return await this.bookingService.resendCartEmail(shareBookingDto);
+	}
+
 
 	@Get()
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
