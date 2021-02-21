@@ -586,7 +586,7 @@ export class BookingService {
 						}
 						const installment = {
 							instalmentDate: baseInstallments.instalmentDate,
-							instalmentStatus: baseInstallments.instalmentStatus,
+							instalmentStatus: baseInstallments?.paymentStatus,
 							attempt: baseInstallments.attempt,
 							amount: Generic.formatPriceDecimal(amount)
 						}
@@ -770,7 +770,7 @@ export class BookingService {
 				const currency = cart.bookings[0].currency2
 				const baseBooking = cart.bookings[0].bookingInstalments
 				let cartInstallments = [];
-				if (baseBooking.length) {
+				if (baseBooking.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
 					for await (const baseInstallments of baseBooking) {
 
 						let amount = parseFloat(baseInstallments.amount);
@@ -924,7 +924,7 @@ export class BookingService {
 			const baseBooking = cart.bookings[0].bookingInstalments
 			const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
 			let cartInstallments = [];
-			if (baseBooking.length) {
+			if (baseBooking.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
 				for await (const baseInstallments of baseBooking) {
 
 					let amount = parseFloat(baseInstallments.amount);
@@ -944,7 +944,7 @@ export class BookingService {
 					}
 					const installment = {
 						instalmentDate: baseInstallments.instalmentDate,
-						instalmentStatus: baseInstallments.instalmentStatus,
+						instalmentStatus: baseInstallments?.paymentStatus,
 						attempt: baseInstallments.attempt,
 						amount: Generic.formatPriceDecimal(amount)
 					}
