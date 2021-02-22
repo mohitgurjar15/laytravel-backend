@@ -64,6 +64,12 @@ export class ListBookingDto {
     payment_type: number;
 
     @ApiPropertyOptional({
+        description: 'Product id',
+        example: ""
+    })
+    product_id: string;
+
+    @ApiPropertyOptional({
         description: 'booking id',
         example: ""
     })

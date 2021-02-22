@@ -217,7 +217,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price:</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalAmount}</span></td>
                             </tr>`
-                            if(param.cart.totalPaid){
+                            if(param.cart.totalPaid != '$0'){
                                 content += `<tr>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Paid:</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalPaid}</span></td>
@@ -232,7 +232,12 @@ export async function LaytripCartBookingConfirmtionMail(
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <td>`
+                    if(param.paymentDetail.length)
+                    {
+
+                    
+                    content += `
                         <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
@@ -242,12 +247,8 @@ export async function LaytripCartBookingConfirmtionMail(
                                         <span>Payment details</span>
                                     </div>
                                 </td>
-                            </tr>`
-                            if(param.paymentDetail.length)
-                            {
-
-                            
-                            content += `<tr>
+                            </tr>
+                            <tr>
                                 <th align="center" valign="center" cellpadding="10" cellspacing="0"
                                     width="15%" class="header_txt"
                                     style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
@@ -311,10 +312,12 @@ export async function LaytripCartBookingConfirmtionMail(
                                         </tr>
                                     </table>
                                 </td>
-                            </tr>`
+                            </tr></table>`
                             }
+                            
                         }
-                        content +=`</table>
+
+                        content +=`
                     </td>
                 </tr>
                 <tr>
