@@ -58,7 +58,7 @@ export class BookingService {
 		const { bookingId } = bookingDetail
 		const responce = await CartDataUtility.CartMailModelDataGenerate(bookingId)
 		if (responce?.param) {
-			let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`:`BOOKING ID ${responce.param.orderId} CONFIRMATION`
+			let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
 			this.mailerService
 				.sendMail({
 					to: responce.email,
@@ -76,7 +76,7 @@ export class BookingService {
 			return {
 				message: `Cart booking email send succeessfully`
 			};
-		}else{
+		} else {
 			return {
 				message: `We could not find your booking id please correct it.`
 			};
@@ -556,6 +556,8 @@ export class BookingService {
 				throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 			}
 			let responce = []
+			console.log('getData');
+
 			for await (const cart of CartList) {
 				let paidAmount = 0;
 				let remainAmount = 0;
@@ -566,7 +568,8 @@ export class BookingService {
 				const baseBooking = cart.bookings[0].bookingInstalments
 				const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
 				let cartInstallments = [];
-				if (baseBooking) {
+				if (baseBooking && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
+					console.log('baseBooking');
 					for await (const baseInstallments of baseBooking) {
 
 						let amount = parseFloat(baseInstallments.amount);
@@ -596,16 +599,18 @@ export class BookingService {
 
 
 				for await (const booking of cart.bookings) {
-
-
-					for await (const installment of booking.bookingInstalments) {
-						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-							paidAmount += parseFloat(installment.amount);
-						} else {
-							remainAmount += parseFloat(installment.amount);
-							pandinginstallment = pandinginstallment + 1;
+					console.log('booking');
+					if (booking.bookingInstalments.length) {
+						for await (const installment of booking.bookingInstalments) {
+							if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+								paidAmount += parseFloat(installment.amount);
+							} else {
+								remainAmount += parseFloat(installment.amount);
+								pandinginstallment = pandinginstallment + 1;
+							}
 						}
 					}
+
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
@@ -630,7 +635,7 @@ export class BookingService {
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
 				const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
-				cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport.paymentStatus != PaymentStatus.CONFIRM ? false : true
+				cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport?.paymentStatus != PaymentStatus.CONFIRM ? false : true
 				cartResponce['checkInDate'] = cart.checkInDate
 				cartResponce['checkOutDate'] = cart.checkOutDate
 				cartResponce['laytripCartId'] = cart.laytripCartId
@@ -803,16 +808,17 @@ export class BookingService {
 
 					if (booking.bookingInstalments.length > 0) {
 						booking.bookingInstalments.sort((a, b) => a.id - b.id)
-					}
-
-					for await (const installment of booking.bookingInstalments) {
-						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-							paidAmount += parseFloat(installment.amount);
-						} else {
-							remainAmount += parseFloat(installment.amount);
-							pandinginstallment = pandinginstallment + 1;
+						for await (const installment of booking.bookingInstalments) {
+							if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+								paidAmount += parseFloat(installment.amount);
+							} else {
+								remainAmount += parseFloat(installment.amount);
+								pandinginstallment = pandinginstallment + 1;
+							}
 						}
 					}
+
+					
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
@@ -836,7 +842,7 @@ export class BookingService {
 				let cartResponce = {}
 				cartResponce['id'] = cart.id
 				const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
-				cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport.paymentStatus != PaymentStatus.CONFIRM ? false : true
+				cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport?.paymentStatus != PaymentStatus.CONFIRM ? false : true
 				cartResponce['checkInDate'] = cart.checkInDate
 				cartResponce['checkOutDate'] = cart.checkOutDate
 				cartResponce['laytripCartId'] = cart.laytripCartId
@@ -994,7 +1000,7 @@ export class BookingService {
 			let cartResponce = {}
 			cartResponce['id'] = cart.id
 			const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
-			cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport.paymentStatus != PaymentStatus.CONFIRM ? false : true
+			cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport?.paymentStatus != PaymentStatus.CONFIRM ? false : true
 			cartResponce['checkInDate'] = cart.checkInDate
 			cartResponce['checkOutDate'] = cart.checkOutDate
 			cartResponce['laytripCartId'] = cart.laytripCartId
