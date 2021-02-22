@@ -919,7 +919,7 @@ export class PaymentService {
 
 		let authCardResult = await this.authorizeCard(
 			bookDto.card_token,
-			3005,
+			3004,
 			// Math.ceil(1 * 100),
 			"USD",
 			bookDto.browser_info,
@@ -936,5 +936,33 @@ export class PaymentService {
 
 		return response;
 	}
+
+	async completeTransaction(purchaseToken) {
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
+
+		let url = `https://core.spreedly.com/v1/transactions/${purchaseToken}/complete.json`;
+		let requestBody = {};
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
+		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
+			return {
+				status: true,
+				token: captureRes.transaction.token,
+				meta_data: captureRes,
+			};
+		} else {
+			return {
+				status: false,
+				meta_data: captureRes,
+			};
+		}
+	}
+
 
 }

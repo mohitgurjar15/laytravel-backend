@@ -295,4 +295,19 @@ export class PaymentController {
 		return await this.paymentService.validate(bookDto, req.headers, user);
 	}
 
+	@Post('/complete')
+	@ApiOperation({ summary: "complete Booking" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 404, description: 'Flight is not available now' })
+	@HttpCode(200)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+	async complete(
+		@Body() token: any,
+	) {
+
+		return await this.paymentService.completeTransaction(token.token);
+	}
+
 }
