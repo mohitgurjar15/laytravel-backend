@@ -84,7 +84,14 @@ export class CartBookDto {
             }
         ]
     })
-    cart: Cart[]
+    cart: Cart[];
+
+    @IsOptional()
+    @ApiProperty({
+        description: `Transction token`,
+        example: `12ds4ttr`
+    })
+    transaction_token: string;
 }
 
 class Cart {

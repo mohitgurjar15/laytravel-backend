@@ -906,7 +906,7 @@ export class PaymentService {
 
 	async validate(bookDto, headers, user) {
 
-    console.log(bookDto, headers, user);
+    	console.log(bookDto, headers, user);
 		let uuid = uuidv4();
 		let redirection = bookDto.site_url + '/book/charge/' + uuid;
 
@@ -916,10 +916,12 @@ export class PaymentService {
 			transaction: {}
 		};
 		
+		//this.userCart.findAll();
+
 
 		let authCardResult = await this.authorizeCard(
 			bookDto.card_token,
-			3004,
+			3005, //make it dynamic
 			// Math.ceil(1 * 100),
 			"USD",
 			bookDto.browser_info,
