@@ -450,7 +450,7 @@ export class BookingRepository extends Repository<Booking> {
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
 			.leftJoinAndSelect("booking.cart", "cart")
-			.leftJoinAndSelect("booking.bookingInstalments", "installment")
+			//.leftJoinAndSelect("booking.bookingInstalments", "installment")
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
@@ -474,13 +474,13 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.transactionToken",
 				"BookingInstalments.comment",
-				"installment.id",
-				"installment.instalmentDate",
-				"installment.currencyId",
-				"installment.amount",
-				"installment.instalmentStatus",
-				"installment.paymentInfo",
-				"installment.paymentStatus",
+				// "installment.id",
+				// "installment.instalmentDate",
+				// "installment.currencyId",
+				// "installment.amount",
+				// "installment.instalmentStatus",
+				// "installment.paymentInfo",
+				// "installment.paymentStatus",
 				"booking.bookingType",
 				"booking.bookingStatus",
 				"booking.currency",
@@ -491,7 +491,7 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.bookingDate",
 				"booking.totalInstallments",
 				"booking.locationInfo",
-				"booking.moduleInfo",
+				// "booking.moduleInfo",
 				"booking.paymentGatewayId",
 				"booking.paymentStatus",
 				"booking.paymentInfo",

@@ -7,3 +7,4 @@ export const FacebookSocialLink = `https://www.facebook.com/LaytripTravel`
 export const LinkedInSocialLink = `https://www.linkedin.com/company/laytriptravels`
 export const PintrestSocialLink = `https://in.pinterest.com/laytriptravel/`
 export const TwitterSocialLink =`https://twitter.com/LaytripTravel`
+export const BookingLink =`https://alpha.laytrip.com/account/bookings`
