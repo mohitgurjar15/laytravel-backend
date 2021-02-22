@@ -470,7 +470,7 @@ export class CronJobsService {
 
 								const responce = await CartDataUtility.CartMailModelDataGenerate(cartBooking.laytripCartId)
 								if (responce?.param) {
-									let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
+									let subject = `BOOKING ID ${cartBooking.laytripCartId} COMPLETION NOTICE`
 									this.mailerService
 										.sendMail({
 											to: responce.email,
@@ -1021,7 +1021,7 @@ export class CronJobsService {
 			await getConnection()
 				.createQueryBuilder()
 				.update(Booking)
-				.set({ paymentStatus: PaymentStatus.CONFIRM })
+				.set({ paymentStatus: PaymentStatus.CONFIRM, nextInstalmentDate: null })
 				.where("id = :id", { id: bookingId })
 				.execute();
 		}

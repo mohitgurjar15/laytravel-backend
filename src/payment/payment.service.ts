@@ -732,7 +732,7 @@ export class PaymentService {
 						else{
 							const responce = await CartDataUtility.CartMailModelDataGenerate(cart.laytripCartId)
 								if (responce?.param) {
-									let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
+									let subject = `BOOKING ID ${responce.param.orderId} COMPLETION NOTICE`
 									this.mailerService
 										.sendMail({
 											to: responce.email,
@@ -851,7 +851,7 @@ export class PaymentService {
 			await getConnection()
 				.createQueryBuilder()
 				.update(Booking)
-				.set({ paymentStatus: PaymentStatus.CONFIRM, nextInstalmentDate: '' })
+				.set({ paymentStatus: PaymentStatus.CONFIRM, nextInstalmentDate: null })
 				.where("id = :id", { id: bookingId })
 				.execute();
 		}
