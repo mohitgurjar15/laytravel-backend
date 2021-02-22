@@ -285,12 +285,13 @@ export class PaymentController {
 	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
 	@ApiResponse({ status: 404, description: 'Flight is not available now' })
 	@HttpCode(200)
+	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
 	async validate(
 		@Body() bookDto: AuthoriseCartDto,
 		@Req() req,
-		@LogInUser() user
+		@GetUser() user : User
 	) {
 		// return bookDto;
 		return await this.paymentService.validate(bookDto, req.headers, user);

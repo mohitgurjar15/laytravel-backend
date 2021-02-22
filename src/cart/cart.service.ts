@@ -150,29 +150,6 @@ export class CartService {
 
         if (flightInfo) {
 
-            // var travelersCount:number = parseInt(flightInfo[0].adult_count)
-            // //console.log(flightInfo[0].adult_count);
-            // //console.log(travelersCount);
-
-            // const 
-            // travelersCount= travelersCount + 
-            // //console.log(flightInfo[0].child_count);
-            // //console.log(travelersCount);
-
-            // travelersCount = travelersCount + flightInfo[0].infant_count ? parseInt(flightInfo[0].infant_count) : 0
-            // //console.log(travelersCount);
-
-            // //console.log(travelersCount);
-            // //console.log(travelers.length);
-
-
-            // if (travelersCount != travelers.length) {
-            //     if (travelersCount > travelers.length) {
-            //         throw new BadRequestException('Please add traveler')
-            //     } else {
-            //         throw new BadRequestException('Please remove traveler')
-            //     }
-            // }
             const depatureDate = flightInfo[0].departure_date;
 
             const formatedDepatureDate = DateTime.convertDateFormat(depatureDate, 'DD/MM/YYYY', 'YYYY-MM-DD')

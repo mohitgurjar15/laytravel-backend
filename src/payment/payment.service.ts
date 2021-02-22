@@ -56,7 +56,7 @@ import { Instalment } from "src/utility/instalment.utility";
 export class PaymentService {
 	constructor(
 		private readonly mailerService: MailerService,
-		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+		//@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
@@ -887,11 +887,16 @@ export class PaymentService {
 	}
 
 
-	async validate(bookDto:AuthoriseCartDto, headers, user) {
+	async validate(bookDto:AuthoriseCartDto, headers, user:User) {
 
     	console.log(bookDto, headers, user);
 		const { payment_type, laycredit_points, card_token, instalment_type, additional_amount,  cart, selected_down_payment , browser_info , site_url } = bookDto
 		let uuid = uuidv4();
+		const date = new Date();
+		var date1 = date.toISOString();
+		date1 = date1
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "").split(' ')[0];
 		let redirection = site_url + '/book/charge/' + uuid;
 
 		let response: any = {
@@ -913,8 +918,8 @@ export class PaymentService {
 		let query = getConnection()
 			.createQueryBuilder(Cart, "cart")
 			.select([
-				"cart.moduleInfo"])
-			.where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
+				"cart.moduleInfo","cart.moduleId"])
+			.where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
 			.orderBy(`cart.id`, 'DESC')
 			.limit(5)
 		const [result, count] = await query.getManyAndCount();
@@ -922,18 +927,32 @@ export class PaymentService {
 		if (!result.length) {
 			throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
 		}
-		let smallestDate = ''
-            let totalAmount = 0
-            //let ToatalAmount = ''
+		
+		
+		
+			let smallestDate = ''
+            let totalAmount:number = 0
+            
             for await (const item of result) {
+				console.log('moduleId',item.moduleId);
+				 
                 if (item.moduleId == ModulesName.FLIGHT) {
-                    const dipatureDate = await DateTime.convertDateFormat(item.moduleInfo[0].departure_date, 'MM/DD/YYYY', 'YYYY-MM-DD')
-                    if (smallestDate == '') {
+					console.log('1');
+					console.log(result[0].moduleInfo[0].departure_date);			
+                    const dipatureDate = await this.changeDateFormat(item.moduleInfo[0].departure_date)
+                    console.log('2');
+					if (smallestDate == '') {
                         smallestDate = dipatureDate;
                     } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                         smallestDate = dipatureDate;
                     }
-					totalAmount += item.moduleInfo[0].selling_price
+					console.log('smallestDate',smallestDate);
+					console.log(item.moduleInfo[0].selling_price);
+					
+					totalAmount += parseFloat(item.moduleInfo[0].selling_price) 
+
+					console.log('totalAmount',totalAmount);
+					
                 }
             }
 
@@ -950,7 +969,7 @@ export class PaymentService {
 					instalmentDetails = Instalment.weeklyInstalment(
 						totalAmount,
 						smallestDate,
-						new Date(),
+						date1,
 						totalAdditionalAmount,
 						0,
 						0,
@@ -961,7 +980,7 @@ export class PaymentService {
 					instalmentDetails = Instalment.biWeeklyInstalment(
 						totalAmount,
 						smallestDate,
-						new Date(),
+						date1,
 						totalAdditionalAmount,
 						0,
 						0,
@@ -972,7 +991,7 @@ export class PaymentService {
 					instalmentDetails = Instalment.monthlyInstalment(
 						totalAmount,
 						smallestDate,
-						new Date(),
+						date1,
 						totalAdditionalAmount,
 						0,
 						0,
@@ -1058,9 +1077,10 @@ export class PaymentService {
 		// return authCardResult;
 		if (authCardResult.meta_data) {
 			let transaction = authCardResult.meta_data.transaction;
-			this.cacheManager.set(uuid, { bookDto, headers, user }, { ttl: 3000 });
+			//this.cacheManager.set(uuid, { bookDto, headers, user }, { ttl: 3000 });
 			response.transaction = transaction;
 			response.redirection = redirection + '?transaction_token=' + transaction.token;
+			response.authoriceAmount = authoriseAmount
 		}
 
 		return response;
@@ -1093,5 +1113,10 @@ export class PaymentService {
 		}
 	}
 
+	async changeDateFormat(dateTime) {
+		var date = dateTime.split('/')
 
+		return `${date[2]}-${date[1]}-${date[0]}`
+
+	}
 }

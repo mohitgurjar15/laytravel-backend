@@ -8,11 +8,11 @@ import * as redisStore from 'cache-manager-redis-store';
   imports: [
     AuthModule,
     // CacheModule.register(),
-    CacheModule.register({
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
-    }),
+    // CacheModule.register({
+    //   store: redisStore,
+    //   host: 'localhost',
+    //   port: 6379,
+    // }),
 
   ],
   controllers: [PaymentController],

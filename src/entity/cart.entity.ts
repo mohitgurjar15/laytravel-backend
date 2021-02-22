@@ -44,7 +44,7 @@ export class Cart extends BaseEntity {
     @Column("json", { name: "module_info" })
     moduleInfo: object;
 
-    @Column("json", { name: "module_info", nullable: true })
+    @Column("json", { name: "old_module_info", nullable: true })
     oldModuleInfo: object;
 
     @Column("uuid", { name: "user_id", nullable: true })
