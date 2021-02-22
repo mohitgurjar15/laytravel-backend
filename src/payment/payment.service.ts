@@ -39,6 +39,8 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
+import { CartDataUtility } from "src/utility/cart-data.utility";
+import { LaytripCartBookingComplationMail } from "src/config/new_email_templete/cart-completion-mail.html";
 
 
 @Injectable()
@@ -629,8 +631,8 @@ export class PaymentService {
 						await instalment.save()
 					}
 				}
-				let nextAmount;
-				let nextDate
+				let nextDate;
+				let nextAmount: number = 0;
 
 
 				if (transaction.status == false) {
@@ -669,8 +671,10 @@ export class PaymentService {
 							.set(update)
 							.where("id = :id", { id: booking.id })
 							.execute();
-						nextAmount += nextInstalmentDate.amount ? parseFloat(nextInstalmentDate.amount) : 0
-						nextDate = nextInstalmentDate.instalmentDate
+						if (nextInstalmentDate) {
+							nextAmount += nextInstalmentDate.amount ? parseFloat(nextInstalmentDate.amount) : 0
+							nextDate = nextInstalmentDate.instalmentDate
+						}
 					}
 
 					//console.log('installment');
@@ -709,20 +713,43 @@ export class PaymentService {
 						nextAmount: nextAmount,
 					}
 					if (cart.user.isEmail) {
-						this.mailerService
-							.sendMail({
-								to: cart.user.email,
-								from: mailConfig.from,
-								bcc: mailConfig.BCC,
-								subject: `Installment Payment Successed`,
-								html: InstallmentRecevied(param),
-							})
-							.then((res) => {
-								//console.log("res", res);
-							})
-							.catch((err) => {
-								//console.log("err", err);
-							});
+						if (nextAmount > 0) {
+							this.mailerService
+								.sendMail({
+									to: cart.user.email,
+									from: mailConfig.from,
+									bcc: mailConfig.BCC,
+									subject: `Installment Payment Successed`,
+									html: InstallmentRecevied(param),
+								})
+								.then((res) => {
+									//console.log("res", res);
+								})
+								.catch((err) => {
+									//console.log("err", err);
+								});
+						}
+						else{
+							const responce = await CartDataUtility.CartMailModelDataGenerate(cart.laytripCartId)
+								if (responce?.param) {
+									let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
+									this.mailerService
+										.sendMail({
+											to: responce.email,
+											from: mailConfig.from,
+											bcc: mailConfig.BCC,
+											subject: subject,
+											html: await LaytripCartBookingComplationMail(responce.param),
+										})
+										.then((res) => {
+											//console.log("res", res);
+										})
+										.catch((err) => {
+											//console.log("err", err);
+										});
+								}
+						}
+
 					}
 
 					if (cart.user.isSMS) {
@@ -824,7 +851,7 @@ export class PaymentService {
 			await getConnection()
 				.createQueryBuilder()
 				.update(Booking)
-				.set({ paymentStatus: PaymentStatus.CONFIRM , nextInstalmentDate : ''})
+				.set({ paymentStatus: PaymentStatus.CONFIRM, nextInstalmentDate: '' })
 				.where("id = :id", { id: bookingId })
 				.execute();
 		}

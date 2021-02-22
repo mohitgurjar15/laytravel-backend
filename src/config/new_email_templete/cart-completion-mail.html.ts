@@ -6,7 +6,7 @@ import { CartBookingEmailParameterModel } from "../email_template/model/cart-boo
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function LaytripCartBookingConfirmtionMail(
+export async function LaytripCartBookingComplationMail(
     param: CartBookingEmailParameterModel
   ) {
     let content = `<tr>
@@ -22,16 +22,15 @@ export async function LaytripCartBookingConfirmtionMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
-                        Congratulations on booking your travel! Your Laytrip Booking ID is ${param.orderId} please use this number when referencing your booking. Here are your Booking Details:
+                        Congratulations on completing your installment plan! We have processed your final payment for Booking ID ${param.orderId}.
                     </td>
                 </tr>`
                 if(param.bookingType == BookingType.INSTALMENT){
                 content += `<tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px;  line-height: 20px; color: #707070;padding: 15px 0; text-align: left;">
-                        We will send you your airline, hotel, car and home rental reservation number(s) once we have received your final installment payment. Until your final installment is received, our  
-                        <a href="#" style="color: #f725c5;"><u>Laytrip Policy</u></a> for changes and cancellations apply. 
-                        <br/>Here are your booking details:</td>
+                        Below you will find your applicable airline, hotel, home and car rental reservation number(s) so you can contact your travel providers directly for any of your final travel preparations.
+                        </td>
                 </tr>` 
                 }
                 content += `
