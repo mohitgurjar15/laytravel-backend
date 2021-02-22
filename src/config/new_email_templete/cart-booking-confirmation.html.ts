@@ -95,7 +95,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                 <span style="display: block;">Airport :- ${droup.depature.code} (La Guardia)</span>
                                                 <span style="display: block;">City :- ${droup.depature.city}</span>
                                                 <span style="display: block;">Country:- ${droup.depature.country}</span>
-                                                <span style="display: block;"> Date :- ${droup.depature.date}</span>
+                                                <span style="display: block;"> Date :- ${ DateTime.convertDateFormat(droup.depature.date, 'MM/DD/YYYY', 'MMM DD, YYYY')}</span>
                                                 <span style="display: block;">time :- ${droup.depature.time}</span>
                                             </td>
                                         </tr>
@@ -108,7 +108,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                 <span style="display: block;">Airport :- ${droup.arrival.code}</span>
                                                 <span style="display: block;">City :- ${droup.arrival.city}</span>
                                                 <span style="display: block;">Country:- ${droup.arrival.country}</span>
-                                                <span style="display: block;"> Date :- ${droup.arrival.date}</span>
+                                                <span style="display: block;"> Date :- ${DateTime.convertDateFormat(droup.arrival.date, 'MM/DD/YYYY', 'MMM DD, YYYY')}</span>
                                                 <span style="display: block;">time :- ${droup.arrival.time}</span>
                                             </td>
                                         </tr>
@@ -232,23 +232,25 @@ export async function LaytripCartBookingConfirmtionMail(
                     </td>
                 </tr>
                 <tr>
-                    <td>`
-                    if(param.paymentDetail.length)
-                    {
-
-                    
-                    content += `
+                    <td>
                         <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
-                            <tr>
-                                <td colspan="4"
+                            <tr>`
+                            if(param.paymentDetail.length)
+                            {
+                                content += ` <td colspan="4"
                                     style="padding: 10px 0; background-color: #ecf1ff; color: #000000; font-weight: 800; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
                                         <span>Payment details</span>
                                     </div>
                                 </td>
-                            </tr>
-                            <tr>
+                            </tr>`
+                            }
+                            if(param.paymentDetail.length)
+                            {
+
+                            
+                            content += `<tr>
                                 <th align="center" valign="center" cellpadding="10" cellspacing="0"
                                     width="15%" class="header_txt"
                                     style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
@@ -312,12 +314,10 @@ export async function LaytripCartBookingConfirmtionMail(
                                         </tr>
                                     </table>
                                 </td>
-                            </tr></table>`
+                            </tr>`
                             }
-                            
                         }
-
-                        content +=`
+                        content +=`</table>
                     </td>
                 </tr>
                 <tr>

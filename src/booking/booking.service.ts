@@ -818,7 +818,7 @@ export class BookingService {
 						}
 					}
 
-					
+
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
@@ -1177,7 +1177,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search,product_id
+			search, product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1251,7 +1251,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search,product_id
+			search, product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1326,7 +1326,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search,product_id
+			search, product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1383,7 +1383,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search,product_id
+			search, product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1813,32 +1813,38 @@ export class BookingService {
 
 	async shareBooking(shareBookingDto: ShareBookingDto, user: User): Promise<{ message: any }> {
 		const { emails, bookingId } = shareBookingDto
-		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
-		if (bookingData.userId != user.userId) {
-			throw new NotAcceptableException(`given booking not found`)
-		}
 
-		if (!bookingData) {
-			throw new NotFoundException(
-				"Given booking id not found&&&booking_id&&&Given booking id not found"
-			);
-		}
-		for await (const emailData of emails) {
-			const email = emailData.email
-			const Data = bookingData;
-			switch (Data.moduleId) {
-				case ModulesName.HOTEL:
-					break;
-
-				case ModulesName.FLIGHT:
-					await this.flightBookingEmailSend(Data, email);
-					break;
-
-				default:
-					break;
+		const responce = await CartDataUtility.CartMailModelDataGenerate(bookingId)
+		if (responce?.param) {
+			let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
+			let emailId = ''
+			for await (const email of emails) {
+				emailId += email.email + ','
 			}
+			this.mailerService
+				.sendMail({
+					to: emailId,
+					cc: responce.email,
+					from: mailConfig.from,
+					bcc: mailConfig.BCC,
+					subject: subject,
+					html: await LaytripCartBookingConfirmtionMail(responce.param),
+				})
+				.then((res) => {
+					//console.log("res", res);
+				})
+				.catch((err) => {
+					//console.log("err", err);
+				});
+			return {
+				message: `Cart booking email send succeessfully`
+			};
+		} else {
+			return {
+				message: `We could not find your booking id please correct it.`
+			};
 		}
-		return { message: `emails send successfully` };
+
 	}
 	async getBookingIds() {
 

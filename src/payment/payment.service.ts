@@ -658,7 +658,7 @@ export class PaymentService {
 							.where(`"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${booking.id}'`)
 							.orderBy(`"BookingInstalments"."id"`)
 							.getOne()
-						let update = { nextInstalmentDate: nextInstalmentDate.instalmentDate || null }
+						let update = { nextInstalmentDate: nextInstalmentDate?.instalmentDate || null }
 						if (!nextInstalmentDate) {
 							update['paymentStatus'] = PaymentStatus.CONFIRM
 						}
@@ -824,7 +824,7 @@ export class PaymentService {
 			await getConnection()
 				.createQueryBuilder()
 				.update(Booking)
-				.set({ paymentStatus: PaymentStatus.CONFIRM })
+				.set({ paymentStatus: PaymentStatus.CONFIRM , nextInstalmentDate : ''})
 				.where("id = :id", { id: bookingId })
 				.execute();
 		}
