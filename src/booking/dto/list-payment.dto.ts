@@ -23,10 +23,15 @@ export class ListPaymentDto {
 
     @ApiPropertyOptional({
         description:'Booking id',
-        example:"937a3d28-efbb-4a3f-a117-f11b8a6e8f2e"
+        example:""
     })
     booking_id: string;
 
+    @ApiPropertyOptional({
+        description: 'Product id',
+        example: ""
+    })
+    product_id: string;
 
     @ApiPropertyOptional({
         description:'module id',

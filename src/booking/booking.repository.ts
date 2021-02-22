@@ -28,8 +28,8 @@ export class BookingRepository extends Repository<Booking> {
 			booking_id,
 			search,
 			module_id, supplier_id,
-			email, booking_through, transaction_token
-
+			email, booking_through, transaction_token,product_id
+			
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -65,8 +65,12 @@ export class BookingRepository extends Repository<Booking> {
 			where += `AND ("booking"."booking_type" = '${booking_type}')`;
 		}
 
+		if (product_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
+		}
+
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+			where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`;
 		}
 
 		if (customer_name) {
@@ -220,7 +224,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_type,
 			payment_start_date,
 			instalment_type,
-			module_id, payment_status
+			module_id, payment_status,product_id
 		} = listPaymentDto;
 
 		const take = limit || 10;
@@ -305,15 +309,21 @@ export class BookingRepository extends Repository<Booking> {
 			.where(`"User"."user_id" =:userId`, { userId: user.userId })
 		//.orderBy("BookingInstalments.id", 'DESC')
 
-		if (booking_id)
-			query = query.andWhere(`"booking"."laytrip_booking_id"=:booking_id`, { booking_id });
+		
+		if (product_id) {
+			query = query.andWhere (`AND ("booking"."laytrip_booking_id" =  '${product_id}')`);
+		}
+
+		if (booking_id) {
+			query = query.andWhere (`AND ("cart"."laytrip_cart_id" =  '${booking_id}')`);
+		}
 		if (booking_type)
 			query = query.andWhere(`"booking"."booking_type"=:booking_type`, {
 				booking_type,
 			});
 
 		if (module_id)
-			query = query.andWhere(`"booking"."module_id"=:module_id`, {
+		query = query.andWhere(`"booking"."module_id"=:module_id`, {
 				module_id,
 			});
 		if (payment_status) {
@@ -652,7 +662,7 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id, supplier_id, userId
+			module_id, supplier_id, userId , product_id
 		} = filterOption;
 
 		let where;
@@ -681,8 +691,12 @@ export class BookingRepository extends Repository<Booking> {
 			where += `AND ("booking"."booking_type" = '${booking_type}')`;
 		}
 
+		if (product_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`
+		}
+
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" =  '${booking_id}')`;
+			where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`
 		}
 
 		// if (payment_type) {

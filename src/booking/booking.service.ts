@@ -1177,7 +1177,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search
+			search,product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1186,8 +1186,12 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
 		}
 
+		if (product_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`
+		}
+
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+			where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
@@ -1247,7 +1251,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search
+			search,product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1256,8 +1260,12 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
 		}
 
+		if (product_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`
+		}
+
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+			where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
@@ -1318,7 +1326,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search
+			search,product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1327,8 +1335,12 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
 		}
 
+		if (product_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`
+		}
+
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+			where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
@@ -1371,7 +1383,7 @@ export class BookingService {
 			instalment_type,
 			user_id,
 			booking_id,
-			search
+			search,product_id
 		} = listPaymentAdminDto;
 
 		let where;
@@ -1380,8 +1392,12 @@ export class BookingService {
 			where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
 		}
 
+		if (product_id) {
+			where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`
+		}
+
 		if (booking_id) {
-			where += `AND ("booking"."laytrip_booking_id" = '${booking_id}')`;
+			where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`
 		}
 		if (start_date) {
 			where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
