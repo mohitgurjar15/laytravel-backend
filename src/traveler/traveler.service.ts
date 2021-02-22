@@ -345,10 +345,12 @@ export class TravelerService {
 			if (!result.length) {
 				throw new NotFoundException(`No data found.`);
 			}
-			result.forEach(function (data) {
+			for await (const data of result) {
 				// delete data.updatedDate;
 				// delete data.salt;
 				// delete data.password;
+				data.passportExpiry = data.passportExpiry || ''
+				data.passportNumber = data.passportNumber || '' 
 				var birthDate = new Date(data.dob);
 
 				var age = moment(new Date()).diff(moment(birthDate), "years");
@@ -360,7 +362,7 @@ export class TravelerService {
 				} else {
 					data.user_type = "adult";
 				}
-			});
+			};
 
 			return { data: result, TotalReseult: count };
 		} catch (error) {

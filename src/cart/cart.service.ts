@@ -32,6 +32,13 @@ import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { UserCard } from 'src/entity/user-card.entity';
 import { SearchLog } from 'src/entity/search-log.entity';
+import { CartBookingEmailParameterModel } from 'src/config/email_template/model/cart-booking-email.model';
+import { CartDataUtility } from 'src/utility/cart-data.utility';
+import { MailerService } from '@nestjs-modules/mailer';
+import * as config from "config";
+import { LaytripCartBookingConfirmtionMail } from 'src/config/new_email_templete/cart-booking-confirmation.html';
+const mailConfig = config.get("email");
+import { BookingNotCompletedMail } from 'src/config/new_email_templete/booking-not-completed-mail.html';
 
 @Injectable()
 export class CartService {
@@ -44,6 +51,8 @@ export class CartService {
 
         @InjectRepository(AirportRepository)
         private airportRepository: AirportRepository,
+
+        public readonly mailerService: MailerService
     ) { }
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
@@ -813,11 +822,14 @@ export class CartService {
             const cartData = await cartBook.save()
 
             let responce = []
+            let mailResponce = []
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
                         let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
                         responce.push(flightResponce)
+                        flightResponce['cart'] = item
+                        mailResponce.push(flightResponce)
                         break;
 
                     default:
@@ -827,6 +839,8 @@ export class CartService {
             let returnResponce = {}
             returnResponce = cartData
             returnResponce['carts'] = responce
+            this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
+
             return returnResponce
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -967,6 +981,46 @@ export class CartService {
 
 
         return newCart
+    }
+
+    async cartBookingEmailSend(bookingId, userId) {
+        const responce = await CartDataUtility.CartMailModelDataGenerate(bookingId)
+        if (responce?.param) {
+            let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
+            this.mailerService
+                .sendMail({
+                    to: responce.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: subject,
+                    html: await LaytripCartBookingConfirmtionMail(responce.param),
+                })
+                .then((res) => {
+                    //console.log("res", res);
+                })
+                .catch((err) => {
+                    //console.log("err", err);
+                });
+        } else {
+            const user = await CartDataUtility.userData(bookingId)
+            const userName = user.firstName ? user.firstName : '' + ' ' + user.lastName ? user.lastName : ''
+
+            const subject = `BOOKING NOT COMPLETED`
+            this.mailerService
+                .sendMail({
+                    to: user.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: subject,
+                    html: await BookingNotCompletedMail({ userName }),
+                })
+                .then((res) => {
+                    //console.log("res", res);
+                })
+                .catch((err) => {
+                    //console.log("err", err);
+                });
+        }
     }
 
     async cartInstallmentDetail(Dto: cartInstallmentsDto, user: User) {

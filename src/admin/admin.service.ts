@@ -95,7 +95,7 @@ export class AdminService {
 				.sendMail({
 					to: userdata.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: `Welcome on board`,
 					template: "welcome.html",
 					context: {
@@ -414,7 +414,7 @@ export class AdminService {
 								.sendMail({
 									to: data.email,
 									from: mailConfig.from,
-									cc: mailConfig.BCC,
+									bcc: mailConfig.BCC,
 									subject: `Welcome on board`,
 									html: RagisterMail({
 										username: data.firstName + " " + data.lastName

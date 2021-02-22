@@ -209,7 +209,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: first_name + " " + last_name,
@@ -379,7 +379,7 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -436,7 +436,7 @@ export class AuthService {
 				.sendMail({
 					to: newEmail,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Verify your account",
 					html: VerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
@@ -571,7 +571,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				sender: "laytrip",
 				subject: "Forgot Password",
 				html: forgotPasswordMail({
@@ -676,7 +676,7 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
-						cc: mailConfig.BCC,
+						bcc: mailConfig.BCC,
 						sender: "laytrip",
 						subject: "Reset Password",
 						html: resetPasswordMail({
@@ -824,7 +824,7 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
-						cc: mailConfig.BCC,
+						bcc: mailConfig.BCC,
 						subject: "Welcome on board",
 						html: WelcomeBoardMail({
 							username: user.firstName + " " + user.lastName,

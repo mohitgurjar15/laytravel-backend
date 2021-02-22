@@ -68,4 +68,10 @@ export class ExportBookingDto {
     })
     search: string;
 
+    @ApiPropertyOptional({
+        description: 'Product id',
+        example: ""
+    })
+    product_id: string;
+
 }

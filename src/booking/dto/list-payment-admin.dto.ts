@@ -75,4 +75,10 @@ export class ListPaymentAdminDto {
     })
     search:string;
 
+    @ApiPropertyOptional({
+        description: 'Product id',
+        example: ""
+    })
+    product_id: string;
+
 }

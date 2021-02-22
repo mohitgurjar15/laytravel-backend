@@ -2,7 +2,7 @@ import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { BaseUrl } from "../base-url";
 
-export function BookingNotCompletedMail(param:{ username:string,bookingId })
+export function BookingNotCompletedMail(param:{ userName:string })
 {
 const content = `<!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
@@ -21,7 +21,7 @@ const content = `<!-- header Text section start -->
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 22px; line-height: 24px; color: #444; font-weight:700; padding-top: 15px; text-align: center;">Covid Update</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 22px; line-height: 24px; color: #444; font-weight:700; padding-top: 15px; text-align: center;">Hi ${param.username}</td>
+                                                    <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 22px; line-height: 24px; color: #444; font-weight:700; padding-top: 15px; text-align: center;">Hi ${param.userName}</td>
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">

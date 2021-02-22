@@ -57,4 +57,10 @@ export class ExportPaymentAdminDto {
     })
     search:string;
 
+    @ApiPropertyOptional({
+        description: 'Product id',
+        example: ""
+    })
+    product_id: string;
+
 }
