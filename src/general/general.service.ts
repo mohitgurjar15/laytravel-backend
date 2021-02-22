@@ -14,6 +14,7 @@ import { Role } from 'src/enum/role.enum';
 import { massCommunicationMail } from 'src/config/email_template/mass-communication.html';
 import { TestTemplete } from 'src/config/new_email_templete/test.html';
 import { LaytripFlightBookingConfirmtionMail } from 'src/config/new_email_templete/flight-booking-confirmation.html';
+import { MassCommunication } from 'src/entity/mass-communication.entity';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -126,9 +127,16 @@ export class GeneralService {
         }
     }
 
-    async massCommunication(dto: MassCommunicationDto) {
+    async massCommunication(dto: MassCommunicationDto, user: User) {
         const { subject, email_body } = dto
         const role = [Role.FREE_USER, Role.PAID_USER]
+        const log = new MassCommunication
+        log.subject = subject
+        log.message = email_body
+        log.createdDate = new Date()
+        log.createdBy = user.userId
+
+        await log.save();
         // let emails = await getManager()
         //     .createQueryBuilder(User, "user")
         //     .select([
@@ -202,5 +210,29 @@ export class GeneralService {
         return {
             message: `email send succesfully`
         }
+    }
+
+
+    async ListMassCommunication() {
+        const [result, count] = await getManager()
+            .createQueryBuilder(MassCommunication, "log")
+            .leftJoinAndSelect("log.user", "user")
+            .select([
+                "user.userId",
+                "user.firstName",
+                "user.lastName",
+                "user.email",
+                "log.id",
+                "log.message",
+                "log.subject",
+                "log.createdDate",
+                "user.roleId"
+            ])
+            .orderBy("log.id", "DESC")
+            .getManyAndCount();
+        if (!result.length) {
+            throw new NotFoundException(`No Log found.`);
+        }
+        return { data: result, TotalReseult: count };
     }
 }
