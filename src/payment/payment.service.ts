@@ -44,6 +44,12 @@ import { TwilioSMS } from "src/utility/sms.utility";
 import { Cache } from 'cache-manager';
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripCartBookingComplationMail } from "src/config/new_email_templete/cart-completion-mail.html";
+import { AuthoriseCartDto } from "./dto/authorise-card-for-booking.dto";
+import { ModulesName } from "src/enum/module.enum";
+import { Cart } from "src/entity/cart.entity";
+import { PaymentType } from "src/enum/payment-type.enum";
+import { InstalmentType } from "src/enum/instalment-type.enum";
+import { Instalment } from "src/utility/instalment.utility";
 
 
 @Injectable()
@@ -881,27 +887,171 @@ export class PaymentService {
 	}
 
 
-	async validate(bookDto, headers, user) {
+	async validate(bookDto:AuthoriseCartDto, headers, user) {
 
     	console.log(bookDto, headers, user);
+		const { payment_type, laycredit_points, card_token, instalment_type, additional_amount,  cart, selected_down_payment , browser_info , site_url } = bookDto
 		let uuid = uuidv4();
-		let redirection = bookDto.site_url + '/book/charge/' + uuid;
+		let redirection = site_url + '/book/charge/' + uuid;
 
 		let response: any = {
 			uuid,
 			redirection,
 			transaction: {}
 		};
-		
-		//this.userCart.findAll();
 
+		let authoriseAmount:number = 0 
+
+		if (cart.length > 5) {
+			throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
+		}
+		let cartIds: number[] = []
+		for await (const i of cart) {
+			cartIds.push(i.cart_id)
+		}
+
+		let query = getConnection()
+			.createQueryBuilder(Cart, "cart")
+			.select([
+				"cart.moduleInfo"])
+			.where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
+			.orderBy(`cart.id`, 'DESC')
+			.limit(5)
+		const [result, count] = await query.getManyAndCount();
+		
+		if (!result.length) {
+			throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
+		}
+		let smallestDate = ''
+            let totalAmount = 0
+            //let ToatalAmount = ''
+            for await (const item of result) {
+                if (item.moduleId == ModulesName.FLIGHT) {
+                    const dipatureDate = await DateTime.convertDateFormat(item.moduleInfo[0].departure_date, 'MM/DD/YYYY', 'YYYY-MM-DD')
+                    if (smallestDate == '') {
+                        smallestDate = dipatureDate;
+                    } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                        smallestDate = dipatureDate;
+                    }
+					totalAmount += item.moduleInfo[0].selling_price
+                }
+            }
+
+			
+			if (payment_type == PaymentType.INSTALMENT) {
+				let instalmentDetails;
+			
+				let totalAdditionalAmount = additional_amount || 0;
+				if (laycredit_points > 0) {
+					totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
+				}
+				//save entry for future booking
+				if (instalment_type == InstalmentType.WEEKLY) {
+					instalmentDetails = Instalment.weeklyInstalment(
+						totalAmount,
+						smallestDate,
+						new Date(),
+						totalAdditionalAmount,
+						0,
+						0,
+						selected_down_payment
+					);
+				}
+				if (instalment_type == InstalmentType.BIWEEKLY) {
+					instalmentDetails = Instalment.biWeeklyInstalment(
+						totalAmount,
+						smallestDate,
+						new Date(),
+						totalAdditionalAmount,
+						0,
+						0,
+						selected_down_payment
+					);
+				}
+				if (instalment_type == InstalmentType.MONTHLY) {
+					instalmentDetails = Instalment.monthlyInstalment(
+						totalAmount,
+						smallestDate,
+						new Date(),
+						totalAdditionalAmount,
+						0,
+						0,
+						selected_down_payment
+					);
+				}
+			
+				if (instalmentDetails.instalment_available) {
+					let firstInstalemntAmount =
+						instalmentDetails.instalment_date[0].instalment_amount;
+					if (laycredit_points > 0) {
+						firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
+					}
+					authoriseAmount = Generic.formatPriceDecimal(firstInstalemntAmount)
+					
+				} else {
+					return {
+						statusCode: 422,
+						message: `Instalment option is not available for your search criteria`
+					}
+				}
+			}
+			else if (payment_type == PaymentType.NOINSTALMENT) {
+
+				let sellingPrice = totalAmount;
+				if (laycredit_points > 0) {
+					sellingPrice = totalAmount - laycredit_points
+				}
+			
+				if (sellingPrice > 0) {
+					authoriseAmount = Generic.formatPriceDecimal(sellingPrice)
+				}
+				// else {
+				// 	//for full laycredit rdeem
+				// 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+				// 	const bookingResult = await mystifly.bookFlight(
+				// 		bookFlightDto,
+				// 		travelersDetails,
+				// 		isPassportRequired
+				// 	);
+				// 	if (bookingResult.booking_status == "success") {
+			
+				// 		let laytripBookingResult = await this.saveBooking(
+				// 			bookingRequestInfo,
+				// 			currencyId,
+				// 			bookingDate,
+				// 			BookingType.NOINSTALMENT,
+				// 			userId,
+				// 			airRevalidateResult,
+				// 			null,
+				// 			null,
+				// 			bookingResult,
+				// 			travelers,
+				//			cartId
+				// 		);
+				// 		//send email here
+				// 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+				// 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
+			
+				// 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+				// 			laytripBookingResult.laytripBookingId
+				// 		);
+				// 		return bookingResult;
+				// 	} else {
+			
+				// 			return {
+				// 				status: 424,
+				// 				message: bookingResult.error_message,
+				// 			}
+				// 	}
+				// }
+			}
 
 		let authCardResult = await this.authorizeCard(
-			bookDto.card_token,
-			3005, //make it dynamic
+			card_token,
+			Math.ceil(authoriseAmount * 100), //make it dynamic
 			// Math.ceil(1 * 100),
 			"USD",
-			bookDto.browser_info,
+			browser_info,
 			redirection
 		);
 

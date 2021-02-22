@@ -39,6 +39,9 @@ import * as config from "config";
 import { LaytripCartBookingConfirmtionMail } from 'src/config/new_email_templete/cart-booking-confirmation.html';
 const mailConfig = config.get("email");
 import { BookingNotCompletedMail } from 'src/config/new_email_templete/booking-not-completed-mail.html';
+import { PaymentService } from 'src/payment/payment.service';
+import { BookingInstalments } from 'src/entity/booking-instalments.entity';
+import { Booking } from 'src/entity/booking.entity';
 
 @Injectable()
 export class CartService {
@@ -46,7 +49,7 @@ export class CartService {
     constructor(
         private flightService: FlightService,
         private vacationService: VacationRentalService,
-
+        private paymentService: PaymentService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
 
         @InjectRepository(AirportRepository)
@@ -85,29 +88,6 @@ export class CartService {
                 .createQueryBuilder(User, "user")
                 .where(`user_id = '${user.user_id}'`)
                 .getOne()
-
-
-
-
-
-
-            // let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
-
-            // for await (const traveler of travelers) {
-            //     if (!traveler.traveler_id || !uuidValidator(traveler.traveler_id)) {
-            //         throw new BadRequestException('Given traveler is not valid')
-            //     }
-
-            //     let where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role})) AND ("User"."user_id" = '${traveler.traveler_id}')`;
-            //     let travelerAvailable = await getConnection()
-            //         .createQueryBuilder(User, "User")
-            //         .where(where)
-            //         .getCount()
-
-            //     if (!travelerAvailable) {
-            //         throw new BadRequestException('Given traveler is not available')
-            //     }
-            // }
 
             switch (module_id) {
                 case ModulesName.HOTEL:
@@ -215,6 +195,7 @@ export class CartService {
 
             cart.moduleId = ModulesName.FLIGHT
             cart.moduleInfo = flightInfo
+            cart.oldModuleInfo = flightInfo
             cart.expiryDate = diffrence > 2 ? new Date(dayAfterDay) : new Date(formatedDepatureDate);
             cart.isDeleted = false
             cart.createdDate = new Date();
@@ -554,7 +535,7 @@ export class CartService {
                 let newCart = {}
 
                 if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
-                    newCart['oldModuleInfo'] = cart.moduleInfo
+                    newCart['oldModuleInfo'] = cart.oldModuleInfo
                     const value = await this.flightAvailiblity(cart, flightResponse[index])
                     //return value
                     if (typeof value.message == "undefined") {
@@ -562,33 +543,33 @@ export class CartService {
                         newCart['moduleInfo'] = [value]
                         newCart['is_available'] = true
 
-                        //cart.moduleInfo = [value]
-                        // await getConnection()
-                        //     .createQueryBuilder()
-                        //     .update(Cart)
-                        //     .set({ moduleInfo: [value] })
-                        //     .where("id = :id", { id: cart.id })
-                        //     .execute();
-                        // await cart.save()
+                        cart.moduleInfo = [value]
+                        await getConnection()
+                            .createQueryBuilder()
+                            .update(Cart)
+                            .set({ moduleInfo: [value] })
+                            .where("id = :id", { id: cart.id })
+                            .execute();
+                        await cart.save()
                     } else {
                         newCart['is_available'] = false
                         newCart['moduleInfo'] = cart.moduleInfo
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(CartTravelers)
-                            .where(
-                                `"cart_id" = '${cart.id}'`
-                            )
-                            .execute()
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(Cart)
-                            .where(
-                                `"id" = '${cart.id}'`
-                            )
-                            .execute()
+                        // await getConnection()
+                        //     .createQueryBuilder()
+                        //     .delete()
+                        //     .from(CartTravelers)
+                        //     .where(
+                        //         `"cart_id" = '${cart.id}'`
+                        //     )
+                        //     .execute()
+                        // await getConnection()
+                        //     .createQueryBuilder()
+                        //     .delete()
+                        //     .from(Cart)
+                        //     .where(
+                        //         `"id" = '${cart.id}'`
+                        //     )
+                        //     .execute()
                     }
                 }
                 else {
@@ -746,10 +727,9 @@ export class CartService {
         }
     }
 
-
     async bookCart(bookCart: CartBookDto, user: User, Headers) {
         try {
-            const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment } = bookCart
+            const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment, transaction_token } = bookCart
 
 
             if (cart.length > 5) {
@@ -792,6 +772,7 @@ export class CartService {
             }
             let smallestDate = ''
             let largestDate = ''
+            //let ToatalAmount = ''
             for await (const item of result) {
                 if (item.moduleId == ModulesName.FLIGHT) {
                     const dipatureDate = await this.flightService.changeDateFormat(item.moduleInfo[0].departure_date)
@@ -808,6 +789,8 @@ export class CartService {
                     } else if (new Date(largestDate) > new Date(arrivalDate)) {
                         largestDate = arrivalDate;
                     }
+
+
                 }
             }
             const cartBook = new CartBooking
@@ -822,14 +805,18 @@ export class CartService {
             const cartData = await cartBook.save()
 
             let responce = []
-            let mailResponce = []
+            let successedResult = 0;
+            let BookingIds = []
+            //let mailResponce = []
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
                         let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
                         responce.push(flightResponce)
-                        flightResponce['cart'] = item
-                        mailResponce.push(flightResponce)
+                        if (flightResponce['status'] == 1) {
+                            successedResult++;
+                            BookingIds.push(flightResponce['detail']['id'])
+                        }
                         break;
 
                     default:
@@ -839,7 +826,11 @@ export class CartService {
             let returnResponce = {}
             returnResponce = cartData
             returnResponce['carts'] = responce
-            this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
+            if (successedResult) {
+                this.capturePayment(BookingIds, transaction_token, bookCart.payment_type)
+                this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
+            }
+
 
             return returnResponce
         } catch (error) {
@@ -874,8 +865,29 @@ export class CartService {
         }
     }
 
+    async capturePayment(BookingIds, transaction_token, payment_type) {
+        let captureCardresult = await this.paymentService.captureCard(
+            transaction_token
+        );
+        if(payment_type == BookingType.INSTALMENT){
+            await getConnection()
+            .createQueryBuilder()
+            .update(BookingInstalments)
+            .set({ paymentStatus : PaymentStatus.CONFIRM , paymentInfo : captureCardresult.meta_data , transactionToken : captureCardresult.token })
+            .where(`booking_id In (${BookingIds}) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`)
+            .execute();
+        }else{
+            await getConnection()
+            .createQueryBuilder()
+            .update(Booking)
+            .set({ paymentStatus : PaymentStatus.CONFIRM , paymentInfo : captureCardresult.meta_data })
+            .where(`booking_id In (${BookingIds}) `)
+            .execute();
+        } 
+    }
+
     async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string, cartData: CartBooking) {
-        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, selected_down_payment } = bookCart
+        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, selected_down_payment, transaction_token } = bookCart
         const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
         const downPayment = selected_down_payment ? selected_down_payment : 0;
         let flightRequest;
@@ -944,12 +956,13 @@ export class CartService {
                     custom_instalment_amount: 0,
                     custom_instalment_no: 0,
                     card_token,
-                    booking_through,
+                    booking_through
+
                 }
 
 
                 //console.log(bookingdto);
-                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id, selected_down_payment)
+                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id, selected_down_payment, transaction_token)
             }
 
         } else {
@@ -1155,4 +1168,5 @@ export class CartService {
             );
         }
     }
+
 }

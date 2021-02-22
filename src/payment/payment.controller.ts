@@ -11,6 +11,7 @@ import { User } from 'src/entity/user.entity';
 import { CreteTransactionDto } from './dto/create-transaction.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
+import { AuthoriseCartDto } from './dto/authorise-card-for-booking.dto';
 
 
 @ApiTags("Payment")
@@ -287,7 +288,7 @@ export class PaymentController {
 	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
 	async validate(
-		@Body() bookDto: any,
+		@Body() bookDto: AuthoriseCartDto,
 		@Req() req,
 		@LogInUser() user
 	) {
