@@ -32,6 +32,7 @@ import { Notification } from "./notification.entity";
 import { Deal } from "./deal.entity";
 import { DeleteUserAccountRequest } from "./delete-user-account-request.entity";
 import { CryptoKey } from "src/config/common.config";
+import { MassCommunication } from "./mass-communication.entity";
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
 @Index("user_preferred_language", ["preferredLanguage"], {})
@@ -308,6 +309,12 @@ export class User extends BaseEntity {
     user => user.createdBy2
   )
   users: User[];
+
+  @OneToMany(
+    () => MassCommunication,
+    massCommunication => massCommunication.user
+  )
+  massCommunication: MassCommunication[];
 
   @ManyToOne(
     () => Currency,

@@ -1,8 +1,11 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { GetUser } from 'src/auth/get-user.dacorator';
+import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
+import { RolesGuard } from 'src/guards/role.guard';
 import { Detail } from 'src/hotel/hotel-suppliers/priceline/modules/detail';
 import { CryptoUtility } from 'src/utility/crypto.utility';
 import { PushNotification } from 'src/utility/push-notification.utility';
@@ -130,8 +133,8 @@ export class GeneralController {
     @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
     @Post(["mass-communication"])
     @ApiBearerAuth()
-    @UseGuards(AuthGuard())
-    @ApiOperation({ summary: "Mass communicartion" })
+    @UseGuards(AuthGuard(),RolesGuard)
+    @ApiOperation({ summary: "Mass communication" })
     @ApiResponse({ status: 200, description: "Api success" })
     @ApiResponse({ status: 422, description: "Bad Request or API error message" })
     @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
@@ -139,10 +142,27 @@ export class GeneralController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async massCommunication(
-        @Body() dto: MassCommunicationDto
+        @Body() dto: MassCommunicationDto,
+        @GetUser() user:User
     ) {
         return await this.generalService.massCommunication(
-            dto
+            dto,user
+        );
+    }
+    @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
+    @Get(["list/mass-communication"])
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(),RolesGuard)
+    @ApiOperation({ summary: "list Mass communication" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async listmassCommunication(
+    ) {
+        return await this.generalService.ListMassCommunication(
         );
     }
 
