@@ -16,6 +16,7 @@ import { PassportModule} from '@nestjs/passport'
 import * as config from 'config';
 import { JwtStrategy } from './jwt.strategy';
 import { ForgetPassWordRepository } from './forget-password.repository';
+import { UserService } from 'src/user/user.service';
 
 
 const jwtConfig = config.get('jwt');

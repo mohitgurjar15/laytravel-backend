@@ -20,11 +20,11 @@ import { ImportUserDto } from './dto/import-user.dto';
 import { csvFileDto } from './dto/csv-file.dto';
 import { ListDeleteRequestDto } from './dto/list-delete-request.dto';
 import { ExportUserDto } from './dto/export-user.dto';
+import { DeleteAccountReqDto } from 'src/auth/dto/delete-account-request.dto';
+import { ExportDeleteRequestDto } from './dto/export-deleted-user.dto';
 
 @ApiTags('User')
 @Controller('user')
-@ApiBearerAuth()
-@UseGuards(AuthGuard(), RolesGuard)
 export class UserController {
 
 	constructor(
@@ -32,6 +32,8 @@ export class UserController {
 	) { }
 
 	@Get()
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "List user by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -47,6 +49,8 @@ export class UserController {
 	}
 
 	@Get('/:id')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Get user details by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -62,6 +66,8 @@ export class UserController {
 	}
 
 	@Post()
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiConsumes("multipart/form-data")
 	@ApiOperation({ summary: "Create new user by admin" })
@@ -102,6 +108,8 @@ export class UserController {
 
 
 	@Put('/:id')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiConsumes("multipart/form-data")
 	@ApiOperation({ summary: "Update user by admin" })
@@ -142,6 +150,8 @@ export class UserController {
 
 
 	@Delete(':id')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Delete user by admin" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -158,6 +168,8 @@ export class UserController {
 	}
 
 	@Patch("active-deactive-user/:id")
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Active-deactive user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -176,6 +188,8 @@ export class UserController {
 	 * export Customer
 	 */
 	@Get('report/export')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "export customer" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -190,10 +204,12 @@ export class UserController {
 	): Promise<{ data: User[] }> {
 
 		const adminId = user.userId;
-		return await this.userService.exportUser(adminId,paginationOption);
+		return await this.userService.exportUser(adminId, paginationOption);
 	}
 
 	@Get('report/weekly-register')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Count of register user in current week" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -212,6 +228,8 @@ export class UserController {
 
 
 	@Get('report/counts')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "get-counts Of all user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -230,6 +248,8 @@ export class UserController {
 
 	@Post("report/import")
 	@ApiConsumes("multipart/form-data")
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "import user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -275,6 +295,8 @@ export class UserController {
 	}
 
 	@Get('delete-account-requests/list')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "list all delete account requests" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -293,7 +315,30 @@ export class UserController {
 		return await this.userService.listDeleteRequest(dto);
 	}
 
+	@Get('delete-account-requests/export')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@ApiOperation({ summary: "export all delete account requests" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "User not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async exportDeleteRequest(
+		@Query() dto: ExportDeleteRequestDto
+	) {
+		console.log(dto);
+
+		return await this.userService.exportDeleteRequest(dto);
+	}
+
 	@Patch('delete-account-request/reject/:request_id')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "list all delete account requests" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -313,6 +358,8 @@ export class UserController {
 
 
 	@Patch('delete-account-request/approve/:request_id')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 	@ApiOperation({ summary: "list all delete account requests" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -332,6 +379,8 @@ export class UserController {
 
 
 	@Get('filter-options/first-name')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "list all first name of user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -347,6 +396,8 @@ export class UserController {
 	}
 
 	@Get('filter-options/last-name')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "list all last name of user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -362,6 +413,8 @@ export class UserController {
 	}
 
 	@Get('filter-options/email')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "list all email of user" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -378,6 +431,8 @@ export class UserController {
 
 
 	@Get('check-email/:email')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Check email exiest or not" })
 	@ApiResponse({ status: 200, description: "Api success" })
@@ -389,8 +444,29 @@ export class UserController {
 	@ApiResponse({ status: 404, description: "User not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async checkEmail(
-		@Param('email') email : string
+		@Param('email') email: string
 	) {
 		return await this.userService.checkEmailExiest(email);
+	}
+
+	@Roles(Role.FREE_USER, Role.PAID_USER)
+	@Delete(["delete-account-request"])
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "request for delete account" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async deleteUserAcc(
+		@GetUser() user: User,
+		@Body() dto: DeleteAccountReqDto
+	) {
+		return await this.userService.deleteUserAccount(
+			user,
+			dto
+		);
 	}
 }

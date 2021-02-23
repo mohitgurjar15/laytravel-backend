@@ -37,8 +37,8 @@ import { CartDataUtility } from 'src/utility/cart-data.utility';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
 import { LaytripCartBookingConfirmtionMail } from 'src/config/new_email_templete/cart-booking-confirmation.html';
+import { BookingNotCompletedMail } from 'src/config/new_email_templete/laytrip_booking-not-completed-mail.html';
 const mailConfig = config.get("email");
-import { BookingNotCompletedMail } from 'src/config/new_email_templete/booking-not-completed-mail.html';
 
 @Injectable()
 export class CartService {

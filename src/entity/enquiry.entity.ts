@@ -30,6 +30,6 @@ export class Enquiry extends BaseEntity {
   @Column("text", { name: "message" })
   message: string;
 
-  @Column("date", { name: "created_date" })
+  @Column("timestamp without time zone", { name: "created_date" , nullable: true})
   createdDate: Date;
 }

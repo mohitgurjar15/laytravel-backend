@@ -20,10 +20,10 @@ export class FailedPaymentAttempt extends BaseEntity {
   @Column("bigint", { name: "instalment_id" })
   instalmentId: number;
 
-  @Column("date", { name: "date" })
+  @Column("timestamp", { name: "date", nullable: true })
   date: Date;
 
-  @Column("json", { name: "payment_info", nullable:true })
+  @Column("json", { name: "payment_info", nullable: true })
   paymentInfo: object | null;
 
   @ManyToOne(

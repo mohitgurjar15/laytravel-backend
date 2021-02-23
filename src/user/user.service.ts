@@ -45,6 +45,15 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import * as uuidValidator from "uuid-validate"
 import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ExportUserDto } from "./dto/export-user.dto";
+import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
+import { DeleteAccountReqDto } from "src/auth/dto/delete-account-request.dto";
+import { CartBooking } from "src/entity/cart-booking.entity";
+import { CartTravelers } from "src/entity/cart-traveler.entity";
+import { Cart } from "src/entity/cart.entity";
+import { LoginLog } from "src/entity/login-log.entity";
+import { SearchLog } from "src/entity/search-log.entity";
+import { LaytripFeedback } from "src/entity/laytrip_feedback.entity";
+import { ExportDeleteRequestDto } from "./dto/export-deleted-user.dto";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -565,6 +574,7 @@ export class UserService {
 	}
 
 	async listDeleteRequest(dto: ListDeleteRequestDto) {
+		try{
 		const { page_no, search, limit, status } = dto;
 
 
@@ -601,8 +611,156 @@ export class UserService {
 		return {
 			data: result, count: count
 		}
+	} catch (error) {
+		if (typeof error.response !== "undefined") {
+			switch (error.response.statusCode) {
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 409:
+					throw new ConflictException(error.response.message);
+				case 422:
+					throw new BadRequestException(error.response.message);
+				case 403:
+					throw new ForbiddenException(error.response.message);
+				case 500:
+					throw new InternalServerErrorException(error.response.message);
+				case 406:
+					throw new NotAcceptableException(error.response.message);
+				case 404:
+					throw new NotFoundException(error.response.message);
+				case 401:
+					throw new UnauthorizedException(error.response.message);
+				default:
+					throw new InternalServerErrorException(
+						`${error.message}&&&id&&&${error.Message}`
+					);
+			}
+		}
+		throw new InternalServerErrorException(
+			`${error.message}&&&id&&&${errorMessage}`
+		);
+	}
 	}
 
+	async exportDeleteRequest(dto: ExportDeleteRequestDto) {
+		try{
+		const { search, status } = dto;
+
+
+		const keyword = search || "";
+
+		let where;
+		where = `1=1 `
+		if (status) {
+			where += `AND "req"."status" = ${status}`;
+		}
+
+		if (keyword) {
+			where += `AND ( "req"."email" ILIKE '%${keyword}%' OR "req"."user_name" ILIKE '%${keyword}%')`;
+		}
+		const [result, count] = await getConnection()
+			.createQueryBuilder(DeleteUserAccountRequest, "req")
+			.where(where)
+			.orderBy("req.id", "DESC")
+			.getManyAndCount();
+
+		if (!result.length) {
+			throw new NotFoundException(`No request found.`);
+		}
+
+		return {
+			data: result, count: count
+		}} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
+
+	async deleteUserAccount(
+		user: User,
+		dto: DeleteAccountReqDto
+	) {
+		try {
+			const { requireBackupFile } = dto
+			const where = `"req"."user_id" = '${user.userId}' AND "req"."status" != ${DeleteAccountRequestStatus.CANCELLED}`
+			const req = await getConnection()
+				.createQueryBuilder(DeleteUserAccountRequest, "req")
+				.where(where)
+				.getOne();
+			if (req) {
+				this.deleteRequestAccept(req.id, user)
+			}
+			else {
+				const newReq = new DeleteUserAccountRequest
+				newReq.userId = user.userId
+				newReq.status = DeleteAccountRequestStatus.PENDING
+				newReq.createdDate = new Date();
+				newReq.email = user.email
+				newReq.requestForData = requireBackupFile
+				newReq.userName = user.full_name || user.firstName + ' ' + user.lastName
+				const userRequest = await newReq.save()
+
+				await this.deleteRequestAccept(userRequest.id, user)
+
+			}
+			return {
+				message: `Your account deleted successfully `
+			}
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
+		}
+	}
 
 	async deleteRequestAccept(id, user: User) {
 
@@ -640,6 +798,23 @@ export class UserService {
 				this.createCsv(userId, bookingTravelerData.data, 'booking-traveler-data')
 			}
 		}
+
+		const cartBookingData = await this.CartBookingData(userId)
+		if (cartBookingData.data) {
+			data['cartBookingData'] = cartBookingData.data
+			sqlData += cartBookingData.sql
+			this.createCsv(userId, cartBookingData.data, 'bookingData')
+		}
+		// if (cartBookingData.bookingIds.length) {
+		// 	const bookingTravelerData = await this.CartTraveler(cartBookingData.bookingIds)
+
+		// 	if (bookingTravelerData.data) {
+		// 		data['bookingTravelerData'] = bookingData.data
+		// 		sqlData += bookingData.sql
+		// 		this.createCsv(userId, bookingTravelerData.data, 'booking-traveler-data')
+		// 	}
+		// }
+
 
 
 
@@ -704,19 +879,19 @@ export class UserService {
 		}
 
 
-		if (req.requestForData) {
-			await this.sendDataToUser(userId, req.email)
-		}
+		// if (req.requestForData) {
+		// 	await this.sendDataToUser(userId, req.email)
+		// }
 
 		await this.createSql(userId, sqlData, 'user-detail')
 
-		await this.deleteuserData(userId, bookingData.bookingIds)
+		await this.deleteuserData(userId, bookingData.bookingIds, bookingInstallment.installmentIds, cartBookingData.bookingIds)
 
 		req.status = DeleteAccountRequestStatus.CONFIRM
-		req.updateBy = user
+		
 		req.updatedDate = new Date()
 
-		req.save()
+		await req.save()
 
 		return {
 			message: `User ${req.email} deleted succesfully`
@@ -788,7 +963,6 @@ export class UserService {
 			throw new NotFoundException(`Given request id not available`)
 		}
 		req.status = DeleteAccountRequestStatus.CANCELLED
-		req.updateBy = user
 		req.updatedDate = new Date()
 
 		req.save()
@@ -881,6 +1055,53 @@ export class UserService {
 		}
 		return {
 			data, sql, bookingIds
+		}
+	}
+
+	async CartBookingData(userId) {
+		const data = await getConnection()
+			.createQueryBuilder(CartBooking, "booking")
+			.where(
+				`"booking"."user_id" = '${userId}'`
+			)
+			.getMany()
+		var sql = ''
+		var bookingIds = [];
+		if (data.length) {
+			for await (const raw of data) {
+				bookingIds.push(raw.id)
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(CartBooking)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql, bookingIds
+		}
+	}
+	async CartTraveler(bookingIds) {
+		const data = await getConnection()
+			.createQueryBuilder(CartTravelers, "traveler")
+			.where(`"cart_id" in (:...bookingIds) `, {
+				bookingIds
+			})
+			.getMany()
+		var sql = ''
+		if (data.length) {
+			for await (const raw of data) {
+				sql += await getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(CartTravelers)
+					.values(raw)
+					.getQuery();
+			}
+		}
+		return {
+			data, sql
 		}
 	}
 
@@ -1006,8 +1227,10 @@ export class UserService {
 			)
 			.getMany()
 		var sql = ''
+		var installmentIds = [];
 		if (data.length) {
 			for await (const raw of data) {
+				installmentIds.push(raw.id)
 				sql += await getConnection()
 					.createQueryBuilder()
 					.insert()
@@ -1017,7 +1240,7 @@ export class UserService {
 			}
 		}
 		return {
-			data, sql
+			data, sql, installmentIds
 		}
 	}
 
@@ -1091,7 +1314,7 @@ export class UserService {
 		}
 	}
 
-	async deleteuserData(userId, bookingIds) {
+	async deleteuserData(userId, bookingIds, installmentIds, cartBookingIds) {
 
 
 		await getConnection()
@@ -1121,6 +1344,16 @@ export class UserService {
 			)
 			.execute()
 
+		if (installmentIds.length) {
+			await getConnection()
+				.createQueryBuilder()
+				.delete()
+				.from(FailedPaymentAttempt)
+				.where(`"instalment_id" in (:...installmentIds) `, {
+					installmentIds,
+				})
+				.execute()
+		}
 		await getConnection()
 			.createQueryBuilder()
 			.delete()
@@ -1162,8 +1395,9 @@ export class UserService {
 			.where(
 				`"user_id" = '${userId}'`
 			).execute();
+
 		console.log(bookingIds)
-		if (bookingIds.length && bookingIds[0]) {
+		if (bookingIds.length) {
 			// await getConnection()
 			// 	.createQueryBuilder()
 			// 	.delete()
@@ -1196,16 +1430,101 @@ export class UserService {
 
 		await getConnection()
 			.createQueryBuilder()
-			.delete()
-			.from(User)
+			.update(User)
+			.set({ createdBy: null })
 			.where(
 				`"created_by" = '${userId}'`
 			)
 			.execute()
+			await getConnection()
+			.createQueryBuilder()
+			.update(SearchLog)
+			.set({ userId: null })
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+			
+		await getConnection()
+			.createQueryBuilder()
+			.update(User)
+			.set({ updatedBy: null })
+			.where(
+				`"updated_by" = '${userId}'`
+			)
+			.execute()
+
 		await getConnection()
 			.createQueryBuilder()
 			.delete()
 			.from(Booking)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+		
+			await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(LaytripFeedback)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		let carts = await getConnection()
+			.createQueryBuilder(Cart, "cart")
+			.where(`"user_id" = '${userId}'`)
+			.getMany()
+		let cartIds: number[] = []
+		for await (const cart of carts) {
+			cartIds.push(cart.id)
+		}
+		if (cartIds.length) {
+			await getConnection()
+				.createQueryBuilder()
+				.delete()
+				.from(CartTravelers)
+				.where(
+					`"cart_id" in (:...cartIds)`, {
+					cartIds
+				}
+				)
+				.execute()
+			await getConnection()
+				.createQueryBuilder()
+				.delete()
+				.from(Cart)
+				.where(
+					`"id" in (:...cartIds)`, {
+					cartIds
+				}
+				)
+				.execute()
+		}
+
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(CartBooking)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+			await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(LoginLog)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(User)
 			.where(
 				`"user_id" = '${userId}'`
 			)

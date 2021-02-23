@@ -28,8 +28,8 @@ export class BookingRepository extends Repository<Booking> {
 			booking_id,
 			search,
 			module_id, supplier_id,
-			email, booking_through, transaction_token,product_id
-			
+			email, booking_through, transaction_token, product_id
+
 		} = listBookingDto;
 		const take = limit || 10;
 		const skip = (page_no - 1) * limit || 0;
@@ -165,8 +165,8 @@ export class BookingRepository extends Repository<Booking> {
 			} else {
 				result.travelers[j].userData.user_type = "adult";
 			}
-		}	
-		
+		}
+
 
 		return result;
 
@@ -176,12 +176,12 @@ export class BookingRepository extends Repository<Booking> {
 	async getBookDetail(id) {
 
 		let relations = ["user", "currency2", "bookingInstalments", "travelers", "travelers.userData", "card"];
-		
+
 		let result = this.findOne({
-            where: { laytripBookingId: id },
-            relations 
+			where: { laytripBookingId: id },
+			relations
 		});
-		
+
 		return result;
 	}
 
@@ -224,7 +224,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_type,
 			payment_start_date,
 			instalment_type,
-			module_id, payment_status,product_id
+			module_id, payment_status, product_id
 		} = listPaymentDto;
 
 		const take = limit || 10;
@@ -309,13 +309,13 @@ export class BookingRepository extends Repository<Booking> {
 			.where(`"User"."user_id" =:userId`, { userId: user.userId })
 		//.orderBy("BookingInstalments.id", 'DESC')
 
-		
+
 		if (product_id) {
-			query = query.andWhere (`AND ("booking"."laytrip_booking_id" =  '${product_id}')`);
+			query = query.andWhere(`AND ("booking"."laytrip_booking_id" =  '${product_id}')`);
 		}
 
 		if (booking_id) {
-			query = query.andWhere (`AND ("cart"."laytrip_cart_id" =  '${booking_id}')`);
+			query = query.andWhere(`AND ("cart"."laytrip_cart_id" =  '${booking_id}')`);
 		}
 		if (booking_type)
 			query = query.andWhere(`"booking"."booking_type"=:booking_type`, {
@@ -323,7 +323,7 @@ export class BookingRepository extends Repository<Booking> {
 			});
 
 		if (module_id)
-		query = query.andWhere(`"booking"."module_id"=:module_id`, {
+			query = query.andWhere(`"booking"."module_id"=:module_id`, {
 				module_id,
 			});
 		if (payment_status) {
@@ -445,7 +445,7 @@ export class BookingRepository extends Repository<Booking> {
 	}
 
 	async exportPayment(where: string) {
-		
+
 		let query = getConnection()
 			.createQueryBuilder(BookingInstalments, "BookingInstalments")
 			.leftJoinAndSelect("BookingInstalments.booking", "booking")
@@ -474,6 +474,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.transactionToken",
 				"BookingInstalments.comment",
+				"cart.laytripCartId",
 				// "installment.id",
 				// "installment.instalmentDate",
 				// "installment.currencyId",
@@ -662,7 +663,7 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id, supplier_id, userId , product_id
+			module_id, supplier_id, userId, product_id
 		} = filterOption;
 
 		let where;
