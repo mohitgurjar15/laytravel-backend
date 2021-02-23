@@ -46,7 +46,7 @@ var fs = require('fs');
 const cronUserId = config.get('cronUserId');
 import * as md5 from 'md5';
 import { CartBooking } from "src/entity/cart-booking.entity";
-import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
+import { LaytripInstallmentRecevied } from "src/config/new_email_templete/laytrip_installment-recived.html";
 import { v4 as uuidv4 } from "uuid";
 import * as uniqid from 'uniqid';
 import { CartDataUtility } from "src/utility/cart-data.utility";
@@ -509,7 +509,7 @@ export class CronJobsService {
 										from: mailConfig.from,
 										bcc: mailConfig.BCC,
 										subject: `BOOKING ID ${param.bookingId} INSTALLMENT RECEIVED`,
-										html: InstallmentRecevied(param),
+										html: LaytripInstallmentRecevied(param),
 									})
 									.then((res) => {
 										console.log("res", res);
