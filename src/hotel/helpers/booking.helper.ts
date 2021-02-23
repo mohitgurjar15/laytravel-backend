@@ -151,7 +151,7 @@ export class BookingHelper{
             .sendMail({
                 to: booking_details.user.email,
                 from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				subject: 'Hotel Booking Confirmation',
                 html: await HotelBookingConfirmationMail(new HotelBookingParam(booking_details)),
             })

@@ -571,7 +571,7 @@ export class AuthService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				sender: "laytrip",
 				subject: "Password Reset One Time Pin",
 				html: LaytripForgotPasswordMail({
@@ -676,7 +676,7 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
-						cc: mailConfig.BCC,
+						bcc: mailConfig.BCC,
 						sender: "laytrip",
 						subject: "Password Reset",
 						html: LaytripResetPasswordMail({

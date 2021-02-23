@@ -777,7 +777,7 @@ export class VacationRentalService {
 				.sendMail({
 					to: user.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: EmailSubject,
 					html: await HomeRentalBookingConfirmationMail(param)
 				})
@@ -794,7 +794,7 @@ export class VacationRentalService {
 				.sendMail({
 					to: bookingData.user.email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Flight Booking Failed",
 					html: BookingFailerMail({
 						error: null
@@ -1607,7 +1607,7 @@ export class VacationRentalService {
 			.sendMail({
 				to: email,
 				from: mailConfig.from,
-				cc: mailConfig.BCC,
+				bcc: mailConfig.BCC,
 				subject: "Booking detail updated",
 				html: BookingDetailsUpdateMail({ username: userName }),
 			})

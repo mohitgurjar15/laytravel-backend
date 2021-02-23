@@ -63,7 +63,7 @@ export class NewsLettersService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					cc: mailConfig.BCC,
+					bcc: mailConfig.BCC,
 					subject: "Welcome to Laytrip",
 					html: await NewsLetterMail(),
 				})

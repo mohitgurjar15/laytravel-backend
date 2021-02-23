@@ -9,13 +9,14 @@ export function LaytripPaymentReminderTemplete(param: { userName: string, amount
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">This is a reminder that your installment payment for ${param.amount} will be processed on ${param.date} for Booking ID ${param.bookingId} </td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding-top:10px; text-align: left;">Please contact <span style="color: blue;">customerservice@laytrip.com</span> if you have any questions.</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding-top:10px; text-align: left;">Please contact <a href = 'mailto:customerservice@laytrip.com'
+                    style="color: #f725c5;"><u>customerservice@laytrip.com</u></a> if you have any questions.</td>
                 </tr>
                 
             </tbody>
