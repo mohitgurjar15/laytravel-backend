@@ -30,7 +30,6 @@ import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { getBookingDailyPriceDto } from "./dto/get-daily-booking-price.dto";
 import { Generic } from "src/utility/generic.utility";
 import { PushNotification } from "src/utility/push-notification.utility";
-import { PaymentReminderMail } from "src/config/new_email_templete/payment-reminder-mail.html";
 import { UserDeviceDetail } from "src/entity/user-device-detail.entity";
 import { DateTime } from "src/utility/datetime.utility";
 import { ModulesName } from "src/enum/module.enum";
@@ -53,6 +52,8 @@ import * as uniqid from 'uniqid';
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripPaymentFailedTemplete } from "src/config/new_email_templete/installment-default.html";
 import { LaytripCartBookingComplationMail } from "src/config/new_email_templete/cart-completion-mail.html";
+import { LaytripMissedPaymentTemplete } from "src/config/new_email_templete/missed-installment.html";
+import { LaytripPaymentReminderTemplete } from "src/config/new_email_templete/payment-reminder.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -290,12 +291,45 @@ export class CronJobsService {
 						await faildTransaction.save()
 
 						const instalment = cartBooking.bookings[0].bookingInstalments[0]
-						let param = {
+						let nextInstalmentDate:string =''
+						switch (instalment.attempt) {
+							case 1:
+								var nDate = new Date(cartBooking.bookings[0].bookingInstalments[0].instalmentDate);
+								nDate.setDate(nDate.getDate() + 3);
+								nextInstalmentDate = nDate.toISOString();
+								nextInstalmentDate = nextInstalmentDate
+									.replace(/T/, " ") // replace T with a space
+									.replace(/\..+/, "").split(' ')[0];
+								break;
+								case 2:
+									var nDate = new Date(cartBooking.bookings[0].bookingInstalments[0].instalmentDate);
+									nDate.setDate(nDate.getDate() + 7);
+									nextInstalmentDate = nDate.toISOString();
+									nextInstalmentDate = nextInstalmentDate
+										.replace(/T/, " ") // replace T with a space
+										.replace(/\..+/, "").split(' ')[0];
+									break;
+								case 3:
+										var nDate = new Date(cartBooking.bookings[0].bookingInstalments[0].instalmentDate);
+										nDate.setDate(nDate.getDate() + 10);
+										nextInstalmentDate = nDate.toISOString();
+										nextInstalmentDate = nextInstalmentDate
+											.replace(/T/, " ") // replace T with a space
+											.replace(/\..+/, "").split(' ')[0];
+										break;
+
+							default:
+								break;
+						}
+						let param:any = {
 							userName: cartBooking.user.firstName,
 							amount: cartBooking.bookings[0].bookingInstalments[0].currency.symbol + `${Generic.formatPriceDecimal(cartAmount)}`,
 							date: DateTime.convertDateFormat(cartBooking.bookings[0].bookingInstalments[0].instalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY'),
 							bookingId: cartBooking.laytripCartId,
 							try: instalment.attempt
+						}
+						if(nextInstalmentDate){
+							param.nextDate = DateTime.convertDateFormat(nextInstalmentDate, 'YYYY-MM-DD', 'MMM DD, YYYY')
 						}
 
 
@@ -309,10 +343,10 @@ export class CronJobsService {
 								.execute();
 							instalment.paymentStatus = PaymentStatus.FAILED
 							await instalment.save()
-							if (cartBooking.user.isEmail) {
-								console.log('transaction incomplete mail')
-								await this.sendFlightIncompleteMail(cartBooking.user.email, cartBooking.laytripCartId, 'we not able to get payment from your card', `${param.amount}`)
-							}
+							// if (cartBooking.user.isEmail) {
+							// 	console.log('transaction incomplete mail')
+							// 	await this.sendFlightIncompleteMail(cartBooking.user.email, cartBooking.laytripCartId, 'we not able to get payment from your card', `${param.amount}`)
+							// }
 
 							if (cartBooking.user.isSMS) {
 								TwilioSMS.sendSMS({
@@ -347,20 +381,38 @@ export class CronJobsService {
 
 						if (cartBooking.user.isEmail) {
 							console.log('transaction payment failed ')
-							this.mailerService
-								.sendMail({
-									to: cartBooking.user.email,
-									from: mailConfig.from,
-									bcc: mailConfig.BCC,
-									subject: `BOOKING ID ${param.bookingId} NOTICE OF DEFAULT AND CANCELLATION`,
-									html: await LaytripPaymentFailedTemplete(param),
-								})
-								.then((res) => {
-									console.log("res", res);
-								})
-								.catch((err) => {
-									console.log("err", err);
-								});
+							if (param.try >= 4) {
+								this.mailerService
+									.sendMail({
+										to: cartBooking.user.email,
+										from: mailConfig.from,
+										bcc: mailConfig.BCC,
+										subject: `BOOKING ID ${param.bookingId} NOTICE OF DEFAULT AND CANCELLATION`,
+										html: await LaytripPaymentFailedTemplete(param),
+									})
+									.then((res) => {
+										console.log("res", res);
+									})
+									.catch((err) => {
+										console.log("err", err);
+									});
+							} else {
+								this.mailerService
+									.sendMail({
+										to: cartBooking.user.email,
+										from: mailConfig.from,
+										bcc: mailConfig.BCC,
+										subject: `BOOKING ID ${param.bookingId} MISSED PAYMENT REMINDER #${param.try}`,
+										html: await LaytripMissedPaymentTemplete(param),
+									})
+									.then((res) => {
+										console.log("res", res);
+									})
+									.catch((err) => {
+										console.log("err", err);
+									});
+							}
+
 						}
 
 						// if (cartBooking.user.isSMS) {
@@ -470,7 +522,7 @@ export class CronJobsService {
 
 								const responce = await CartDataUtility.CartMailModelDataGenerate(cartBooking.laytripCartId)
 								if (responce?.param) {
-									let subject = responce.param.bookingType == BookingType.INSTALMENT ? `BOOKING ID ${responce.param.orderId} CONFIRMATION` : `BOOKING ID ${responce.param.orderId} CONFIRMATION`
+									let subject = `BOOKING ID ${cartBooking.laytripCartId} COMPLETION NOTICE`
 									this.mailerService
 										.sendMail({
 											to: responce.email,
@@ -942,13 +994,13 @@ export class CronJobsService {
 				for await (const instalment of booking.bookingInstalments) {
 					totalAmount += parseFloat(instalment.amount)
 				}
-				const instalment = booking.bookingStatus[0]
+				const instalment = booking.bookingInstalments[0]
 				console.log(instalment);
 
 				const param = {
 					userName: booking.user.firstName,
 					amount: instalment.currency.symbol + `${Generic.formatPriceDecimal(totalAmount)}`,
-					date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MM/DD/YYYY'),
+					date: DateTime.convertDateFormat(new Date(instalment.instalmentDate), 'YYYY-MM-DD', 'MMM DD,YYYY'),
 					bookingId: cartBooking.laytripCartId,
 					phoneNo: `+${booking.user.countryCode}` + booking.user.phoneNo
 				}
@@ -970,8 +1022,8 @@ export class CronJobsService {
 							to: booking.user.email,
 							from: mailConfig.from,
 							bcc: mailConfig.BCC,
-							subject: "Payment Reminder",
-							html: PaymentReminderMail(param),
+							subject: `BOOKING ID ${param.bookingId} UPCOMING PAYMENT REMINDER`,
+							html: LaytripPaymentReminderTemplete(param),
 						})
 						.then((res) => {
 							console.log("res", res);
@@ -1021,7 +1073,7 @@ export class CronJobsService {
 			await getConnection()
 				.createQueryBuilder()
 				.update(Booking)
-				.set({ paymentStatus: PaymentStatus.CONFIRM })
+				.set({ paymentStatus: PaymentStatus.CONFIRM, nextInstalmentDate: null })
 				.where("id = :id", { id: bookingId })
 				.execute();
 		}
