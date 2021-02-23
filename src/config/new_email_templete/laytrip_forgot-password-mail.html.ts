@@ -20,7 +20,8 @@ const content = `<tr>
             </tr>
             <tr>
                  <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                    If you did not request a password reset, please ignore this email or contact us at  customerservice@laytrip.com.               
+                    If you did not request a password reset, please ignore this email or contact us at  <a href = 'mailto:customerservice@laytrip.com'
+                    style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>.               
                  </td>
             </tr>
         </tbody>

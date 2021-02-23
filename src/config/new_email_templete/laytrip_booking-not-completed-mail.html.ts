@@ -17,7 +17,8 @@ const content = `
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
-                                                        Unfortunately we were unable to process your booking. You will not be charged for this attempt. Please return to Laytrip.com and try again or if you have questions, contact us at customerservice@laytrip.com.
+                                                        Unfortunately we were unable to process your booking. You will not be charged for this attempt. Please return to Laytrip.com and try again or if you have questions, contact us at <a href = 'mailto:customerservice@laytrip.com'
+                                                        style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>.
                                                     </td>
                                                 </tr>
                                             </tbody>

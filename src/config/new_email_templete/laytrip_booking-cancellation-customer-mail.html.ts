@@ -23,7 +23,8 @@ export function LaytripBookingCancellationCustomerMail(param: { username: string
                 </tr>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                         If you have any questions, please contact us at customerservice@laytrip.com. We hope you will try booking with us again in the future.                                              
+                         If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
+                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope you will try booking with us again in the future.                                              
                     </td>
                 </tr>													
             </tbody>
