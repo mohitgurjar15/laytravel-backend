@@ -382,10 +382,6 @@ export class User extends BaseEntity {
     deal => deal.updateBy)
   deal: Deal[];
 
-  @OneToMany(
-    () => DeleteUserAccountRequest,
-    deleteUserAccountRequest => deleteUserAccountRequest.updateBy)
-  deleteUserAccountRequest: DeleteUserAccountRequest[];
 
 
 }

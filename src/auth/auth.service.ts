@@ -82,6 +82,7 @@ import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 import { LaytripWelcomeBoardMail } from "src/config/new_email_templete/laytrip_welcome-board-mail.html";
 import { LaytripResetPasswordMail } from "src/config/new_email_templete/laytrip_reset-password-mail.html";
 import { GuestUserDto } from "./dto/guest-user.dto";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class AuthService {
@@ -1754,64 +1755,7 @@ export class AuthService {
 		}
 	}
 
-	async deleteUserAccount(
-		user: User,
-		dto: DeleteAccountReqDto
-	) {
-		try {
-			const { requireBackupFile } = dto
-			const where = `"req"."user_id" = '${user.userId}' AND "req"."status" != ${DeleteAccountRequestStatus.CANCELLED}`
-			const req = await getConnection()
-				.createQueryBuilder(DeleteUserAccountRequest, "req")
-				.where(where)
-				.getOne();
-			if (req) {
-				throw new ConflictException(`We have already Requst for delete your account  and it is under process`)
-			}
-			else {
-				const newReq = new DeleteUserAccountRequest
-				newReq.userId = user.userId
-				newReq.status = DeleteAccountRequestStatus.PENDING
-				newReq.createdDate = new Date();
-				newReq.email = user.email
-				newReq.requestForData = requireBackupFile
-				newReq.userName = user.full_name || user.firstName + ' ' + user.lastName
-				newReq.save()
-
-				return {
-					message: `We have get your request! In some time your account will Delete.`
-				}
-			}
-		} catch (error) {
-			if (typeof error.response !== "undefined") {
-				switch (error.response.statusCode) {
-					case 404:
-						throw new NotFoundException(error.response.message);
-					case 409:
-						throw new ConflictException(error.response.message);
-					case 422:
-						throw new BadRequestException(error.response.message);
-					case 403:
-						throw new ForbiddenException(error.response.message);
-					case 500:
-						throw new InternalServerErrorException(error.response.message);
-					case 406:
-						throw new NotAcceptableException(error.response.message);
-					case 404:
-						throw new NotFoundException(error.response.message);
-					case 401:
-						throw new UnauthorizedException(error.response.message);
-					default:
-						throw new InternalServerErrorException(
-							`${error.message}&&&id&&&${error.Message}`
-						);
-				}
-			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
-		}
-	}
+	
 
 	async getPreference(user: User) {
 
