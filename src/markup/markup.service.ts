@@ -47,7 +47,7 @@ export class MarkupService {
 		let markupDetail = await this.markupRepository.findOne({ id });
 
 		if (!markupDetail) throw new NotFoundException(`markup id not found`);
-		const previousData = markupDetail
+		const previousData = JSON.stringify(markupDetail)
 		//markupDetail.moduleId = module_id;
 		//markupDetail.userType = user_type;
 		markupDetail.operand = operand;
@@ -56,7 +56,7 @@ export class MarkupService {
 
 		try {
 			markupDetail.save();
-			const currentData = markupDetail
+			const currentData = JSON.stringify(markupDetail)
 			await getConnection().queryResultCache!.remove(["markup"]);
 			Activity.logActivity(user.userId, "markup", `Markup Updated by admin`,previousData,currentData);
 

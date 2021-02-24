@@ -60,6 +60,11 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 		}
 
 		for await (const raw of result) {
+			console.log(typeof raw.currentValue);
+			
+			if(typeof raw.currentValue == 'string'){
+				raw.currentValue = JSON.parse(raw.currentValue)
+			}
 			if (raw.currentValue) {
 				if (raw.currentValue['password'] != undefined) {
 					delete (raw.currentValue['password'])
@@ -70,6 +75,9 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 				}
 			}
 
+			if(typeof raw.previousValue == 'string'){
+				raw.previousValue = JSON.parse(raw.previousValue)
+			}
 			if (raw.previousValue) {
 				if (raw.previousValue['password'] != undefined) {
 					delete (raw.previousValue['password'])
@@ -131,6 +139,11 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 		}
 
 		for await (const raw of result) {
+			console.log(typeof raw.currentValue);
+			
+			if(typeof raw.currentValue == 'string'){
+				raw.currentValue = JSON.parse(raw.currentValue)
+			}
 			if (raw.currentValue) {
 				if (raw.currentValue['password'] != undefined) {
 					delete (raw.currentValue['password'])
@@ -140,7 +153,9 @@ export class ActivitylogRepository extends Repository<ActivityLog> {
 					delete (raw.currentValue['salt'])
 				}
 			}
-
+			if(typeof raw.previousValue == 'string'){
+				raw.previousValue = JSON.parse(raw.previousValue)
+			}
 			if (raw.previousValue) {
 				if (raw.previousValue['password'] != undefined) {
 					delete (raw.previousValue['password'])

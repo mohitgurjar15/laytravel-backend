@@ -116,7 +116,7 @@ export class FaqService {
 		faq.updatedDate = new Date();
 		try {
 			await faq.save();
-			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,faq);
+			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
 			return { message: "Faq Careated successfully" };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -161,14 +161,14 @@ export class FaqService {
 		if (!faq) {
 			throw new NotFoundException(`Faq Id Not Found`);
 		}
-		const previousData = faq
+		const previousData = JSON.stringify(faq)
 		faq.categoryId = categoryId;
 		faq.question = question;
 		faq.answer = answer;
 		faq.updatedDate = new Date();
 		try {
 			await faq.save();
-			const currentData = faq
+			const currentData = JSON.stringify(faq)
 			Activity.logActivity(adminId, "faq", `Faq updated by the admin`,previousData,currentData);
 			return { message: "Faq Updated Successfully" };
 		} catch (error) {
@@ -209,10 +209,10 @@ export class FaqService {
 			if (!faq) {
 				throw new NotFoundException(`Faq Id Not Found`);
 			}
-			const previousData = faq
+			const previousData = JSON.stringify(faq)
 			faq.isDeleted = true;
 			faq.save();
-			const currentData = faq
+			const currentData = JSON.stringify(faq)
 			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`,previousData,currentData);
 			return { message: "Faq Deleted Successfully" };
 		} catch (error) {
@@ -258,10 +258,10 @@ export class FaqService {
 			if (!faq) {
 				throw new NotFoundException(`Faq Id Not Found`);
 			}
-			const previousData = faq
+			const previousData = JSON.stringify(faq)
 			faq.status = status;
 			faq.save();
-			const currentData = faq
+			const currentData = JSON.stringify(faq)
 			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`,previousData,currentData);
 			return { message: "Faq Status Changed" };
 		} catch (error) {
