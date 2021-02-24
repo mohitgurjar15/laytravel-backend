@@ -44,6 +44,7 @@ import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_temple
 import { DateTime } from "src/utility/datetime.utility";
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
+import { DeleteBookingDto } from "./dto/delete-cart.dto";
 
 @Injectable()
 export class BookingService {
@@ -1849,5 +1850,51 @@ export class BookingService {
 	async getBookingIds() {
 
 		return await this.bookingRepository.getBookingId()
+	}
+
+
+	async deleteBooking(deleteBookingDto : DeleteBookingDto , user:User){
+		const {booking_id , product_id} = deleteBookingDto
+
+		let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
+		if(product_id){
+			where += `AND ("booking"."laytrip_booking_id" = '${product_id}')`
+		}
+		if(user.roleId >= 5){
+			where += `AND ("cartBooking"."user_id" =  '${user.userId}')`
+		}
+        const query = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+			.where(where)
+			.getOne();
+		
+		if(!query && !query.bookings.length){
+			throw new BadRequestException(`Given booking id not found`)
+		}
+
+		for await (const booking of query.bookings) {
+			await getConnection()
+                .createQueryBuilder()
+                .update(Booking)
+                .set({ bookingStatus : BookingStatus.CANCELLED , paymentStatus : PaymentStatus.CANCELLED  })
+                .where("id =:id", { id: booking.id })
+                .execute();
+			
+			await getConnection()
+                .createQueryBuilder()
+                .update(BookingInstalments)
+                .set({ paymentStatus : PaymentStatus.CANCELLED   })
+                .where("booking_id =:id", { id: booking.id })
+                .execute();
+		}
+		if(product_id){
+			return {
+				message : `Your Product Canceled successfully `
+			}	
+		}
+		return {
+			message : `Your booking Canceled successfully `
+		}
 	}
 }
