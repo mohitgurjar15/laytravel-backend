@@ -1837,7 +1837,7 @@ export class BookingService {
 					//console.log("err", err);
 				});
 			return {
-				message: `Cart booking email send succeessfully`
+				message: `Cart booking email send successfully`
 			};
 		} else {
 			return {
