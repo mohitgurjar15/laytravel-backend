@@ -648,28 +648,14 @@ export class AdminDashboardService {
     response["new_user"] = result[0].count;
 
     const totalInitialBookings = await getConnection().query(
-      `SELECT
-		user_id, COUNT(*)
-	    FROM
-		booking
-	    GROUP BY
-		user_id
-	    HAVING 
-		COUNT(*) < 2`
+      `select count(*) as cnt from "user" where 1 = (select count(*) from booking where user_id = "user"."user_id") AND ${userConditon}`
     );
-    response["total_initial_bookings"] = totalInitialBookings.length;
+    response["total_initial_bookings"] = totalInitialBookings[0].cnt;
 
     const totalRepeatBookings = await getConnection().query(
-      `SELECT
-		  user_id, COUNT(*)
-		  FROM
-		  booking
-		  GROUP BY
-		  user_id
-		  HAVING 
-		  COUNT(*) > 1`
+      `select count(*) as cnt from "user" where 1 < (select count(*) from booking where user_id = "user"."user_id") AND ${userConditon}`
     );
-    response["total_repeat_bookings"] = totalRepeatBookings.length;
+    response["total_repeat_bookings"] = totalRepeatBookings[0].cnt;
 
     const totalTicketsBooked = await getConnection().query(`
     SELECT  count(*) as "cnt" FROM booking`);
@@ -710,10 +696,10 @@ export class AdminDashboardService {
     var markUpTotalBooking = (parseFloat(sumOfMarkUpAmount[0].total_amount)) / parseFloat(totalTicketsBooked[0].cnt);
     var totalAmtTotalBooking = (parseFloat(sumOfTotalAmount[0].total_amount)) / parseFloat(totalTicketsBooked[0].cnt);
 
-    const avgBookingMarkUp = (100 * markUpTotalBooking) / totalAmtTotalBooking;
+    const avgBookingMarkUp = sumOfMarkUpAmount[0].total_amount / parseFloat(totalTicketsBooked[0].cnt);
     response["average_booking_markup_percentage"] = (Math.round(avgBookingMarkUp * 100) / 100).toFixed(2);
 
-    const avgBookingMarkUpUsd = (parseFloat(sumOfTotalAmount[0].total_amount)) - (parseFloat(sumOfMarkUpAmount[0].total_amount))
+    const avgBookingMarkUpUsd = sumOfMarkUpAmount[0].total_amount
     response["average_booking_markup_usd"] = (Math.round(avgBookingMarkUpUsd * 100) / 100).toFixed(2);
 
     const newUpfrontUsers = await getConnection().query(
@@ -730,38 +716,34 @@ export class AdminDashboardService {
       `SELECT 
       count(*) as cnt
       FROM
-        "user" Where ${userConditon}`
+        "user" Where ${where}`
     );
     response["total_account_holders"] = totalAccountHolders[0].cnt
 
     const totalGuestUsers = await getConnection().query(
-      `SELECT "user"."user_id", COUNT(*)
+      `SELECT COUNT(*) as cnt
       FROM
       "user"
       WHERE
-      role_id In (${Role.GUEST_USER})
-      GROUP BY
-		  user_id`
+      role_id =${Role.GUEST_USER}
+      `
     );
-    response["total_guest_users"] = (Math.round(totalGuestUsers.length * 100) / 100);
+    response["total_guest_users"] = totalGuestUsers[0].cnt;
 
     const activeGuestUsers = await getConnection().query(
-      `SELECT "user"."user_id", COUNT(*)
+      `SELECT COUNT(*) as cnt
       FROM
       "user"
       WHERE
       is_deleted=false
-      AND
-      is_verified=true
       AND
       role_id In (${Role.GUEST_USER})
-      GROUP BY
-		  user_id`
+      `
     );
-    response["active_guest_users"] = (Math.round(activeGuestUsers.length * 100) / 100);
+    response["active_guest_users"] = activeGuestUsers[0].cnt;
 
     const activeFreeUsers = await getConnection().query(
-      `SELECT "user"."user_id", COUNT(*)
+      `SELECT COUNT(*) as cnt
       FROM
       "user"
       WHERE
@@ -769,26 +751,20 @@ export class AdminDashboardService {
       AND
       is_verified=true
       AND
-      role_id In (${Role.FREE_USER})
-      GROUP BY
-		  user_id`
+      role_id =${Role.FREE_USER}`
     );
-    response["active_free_users"] = (Math.round(activeFreeUsers.length * 100) / 100);
+    response["active_free_users"] = activeFreeUsers[0].cnt
 
     const totalActiveUsers = await getConnection().query(
-      `SELECT "user"."user_id", COUNT(*)
+      `SELECT COUNT(*) as cnt
       FROM
       "user"
       WHERE
       is_deleted=false
       AND
-      is_verified=true
-      GROUP BY
-		  user_id`
+      is_verified=true`
     );
-    response["total_active_users"] = (Math.round(totalActiveUsers.length * 100) / 100);
-
-
+    response["total_active_users"] = totalActiveUsers[0].cnt
 
     const salesByFullPriceCount = await getConnection().query(
       `SELECT COUNT(id)
