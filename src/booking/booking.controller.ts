@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Param, Query, Post, Body, HttpCode } from "@nestjs/common";
+import { Controller, Get, UseGuards, Param, Query, Post, Body, HttpCode, Delete } from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
@@ -14,6 +14,7 @@ import { User } from "src/entity/user.entity";
 import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { BookingFilterDto } from "./dto/booking-filter.dto";
 import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
+import { DeleteBookingDto } from "./dto/delete-cart.dto";
 
 
 @ApiTags("Booking")
@@ -55,7 +56,7 @@ export class BookingController {
 	@HttpCode(200)
 	async resentCartEmail(
 		@Body() shareBookingDto: getBookingDetailsDto
-	){
+	) {
 		return await this.bookingService.resendCartEmail(shareBookingDto);
 	}
 
@@ -134,17 +135,17 @@ export class BookingController {
 	}
 
 	@Get('cart-detail/:cart_id')
-    @Roles(Role.FREE_USER, Role.PAID_USER)
-    @ApiOperation({ summary: "get cart detail" })
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    async cartBookingDetail(
-        @GetUser() user: User,
-        @Param('cart_id') cartId: string
-    ) {
-        return await this.bookingService.getCartBookingDetail(cartId, user);
-    }
+	@Roles(Role.FREE_USER, Role.PAID_USER)
+	@ApiOperation({ summary: "get cart detail" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async cartBookingDetail(
+		@GetUser() user: User,
+		@Param('cart_id') cartId: string
+	) {
+		return await this.bookingService.getCartBookingDetail(cartId, user);
+	}
 
 	@Get('booking-details/:id')
 	@ApiOperation({ summary: "get booking detail" })
@@ -353,5 +354,22 @@ export class BookingController {
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getemails() {
 		return await this.bookingService.getBookingIds();
+	}
+
+	@Delete()
+	@ApiOperation({ summary: "Delete booking listing by admin" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Booking not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async deleteCart(
+		@Query() deleteBookingDto: DeleteBookingDto,
+		@GetUser() user: User
+	) {
+		return await this.bookingService.deleteBooking(deleteBookingDto, user);
 	}
 }
