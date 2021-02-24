@@ -13,10 +13,10 @@ export class NewsLetters extends BaseEntity {
   @Column("boolean", { name: "is_subscribed", default: () => "true" })
   isSubscribed: boolean;
 
-  @Column("date", { name: "subscribe_date" })
+  @Column("timestamp with time zone", { name: "subscribe_date" ,nullable : true})
   subscribeDate: Date;
 
-  @Column("date", { name: "unsubscribe_date" ,nullable : true,default: () => null })
+  @Column("timestamp with time zone", { name: "unsubscribe_date" ,nullable : true,default: () => null })
   unSubscribeDate: Date;
 
   // @Column("date", { name: "updated_date" ,nullable : true,default: () => null })
