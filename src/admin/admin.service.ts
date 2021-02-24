@@ -90,7 +90,7 @@ export class AdminService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "Admin", ` New admin ${userdata.email} created By super admin ${adminId}`, null, userdata);
+			Activity.logActivity(adminId, "Admin", ` New admin ${userdata.email} created By super admin ${adminId}`, null, JSON.stringify(userdata));
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -138,10 +138,8 @@ export class AdminService {
 				throw new NotFoundException(`Given id not found.`)
 			}
 
-			let previousData = userData;
-			console.log(previousData);
-			console.log(firstName);
-
+			let previousData = JSON.stringify(userData);
+			
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -154,10 +152,8 @@ export class AdminService {
 
 			delete userData.password;
 			delete userData.salt;
-			let newData = new User();
-			newData = userData
-			console.log(userData);
-
+			let newData = JSON.stringify(userData)
+			
 			await userData.save();
 
 			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, newData);
@@ -224,12 +220,12 @@ export class AdminService {
 					`You are not allowed to access this resource.`
 				);
 			} else {
-				const previousData = user;
+				const previousData = JSON.stringify(user);
 				user.isDeleted = true;
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				const currentData = user;
+				const currentData = JSON.stringify(user);
 				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`, previousData, currentData);
 				return { messge: `Admin deleted successfully` };
 			}
@@ -288,13 +284,13 @@ export class AdminService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-			const previousData = user;
+			const previousData = JSON.stringify(user);
 			var statusWord = status === true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			const currentData = user;
+			const currentData = JSON.stringify(user);
 			Activity.logActivity(adminId, `Admin`, `Admin status changed ${statusWord}`, previousData, currentData);
 			return { messge: `admin status changed` };
 		} catch (error) {

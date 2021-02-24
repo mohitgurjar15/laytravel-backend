@@ -52,14 +52,14 @@ import { Activity } from "src/utility/activity.utility";
 import { ChangePasswordDto } from "src/user/dto/change-password.dto";
 import { PrefferedLanguageDto } from "./dto/preffered-languge.dto";
 import { PrefferedCurrencyDto } from "./dto/preffered-currency.dto";
-import { VerifyEmailIdTemplete } from "src/config/new_email_templete/email-id-verify-mail.html";
+import { LaytripVerifyEmailIdTemplete } from "src/config/new_email_templete/laytrip_email-id-verify-mail.html";
 import { OtpDto } from "./dto/otp.dto";
 import { ReSendVerifyoOtpDto } from "./dto/resend-verify-otp.dto";
 import { UpdateEmailId } from "./dto/update-email.dto";
 import { Currency } from "src/entity/currency.entity";
 import { Language } from "src/entity/language.entity";
 import { CheckEmailConflictDto } from "./dto/check-email-conflict.dto";
-import { forgotPasswordMail } from "src/config/new_email_templete/forgot-password-mail.html";
+import { LaytripForgotPasswordMail } from "src/config/new_email_templete/laytrip_forgot-password-mail.html";
 import * as config from "config";
 const mailConfig = config.get("email");
 const jwtConfig = config.get("jwt");
@@ -79,9 +79,10 @@ import { UserPreference } from "src/enum/user-preference.enum";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { airports } from "src/flight/airports";
 import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
-import { WelcomeBoardMail } from "src/config/new_email_templete/welcome-board-mail.html";
-import { resetPasswordMail } from "src/config/new_email_templete/reset-password-mail.html";
+import { LaytripWelcomeBoardMail } from "src/config/new_email_templete/laytrip_welcome-board-mail.html";
+import { LaytripResetPasswordMail } from "src/config/new_email_templete/laytrip_reset-password-mail.html";
 import { GuestUserDto } from "./dto/guest-user.dto";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class AuthService {
@@ -209,9 +210,9 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Verify your account",
-					html: VerifyEmailIdTemplete({
+					cc: mailConfig.BCC,
+					subject: "Verify Your Email Address",
+					html: LaytripVerifyEmailIdTemplete({
 						username: first_name + " " + last_name,
 						otp: user.otp,
 					}),
@@ -379,9 +380,9 @@ export class AuthService {
 				.sendMail({
 					to: email,
 					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Verify your account",
-					html: VerifyEmailIdTemplete({
+					cc: mailConfig.BCC,
+					subject: "Verify Your Email Address",
+					html: LaytripVerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
 						otp: user.otp,
 					}),
@@ -436,9 +437,9 @@ export class AuthService {
 				.sendMail({
 					to: newEmail,
 					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Verify your account",
-					html: VerifyEmailIdTemplete({
+					cc: mailConfig.BCC,
+					subject: "Verify Your Email Address",
+					html: LaytripVerifyEmailIdTemplete({
 						username: user.firstName + " " + user.lastName,
 						otp: user.otp,
 					}),
@@ -573,8 +574,8 @@ export class AuthService {
 				from: mailConfig.from,
 				bcc: mailConfig.BCC,
 				sender: "laytrip",
-				subject: "Forgot Password",
-				html: forgotPasswordMail({
+				subject: "Password Reset One Time Pin",
+				html: LaytripForgotPasswordMail({
 					username: user.firstName + " " + user.lastName,
 					otp: otp,
 				}),
@@ -678,8 +679,8 @@ export class AuthService {
 						from: mailConfig.from,
 						bcc: mailConfig.BCC,
 						sender: "laytrip",
-						subject: "Reset Password",
-						html: resetPasswordMail({
+						subject: "Password Reset",
+						html: LaytripResetPasswordMail({
 							username: user.firstName
 						}),
 					})
@@ -824,11 +825,9 @@ export class AuthService {
 					.sendMail({
 						to: email,
 						from: mailConfig.from,
-						bcc: mailConfig.BCC,
-						subject: "Welcome on board",
-						html: WelcomeBoardMail({
-							username: user.firstName + " " + user.lastName,
-						}),
+						cc: mailConfig.BCC,
+						subject: "Welcome To Laytrip!",
+						html: LaytripWelcomeBoardMail(),
 					})
 					.then((res) => {
 						console.log("res", res);
@@ -1756,64 +1755,7 @@ export class AuthService {
 		}
 	}
 
-	async deleteUserAccount(
-		user: User,
-		dto: DeleteAccountReqDto
-	) {
-		try {
-			const { requireBackupFile } = dto
-			const where = `"req"."user_id" = '${user.userId}' AND "req"."status" != ${DeleteAccountRequestStatus.CANCELLED}`
-			const req = await getConnection()
-				.createQueryBuilder(DeleteUserAccountRequest, "req")
-				.where(where)
-				.getOne();
-			if (req) {
-				throw new ConflictException(`We have already Requst for delete your account  and it is under process`)
-			}
-			else {
-				const newReq = new DeleteUserAccountRequest
-				newReq.userId = user.userId
-				newReq.status = DeleteAccountRequestStatus.PENDING
-				newReq.createdDate = new Date();
-				newReq.email = user.email
-				newReq.requestForData = requireBackupFile
-				newReq.userName = user.full_name || user.firstName + ' ' + user.lastName
-				newReq.save()
-
-				return {
-					message: `We have get your request! In some time your account will Delete.`
-				}
-			}
-		} catch (error) {
-			if (typeof error.response !== "undefined") {
-				switch (error.response.statusCode) {
-					case 404:
-						throw new NotFoundException(error.response.message);
-					case 409:
-						throw new ConflictException(error.response.message);
-					case 422:
-						throw new BadRequestException(error.response.message);
-					case 403:
-						throw new ForbiddenException(error.response.message);
-					case 500:
-						throw new InternalServerErrorException(error.response.message);
-					case 406:
-						throw new NotAcceptableException(error.response.message);
-					case 404:
-						throw new NotFoundException(error.response.message);
-					case 401:
-						throw new UnauthorizedException(error.response.message);
-					default:
-						throw new InternalServerErrorException(
-							`${error.message}&&&id&&&${error.Message}`
-						);
-				}
-			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
-		}
-	}
+	
 
 	async getPreference(user: User) {
 

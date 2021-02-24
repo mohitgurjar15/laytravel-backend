@@ -94,6 +94,7 @@ export class SupportUserService {
 					console.log("err", err);
 				});
 		}
+		Activity.logActivity(adminId, "support-user", ` New support-user ${userdata.email} created By admin ${adminId}`, null, JSON.stringify(userdata));
 		return userdata;
 	}
 
@@ -120,6 +121,7 @@ export class SupportUserService {
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([3]) },
 			});
+			const previousDate:any = JSON.stringify(userData)
 			userData.gender = gender
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
@@ -128,7 +130,10 @@ export class SupportUserService {
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
 			userData.updatedDate = new Date();
-			await userData.save();
+
+			const currentValue = await userData.save();
+
+			Activity.logActivity(adminId, "support-user", `Support-user ${userData.email} updated By admin ${adminId}`, previousDate, JSON.stringify(currentValue));
 			return userData;
 		} catch (error) {
 			if (

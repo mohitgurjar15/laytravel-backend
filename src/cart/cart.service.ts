@@ -38,7 +38,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
 import { LaytripCartBookingConfirmtionMail } from 'src/config/new_email_templete/cart-booking-confirmation.html';
 const mailConfig = config.get("email");
-import { BookingNotCompletedMail } from 'src/config/new_email_templete/booking-not-completed-mail.html';
+import { BookingNotCompletedMail } from 'src/config/new_email_templete/laytrip_booking-not-completed-mail.html';
 import { PaymentService } from 'src/payment/payment.service';
 import { BookingInstalments } from 'src/entity/booking-instalments.entity';
 import { Booking } from 'src/entity/booking.entity';

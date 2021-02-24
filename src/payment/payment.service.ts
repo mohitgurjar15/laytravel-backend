@@ -39,7 +39,7 @@ import { PushNotification } from "src/utility/push-notification.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
-import { InstallmentRecevied } from "src/config/new_email_templete/installment-recived.html";
+import { LaytripInstallmentRecevied } from "src/config/new_email_templete/laytrip_installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
 import { Cache } from 'cache-manager';
 import { CartDataUtility } from "src/utility/cart-data.utility";
@@ -741,43 +741,20 @@ export class PaymentService {
 						nextAmount: nextAmount,
 					}
 					if (cart.user.isEmail) {
-						if (nextAmount > 0) {
-							this.mailerService
-								.sendMail({
-									to: cart.user.email,
-									from: mailConfig.from,
-									bcc: mailConfig.BCC,
-									subject: `Installment Payment Successed`,
-									html: InstallmentRecevied(param),
-								})
-								.then((res) => {
-									//console.log("res", res);
-								})
-								.catch((err) => {
-									//console.log("err", err);
-								});
-						}
-						else{
-							const responce = await CartDataUtility.CartMailModelDataGenerate(cart.laytripCartId)
-								if (responce?.param) {
-									let subject = `BOOKING ID ${responce.param.orderId} COMPLETION NOTICE`
-									this.mailerService
-										.sendMail({
-											to: responce.email,
-											from: mailConfig.from,
-											bcc: mailConfig.BCC,
-											subject: subject,
-											html: await LaytripCartBookingComplationMail(responce.param),
-										})
-										.then((res) => {
-											//console.log("res", res);
-										})
-										.catch((err) => {
-											//console.log("err", err);
-										});
-								}
-						}
-
+						this.mailerService
+							.sendMail({
+								to: cart.user.email,
+								from: mailConfig.from,
+								cc: mailConfig.BCC,
+								subject: `Installment Payment Successed`,
+								html: LaytripInstallmentRecevied(param),
+							})
+							.then((res) => {
+								//console.log("res", res);
+							})
+							.catch((err) => {
+								//console.log("err", err);
+							});
 					}
 
 					if (cart.user.isSMS) {

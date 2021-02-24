@@ -71,12 +71,12 @@ export class CurrencyService {
 				isDeleted: false,
 			});
 			if (!CurrencyData) throw new NotFoundException(`No currency found`);
-			const previousData = CurrencyData
+			const previousData = JSON.stringify(CurrencyData)
 			CurrencyData.liveRate = rate;
 			//CurrencyData.updatedBy = adminId;
 			CurrencyData.updatedDate = new Date();
 			CurrencyData.save();
-			const correntData = CurrencyData
+			const correntData = JSON.stringify(CurrencyData)
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId, "currency", `Currency rate ${rate} changed by admin`,previousData,correntData);
 			return { message: "Currency updated successfully" };
@@ -106,12 +106,12 @@ export class CurrencyService {
 			});
 			if (!Data) throw new NotFoundException(`No currency found`);
 			
-			const previousData = Data
+			const previousData = JSON.stringify(Data)
 			Data.status = status;
 			//Data. = adminId.userId;
 			Data.updatedDate = new Date();
 			Data.save();
-			const currentData = Data
+			const currentData = JSON.stringify(Data)
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId.id, "currency", `Currency ${Data.code} status ${status} changed by admin`,previousData,currentData);
 			return { message: `${Data.code} currency status changed successfully` };
@@ -167,12 +167,12 @@ export class CurrencyService {
 				isDeleted: false,
 			});
 			if (!CurrencyData) throw new NotFoundException(`No Currency found`);
-			const previousData = CurrencyData
+			const previousData = JSON.stringify(CurrencyData)
 			CurrencyData.isDeleted = true;
 			//CurrencyData.updatedBy = adminId;
 			CurrencyData.updatedDate = new Date();
 			CurrencyData.save();
-			const currentData = CurrencyData
+			const currentData = JSON.stringify(CurrencyData)
 			await getConnection().queryResultCache!.remove(["Currency"]);
 			Activity.logActivity(adminId, "currency", `Currency ${CurrencyData.code} Deleted by admin`,previousData,currentData);
 			return { message: "Currency deleted successfully" };

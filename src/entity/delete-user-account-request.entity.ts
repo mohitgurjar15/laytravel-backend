@@ -23,10 +23,10 @@ export class DeleteUserAccountRequest extends BaseEntity {
     @Column("character varying", { name: "user_name", length: 255, nullable: true })
     userName: string;
 
-    @Column("date", { name: "created_date" })
+    @Column("timestamp without time zone", { name: "created_date" , nullable: true })
     createdDate: Date;
 
-    @Column("date", { name: "updated_date", nullable: true })
+    @Column("timestamp without time zone", { name: "updated_date", nullable: true })
     updatedDate: Date;
 
     @Column("boolean", { name: "request_for_data", default: false })
@@ -35,11 +35,11 @@ export class DeleteUserAccountRequest extends BaseEntity {
     @Column("integer", { name: "status" })
     status: number;
 
-    @ManyToOne(
-        () => User,
-        user => user.deleteUserAccountRequest
-    )
-    @JoinColumn([{ name: "update_by", referencedColumnName: "userId" }])
-    updateBy: User
+    // @ManyToOne(
+    //     () => User,
+    //     user => user.deleteUserAccountRequest
+    // )
+    // @JoinColumn([{ name: "update_by", referencedColumnName: "userId" }])
+    // updateBy: User
 
 }
