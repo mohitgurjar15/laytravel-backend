@@ -94,7 +94,7 @@ export class SupportUserService {
 					console.log("err", err);
 				});
 		}
-		Activity.logActivity(adminId, "support-user", ` New support-user ${userdata.email} created By admin ${adminId}`, null, userdata);
+		Activity.logActivity(adminId, "support-user", ` New support-user ${userdata.email} created By admin ${adminId}`, null, JSON.stringify(userdata));
 		return userdata;
 	}
 

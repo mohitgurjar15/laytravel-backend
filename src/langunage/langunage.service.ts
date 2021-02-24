@@ -73,12 +73,12 @@ export class LangunageService {
 				isDeleted: false,
 			});
 			if (!languageData) throw new NotFoundException(`No language found`);
-			const previousData = languageData
+			const previousData = JSON.stringify(languageData)
 			languageData.name = name;
 			//languageData.updatedBy = adminId;
 			languageData.updatedDate = new Date();
 			languageData.save();
-			const currentData = languageData
+			const currentData = JSON.stringify(languageData)
 			
 			await getConnection().queryResultCache!.remove(["languages"]);
 			Activity.logActivity(adminId, "language", `${languageData.name} Languge is updated by admin`,previousData,currentData);
@@ -108,12 +108,12 @@ export class LangunageService {
 				isDeleted: false,
 			});
 			if (!languageData) throw new NotFoundException(`No language found`);
-			const previousData = languageData
+			const previousData = JSON.stringify(languageData)
 			languageData.isDeleted = true;
 			//languageData.updatedBy = adminId;
 			languageData.updatedDate = new Date();
 			languageData.save();
-			const currentData = languageData
+			const currentData = JSON.stringify(languageData)
 			await getConnection().queryResultCache!.remove(["languages"]);
 			Activity.logActivity(adminId, "language", `${languageData.name} Languge is Deleted by admin`,previousData,currentData);
         
@@ -143,13 +143,13 @@ export class LangunageService {
 				id: id,
 			});
 			if (!Data) throw new NotFoundException(`No language found`);
-			const previousData = Data
+			const previousData = JSON.stringify(Data)
 			
 			Data.active = status;
 			Data.updatedBy = adminId.userId;
 			Data.updatedDate = new Date();
 			Data.save();
-			const currentData = Data
+			const currentData = JSON.stringify(Data)
 			await getConnection().queryResultCache!.remove(["languages"]);
 			Activity.logActivity(adminId.userId, "language", ` Languge ${Data.name} status changed by admin`,previousData,currentData);
         

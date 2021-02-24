@@ -149,7 +149,7 @@ export class UserService {
 		delete userdata.password;
 		delete userdata.salt;
 		if (userdata) {
-			Activity.logActivity(adminId, "user", `New user ${user.email} created by admin `, null, user);
+			Activity.logActivity(adminId, "user", `New user ${user.email} created by admin `, null, JSON.stringify(user));
 			this.mailerService
 				.sendMail({
 					to: userdata.email,
@@ -239,7 +239,7 @@ export class UserService {
 				},
 			});
 
-			const previousData = userData
+			const previousData = JSON.stringify(userData)
 
 			if (typeof files.profile_pic != "undefined")
 				userData.profilePic = files.profile_pic[0].filename;
@@ -263,8 +263,8 @@ export class UserService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
-			const currentData = userData
-			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, userData);
+			const currentData = JSON.stringify(userData)
+			Activity.logActivity(adminId, "user", `${userData.email} is updated by admin`, previousData, JSON.stringify(userData));
 			return userData;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -325,13 +325,13 @@ export class UserService {
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
-			const previousData = user
+			const previousData = JSON.stringify(user)
 			var statusWord = status == true ? 1 : 0;
 			user.status = statusWord;
 			user.updatedBy = adminId;
 			user.updatedDate = new Date();
 			await user.save();
-			const currentData = user
+			const currentData = JSON.stringify(user)
 
 			Activity.logActivity(adminId, "user", `User ${user.email}  status changed by admin`, previousData, currentData);
 			return { message: `user status changed` };
@@ -458,12 +458,12 @@ export class UserService {
 					`You are not allowed to access this resource.`
 				);
 			} else {
-				const previousData = user
+				const previousData = JSON.stringify(user)
 				user.isDeleted = true;
 				user.updatedBy = adminId;
 				user.updatedDate = new Date();
 				await user.save();
-				const currentData = user
+				const currentData = JSON.stringify(user)
 				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`, previousData, currentData);
 				return { messge: `User deleted successfully` };
 			}

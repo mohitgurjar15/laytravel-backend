@@ -103,7 +103,7 @@ export class SupplierService {
 			"supplier-user",
 			`Supplier-user ${user.email} is added by admin`,
 			null,
-			userdata
+			JSON.stringify(userdata)
 		);
 		return this.userRepository.getUserDetails(userdata.userId, siteUrl, [
 			Role.SUPPLIER,
@@ -136,7 +136,7 @@ export class SupplierService {
 			const userData = await this.userRepository.findOne({
 				where: { userId, isDeleted: 0, roleId: In([Role.SUPPLIER]) },
 			});
-			const previousData = userData
+			const previousData = JSON.stringify(userData)
 			userData.firstName = firstName;
 			userData.middleName = middleName || "";
 			userData.lastName = lastName;
@@ -148,7 +148,7 @@ export class SupplierService {
 			userData.updatedDate = new Date();
 
 			await userData.save();
-			const currentData = userData
+			const currentData = JSON.stringify(userData)
 			Activity.logActivity(
 				adminId,
 				"supplier-user",
@@ -229,8 +229,8 @@ export class SupplierService {
 					adminId,
 					"supplier-user",
 					` ${user.email} is deleted by admin`,
-					previousData,
-					currentData
+					JSON.stringify(previousData),
+						JSON.stringify(currentData)
 				);
 				return { messge: `supplier deleted successfully` };
 			}
@@ -462,8 +462,8 @@ export class SupplierService {
 				adminId,
 				"supplier-user",
 				`${user.email} supplier user status changed by admin`,
-				previousData,
-				currentData
+				JSON.stringify(previousData),
+				JSON.stringify(currentData)
 			);
 			return { message: `supplier user status changed` };
 		} catch (error) {
