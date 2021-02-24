@@ -716,7 +716,7 @@ export class AdminDashboardService {
       `SELECT 
       count(*) as cnt
       FROM
-        "user" Where ${where}`
+        "user" WHERE ${userConditon}`
     );
     response["total_account_holders"] = totalAccountHolders[0].cnt
 
