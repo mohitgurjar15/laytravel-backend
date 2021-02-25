@@ -243,8 +243,47 @@ export class CartService {
                     `"user_id" = '${guestUserId}'`
                 )
                 .execute()
+                let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
+               
+                let [query,count] = await getConnection()
+                    .createQueryBuilder(Cart, "cart")
+                    .where(where)
+                    .skip(5)
+                    .getManyAndCount()
+                let cartOverLimit = false
+                if (count > 5) {
+                    cartOverLimit = true
+                    let cartIds = []
+                    if (query.length) {
+                        for await (const dcart of query) {
+                            cartIds.push(dcart.id)
+                        }
+                        await getConnection()
+                            .createQueryBuilder()
+                            .delete()
+                            .from(CartTravelers)
+                            .where(
+                                `"cart_id" in (:...cartIds)`, {
+                                cartIds
+                            }
+                            )
+                            .execute()
+                        await getConnection()
+                            .createQueryBuilder()
+                            .delete()
+                            .from(Cart)
+                            .where(
+                                `"id" in (:...cartIds)`, {
+                                cartIds
+                            }
+                            )
+                            .execute()
+                    }
+    
+                }
             return {
-                message: `Guest user cart successfully maped `
+                message: `Guest user cart successfully maped `,
+                cartOverLimit
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -425,6 +464,7 @@ export class CartService {
                     "cart.moduleId",
                     "cart.moduleInfo",
                     "cart.expiryDate",
+                    "cart.oldModuleInfo",
                     "cart.isDeleted",
                     "cart.createdDate",
                     "module.id",
@@ -441,51 +481,11 @@ export class CartService {
             if (!result.length) {
                 throw new NotFoundException(`Cart is empty`)
             }
-            if (count > 5) {
-                let query = getConnection()
-                    .createQueryBuilder(Cart, "cart")
-                    .leftJoinAndSelect("cart.module", "module")
-                    .leftJoinAndSelect("cart.travelers", "travelers")
-            }
+            
             let responce = []
             var flightRequest = [];
             let flightResponse = [];
-            let cartOverLimit = false
-            if (count > 5) {
-                let query = await getConnection()
-                    .createQueryBuilder(Cart, "cart")
-                    .where(where)
-                    .orderBy(`cart.id`, 'ASC')
-                    .skip(5)
-                    .getMany()
-                let cartIds = []
-                if (query.length) {
-                    for await (const dcart of query) {
-                        cartIds.push(dcart.id)
-                    }
-                    await getConnection()
-                        .createQueryBuilder()
-                        .delete()
-                        .from(CartTravelers)
-                        .where(
-                            `"cart_id" in (:...cartIds)`, {
-                            cartIds
-                        }
-                        )
-                        .execute()
-                    await getConnection()
-                        .createQueryBuilder()
-                        .delete()
-                        .from(Cart)
-                        .where(
-                            `"id" in (:...cartIds)`, {
-                            cartIds
-                        }
-                        )
-                        .execute()
-                }
-
-            }
+            
             if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 await this.flightService.validateHeaders(headers);
 
@@ -549,7 +549,7 @@ export class CartService {
                 const cart = result[index];
 
                 let newCart = {}
-                newCart['oldModuleInfo'] = cart.oldModuleInfo
+                
                 if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
 
                     const value = await this.flightAvailiblity(cart, flightResponse[index])
@@ -590,8 +590,8 @@ export class CartService {
                 }
                 else {
                     newCart['moduleInfo'] = cart.moduleInfo
-                    //newCart['is_available'] = false
                 }
+                newCart['oldModuleInfo'] = cart.oldModuleInfo || {}
                 newCart['id'] = cart.id
                 newCart['userId'] = cart.userId
                 newCart['guestUserId'] = cart.guestUserId
@@ -605,8 +605,7 @@ export class CartService {
             }
             return {
                 data: responce,
-                count: count,
-                cartOverLimit
+                count: count
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
