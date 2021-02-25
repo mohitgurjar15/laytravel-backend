@@ -86,7 +86,7 @@ export class PaymentController {
 	}
 
 
-	@Get('spreedly/credantial')
+	@Get('details')
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "payment caredantial" })
