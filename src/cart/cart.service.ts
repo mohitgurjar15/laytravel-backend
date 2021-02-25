@@ -86,29 +86,6 @@ export class CartService {
                 .where(`user_id = '${user.user_id}'`)
                 .getOne()
 
-
-
-
-
-
-            // let role = [Role.FREE_USER, Role.PAID_USER, Role.TRAVELER_USER]
-
-            // for await (const traveler of travelers) {
-            //     if (!traveler.traveler_id || !uuidValidator(traveler.traveler_id)) {
-            //         throw new BadRequestException('Given traveler is not valid')
-            //     }
-
-            //     let where = `("User"."is_deleted" = false) AND("User"."role_id" IN (${role})) AND ("User"."user_id" = '${traveler.traveler_id}')`;
-            //     let travelerAvailable = await getConnection()
-            //         .createQueryBuilder(User, "User")
-            //         .where(where)
-            //         .getCount()
-
-            //     if (!travelerAvailable) {
-            //         throw new BadRequestException('Given traveler is not available')
-            //     }
-            // }
-
             switch (module_id) {
                 case ModulesName.HOTEL:
                     break;
@@ -170,29 +147,6 @@ export class CartService {
 
         if (flightInfo) {
 
-            // var travelersCount:number = parseInt(flightInfo[0].adult_count)
-            // //console.log(flightInfo[0].adult_count);
-            // //console.log(travelersCount);
-
-            // const 
-            // travelersCount= travelersCount + 
-            // //console.log(flightInfo[0].child_count);
-            // //console.log(travelersCount);
-
-            // travelersCount = travelersCount + flightInfo[0].infant_count ? parseInt(flightInfo[0].infant_count) : 0
-            // //console.log(travelersCount);
-
-            // //console.log(travelersCount);
-            // //console.log(travelers.length);
-
-
-            // if (travelersCount != travelers.length) {
-            //     if (travelersCount > travelers.length) {
-            //         throw new BadRequestException('Please add traveler')
-            //     } else {
-            //         throw new BadRequestException('Please remove traveler')
-            //     }
-            // }
             const depatureDate = flightInfo[0].departure_date;
 
             const formatedDepatureDate = DateTime.convertDateFormat(depatureDate, 'DD/MM/YYYY', 'YYYY-MM-DD')
@@ -215,6 +169,7 @@ export class CartService {
 
             cart.moduleId = ModulesName.FLIGHT
             cart.moduleInfo = flightInfo
+            cart.oldModuleInfo = flightInfo
             cart.expiryDate = diffrence > 2 ? new Date(dayAfterDay) : new Date(formatedDepatureDate);
             cart.isDeleted = false
             cart.createdDate = new Date();
@@ -486,9 +441,51 @@ export class CartService {
             if (!result.length) {
                 throw new NotFoundException(`Cart is empty`)
             }
+            if (count > 5) {
+                let query = getConnection()
+                    .createQueryBuilder(Cart, "cart")
+                    .leftJoinAndSelect("cart.module", "module")
+                    .leftJoinAndSelect("cart.travelers", "travelers")
+            }
             let responce = []
             var flightRequest = [];
             let flightResponse = [];
+            let cartOverLimit = false
+            if (count > 5) {
+                let query = await getConnection()
+                    .createQueryBuilder(Cart, "cart")
+                    .where(where)
+                    .orderBy(`cart.id`, 'ASC')
+                    .skip(5)
+                    .getMany()
+                let cartIds = []
+                if (query.length) {
+                    for await (const dcart of query) {
+                        cartIds.push(dcart.id)
+                    }
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(CartTravelers)
+                        .where(
+                            `"cart_id" in (:...cartIds)`, {
+                            cartIds
+                        }
+                        )
+                        .execute()
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(Cart)
+                        .where(
+                            `"id" in (:...cartIds)`, {
+                            cartIds
+                        }
+                        )
+                        .execute()
+                }
+
+            }
             if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 await this.flightService.validateHeaders(headers);
 
@@ -552,9 +549,9 @@ export class CartService {
                 const cart = result[index];
 
                 let newCart = {}
-
+                newCart['oldModuleInfo'] = cart.oldModuleInfo
                 if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
-                    newCart['oldModuleInfo'] = cart.moduleInfo
+
                     const value = await this.flightAvailiblity(cart, flightResponse[index])
                     //return value
                     if (typeof value.message == "undefined") {
@@ -562,33 +559,33 @@ export class CartService {
                         newCart['moduleInfo'] = [value]
                         newCart['is_available'] = true
 
-                        //cart.moduleInfo = [value]
-                        // await getConnection()
-                        //     .createQueryBuilder()
-                        //     .update(Cart)
-                        //     .set({ moduleInfo: [value] })
-                        //     .where("id = :id", { id: cart.id })
-                        //     .execute();
-                        // await cart.save()
+                        cart.moduleInfo = [value]
+                        await getConnection()
+                            .createQueryBuilder()
+                            .update(Cart)
+                            .set({ moduleInfo: [value] })
+                            .where("id = :id", { id: cart.id })
+                            .execute();
+                        await cart.save()
                     } else {
                         newCart['is_available'] = false
                         newCart['moduleInfo'] = cart.moduleInfo
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(CartTravelers)
-                            .where(
-                                `"cart_id" = '${cart.id}'`
-                            )
-                            .execute()
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(Cart)
-                            .where(
-                                `"id" = '${cart.id}'`
-                            )
-                            .execute()
+                        // await getConnection()
+                        //     .createQueryBuilder()
+                        //     .delete()
+                        //     .from(CartTravelers)
+                        //     .where(
+                        //         `"cart_id" = '${cart.id}'`
+                        //     )
+                        //     .execute()
+                        // await getConnection()
+                        //     .createQueryBuilder()
+                        //     .delete()
+                        //     .from(Cart)
+                        //     .where(
+                        //         `"id" = '${cart.id}'`
+                        //     )
+                        //     .execute()
                     }
                 }
                 else {
@@ -608,7 +605,8 @@ export class CartService {
             }
             return {
                 data: responce,
-                count: count
+                count: count,
+                cartOverLimit
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
