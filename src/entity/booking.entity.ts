@@ -113,6 +113,9 @@ export class Booking extends BaseEntity {
   @Column("boolean", { name: "is_ticketd", default: () => false })
   isTicketd: boolean;
 
+  @Column("text", { name: "message" , nullable:true })
+  message: string;
+
   @Column("numeric", {
     name: "payment_gateway_processing_fee",
     nullable: true,
