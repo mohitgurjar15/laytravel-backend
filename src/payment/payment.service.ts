@@ -1050,7 +1050,8 @@ export class PaymentService {
 			browser_info,
 			redirection
 		);
-
+			console.log(JSON.stringify(authCardResult));
+			
 		// return authCardResult;
 		if (authCardResult.meta_data) {
 			let transaction = authCardResult.meta_data.transaction;
@@ -1095,5 +1096,10 @@ export class PaymentService {
 
 		return `${date[2]}-${date[1]}-${date[0]}`
 
+	}
+
+	async getCredantial(){
+		const GatewayCredantial = await Generic.getPaymentCredential()
+		return GatewayCredantial
 	}
 }

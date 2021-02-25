@@ -444,9 +444,51 @@ export class CartService {
             if (!result.length) {
                 throw new NotFoundException(`Cart is empty`)
             }
+            if (count > 5) {
+                let query = getConnection()
+                    .createQueryBuilder(Cart, "cart")
+                    .leftJoinAndSelect("cart.module", "module")
+                    .leftJoinAndSelect("cart.travelers", "travelers")
+            }
             let responce = []
             var flightRequest = [];
             let flightResponse = [];
+            let cartOverLimit = false
+            if (count > 5) {
+                let query = await getConnection()
+                    .createQueryBuilder(Cart, "cart")
+                    .where(where)
+                    .orderBy(`cart.id`, 'ASC')
+                    .skip(5)
+                    .getMany()
+                let cartIds = []
+                if (query.length) {
+                    for await (const dcart of query) {
+                        cartIds.push(dcart.id)
+                    }
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(CartTravelers)
+                        .where(
+                            `"cart_id" in (:...cartIds)`, {
+                            cartIds
+                        }
+                        )
+                        .execute()
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(Cart)
+                        .where(
+                            `"id" in (:...cartIds)`, {
+                            cartIds
+                        }
+                        )
+                        .execute()
+                }
+
+            }
             if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 await this.flightService.validateHeaders(headers);
 
@@ -510,9 +552,9 @@ export class CartService {
                 const cart = result[index];
 
                 let newCart = {}
-
+                newCart['oldModuleInfo'] = cart.oldModuleInfo
                 if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
-                    newCart['oldModuleInfo'] = cart.oldModuleInfo
+
                     const value = await this.flightAvailiblity(cart, flightResponse[index])
                     //return value
                     if (typeof value.message == "undefined") {
@@ -566,7 +608,8 @@ export class CartService {
             }
             return {
                 data: responce,
-                count: count
+                count: count,
+                cartOverLimit
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -846,21 +889,21 @@ export class CartService {
         let captureCardresult = await this.paymentService.captureCard(
             transaction_token
         );
-        if(payment_type == BookingType.INSTALMENT){
+        if (payment_type == BookingType.INSTALMENT) {
             await getConnection()
-            .createQueryBuilder()
-            .update(BookingInstalments)
-            .set({ paymentStatus : PaymentStatus.CONFIRM , paymentInfo : captureCardresult.meta_data , transactionToken : captureCardresult.token })
-            .where(`booking_id In (${BookingIds}) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`)
-            .execute();
-        }else{
+                .createQueryBuilder()
+                .update(BookingInstalments)
+                .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data, transactionToken: captureCardresult.token })
+                .where(`booking_id In (${BookingIds}) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`)
+                .execute();
+        } else {
             await getConnection()
-            .createQueryBuilder()
-            .update(Booking)
-            .set({ paymentStatus : PaymentStatus.CONFIRM , paymentInfo : captureCardresult.meta_data })
-            .where(`booking_id In (${BookingIds}) `)
-            .execute();
-        } 
+                .createQueryBuilder()
+                .update(Booking)
+                .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data })
+                .where(`booking_id In (${BookingIds}) `)
+                .execute();
+        }
     }
 
     async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string, cartData: CartBooking) {
