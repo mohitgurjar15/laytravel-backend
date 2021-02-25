@@ -84,6 +84,24 @@ export class PaymentController {
 		return await this.paymentService.getAllCards(userId, { guest_id: '' });
 	}
 
+
+	@Get('spreedly/credantial')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@ApiOperation({ summary: "payment caredantial" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async gatewayCredantial(
+	) {
+		return await this.paymentService.getCredantial();
+	}
+
 	@Get()
 	@ApiBearerAuth()
 	@ApiOperation({ summary: "Get all customer card" })

@@ -835,5 +835,8 @@ export class PaymentService {
 
 	}
 
-
+	async getCredantial(){
+		const GatewayCredantial = await Generic.getPaymentCredential()
+		return GatewayCredantial
+	}
 }
