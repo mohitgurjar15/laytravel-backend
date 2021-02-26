@@ -1470,8 +1470,10 @@ export class FlightService {
 		booking.moduleInfo = airRevalidateResult;
 		booking.checkInDate = await this.changeDateFormat(airRevalidateResult[0].departure_date)
 		booking.checkOutDate = await this.changeDateFormat(airRevalidateResult[0].arrival_date)
+		
 		try {
 			let bookingDetails = await booking.save();
+			console.log(' save booking')
 			await this.saveTravelers(booking.id, userId, travelers);
 			if (instalmentDetails) {
 				let bookingInstalments: BookingInstalments[] = [];
@@ -1517,6 +1519,7 @@ export class FlightService {
 			predictiveBooking.price = parseFloat(booking.totalAmount);
 			predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
 			await predictiveBooking.save()
+			console.log('get booking')
 			return await this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);
@@ -2422,7 +2425,7 @@ export class FlightService {
 
 
 			let headerDetails = await this.validateHeaders(headers);
-
+			console.log('header validate')
 			let {
 				travelers,
 				payment_type,
@@ -2497,6 +2500,7 @@ export class FlightService {
 				bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
 				bookingRequestInfo.card_token = card_token;
 			}
+			console.log('bookingRequestInfo',bookingRequestInfo)
 			let {
 				selling_price,
 				departure_date,
@@ -2509,9 +2513,10 @@ export class FlightService {
 				travelers,
 				isPassportRequired
 			);
-
+			console.log('travelersDetails',travelersDetails)
 			let currencyId = headerDetails.currency.id;
 			const userId = user.userId;
+			console.log('userId',userId)
 			if (adult_count != travelersDetails.adults.length) {
 				return {
 					statusCode: 422,
@@ -2585,6 +2590,7 @@ export class FlightService {
 					/* Call mystifly booking API if checkin date is less 3 months */
 					let dayDiff = moment(departure_date).diff(bookingDate, 'days');
 					let bookingResult;
+					console.log('dayDiff',dayDiff)
 					if (dayDiff <= 90) {
 						const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 						bookingResult = await mystifly.bookFlight(
@@ -2597,7 +2603,7 @@ export class FlightService {
 					let authCardToken = transaction_token;
 
 
-
+					console.log('req for save booking')
 					let laytripBookingResult = await this.saveBooking(
 						bookingRequestInfo,
 						currencyId,

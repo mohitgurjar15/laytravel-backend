@@ -1044,8 +1044,8 @@ export class PaymentService {
 
 		let authCardResult = await this.authorizeCard(
 			card_token,
-			Math.ceil(authoriseAmount * 100), //make it dynamic
-			// Math.ceil(1 * 100),
+			//Math.ceil(authoriseAmount * 100), //make it dynamic
+			3005,
 			"USD",
 			browser_info,
 			redirection
@@ -1101,5 +1101,41 @@ export class PaymentService {
 	async getCredantial(){
 		const GatewayCredantial = await Generic.getPaymentCredential()
 		return GatewayCredantial
+	}
+
+
+	async refund(amount,token,currencyCode) {
+
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
+
+		let url = `https://core.spreedly.com/v1/transactions/${token}/credit.json`;
+		let requestBody = {
+			transaction: {
+			  amount: amount,
+			  currency_code: currencyCode
+			}
+		  };
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'refund');
+
+		//console.log(cardResult);
+		if (typeof cardResult.transaction != 'undefined' && cardResult.transaction.succeeded) {
+			return {
+				status: true,
+				token: cardResult.transaction.token,
+				meta_data: cardResult,
+			};
+		} else {
+			return {
+				status: false,
+				meta_data: cardResult,
+			};
+		}
 	}
 }

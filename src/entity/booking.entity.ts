@@ -62,7 +62,7 @@ export class Booking extends BaseEntity {
   @Column("date", { name: "booking_date" })
   bookingDate: string;
 
-  @Column("integer", { name: "total_installments" })
+  @Column("integer", { name: "total_installments" , default: 0})
   totalInstallments: number;
 
   @Column("uuid", { name: "cart_id", nullable: true })
