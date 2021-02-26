@@ -68,7 +68,7 @@ export class BookingInstalments extends BaseEntity {
   @Column("boolean", { name: "is_manually", default: () => false })
   isManually: boolean;
 
-  @Column("uuid", { name: "capture_by" , nullable : true})
+  @Column("uuid", { name: "capture_by_user" , nullable : true})
   captureBy: string;
 
   @Column("integer", { name: "payment_gateway_id", nullable: true })
@@ -130,9 +130,9 @@ export class BookingInstalments extends BaseEntity {
 
   @ManyToOne(
     () => User,
-    user => user.bookingInstalments
+    user => user.installmentCaptured
   )
-  @JoinColumn([{ name: "capture_by", referencedColumnName: "userId" }])
+  @JoinColumn([{ name: "capture_by_user", referencedColumnName: "userId" }])
   captureByUser: User;
 
   @OneToMany(
