@@ -35,6 +35,7 @@ export class LoginLogRepository extends Repository<LoginLog> {
 		const result = await getManager()
 			.createQueryBuilder(LoginLog, "log")
 			.leftJoinAndSelect("log.user", "user")
+			.leftJoinAndSelect("log.loginBy", "loginBy")
 			.select([
 				"user.userId",
 				"user.firstName",
@@ -45,6 +46,10 @@ export class LoginLogRepository extends Repository<LoginLog> {
 				"log.loginAgent",
 				"log.id",
 				"log.loginDate",
+				"loginBy.userId",
+				"loginBy.firstName",
+				"loginBy.lastName",
+				"loginBy.email",
 			])
 			.where(where)
 			.skip(skip)
@@ -59,6 +64,7 @@ export class LoginLogRepository extends Repository<LoginLog> {
 		if (!result.length) {
 			throw new NotFoundException(`No Log found.`);
 		}
+		
 		return { data: result, TotalReseult: total };
 	}
 }
