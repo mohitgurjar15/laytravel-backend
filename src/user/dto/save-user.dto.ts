@@ -16,16 +16,16 @@ import { IsEqualTo } from "src/auth/password.decorator";
 import { IsValidDate } from "src/decorator/is-valid-date.decorator";
 
 export class SaveUserDto {
-	@IsEnum(["mr", "ms", "mrs"], {
-		message: (args: ValidationArguments) => {
-			if (typeof args.value == "undefined" || args.value == "") {
-				return `Please select your title.&&&gender`;
-			} else {
-				return `Please select valid title('mr','ms','mrs').&&&title&&&${errorMessage}`;
-			}
-		},
-	})
-	@ApiProperty({
+	// @IsEnum(["mr", "ms", "mrs"], {
+	// 	message: (args: ValidationArguments) => {
+	// 		if (typeof args.value == "undefined" || args.value == "") {
+	// 			return `Please select your title.&&&gender`;
+	// 		} else {
+	// 			return `Please select valid title('mr','ms','mrs').&&&title&&&${errorMessage}`;
+	// 		}
+	// 	},
+	// })
+	@ApiPropertyOptional({
 		description: `Select Title ('mr','ms','mrs')`,
 		example: `mr`,
 	})
@@ -128,46 +128,31 @@ export class SaveUserDto {
 	})
 	phone_no: string;
 
-	@IsNotEmpty({
-		message: `Please enter your address.&&&address`,
-	})
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: `Enter Your address`,
 		example: `12 street, las vegas`,
 	})
 	address: string;
 
-	@IsNotEmpty({
-		message: `Please enter your zipcode.&&&zip_code`,
-	})
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: `Enter your zipcode`,
 		example: `H7623`,
 	})
 	zip_code: string;
 
-	@IsNotEmpty({
-		message: `Please select your country.&&&country_id`,
-	})
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: `Enter your country id`,
 		example: 233,
 	})
 	country_id: number;
 
-	@IsNotEmpty({
-		message: `Please select your state.&&&state_id`,
-	})
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: `Enter your state id`,
 		example: 1452,
 	})
 	state_id: number;
 
-	@IsNotEmpty({
-		message: `Please enter your city name.&&&city_name`,
-	})
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: `Enter your city name`,
 		example: `Las vegas`,
 	})
@@ -213,8 +198,5 @@ export class SaveUserDto {
 		description: "profile Picture Url (Allow Only 'JPG,JPEG,PNG')",
 		example: "profile.jpg",
 	})
-	profile_pic: string;
-
-
-	
+	profile_pic: string;	
 }

@@ -22,4 +22,12 @@ export class MassCommunicationDto {
         example: ``
     })
     email_body: string 
+
+    @ApiPropertyOptional({
+		type: "string",
+		format: "binary",
+		description: "file url",
+		example: "",
+	})
+    file: string;
 }

@@ -1,6 +1,8 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { editFileName } from 'src/auth/file-validator';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
@@ -13,7 +15,10 @@ import { WebNotification } from 'src/utility/web-notification.utility';
 import { PushNotificationDto } from './dto/push-notification.dto';
 import { MassCommunicationDto } from './dto/send-mass-communication.dto';
 import { WebNotificationDto } from './dto/web-notification.dto';
+import { diskStorage } from "multer";
 import { GeneralService } from './general.service';
+import {uploadFileDto} from './dto/upload-file.dto'
+import { SiteUrl } from 'src/decorator/site-url.decorator';
 
 @ApiTags("Generic")
 @Controller('generic')
@@ -134,6 +139,16 @@ export class GeneralController {
     @Post(["mass-communication"])
     @ApiBearerAuth()
     @UseGuards(AuthGuard(),RolesGuard)
+    @ApiConsumes("multipart/form-data")
+    @UseInterceptors(
+		FileFieldsInterceptor([{ name: "file" }], {
+			storage: diskStorage({
+				destination: "/var/www/html/logs/mail/",
+				filename: editFileName,
+			}),
+			limits: { fileSize: 2097152 },
+		})
+	)
     @ApiOperation({ summary: "Mass communication" })
     @ApiResponse({ status: 200, description: "Api success" })
     @ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -143,10 +158,12 @@ export class GeneralController {
     @HttpCode(200)
     async massCommunication(
         @Body() dto: MassCommunicationDto,
-        @GetUser() user:User
+        @GetUser() user:User,
+        @UploadedFiles() files: uploadFileDto,
+        @SiteUrl() siteUrl
     ) {
         return await this.generalService.massCommunication(
-            dto,user
+            dto,user,files ,siteUrl
         );
     }
     @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
