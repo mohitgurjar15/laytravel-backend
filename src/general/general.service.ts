@@ -15,6 +15,8 @@ import { massCommunicationMail } from 'src/config/email_template/mass-communicat
 import { TestTemplete } from 'src/config/new_email_templete/test.html';
 import { LaytripFlightBookingConfirmtionMail } from 'src/config/new_email_templete/flight-booking-confirmation.html';
 import { MassCommunication } from 'src/entity/mass-communication.entity';
+import { contentType } from 'src/config/content-type';
+import { extname } from 'path';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -130,13 +132,7 @@ export class GeneralService {
     async massCommunication(dto: MassCommunicationDto, user: User, files, siteUrl) {
         const { subject, email_body } = dto
         const role = [Role.FREE_USER, Role.PAID_USER]
-        const log = new MassCommunication
-        log.subject = subject
-        log.message = email_body
-        log.createdDate = new Date()
-        log.createdBy = user.userId
-
-        await log.save();
+       
 
         let emails = [{
             email: 'parthvirani@itoneclick.com'
@@ -151,19 +147,37 @@ export class GeneralService {
         let attachments = []
         const fs = require("fs");
         var path = require('path');
+        let filesName = {
+            file : []
+        }
         if (typeof files.file != "undefined") {
             for await (const file of files.file) {
                 
+                filesName.file.push(file.filename)
                 var fileName = path.resolve('/var/www/html/logs/mail/'+file.filename);
+                const fileExtName = extname(file.originalname)
+                const cn = contentType[fileExtName]
+                console.log(cn);
+                
                 const attachment =
                 {
                     content: fs.readFileSync(fileName).toString('base64'),
-                    filename: file.filename
+                    filename: file.filename,
+                    contentType : cn
                 }
                 attachments.push(attachment)
             }
 
         }
+
+        const log = new MassCommunication
+        log.subject = subject
+        log.message = email_body
+        log.createdDate = new Date()
+        log.createdBy = user.userId
+        log.attachment = JSON.stringify(filesName)
+
+        await log.save();
 
         for await (const email of emails) {
             // allemail += email.email + ','
@@ -232,6 +246,7 @@ export class GeneralService {
                 "log.message",
                 "log.subject",
                 "log.createdDate",
+                "log.attachment",
                 "user.roleId"
             ])
             .orderBy("log.id", "DESC")

@@ -32,6 +32,9 @@ export class MassCommunication extends BaseEntity {
     @Column("text", { name: "message" })
     message: string;
 
+    @Column("text", { name: "attachment" ,nullable : true})
+    attachment: string;
+
     @Column("uuid", { name: "created_by" })
     createdBy: string;
 
