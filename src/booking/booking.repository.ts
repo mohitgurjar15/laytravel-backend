@@ -365,7 +365,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			.leftJoinAndSelect("BookingInstalments.captureBy", "captureBy")
+			.leftJoinAndSelect("BookingInstalments.captureByUser", "captureBy")
 			.select([
 				"BookingInstalments.attempt",
 				"BookingInstalments.id",
@@ -463,7 +463,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			.leftJoinAndSelect("BookingInstalments.captureBy", "captureBy")
+			.leftJoinAndSelect("BookingInstalments.captureByUser", "captureBy")
 			.select([
 				"captureBy.firstName",
 				"captureBy.lastName",
