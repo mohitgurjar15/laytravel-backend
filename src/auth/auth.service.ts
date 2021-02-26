@@ -1615,6 +1615,7 @@ export class AuthService {
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };
+				this.addLoginLog(user.userId ,signInOtherUserDto,'Admin_panel',parentUser.userId)
 				return token;
 			}
 		} catch (error) {
@@ -1628,7 +1629,7 @@ export class AuthService {
 		}
 	}
 
-	addLoginLog(userId, request, loginVia) {
+	addLoginLog(userId, request, loginVia ,loginBy = null) {
 		const loginLog = new LoginLog();
 		loginLog.userId = userId;
 		loginLog.ipAddress = request.ip || "";
@@ -1636,6 +1637,11 @@ export class AuthService {
 			typeof request.headers["user-agent"] != "undefined"
 				? request.headers["user-agent"]
 				: request.headers;
+		if(loginBy){
+			loginLog.loginBy2 = loginBy	
+		}else{
+			loginLog.loginBy2 = userId
+		}
 		loginLog.loginDate = new Date();
 		loginLog.loginVia = loginVia;
 		getConnection()

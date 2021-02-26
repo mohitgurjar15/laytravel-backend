@@ -1878,7 +1878,7 @@ export class BookingService {
                 .createQueryBuilder()
                 .update(Booking)
                 .set({ bookingStatus : BookingStatus.CANCELLED , paymentStatus : PaymentStatus.CANCELLED  })
-                .where("id =:id", { id: booking.id })
+                .where(`id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
                 .execute();
 			
 			await getConnection()

@@ -41,7 +41,7 @@ export class PaymentController {
 	}
 
 	@Post('user-card/:user_id')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Save user Card by admin" })
@@ -65,7 +65,7 @@ export class PaymentController {
 	}
 
 	@Get('user-card/:user_id')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Get all customer card list by admin" })
@@ -142,7 +142,7 @@ export class PaymentController {
 		return await this.paymentService.addCard(addCardDto,parent_user_id,guest_id);
 	}
 	@Post('add-user-card/:user_id')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Save user Card by admin" })
@@ -184,7 +184,7 @@ export class PaymentController {
 
 
 	@Post('get-payment')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Get a payment from the user by admin " })
@@ -205,7 +205,7 @@ export class PaymentController {
 	}
 
 	@Get('check-active-payments/:card_id')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "check for payment active for selected card " })
@@ -226,7 +226,7 @@ export class PaymentController {
 
 
 	@Delete('/:card_id')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "delete user card" })
@@ -246,7 +246,7 @@ export class PaymentController {
 	}
 
 	@Put('/:card_id')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "update user card" })
@@ -267,7 +267,7 @@ export class PaymentController {
 	}
 
 	@Post('/take-manually')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FREE_USER, Role.PAID_USER, Role.SUPPORT)
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "Manually take payment " })

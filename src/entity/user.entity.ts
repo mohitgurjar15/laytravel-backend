@@ -212,6 +212,12 @@ export class User extends BaseEntity {
   bookingInstalments: BookingInstalments[];
 
   @OneToMany(
+    () => BookingInstalments,
+    bookingInstalments => bookingInstalments.captureByUser
+  )
+  installmentCaptured: BookingInstalments[];
+
+  @OneToMany(
     () => OtherPayments,
     otherPayments => otherPayments.user
   )
@@ -252,6 +258,12 @@ export class User extends BaseEntity {
     loginLog => loginLog.user
   )
   loginLogs: LoginLog[];
+
+  @OneToMany(
+    () => LoginLog,
+    loginLog => loginLog.loginBy
+  )
+  loginBy: LoginLog[];
 
   @OneToMany(
     () => Markup,

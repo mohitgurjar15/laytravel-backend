@@ -127,7 +127,7 @@ export class GeneralService {
         }
     }
 
-    async massCommunication(dto: MassCommunicationDto, user: User) {
+    async massCommunication(dto: MassCommunicationDto, user: User, files, siteUrl) {
         const { subject, email_body } = dto
         const role = [Role.FREE_USER, Role.PAID_USER]
         const log = new MassCommunication
@@ -137,18 +137,6 @@ export class GeneralService {
         log.createdBy = user.userId
 
         await log.save();
-        // let emails = await getManager()
-        //     .createQueryBuilder(User, "user")
-        //     .select([
-        //         "user.email"
-        //     ])
-        //     .where(`"user"."is_deleted"=:is_deleted`, {
-        //         is_deleted: false,
-        //     })
-        //     .andWhere(role ? `"user"."role_id" in (:...role) ` : `1=1`, {
-        //         role
-        //     })
-        //     .getMany();
 
         let emails = [{
             email: 'parthvirani@itoneclick.com'
@@ -160,6 +148,23 @@ export class GeneralService {
             email: 'jimeet@itoneclick.com'
         }]
         var allemail = '';
+        let attachments = []
+        const fs = require("fs");
+        var path = require('path');
+        if (typeof files.file != "undefined") {
+            for await (const file of files.file) {
+                
+                var fileName = path.resolve('/var/www/html/logs/mail/'+file.filename);
+                const attachment =
+                {
+                    content: fs.readFileSync(fileName).toString('base64'),
+                    filename: file.filename
+                }
+                attachments.push(attachment)
+            }
+
+        }
+
         for await (const email of emails) {
             // allemail += email.email + ','
             this.mailerService
@@ -168,6 +173,7 @@ export class GeneralService {
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: subject,
+                    attachments: attachments,
                     html: await massCommunicationMail({ header: subject, body: email_body }),
                 })
                 .then((res) => {

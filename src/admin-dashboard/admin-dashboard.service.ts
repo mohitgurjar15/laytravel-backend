@@ -501,7 +501,7 @@ export class AdminDashboardService {
       response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;
 
       var valueOfBooking = await getConnection().query(`
-      SELECT  SUM( total_amount * usd_factor) as total_amount from booking where ${moduleIdCondition} AND ${dateConditon}
+      SELECT  SUM( total_amount * usd_factor) as total_amount from booking where booking_status In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}
 `);
 
       response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;

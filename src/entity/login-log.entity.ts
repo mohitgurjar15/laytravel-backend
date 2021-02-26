@@ -19,6 +19,9 @@ export class LoginLog extends BaseEntity {
   @Column("uuid", { name: "user_id" })
   userId: string;
 
+  @Column("uuid", { name: "login_by", nullable: true })
+  loginBy2: string;
+
   @Column("character varying", { name: "ip_address", length: 25 })
   ipAddress: string;
 
@@ -37,4 +40,11 @@ export class LoginLog extends BaseEntity {
   )
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
+
+  @ManyToOne(
+    () => User,
+    user => user.loginBy
+  )
+  @JoinColumn([{ name: "login_by", referencedColumnName: "userId" }])
+  loginBy: User;
 }
