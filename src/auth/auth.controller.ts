@@ -535,12 +535,13 @@ export class AuthController {
 	async signInToOtherUser(
 		@Body(ValidationPipe) signInOtherUserDto: SignInOtherUserDto,
 		@SiteUrl() siteUrl: string,
-		@GetUser() user: User
+		@GetUser() user: User,
+		@Req() req
 	) {
 		const result = await this.authService.signInToOtherUser(
 			signInOtherUserDto,
 			siteUrl,
-			user
+			user,req
 		);
 		return result;
 	}
