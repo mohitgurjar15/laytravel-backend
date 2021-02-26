@@ -494,20 +494,15 @@ export class AdminDashboardService {
       from booking where booking_type = ${BookingType.NOINSTALMENT}  AND ${moduleIdCondition} AND ${dateConditon}`);
       response["booking_with_no_installment_qty"] = noInstallmentBookingQty[0].confirm_booking || 0;
 
+      
       var valueOfBooking = await getConnection().query(`
-                SELECT  SUM( total_amount * usd_factor) as total_amount from booking where ${moduleIdCondition} AND ${dateConditon}
-			`);
-
-      response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;
-
-      var valueOfBooking = await getConnection().query(`
-      SELECT  SUM( total_amount * usd_factor) as total_amount from booking where booking_status In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}
+      SELECT  SUM( total_amount / usd_factor) as total_amount from booking where booking_status In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}
 `);
 
       response["value_of_bookings"] = valueOfBooking[0].total_amount || 0;
 
       var valueOfBookingQty = await getConnection().query(`
-      SELECT  count(id) as cnt from booking where ${moduleIdCondition} AND ${dateConditon}
+      SELECT  count(id) as cnt from booking where booking_status In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}
       `);
 
       response["value_of_bookings_qyt"] = valueOfBookingQty[0].cnt || 0;
