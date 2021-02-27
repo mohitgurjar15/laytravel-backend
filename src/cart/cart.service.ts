@@ -322,6 +322,7 @@ export class CartService {
             );
         }
     }
+
     async updateCart(updateCartDto: UpdateCartDto, user) {
         try {
             const { cart_id, travelers } = updateCartDto

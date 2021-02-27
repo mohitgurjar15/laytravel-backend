@@ -22,18 +22,18 @@ export class UpdateProfileDto {
     title : string;
 
     
-    @IsEnum(['M','F','N'],{
+    @IsEnum(['M','F','O'],{
         message : (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "" || args.value == null) {
                 return `Please select your gender.&&&gender&&&Please select your gender.`
             }
             else{
-                return `Please select valid gender(M,F,N).&&&gender&&&${errorMessage}`
+                return `Please select valid gender(M,F,O).&&&gender&&&${errorMessage}`
             }
         }
     })
     @ApiProperty({
-        description: `Select Gender (M,F)`,
+        description: `Select Gender (M,F,O)`,
         example: `M`
     })
     gender : Gender;
