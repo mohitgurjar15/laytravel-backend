@@ -836,9 +836,11 @@ export class CartService {
                     case ModulesName.FLIGHT:
                         let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
                         responce.push(flightResponce)
+
                         if (flightResponce['status'] == 1) {
                             successedResult++;
-                            BookingIds.push(flightResponce['detail']['id'])
+                            
+                            BookingIds.push(flightResponce['detail']['laytrip_booking_id'])
                         } else {
                             failedResult++
                         }
@@ -848,6 +850,8 @@ export class CartService {
                         break;
                 }
             }
+            console.log(BookingIds);
+            
             if (successedResult) {
                 const payment = await this.capturePayment(BookingIds, transaction_token, bookCart.payment_type)
                 await this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
@@ -1090,6 +1094,7 @@ export class CartService {
 
                 //console.log(bookingdto);
                 newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id, selected_down_payment, transaction_token)
+                //console.log(JSON.stringify(newCart['detail']));                
             }
 
         } else {
