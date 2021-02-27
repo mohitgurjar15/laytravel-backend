@@ -1499,7 +1499,7 @@ export class FlightService {
 					bookingInstalment.supplierId = 1;
 					bookingInstalment.isPaymentProcessedToSupplier = 0;
 					bookingInstalment.isInvoiceGenerated = 0;
-					bookingInstalment.instalmentNo = i
+					bookingInstalment.instalmentNo = i+1
 					i++;
 					bookingInstalments.push(bookingInstalment);
 				}

@@ -367,6 +367,7 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
+			.leftJoinAndSelect("BookingInstalments.captureByUser", "captureBy")
 			.select([
 				"BookingInstalments.attempt",
 				"BookingInstalments.id",
@@ -386,6 +387,7 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isPaymentProcessedToSupplier",
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.transactionToken",
+				"BookingInstalments.paymentCaptureDate",
 				"BookingInstalments.comment",
 				"installment.id",
 				"installment.instalmentDate",
@@ -429,7 +431,14 @@ export class BookingRepository extends Repository<Booking> {
 				"User.phoneNo",
 				"User.roleId",
 				"moduleData.name",
-				"cart.laytripCartId"
+				"cart.laytripCartId",
+				"BookingInstalments.isManually",
+				"captureBy.firstName",
+				"captureBy.lastName",
+				"captureBy.socialAccountId",
+				"captureBy.email",
+				"captureBy.phoneNo",
+				"captureBy.roleId"
 			])
 
 			.where(where)
@@ -456,7 +465,14 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("BookingInstalments.currency", "currency")
 			.leftJoinAndSelect("BookingInstalments.user", "User")
 			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
+			.leftJoinAndSelect("BookingInstalments.captureByUser", "captureBy")
 			.select([
+				"captureBy.firstName",
+				"captureBy.lastName",
+				"captureBy.socialAccountId",
+				"captureBy.email",
+				"captureBy.phoneNo",
+				"captureBy.roleId",
 				"BookingInstalments.attempt",
 				"BookingInstalments.id",
 				"BookingInstalments.bookingId",
@@ -476,6 +492,8 @@ export class BookingRepository extends Repository<Booking> {
 				"BookingInstalments.isInvoiceGenerated",
 				"BookingInstalments.transactionToken",
 				"BookingInstalments.comment",
+				"BookingInstalments.paymentCaptureDate",
+				"BookingInstalments.isManually",
 				"cart.laytripCartId",
 				// "installment.id",
 				// "installment.instalmentDate",

@@ -656,6 +656,8 @@ export class PaymentService {
 						instalment.attempt = instalment.attempt ? instalment.attempt + 1 : 1;
 						instalment.instalmentStatus = transaction.status == true ? PaymentStatus.CONFIRM : PaymentStatus.PENDING
 						instalment.comment = `try to get Payment by cron on ${currentDate}`
+						instalment.isManually = true
+						instalment.captureBy = admin.userId
 						await instalment.save()
 					}
 				}

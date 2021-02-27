@@ -1574,7 +1574,7 @@ export class AuthService {
 		}
 	}
 
-	async signInToOtherUser(signInOtherUserDto, siteUrl, parentUser) {
+	async signInToOtherUser(signInOtherUserDto, siteUrl, parentUser,req) {
 		const { user_id } = signInOtherUserDto;
 		try {
 			// inactive user also can login
@@ -1615,6 +1615,7 @@ export class AuthService {
 				};
 				const accessToken = this.jwtService.sign(payload);
 				const token = { token: accessToken };
+				this.addLoginLog(user.userId ,req,'Admin_panel',parentUser.userId)
 				return token;
 			}
 		} catch (error) {
@@ -1628,14 +1629,19 @@ export class AuthService {
 		}
 	}
 
-	addLoginLog(userId, request, loginVia) {
+	addLoginLog(userId, request, loginVia ,loginBy = null) {
 		const loginLog = new LoginLog();
 		loginLog.userId = userId;
 		loginLog.ipAddress = request.ip || "";
 		loginLog.loginAgent =
-			typeof request.headers["user-agent"] != "undefined"
+			request?.headers["user-agent"] 
 				? request.headers["user-agent"]
 				: request.headers;
+		if(loginBy){
+			loginLog.loginBy2 = loginBy	
+		}else{
+			loginLog.loginBy2 = userId
+		}
 		loginLog.loginDate = new Date();
 		loginLog.loginVia = loginVia;
 		getConnection()

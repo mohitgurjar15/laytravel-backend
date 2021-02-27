@@ -50,7 +50,7 @@ export class BookingInstalments extends BaseEntity {
   @Column("integer", { name: "attempt", default: 0 })
   attempt: number;
 
-  @Column("date", { name: "payment_capture_date" , nullable:true})
+  @Column("timestamp without time zone", { name: "payment_capture_date" , nullable:true})
   paymentCaptureDate: Date;
 
   @Column("integer", { name: "currency_id" })
@@ -64,6 +64,12 @@ export class BookingInstalments extends BaseEntity {
 
   @Column("integer", { name: "instalment_no" , nullable : true })
   instalmentNo: number;
+
+  @Column("boolean", { name: "is_manually", default: () => false })
+  isManually: boolean;
+
+  @Column("uuid", { name: "capture_by_user" , nullable : true})
+  captureBy: string;
 
   @Column("integer", { name: "payment_gateway_id", nullable: true })
   paymentGatewayId: number | null;
@@ -120,6 +126,14 @@ export class BookingInstalments extends BaseEntity {
   )
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
+
+
+  @ManyToOne(
+    () => User,
+    user => user.installmentCaptured
+  )
+  @JoinColumn([{ name: "capture_by_user", referencedColumnName: "userId" }])
+  captureByUser: User;
 
   @OneToMany(
     () => FailedPaymentAttempt,

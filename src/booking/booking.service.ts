@@ -1878,14 +1878,14 @@ export class BookingService {
                 .createQueryBuilder()
                 .update(Booking)
                 .set({ bookingStatus : BookingStatus.CANCELLED , paymentStatus : PaymentStatus.CANCELLED  })
-                .where("id =:id", { id: booking.id })
+                .where(`id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
                 .execute();
 			
 			await getConnection()
                 .createQueryBuilder()
                 .update(BookingInstalments)
                 .set({ paymentStatus : PaymentStatus.CANCELLED   })
-                .where("booking_id =:id", { id: booking.id })
+                .where(`booking_id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
                 .execute();
 		}
 		if(product_id){
