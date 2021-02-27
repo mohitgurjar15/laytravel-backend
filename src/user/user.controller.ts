@@ -450,7 +450,7 @@ export class UserController {
 	}
 
 	@Roles(Role.FREE_USER, Role.PAID_USER)
-	@Delete(["delete-account-request"])
+	@Delete("account/request")
 	@ApiBearerAuth()
 	@UseGuards(AuthGuard(), RolesGuard)
 	@ApiOperation({ summary: "request for delete account" })
