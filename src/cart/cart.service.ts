@@ -243,44 +243,7 @@ export class CartService {
                     `"user_id" = '${guestUserId}'`
                 )
                 .execute()
-                let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
-               
-                let [query,count] = await getConnection()
-                    .createQueryBuilder(Cart, "cart")
-                    .where(where)
-                    .skip(5)
-                    .getManyAndCount()
-                let cartOverLimit = false
-                if (count > 5) {
-                    cartOverLimit = true
-                    let cartIds = []
-                    if (query.length) {
-                        for await (const dcart of query) {
-                            cartIds.push(dcart.id)
-                        }
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(CartTravelers)
-                            .where(
-                                `"cart_id" in (:...cartIds)`, {
-                                cartIds
-                            }
-                            )
-                            .execute()
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(Cart)
-                            .where(
-                                `"id" in (:...cartIds)`, {
-                                cartIds
-                            }
-                            )
-                            .execute()
-                    }
-    
-                }
+                
             return {
                 message: `Guest user cart successfully maped `,
                 cartOverLimit
