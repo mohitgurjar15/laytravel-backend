@@ -993,14 +993,14 @@ export class CartService {
                     .createQueryBuilder()
                     .update(BookingInstalments)
                     .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data, transactionToken: captureCardresult.token })
-                    .where(`booking_id In (${BookingIds}) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`)
+                    .where(`booking_id In (:...BookingIds) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`,{BookingIds})
                     .execute();
             } else {
                 await getConnection()
                     .createQueryBuilder()
                     .update(Booking)
                     .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data })
-                    .where(`booking_id In (${BookingIds}) `)
+                    .where(`id In (:...BookingIds) `,{BookingIds})
                     .execute();
             }
         }
