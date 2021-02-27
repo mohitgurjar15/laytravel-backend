@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { getConnection, getManager } from "typeorm";
+import { getConnection, getManager, LessThan } from "typeorm";
 import { Countries } from 'src/entity/countries.entity';
 import { States } from 'src/entity/states.entity';
 import * as geoip from 'geoip-lite';
@@ -253,6 +253,18 @@ export class GeneralService {
             .getManyAndCount();
         if (!result.length) {
             throw new NotFoundException(`No Log found.`);
+        }
+
+        for await (const log of result) {
+            const attachment = JSON.parse(log.attachment)
+
+            if(attachment?.file.length){
+                for (let index = 0; index < attachment?.file.length; index++) {
+                    const file = attachment?.file[index];
+                    attachment.file[index] = 'https://laytrip.com/logs/mail/' + file
+                }
+            }
+            log.attachment = attachment
         }
         return { data: result, TotalReseult: count };
     }
