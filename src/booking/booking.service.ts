@@ -1480,7 +1480,7 @@ export class BookingService {
 				predictiveBookingData['remain_seat'] = data.remainSeat
 				predictiveBookingData['selling_price'] = bookingData.totalAmount;
 				predictiveBookingData['paid_amount'] = totalPaidAmount;
-				predictiveBookingData['is_installation_on_track'] = paidAmount.attempt == 1 && paidAmount.paymentStatus == PaymentStatus.CONFIRM ? true : false
+				predictiveBookingData['is_installation_on_track'] = paidAmount?.attempt == 1 && paidAmount?.paymentStatus == PaymentStatus.CONFIRM ? true : false
 				predictiveBookingData['paid_amount_in_percentage'] = (totalPaidAmount * 100) / parseFloat(bookingData.totalAmount)
 				predictiveBookingData['booking_status'] = bookingData.bookingStatus;
 				// //console.log(bookingData.laytripBookingId);
@@ -1890,11 +1890,11 @@ export class BookingService {
 		}
 		if(product_id){
 			return {
-				message : `Your Product Canceled successfully `
+				message : `Selected product cancel successfully `
 			}	
 		}
 		return {
-			message : `Your booking Canceled successfully `
+			message : `Selected booking cancel successfully `
 		}
 	}
 }

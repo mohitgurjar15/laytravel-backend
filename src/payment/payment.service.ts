@@ -800,7 +800,7 @@ export class PaymentService {
 				for await (const booking of cart.bookings) {
 					await this.checkAllinstallmentPaid(booking.id)
 				}
-				Activity.logActivity(admin.userId, "Payment", `Mannully take payment for booking = ${cart_id} , Total amount = ${totalAmount} , installmentDates = ${instalmentDate}`)
+				Activity.logActivity(admin.userId, "Payment", `Manually take payment for booking = ${cart_id} , Total amount = ${totalAmount} , installmentDates = ${instalmentDate}`)
 				return {
 					message: `Installment take successfully `
 				}
