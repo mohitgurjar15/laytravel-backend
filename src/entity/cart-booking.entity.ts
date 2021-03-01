@@ -42,6 +42,8 @@ export class CartBooking extends BaseEntity {
     @Column("character varying", { name: "laytrip_cart_id" })
     laytripCartId: string;
 
+    @Column("json", { name: "refund_payment_info", nullable: true })
+    refundPaymentInfo: object;
 
     @ManyToOne(
         () => User,

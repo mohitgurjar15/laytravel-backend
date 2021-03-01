@@ -149,6 +149,8 @@ export class BookingRepository extends Repository<Booking> {
 		delete result.user.updatedDate;
 		delete result.user.salt;
 		delete result.user.password;
+		delete result.module.liveCredential
+		delete result.module.testCredential
 		for (let j in result.travelers) {
 			delete result.travelers[j].userData.updatedDate;
 			delete result.travelers[j].userData.salt;

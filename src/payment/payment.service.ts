@@ -7,6 +7,8 @@ import {
 	ForbiddenException,
 	NotAcceptableException,
 	UnauthorizedException,
+	Inject,
+	CACHE_MANAGER,
 } from "@nestjs/common";
 import { SaveCardDto } from "./dto/save-card.dto";
 import * as config from "config";
@@ -39,14 +41,22 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { LaytripInstallmentRecevied } from "src/config/new_email_templete/laytrip_installment-recived.html";
 import { TwilioSMS } from "src/utility/sms.utility";
+import { Cache } from 'cache-manager';
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripCartBookingComplationMail } from "src/config/new_email_templete/cart-completion-mail.html";
+import { AuthoriseCartDto } from "./dto/authorise-card-for-booking.dto";
+import { ModulesName } from "src/enum/module.enum";
+import { Cart } from "src/entity/cart.entity";
+import { PaymentType } from "src/enum/payment-type.enum";
+import { InstalmentType } from "src/enum/instalment-type.enum";
+import { Instalment } from "src/utility/instalment.utility";
 
 
 @Injectable()
 export class PaymentService {
 	constructor(
 		private readonly mailerService: MailerService,
+		//@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
@@ -220,7 +230,7 @@ export class PaymentService {
 		}
 	}
 
-	async authorizeCard(card_id, amount, currency_code) {
+	async authorizeCard(card_id, amount, currency_code, browser_info?: any, redirection: string = '') {
 
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
@@ -233,13 +243,31 @@ export class PaymentService {
 			Authorization: authorization,
 		}
 
+		let transaction = {
+			payment_method_token: card_id,
+			amount: amount,
+			currency_code: currency_code,
+		};
+
+		if (redirection != '') {
+			let threeDS = {
+				redirect_url: redirection,
+				callback_url: redirection,
+				three_ds_version: "2",
+				attempt_3dsecure: true,
+				browser_info,
+			};
+
+			transaction = {
+				...transaction,
+				...threeDS
+			};
+		};
+
+
 		let url = `https://core.spreedly.com/v1/gateways/${gatewayToken}/authorize.json`;
 		let requestBody = {
-			transaction: {
-				payment_method_token: card_id,
-				amount: amount,
-				currency_code: currency_code,
-			},
+			transaction
 		};
 		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
 		// //console.log(authResult)
@@ -837,8 +865,279 @@ export class PaymentService {
 
 	}
 
+
+	async validate(bookDto:AuthoriseCartDto, headers, user:User) {
+
+    	console.log(bookDto, headers, user);
+		const { payment_type, laycredit_points, card_token, instalment_type, additional_amount,  cart, selected_down_payment , browser_info , site_url } = bookDto
+		let uuid = uuidv4();
+		const date = new Date();
+		var date1 = date.toISOString();
+		date1 = date1
+			.replace(/T/, " ") // replace T with a space
+			.replace(/\..+/, "").split(' ')[0];
+		let redirection = site_url + '/book/charge/' + uuid;
+
+		let response: any = {
+			uuid,
+			redirection,
+			transaction: {}
+		};
+
+		let authoriseAmount:number = 0 
+
+		if (cart.length > 5) {
+			throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
+		}
+		let cartIds: number[] = []
+		for await (const i of cart) {
+			cartIds.push(i.cart_id)
+		}
+
+		let query = getConnection()
+			.createQueryBuilder(Cart, "cart")
+			.select([
+				"cart.moduleInfo","cart.moduleId"])
+			.where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
+			.orderBy(`cart.id`, 'DESC')
+			.limit(5)
+		const [result, count] = await query.getManyAndCount();
+		
+		if (!result.length) {
+			throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
+		}
+		
+		
+		
+			let smallestDate = ''
+            let totalAmount:number = 0
+            
+            for await (const item of result) {
+				console.log('moduleId',item.moduleId);
+				 
+                if (item.moduleId == ModulesName.FLIGHT) {
+					console.log('1');
+					console.log(result[0].moduleInfo[0].departure_date);			
+                    const dipatureDate = await this.changeDateFormat(item.moduleInfo[0].departure_date)
+                    console.log('2');
+					if (smallestDate == '') {
+                        smallestDate = dipatureDate;
+                    } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                        smallestDate = dipatureDate;
+                    }
+					console.log('smallestDate',smallestDate);
+					console.log(item.moduleInfo[0].selling_price);
+					
+					totalAmount += parseFloat(item.moduleInfo[0].selling_price) 
+
+					console.log('totalAmount',totalAmount);
+					
+                }
+            }
+
+			
+			if (payment_type == PaymentType.INSTALMENT) {
+				let instalmentDetails;
+			
+				let totalAdditionalAmount = additional_amount || 0;
+				if (laycredit_points > 0) {
+					totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
+				}
+				//save entry for future booking
+				if (instalment_type == InstalmentType.WEEKLY) {
+					instalmentDetails = Instalment.weeklyInstalment(
+						totalAmount,
+						smallestDate,
+						date1,
+						totalAdditionalAmount,
+						0,
+						0,
+						selected_down_payment
+					);
+				}
+				if (instalment_type == InstalmentType.BIWEEKLY) {
+					instalmentDetails = Instalment.biWeeklyInstalment(
+						totalAmount,
+						smallestDate,
+						date1,
+						totalAdditionalAmount,
+						0,
+						0,
+						selected_down_payment
+					);
+				}
+				if (instalment_type == InstalmentType.MONTHLY) {
+					instalmentDetails = Instalment.monthlyInstalment(
+						totalAmount,
+						smallestDate,
+						date1,
+						totalAdditionalAmount,
+						0,
+						0,
+						selected_down_payment
+					);
+				}
+			
+				if (instalmentDetails.instalment_available) {
+					let firstInstalemntAmount =
+						instalmentDetails.instalment_date[0].instalment_amount;
+					if (laycredit_points > 0) {
+						firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
+					}
+					authoriseAmount = Generic.formatPriceDecimal(firstInstalemntAmount)
+					
+				} else {
+					return {
+						statusCode: 422,
+						message: `Instalment option is not available for your search criteria`
+					}
+				}
+			}
+			else if (payment_type == PaymentType.NOINSTALMENT) {
+
+				let sellingPrice = totalAmount;
+				if (laycredit_points > 0) {
+					sellingPrice = totalAmount - laycredit_points
+				}
+			
+				if (sellingPrice > 0) {
+					authoriseAmount = Generic.formatPriceDecimal(sellingPrice)
+				}
+				// else {
+				// 	//for full laycredit rdeem
+				// 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+				// 	const bookingResult = await mystifly.bookFlight(
+				// 		bookFlightDto,
+				// 		travelersDetails,
+				// 		isPassportRequired
+				// 	);
+				// 	if (bookingResult.booking_status == "success") {
+			
+				// 		let laytripBookingResult = await this.saveBooking(
+				// 			bookingRequestInfo,
+				// 			currencyId,
+				// 			bookingDate,
+				// 			BookingType.NOINSTALMENT,
+				// 			userId,
+				// 			airRevalidateResult,
+				// 			null,
+				// 			null,
+				// 			bookingResult,
+				// 			travelers,
+				//			cartId
+				// 		);
+				// 		//send email here
+				// 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+				// 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
+			
+				// 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+				// 			laytripBookingResult.laytripBookingId
+				// 		);
+				// 		return bookingResult;
+				// 	} else {
+			
+				// 			return {
+				// 				status: 424,
+				// 				message: bookingResult.error_message,
+				// 			}
+				// 	}
+				// }
+			}
+
+		let authCardResult = await this.authorizeCard(
+			card_token,
+			Math.ceil(authoriseAmount * 100), //make it dynamic
+			//3005,
+			"USD",
+			browser_info,
+			redirection
+		);
+			console.log(JSON.stringify(authCardResult));
+			
+		// return authCardResult;
+		if (authCardResult.meta_data) {
+			let transaction = authCardResult.meta_data.transaction;
+			//this.cacheManager.set(uuid, { bookDto, headers, user }, { ttl: 3000 });
+			response.transaction = transaction;
+			response.redirection = redirection + '?transaction_token=' + transaction.token;
+			response.authoriceAmount = authoriseAmount
+		}
+
+		return response;
+	}
+
+	async completeTransaction(purchaseToken) {
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
+
+		let url = `https://core.spreedly.com/v1/transactions/${purchaseToken}/complete.json`;
+		let requestBody = {};
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
+		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
+			return {
+				status: true,
+				token: captureRes.transaction.token,
+				meta_data: captureRes,
+			};
+		} else {
+			return {
+				status: false,
+				meta_data: captureRes,
+			};
+		}
+	}
+
+	async changeDateFormat(dateTime) {
+		var date = dateTime.split('/')
+
+		return `${date[2]}-${date[1]}-${date[0]}`
+
+	}
+
 	async getCredantial(){
 		const GatewayCredantial = await Generic.getPaymentCredential()
 		return GatewayCredantial
+	}
+
+
+	async refund(amount,token,currencyCode) {
+
+		const GatewayCredantial = await Generic.getPaymentCredential()
+
+		const authorization = GatewayCredantial.credentials.authorization;
+
+		const headers = {
+			Accept: "application/json",
+			Authorization: authorization,
+		}
+
+		let url = `https://core.spreedly.com/v1/transactions/${token}/credit.json`;
+		let requestBody = {
+			transaction: {
+			  amount: amount,
+			  currency_code: currencyCode
+			}
+		  };
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'refund');
+
+		//console.log(cardResult);
+		if (typeof cardResult.transaction != 'undefined' && cardResult.transaction.succeeded) {
+			return {
+				status: true,
+				token: cardResult.transaction.token,
+				meta_data: cardResult,
+			};
+		} else {
+			return {
+				status: false,
+				meta_data: cardResult,
+			};
+		}
 	}
 }

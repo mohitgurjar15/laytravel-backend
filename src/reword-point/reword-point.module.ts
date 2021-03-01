@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { RewordPointController } from './reword-point.controller';
 import { RewordPointService } from './reword-point.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,7 +9,7 @@ import { PaymentService } from 'src/payment/payment.service';
 import { BookingRepository } from 'src/booking/booking.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RewordPointEarnRepository,RewordPointRedeemRepository,BookingRepository]), AuthModule],
+  imports: [TypeOrmModule.forFeature([RewordPointEarnRepository, RewordPointRedeemRepository, BookingRepository]), AuthModule, CacheModule.register(),],
   controllers: [RewordPointController],
   providers: [RewordPointService , PaymentService]
 })

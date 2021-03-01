@@ -1470,8 +1470,10 @@ export class FlightService {
 		booking.moduleInfo = airRevalidateResult;
 		booking.checkInDate = await this.changeDateFormat(airRevalidateResult[0].departure_date)
 		booking.checkOutDate = await this.changeDateFormat(airRevalidateResult[0].arrival_date)
+		
 		try {
 			let bookingDetails = await booking.save();
+			console.log(' save booking')
 			await this.saveTravelers(booking.id, userId, travelers);
 			if (instalmentDetails) {
 				let bookingInstalments: BookingInstalments[] = [];
@@ -1489,11 +1491,11 @@ export class FlightService {
 					bookingInstalment.instalmentStatus =
 						i == 0 ? InstalmentStatus.PAID : InstalmentStatus.PENDING;
 					bookingInstalment.transactionToken =
-						i == 0 ? captureCardresult.token : null;
+						i == 0 ? captureCardresult?.token : null;
 					bookingInstalment.paymentStatus =
-						i == 0 ? PaymentStatus.CONFIRM : PaymentStatus.PENDING;
+						i == 0 && captureCardresult ? PaymentStatus.CONFIRM : PaymentStatus.PENDING;
 					bookingInstalment.attempt =
-						i == 0 ? 1 : 0;
+						i == 0 && captureCardresult ? 1 : 0;
 					bookingInstalment.supplierId = 1;
 					bookingInstalment.isPaymentProcessedToSupplier = 0;
 					bookingInstalment.isInvoiceGenerated = 0;
@@ -1517,6 +1519,7 @@ export class FlightService {
 			predictiveBooking.price = parseFloat(booking.totalAmount);
 			predictiveBooking.remainSeat = booking.moduleInfo[0].routes[0].stops[0].remaining_seat
 			await predictiveBooking.save()
+			console.log('get booking')
 			return await this.bookingRepository.getBookingDetails(booking.laytripBookingId);
 		} catch (error) {
 			console.log(error);
@@ -1666,7 +1669,7 @@ export class FlightService {
 
 			let laytripBookingResult = await this.partialyBookingSave(
 				{
-					net_rate:airRevalidateResult[0].net_rate,
+					net_rate: airRevalidateResult[0].net_rate,
 					fare_type: airRevalidateResult[0].fare_type
 				},
 				currencyId,
@@ -1697,7 +1700,7 @@ export class FlightService {
 			// 	laytripBookingResult.laytripBookingId
 			// );
 			return {
-				message : `Partial booking successfully booked from supplier side supplier Booking id is ${bookingResult.supplier_booking_id}` 
+				message: `Partial booking successfully booked from supplier side supplier Booking id is ${bookingResult.supplier_booking_id}`
 			};
 
 		}
@@ -2417,12 +2420,12 @@ export class FlightService {
 			});
 	}
 
-	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId, selected_down_payment: number) {
+	async cartBook(bookFlightDto: BookFlightDto, headers, user: User, smallestDipatureDate, cartId, selected_down_payment: number, transaction_token) {
 		try {
 
 
 			let headerDetails = await this.validateHeaders(headers);
-
+			console.log('header validate')
 			let {
 				travelers,
 				payment_type,
@@ -2497,6 +2500,7 @@ export class FlightService {
 				bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
 				bookingRequestInfo.card_token = card_token;
 			}
+			console.log('bookingRequestInfo',bookingRequestInfo)
 			let {
 				selling_price,
 				departure_date,
@@ -2509,9 +2513,10 @@ export class FlightService {
 				travelers,
 				isPassportRequired
 			);
-
+			console.log('travelersDetails',travelersDetails)
 			let currencyId = headerDetails.currency.id;
 			const userId = user.userId;
+			console.log('userId',userId)
 			if (adult_count != travelersDetails.adults.length) {
 				return {
 					statusCode: 422,
@@ -2582,82 +2587,48 @@ export class FlightService {
 					if (laycredit_points > 0) {
 						firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
 					}
-
-					let authCardResult = await this.paymentService.authorizeCard(
-						card_token,
-						Math.ceil(firstInstalemntAmount * 100),
-						"USD"
-					);
-					if (authCardResult.status == true) {
-
-						/* Call mystifly booking API if checkin date is less 3 months */
-						let dayDiff = moment(departure_date).diff(bookingDate, 'days');
-						let bookingResult;
-						if (dayDiff <= 90) {
-							const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-							bookingResult = await mystifly.bookFlight(
-								bookFlightDto,
-								travelersDetails,
-								isPassportRequired
-							);
-						}
-
-						let authCardToken = authCardResult.token;
-
-						let captureCardresult;
-						if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
-
-							captureCardresult = await this.paymentService.captureCard(
-								authCardToken
-							);
-						}
-						else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
-							await this.paymentService.voidCard(authCardToken);
-
-							return {
-								statusCode: 424,
-								message: bookingResult.error_message,
-							}
-						}
-
-						if (captureCardresult.status == true) {
-
-							let laytripBookingResult = await this.saveBooking(
-								bookingRequestInfo,
-								currencyId,
-								bookingDate,
-								BookingType.INSTALMENT,
-								userId,
-								airRevalidateResult,
-								instalmentDetails,
-								captureCardresult,
-								bookingResult || null,
-								travelers,
-								cartId
-							);
-							this.sendBookingEmail(laytripBookingResult.laytripBookingId);
-							return {
-								laytrip_booking_id: laytripBookingResult.id,
-								booking_status: "pending",
-								supplier_booking_id: "",
-								success_message: `Booking is in pending state!`,
-								error_message: "",
-								booking_details: await this.bookingRepository.getBookingDetails(
-									laytripBookingResult.laytripBookingId
-								),
-							};
-						} else {
-							return {
-								statusCode: 422,
-								message: `Card capture is failed&&&card_token`
-							}
-						}
-					} else {
-						return {
-							statusCode: 422,
-							message: `Card authorization is failed&&&card_token`
-						}
+					/* Call mystifly booking API if checkin date is less 3 months */
+					let dayDiff = moment(departure_date).diff(bookingDate, 'days');
+					let bookingResult;
+					console.log('dayDiff',dayDiff)
+					if (dayDiff <= 90) {
+						const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+						bookingResult = await mystifly.bookFlight(
+							bookFlightDto,
+							travelersDetails,
+							isPassportRequired
+						);
 					}
+
+					let authCardToken = transaction_token;
+
+
+					console.log('req for save booking')
+					let laytripBookingResult = await this.saveBooking(
+						bookingRequestInfo,
+						currencyId,
+						bookingDate,
+						BookingType.INSTALMENT,
+						userId,
+						airRevalidateResult,
+						instalmentDetails,
+						null,
+						bookingResult || null,
+						travelers,
+						cartId
+					);
+					return {
+						laytrip_booking_id: laytripBookingResult.id,
+						booking_status: "pending",
+						supplier_booking_id: "",
+						success_message: `Booking is in pending state!`,
+						error_message: "",
+						booking_details: await this.bookingRepository.getBookingDetails(
+							laytripBookingResult.laytripBookingId
+						),
+					};
+
+
 				} else {
 					return {
 						statusCode: 422,
@@ -2674,65 +2645,50 @@ export class FlightService {
 
 				if (sellingPrice > 0) {
 
-					let authCardResult = await this.paymentService.authorizeCard(
-						card_token,
-						Math.ceil(sellingPrice * 100),
-						"USD"
+
+					const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+					const bookingResult = await mystifly.bookFlight(
+						bookFlightDto,
+						travelersDetails,
+						isPassportRequired
 					);
-					if (authCardResult.status == true) {
+					// let bookingResult: any = {
+					// 	booking_status: "success"
+					// }
+					let authCardToken = transaction_token;
+					if (bookingResult.booking_status == "success") {
 
-						const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-						const bookingResult = await mystifly.bookFlight(
-							bookFlightDto,
-							travelersDetails,
-							isPassportRequired
+						let laytripBookingResult = await this.saveBooking(
+							bookingRequestInfo,
+							currencyId,
+							bookingDate,
+							BookingType.NOINSTALMENT,
+							userId,
+							airRevalidateResult,
+							null,
+							null,
+							bookingResult,
+							travelers,
+							cartId
 						);
-						// let bookingResult: any = {
-						// 	booking_status: "success"
-						// }
-						let authCardToken = authCardResult.token;
-						if (bookingResult.booking_status == "success") {
-							let captureCardresult = await this.paymentService.captureCard(
-								authCardToken
-							);
-							let laytripBookingResult = await this.saveBooking(
-								bookingRequestInfo,
-								currencyId,
-								bookingDate,
-								BookingType.NOINSTALMENT,
-								userId,
-								airRevalidateResult,
-								null,
-								captureCardresult,
-								bookingResult,
-								travelers,
-								cartId
-							);
-							//send email here
-							this.sendBookingEmail(laytripBookingResult.laytripBookingId);
-							bookingResult.laytrip_booking_id = laytripBookingResult.id;
-							bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-								laytripBookingResult.laytripBookingId
-							);
+						//send email here
+						this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+						bookingResult.laytrip_booking_id = laytripBookingResult.id;
+						bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+							laytripBookingResult.laytripBookingId
+						);
 
-							if (bookingRequestInfo.fare_type == 'GDS') {
-								this.ticketFlight(bookingResult.supplier_booking_id)
-							}
-							return bookingResult;
-						} else {
-							await this.paymentService.voidCard(authCardToken);
-
-							return {
-								statusCode: 424,
-								message: bookingResult.error_message,
-							}
+						if (bookingRequestInfo.fare_type == 'GDS') {
+							this.ticketFlight(bookingResult.supplier_booking_id)
 						}
+						return bookingResult;
 					} else {
-						return {
-							statusCode: 422,
-							message: `Card authorization is failed&&&card_token`
-						}
+						await this.paymentService.voidCard(authCardToken);
 
+						return {
+							statusCode: 424,
+							message: bookingResult.error_message,
+						}
 					}
 				}
 				// else {

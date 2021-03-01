@@ -1,5 +1,5 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query, Req } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
 import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
@@ -11,6 +11,7 @@ import { User } from 'src/entity/user.entity';
 import { CreteTransactionDto } from './dto/create-transaction.dto';
 import { RolesGuard } from 'src/guards/role.guard';
 import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
+import { AuthoriseCartDto } from './dto/authorise-card-for-booking.dto';
 
 
 @ApiTags("Payment")
@@ -285,4 +286,48 @@ export class PaymentController {
 	) {
 		return await this.paymentService.manuallyTakePayment(manullyTakePaymentDto, user);
 	}
+
+
+	@Post('/validate')
+	@ApiHeader({
+		name: 'currency',
+		description: 'Enter currency code(ex. USD)',
+		example: 'USD'
+	})
+	@ApiHeader({
+		name: 'language',
+		description: 'Enter language code(ex. en)',
+	})
+	@ApiOperation({ summary: "Validate Booking" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 404, description: 'Flight is not available now' })
+	@HttpCode(200)
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+	async validate(
+		@Body() bookDto: AuthoriseCartDto,
+		@Req() req,
+		@GetUser() user : User
+	) {
+		// return bookDto;
+		return await this.paymentService.validate(bookDto, req.headers, user);
+	}
+
+	@Post('/complete')
+	@ApiOperation({ summary: "complete Booking" })
+	@ApiResponse({ status: 200, description: 'Api success' })
+	@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+	@ApiResponse({ status: 404, description: 'Flight is not available now' })
+	@HttpCode(200)
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
+	async complete(
+		@Body() token: any,
+	) {
+
+		return await this.paymentService.completeTransaction(token.token);
+	}
+
 }

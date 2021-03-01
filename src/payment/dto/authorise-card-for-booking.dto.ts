@@ -5,7 +5,7 @@ import { Type } from 'class-transformer';
 import { PaymentType } from "src/enum/payment-type.enum";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 
-export class CartBookDto {
+export class AuthoriseCartDto {
 
     @IsEnum([PaymentType.INSTALMENT, PaymentType.NOINSTALMENT, PaymentType.FULLPOINTS, PaymentType.PARTIALPOINTS], {
         message: (args: ValidationArguments) => {
@@ -25,14 +25,14 @@ export class CartBookDto {
     @IsOptional()
     @ApiProperty({
         description: `Laycredit point to redeem`,
-        example: 10
+        example: 0
     })
     laycredit_points: number;
 
     @IsOptional()
     @ApiProperty({
         description: `Card token`,
-        example: `XXXXXX-XXXXX-XXXXXX`
+        example: `aFulDTtYbr9ifg7diCEzO6lIVhE`
     })
     card_token: string;
 
@@ -59,17 +59,11 @@ export class CartBookDto {
     @IsOptional()
     @ApiProperty({
         description: `Additional with payment with instalement`,
-        example: 10
+        example: 0
     })
     additional_amount: number;
 
-    @IsOptional()
-    @ApiProperty({
-        description: `Booking Through (web,android,ios)`,
-        example: `web`
-    })
-    booking_through: string;
-
+    
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => Cart)
@@ -86,12 +80,23 @@ export class CartBookDto {
     })
     cart: Cart[];
 
-    @IsOptional()
-    @ApiProperty({
-        description: `Transction token`,
-        example: `12ds4ttr`
+    @IsNotEmpty({
+        message: `enter browser_info`,
     })
-    transaction_token: string;
+    @ApiProperty({
+        description: `browser_info `,
+        example: `eyJ3aWR0aCI6MTQ0MCwiaGVpZ2h0Ijo4MTAsImRlcHRoIjoyNCwidGltZXpvbmUiOi0zMzAsInVzZXJfYWdlbnQiOiJNb3ppbGxhLzUuMCAoWDExOyBMaW51eCB4ODZfNjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS84MC4wLjM5ODcuMTA2IFNhZmFyaS81MzcuMzYiLCJqYXZhIjpmYWxzZSwibGFuZ3VhZ2UiOiJlbi1HQiIsImJyb3dzZXJfc2l6ZSI6IjAxIiwiYWNjZXB0X2hlYWRlciI6InRleHQvaHRtbCxhcHBsaWNhdGlvbi94aHRtbCt4bWwsYXBwbGljYXRpb24veG1sO3E9MC45LCovKjtxPTAuOCJ9`
+    })
+    browser_info: string
+
+    @IsNotEmpty({
+        message: `enter site_url`,
+    })
+    @ApiProperty({
+        description: `site_url `,
+        example: `https://demo.eztoflow.com`
+    })
+    site_url: string
 }
 
 class Cart {

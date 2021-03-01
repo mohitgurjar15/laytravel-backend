@@ -37,8 +37,14 @@ import { CartDataUtility } from 'src/utility/cart-data.utility';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
 import { LaytripCartBookingConfirmtionMail } from 'src/config/new_email_templete/cart-booking-confirmation.html';
-import { BookingNotCompletedMail } from 'src/config/new_email_templete/laytrip_booking-not-completed-mail.html';
 const mailConfig = config.get("email");
+import { BookingNotCompletedMail } from 'src/config/new_email_templete/laytrip_booking-not-completed-mail.html';
+import { PaymentService } from 'src/payment/payment.service';
+import { BookingInstalments } from 'src/entity/booking-instalments.entity';
+import { Booking } from 'src/entity/booking.entity';
+import { PaymentType } from 'src/enum/payment-type.enum';
+import { Instalment } from 'src/utility/instalment.utility';
+import { InstalmentType } from 'src/enum/instalment-type.enum';
 
 @Injectable()
 export class CartService {
@@ -46,7 +52,7 @@ export class CartService {
     constructor(
         private flightService: FlightService,
         private vacationService: VacationRentalService,
-
+        private paymentService: PaymentService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
 
         @InjectRepository(AirportRepository)
@@ -243,44 +249,44 @@ export class CartService {
                     `"user_id" = '${guestUserId}'`
                 )
                 .execute()
-                let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
-               
-                let [query,count] = await getConnection()
-                    .createQueryBuilder(Cart, "cart")
-                    .where(where)
-                    .skip(5)
-                    .getManyAndCount()
-                let cartOverLimit = false
-                if (count > 5) {
-                    cartOverLimit = true
-                    let cartIds = []
-                    if (query.length) {
-                        for await (const dcart of query) {
-                            cartIds.push(dcart.id)
-                        }
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(CartTravelers)
-                            .where(
-                                `"cart_id" in (:...cartIds)`, {
-                                cartIds
-                            }
-                            )
-                            .execute()
-                        await getConnection()
-                            .createQueryBuilder()
-                            .delete()
-                            .from(Cart)
-                            .where(
-                                `"id" in (:...cartIds)`, {
-                                cartIds
-                            }
-                            )
-                            .execute()
+            let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`
+
+            let [query, count] = await getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(where)
+                .skip(5)
+                .getManyAndCount()
+            let cartOverLimit = false
+            if (count > 5) {
+                cartOverLimit = true
+                let cartIds = []
+                if (query.length) {
+                    for await (const dcart of query) {
+                        cartIds.push(dcart.id)
                     }
-    
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(CartTravelers)
+                        .where(
+                            `"cart_id" in (:...cartIds)`, {
+                            cartIds
+                        }
+                        )
+                        .execute()
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(Cart)
+                        .where(
+                            `"id" in (:...cartIds)`, {
+                            cartIds
+                        }
+                        )
+                        .execute()
                 }
+
+            }
             return {
                 message: `Guest user cart successfully maped `,
                 cartOverLimit
@@ -482,11 +488,11 @@ export class CartService {
             if (!result.length) {
                 throw new NotFoundException(`Cart is empty`)
             }
-            
+
             let responce = []
             var flightRequest = [];
             let flightResponse = [];
-            
+
             if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
                 await this.flightService.validateHeaders(headers);
 
@@ -550,7 +556,7 @@ export class CartService {
                 const cart = result[index];
 
                 let newCart = {}
-                
+
                 if (typeof live_availiblity != "undefined" && live_availiblity == 'yes') {
 
                     const value = await this.flightAvailiblity(cart, flightResponse[index])
@@ -744,10 +750,9 @@ export class CartService {
         }
     }
 
-
     async bookCart(bookCart: CartBookDto, user: User, Headers) {
         try {
-            const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment } = bookCart
+            const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, cart, selected_down_payment, transaction_token } = bookCart
 
 
             if (cart.length > 5) {
@@ -790,6 +795,7 @@ export class CartService {
             }
             let smallestDate = ''
             let largestDate = ''
+            //let ToatalAmount = ''
             for await (const item of result) {
                 if (item.moduleId == ModulesName.FLIGHT) {
                     const dipatureDate = await this.flightService.changeDateFormat(item.moduleInfo[0].departure_date)
@@ -806,6 +812,8 @@ export class CartService {
                     } else if (new Date(largestDate) > new Date(arrivalDate)) {
                         largestDate = arrivalDate;
                     }
+
+
                 }
             }
             const cartBook = new CartBooking
@@ -817,28 +825,50 @@ export class CartService {
             cartBook.userId = user.userId
             cartBook.bookingType = payment_type == "instalment" ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
             cartBook.status == BookingStatus.PENDING
-            const cartData = await cartBook.save()
+            let cartData = await cartBook.save()
 
             let responce = []
-            let mailResponce = []
+            let successedResult = 0;
+            let failedResult = 0;
+            let BookingIds = []
+            //let mailResponce = []
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
                         let flightResponce = await this.bookFlight(item, user, Headers, bookCart, smallestDate, cartData)
                         responce.push(flightResponce)
-                        flightResponce['cart'] = item
-                        mailResponce.push(flightResponce)
+
+                        if (flightResponce['status'] == 1) {
+                            successedResult++;
+                            
+                            BookingIds.push(flightResponce['detail']['laytrip_booking_id'])
+                        } else {
+                            failedResult++
+                        }
                         break;
 
                     default:
                         break;
                 }
             }
+            console.log(BookingIds);
+            
+            if (successedResult) {
+                const payment = await this.capturePayment(BookingIds, transaction_token, bookCart.payment_type)
+                await this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
+                if (failedResult && payment.status) {
+                    await this.refundCart(cartData.id, Headers, payment_type, instalment_type, smallestDate, selected_down_payment, payment.token)
+                }
+            }
+            else{
+                cartData.status == BookingStatus.FAILED
+                await cartData.save()
+            }
             let returnResponce = {}
             returnResponce = cartData
             returnResponce['carts'] = responce
-            this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
-
+            
+            
             return returnResponce
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -871,11 +901,117 @@ export class CartService {
             );
         }
     }
+    async refundCart(cartId, Headers, payment_type, instalment_type, smallestDate, selected_down_payment, transactionToken) {
+        var sumOfTotalAmount = await getConnection().query(`
+        SELECT sum("booking"."total_amount") as "total_amount" 
+        FROM booking where cart_id = ${cartId} AND booking_status = ${BookingStatus.FAILED}`
+        );
+        let refundAmount = 0
+        const date = new Date();
+        var date1 = date.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "").split(' ')[0];
+        const totalAmount = parseFloat(sumOfTotalAmount[0].total_amount)
+        if (payment_type == PaymentType.INSTALMENT) {
+            let instalmentDetails;
+
+            if (instalment_type == InstalmentType.WEEKLY) {
+                instalmentDetails = Instalment.weeklyInstalment(
+                    totalAmount,
+                    smallestDate,
+                    date1,
+                    0,
+                    0,
+                    0,
+                    selected_down_payment
+                );
+            }
+            if (instalment_type == InstalmentType.BIWEEKLY) {
+                instalmentDetails = Instalment.biWeeklyInstalment(
+                    totalAmount,
+                    smallestDate,
+                    date1,
+                    0,
+                    0,
+                    0,
+                    selected_down_payment
+                );
+            }
+            if (instalment_type == InstalmentType.MONTHLY) {
+                instalmentDetails = Instalment.monthlyInstalment(
+                    totalAmount,
+                    smallestDate,
+                    date1,
+                    0,
+                    0,
+                    0,
+                    selected_down_payment
+                );
+            }
+
+            let firstInstalemntAmount =
+                instalmentDetails.instalment_date[0].instalment_amount;
+
+            refundAmount = Generic.formatPriceDecimal(firstInstalemntAmount)
+
+
+        }
+        else if (payment_type == PaymentType.NOINSTALMENT) {
+
+            let sellingPrice = totalAmount;
+
+            if (sellingPrice > 0) {
+                refundAmount = Generic.formatPriceDecimal(sellingPrice)
+            }
+
+        }
+
+        const valideHeader = await this.flightService.validateHeaders(Headers);
+
+        const refund = await this.paymentService.refund(refundAmount, transactionToken, valideHeader.currency.code)
+
+        await getConnection()
+            .createQueryBuilder()
+            .update(CartBooking)
+            .set({ refundPaymentInfo: refund.meta_data })
+            .where(`id = (${cartId}) `)
+            .execute();
+
+
+    }
+    async capturePayment(BookingIds, transaction_token, payment_type) {
+        let captureCardresult = await this.paymentService.captureCard(
+            transaction_token
+        );
+
+        console.log('captureCardresult',captureCardresult);
+        
+        if (captureCardresult.status == true) {
+            if (payment_type == BookingType.INSTALMENT) {
+                await getConnection()
+                    .createQueryBuilder()
+                    .update(BookingInstalments)
+                    .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data, transactionToken: captureCardresult.token })
+                    .where(`booking_id In (:...BookingIds) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`,{BookingIds})
+                    .execute();
+            } else {
+                await getConnection()
+                    .createQueryBuilder()
+                    .update(Booking)
+                    .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data })
+                    .where(`id In (:...BookingIds) `,{BookingIds})
+                    .execute();
+            }
+        }
+        return captureCardresult
+    }
 
     async bookFlight(cart: Cart, user: User, Headers, bookCart: CartBookDto, smallestDate: string, cartData: CartBooking) {
-        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, selected_down_payment } = bookCart
+        const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, booking_through, selected_down_payment, transaction_token } = bookCart
         const bookingType = cart.moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway'
         const downPayment = selected_down_payment ? selected_down_payment : 0;
+        const paidIn = payment_type == 'installment' ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
         let flightRequest;
         if (bookingType == 'oneway') {
 
@@ -913,7 +1049,7 @@ export class CartService {
         newCart['moduleId'] = cart.moduleId
         newCart['isDeleted'] = cart.isDeleted
         newCart['createdDate'] = cart.createdDate
-        newCart['status'] = BookingStatus.CONFIRM
+        newCart['status'] = BookingStatus.FAILED
         newCart['type'] = cart.module.name
         if (typeof value.message == "undefined") {
             let travelers = []
@@ -924,6 +1060,15 @@ export class CartService {
                     status: BookingStatus.FAILED,
                     message: `Please update traveler details.`
                 }
+                await this.saveFailedBooking(cartData.id, cart.moduleInfo, cart.userId, {
+                    statusCode: 422,
+                    status: BookingStatus.FAILED,
+                    message: `Please update traveler details.`
+                }, {
+                    bookingType: paidIn,
+                    currencyId: 1,
+                    booking_through: 'web'
+                })
             } else {
                 for await (const traveler of cart.travelers) {
                     //console.log(traveler);
@@ -942,12 +1087,15 @@ export class CartService {
                     custom_instalment_amount: 0,
                     custom_instalment_no: 0,
                     card_token,
-                    booking_through,
+                    booking_through
+
                 }
 
+                console.log('cartBook request')
 
                 //console.log(bookingdto);
-                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id, selected_down_payment)
+                newCart['detail'] = await this.flightService.cartBook(bookingdto, Headers, user, smallestDate, cartData.id, selected_down_payment, transaction_token)
+                //console.log(JSON.stringify(newCart['detail']));                
             }
 
         } else {
@@ -955,9 +1103,15 @@ export class CartService {
                 message: value.message
             }
             newCart['status'] = BookingStatus.FAILED
+            await this.saveFailedBooking(cartData.id, cart.moduleInfo, cart.userId, value, {
+                bookingType: paidIn,
+                currencyId: 1,
+                booking_through: 'web'
+            })
             return newCart
         }
-        if (!newCart['detail']['status']) {
+        if (!newCart['detail']['status'] && !newCart['detail']['error']) {
+            newCart['status'] = BookingStatus.CONFIRM
             await getConnection()
                 .createQueryBuilder()
                 .delete()
@@ -975,10 +1129,67 @@ export class CartService {
                 )
                 .execute()
         }
-
-
-
+        else {
+            await this.saveFailedBooking(cartData.id, cart.moduleInfo, cart.userId, newCart['detail'], {
+                bookingType: paidIn,
+                currencyId: 1,
+                booking_through: 'web'
+            })
+        }
         return newCart
+    }
+
+
+    async saveFailedBooking(cartId, moduleInfo, userId: string, errorLog, other: {
+        bookingType: number,
+        currencyId: number,
+        booking_through: string
+    }) {
+        if (typeof errorLog == 'object'){
+            errorLog = JSON.stringify(errorLog)
+        }
+        const date = new Date();
+        var date1 = date.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "").split(' ')[0];
+        const { bookingType, currencyId, booking_through } = other
+        let booking = new Booking();
+        booking.id = uuidv4();
+        booking.moduleId = ModulesName.FLIGHT;
+        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+        booking.bookingType = bookingType;
+        booking.currency = currencyId;
+        booking.totalAmount = moduleInfo[0].selling_price;
+        booking.netRate = moduleInfo[0].net_rate
+        booking.markupAmount = (parseFloat(moduleInfo[0].selling_price) - parseFloat(moduleInfo[0].net_rate)).toString();
+        booking.bookingDate = date1;
+        booking.usdFactor = "1";
+        booking.layCredit = "0";
+        booking.message = errorLog
+        booking.bookingThrough = booking_through || '';
+        booking.cartId = cartId
+        booking.locationInfo = {
+            journey_type: moduleInfo[0].routes.length > 1 ? 'RoundTrip' : 'oneway',
+            source_location: moduleInfo[0].departure_date,
+            destination_location: moduleInfo[0].arrival_code,
+        };
+
+        booking.fareType = '';
+        booking.isTicketd = false;
+
+        booking.userId = userId;
+
+        booking.bookingStatus = BookingStatus.FAILED
+        booking.paymentStatus = PaymentStatus.REFUNDED;
+        booking.supplierBookingId = "";
+        booking.isPredictive = true;
+        booking.supplierStatus = 1;
+        booking.moduleInfo = moduleInfo;
+        booking.checkInDate = await this.changeDateFormat(moduleInfo[0].departure_date)
+        booking.checkOutDate = await this.changeDateFormat(moduleInfo[0].arrival_date)
+
+        await booking.save();
     }
 
     async cartBookingEmailSend(bookingId, userId) {
@@ -1000,7 +1211,7 @@ export class CartService {
                     //console.log("err", err);
                 });
         } else {
-            const user = await CartDataUtility.userData(bookingId)
+            const user = await CartDataUtility.userData(userId)
             const userName = user.firstName ? user.firstName : '' + ' ' + user.lastName ? user.lastName : ''
 
             const subject = `BOOKING NOT COMPLETED`
@@ -1152,5 +1363,12 @@ export class CartService {
                 `${error.message}&&&id&&&${error.message}`
             );
         }
+    }
+
+    async changeDateFormat(dateTime) {
+        var date = dateTime.split('/')
+
+        return `${date[2]}-${date[1]}-${date[0]}`
+
     }
 }
