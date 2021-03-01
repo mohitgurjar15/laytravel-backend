@@ -1112,22 +1112,22 @@ export class CartService {
         }
         if (!newCart['detail']['status'] && !newCart['detail']['error']) {
             newCart['status'] = BookingStatus.CONFIRM
-            // await getConnection()
-            //     .createQueryBuilder()
-            //     .delete()
-            //     .from(CartTravelers)
-            //     .where(
-            //         `"cart_id" = '${cart.id}'`
-            //     )
-            //     .execute()
-            // await getConnection()
-            //     .createQueryBuilder()
-            //     .delete()
-            //     .from(Cart)
-            //     .where(
-            //         `"id" = '${cart.id}'`
-            //     )
-            //     .execute()
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(
+                    `"cart_id" = '${cart.id}'`
+                )
+                .execute()
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(
+                    `"id" = '${cart.id}'`
+                )
+                .execute()
         }
         else {
             await this.saveFailedBooking(cartData.id, cart.moduleInfo, cart.userId, newCart['detail'], {
