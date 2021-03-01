@@ -599,7 +599,7 @@ export class BookingRepository extends Repository<Booking> {
 				"cart.laytripCartId"
 			])
 
-			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)`, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)  AND booking.booking_status In (${BookingStatus.PENDING})`, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
 
 
 		const [data, count] = await query.getManyAndCount();
