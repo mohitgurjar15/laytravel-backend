@@ -325,7 +325,7 @@ export async function LaytripCartBookingComplationMail(
                             <tbody>
                                 <tr>
                                     <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; background: #1943FF; color: #ffffff; border-radius: 4px; padding:0 15px; cursor: pointer;" height="48">
-                                        <a class="" href = '${BookingLink}' style="text-decoration: none; color: #fff; background: #1943FF; display: block; line-height: 46px;">Booking details</a>
+                                        <a class="" href = '${BookingLink}' >Booking details</a>
                                     </td>
                                 </tr>
                             </tbody>
