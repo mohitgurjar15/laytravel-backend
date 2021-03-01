@@ -33,6 +33,8 @@ import { Deal } from "./deal.entity";
 import { DeleteUserAccountRequest } from "./delete-user-account-request.entity";
 import { CryptoKey } from "src/config/common.config";
 import { MassCommunication } from "./mass-communication.entity";
+import { LaytripCategory } from "./laytrip-category.entity";
+import { FlightRoute } from "./flight-route.entity";
 @Index("user_country_id", ["countryId"], {})
 @Index("user_created_by", ["createdBy"], {})
 @Index("user_preferred_language", ["preferredLanguage"], {})
@@ -258,6 +260,30 @@ export class User extends BaseEntity {
     loginLog => loginLog.user
   )
   loginLogs: LoginLog[];
+
+  @OneToMany(
+    () => LaytripCategory,
+    laytripCategory => laytripCategory.createByUser
+  )
+  createdLaytripCategory: LaytripCategory[];
+
+  @OneToMany(
+    () => LaytripCategory,
+    laytripCategory => laytripCategory.updateByUser
+  )
+  updatedLaytripCategory: LaytripCategory[];
+
+  @OneToMany(
+    () => FlightRoute,
+    flightRoute => flightRoute.createByUser
+  )
+  createdRoute: FlightRoute[];
+
+  @OneToMany(
+    () => FlightRoute,
+    flightRoute => flightRoute.updateByUser
+  )
+  updatedRoute: FlightRoute[];
 
   @OneToMany(
     () => LoginLog,
