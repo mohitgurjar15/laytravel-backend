@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException, Put, Delete } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, Body, HttpCode, Req, BadRequestException, Put, Delete, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiResponse, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FlightService } from './flight.service';
@@ -17,6 +17,9 @@ import { NetRateDto } from './dto/net-rate.dto';
 import * as moment from 'moment';
 import { ManullyBookingDto } from './dto/manully-update-flight.dto';
 import { User } from 'src/entity/user.entity';
+import { query } from 'express';
+import { SearchRouteDto } from './dto/search-flight-route.dto';
+import { AddFlightRouteDto } from './dto/add-flight-route.dto';
 
 @ApiTags('Flight')
 @Controller('flight')
@@ -438,5 +441,33 @@ export class FlightController {
 
     ) {
         return await this.flightService.bookPartialBooking(booking_id, req.headers);
+    }
+
+    @Get('/route/search')
+    @ApiOperation({ summary: "Search flight route" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async searchFlightRoute(
+        @Query() searchRouteDto: SearchRouteDto
+    ) {
+        return await this.flightService.serchRoute(searchRouteDto);
+    }
+
+    @Post('/route/create')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "Add new flight route" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async createNewRoute(
+        @Body() addFlightRouteDto: AddFlightRouteDto,
+        @GetUser() user: User
+    ) {
+        return await this.flightService.addFlightRoute(addFlightRouteDto, user);
     }
 }

@@ -28,7 +28,7 @@ export class FlightRoute extends BaseEntity {
     @Column("character varying", { name: "from_airport_name" })
     fromAirportName: string;
 
-    @Column("character varying", { name: "from_airport_city " })
+    @Column("character varying", { name: "from_airport_city",nullable :true })
     fromAirportCity : string;
 
     @Column("character varying", { name: "from_airport_country" })
@@ -40,7 +40,7 @@ export class FlightRoute extends BaseEntity {
     @Column("character varying", { name: "to_airport_name" })
     toAirportName: string;
 
-    @Column("character varying", { name: "to_airport_city " })
+    @Column("character varying", { name: "to_airport_city" ,nullable :true })
     toAirportCity : string;
 
     @Column("character varying", { name: "to_airport_country" })
@@ -48,9 +48,6 @@ export class FlightRoute extends BaseEntity {
 
     @Column("uuid", { name: "create_by", nullable: true })
     createBy: string;
-
-    @Column("integer", { name: "installment_available_after", nullable: true })
-    installmentAvailableAfter: number;
 
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;
@@ -64,7 +61,7 @@ export class FlightRoute extends BaseEntity {
     @Column("boolean", { name: "is_deleted", default: () => "false" })
     isDeleted: boolean;
 
-    @Column("timestamp without time zone", { name: "update_date" })
+    @Column("timestamp without time zone", { name: "update_date", nullable : true })
     updateDate: Date;
 
     @ManyToOne(
