@@ -30,6 +30,9 @@ export class UserCard extends BaseEntity {
   @Column("integer", { name: "payment_gateway_id", nullable: true })
   paymentGatewayId: number | null;
 
+  @Column("bigint", { name: "timeStamp", nullable: true })
+  timeStamp: number | null;
+
   @Column("character varying", { name: "card_type", length: 100 })
   cardType: string;
 
@@ -47,6 +50,9 @@ export class UserCard extends BaseEntity {
 
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
+
+  @Column("boolean", { name: "is_default", default: () => "false" })
+  isDefault: boolean;
 
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
