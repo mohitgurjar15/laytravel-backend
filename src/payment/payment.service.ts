@@ -111,6 +111,8 @@ export class PaymentService {
 				switch (error.response.statusCode) {
 					case 404:
 						throw new NotFoundException(error.response.message);
+					case 400:
+						throw new BadRequestException(error.response.message);
 					case 409:
 						throw new ConflictException(error.response.message);
 					case 422:
@@ -195,10 +197,10 @@ export class PaymentService {
 				throw new BadRequestException(`You accessed full length of card please remove one card for add new card`)
 			}
 
-			this.retainCard(card_token);
+			this.retainCard(card_token,userId || guest_id);
 
 
-			let authoriseCode = await this.authorizeCard(card_token, 50, 'USD')
+			let authoriseCode = await this.authorizeCard(card_token, 50, 'USD','','',userId || guest_id,userId || guest_id)
 			if (authoriseCode.status == false) {
 				throw new BadRequestException(`Card failed at authorization.&&&card_failed&&&Card failed at authorization.`)
 			}
@@ -226,7 +228,7 @@ export class PaymentService {
 			userCard.timeStamp = new Date().getTime()
 
 
-			this.voidCard(authoriseCode.token)
+			this.voidCard(authoriseCode.token , userId || guest_id)
 			return await userCard.save();
 
 		} catch (error) {
@@ -237,6 +239,8 @@ export class PaymentService {
 					case 409:
 						throw new ConflictException(error.response.message);
 					case 422:
+						throw new BadRequestException(error.response.message);
+					case 400:
 						throw new BadRequestException(error.response.message);
 					case 403:
 						throw new ForbiddenException(error.response.message);
@@ -337,7 +341,7 @@ export class PaymentService {
 				retained: true,
 			},
 		};
-		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card');
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card',userId||guest_id);
 
 		//console.log(cardResult);
 		if (
@@ -382,7 +386,7 @@ export class PaymentService {
 		}
 	}
 
-	async authorizeCard(card_id, amount, currency_code, browser_info?: any, redirection: string = '') {
+	async authorizeCard(card_id, amount, currency_code, browser_info?: any, redirection: string = '' ,userId?:string , description = '') {
 
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
@@ -399,6 +403,7 @@ export class PaymentService {
 			payment_method_token: card_id,
 			amount: amount,
 			currency_code: currency_code,
+			description : description
 		};
 
 		if (redirection != '') {
@@ -421,7 +426,7 @@ export class PaymentService {
 		let requestBody = {
 			transaction
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card',userId);
 		// //console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -437,7 +442,7 @@ export class PaymentService {
 		}
 	}
 
-	async captureCard(authorizeToken) {
+	async captureCard(authorizeToken,userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -449,7 +454,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card',userId);
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -464,7 +469,7 @@ export class PaymentService {
 		}
 	}
 
-	async voidCard(captureToken) {
+	async voidCard(captureToken,userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -475,7 +480,7 @@ export class PaymentService {
 		}
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
-		let voidRes = await this.axiosRequest(url, requestBody, headers, null, 'void-card');
+		let voidRes = await this.axiosRequest(url, requestBody, headers, null, 'void-card',userId);
 		if (typeof voidRes.transaction != 'undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -490,7 +495,7 @@ export class PaymentService {
 		}
 	}
 
-	async retainCard(cardToken) {
+	async retainCard(cardToken , userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -502,7 +507,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
 		let requestBody = {};
-		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT', 'retain-card');
+		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT', 'retain-card' , userId);
 		if (typeof retainRes != 'undefined' && retainRes.transaction.succeeded) {
 			return {
 				success: true
@@ -514,7 +519,7 @@ export class PaymentService {
 		}
 	}
 
-	async axiosRequest(url, requestBody, headers, method = null, headerAction = null) {
+	async axiosRequest(url, requestBody, headers, method = null, headerAction = null,userId) {
 
 		method = method || 'POST';
 		//console.log("method", method)
@@ -533,6 +538,9 @@ export class PaymentService {
 			logData['headers'] = headers
 			logData['responce'] = result.data;
 			let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
+			if(userId){
+				fileName += '_' + userId
+			}
 			Activity.createlogFile(fileName, logData, 'payment');
 			return result.data;
 		} catch (error) {
@@ -583,7 +591,7 @@ export class PaymentService {
 		}
 	}
 
-	async getPayment(card_token, amount, currency_code) {
+	async getPayment(card_token, amount, currency_code , userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const gatewayToken = GatewayCredantial.credentials.token;
@@ -603,7 +611,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment' , userId);
 		//console.log(authResult);
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -634,7 +642,7 @@ export class PaymentService {
 			paidFor,
 			note } = creteTransactionDto;
 
-		const result = await this.getPayment(card_token, amount, "USD")
+		const result = await this.getPayment(card_token, amount, "USD" , createdBy)
 
 
 		const transaction = new OtherPayments;
@@ -796,7 +804,7 @@ export class PaymentService {
 
 
 			if (cardToken) {
-				let transaction = await this.getPayment(cardToken, totalAmount, currencyCode)
+				let transaction = await this.getPayment(cardToken, totalAmount, currencyCode , user_id)
 
 				for await (const booking of cart.bookings) {
 
@@ -1202,8 +1210,10 @@ export class PaymentService {
 			//3005,
 			"USD",
 			browser_info,
-			redirection
-		);
+			redirection,
+			user.userId,
+			user.email
+ 		);
 		console.log(JSON.stringify(authCardResult));
 
 		// return authCardResult;
@@ -1218,7 +1228,7 @@ export class PaymentService {
 		return response;
 	}
 
-	async completeTransaction(purchaseToken) {
+	async completeTransaction(purchaseToken , userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -1230,7 +1240,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${purchaseToken}/complete.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card',userId);
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -1258,7 +1268,7 @@ export class PaymentService {
 	}
 
 
-	async refund(amount, token, currencyCode) {
+	async refund(amount, token, currencyCode , userId) {
 
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
@@ -1276,7 +1286,7 @@ export class PaymentService {
 				currency_code: currencyCode
 			}
 		};
-		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'refund');
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'refund',userId);
 
 		//console.log(cardResult);
 		if (typeof cardResult.transaction != 'undefined' && cardResult.transaction.succeeded) {

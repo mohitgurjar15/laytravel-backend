@@ -5,7 +5,7 @@ import { Activity } from './activity.utility';
 
 export class HttpRequest {
 
-    static async mystiflyRequest(url, requestBody, headerAction) {
+    static async mystiflyRequest(url, requestBody, headerAction , user = '') {
         try {
             let result = await Axios({
                 method: 'POST',
@@ -34,7 +34,11 @@ export class HttpRequest {
                     'cache-control': 'no-cache'
                 }
                 logData['responce'] = result.data;
+
                 fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
+                if(user){
+                    fileName +=  user
+                }
                 Activity.createlogFile(fileName, logData, 'flights');
             }
 
