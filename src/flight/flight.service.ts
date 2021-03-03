@@ -1183,7 +1183,7 @@ export class FlightService {
 				let authCardResult = await this.paymentService.authorizeCard(
 					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
-					"USD"
+					"USD",'','',
 				);
 				if (authCardResult.status == true) {
 
@@ -1205,11 +1205,11 @@ export class FlightService {
 					if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
 
 						captureCardresult = await this.paymentService.captureCard(
-							authCardToken
+							authCardToken , userId
 						);
 					}
 					else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
-						await this.paymentService.voidCard(authCardToken);
+						await this.paymentService.voidCard(authCardToken,userId);
 						throw new HttpException(
 							{
 								status: 424,
@@ -1285,7 +1285,7 @@ export class FlightService {
 					let authCardToken = authCardResult.token;
 					if (bookingResult.booking_status == "success") {
 						let captureCardresult = await this.paymentService.captureCard(
-							authCardToken
+							authCardToken , userId
 						);
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
@@ -1311,7 +1311,7 @@ export class FlightService {
 						}
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken);
+						await this.paymentService.voidCard(authCardToken,userId);
 						throw new HttpException(
 							{
 								status: 424,
@@ -2687,7 +2687,7 @@ export class FlightService {
 						}
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken);
+						await this.paymentService.voidCard(authCardToken , userId);
 
 						return {
 							statusCode: 424,

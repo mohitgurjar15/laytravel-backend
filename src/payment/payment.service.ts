@@ -60,53 +60,207 @@ export class PaymentService {
 		// @InjectRepository(BookingRepository)
 		// private bookingRepository: BookingRepository,
 	) { }
-	async saveCard(saveCardDto: SaveCardDto, userId: string, guest_id) {
-		const {
-			card_holder_name,
-			card_last_digit,
-			card_type,
-			card_token,
-			card_meta
-		} = saveCardDto;
+	async defaultCard(cardId: string, userId: string, guest_id) {
+		try {
+			if (!uuidValidator(cardId)) {
+				throw new NotFoundException('Given card id not avilable&&&card_id&&&' + errorMessage)
+			}
+			let whr
+			let whereForUncheck
+			if (userId) {
+				if (!uuidValidator(userId)) {
+					throw new NotFoundException('Given user id not avilable&&&user_id&&&' + errorMessage)
+				}
+				whr = `user_id = '${userId}' AND id = '${cardId}' `
+				whereForUncheck = `user_id = '${userId}'`
+			}
+			else {
+				if (!uuidValidator(userId)) {
+					throw new NotFoundException('Given guest id not avilable&&&guest_id&&&' + errorMessage)
+				}
+				whr = `guest_user_id = '${guest_id}' AND id = '${cardId}'`
+				whereForUncheck = `guest_user_id = '${guest_id}'`
+			}
+			let card = await getManager()
+				.createQueryBuilder(UserCard, "card")
+				.where(whr)
+				.getOne();
+			if (!card) {
+				throw new NotFoundException('Given card id not avilable')
+			}
 
-		let paymentGateway = await getManager()
-			.createQueryBuilder(PaymentGateway, "paymentgateway")
-			.where("paymentgateway.gateway_name = :name ", { name: "stripe" })
-			.getOne();
-		if (!paymentGateway) {
-			throw new BadRequestException(
-				`Payment gateway is not configured in database&&&payment_gateway_id&&&${errorMessage}`
+			await getConnection()
+				.createQueryBuilder()
+				.update(UserCard)
+				.set({ isDefault: false })
+				.where(whereForUncheck)
+				.execute();
+
+			await getConnection()
+				.createQueryBuilder()
+				.update(UserCard)
+				.set({ isDefault: true })
+				.where(whr)
+				.execute();
+
+			return {
+				message: `Card successfully updated as a default card`
+			}
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 400:
+						throw new BadRequestException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+	}
 
-		this.retainCard(card_token);
-
-		let userCard = new UserCard();
-		userCard.id = uuidv4();
-		userCard.paymentGatewayId = paymentGateway.id;
-		if (userId) {
-			if (!uuidValidator(userId)) {
-				throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
-			}
-			userCard.userId = userId;
-		} else {
-			if (!uuidValidator(guest_id)) {
-				throw new NotFoundException('Given guest_id not avilable&&&userId&&&' + errorMessage)
-			}
-			userCard.guestUserId = guest_id;
-		}
-
-		userCard.cardHolderName = card_holder_name;
-		userCard.cardDigits = card_last_digit;
-		userCard.cardToken = card_token;
-		userCard.cardType = card_type;
-		userCard.cardMetaData = card_meta || {};
-		userCard.createdDate = new Date();
-
+	async saveCard(saveCardDto: SaveCardDto, userId: string, guest_id) {
 		try {
+			const {
+				card_holder_name,
+				card_last_digit,
+				card_type,
+				card_token,
+				card_meta
+			} = saveCardDto;
+
+			let paymentGateway = await getManager()
+				.createQueryBuilder(PaymentGateway, "paymentgateway")
+				.where("paymentgateway.gateway_name = :name ", { name: "stripe" })
+				.getOne();
+			if (!paymentGateway) {
+				throw new BadRequestException(
+					`Payment gateway is not configured in database&&&payment_gateway_id&&&${errorMessage}`
+				);
+			}
+			let timeStamp = new Date().getTime() - 20000
+			let whr
+			if (userId) {
+				whr = `user_id = '${userId}' AND ("timeStamp" >= ${timeStamp} OR "card_digits" = '${card_last_digit}') AND "card_type" = '${card_type}' `
+			}
+			else {
+				whr = `guest_user_id = '${guest_id}' AND ("timeStamp" >= ${timeStamp} OR "card_digits" = '${card_last_digit}') AND "card_type" = '${card_type}'`
+			}
+			let lastAddedCard = await getManager()
+				.createQueryBuilder(UserCard, "card")
+				.where(whr)
+				.getOne();
+			if (lastAddedCard) {
+				if (lastAddedCard.timeStamp >= timeStamp) {
+					throw new NotAcceptableException(
+						`You may add new card after 10 second`
+					);
+				} else {
+					throw new ConflictException(
+						`Given card alredy exeist`
+					);
+				}
+
+			}
+			let wher
+			if (userId) {
+				wher = `user_id = '${userId}'`
+			}
+			else {
+				wher = `guest_user_id = '${guest_id}'`
+			}
+			let totalCard = await getManager()
+				.createQueryBuilder(UserCard, "card")
+				.where(wher)
+				.getCount();
+			if (totalCard >= 5) {
+				throw new BadRequestException(`You accessed full length of card please remove one card for add new card`)
+			}
+
+			this.retainCard(card_token,userId || guest_id);
+
+
+			let authoriseCode = await this.authorizeCard(card_token, 50, 'USD','','',userId || guest_id,userId || guest_id)
+			if (authoriseCode.status == false) {
+				throw new BadRequestException(`Card failed at authorization.&&&card_failed&&&Card failed at authorization.`)
+			}
+			let userCard = new UserCard();
+			userCard.id = uuidv4();
+			userCard.paymentGatewayId = paymentGateway.id;
+			if (userId) {
+				if (!uuidValidator(userId)) {
+					throw new NotFoundException('Given user_id not avilable&&&userId&&&' + errorMessage)
+				}
+				userCard.userId = userId;
+			} else {
+				if (!uuidValidator(guest_id)) {
+					throw new NotFoundException('Given guest_id not avilable&&&userId&&&' + errorMessage)
+				}
+				userCard.guestUserId = guest_id;
+			}
+
+			userCard.cardHolderName = card_holder_name;
+			userCard.cardDigits = card_last_digit;
+			userCard.cardToken = card_token;
+			userCard.cardType = card_type;
+			userCard.cardMetaData = card_meta || {};
+			userCard.createdDate = new Date();
+			userCard.timeStamp = new Date().getTime()
+
+
+			this.voidCard(authoriseCode.token , userId || guest_id)
 			return await userCard.save();
-		} catch (exception) {
-			throw new InternalServerErrorException(errorMessage);
+
+		} catch (error) {
+			if (typeof error.response !== "undefined") {
+				switch (error.response.statusCode) {
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 409:
+						throw new ConflictException(error.response.message);
+					case 422:
+						throw new BadRequestException(error.response.message);
+					case 400:
+						throw new BadRequestException(error.response.message);
+					case 403:
+						throw new ForbiddenException(error.response.message);
+					case 500:
+						throw new InternalServerErrorException(error.response.message);
+					case 406:
+						throw new NotAcceptableException(error.response.message);
+					case 404:
+						throw new NotFoundException(error.response.message);
+					case 401:
+						throw new UnauthorizedException(error.response.message);
+					default:
+						throw new InternalServerErrorException(
+							`${error.message}&&&id&&&${error.Message}`
+						);
+				}
+			}
+			throw new InternalServerErrorException(
+				`${error.message}&&&id&&&${errorMessage}`
+			);
 		}
 	}
 
@@ -130,6 +284,7 @@ export class PaymentService {
 				"user_card.userId",
 				"user_card.guestUserId",
 				"user_card.id",
+				"user_card.isDefault",
 				"user_card.cardHolderName",
 				"user_card.cardDigits",
 				"user_card.cardToken",
@@ -138,6 +293,7 @@ export class PaymentService {
 				"user_card.cardMetaData"
 			])
 			.where(where)
+			.limit(5)
 			.getMany();
 
 		if (!cardList.length) throw new NotFoundException(`No card founds`);
@@ -185,7 +341,7 @@ export class PaymentService {
 				retained: true,
 			},
 		};
-		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card');
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'add-card',userId||guest_id);
 
 		//console.log(cardResult);
 		if (
@@ -230,7 +386,7 @@ export class PaymentService {
 		}
 	}
 
-	async authorizeCard(card_id, amount, currency_code, browser_info?: any, redirection: string = '') {
+	async authorizeCard(card_id, amount, currency_code, browser_info?: any, redirection: string = '' ,userId?:string , description = '') {
 
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
@@ -247,6 +403,7 @@ export class PaymentService {
 			payment_method_token: card_id,
 			amount: amount,
 			currency_code: currency_code,
+			description : description
 		};
 
 		if (redirection != '') {
@@ -269,7 +426,7 @@ export class PaymentService {
 		let requestBody = {
 			transaction
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'authorise-card',userId);
 		// //console.log(authResult)
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -285,7 +442,7 @@ export class PaymentService {
 		}
 	}
 
-	async captureCard(authorizeToken) {
+	async captureCard(authorizeToken,userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -297,7 +454,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card',userId);
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -312,7 +469,7 @@ export class PaymentService {
 		}
 	}
 
-	async voidCard(captureToken) {
+	async voidCard(captureToken,userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -323,7 +480,7 @@ export class PaymentService {
 		}
 		let url = `https://core.spreedly.com/v1/transactions/${captureToken}/void.json`;
 		let requestBody = {};
-		let voidRes = await this.axiosRequest(url, requestBody, headers, null, 'void-card');
+		let voidRes = await this.axiosRequest(url, requestBody, headers, null, 'void-card',userId);
 		if (typeof voidRes.transaction != 'undefined' && voidRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -338,7 +495,7 @@ export class PaymentService {
 		}
 	}
 
-	async retainCard(cardToken) {
+	async retainCard(cardToken , userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -350,7 +507,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/payment_methods/${cardToken}/retain.json`;
 		let requestBody = {};
-		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT', 'retain-card');
+		let retainRes = await this.axiosRequest(url, requestBody, headers, 'PUT', 'retain-card' , userId);
 		if (typeof retainRes != 'undefined' && retainRes.transaction.succeeded) {
 			return {
 				success: true
@@ -362,7 +519,7 @@ export class PaymentService {
 		}
 	}
 
-	async axiosRequest(url, requestBody, headers, method = null, headerAction = null) {
+	async axiosRequest(url, requestBody, headers, method = null, headerAction = null,userId) {
 
 		method = method || 'POST';
 		//console.log("method", method)
@@ -381,6 +538,9 @@ export class PaymentService {
 			logData['headers'] = headers
 			logData['responce'] = result.data;
 			let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
+			if(userId){
+				fileName += '_' + userId
+			}
 			Activity.createlogFile(fileName, logData, 'payment');
 			return result.data;
 		} catch (error) {
@@ -431,7 +591,7 @@ export class PaymentService {
 		}
 	}
 
-	async getPayment(card_token, amount, currency_code) {
+	async getPayment(card_token, amount, currency_code , userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const gatewayToken = GatewayCredantial.credentials.token;
@@ -451,7 +611,7 @@ export class PaymentService {
 				currency_code: currency_code,
 			},
 		};
-		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment');
+		let authResult = await this.axiosRequest(url, requestBody, headers, null, 'capture-payment' , userId);
 		//console.log(authResult);
 		if (typeof authResult.transaction != 'undefined' && authResult.transaction.succeeded) {
 			return {
@@ -482,7 +642,7 @@ export class PaymentService {
 			paidFor,
 			note } = creteTransactionDto;
 
-		const result = await this.getPayment(card_token, amount, "USD")
+		const result = await this.getPayment(card_token, amount, "USD" , createdBy)
 
 
 		const transaction = new OtherPayments;
@@ -644,7 +804,7 @@ export class PaymentService {
 
 
 			if (cardToken) {
-				let transaction = await this.getPayment(cardToken, totalAmount, currencyCode)
+				let transaction = await this.getPayment(cardToken, totalAmount, currencyCode , user_id)
 
 				for await (const booking of cart.bookings) {
 
@@ -866,10 +1026,10 @@ export class PaymentService {
 	}
 
 
-	async validate(bookDto:AuthoriseCartDto, headers, user:User) {
+	async validate(bookDto: AuthoriseCartDto, headers, user: User) {
 
-    	console.log(bookDto, headers, user);
-		const { payment_type, laycredit_points, card_token, instalment_type, additional_amount,  cart, selected_down_payment , browser_info , site_url } = bookDto
+		console.log(bookDto, headers, user);
+		const { payment_type, laycredit_points, card_token, instalment_type, additional_amount, cart, selected_down_payment, browser_info, site_url } = bookDto
 		let uuid = uuidv4();
 		const date = new Date();
 		var date1 = date.toISOString();
@@ -884,7 +1044,7 @@ export class PaymentService {
 			transaction: {}
 		};
 
-		let authoriseAmount:number = 0 
+		let authoriseAmount: number = 0
 
 		if (cart.length > 5) {
 			throw new BadRequestException('Please check cart, In cart you can not purches more then 5 item')
@@ -897,152 +1057,152 @@ export class PaymentService {
 		let query = getConnection()
 			.createQueryBuilder(Cart, "cart")
 			.select([
-				"cart.moduleInfo","cart.moduleId"])
+				"cart.moduleInfo", "cart.moduleId"])
 			.where(`("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`)
 			.orderBy(`cart.id`, 'DESC')
 			.limit(5)
 		const [result, count] = await query.getManyAndCount();
-		
+
 		if (!result.length) {
 			throw new BadRequestException(`Cart is empty.&&&cart&&&${errorMessage}`)
 		}
-		
-		
-		
-			let smallestDate = ''
-            let totalAmount:number = 0
-            
-            for await (const item of result) {
-				console.log('moduleId',item.moduleId);
-				 
-                if (item.moduleId == ModulesName.FLIGHT) {
-					console.log('1');
-					console.log(result[0].moduleInfo[0].departure_date);			
-                    const dipatureDate = await this.changeDateFormat(item.moduleInfo[0].departure_date)
-                    console.log('2');
-					if (smallestDate == '') {
-                        smallestDate = dipatureDate;
-                    } else if (new Date(smallestDate) > new Date(dipatureDate)) {
-                        smallestDate = dipatureDate;
-                    }
-					console.log('smallestDate',smallestDate);
-					console.log(item.moduleInfo[0].selling_price);
-					
-					totalAmount += parseFloat(item.moduleInfo[0].selling_price) 
 
-					console.log('totalAmount',totalAmount);
-					
-                }
-            }
 
-			
-			if (payment_type == PaymentType.INSTALMENT) {
-				let instalmentDetails;
-			
-				let totalAdditionalAmount = additional_amount || 0;
+
+		let smallestDate = ''
+		let totalAmount: number = 0
+
+		for await (const item of result) {
+			console.log('moduleId', item.moduleId);
+
+			if (item.moduleId == ModulesName.FLIGHT) {
+				console.log('1');
+				console.log(result[0].moduleInfo[0].departure_date);
+				const dipatureDate = await this.changeDateFormat(item.moduleInfo[0].departure_date)
+				console.log('2');
+				if (smallestDate == '') {
+					smallestDate = dipatureDate;
+				} else if (new Date(smallestDate) > new Date(dipatureDate)) {
+					smallestDate = dipatureDate;
+				}
+				console.log('smallestDate', smallestDate);
+				console.log(item.moduleInfo[0].selling_price);
+
+				totalAmount += parseFloat(item.moduleInfo[0].selling_price)
+
+				console.log('totalAmount', totalAmount);
+
+			}
+		}
+
+
+		if (payment_type == PaymentType.INSTALMENT) {
+			let instalmentDetails;
+
+			let totalAdditionalAmount = additional_amount || 0;
+			if (laycredit_points > 0) {
+				totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
+			}
+			//save entry for future booking
+			if (instalment_type == InstalmentType.WEEKLY) {
+				instalmentDetails = Instalment.weeklyInstalment(
+					totalAmount,
+					smallestDate,
+					date1,
+					totalAdditionalAmount,
+					0,
+					0,
+					selected_down_payment
+				);
+			}
+			if (instalment_type == InstalmentType.BIWEEKLY) {
+				instalmentDetails = Instalment.biWeeklyInstalment(
+					totalAmount,
+					smallestDate,
+					date1,
+					totalAdditionalAmount,
+					0,
+					0,
+					selected_down_payment
+				);
+			}
+			if (instalment_type == InstalmentType.MONTHLY) {
+				instalmentDetails = Instalment.monthlyInstalment(
+					totalAmount,
+					smallestDate,
+					date1,
+					totalAdditionalAmount,
+					0,
+					0,
+					selected_down_payment
+				);
+			}
+
+			if (instalmentDetails.instalment_available) {
+				let firstInstalemntAmount =
+					instalmentDetails.instalment_date[0].instalment_amount;
 				if (laycredit_points > 0) {
-					totalAdditionalAmount = totalAdditionalAmount + laycredit_points;
+					firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
 				}
-				//save entry for future booking
-				if (instalment_type == InstalmentType.WEEKLY) {
-					instalmentDetails = Instalment.weeklyInstalment(
-						totalAmount,
-						smallestDate,
-						date1,
-						totalAdditionalAmount,
-						0,
-						0,
-						selected_down_payment
-					);
-				}
-				if (instalment_type == InstalmentType.BIWEEKLY) {
-					instalmentDetails = Instalment.biWeeklyInstalment(
-						totalAmount,
-						smallestDate,
-						date1,
-						totalAdditionalAmount,
-						0,
-						0,
-						selected_down_payment
-					);
-				}
-				if (instalment_type == InstalmentType.MONTHLY) {
-					instalmentDetails = Instalment.monthlyInstalment(
-						totalAmount,
-						smallestDate,
-						date1,
-						totalAdditionalAmount,
-						0,
-						0,
-						selected_down_payment
-					);
-				}
-			
-				if (instalmentDetails.instalment_available) {
-					let firstInstalemntAmount =
-						instalmentDetails.instalment_date[0].instalment_amount;
-					if (laycredit_points > 0) {
-						firstInstalemntAmount = firstInstalemntAmount - laycredit_points;
-					}
-					authoriseAmount = Generic.formatPriceDecimal(firstInstalemntAmount)
-					
-				} else {
-					return {
-						statusCode: 422,
-						message: `Instalment option is not available for your search criteria`
-					}
+				authoriseAmount = Generic.formatPriceDecimal(firstInstalemntAmount)
+
+			} else {
+				return {
+					statusCode: 422,
+					message: `Instalment option is not available for your search criteria`
 				}
 			}
-			else if (payment_type == PaymentType.NOINSTALMENT) {
+		}
+		else if (payment_type == PaymentType.NOINSTALMENT) {
 
-				let sellingPrice = totalAmount;
-				if (laycredit_points > 0) {
-					sellingPrice = totalAmount - laycredit_points
-				}
-			
-				if (sellingPrice > 0) {
-					authoriseAmount = Generic.formatPriceDecimal(sellingPrice)
-				}
-				// else {
-				// 	//for full laycredit rdeem
-				// 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-				// 	const bookingResult = await mystifly.bookFlight(
-				// 		bookFlightDto,
-				// 		travelersDetails,
-				// 		isPassportRequired
-				// 	);
-				// 	if (bookingResult.booking_status == "success") {
-			
-				// 		let laytripBookingResult = await this.saveBooking(
-				// 			bookingRequestInfo,
-				// 			currencyId,
-				// 			bookingDate,
-				// 			BookingType.NOINSTALMENT,
-				// 			userId,
-				// 			airRevalidateResult,
-				// 			null,
-				// 			null,
-				// 			bookingResult,
-				// 			travelers,
-				//			cartId
-				// 		);
-				// 		//send email here
-				// 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
-				// 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
-			
-				// 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-				// 			laytripBookingResult.laytripBookingId
-				// 		);
-				// 		return bookingResult;
-				// 	} else {
-			
-				// 			return {
-				// 				status: 424,
-				// 				message: bookingResult.error_message,
-				// 			}
-				// 	}
-				// }
+			let sellingPrice = totalAmount;
+			if (laycredit_points > 0) {
+				sellingPrice = totalAmount - laycredit_points
 			}
+
+			if (sellingPrice > 0) {
+				authoriseAmount = Generic.formatPriceDecimal(sellingPrice)
+			}
+			// else {
+			// 	//for full laycredit rdeem
+			// 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+			// 	const bookingResult = await mystifly.bookFlight(
+			// 		bookFlightDto,
+			// 		travelersDetails,
+			// 		isPassportRequired
+			// 	);
+			// 	if (bookingResult.booking_status == "success") {
+
+			// 		let laytripBookingResult = await this.saveBooking(
+			// 			bookingRequestInfo,
+			// 			currencyId,
+			// 			bookingDate,
+			// 			BookingType.NOINSTALMENT,
+			// 			userId,
+			// 			airRevalidateResult,
+			// 			null,
+			// 			null,
+			// 			bookingResult,
+			// 			travelers,
+			//			cartId
+			// 		);
+			// 		//send email here
+			// 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+			// 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
+
+			// 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+			// 			laytripBookingResult.laytripBookingId
+			// 		);
+			// 		return bookingResult;
+			// 	} else {
+
+			// 			return {
+			// 				status: 424,
+			// 				message: bookingResult.error_message,
+			// 			}
+			// 	}
+			// }
+		}
 
 		let authCardResult = await this.authorizeCard(
 			card_token,
@@ -1050,10 +1210,12 @@ export class PaymentService {
 			//3005,
 			"USD",
 			browser_info,
-			redirection
-		);
-			console.log(JSON.stringify(authCardResult));
-			
+			redirection,
+			user.userId,
+			user.email
+ 		);
+		console.log(JSON.stringify(authCardResult));
+
 		// return authCardResult;
 		if (authCardResult.meta_data) {
 			let transaction = authCardResult.meta_data.transaction;
@@ -1066,7 +1228,7 @@ export class PaymentService {
 		return response;
 	}
 
-	async completeTransaction(purchaseToken) {
+	async completeTransaction(purchaseToken , userId) {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
 		const authorization = GatewayCredantial.credentials.authorization;
@@ -1078,7 +1240,7 @@ export class PaymentService {
 
 		let url = `https://core.spreedly.com/v1/transactions/${purchaseToken}/complete.json`;
 		let requestBody = {};
-		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card');
+		let captureRes = await this.axiosRequest(url, requestBody, headers, null, 'capture-card',userId);
 		if (typeof captureRes.transaction != 'undefined' && captureRes.transaction.succeeded) {
 			return {
 				status: true,
@@ -1100,13 +1262,13 @@ export class PaymentService {
 
 	}
 
-	async getCredantial(){
+	async getCredantial() {
 		const GatewayCredantial = await Generic.getPaymentCredential()
 		return GatewayCredantial
 	}
 
 
-	async refund(amount,token,currencyCode) {
+	async refund(amount, token, currencyCode , userId) {
 
 		const GatewayCredantial = await Generic.getPaymentCredential()
 
@@ -1120,11 +1282,11 @@ export class PaymentService {
 		let url = `https://core.spreedly.com/v1/transactions/${token}/credit.json`;
 		let requestBody = {
 			transaction: {
-			  amount: amount,
-			  currency_code: currencyCode
+				amount: amount,
+				currency_code: currencyCode
 			}
-		  };
-		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'refund');
+		};
+		let cardResult = await this.axiosRequest(url, requestBody, headers, null, 'refund',userId);
 
 		//console.log(cardResult);
 		if (typeof cardResult.transaction != 'undefined' && cardResult.transaction.succeeded) {

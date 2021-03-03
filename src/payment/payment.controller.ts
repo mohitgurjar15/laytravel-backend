@@ -142,6 +142,28 @@ export class PaymentController {
 		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
 		return await this.paymentService.addCard(addCardDto,parent_user_id,guest_id);
 	}
+
+	@Put('default-card/:card_id')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: "Create card as a default" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@HttpCode(200)
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async defaultCard(
+		@Param('card_id') cardId : string,
+		@LogInUser() user
+	) {
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id : '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
+		return await this.paymentService.defaultCard(cardId,parent_user_id,guest_id);
+	}
+
 	@Post('add-user-card/:user_id')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiBearerAuth()
@@ -177,10 +199,11 @@ export class PaymentController {
 	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async retainCard(
-		@Param('card_token') card_token: string
+		@Param('card_token') card_token: string,
+		@LogInUser() user
 	) {
 		console.log("card_token", card_token)
-		return await this.paymentService.retainCard(card_token);
+		return await this.paymentService.retainCard(card_token,user.user_id);
 	}
 
 
@@ -325,9 +348,10 @@ export class PaymentController {
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
 	async complete(
 		@Body() token: any,
+		@LogInUser() user
 	) {
 
-		return await this.paymentService.completeTransaction(token.token);
+		return await this.paymentService.completeTransaction(token.token,user.user_id);
 	}
 
 }

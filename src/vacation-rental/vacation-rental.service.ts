@@ -354,11 +354,11 @@ export class VacationRentalService {
 					if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
 
 						captureCardresult = await this.paymentService.captureCard(
-							authCardToken
+							authCardToken,''
 						);
 					}
 					else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
-						await this.paymentService.voidCard(authCardToken);
+						await this.paymentService.voidCard(authCardToken,'');
 						throw new HttpException(
 							{
 								status: 424,
@@ -436,7 +436,7 @@ export class VacationRentalService {
 					let authCardToken = authCardResult.token;
 					if (bookingResult.booking_status == "success") {
 						let captureCardresult = await this.paymentService.captureCard(
-							authCardToken
+							authCardToken,''
 						);
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
@@ -461,7 +461,7 @@ export class VacationRentalService {
 
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken);
+						await this.paymentService.voidCard(authCardToken,'');
 						throw new HttpException(
 							{
 								status: 424,

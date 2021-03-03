@@ -368,7 +368,7 @@ export class HotelService{
                     bookingData.paymentStatus = PaymentStatus.CONFIRM;
                 } else {
                     
-                    await this.paymentService.voidCard(authCardToken);
+                    await this.paymentService.voidCard(authCardToken,'');
 
                     return  {
                         success_message: 'Booking is Failed',
@@ -384,7 +384,7 @@ export class HotelService{
             if (capturePayment) {
                 
                 let captureCardresult = await this.paymentService.captureCard(
-                    authCardToken
+                    authCardToken , ''
                 );
 
                 if (captureCardresult.status == true) {
@@ -436,7 +436,7 @@ export class HotelService{
                     );
                 }
             } else {
-                await this.paymentService.voidCard(authCardToken);
+                await this.paymentService.voidCard(authCardToken,'');
                 throw new HttpException(
                     {
                         status: 424,
