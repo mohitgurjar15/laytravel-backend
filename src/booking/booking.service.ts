@@ -645,7 +645,7 @@ export class BookingService {
 				cartResponce['cartInstallments'] = cartInstallments
 				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)
 				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)
-				cartResponce['pandinginstallment'] = pandinginstallment
+				cartResponce['pendinginstallment'] = pandinginstallment
 				cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
 				cartResponce['nextInstallmentDate'] = nextInstallmentDate
 				cartResponce['currency'] = currency
@@ -852,7 +852,7 @@ export class BookingService {
 				cartResponce['cartInstallments'] = cartInstallments
 				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)
 				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)
-				cartResponce['pandinginstallment'] = pandinginstallment
+				cartResponce['pendinginstallment'] = pandinginstallment
 				cartResponce['currency'] = currency
 				cartResponce['nextInstallmentDate'] = cart.bookings[0].nextInstalmentDate
 				if (installmentType) {
@@ -903,7 +903,7 @@ export class BookingService {
 
 	async getCartBookingDetail(cartId, user: User) {
 		try {
-			const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
+				const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
 				.leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -934,20 +934,22 @@ export class BookingService {
 			if (baseBooking.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
 				for await (const baseInstallments of baseBooking) {
 
-					let amount = parseFloat(baseInstallments.amount);
+					let amount = 0;
+					if(cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM){
+						amount += parseFloat(baseInstallments.amount);
+					}
 
 					if (cart.bookings.length > 1) {
 						for (let index = 1; index < cart.bookings.length; index++) {
-
-							for await (const installment of cart.bookings[index].bookingInstalments) {
-								if (baseInstallments.instalmentDate == installment.instalmentDate) {
-									amount += parseFloat(installment.amount)
+							if(cart.bookings[index].bookingStatus <= BookingStatus.CONFIRM){
+								for await (const installment of cart.bookings[index].bookingInstalments) {
+									if (baseInstallments.instalmentDate == installment.instalmentDate) {
+										amount += parseFloat(installment.amount)
+									}
 								}
 							}
+							
 						}
-					}
-					else {
-						amount = parseFloat(baseInstallments.amount)
 					}
 					const installment = {
 						instalmentDate: baseInstallments.instalmentDate,
@@ -965,16 +967,21 @@ export class BookingService {
 				if (booking.bookingInstalments.length > 0) {
 					booking.bookingInstalments.sort((a, b) => a.id - b.id)
 				}
-
-				for await (const installment of booking.bookingInstalments) {
-					if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-						paidAmount += parseFloat(installment.amount);
-					} else {
-						remainAmount += parseFloat(installment.amount);
-						pandinginstallment = pandinginstallment + 1;
+				if(booking.bookingStatus <= BookingStatus.CONFIRM){
+					for await (const installment of booking.bookingInstalments) {
+						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+							paidAmount += parseFloat(installment.amount);
+						} else {
+							remainAmount += parseFloat(installment.amount);
+							pandinginstallment = pandinginstallment + 1;
+						}
 					}
+					
+					totalAmount += parseFloat(booking.totalAmount)
+					console.log(totalAmount , 'totalAmount');
 				}
-				totalAmount += parseFloat(booking.totalAmount)
+				
+				
 				delete booking.currency2
 				delete booking.bookingInstalments
 				delete booking.module.liveCredential

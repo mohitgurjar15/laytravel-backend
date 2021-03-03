@@ -263,7 +263,7 @@ export class CronJobsService {
 				console.log('1');
 
 				if (cardToken) {
-					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode)
+					let transaction = await this.paymentService.getPayment(cardToken, amount, currencyCode,cartBooking.userId)
 					console.log('transaction done');
 					for await (const booking of cartBooking.bookings) {
 
@@ -668,6 +668,7 @@ export class CronJobsService {
 				"booking.supplierBookingId",
 				"booking.id",
 				"User.email",
+				"booking.userId",
 				"booking.laytripBookingId"
 			])
 			.where(
@@ -681,7 +682,7 @@ export class CronJobsService {
 			let tripDetails: any = await this.flightService.tripDetails(booking.supplierBookingId);
 			if (tripDetails.booking_status == 'Not Booked') {
 
-				const voidCard = await this.paymentService.voidCard(booking.cardToken)
+				const voidCard = await this.paymentService.voidCard(booking.cardToken,booking.userId)
 
 				if (voidCard.status == true) {
 

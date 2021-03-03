@@ -199,10 +199,11 @@ export class PaymentController {
 	})
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async retainCard(
-		@Param('card_token') card_token: string
+		@Param('card_token') card_token: string,
+		@LogInUser() user
 	) {
 		console.log("card_token", card_token)
-		return await this.paymentService.retainCard(card_token);
+		return await this.paymentService.retainCard(card_token,user.user_id);
 	}
 
 
@@ -347,9 +348,10 @@ export class PaymentController {
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
 	async complete(
 		@Body() token: any,
+		@LogInUser() user
 	) {
 
-		return await this.paymentService.completeTransaction(token.token);
+		return await this.paymentService.completeTransaction(token.token,user.user_id);
 	}
 
 }
