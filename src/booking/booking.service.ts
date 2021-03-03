@@ -850,9 +850,9 @@ export class BookingService {
 				cartResponce['bookingDate'] = cart.bookingDate
 				cartResponce['booking'] = cart.bookings
 				cartResponce['cartInstallments'] = cartInstallments
-				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)
-				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)
-				cartResponce['pendinginstallment'] = pandinginstallment
+				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)||0
+				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)||0
+				cartResponce['pendinginstallment'] = pandinginstallment||0
 				cartResponce['currency'] = currency
 				cartResponce['nextInstallmentDate'] = cart.bookings[0].nextInstalmentDate
 				if (installmentType) {
