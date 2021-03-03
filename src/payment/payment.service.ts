@@ -161,10 +161,10 @@ export class PaymentService {
 			let timeStamp = new Date().getTime() - 20000
 			let whr
 			if (userId) {
-				whr = `user_id = '${userId}' AND ("timeStamp" >= ${timeStamp} OR "card_digits" = '${card_last_digit}') AND "card_type" = '${card_type}' `
+				whr = `user_id = '${userId}' AND ("timeStamp" >= ${timeStamp} OR "card_digits" = '${card_last_digit}') AND "card_type" = '${card_type}' AND is_deleted = false`
 			}
 			else {
-				whr = `guest_user_id = '${guest_id}' AND ("timeStamp" >= ${timeStamp} OR "card_digits" = '${card_last_digit}') AND "card_type" = '${card_type}'`
+				whr = `guest_user_id = '${guest_id}' AND ("timeStamp" >= ${timeStamp} OR "card_digits" = '${card_last_digit}') AND "card_type" = '${card_type}' AND is_deleted = false`
 			}
 			let lastAddedCard = await getManager()
 				.createQueryBuilder(UserCard, "card")
@@ -184,17 +184,17 @@ export class PaymentService {
 			}
 			let wher
 			if (userId) {
-				wher = `user_id = '${userId}'`
+				wher = `user_id = '${userId}' AND is_deleted = false`
 			}
 			else {
-				wher = `guest_user_id = '${guest_id}'`
+				wher = `guest_user_id = '${guest_id}' AND is_deleted = false`
 			}
 			let totalCard = await getManager()
 				.createQueryBuilder(UserCard, "card")
 				.where(wher)
 				.getCount();
 			if (totalCard >= 5) {
-				throw new BadRequestException(`You accessed full length of card please remove one card for add new card`)
+				throw new BadRequestException(`Maximum 5 Cards, please delete one`)
 			}
 
 			this.retainCard(card_token,userId || guest_id);
@@ -202,7 +202,7 @@ export class PaymentService {
 
 			let authoriseCode = await this.authorizeCard(card_token, 50, 'USD','','',userId || guest_id,userId || guest_id)
 			if (authoriseCode.status == false) {
-				throw new BadRequestException(`Card failed at authorization.&&&card_failed&&&Card failed at authorization.`)
+				throw new BadRequestException(`Card failed at authorization. Please correct card detail.&&&card_failed&&&Card failed at authorization. Please correct card detail.`)
 			}
 			let userCard = new UserCard();
 			userCard.id = uuidv4();
