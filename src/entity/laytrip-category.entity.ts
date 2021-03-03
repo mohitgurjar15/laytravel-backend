@@ -36,7 +36,7 @@ export class LaytripCategory extends BaseEntity {
     @Column("boolean", { name: "status", default: () => "false" })
     status: boolean;
 
-    @Column("timestamp without time zone", { name: "update_date" , nullable : true })
+    @Column("timestamp without time zone", { name: "update_date" ,nullable :true})
     updateDate: Date;
 
     @ManyToOne(

@@ -142,6 +142,28 @@ export class PaymentController {
 		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
 		return await this.paymentService.addCard(addCardDto,parent_user_id,guest_id);
 	}
+
+	@Put('default-card/:card_id')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: "Create card as a default" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 401, description: "Unauthorized access" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@HttpCode(200)
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async defaultCard(
+		@Param('card_id') cardId : string,
+		@LogInUser() user
+	) {
+		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id : '';
+		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : '';
+		return await this.paymentService.defaultCard(cardId,parent_user_id,guest_id);
+	}
+
 	@Post('add-user-card/:user_id')
 	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiBearerAuth()
