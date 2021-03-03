@@ -49,9 +49,6 @@ export class FlightRoute extends BaseEntity {
     @Column("uuid", { name: "create_by", nullable: true })
     createBy: string;
 
-    @Column("integer", { name: "installment_available_after", nullable: true })
-    installmentAvailableAfter: number;
-
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;
 

@@ -45,6 +45,7 @@ import { AppVersionModule } from './app-version/app-version.module';
 import { MarketingModule } from './marketing/marketing.module';
 import { CartModule } from './cart/cart.module';
 import { DealModule } from './deal/deal.module';
+import { LaytripCategoryModule } from './laytrip-category/laytrip-category.module';
 
 @Module({
   imports: [
@@ -117,6 +118,7 @@ import { DealModule } from './deal/deal.module';
     MarketingModule,
     CartModule,
     DealModule,
+    LaytripCategoryModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

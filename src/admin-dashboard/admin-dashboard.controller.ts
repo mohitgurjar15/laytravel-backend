@@ -15,7 +15,7 @@ export class AdminDashboardController {
 	constructor(private adminDashboardService: AdminDashboardService) {}
 
 	@Get("total-revanue")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({
 		summary: "Get a total no of booking , Total revenue, total profit cost",
 	})
@@ -34,7 +34,7 @@ export class AdminDashboardController {
 	}
 
 	@Get('laytrip-user-location')
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({ summary: "Count of the users based on locations" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
@@ -50,7 +50,7 @@ export class AdminDashboardController {
 	}
 
 	@Get("member-static-graph")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({
 		summary: "Get a total of mamber statics ",
 	})
@@ -70,7 +70,7 @@ export class AdminDashboardController {
 
 
 	@Get("laytrip-credit-states")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({
 		summary: "Total laytrip credit states ",
 	})
@@ -89,7 +89,7 @@ export class AdminDashboardController {
 	}
 
 	@Get("weekly-monthly-member-statics")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({
 		summary: "Get a total of current month and current week count ",
 	})
@@ -107,7 +107,7 @@ export class AdminDashboardController {
 	}
 
 	@Get("booking-statistics")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({
 		summary: "get all booking statistics",
 	})
@@ -127,7 +127,7 @@ export class AdminDashboardController {
 
 
 	@Get("customer-statistics")
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
 	@ApiOperation({
 		summary: "get all customer statistics",
 	})
