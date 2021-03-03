@@ -59,9 +59,11 @@ export class CmsService {
         let iscmsPageExist = await this.cmsRepository.findOne({
             pageType: page_type
         });
+
+        
         if (!iscmsPageExist)
             throw new NotFoundException(`Cms page not found`);
-
+            const previousValue = JSON.stringify(iscmsPageExist)
         let cmsPage = new Cms();
         cmsPage.pageType = page_type;
         cmsPage.title = title;
@@ -72,7 +74,7 @@ export class CmsService {
         cmsPage.frContent = fr_content;
 
         await this.cmsRepository.update({ pageType: page_type }, cmsPage);
-        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`, iscmsPageExist, cmsPage);
+        Activity.logActivity(user.userId, "cms", `${cmsPage.title} is updated by ${user.email}`, previousValue,JSON.stringify(cmsPage));
         return cmsPage;
     }
 

@@ -840,7 +840,7 @@ export class CartService {
 
                         if (flightResponce['status'] == 1) {
                             successedResult++;
-                            
+
                             BookingIds.push(flightResponce['detail']['laytrip_booking_id'])
                         } else {
                             failedResult++
@@ -852,23 +852,23 @@ export class CartService {
                 }
             }
             console.log(BookingIds);
-            
+
             if (successedResult) {
-                const payment = await this.capturePayment(BookingIds, transaction_token, bookCart.payment_type)
+                const payment = await this.capturePayment(BookingIds, transaction_token, bookCart.payment_type, user.userId)
                 await this.cartBookingEmailSend(cartData.laytripCartId, cartData.userId)
                 if (failedResult && payment.status) {
-                    await this.refundCart(cartData.id, Headers, payment_type, instalment_type, smallestDate, selected_down_payment, payment.token)
+                    await this.refundCart(cartData.id, Headers, payment_type, instalment_type, smallestDate, selected_down_payment, payment.token, user.userId)
                 }
             }
-            else{
+            else {
                 cartData.status == BookingStatus.FAILED
                 await cartData.save()
             }
             let returnResponce = {}
             returnResponce = cartData
             returnResponce['carts'] = responce
-            
-            
+
+
             return returnResponce
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -901,7 +901,7 @@ export class CartService {
             );
         }
     }
-    async refundCart(cartId, Headers, payment_type, instalment_type, smallestDate, selected_down_payment, transactionToken) {
+    async refundCart(cartId, Headers, payment_type, instalment_type, smallestDate, selected_down_payment, transactionToken, userId) {
         var sumOfTotalAmount = await getConnection().query(`
         SELECT sum("booking"."total_amount") as "total_amount" 
         FROM booking where cart_id = ${cartId} AND booking_status = ${BookingStatus.FAILED}`
@@ -969,7 +969,7 @@ export class CartService {
 
         const valideHeader = await this.flightService.validateHeaders(Headers);
 
-        const refund = await this.paymentService.refund(refundAmount, transactionToken, valideHeader.currency.code)
+        const refund = await this.paymentService.refund(refundAmount, transactionToken, valideHeader.currency.code, userId)
 
         await getConnection()
             .createQueryBuilder()
@@ -980,27 +980,27 @@ export class CartService {
 
 
     }
-    async capturePayment(BookingIds, transaction_token, payment_type) {
+    async capturePayment(BookingIds, transaction_token, payment_type, userId) {
         let captureCardresult = await this.paymentService.captureCard(
-            transaction_token
+            transaction_token, userId
         );
 
-        console.log('captureCardresult',captureCardresult);
-        
+        console.log('captureCardresult', captureCardresult);
+
         if (captureCardresult.status == true) {
             if (payment_type == BookingType.INSTALMENT) {
                 await getConnection()
                     .createQueryBuilder()
                     .update(BookingInstalments)
                     .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data, transactionToken: captureCardresult.token })
-                    .where(`booking_id In (:...BookingIds) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`,{BookingIds})
+                    .where(`booking_id In (:...BookingIds) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`, { BookingIds })
                     .execute();
             } else {
                 await getConnection()
                     .createQueryBuilder()
                     .update(Booking)
                     .set({ paymentStatus: PaymentStatus.CONFIRM, paymentInfo: captureCardresult.meta_data })
-                    .where(`id In (:...BookingIds) `,{BookingIds})
+                    .where(`id In (:...BookingIds) `, { BookingIds })
                     .execute();
             }
         }
@@ -1145,7 +1145,7 @@ export class CartService {
         currencyId: number,
         booking_through: string
     }) {
-        if (typeof errorLog == 'object'){
+        if (typeof errorLog == 'object') {
             errorLog = JSON.stringify(errorLog)
         }
         const date = new Date();
