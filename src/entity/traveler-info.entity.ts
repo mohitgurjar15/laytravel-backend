@@ -5,7 +5,7 @@ import {
 	Column,
 	OneToOne,
 	JoinColumn,
-    ManyToOne,
+	ManyToOne,
 	Index,
 } from "typeorm";
 import { User } from "./user.entity";
@@ -27,6 +27,9 @@ export class TravelerInfo extends BaseEntity {
 
 	@Column("character varying", { name: "role_id" })
 	roleId: number;
+
+	@Column("json", { name: "traveler_info", nullable: true })
+	travelerInfo: object;
 
 	@ManyToOne(
 		() => User,
