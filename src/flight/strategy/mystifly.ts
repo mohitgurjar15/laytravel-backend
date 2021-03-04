@@ -55,6 +55,7 @@ export class Mystifly implements StrategyAirline {
     async getMystiflyCredential() {
 
         const config = await Generic.getCredential('flight');
+        
         let mystiflyConfig = JSON.parse(config.testCredential)
         config.mode=true;
         mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';

@@ -32,13 +32,20 @@ export class MassCommunication extends BaseEntity {
     @Column("text", { name: "message" })
     message: string;
 
-    @Column("text", { name: "attachment" ,nullable : true})
+    @Column("text", { name: "attachment", nullable: true })
     attachment: string;
 
     @Column("uuid", { name: "created_by" })
     createdBy: string;
 
-    
+    @Column("json", { name: "users", nullable: true })
+    users: object;
+
+    @Column("integer", { name: "total", nullable: true })
+    total: number;
+
+
+
     @ManyToOne(
         () => User,
         user => user.massCommunication

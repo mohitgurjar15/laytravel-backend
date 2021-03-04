@@ -850,9 +850,9 @@ export class BookingService {
 				cartResponce['bookingDate'] = cart.bookingDate
 				cartResponce['booking'] = cart.bookings
 				cartResponce['cartInstallments'] = cartInstallments
-				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)||0
-				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)||0
-				cartResponce['pendinginstallment'] = pandinginstallment||0
+				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount) || 0
+				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount) || 0
+				cartResponce['pendinginstallment'] = pandinginstallment || 0
 				cartResponce['currency'] = currency
 				cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
 				cartResponce['nextInstallmentDate'] = cart.bookings[0].nextInstalmentDate
@@ -904,7 +904,7 @@ export class BookingService {
 
 	async getCartBookingDetail(cartId, user: User) {
 		try {
-				const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
+			const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
 				.leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -928,28 +928,28 @@ export class BookingService {
 			let remainAmount = 0;
 			let pandinginstallment = 0
 			let totalAmount = 0
-			const currency = cart.bookings[0].currency2
-			const baseBooking = cart.bookings[0].bookingInstalments
+			const currency = cart.bookings[0]?.currency2
+			const baseBooking = cart.bookings[0]?.bookingInstalments
 			const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
 			let cartInstallments = [];
-			if (baseBooking.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
+			if (baseBooking?.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
 				for await (const baseInstallments of baseBooking) {
 
 					let amount = 0;
-					if(cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM){
+					if (cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM) {
 						amount += parseFloat(baseInstallments.amount);
 					}
 
 					if (cart.bookings.length > 1) {
 						for (let index = 1; index < cart.bookings.length; index++) {
-							if(cart.bookings[index].bookingStatus <= BookingStatus.CONFIRM){
+							if (cart.bookings[index].bookingStatus <= BookingStatus.CONFIRM) {
 								for await (const installment of cart.bookings[index].bookingInstalments) {
 									if (baseInstallments.instalmentDate == installment.instalmentDate) {
 										amount += parseFloat(installment.amount)
 									}
 								}
 							}
-							
+
 						}
 					}
 					const installment = {
@@ -968,27 +968,29 @@ export class BookingService {
 				if (booking.bookingInstalments.length > 0) {
 					booking.bookingInstalments.sort((a, b) => a.id - b.id)
 				}
-				if(booking.bookingStatus <= BookingStatus.CONFIRM){
-					for await (const installment of booking.bookingInstalments) {
-						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-							paidAmount += parseFloat(installment.amount);
-						} else {
-							remainAmount += parseFloat(installment.amount);
-							pandinginstallment = pandinginstallment + 1;
+				if (booking.bookingStatus <= BookingStatus.CONFIRM) {
+					if (booking?.bookingInstalments?.length) {
+						for await (const installment of booking.bookingInstalments) {
+							if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+								paidAmount += parseFloat(installment.amount);
+							} else {
+								remainAmount += parseFloat(installment.amount);
+								pandinginstallment = pandinginstallment + 1;
+							}
 						}
 					}
-					
+
 					totalAmount += parseFloat(booking.totalAmount)
-					console.log(totalAmount , 'totalAmount');
+					//console.log(totalAmount, 'totalAmount');
 				}
-				
-				
-				delete booking.currency2
-				delete booking.bookingInstalments
-				delete booking.module.liveCredential
-				delete booking.module.testCredential
-				delete booking.module.mode
-				delete booking.module.status
+
+
+				delete booking?.currency2
+				delete booking?.bookingInstalments
+				delete booking?.module.liveCredential
+				delete booking?.module.testCredential
+				delete booking?.module.mode
+				delete booking?.module.status
 				for await (const traveler of booking.travelers) {
 					delete traveler.userData.salt
 					delete traveler.userData.password
@@ -1005,10 +1007,12 @@ export class BookingService {
 				})
 				//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 			}
-
+			console.log('cartResponce');
+			
 			let cartResponce = {}
-			cartResponce['id'] = cart.id
-			const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
+			cartResponce['id'] = cart?.id
+			
+			const trackReport = await this.paidAmountByUser(cart.bookings[0]?.id)
 			cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport?.paymentStatus != PaymentStatus.CONFIRM ? false : true
 			cartResponce['checkInDate'] = cart.checkInDate
 			cartResponce['checkOutDate'] = cart.checkOutDate
@@ -1021,11 +1025,11 @@ export class BookingService {
 			cartResponce['pandinginstallment'] = pandinginstallment
 			cartResponce['currency'] = currency
 			cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
-			if (cart.bookings[0].nextInstalmentDate) {
+			if (cart.bookings[0]?.nextInstalmentDate) {
 				cartResponce['nextInstalmentDate'] = cart.bookings[0].nextInstalmentDate
 			}
 
-			cartResponce['cardDetail'] = await this.cardDetail(cart.bookings[0].cardToken)
+			cartResponce['cardDetail'] = await this.cardDetail(cart.bookings[0]?.cardToken)
 			if (installmentType) {
 				cartResponce['installmentType'] = installmentType
 			}
@@ -1861,48 +1865,48 @@ export class BookingService {
 	}
 
 
-	async deleteBooking(deleteBookingDto : DeleteBookingDto , user:User){
-		const {booking_id , product_id} = deleteBookingDto
+	async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
+		const { booking_id, product_id } = deleteBookingDto
 
 		let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
-		if(product_id){
+		if (product_id) {
 			where += `AND ("booking"."laytrip_booking_id" = '${product_id}')`
 		}
-		if(user.roleId >= 5){
+		if (user.roleId >= 5) {
 			where += `AND ("cartBooking"."user_id" =  '${user.userId}')`
 		}
-        const query = await getConnection()
-            .createQueryBuilder(CartBooking, "cartBooking")
-            .leftJoinAndSelect("cartBooking.bookings", "booking")
+		const query = await getConnection()
+			.createQueryBuilder(CartBooking, "cartBooking")
+			.leftJoinAndSelect("cartBooking.bookings", "booking")
 			.where(where)
 			.getOne();
-		
-		if(!query && !query.bookings.length){
+
+		if (!query && !query.bookings.length) {
 			throw new BadRequestException(`Given booking id not found`)
 		}
 
 		for await (const booking of query.bookings) {
 			await getConnection()
-                .createQueryBuilder()
-                .update(Booking)
-                .set({ bookingStatus : BookingStatus.CANCELLED , paymentStatus : PaymentStatus.CANCELLED  })
-                .where(`id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
-                .execute();
-			
+				.createQueryBuilder()
+				.update(Booking)
+				.set({ bookingStatus: BookingStatus.CANCELLED, paymentStatus: PaymentStatus.CANCELLED })
+				.where(`id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
+				.execute();
+
 			await getConnection()
-                .createQueryBuilder()
-                .update(BookingInstalments)
-                .set({ paymentStatus : PaymentStatus.CANCELLED   })
-                .where(`booking_id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
-                .execute();
+				.createQueryBuilder()
+				.update(BookingInstalments)
+				.set({ paymentStatus: PaymentStatus.CANCELLED })
+				.where(`booking_id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
+				.execute();
 		}
-		if(product_id){
+		if (product_id) {
 			return {
-				message : `Selected product cancel successfully `
-			}	
+				message: `Selected product cancel successfully `
+			}
 		}
 		return {
-			message : `Selected booking cancel successfully `
+			message: `Selected booking cancel successfully `
 		}
 	}
 }
