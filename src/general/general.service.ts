@@ -135,14 +135,33 @@ export class GeneralService {
        
 
         let emails = [{
+            firstName : 'parth',
+            lastName : 'Virani',
             email: 'parthvirani@itoneclick.com'
         }, {
+            firstName : 'suresh',
+            lastName : 'suthar',
             email: 'suresh@itoneclick.com'
         }, {
+            firstName : 'jaymeesh',
+            lastName : 'donga',
             email: 'jaymees@itoneclick.com'
         }, {
+            firstName : 'jimeet@itoneclick.com',
+            lastName : '',
             email: 'jimeet@itoneclick.com'
         }]
+
+        // const emails = await getManager()
+        //     .createQueryBuilder(User, "user")
+        //     .select(`user.email,
+        //         user.firstName,
+        //         user.lastName`)
+        //     .where(`email != null AND email != '' AND role_id IN (${Role.FREE_USER,Role.PAID_USER})`)
+        //     .getMany();
+            
+
+
         var allemail = '';
         let attachments = []
         const fs = require("fs");
@@ -176,6 +195,8 @@ export class GeneralService {
         log.createdDate = new Date()
         log.createdBy = user.userId
         log.attachment = JSON.stringify(filesName)
+        log.total = emails.length
+        log.users = emails
 
         await log.save();
 
@@ -247,6 +268,8 @@ export class GeneralService {
                 "log.subject",
                 "log.createdDate",
                 "log.attachment",
+                "log.total",
+                "log.users",
                 "user.roleId"
             ])
             .orderBy("log.id", "DESC")
