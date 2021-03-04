@@ -2871,14 +2871,14 @@ export class FlightService {
 		let opResult = []
 		for await (const route of result) {
 			if (is_from_location == 'yes') {
-				if (availableRoute.indexOf(route.toAirportCode) == -1) {
-					opResult.push(airports[route.toAirportCode])
-					availableRoute.push(route.toAirportCode)
-				}
-			} else {
 				if (availableRoute.indexOf(route.fromAirportCode) == -1) {
 					opResult.push(airports[route.fromAirportCode])
 					availableRoute.push(route.fromAirportCode)
+				}
+			} else {
+				if (availableRoute.indexOf(route.toAirportCode) == -1) {
+					opResult.push(airports[route.toAirportCode])
+					availableRoute.push(route.toAirportCode)
 				}
 			}
 		}
@@ -2886,4 +2886,42 @@ export class FlightService {
 		return opResult
 	}
 
+	async importCategory(){
+		 let categories=[
+			"BOS-BWI","BOS-EWR","BOS-FLL","BOS-PBI","BOS-PHL","EWR-PBI","JFK-FLL","LAX-OAK","LAX-PHX","LGA-FLL","LGA-PBI","OAK-BUR","SFO-LAS","SFO-PHX"
+		 ]
+		 let categoryId=6;
+
+		 for(let category of categories){
+			 
+			 let categoryArr= category.split("-");
+			 let fromAirport = airports[categoryArr[0]];
+			 let toAirport = airports[categoryArr[1]];
+			 const categoryData= new FlightRoute();
+			
+			//categoryData.parentBy =0;
+			categoryData.categoryId = categoryId,
+			categoryData.fromAirportCode = fromAirport.code,
+			categoryData.fromAirportName = fromAirport.name,
+			categoryData.fromAirportCity = fromAirport.city,
+			categoryData.fromAirportCountry = fromAirport.country,
+			categoryData.toAirportCode = toAirport.code,
+			categoryData.toAirportName = toAirport.name,
+			categoryData.toAirportCity = toAirport.city,
+			categoryData.toAirportCountry = toAirport.country,
+			categoryData.createBy = 'df1c38f6-954b-4947-b202-d50c2fece143',
+			categoryData.createDate = new Date(),
+			categoryData.status = true,
+			categoryData.isDeleted =false
+
+			console.log(categoryData)
+
+			await getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(FlightRoute)
+            .values(categoryData)
+            .execute();
+		 }
+	}
 }

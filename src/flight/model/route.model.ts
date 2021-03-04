@@ -51,12 +51,19 @@ export class Route{
     instalment_details      :{};
     unique_code             :string;
     no_of_weekly_installment:number;
-    biweekly_down_payment:number;
+    /* biweekly_down_payment:number;
     biweekly_installment:number;
     no_of_biweekly_installment:number;
     monthly_down_payment:number;
     monthly_installment:number;
-    no_of_monthly_installment:number;
+    no_of_monthly_installment:number; */
+    secondary_start_price_2:number;
+    secondary_start_price_3:number;
+    second_down_payment:number;
+    no_of_weekly_installment_2:number;
+    third_down_payment:number;
+    no_of_weekly_installment_3:number;
+    instalment_avail_after:number;
 }
 
 export class RouteType{

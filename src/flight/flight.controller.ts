@@ -470,4 +470,14 @@ export class FlightController {
     ) {
         return await this.flightService.addFlightRoute(addFlightRouteDto, user);
     }
+
+    @Post('/import-category')
+    @ApiOperation({ summary: "Import category" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    
+    async importCategory(
+    ) {
+        return await this.flightService.importCategory();
+        //return await this.flightService.mapChildParentAirport(name);
+    }
 }

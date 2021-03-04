@@ -1,6 +1,6 @@
 import { StrategyAirline } from "./strategy.interface";
 import { OneWaySearchFlightDto } from "../dto/oneway-flight.dto";
-import { NotFoundException, InternalServerErrorException, Inject, CACHE_MANAGER } from "@nestjs/common";
+import { NotFoundException, InternalServerErrorException, Inject, CACHE_MANAGER, BadRequestException } from "@nestjs/common";
 import { RoundtripSearchFlightDto } from "../dto/roundtrip-flight.dto";
 import * as moment from 'moment';
 import { DateTime } from "src/utility/datetime.utility";
@@ -20,6 +20,7 @@ const fs = require('fs').promises;
 import * as zlib from 'zlib';
 import * as md5 from 'md5';
 import { Cache } from 'cache-manager';
+import { RouteCategory } from "src/utility/route-category.utility";
 
 export const flightClass = {
     'Economy': 'Y',
@@ -56,6 +57,7 @@ export class Mystifly implements StrategyAirline {
         const config = await Generic.getCredential('flight');
         
         let mystiflyConfig = JSON.parse(config.testCredential)
+        config.mode=true;
         mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
         if (config.mode) {
             mystiflyConfig = JSON.parse(config.liveCredential);
@@ -169,6 +171,11 @@ export class Mystifly implements StrategyAirline {
             throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
         }
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
+        let routeDetails:any =await RouteCategory.flightRouteAvailability(source_location,destination_location)
+        console.log("routeDetails:::",routeDetails)
+        if(typeof routeDetails=='undefined'){
+            //throw new NotFoundException(`Fligh is not available for search route`)
+        }
 
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
         let markUpDetails = markup.markUpDetails;
@@ -311,17 +318,31 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_fare_break_down = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
                 route.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, markUpDetails))
-                let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
-                    route.no_of_weekly_installment = instalmentDetails.instalment_date.length-1;
+                route.start_price = 0;
+                route.secondary_start_price = 0;
+                route.no_of_weekly_installment=0;
+                route.instalment_avail_after=routeDetails.category.installmentAvailableAfter;
+                let instalmentDetails;
+                let instalmentEligibility =  RouteCategory.checkInstalmentEligibility(departure_date,bookingDate,routeDetails.category.installmentAvailableAfter);
+                //console.log("instalmentEligibility:::",instalmentEligibility)
+                if(instalmentEligibility){
+
+                    instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    let instalmentDetails2= Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0, null,null,1)
+                    let instalmentDetails3= Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0, null,null,2)
+                    if (instalmentDetails.instalment_available) {
+                        route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_weekly_installment = instalmentDetails.instalment_date.length-1;
+                        route.secondary_start_price_2 = instalmentDetails2.instalment_date[1].instalment_amount;
+                        route.second_down_payment = instalmentDetails2.instalment_date[0].instalment_amount;
+                        route.no_of_weekly_installment_2 = instalmentDetails2.instalment_date.length-1;
+                        route.secondary_start_price_3 = instalmentDetails3.instalment_date[1].instalment_amount;
+                        route.third_down_payment = instalmentDetails3.instalment_date[0].instalment_amount;
+                        route.no_of_weekly_installment_3 = instalmentDetails3.instalment_date.length-1;
+                    }
                 }
-                else {
-                    route.start_price = 0;
-                    route.secondary_start_price = 0;
-                    route.no_of_weekly_installment=0;
-                }
+                
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
                 }
@@ -330,29 +351,26 @@ export class Mystifly implements StrategyAirline {
                 }
                 route.instalment_details = instalmentDetails;
 
-                instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
-                    route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
-                }
-                else {
-                    route.biweekly_down_payment = 0;
-                    route.biweekly_installment = 0;
-                    route.no_of_biweekly_installment=0;
-                }
-
-                instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
-                    route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
-                }
-                else {
-                    route.biweekly_down_payment = 0;
-                    route.biweekly_installment = 0;
-                    route.no_of_monthly_installment=0;
-                }
+                
+                /* if(instalmentEligibility){
+                    instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    if (instalmentDetails.instalment_available) {
+                        route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
+                    }
+                } */
+                
+                
+                /* if(instalmentEligibility){
+                    instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    if (instalmentDetails.instalment_available) {
+                        route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
+                    }
+                } */
+               
 
                 route.stop_count = stops.length - 1;
                 route.is_passport_required = flightRoutes[i]['a:ispassportmandatory'][0] == "true" ? true : false;
@@ -1266,6 +1284,10 @@ export class Mystifly implements StrategyAirline {
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         const currencyDetails = await Generic.getAmountTocurrency(this.headers.currency);
         //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
+        let routeDetails:any =await RouteCategory.flightRouteAvailability(source_location,destination_location)
+        if(typeof routeDetails=='undefined'){
+            //throw new NotFoundException(`Fligh is not available for search route`)
+        }
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
@@ -1479,17 +1501,30 @@ export class Mystifly implements StrategyAirline {
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_fare_break_down = this.getFareBreakDown(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:ptc_farebreakdowns'][0]['a:ptc_farebreakdown'], secondaryMarkUpDetails);
                 }
-                let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
-                    route.no_of_weekly_installment = instalmentDetails.instalment_date.length-1;
+
+                route.start_price = 0;
+                route.secondary_start_price = 0;
+                route.no_of_weekly_installment = 0;
+                route.instalment_avail_after=routeDetails.category.installmentAvailableAfter;
+                let instalmentDetails;
+                let instalmentEligibility =  RouteCategory.checkInstalmentEligibility(departure_date,bookingDate,routeDetails.category.installmentAvailableAfter);
+                if(instalmentEligibility){
+                    instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    let instalmentDetails2= Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0, null,null,1)
+                    let instalmentDetails3= Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0, null,null,2)
+                    if (instalmentDetails.instalment_available) {
+                        route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_weekly_installment = instalmentDetails.instalment_date.length-1;
+                        route.secondary_start_price_2 = instalmentDetails2.instalment_date[1].instalment_amount;
+                        route.second_down_payment = instalmentDetails2.instalment_date[0].instalment_amount;
+                        route.no_of_weekly_installment_2 = instalmentDetails2.instalment_date.length-1;
+                        route.secondary_start_price_3 = instalmentDetails3.instalment_date[1].instalment_amount;
+                        route.third_down_payment = instalmentDetails3.instalment_date[0].instalment_amount;
+                        route.no_of_weekly_installment_3 = instalmentDetails3.instalment_date.length-1;
+                    }
                 }
-                else {
-                    route.start_price = 0;
-                    route.secondary_start_price = 0;
-                    route.no_of_weekly_installment = 0;
-                }
+                
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
@@ -1499,29 +1534,25 @@ export class Mystifly implements StrategyAirline {
                 }
                 route.instalment_details = instalmentDetails;
 
-                instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
-                    route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
-                }
-                else {
-                    route.biweekly_down_payment = 0;
-                    route.biweekly_installment = 0;
-                    route.no_of_biweekly_installment=0;
-                }
+                /* if(instalmentEligibility){
 
-                instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
-                    route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
-                }
-                else {
-                    route.biweekly_down_payment = 0;
-                    route.biweekly_installment = 0;
-                    route.no_of_monthly_installment=0;
-                }
+                    instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    if (instalmentDetails.instalment_available) {
+                        route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
+                    }
+                } */
+                
+                /* if(instalmentEligibility){
+                    instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    if (instalmentDetails.instalment_available) {
+                        route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
+                    }
+                } */
+                
 
                 route.inbound_stop_count = stops.length - 1;
                 route.departure_code = source_location;
@@ -1660,11 +1691,12 @@ export class Mystifly implements StrategyAirline {
         if (!module) {
             throw new InternalServerErrorException(`Flight module is not configured in database&&&module&&&${errorMessage}`);
         }
+
+        
         const mystiflyConfig = await this.getMystiflyCredential();
-        console.log(mystiflyConfig);
 
         const sessionToken = await this.startSession();
-        // 
+
         const requestBody =
             `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
             <soapenv:Body>
@@ -1703,6 +1735,7 @@ export class Mystifly implements StrategyAirline {
             let uniqueCode;
             let otherSegments;
             for (let i = 0; i < flightRoutes.length; i++) {
+                
                 route = new Route;
                 stops = [];
                 totalDuration = 0;
@@ -1755,6 +1788,7 @@ export class Mystifly implements StrategyAirline {
                     stops.push(stop);
                     j++;
                 });
+                
 
                 routeType = new RouteType();
                 routeType.type = 'outbound';
@@ -1833,15 +1867,24 @@ export class Mystifly implements StrategyAirline {
                 route.fare_type = flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:faretype'][0] == 'WebFare' ? 'LCC' : 'GDS';
                 route.net_rate = Generic.convertAmountTocurrency(flightRoutes[i]['a:airitinerarypricinginfo'][0]['a:itintotalfare'][0]['a:totalfare'][0]['a:amount'][0], currencyDetails.liveRate);
                 route.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, markUpDetails))
-                let instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-                if (instalmentDetails.instalment_available) {
-                    route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
-                    route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                let routeDetails:any =await RouteCategory.flightRouteAvailability(route.departure_code,route.arrival_code)
+                if(typeof routeDetails=='undefined'){
+                    //throw new NotFoundException(`Fligh is not available for search route`)
                 }
-                else {
-                    route.start_price = 0;
-                    route.secondary_start_price = 0;
+                route.start_price = 0;
+                route.secondary_start_price = 0;
+                route.instalment_avail_after=routeDetails.category.installmentAvailableAfter;
+                let instalmentEligibility =  RouteCategory.checkInstalmentEligibility(moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"),bookingDate,routeDetails.category.installmentAvailableAfter);
+                let instalmentDetails;
+                if(instalmentEligibility){
+
+                    instalmentDetails = Instalment.weeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
+                    if (instalmentDetails.instalment_available) {
+                        route.start_price = instalmentDetails.instalment_date[0].instalment_amount;
+                        route.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
+                    }
                 }
+                
 
                 if (typeof secondaryMarkUpDetails != 'undefined' && Object.keys(secondaryMarkUpDetails).length) {
                     route.secondary_selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, secondaryMarkUpDetails))
