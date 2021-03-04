@@ -1110,7 +1110,7 @@ export class CartService {
             })
             return newCart
         }
-        if (!newCart['detail']['status'] && !newCart['detail']['error']) {
+        if (!newCart['detail']['statusCode'] && !newCart['detail']['error']) {
             newCart['status'] = BookingStatus.CONFIRM
             await getConnection()
                 .createQueryBuilder()
