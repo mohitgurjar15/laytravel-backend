@@ -35,7 +35,7 @@ email:
     port: 587
     secure: true
     from: '"laytrip" <no-reply@laytrip.com>'
-    BCC:  'suresh@itoneclick.com,gaurav@itoneclick.com,hitendra@laytrip.com'
+    BCC:  'suresh@itoneclick.com,gaurav@itoneclick.com,hitendra@laytrip.com,ashfaq@itoneclick.com,customerservice@laytrip.com'
     admin: 'suresh@itoneclick.com,jimeet@itoneclick.com'
     contactUs: 'contactus@laytrip.com'
     customerService: 'customerservice@laytrip.com'

@@ -177,7 +177,7 @@ export class PaymentService {
 					);
 				} else {
 					throw new ConflictException(
-						`Given card alredy exeist`
+						`Card already exists, Please try with other card.`
 					);
 				}
 
@@ -226,6 +226,7 @@ export class PaymentService {
 			userCard.cardMetaData = card_meta || {};
 			userCard.createdDate = new Date();
 			userCard.timeStamp = new Date().getTime()
+			userCard.isDefault = totalCard == 0 ? true : false
 
 
 			this.voidCard(authoriseCode.token , userId || guest_id)
@@ -902,7 +903,10 @@ export class PaymentService {
 						nextDate: nextDate,
 						nextAmount: nextAmount,
 					}
+					console.log('cart.user.isEmail',cart.user.isEmail);
+					
 					if (cart.user.isEmail) {
+						console.log('cart.user.isEmail',cart.user.isEmail);
 						this.mailerService
 							.sendMail({
 								to: cart.user.email,
@@ -912,10 +916,10 @@ export class PaymentService {
 								html: LaytripInstallmentRecevied(param),
 							})
 							.then((res) => {
-								//console.log("res", res);
+								console.log("res", res);
 							})
 							.catch((err) => {
-								//console.log("err", err);
+								console.log("err", err);
 							});
 					}
 
