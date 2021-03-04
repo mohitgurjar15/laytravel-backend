@@ -7,9 +7,12 @@ import {
 	JoinColumn,
 	ManyToOne,
 	Index,
+	OneToMany,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Booking } from "./booking.entity";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
+import { OtherPayments } from "./other-payment.entity";
 
 @Index("userId_idx", ["userId"], {})
 @Index("bookingId_idx", ["bookingId"], {})
@@ -29,7 +32,17 @@ export class TravelerInfo extends BaseEntity {
 	roleId: number;
 
 	@Column("json", { name: "traveler_info", nullable: true })
-	travelerInfo: object;
+	travelerInfo: TravelerInfoModel;
+
+	@Column("uuid", { name: "update_by", nullable: true })
+	updateBy: string;
+
+	@ManyToOne(
+		() => Booking,
+		booking => booking.travelers
+	)
+	@JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
+	bookingData: Booking;
 
 	@ManyToOne(
 		() => User,
@@ -38,10 +51,10 @@ export class TravelerInfo extends BaseEntity {
 	@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
 	userData: User;
 
-	@ManyToOne(
-		() => Booking,
-		booking => booking.travelers
+
+	@OneToMany(
+		() => OtherPayments,
+		otherPayments => otherPayments.travelerInfo
 	)
-	@JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
-	bookingData: Booking;
+	charges: OtherPayments[];
 }

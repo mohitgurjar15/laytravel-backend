@@ -79,6 +79,7 @@ import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
 
 
 
@@ -1183,7 +1184,7 @@ export class FlightService {
 				let authCardResult = await this.paymentService.authorizeCard(
 					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
-					"USD",'','',
+					"USD", '', '',
 				);
 				if (authCardResult.status == true) {
 
@@ -1205,11 +1206,11 @@ export class FlightService {
 					if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
 
 						captureCardresult = await this.paymentService.captureCard(
-							authCardToken , userId
+							authCardToken, userId
 						);
 					}
 					else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
-						await this.paymentService.voidCard(authCardToken,userId);
+						await this.paymentService.voidCard(authCardToken, userId);
 						throw new HttpException(
 							{
 								status: 424,
@@ -1285,7 +1286,7 @@ export class FlightService {
 					let authCardToken = authCardResult.token;
 					if (bookingResult.booking_status == "success") {
 						let captureCardresult = await this.paymentService.captureCard(
-							authCardToken , userId
+							authCardToken, userId
 						);
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
@@ -1311,7 +1312,7 @@ export class FlightService {
 						}
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken,userId);
+						await this.paymentService.voidCard(authCardToken, userId);
 						throw new HttpException(
 							{
 								status: 424,
@@ -1765,11 +1766,27 @@ export class FlightService {
 		for await (var traveler of travelers) {
 			if (typeof traveler.traveler_id) {
 				var travelerId = traveler.traveler_id;
-
+				const userData = await getConnection()
+					.createQueryBuilder(User, "user")
+					.where(`"user_id" =:user_id`, { user_id: travelerId })
+					.getOne()
+				const travelerInfo: TravelerInfoModel = {
+					firstName: userData.firstName,
+					passportExpiry: userData.passportExpiry,
+					passportNumber: userData.passportNumber,
+					lastName: userData.lastName,
+					email: userData.email,
+					phoneNo: userData.phoneNo,
+					countryCode: userData.countryCode,
+					dob: userData.dob,
+					countryId: userData.countryId,
+					gender : userData.gender
+				}
 				var travelerUser = new TravelerInfo();
 				travelerUser.bookingId = bookingId;
 				travelerUser.userId = travelerId;
 				travelerUser.roleId = Role.TRAVELER_USER;
+				travelerUser.travelerInfo = travelerInfo
 				await travelerUser.save();
 			}
 		}
@@ -1953,7 +1970,7 @@ export class FlightService {
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
-				var birthDate = new Date(traveler.userData.dob);
+				var birthDate = new Date(traveler.travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 				var user_type = '';
@@ -1965,8 +1982,8 @@ export class FlightService {
 					user_type = "adult";
 				}
 				travelerInfo.push({
-					name: traveler.userData.firstName + ' ' + traveler.userData.lastName,
-					email: traveler.userData.email,
+					name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
+					email: traveler.travelerInfo.email,
 					type: user_type
 				})
 
@@ -2687,7 +2704,7 @@ export class FlightService {
 						}
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken , userId);
+						await this.paymentService.voidCard(authCardToken, userId);
 
 						return {
 							statusCode: 424,

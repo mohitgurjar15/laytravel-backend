@@ -45,13 +45,16 @@ import { DateTime } from "src/utility/datetime.utility";
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 import { DeleteBookingDto } from "./dto/delete-cart.dto";
+import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
+import { TravelerInfo } from "src/entity/traveler-info.entity";
+import { PaymentService } from "src/payment/payment.service";
 
 @Injectable()
 export class BookingService {
 	constructor(
 		@InjectRepository(BookingRepository)
 		private bookingRepository: BookingRepository,
-
+		private paymentService: PaymentService,
 		public readonly mailerService: MailerService
 	) { }
 
@@ -206,7 +209,7 @@ export class BookingService {
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
-				var birthDate = new Date(traveler.userData.dob);
+				var birthDate = new Date(traveler.travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 				var user_type = '';
@@ -218,8 +221,8 @@ export class BookingService {
 					user_type = "adult";
 				}
 				travelerInfo.push({
-					name: traveler.userData.firstName + ' ' + traveler.userData.lastName,
-					email: traveler.userData.email,
+					name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
+					email: traveler.travelerInfo.email,
 					type: user_type
 				})
 
@@ -345,20 +348,17 @@ export class BookingService {
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
 				for (let j in result.data[i].travelers) {
-					delete result.data[i].travelers[j].userData.updatedDate;
-					delete result.data[i].travelers[j].userData.salt;
-					delete result.data[i].travelers[j].userData.password;
-
-					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+				
+					var birthDate = new Date(result.data[i].travelers[j].travelerInfo.dob);
 					var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
 					if (age < 2) {
-						result.data[i].travelers[j].userData.user_type = "infant";
+						result.data[i].travelers[j].travelerInfo.user_type = "infant";
 					} else if (age < 12) {
-						result.data[i].travelers[j].userData.user_type = "child";
+						result.data[i].travelers[j].travelerInfo.user_type = "child";
 					} else {
-						result.data[i].travelers[j].userData.user_type = "adult";
+						result.data[i].travelers[j].travelerInfo.user_type = "adult";
 					}
 				}
 			}
@@ -428,18 +428,15 @@ export class BookingService {
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
 				for (let j in result.data[i].travelers) {
-					delete result.data[i].travelers[j].userData.updatedDate;
-					delete result.data[i].travelers[j].userData.salt;
-					delete result.data[i].travelers[j].userData.password;
-
-					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					
+					var birthDate = new Date(result.data[i].travelers[j].travelerInfo.dob);
 					var age = moment(new Date()).diff(moment(birthDate), 'years');
 					if (age < 2) {
-						result.data[i].travelers[j].userData.user_type = "infant";
+						result.data[i].travelers[j].travelerInfo.user_type = "infant";
 					} else if (age < 12) {
-						result.data[i].travelers[j].userData.user_type = "child";
+						result.data[i].travelers[j].travelerInfo.user_type = "child";
 					} else {
-						result.data[i].travelers[j].userData.user_type = "adult";
+						result.data[i].travelers[j].travelerInfo.user_type = "adult";
 					}
 				}
 			}
@@ -615,11 +612,7 @@ export class BookingService {
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
-					for await (const traveler of booking.travelers) {
-						delete traveler.userData.salt
-						delete traveler.userData.password
-						traveler.userData.dob = traveler.userData.dob || ''
-					}
+					
 				}
 
 				if (cartInstallments.length > 0) {
@@ -823,11 +816,7 @@ export class BookingService {
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
-					for await (const traveler of booking.travelers) {
-						delete traveler.userData.salt
-						delete traveler.userData.password
-						traveler.userData.dob = traveler.userData.dob || ''
-					}
+					
 				}
 
 				if (cartInstallments.length > 0) {
@@ -850,9 +839,9 @@ export class BookingService {
 				cartResponce['bookingDate'] = cart.bookingDate
 				cartResponce['booking'] = cart.bookings
 				cartResponce['cartInstallments'] = cartInstallments
-				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount)||0
-				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount)||0
-				cartResponce['pendinginstallment'] = pandinginstallment||0
+				cartResponce['paidAmount'] = Generic.formatPriceDecimal(paidAmount) || 0
+				cartResponce['remainAmount'] = Generic.formatPriceDecimal(remainAmount) || 0
+				cartResponce['pendinginstallment'] = pandinginstallment || 0
 				cartResponce['currency'] = currency
 				cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
 				cartResponce['nextInstallmentDate'] = cart.bookings[0].nextInstalmentDate
@@ -904,7 +893,7 @@ export class BookingService {
 
 	async getCartBookingDetail(cartId, user: User) {
 		try {
-				const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
+			const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
 			const query = getConnection()
 				.createQueryBuilder(CartBooking, "cartBooking")
 				.leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -936,20 +925,20 @@ export class BookingService {
 				for await (const baseInstallments of baseBooking) {
 
 					let amount = 0;
-					if(cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM){
+					if (cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM) {
 						amount += parseFloat(baseInstallments.amount);
 					}
 
 					if (cart.bookings.length > 1) {
 						for (let index = 1; index < cart.bookings.length; index++) {
-							if(cart.bookings[index].bookingStatus <= BookingStatus.CONFIRM){
+							if (cart.bookings[index].bookingStatus <= BookingStatus.CONFIRM) {
 								for await (const installment of cart.bookings[index].bookingInstalments) {
 									if (baseInstallments.instalmentDate == installment.instalmentDate) {
 										amount += parseFloat(installment.amount)
 									}
 								}
 							}
-							
+
 						}
 					}
 					const installment = {
@@ -968,7 +957,7 @@ export class BookingService {
 				if (booking.bookingInstalments.length > 0) {
 					booking.bookingInstalments.sort((a, b) => a.id - b.id)
 				}
-				if(booking.bookingStatus <= BookingStatus.CONFIRM){
+				if (booking.bookingStatus <= BookingStatus.CONFIRM) {
 					for await (const installment of booking.bookingInstalments) {
 						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
 							paidAmount += parseFloat(installment.amount);
@@ -977,23 +966,19 @@ export class BookingService {
 							pandinginstallment = pandinginstallment + 1;
 						}
 					}
-					
+
 					totalAmount += parseFloat(booking.totalAmount)
-					console.log(totalAmount , 'totalAmount');
+					console.log(totalAmount, 'totalAmount');
 				}
-				
-				
+
+
 				delete booking.currency2
 				delete booking.bookingInstalments
 				delete booking.module.liveCredential
 				delete booking.module.testCredential
 				delete booking.module.mode
 				delete booking.module.status
-				for await (const traveler of booking.travelers) {
-					delete traveler.userData.salt
-					delete traveler.userData.password
-					traveler.userData.dob = traveler.userData.dob || ''
-				}
+				
 			}
 
 			if (cartInstallments.length > 0) {
@@ -1096,20 +1081,17 @@ export class BookingService {
 			delete result.user.salt;
 			delete result.user.password;
 			for (let j in result.travelers) {
-				delete result.travelers[j].userData.updatedDate;
-				delete result.travelers[j].userData.salt;
-				delete result.travelers[j].userData.password;
-
-				var birthDate = new Date(result.travelers[j].userData.dob);
+				
+				var birthDate = new Date(result.travelers[j].travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
 				if (age < 2) {
-					result.travelers[j].userData.user_type = "infant";
+					result.travelers[j].travelerInfo.user_type = "infant";
 				} else if (age < 12) {
-					result.travelers[j].userData.user_type = "child";
+					result.travelers[j].travelerInfo.user_type = "child";
 				} else {
-					result.travelers[j].userData.user_type = "adult";
+					result.travelers[j].travelerInfo.user_type = "adult";
 				}
 			}
 
@@ -1766,20 +1748,17 @@ export class BookingService {
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
 				for (let j in result.data[i].travelers) {
-					delete result.data[i].travelers[j].userData.updatedDate;
-					delete result.data[i].travelers[j].userData.salt;
-					delete result.data[i].travelers[j].userData.password;
-
-					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					
+					var birthDate = new Date(result.data[i].travelers[j].travelerInfo.dob);
 					var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
 					if (age < 2) {
-						result.data[i].travelers[j].userData.user_type = "infant";
+						result.data[i].travelers[j].travelerInfo.user_type = "infant";
 					} else if (age < 12) {
-						result.data[i].travelers[j].userData.user_type = "child";
+						result.data[i].travelers[j].travelerInfo.user_type = "child";
 					} else {
-						result.data[i].travelers[j].userData.user_type = "adult";
+						result.data[i].travelers[j].travelerInfo.user_type = "adult";
 					}
 				}
 			}
@@ -1861,48 +1840,82 @@ export class BookingService {
 	}
 
 
-	async deleteBooking(deleteBookingDto : DeleteBookingDto , user:User){
-		const {booking_id , product_id} = deleteBookingDto
+	async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
+		const { booking_id, product_id } = deleteBookingDto
 
 		let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
-		if(product_id){
+		if (product_id) {
 			where += `AND ("booking"."laytrip_booking_id" = '${product_id}')`
 		}
-		if(user.roleId >= 5){
+		if (user.roleId >= 5) {
 			where += `AND ("cartBooking"."user_id" =  '${user.userId}')`
 		}
-        const query = await getConnection()
-            .createQueryBuilder(CartBooking, "cartBooking")
-            .leftJoinAndSelect("cartBooking.bookings", "booking")
+		const query = await getConnection()
+			.createQueryBuilder(CartBooking, "cartBooking")
+			.leftJoinAndSelect("cartBooking.bookings", "booking")
 			.where(where)
 			.getOne();
-		
-		if(!query && !query.bookings.length){
+
+		if (!query && !query.bookings.length) {
 			throw new BadRequestException(`Given booking id not found`)
 		}
 
 		for await (const booking of query.bookings) {
 			await getConnection()
-                .createQueryBuilder()
-                .update(Booking)
-                .set({ bookingStatus : BookingStatus.CANCELLED , paymentStatus : PaymentStatus.CANCELLED  })
-                .where(`id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
-                .execute();
-			
+				.createQueryBuilder()
+				.update(Booking)
+				.set({ bookingStatus: BookingStatus.CANCELLED, paymentStatus: PaymentStatus.CANCELLED })
+				.where(`id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
+				.execute();
+
 			await getConnection()
-                .createQueryBuilder()
-                .update(BookingInstalments)
-                .set({ paymentStatus : PaymentStatus.CANCELLED   })
-                .where(`booking_id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
-                .execute();
+				.createQueryBuilder()
+				.update(BookingInstalments)
+				.set({ paymentStatus: PaymentStatus.CANCELLED })
+				.where(`booking_id =:id AND payment_status = ${PaymentStatus.PENDING}`, { id: booking.id })
+				.execute();
 		}
-		if(product_id){
+		if (product_id) {
 			return {
-				message : `Selected product cancel successfully `
-			}	
+				message: `Selected product cancel successfully `
+			}
 		}
 		return {
-			message : `Selected booking cancel successfully `
+			message: `Selected booking cancel successfully `
 		}
+	}
+
+
+	async updateTravelerInfo(id: number, updateTravelerInfoDto: UpdateTravelerInfoDto, admin: User) {
+		let query = await getManager()
+			.createQueryBuilder(TravelerInfo, "traveler")
+			.leftJoinAndSelect("traveler.bookingData", "booking")
+			.where(`id=:id `, { id })
+			.getOne();
+
+		if (!query) {
+			throw new NotFoundException(`Givel id not found`)
+		}
+
+		// const charges = await this.paymentService.createTransaction({
+		// 	bookingId : null,
+		// 	userId : query.bookingData.userId,
+		// 	card_token : query.bookingData.cardToken,
+		// 	currencyId : 1,
+		// 	amount:2000,
+		// 	paidFor : 'Traveler detail update charges',
+		// 	travelerInfoId : query.id ,
+		// 	note : ''
+		// },admin.userId)
+		
+			await getConnection()
+				.createQueryBuilder()
+				.update(TravelerInfo)
+				.set({ travelerInfo: updateTravelerInfoDto })
+				.where(`id=:id `, { id })
+				.execute();		
+			return {
+				message : `Traveler detail update successfully`
+			}	
 	}
 }
