@@ -325,7 +325,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         <table align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>
-                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; background: #1943FF; color: #ffffff; border-radius: 4px; padding:0 15px; cursor: pointer;" height="48">
+                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; " height="48">
                                         <a class="" href = '${BookingLink}'>Booking details</a>
                                     </td>
                                 </tr>
