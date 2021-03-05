@@ -18,6 +18,10 @@ import { MassCommunication } from 'src/entity/mass-communication.entity';
 import { contentType } from 'src/config/content-type';
 import { extname } from 'path';
 import { LaytripCovidUpdateMail } from 'src/config/new_email_templete/laytrip_covid-mail.html';
+import { LaytripCancellationTravelProviderMail } from 'src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html';
+import { LaytripBookingCancellationCustomerMail } from 'src/config/new_email_templete/laytrip_booking-cancellation-customer-mail.html';
+import { LaytripPaymentMethodChangeMail } from 'src/config/new_email_templete/laytrip_payment-method-change-mail.html';
+import { LaytripVerifyEmailIdTemplete } from 'src/config/new_email_templete/laytrip_email-id-verify-mail.html';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -237,8 +241,8 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: subject,
-                html: await LaytripCovidUpdateMail({username:'Parth'})//await LaytripFlightBookingConfirmtionMail(),
+                subject: 'BOOKING ID LTCA678GFJ PROVIDER CANCELLATION NOTICE',
+                html: await LaytripCancellationTravelProviderMail({userName:'Parth',bookingId:'LTCA678GFJ'})//await LaytripFlightBookingConfirmtionMail(),
             })
             .then((res) => {
                 console.log("res", res);
@@ -246,6 +250,37 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
+
+            this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: 'BOOKING ID LTCA678GFJ CUSTOMER CANCELLATION',
+                html: await LaytripBookingCancellationCustomerMail({username:'Parth',bookingId:'LTCA678GFJ'})//await LaytripFlightBookingConfirmtionMail(),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+            this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: 'PAYMENT METHOD CHANGE CONFIRMATION',
+                html: await LaytripPaymentMethodChangeMail({username:'Parth',otp:324232})//await LaytripFlightBookingConfirmtionMail(),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
 
 
 
