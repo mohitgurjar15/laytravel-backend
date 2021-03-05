@@ -17,6 +17,7 @@ import { LaytripFlightBookingConfirmtionMail } from 'src/config/new_email_temple
 import { MassCommunication } from 'src/entity/mass-communication.entity';
 import { contentType } from 'src/config/content-type';
 import { extname } from 'path';
+import { LaytripCovidUpdateMail } from 'src/config/new_email_templete/laytrip_covid-mail.html';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -237,7 +238,7 @@ export class GeneralService {
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: subject,
-                html: 'aa'//await LaytripFlightBookingConfirmtionMail(),
+                html: await LaytripCovidUpdateMail({username:'Parth'})//await LaytripFlightBookingConfirmtionMail(),
             })
             .then((res) => {
                 console.log("res", res);
