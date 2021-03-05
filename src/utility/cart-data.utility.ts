@@ -102,7 +102,7 @@ export class CartDataUtility {
             .leftJoinAndSelect("booking.module", "module")
             //.leftJoinAndSelect("cartBooking.user", "User")
             .leftJoinAndSelect("booking.travelers", "traveler")
-            .leftJoinAndSelect("traveler.userData", "userData")
+            //.leftJoinAndSelect("traveler.userData", "userData")
             // .leftJoinAndSelect("User.state", "state")
             // .leftJoinAndSelect("User.country", "countries")
 

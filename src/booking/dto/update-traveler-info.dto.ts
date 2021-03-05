@@ -1,4 +1,4 @@
-import { IsNotEmpty,ValidationArguments, IsEnum, ValidateIf, NotContains } from 'class-validator'
+import { IsNotEmpty,ValidationArguments, IsEnum, ValidateIf, NotContains, IsEmail } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from 'src/enum/gender.enum';
 import { errorMessage } from 'src/config/common.config';
@@ -120,6 +120,28 @@ export class UpdateTravelerInfoDto {
 	})
     phone_no: string;
 
+    @ApiPropertyOptional({
+		type: "string",
+		description: "email",
+	})
+	@ValidateIf((o) => moment(new Date()).diff(moment(o.dob),'years') >= 12)
+    @IsEmail(
+		{},
+		{
+			message: (args: ValidationArguments) => {
+				if (typeof args.value == "undefined" || args.value == "") {
+					return `Please enter your email address.&&&email`;
+				} else {
+					return `Please Enter valid email address.&&&email`;
+				}
+			},
+		},
+	)
+    @ApiProperty({
+        description: `Enter Email Id`,
+        example: `jon.doe@gmail.com`
+    })
+    email: string;
 
     @IsNotEmpty({
 		message: `Please select country id.&&&country_code`,

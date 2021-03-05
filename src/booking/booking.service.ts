@@ -48,6 +48,8 @@ import { DeleteBookingDto } from "./dto/delete-cart.dto";
 import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { PaymentService } from "src/payment/payment.service";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class BookingService {
@@ -542,9 +544,9 @@ export class BookingService {
 				.leftJoinAndSelect("booking.currency2", "currency")
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
-				.leftJoinAndSelect("traveler.userData", "userData")
-				.leftJoinAndSelect("userData.state", "state")
-				.leftJoinAndSelect("userData.country", "countries")
+				// .leftJoinAndSelect("traveler.userData", "userData")
+				// .leftJoinAndSelect("userData.state", "state")
+				// .leftJoinAndSelect("userData.country", "countries")
 
 				.where(where)
 				.orderBy(`cartBooking.bookingDate`, 'DESC')
@@ -747,7 +749,7 @@ export class BookingService {
 				.leftJoinAndSelect("booking.currency2", "currency")
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
-				.leftJoinAndSelect("traveler.userData", "userData")
+				//.leftJoinAndSelect("traveler.userData", "userData")
 				// .leftJoinAndSelect("User.state", "state")
 				// .leftJoinAndSelect("User.country", "countries")
 
@@ -902,7 +904,7 @@ export class BookingService {
 				.leftJoinAndSelect("booking.module", "module")
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
-				.leftJoinAndSelect("traveler.userData", "userData")
+				//.leftJoinAndSelect("traveler.userData", "userData")
 				// .leftJoinAndSelect("User.state", "state")
 				// .leftJoinAndSelect("User.country", "countries")
 
@@ -917,11 +919,11 @@ export class BookingService {
 			let remainAmount = 0;
 			let pandinginstallment = 0
 			let totalAmount = 0
-			const currency = cart.bookings[0].currency2
-			const baseBooking = cart.bookings[0].bookingInstalments
+			const currency = cart.bookings[0]?.currency2
+			const baseBooking = cart.bookings[0]?.bookingInstalments
 			const installmentType = cart.bookings[0]?.bookingInstalments[0]?.instalmentType
 			let cartInstallments = [];
-			if (baseBooking.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
+			if (baseBooking?.length && cart.bookings[0].bookingType == BookingType.INSTALMENT) {
 				for await (const baseInstallments of baseBooking) {
 
 					let amount = 0;
@@ -958,27 +960,33 @@ export class BookingService {
 					booking.bookingInstalments.sort((a, b) => a.id - b.id)
 				}
 				if (booking.bookingStatus <= BookingStatus.CONFIRM) {
-					for await (const installment of booking.bookingInstalments) {
-						if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-							paidAmount += parseFloat(installment.amount);
-						} else {
-							remainAmount += parseFloat(installment.amount);
-							pandinginstallment = pandinginstallment + 1;
+					if (booking?.bookingInstalments?.length) {
+						for await (const installment of booking.bookingInstalments) {
+							if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+								paidAmount += parseFloat(installment.amount);
+							} else {
+								remainAmount += parseFloat(installment.amount);
+								pandinginstallment = pandinginstallment + 1;
+							}
 						}
 					}
 
 					totalAmount += parseFloat(booking.totalAmount)
-					console.log(totalAmount, 'totalAmount');
+					//console.log(totalAmount, 'totalAmount');
 				}
 
 
-				delete booking.currency2
-				delete booking.bookingInstalments
-				delete booking.module.liveCredential
-				delete booking.module.testCredential
-				delete booking.module.mode
-				delete booking.module.status
-				
+				delete booking?.currency2
+				delete booking?.bookingInstalments
+				delete booking?.module.liveCredential
+				delete booking?.module.testCredential
+				delete booking?.module.mode
+				delete booking?.module.status
+				// for await (const traveler of booking.travelers) {
+				// 	delete traveler.userData.salt
+				// 	delete traveler.userData.password
+				// 	traveler.userData.dob = traveler.userData.dob || ''
+				// }
 			}
 
 			if (cartInstallments.length > 0) {
@@ -990,10 +998,12 @@ export class BookingService {
 				})
 				//cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 			}
-
+			console.log('cartResponce');
+			
 			let cartResponce = {}
-			cartResponce['id'] = cart.id
-			const trackReport = await this.paidAmountByUser(cart.bookings[0].id)
+			cartResponce['id'] = cart?.id
+			
+			const trackReport = await this.paidAmountByUser(cart.bookings[0]?.id)
 			cartResponce['is_installation_on_track'] = trackReport?.attempt != 1 && trackReport?.paymentStatus != PaymentStatus.CONFIRM ? false : true
 			cartResponce['checkInDate'] = cart.checkInDate
 			cartResponce['checkOutDate'] = cart.checkOutDate
@@ -1006,11 +1016,11 @@ export class BookingService {
 			cartResponce['pandinginstallment'] = pandinginstallment
 			cartResponce['currency'] = currency
 			cartResponce['totalAmount'] = Generic.formatPriceDecimal(totalAmount)
-			if (cart.bookings[0].nextInstalmentDate) {
+			if (cart.bookings[0]?.nextInstalmentDate) {
 				cartResponce['nextInstalmentDate'] = cart.bookings[0].nextInstalmentDate
 			}
 
-			cartResponce['cardDetail'] = await this.cardDetail(cart.bookings[0].cardToken)
+			cartResponce['cardDetail'] = await this.cardDetail(cart.bookings[0]?.cardToken)
 			if (installmentType) {
 				cartResponce['installmentType'] = installmentType
 			}
@@ -1890,12 +1900,14 @@ export class BookingService {
 		let query = await getManager()
 			.createQueryBuilder(TravelerInfo, "traveler")
 			.leftJoinAndSelect("traveler.bookingData", "booking")
-			.where(`id=:id `, { id })
+			.where(`"traveler"."id"=:id `, { id })
 			.getOne();
 
 		if (!query) {
 			throw new NotFoundException(`Givel id not found`)
 		}
+
+		const previousValue = JSON.stringify(query)
 
 		// const charges = await this.paymentService.createTransaction({
 		// 	bookingId : null,
@@ -1907,13 +1919,28 @@ export class BookingService {
 		// 	travelerInfoId : query.id ,
 		// 	note : ''
 		// },admin.userId)
+
+		const travelerInfo: TravelerInfoModel = {
+			firstName: updateTravelerInfoDto.first_name,
+			passportExpiry: updateTravelerInfoDto?.passport_expiry,
+			passportNumber: updateTravelerInfoDto?.passport_number,
+			lastName: updateTravelerInfoDto.last_name,
+			email: updateTravelerInfoDto.email,
+			phoneNo: updateTravelerInfoDto?.phone_no,
+			countryCode: updateTravelerInfoDto?.country_code,
+			dob: updateTravelerInfoDto?.dob,
+			countryId: updateTravelerInfoDto?.country_id,
+			gender : updateTravelerInfoDto?.gender
+		}
 		
-			await getConnection()
+			const updatedValue = await getConnection()
 				.createQueryBuilder()
 				.update(TravelerInfo)
-				.set({ travelerInfo: updateTravelerInfoDto })
+				.set({ travelerInfo: travelerInfo , updateBy : admin.userId })
 				.where(`id=:id `, { id })
-				.execute();		
+				.execute();
+				const currentValue = JSON.stringify(updatedValue)		
+				Activity.logActivity(admin.userId,'Booking','Update traveler info of info id'+ id,previousValue,currentValue)		
 			return {
 				message : `Traveler detail update successfully`
 			}	

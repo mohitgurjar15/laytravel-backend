@@ -1576,7 +1576,7 @@ export class FlightService {
 			console.log(error);
 		}
 	}
-	async partiallyBookFlight(bookFlightDto: BookFlightDto, headers, user, bookingId) {
+	async partiallyBookFlight(bookFlightDto: BookFlightDto, headers, user, bookingId,travelersDetail : TravelerInfoModel[]) {
 		let headerDetails = await this.validateHeaders(headers);
 
 		let {
@@ -1654,8 +1654,8 @@ export class FlightService {
 			infant_count,
 		} = bookingRequestInfo;
 		let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-		let travelersDetails = await this.getTravelersInfo(
-			travelers,
+		let travelersDetails = await this.checkTravelersInfo(
+			travelersDetail,
 			isPassportRequired
 		);
 
@@ -1895,6 +1895,94 @@ export class FlightService {
 					);
 
 				traveler.title = GenderTilte[traveler.title];
+				if (ageDiff < 2) {
+					traveleDetails.infants.push(traveler);
+				} else if (ageDiff >= 2 && ageDiff < 12) {
+					traveleDetails.children.push(traveler);
+				} else if (ageDiff >= 12) {
+					traveleDetails.adults.push(traveler);
+				}
+			}
+			return traveleDetails;
+		} else {
+			throw new BadRequestException(`Please enter valid traveler(s) id`);
+		}
+	}
+
+	async checkTravelersInfo(travelers : TravelerInfoModel[], isPassportRequired = null) {
+		let traveleDetails = {
+			adults: [],
+			children: [],
+			infants: [],
+		};
+		if (travelers.length > 0) {
+			for (let traveler of travelers) {
+				let ageDiff = moment(new Date()).diff(moment(traveler.dob), "years");
+
+				/* if (traveler.title == null || traveler.title == "")
+					throw new BadRequestException(
+						`Title is missing for traveler ${traveler.firstName}`
+					); */
+				if ((traveler.email == null || traveler.email == "") && ageDiff >= 12)
+					throw new BadRequestException(
+						`Email is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					(traveler.countryCode == null || traveler.countryCode == "") &&
+					ageDiff >= 12
+				)
+					throw new BadRequestException(
+						`Country code is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					(traveler.phoneNo == null || traveler.phoneNo == "") &&
+					ageDiff >= 12
+				)
+					throw new BadRequestException(
+						`Phone number is missing for traveler ${traveler.firstName}`
+					);
+				if (traveler.gender == null || traveler.gender == "")
+					throw new BadRequestException(
+						`Gender is missing for traveler ${traveler.firstName}`
+					);
+				if (traveler.dob == null || traveler.dob == "")
+					throw new BadRequestException(
+						`Dob is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportNumber == null || traveler.passportNumber == "")
+				)
+					throw new BadRequestException(
+						`Passport Number is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportExpiry == null || traveler.passportExpiry == "")
+				)
+					throw new BadRequestException(
+						`Passport Expiry is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportExpiry && moment(moment()).isAfter(traveler.passportExpiry))
+				)
+					throw new BadRequestException(
+						`Passport Expiry date is expired for traveler ${traveler.firstName}`
+					);
+				// if (
+				// 	traveler.country == null ||
+				// 	(typeof traveler.country.iso2 !== "undefined" &&
+				// 		traveler.country.iso2 == "")
+				// )
+				// 	throw new BadRequestException(
+				// 		`Country code is missing for traveler ${traveler.firstName}`
+				// 	);
+
+				// traveler.title = GenderTilte[traveler.title];
 				if (ageDiff < 2) {
 					traveleDetails.infants.push(traveler);
 				} else if (ageDiff >= 2 && ageDiff < 12) {
@@ -2346,10 +2434,10 @@ export class FlightService {
 
 			let travelers = [];
 
+			let travelersDetail : TravelerInfoModel[] = [];
+
 			for await (const traveler of bookingData.travelers) {
-				travelers.push({
-					traveler_id: traveler.userId
-				})
+				travelersDetail.push(traveler.travelerInfo)
 			}
 
 			// Headers['currency'] = bookingData.currency2.code
@@ -2403,7 +2491,7 @@ export class FlightService {
 
 					console.log(`step - 1 find booking`);
 
-					const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId)
+					const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId , travelersDetail)
 
 					this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 
@@ -2888,14 +2976,14 @@ export class FlightService {
 		let opResult = []
 		for await (const route of result) {
 			if (is_from_location == 'yes') {
-				if (availableRoute.indexOf(route.toAirportCode) == -1) {
-					opResult.push(airports[route.toAirportCode])
-					availableRoute.push(route.toAirportCode)
-				}
-			} else {
 				if (availableRoute.indexOf(route.fromAirportCode) == -1) {
 					opResult.push(airports[route.fromAirportCode])
 					availableRoute.push(route.fromAirportCode)
+				}
+			} else {
+				if (availableRoute.indexOf(route.toAirportCode) == -1) {
+					opResult.push(airports[route.toAirportCode])
+					availableRoute.push(route.toAirportCode)
 				}
 			}
 		}
@@ -2903,4 +2991,42 @@ export class FlightService {
 		return opResult
 	}
 
+	async importCategory(){
+		 let categories=[
+			"BOS-BWI","BOS-EWR","BOS-FLL","BOS-PBI","BOS-PHL","EWR-PBI","JFK-FLL","LAX-OAK","LAX-PHX","LGA-FLL","LGA-PBI","OAK-BUR","SFO-LAS","SFO-PHX"
+		 ]
+		 let categoryId=6;
+
+		 for(let category of categories){
+			 
+			 let categoryArr= category.split("-");
+			 let fromAirport = airports[categoryArr[0]];
+			 let toAirport = airports[categoryArr[1]];
+			 const categoryData= new FlightRoute();
+			
+			//categoryData.parentBy =0;
+			categoryData.categoryId = categoryId,
+			categoryData.fromAirportCode = fromAirport.code,
+			categoryData.fromAirportName = fromAirport.name,
+			categoryData.fromAirportCity = fromAirport.city,
+			categoryData.fromAirportCountry = fromAirport.country,
+			categoryData.toAirportCode = toAirport.code,
+			categoryData.toAirportName = toAirport.name,
+			categoryData.toAirportCity = toAirport.city,
+			categoryData.toAirportCountry = toAirport.country,
+			categoryData.createBy = 'df1c38f6-954b-4947-b202-d50c2fece143',
+			categoryData.createDate = new Date(),
+			categoryData.status = true,
+			categoryData.isDeleted =false
+
+			console.log(categoryData)
+
+			await getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(FlightRoute)
+            .values(categoryData)
+            .execute();
+		 }
+	}
 }

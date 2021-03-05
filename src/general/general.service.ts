@@ -17,6 +17,9 @@ import { LaytripFlightBookingConfirmtionMail } from 'src/config/new_email_temple
 import { MassCommunication } from 'src/entity/mass-communication.entity';
 import { contentType } from 'src/config/content-type';
 import { extname } from 'path';
+import { LaytripCovidUpdateMail } from 'src/config/new_email_templete/laytrip_covid-mail.html';
+import { TravelerInfo } from 'src/entity/traveler-info.entity';
+import { TravelerInfoModel } from 'src/config/email_template/model/traveler-info.model';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -135,14 +138,33 @@ export class GeneralService {
        
 
         let emails = [{
+            firstName : 'parth',
+            lastName : 'Virani',
             email: 'parthvirani@itoneclick.com'
         }, {
+            firstName : 'suresh',
+            lastName : 'suthar',
             email: 'suresh@itoneclick.com'
         }, {
+            firstName : 'jaymeesh',
+            lastName : 'donga',
             email: 'jaymees@itoneclick.com'
         }, {
+            firstName : 'jimeet@itoneclick.com',
+            lastName : '',
             email: 'jimeet@itoneclick.com'
         }]
+
+        // const emails = await getManager()
+        //     .createQueryBuilder(User, "user")
+        //     .select(`user.email,
+        //         user.firstName,
+        //         user.lastName`)
+        //     .where(`email != null AND email != '' AND role_id IN (${Role.FREE_USER,Role.PAID_USER})`)
+        //     .getMany();
+            
+
+
         var allemail = '';
         let attachments = []
         const fs = require("fs");
@@ -176,6 +198,8 @@ export class GeneralService {
         log.createdDate = new Date()
         log.createdBy = user.userId
         log.attachment = JSON.stringify(filesName)
+        log.total = emails.length
+        log.users = emails
 
         await log.save();
 
@@ -216,7 +240,7 @@ export class GeneralService {
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: subject,
-                html: 'aa'//await LaytripFlightBookingConfirmtionMail(),
+                html: await LaytripCovidUpdateMail({username:'Parth'})//await LaytripFlightBookingConfirmtionMail(),
             })
             .then((res) => {
                 console.log("res", res);
@@ -247,6 +271,8 @@ export class GeneralService {
                 "log.subject",
                 "log.createdDate",
                 "log.attachment",
+                "log.total",
+                "log.users",
                 "user.roleId"
             ])
             .orderBy("log.id", "DESC")
@@ -267,5 +293,39 @@ export class GeneralService {
             log.attachment = attachment
         }
         return { data: result, TotalReseult: count };
+    }
+
+    async updateTravelerInfo(){
+        const travelers = await getConnection()
+					.createQueryBuilder(TravelerInfo, "traveler")
+					//.where(`"traveler_info" = null`)
+					.getMany()
+        for await (var traveler of travelers) {
+			if (typeof traveler.userId) {
+				var travelerId = traveler.userId;
+				const userData = await getConnection()
+					.createQueryBuilder(User, "user")
+					.where(`"user_id" =:user_id`, { user_id: travelerId })
+					.getOne()
+				const travelerInfo: TravelerInfoModel = {
+					firstName: userData.firstName,
+					passportExpiry: userData.passportExpiry,
+					passportNumber: userData.passportNumber,
+					lastName: userData.lastName,
+					email: userData.email,
+					phoneNo: userData.phoneNo,
+					countryCode: userData.countryCode,
+					dob: userData.dob,
+					countryId: userData.countryId,
+					gender : userData.gender
+				}
+				await getConnection()
+				.createQueryBuilder()
+				.update(TravelerInfo)
+				.set({ travelerInfo: travelerInfo })
+				.where("id = :id", { id: traveler.id })
+				.execute();
+			}
+		}
     }
 }

@@ -85,17 +85,17 @@ export class HttpRequest {
                     'cache-control': 'no-cache'
                 }
             })
-            let logData = {};
-            logData['url'] = url
-            logData['requestBody'] = requestBody
-            logData['headers'] = {
-                'content-type': 'text/xml',
-                'Accept-Encoding': 'gzip',
-                'soapaction': `${headerAction}`,
-                'charset': 'UTF-8',
-                'cache-control': 'no-cache'
-            }
-            logData['responce'] = result.data;
+            // let logData = {};
+            // logData['url'] = url
+            // logData['requestBody'] = requestBody
+            // logData['headers'] = {
+            //     'content-type': 'text/xml',
+            //     'Accept-Encoding': 'gzip',
+            //     'soapaction': `${headerAction}`,
+            //     'charset': 'UTF-8',
+            //     'cache-control': 'no-cache'
+            // }
+            // logData['responce'] = result.data;
             
             
             result = await xml2js.parseStringPromise(result.data, {
@@ -105,24 +105,24 @@ export class HttpRequest {
 
             //logData['Decripted responce '] = result;
 
-            const fileName = `Flight-mystifly-zip-search-${new Date().getTime()}`;
-            Activity.createlogFile(fileName, logData, 'flights');
+            // const fileName = `Flight-mystifly-zip-search-${new Date().getTime()}`;
+            // Activity.createlogFile(fileName, logData, 'flights');
             return result;
         }
         catch (error) {
-            let logData = {};
-            logData['url'] = url
-            logData['requestBody'] = requestBody
-            logData['headers'] = {
-                'content-type': 'text/xml',
-                'Accept-Encoding': 'gzip',
-                'soapaction': `${headerAction}`,
-                'charset': 'UTF-8',
-                'cache-control': 'no-cache'
-            }
-            logData['responce'] = error.response.data;
-            const fileName = `Flight-mystifly-zip-search-${new Date().getTime()}`;
-            Activity.createlogFile(fileName, logData, 'Mustifly_errors');
+            // let logData = {};
+            // logData['url'] = url
+            // logData['requestBody'] = requestBody
+            // logData['headers'] = {
+            //     'content-type': 'text/xml',
+            //     'Accept-Encoding': 'gzip',
+            //     'soapaction': `${headerAction}`,
+            //     'charset': 'UTF-8',
+            //     'cache-control': 'no-cache'
+            // }
+            // logData['responce'] = error.response.data;
+            // const fileName = `Flight-mystifly-zip-search-${new Date().getTime()}`;
+            // Activity.createlogFile(fileName, logData, 'Mustifly_errors');
             throw new RequestTimeoutException(`Connection time out`)
         }
 
