@@ -45,7 +45,7 @@ export async function FlightBookingConfirmtionMail(
                                       </tr>
                                       </tbody>
                                   </table></td>`;
-  for await (const data of param.flightData) {
+  for await (const data of param.flight) {
 
     inventry += `
                                                     <tr>
@@ -174,20 +174,20 @@ export async function FlightBookingConfirmtionMail(
                 </table></td>
             </tr>`;
 
-    const element = param.paymentDetail;
+    // const element = param.paymentDetail;
 
-    paymentDetail += `  <tr>
-              <td align="center" valign="top" style="border-bottom: 1px solid #DCDCDC;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <tbody>
-                    <tr>
-                      <td align="center" valign="top" class="oc_w40 oc_f12" style="width: 50px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; font-weight: 400;">0</td>
-                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${element.amount}</td>
-                      <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${DateTime.convertDateFormat(element.date, 'MM/DD/YYYY', 'MMM DD, YYYY')}</td>
-                      <td align="center" valign="top" class="oc_f12" style="padding: 7px 0; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; font-weight: 400; text-transform: capitalize; text-align: center;">${element.status}</td>
-                    </tr>
-                  </tbody>
-                </table></td>
-            </tr>`
+    // paymentDetail += `  <tr>
+    //           <td align="center" valign="top" style="border-bottom: 1px solid #DCDCDC;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+    //               <tbody>
+    //                 <tr>
+    //                   <td align="center" valign="top" class="oc_w40 oc_f12" style="width: 50px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; font-weight: 400;">0</td>
+    //                   <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize;font-weight: 400; text-align: center; ">${element.amount}</td>
+    //                   <td align="center" class="oc_w85 oc_f12" valign="top" style="width: 110px; padding: 7px 0; border-right: 1px solid #DCDCDC; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; font-weight: 400; color: #000000; text-transform: capitalize; text-align: center;">${DateTime.convertDateFormat(element.date, 'MM/DD/YYYY', 'MMM DD, YYYY')}</td>
+    //                   <td align="center" valign="top" class="oc_f12" style="padding: 7px 0; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; font-weight: 400; text-transform: capitalize; text-align: center;">${element.status}</td>
+    //                 </tr>
+    //               </tbody>
+    //             </table></td>
+    //         </tr>`
 
   var travelerDetail = `<tr>
     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 16px; color: #000000; text-transform: capitalize; background: #D0D0D0; padding: 10px 15px; font-weight: 700;">Traveler details</td>
@@ -208,8 +208,8 @@ export async function FlightBookingConfirmtionMail(
               </table></td>
           </tr>`;
 
-  for (let index = 0; index < param.travelers.length; index++) {
-    const element = param.travelers[index];
+  for (let index = 0; index < param.traveler.length; index++) {
+    const element = param.traveler[index];
 
     travelerDetail += `  <tr>
             <td align="center" valign="top" style="border-bottom: 1px solid #DCDCDC;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -237,19 +237,6 @@ export async function FlightBookingConfirmtionMail(
         <td align="center" valign="top" style="padding-top: 15px;"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
             <tbody>
               `
-  if (param.flightData[0].status != "Confirm") {
-    ExstraDetail += `<tr>
-              <td align="left" valign="top" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: red;padding: 10px 0 10px; text-align: left;"><span style="font-weight: 700;">*Ticket ${param.flightData[0].status}</span></td>
-            </tr>`
-              // <tr>
-              //   <td style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: red;padding: 10px 10px 0; text-align: left; " valign="top" align="left">* We will send you a separate email within 3-24 hours, once the ticket is confirmed. If you are travelling within 24 hrs, please contact us immediately.</td>
-              // </tr>
-  }
-  else {
-    ExstraDetail += `<tr>
-                <td align="left" valign="top" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd; font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: blue;padding: 10px 0 10px; text-align: left;"><span style="font-weight: 700;">*Ticket ${param.flightData[0].status}</span></td>
-              </tr>`
-  }
   ExstraDetail += `<tr>
                 <td style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000000;padding: 10px 10px 0; text-align: left; " valign="top" align="left"><ul style="margin:0; padding:0 0 0 15px;">
                     <li style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-bottom:5px;">Refer your eTicket for detailed flight itinerary, fare rules & baggage policy.</li>

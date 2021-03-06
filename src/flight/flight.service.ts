@@ -1973,10 +1973,9 @@ export class FlightService {
 			}
 			const cartData = await CartDataUtility.cartData(bookingData.cartId)
 			param.user_name = `${user.firstName}  ${user.lastName}`;
-			param.flightData = flightData;
+			param.flight = flightData;
 			param.orderId = bookingData.laytripBookingId;
-			param.paymentDetail = installmentDetail;
-			param.travelers = travelerInfo
+			param.traveler = travelerInfo
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
 				param.cart = {
 					cartId: bookingData.cart.laytripCartId,
@@ -1993,8 +1992,7 @@ export class FlightService {
 			}
 
 			param.bookingType = bookingData.bookingType
-			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM ? 'confirmed' : 'pending'
-
+			
 			//console.log(param);
 			// //console.log(param.flightData);
 			if (email != '') {
@@ -2149,6 +2147,7 @@ export class FlightService {
 
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.user", "User")
 			.where(`laytrip_booking_id = '${bookingId}'`)
 		const booking = await query.getOne();
 		if (!booking) {
@@ -2179,6 +2178,7 @@ export class FlightService {
 					"departure_code": reservation["a:departureairportlocationcode"][0],
 					"departure_date": await (await this.getDataTimefromString(reservation["a:departuredatetime"][0])).date,
 					"departure_time": await (await this.getDataTimefromString(reservation["a:departuredatetime"][0])).time,
+					"pnr_no" : reservation["a:airlinepnr"][0],
 					"departure_date_time": reservation["a:departuredatetime"][0],
 					"departure_info": airports[reservation["a:departureairportlocationcode"][0]],
 					"arrival_code": reservation["a:arrivalairportlocationcode"][0],
@@ -2239,6 +2239,7 @@ export class FlightService {
 		booking.supplierBookingId = supplier_booking_id;
 
 		await booking.save();
+
 		return this.bookingRepository.getBookingDetails(booking.laytripBookingId)
 
 	}

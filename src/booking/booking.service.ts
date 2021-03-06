@@ -226,10 +226,10 @@ export class BookingService {
 			}
 			const cartData = await CartDataUtility.cartData(bookingData.cartId)
 			param.user_name = `${user.firstName}  ${user.lastName}`;
-			param.flightData = flightData;
+			param.flight = flightData;
 			param.orderId = bookingData.laytripBookingId;
-			param.paymentDetail = installmentDetail;
-			param.travelers = travelerInfo
+			//param.paymentDetail = installmentDetail;
+			param.traveler = travelerInfo
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
 				param.cart = {
 					cartId: bookingData.cart.laytripCartId,
@@ -246,7 +246,7 @@ export class BookingService {
 			}
 
 			param.bookingType = bookingData.bookingType
-			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM ? 'confirmed' : 'pending'
+			//param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM ? 'confirmed' : 'pending'
 
 			//console.log(param);
 			// //console.log(param.flightData);
