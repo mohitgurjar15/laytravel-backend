@@ -15,6 +15,7 @@ import { getBookingDetailsDto } from "./dto/get-booking-detail.dto";
 import { BookingFilterDto } from "./dto/booking-filter.dto";
 import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 import { DeleteBookingDto } from "./dto/delete-cart.dto";
+import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
 
 
 @ApiTags("Booking")
@@ -371,5 +372,26 @@ export class BookingController {
 		@GetUser() user: User
 	) {
 		return await this.bookingService.deleteBooking(deleteBookingDto, user);
+	}
+
+	@Post("update/travelerInfo/:traveler_info_id")
+	@UseGuards(AuthGuard())
+	@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "Update booking traveler info" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Given booking id not found" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	@HttpCode(200)
+	async updateTravelerInfo(
+		@Body() updateTravelerInfoDto: UpdateTravelerInfoDto,
+		@Param('traveler_info_id') id : number ,
+		@GetUser() user: User
+	): Promise<{ message: any }> {
+		return await this.bookingService.updateTravelerInfo(id,updateTravelerInfoDto, user);
 	}
 }

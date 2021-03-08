@@ -79,6 +79,7 @@ import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
 
 
 
@@ -1183,7 +1184,7 @@ export class FlightService {
 				let authCardResult = await this.paymentService.authorizeCard(
 					card_token,
 					Math.ceil(firstInstalemntAmount * 100),
-					"USD",'','',
+					"USD", '', '',
 				);
 				if (authCardResult.status == true) {
 
@@ -1205,11 +1206,11 @@ export class FlightService {
 					if (typeof bookingResult == "undefined" || bookingResult.booking_status == "success") {
 
 						captureCardresult = await this.paymentService.captureCard(
-							authCardToken , userId
+							authCardToken, userId
 						);
 					}
 					else if (typeof bookingResult !== "undefined" && bookingResult.booking_status != "success") {
-						await this.paymentService.voidCard(authCardToken,userId);
+						await this.paymentService.voidCard(authCardToken, userId);
 						throw new HttpException(
 							{
 								status: 424,
@@ -1285,7 +1286,7 @@ export class FlightService {
 					let authCardToken = authCardResult.token;
 					if (bookingResult.booking_status == "success") {
 						let captureCardresult = await this.paymentService.captureCard(
-							authCardToken , userId
+							authCardToken, userId
 						);
 						let laytripBookingResult = await this.saveBooking(
 							bookingRequestInfo,
@@ -1311,7 +1312,7 @@ export class FlightService {
 						}
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken,userId);
+						await this.paymentService.voidCard(authCardToken, userId);
 						throw new HttpException(
 							{
 								status: 424,
@@ -1575,7 +1576,7 @@ export class FlightService {
 			console.log(error);
 		}
 	}
-	async partiallyBookFlight(bookFlightDto: BookFlightDto, headers, user, bookingId) {
+	async partiallyBookFlight(bookFlightDto: BookFlightDto, headers, user, bookingId,travelersDetail : TravelerInfoModel[]) {
 		let headerDetails = await this.validateHeaders(headers);
 
 		let {
@@ -1653,8 +1654,8 @@ export class FlightService {
 			infant_count,
 		} = bookingRequestInfo;
 		let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-		let travelersDetails = await this.getTravelersInfo(
-			travelers,
+		let travelersDetails = await this.checkTravelersInfo(
+			travelersDetail,
 			isPassportRequired
 		);
 
@@ -1765,11 +1766,27 @@ export class FlightService {
 		for await (var traveler of travelers) {
 			if (typeof traveler.traveler_id) {
 				var travelerId = traveler.traveler_id;
-
+				const userData = await getConnection()
+					.createQueryBuilder(User, "user")
+					.where(`"user_id" =:user_id`, { user_id: travelerId })
+					.getOne()
+				const travelerInfo: TravelerInfoModel = {
+					firstName: userData.firstName,
+					passportExpiry: userData.passportExpiry,
+					passportNumber: userData.passportNumber,
+					lastName: userData.lastName,
+					email: userData.email,
+					phoneNo: userData.phoneNo,
+					countryCode: userData.countryCode,
+					dob: userData.dob,
+					countryId: userData.countryId,
+					gender : userData.gender
+				}
 				var travelerUser = new TravelerInfo();
 				travelerUser.bookingId = bookingId;
 				travelerUser.userId = travelerId;
 				travelerUser.roleId = Role.TRAVELER_USER;
+				travelerUser.travelerInfo = travelerInfo
 				await travelerUser.save();
 			}
 		}
@@ -1892,6 +1909,94 @@ export class FlightService {
 		}
 	}
 
+	async checkTravelersInfo(travelers : TravelerInfoModel[], isPassportRequired = null) {
+		let traveleDetails = {
+			adults: [],
+			children: [],
+			infants: [],
+		};
+		if (travelers.length > 0) {
+			for (let traveler of travelers) {
+				let ageDiff = moment(new Date()).diff(moment(traveler.dob), "years");
+
+				/* if (traveler.title == null || traveler.title == "")
+					throw new BadRequestException(
+						`Title is missing for traveler ${traveler.firstName}`
+					); */
+				if ((traveler.email == null || traveler.email == "") && ageDiff >= 12)
+					throw new BadRequestException(
+						`Email is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					(traveler.countryCode == null || traveler.countryCode == "") &&
+					ageDiff >= 12
+				)
+					throw new BadRequestException(
+						`Country code is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					(traveler.phoneNo == null || traveler.phoneNo == "") &&
+					ageDiff >= 12
+				)
+					throw new BadRequestException(
+						`Phone number is missing for traveler ${traveler.firstName}`
+					);
+				if (traveler.gender == null || traveler.gender == "")
+					throw new BadRequestException(
+						`Gender is missing for traveler ${traveler.firstName}`
+					);
+				if (traveler.dob == null || traveler.dob == "")
+					throw new BadRequestException(
+						`Dob is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportNumber == null || traveler.passportNumber == "")
+				)
+					throw new BadRequestException(
+						`Passport Number is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportExpiry == null || traveler.passportExpiry == "")
+				)
+					throw new BadRequestException(
+						`Passport Expiry is missing for traveler ${traveler.firstName}`
+					);
+				if (
+					ageDiff > 2 &&
+					isPassportRequired &&
+					(traveler.passportExpiry && moment(moment()).isAfter(traveler.passportExpiry))
+				)
+					throw new BadRequestException(
+						`Passport Expiry date is expired for traveler ${traveler.firstName}`
+					);
+				// if (
+				// 	traveler.country == null ||
+				// 	(typeof traveler.country.iso2 !== "undefined" &&
+				// 		traveler.country.iso2 == "")
+				// )
+				// 	throw new BadRequestException(
+				// 		`Country code is missing for traveler ${traveler.firstName}`
+				// 	);
+
+				// traveler.title = GenderTilte[traveler.title];
+				if (ageDiff < 2) {
+					traveleDetails.infants.push(traveler);
+				} else if (ageDiff >= 2 && ageDiff < 12) {
+					traveleDetails.children.push(traveler);
+				} else if (ageDiff >= 12) {
+					traveleDetails.adults.push(traveler);
+				}
+			}
+			return traveleDetails;
+		} else {
+			throw new BadRequestException(`Please enter valid traveler(s) id`);
+		}
+	}
+
 	async sendBookingEmail(bookingId) {
 		const bookingData = await this.bookingRepository.bookingDetail(bookingId);
 		const email = bookingData.user.email
@@ -1953,7 +2058,7 @@ export class FlightService {
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
-				var birthDate = new Date(traveler.userData.dob);
+				var birthDate = new Date(traveler.travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 				var user_type = '';
@@ -1965,18 +2070,17 @@ export class FlightService {
 					user_type = "adult";
 				}
 				travelerInfo.push({
-					name: traveler.userData.firstName + ' ' + traveler.userData.lastName,
-					email: traveler.userData.email,
+					name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
+					email: traveler.travelerInfo.email,
 					type: user_type
 				})
 
 			}
 			const cartData = await CartDataUtility.cartData(bookingData.cartId)
 			param.user_name = `${user.firstName}  ${user.lastName}`;
-			param.flightData = flightData;
+			param.flight = flightData;
 			param.orderId = bookingData.laytripBookingId;
-			param.paymentDetail = installmentDetail;
-			param.travelers = travelerInfo
+			param.traveler = travelerInfo
 			if (bookingData.bookingType == BookingType.INSTALMENT) {
 				param.cart = {
 					cartId: bookingData.cart.laytripCartId,
@@ -1993,8 +2097,7 @@ export class FlightService {
 			}
 
 			param.bookingType = bookingData.bookingType
-			param.bookingStatus = bookingData.bookingStatus == BookingStatus.CONFIRM ? 'confirmed' : 'pending'
-
+			
 			//console.log(param);
 			// //console.log(param.flightData);
 			if (email != '') {
@@ -2149,6 +2252,7 @@ export class FlightService {
 
 		let query = getManager()
 			.createQueryBuilder(Booking, "booking")
+			.leftJoinAndSelect("booking.user", "User")
 			.where(`laytrip_booking_id = '${bookingId}'`)
 		const booking = await query.getOne();
 		if (!booking) {
@@ -2179,6 +2283,7 @@ export class FlightService {
 					"departure_code": reservation["a:departureairportlocationcode"][0],
 					"departure_date": await (await this.getDataTimefromString(reservation["a:departuredatetime"][0])).date,
 					"departure_time": await (await this.getDataTimefromString(reservation["a:departuredatetime"][0])).time,
+					"pnr_no" : reservation["a:airlinepnr"][0],
 					"departure_date_time": reservation["a:departuredatetime"][0],
 					"departure_info": airports[reservation["a:departureairportlocationcode"][0]],
 					"arrival_code": reservation["a:arrivalairportlocationcode"][0],
@@ -2239,6 +2344,7 @@ export class FlightService {
 		booking.supplierBookingId = supplier_booking_id;
 
 		await booking.save();
+
 		return this.bookingRepository.getBookingDetails(booking.laytripBookingId)
 
 	}
@@ -2329,10 +2435,10 @@ export class FlightService {
 
 			let travelers = [];
 
+			let travelersDetail : TravelerInfoModel[] = [];
+
 			for await (const traveler of bookingData.travelers) {
-				travelers.push({
-					traveler_id: traveler.userId
-				})
+				travelersDetail.push(traveler.travelerInfo)
 			}
 
 			// Headers['currency'] = bookingData.currency2.code
@@ -2386,7 +2492,7 @@ export class FlightService {
 
 					console.log(`step - 1 find booking`);
 
-					const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId)
+					const query = await this.partiallyBookFlight(bookingDto, Headers, user, bookingId , travelersDetail)
 
 					this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 
@@ -2687,7 +2793,7 @@ export class FlightService {
 						}
 						return bookingResult;
 					} else {
-						await this.paymentService.voidCard(authCardToken , userId);
+						await this.paymentService.voidCard(authCardToken, userId);
 
 						return {
 							statusCode: 424,
