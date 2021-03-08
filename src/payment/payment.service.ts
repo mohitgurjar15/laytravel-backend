@@ -54,9 +54,8 @@ import { Instalment } from "src/utility/instalment.utility";
 @Injectable()
 export class PaymentService {
   constructor(
-    private readonly mailerService: MailerService
-  ) //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  // @InjectRepository(BookingRepository)
+    private readonly mailerService: MailerService //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) // @InjectRepository(BookingRepository)
   // private bookingRepository: BookingRepository,
   {}
   async defaultCard(cardId: string, userId: string, guest_id) {
@@ -723,17 +722,22 @@ export class PaymentService {
       currencyId,
       amount,
       paidFor,
+      travelerInfoId,
       note,
-      productId,
     } = creteTransactionDto;
 
-    const result = await this.getPayment(card_token, amount, "USD", createdBy);
+    const result = await this.getPayment(
+      card_token,
+      Math.ceil(amount * 100),
+      "USD",
+      createdBy
+    );
 
     const transaction = new OtherPayments();
 
-    transaction.bookingId = productId;
-    transaction.cartBookingId = bookingId;
+    transaction.bookingId = bookingId || null;
     transaction.userId = userId;
+    transaction.travelerInfoId = travelerInfoId;
     transaction.currencyId = currencyId;
     transaction.amount = `${amount}`;
     transaction.paidFor = paidFor;

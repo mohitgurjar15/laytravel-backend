@@ -5,11 +5,14 @@ import {
 	Column,
 	OneToOne,
 	JoinColumn,
-    ManyToOne,
+	ManyToOne,
 	Index,
+	OneToMany,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Booking } from "./booking.entity";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
+import { OtherPayments } from "./other-payment.entity";
 
 @Index("userId_idx", ["userId"], {})
 @Index("bookingId_idx", ["bookingId"], {})
@@ -28,12 +31,11 @@ export class TravelerInfo extends BaseEntity {
 	@Column("character varying", { name: "role_id" })
 	roleId: number;
 
-	@ManyToOne(
-		() => User,
-		User => User.traveler
-	)
-	@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
-	userData: User;
+	@Column("json", { name: "traveler_info", nullable: true })
+	travelerInfo: TravelerInfoModel;
+
+	@Column("uuid", { name: "update_by", nullable: true })
+	updateBy: string;
 
 	@ManyToOne(
 		() => Booking,
@@ -41,4 +43,18 @@ export class TravelerInfo extends BaseEntity {
 	)
 	@JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
 	bookingData: Booking;
+
+	@ManyToOne(
+		() => User,
+		User => User.traveler
+	)
+	@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
+	userData: User;
+
+
+	@OneToMany(
+		() => OtherPayments,
+		otherPayments => otherPayments.travelerInfo
+	)
+	charges: OtherPayments[];
 }

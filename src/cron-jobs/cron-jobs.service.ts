@@ -74,9 +74,8 @@ export class CronJobsService {
 
     private readonly mailerService: MailerService,
 
-    private vacationRentalService: VacationRentalService
-  ) // @InjectTwilio() private readonly client: TwilioClient,
-  // private twilioSMS: TwilioSMS,
+    private vacationRentalService: VacationRentalService // @InjectTwilio() private readonly client: TwilioClient,
+  ) // private twilioSMS: TwilioSMS,
 
   {}
 
@@ -1025,6 +1024,7 @@ export class CronJobsService {
             amount: data.points,
             paidFor: PaidFor.RewordPoint,
             note: "",
+            travelerInfoId: null,
             productId: null,
           };
           const payment = await this.paymentService.createTransaction(

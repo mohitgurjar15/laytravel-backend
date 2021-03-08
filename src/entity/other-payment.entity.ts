@@ -13,6 +13,7 @@ import { Booking } from "./booking.entity";
 import { CartBooking } from "./cart-booking.entity";
 import { Currency } from "./currency.entity";
 import { FailedPaymentAttempt } from "./failed-payment-attempt.entity";
+import { TravelerInfo } from "./traveler-info.entity";
 import { User } from "./user.entity";
 
 @Index("other_payment_id_idx", ["id"], {})
@@ -42,6 +43,9 @@ export class OtherPayments extends BaseEntity {
 
   @Column("integer", { name: "currency_id" })
   currencyId: number;
+
+  @Column("integer", { name: "traveler_info_id", nullable: true })
+  travelerInfoId: number;
 
   @Column("character varying", { name: "amount", nullable: true })
   amount: string;
@@ -102,6 +106,13 @@ export class OtherPayments extends BaseEntity {
   )
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
+
+  @ManyToOne(
+    () => TravelerInfo,
+    (travelerInfo) => travelerInfo.charges
+  )
+  @JoinColumn([{ name: "traveler_info_id", referencedColumnName: "id" }])
+  travelerInfo: User;
 
   // @OneToMany(
   //   () => FailedPaymentAttempt,

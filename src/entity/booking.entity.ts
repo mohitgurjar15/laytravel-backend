@@ -166,9 +166,6 @@ export class Booking extends BaseEntity {
   })
   supplierBookingId: string | null;
 
-  @Column("character varying", { name: "pnr_no", length: 255, nullable: true })
-  pnrNo: string | null;
-
   @ManyToOne(
     () => Currency,
     (currency) => currency.bookings
