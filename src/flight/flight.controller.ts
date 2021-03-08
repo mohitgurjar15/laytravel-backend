@@ -455,6 +455,18 @@ export class FlightController {
         return await this.flightService.serchRoute(searchRouteDto);
     }
 
+    @Get('/route/:type')
+    @ApiOperation({ summary: "Search flight route" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async flightRoute(
+        @Param('type') type: String
+    ) {
+        return await this.flightService.flightRoute(type);
+    }
+
     @Post('/route/create')
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()

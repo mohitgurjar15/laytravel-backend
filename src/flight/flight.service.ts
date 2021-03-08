@@ -2835,6 +2835,81 @@ export class FlightService {
 
 	}
 
+	async flightRoute(type){
+		let result;
+		if (type == 'from') {
+			result = await getConnection().query(
+				`select
+				"route"."from_airport_code" as code,
+				"route"."from_airport_name" as name,
+				"route"."from_airport_city" as city,
+				"route"."from_airport_country" as country
+				from
+					"flight_route" "route"
+				group by
+					"route"."from_airport_code",
+					"route"."from_airport_name",
+					"route"."from_airport_city",
+					"route"."from_airport_country"
+					`
+			  );
+		} else {
+			result = await getConnection().query(
+				`select
+				"route"."to_airport_code" as code,
+				"route"."to_airport_name" as name,
+				"route"."to_airport_city" as city,
+				"route"."to_airport_country" as country
+				from
+					"flight_route" "route"
+				group by
+					"route"."to_airport_code",
+					"route"."to_airport_name",
+					"route"."to_airport_city",
+					"route"."to_airport_country"
+					`
+			  );	
+		}
+
+		
+		//console.log("result",result)
+		if (!result) {
+			throw new NotFoundException(`No any route available for given location`)
+		}
+
+		let opResult = []
+		let data;
+		for await (const route of result) {
+			data={};
+			data = airports[route.code];
+			data.key = route.city.charAt(0);
+			opResult.push(data)
+		}
+
+		opResult = this.groupByKey(opResult,'key')
+		console.log(opResult)
+		let airportArray=[];
+		
+		for (const [key, value] of Object.entries(opResult)) {
+			airportArray.push({
+				key : key,
+				value : value
+			})
+		}
+		
+		//opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
+		airportArray = airportArray.sort((a, b) => a.key.localeCompare(b.key));
+		return airportArray;
+
+	}
+
+	groupByKey(array, key) {
+		return array
+		  .reduce((hash, obj) => {
+			if(obj[key] === undefined) return hash; 
+			return Object.assign(hash, { [obj[key]]:( hash[obj[key]] || [] ).concat(obj)})
+		  }, {})
+	 }
 
 	async serchRoute(searchRouteDto: SearchRouteDto) {
 		let where = `1=1`
