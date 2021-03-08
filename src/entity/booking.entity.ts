@@ -6,7 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne
+  OneToOne,
 } from "typeorm";
 import { Currency } from "./currency.entity";
 import { PaymentGateway } from "./payment-gateway.entity";
@@ -19,13 +19,13 @@ import { PredictiveBookingData } from "./predictive-booking-data.entity";
 import { UserCard } from "./user-card.entity";
 import { type } from "os";
 import { CartBooking } from "./cart-booking.entity";
+import { OtherPayments } from "./other-payment.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
 @Index("booking_paymnet_gateway_id", ["paymentGatewayId"], {})
 @Index("booking_supplier_id", ["supplierId"], {})
 @Index("booking_user_id", ["userId"], {})
-
 //@Index("booking_pk", ["id"], { unique: true })
 @Entity("booking")
 export class Booking extends BaseEntity {
@@ -56,13 +56,18 @@ export class Booking extends BaseEntity {
   @Column("numeric", { name: "markup_amount", precision: 15, scale: 3 })
   markupAmount: string;
 
-  @Column("numeric", { name: "usd_factor", precision: 15, scale: 3, default: 1 })
+  @Column("numeric", {
+    name: "usd_factor",
+    precision: 15,
+    scale: 3,
+    default: 1,
+  })
   usdFactor: string;
 
   @Column("date", { name: "booking_date" })
   bookingDate: string;
 
-  @Column("integer", { name: "total_installments" , default: 0})
+  @Column("integer", { name: "total_installments", default: 0 })
   totalInstallments: number;
 
   @Column("uuid", { name: "cart_id", nullable: true })
@@ -95,32 +100,53 @@ export class Booking extends BaseEntity {
   @Column("boolean", { name: "is_predictive", default: () => false })
   isPredictive: boolean;
 
-  @Column("numeric", { name: "lay_credit", precision: 15, scale: 3, nullable: true })
+  @Column("numeric", {
+    name: "lay_credit",
+    precision: 15,
+    scale: 3,
+    nullable: true,
+  })
   layCredit: string | null;
 
-  @Column("character varying", { name: "fare_type", length: 20, nullable: true })
+  @Column("character varying", {
+    name: "fare_type",
+    length: 20,
+    nullable: true,
+  })
   fareType: string | null;
 
-  @Column("character varying", { name: "booking_through", length: 20, nullable: true })
+  @Column("character varying", {
+    name: "booking_through",
+    length: 20,
+    nullable: true,
+  })
   bookingThrough: string | null;
 
-  @Column("character varying", { name: "card_token", length: 200, nullable: true })
+  @Column("character varying", {
+    name: "card_token",
+    length: 200,
+    nullable: true,
+  })
   cardToken: string | null;
 
-  @Column("character varying", { name: "laytrip_booking_id", length: 200, nullable: true })
+  @Column("character varying", {
+    name: "laytrip_booking_id",
+    length: 200,
+    nullable: true,
+  })
   laytripBookingId: string | null;
 
   @Column("boolean", { name: "is_ticketd", default: () => false })
   isTicketd: boolean;
 
-  @Column("text", { name: "message" , nullable:true })
+  @Column("text", { name: "message", nullable: true })
   message: string;
 
   @Column("numeric", {
     name: "payment_gateway_processing_fee",
     nullable: true,
     precision: 15,
-    scale: 3
+    scale: 3,
   })
   paymentGatewayProcessingFee: string | null;
 
@@ -133,7 +159,11 @@ export class Booking extends BaseEntity {
   @Column("date", { name: "next_instalment_date", nullable: true })
   nextInstalmentDate: string | null;
 
-  @Column("character varying", { name: "supplier_booking_id", length: 255, nullable: true })
+  @Column("character varying", {
+    name: "supplier_booking_id",
+    length: 255,
+    nullable: true,
+  })
   supplierBookingId: string | null;
 
   @Column("character varying", { name: "pnr_no", length: 255, nullable: true })
@@ -141,52 +171,57 @@ export class Booking extends BaseEntity {
 
   @ManyToOne(
     () => Currency,
-    currency => currency.bookings
+    (currency) => currency.bookings
   )
   @JoinColumn([{ name: "currency", referencedColumnName: "id" }])
   currency2: Currency;
 
   @ManyToOne(
     () => Module,
-    module => module.bookings
+    (module) => module.bookings
   )
   @JoinColumn([{ name: "module_id", referencedColumnName: "id" }])
   module: Module;
 
   @ManyToOne(
     () => PaymentGateway,
-    paymentGateway => paymentGateway.bookings
+    (paymentGateway) => paymentGateway.bookings
   )
   @JoinColumn([{ name: "payment_gateway_id", referencedColumnName: "id" }])
   paymentGateway: PaymentGateway;
 
   @ManyToOne(
     () => Supplier,
-    supplier => supplier.bookings
+    (supplier) => supplier.bookings
   )
   @JoinColumn([{ name: "supplier_id", referencedColumnName: "id" }])
   supplier: Supplier;
 
   @ManyToOne(
     () => User,
-    user => user.bookings
+    (user) => user.bookings
   )
   @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
   user: User;
 
   @ManyToOne(
     () => CartBooking,
-    cartBooking => cartBooking.bookings
+    (cartBooking) => cartBooking.bookings
   )
   @JoinColumn([{ name: "cart_id", referencedColumnName: "id" }])
   cart: CartBooking;
 
   @OneToMany(
     () => BookingInstalments,
-    bookingInstalments => bookingInstalments.booking
+    (bookingInstalments) => bookingInstalments.booking
   )
   bookingInstalments: BookingInstalments[];
 
+  @OneToMany(
+    () => OtherPayments,
+    (otherPayments) => otherPayments.booking
+  )
+  otherPayments: OtherPayments[];
 
   @OneToMany(
     () => TravelerInfo,
@@ -196,7 +231,7 @@ export class Booking extends BaseEntity {
 
   @OneToMany(
     () => PredictiveBookingData,
-    predictiveBookingData => predictiveBookingData.booking
+    (predictiveBookingData) => predictiveBookingData.booking
   )
   predictiveBookingData: PredictiveBookingData[];
 
