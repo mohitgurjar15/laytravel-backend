@@ -102,7 +102,7 @@ export class CartDataUtility {
             .leftJoinAndSelect("booking.module", "module")
             //.leftJoinAndSelect("cartBooking.user", "User")
             .leftJoinAndSelect("booking.travelers", "traveler")
-            .leftJoinAndSelect("traveler.userData", "userData")
+            //.leftJoinAndSelect("traveler.userData", "userData")
             // .leftJoinAndSelect("User.state", "state")
             // .leftJoinAndSelect("User.country", "countries")
 
@@ -222,7 +222,7 @@ export class CartDataUtility {
                 let travelers = []
                 //console.log('8');
                 for await (const traveler of booking.travelers) {
-                    var birthDate = new Date(traveler.userData.dob);
+                    var birthDate = new Date(traveler.travelerInfo.dob);
                     var age = moment(new Date()).diff(moment(birthDate), 'years');
 
                     var user_type = '';
@@ -234,8 +234,8 @@ export class CartDataUtility {
                         user_type = "adult";
                     }
                     travelers.push({
-                        name: traveler.userData.firstName + ' ' + traveler.userData.lastName,
-                        email: traveler.userData.email,
+                        name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
+                        email: traveler.travelerInfo.email,
                         type: user_type
                     })
                 }

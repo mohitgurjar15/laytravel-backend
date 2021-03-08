@@ -45,13 +45,18 @@ import { DateTime } from "src/utility/datetime.utility";
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 import { DeleteBookingDto } from "./dto/delete-cart.dto";
+import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
+import { TravelerInfo } from "src/entity/traveler-info.entity";
+import { PaymentService } from "src/payment/payment.service";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
+import { Activity } from "src/utility/activity.utility";
 
 @Injectable()
 export class BookingService {
 	constructor(
 		@InjectRepository(BookingRepository)
 		private bookingRepository: BookingRepository,
-
+		private paymentService: PaymentService,
 		public readonly mailerService: MailerService
 	) { }
 
@@ -206,7 +211,7 @@ export class BookingService {
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
-				var birthDate = new Date(traveler.userData.dob);
+				var birthDate = new Date(traveler.travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 				var user_type = '';
@@ -218,8 +223,8 @@ export class BookingService {
 					user_type = "adult";
 				}
 				travelerInfo.push({
-					name: traveler.userData.firstName + ' ' + traveler.userData.lastName,
-					email: traveler.userData.email,
+					name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
+					email: traveler.travelerInfo.email,
 					type: user_type
 				})
 
@@ -345,20 +350,17 @@ export class BookingService {
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
 				for (let j in result.data[i].travelers) {
-					delete result.data[i].travelers[j].userData.updatedDate;
-					delete result.data[i].travelers[j].userData.salt;
-					delete result.data[i].travelers[j].userData.password;
-
-					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+				
+					var birthDate = new Date(result.data[i].travelers[j].travelerInfo.dob);
 					var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
 					if (age < 2) {
-						result.data[i].travelers[j].userData.user_type = "infant";
+						result.data[i].travelers[j].travelerInfo.user_type = "infant";
 					} else if (age < 12) {
-						result.data[i].travelers[j].userData.user_type = "child";
+						result.data[i].travelers[j].travelerInfo.user_type = "child";
 					} else {
-						result.data[i].travelers[j].userData.user_type = "adult";
+						result.data[i].travelers[j].travelerInfo.user_type = "adult";
 					}
 				}
 			}
@@ -428,18 +430,15 @@ export class BookingService {
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
 				for (let j in result.data[i].travelers) {
-					delete result.data[i].travelers[j].userData.updatedDate;
-					delete result.data[i].travelers[j].userData.salt;
-					delete result.data[i].travelers[j].userData.password;
-
-					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					
+					var birthDate = new Date(result.data[i].travelers[j].travelerInfo.dob);
 					var age = moment(new Date()).diff(moment(birthDate), 'years');
 					if (age < 2) {
-						result.data[i].travelers[j].userData.user_type = "infant";
+						result.data[i].travelers[j].travelerInfo.user_type = "infant";
 					} else if (age < 12) {
-						result.data[i].travelers[j].userData.user_type = "child";
+						result.data[i].travelers[j].travelerInfo.user_type = "child";
 					} else {
-						result.data[i].travelers[j].userData.user_type = "adult";
+						result.data[i].travelers[j].travelerInfo.user_type = "adult";
 					}
 				}
 			}
@@ -545,9 +544,9 @@ export class BookingService {
 				.leftJoinAndSelect("booking.currency2", "currency")
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
-				.leftJoinAndSelect("traveler.userData", "userData")
-				.leftJoinAndSelect("userData.state", "state")
-				.leftJoinAndSelect("userData.country", "countries")
+				// .leftJoinAndSelect("traveler.userData", "userData")
+				// .leftJoinAndSelect("userData.state", "state")
+				// .leftJoinAndSelect("userData.country", "countries")
 
 				.where(where)
 				.orderBy(`cartBooking.bookingDate`, 'DESC')
@@ -615,11 +614,7 @@ export class BookingService {
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
-					for await (const traveler of booking.travelers) {
-						delete traveler.userData.salt
-						delete traveler.userData.password
-						traveler.userData.dob = traveler.userData.dob || ''
-					}
+					
 				}
 
 				if (cartInstallments.length > 0) {
@@ -754,7 +749,7 @@ export class BookingService {
 				.leftJoinAndSelect("booking.currency2", "currency")
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
-				.leftJoinAndSelect("traveler.userData", "userData")
+				//.leftJoinAndSelect("traveler.userData", "userData")
 				// .leftJoinAndSelect("User.state", "state")
 				// .leftJoinAndSelect("User.country", "countries")
 
@@ -823,11 +818,7 @@ export class BookingService {
 					totalAmount += parseFloat(booking.totalAmount)
 					delete booking.currency2
 					delete booking.bookingInstalments
-					for await (const traveler of booking.travelers) {
-						delete traveler.userData.salt
-						delete traveler.userData.password
-						traveler.userData.dob = traveler.userData.dob || ''
-					}
+					
 				}
 
 				if (cartInstallments.length > 0) {
@@ -913,7 +904,7 @@ export class BookingService {
 				.leftJoinAndSelect("booking.module", "module")
 				//.leftJoinAndSelect("cartBooking.user", "User")
 				.leftJoinAndSelect("booking.travelers", "traveler")
-				.leftJoinAndSelect("traveler.userData", "userData")
+				//.leftJoinAndSelect("traveler.userData", "userData")
 				// .leftJoinAndSelect("User.state", "state")
 				// .leftJoinAndSelect("User.country", "countries")
 
@@ -991,11 +982,11 @@ export class BookingService {
 				delete booking?.module.testCredential
 				delete booking?.module.mode
 				delete booking?.module.status
-				for await (const traveler of booking.travelers) {
-					delete traveler.userData.salt
-					delete traveler.userData.password
-					traveler.userData.dob = traveler.userData.dob || ''
-				}
+				// for await (const traveler of booking.travelers) {
+				// 	delete traveler.userData.salt
+				// 	delete traveler.userData.password
+				// 	traveler.userData.dob = traveler.userData.dob || ''
+				// }
 			}
 
 			if (cartInstallments.length > 0) {
@@ -1100,20 +1091,17 @@ export class BookingService {
 			delete result.user.salt;
 			delete result.user.password;
 			for (let j in result.travelers) {
-				delete result.travelers[j].userData.updatedDate;
-				delete result.travelers[j].userData.salt;
-				delete result.travelers[j].userData.password;
-
-				var birthDate = new Date(result.travelers[j].userData.dob);
+				
+				var birthDate = new Date(result.travelers[j].travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
 				if (age < 2) {
-					result.travelers[j].userData.user_type = "infant";
+					result.travelers[j].travelerInfo.user_type = "infant";
 				} else if (age < 12) {
-					result.travelers[j].userData.user_type = "child";
+					result.travelers[j].travelerInfo.user_type = "child";
 				} else {
-					result.travelers[j].userData.user_type = "adult";
+					result.travelers[j].travelerInfo.user_type = "adult";
 				}
 			}
 
@@ -1770,20 +1758,17 @@ export class BookingService {
 				delete result.data[i].user.salt;
 				delete result.data[i].user.password;
 				for (let j in result.data[i].travelers) {
-					delete result.data[i].travelers[j].userData.updatedDate;
-					delete result.data[i].travelers[j].userData.salt;
-					delete result.data[i].travelers[j].userData.password;
-
-					var birthDate = new Date(result.data[i].travelers[j].userData.dob);
+					
+					var birthDate = new Date(result.data[i].travelers[j].travelerInfo.dob);
 					var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 
 					if (age < 2) {
-						result.data[i].travelers[j].userData.user_type = "infant";
+						result.data[i].travelers[j].travelerInfo.user_type = "infant";
 					} else if (age < 12) {
-						result.data[i].travelers[j].userData.user_type = "child";
+						result.data[i].travelers[j].travelerInfo.user_type = "child";
 					} else {
-						result.data[i].travelers[j].userData.user_type = "adult";
+						result.data[i].travelers[j].travelerInfo.user_type = "adult";
 					}
 				}
 			}
@@ -1908,5 +1893,56 @@ export class BookingService {
 		return {
 			message: `Selected booking cancel successfully `
 		}
+	}
+
+
+	async updateTravelerInfo(id: number, updateTravelerInfoDto: UpdateTravelerInfoDto, admin: User) {
+		let query = await getManager()
+			.createQueryBuilder(TravelerInfo, "traveler")
+			.leftJoinAndSelect("traveler.bookingData", "booking")
+			.where(`"traveler"."id"=:id `, { id })
+			.getOne();
+
+		if (!query) {
+			throw new NotFoundException(`Givel id not found`)
+		}
+
+		const previousValue = JSON.stringify(query)
+
+		// const charges = await this.paymentService.createTransaction({
+		// 	bookingId : null,
+		// 	userId : query.bookingData.userId,
+		// 	card_token : query.bookingData.cardToken,
+		// 	currencyId : 1,
+		// 	amount:2000,
+		// 	paidFor : 'Traveler detail update charges',
+		// 	travelerInfoId : query.id ,
+		// 	note : ''
+		// },admin.userId)
+
+		const travelerInfo: TravelerInfoModel = {
+			firstName: updateTravelerInfoDto.first_name,
+			passportExpiry: updateTravelerInfoDto?.passport_expiry,
+			passportNumber: updateTravelerInfoDto?.passport_number,
+			lastName: updateTravelerInfoDto.last_name,
+			email: updateTravelerInfoDto.email,
+			phoneNo: updateTravelerInfoDto?.phone_no,
+			countryCode: updateTravelerInfoDto?.country_code,
+			dob: updateTravelerInfoDto?.dob,
+			countryId: updateTravelerInfoDto?.country_id,
+			gender : updateTravelerInfoDto?.gender
+		}
+		
+			const updatedValue = await getConnection()
+				.createQueryBuilder()
+				.update(TravelerInfo)
+				.set({ travelerInfo: travelerInfo , updateBy : admin.userId })
+				.where(`id=:id `, { id })
+				.execute();
+				const currentValue = JSON.stringify(updatedValue)		
+				Activity.logActivity(admin.userId,'Booking','Update traveler info of info id'+ id,previousValue,currentValue)		
+			return {
+				message : `Traveler detail update successfully`
+			}	
 	}
 }

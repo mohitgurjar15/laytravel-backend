@@ -641,15 +641,17 @@ export class PaymentService {
 			currencyId,
 			amount,
 			paidFor,
+			travelerInfoId,
 			note } = creteTransactionDto;
 
-		const result = await this.getPayment(card_token, amount, "USD" , createdBy)
+		const result = await this.getPayment(card_token,Math.ceil(amount * 100) , "USD" , createdBy)
 
 
 		const transaction = new OtherPayments;
 
-		transaction.bookingId = bookingId;
+		transaction.bookingId = bookingId || null;
 		transaction.userId = userId;
+		transaction.travelerInfoId = travelerInfoId
 		transaction.currencyId = currencyId;
 		transaction.amount = `${amount}`;
 		transaction.paidFor = paidFor
@@ -661,7 +663,7 @@ export class PaymentService {
 		transaction.createdDate = new Date()
 
 		const transactionData = await transaction.save();
-
+		
 		return transactionData;
 	}
 

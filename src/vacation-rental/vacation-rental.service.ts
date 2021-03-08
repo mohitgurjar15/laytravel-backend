@@ -747,7 +747,7 @@ export class VacationRentalService {
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
 				var today = new Date();
-				var birthDate = new Date(traveler.userData.dob);
+				var birthDate = new Date(traveler.travelerInfo.dob);
 				var age = moment(new Date()).diff(moment(birthDate), 'years');
 
 				var user_type = '';
@@ -759,8 +759,8 @@ export class VacationRentalService {
 					user_type = "adult";
 				}
 				travelerInfo.push({
-					name: traveler.userData.firstName + ' ' + traveler.userData.lastName,
-					email: traveler.userData.email,
+					name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
+					email: traveler.travelerInfo.email,
 					type: user_type
 				})
 

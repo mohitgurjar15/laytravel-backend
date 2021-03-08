@@ -98,7 +98,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
-			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("User.country", "countries")
 			.leftJoinAndSelect("booking.supplier", "supplier")
@@ -152,20 +151,18 @@ export class BookingRepository extends Repository<Booking> {
 		delete result.module.liveCredential
 		delete result.module.testCredential
 		for (let j in result.travelers) {
-			delete result.travelers[j].userData.updatedDate;
-			delete result.travelers[j].userData.salt;
-			delete result.travelers[j].userData.password;
+			
 
-			var birthDate = new Date(result.travelers[j].userData.dob);
+			var birthDate = new Date(result.travelers[j].travelerInfo.dob);
 			var age = moment(new Date()).diff(moment(birthDate), 'years');
 
-			result.travelers[j].userData.age = age;
+			result.travelers[j].travelerInfo.age = age;
 			if (age < 2) {
-				result.travelers[j].userData.user_type = "infant";
+				result.travelers[j].travelerInfo.user_type = "infant";
 			} else if (age < 12) {
-				result.travelers[j].userData.user_type = "child";
+				result.travelers[j].travelerInfo.user_type = "child";
 			} else {
-				result.travelers[j].userData.user_type = "adult";
+				result.travelers[j].travelerInfo.user_type = "adult";
 			}
 		}
 
@@ -177,7 +174,7 @@ export class BookingRepository extends Repository<Booking> {
 
 	async getBookDetail(id) {
 
-		let relations = ["user", "currency2", "bookingInstalments", "travelers", "travelers.userData", "card"];
+		let relations = ["user", "currency2", "bookingInstalments", "travelers", "card"];
 
 		let result = this.findOne({
 			where: { laytripBookingId: id },
@@ -198,7 +195,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
-			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.country", "countries")
 			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("booking.supplier", "supplier")
@@ -739,7 +735,6 @@ export class BookingRepository extends Repository<Booking> {
 			.leftJoinAndSelect("booking.currency2", "currency")
 			.leftJoinAndSelect("booking.user", "User")
 			.leftJoinAndSelect("booking.travelers", "traveler")
-			.leftJoinAndSelect("traveler.userData", "userData")
 			.leftJoinAndSelect("User.state", "state")
 			.leftJoinAndSelect("User.country", "countries")
 			// .leftJoinAndSelect("userData.state", "state")

@@ -56,6 +56,12 @@ export class CreteTransactionDto {
         example: ``
     })
     paidFor: string;
+
+    @ApiProperty({
+        description: `traveler info id`,
+        example: ``
+    })
+    travelerInfoId: number;
     
     @ApiProperty({
         description: `note`,

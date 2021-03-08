@@ -855,7 +855,8 @@ export class CronJobsService {
 						"currencyId": 1,
 						"amount": data.points,
 						"paidFor": PaidFor.RewordPoint,
-						"note": ""
+						"note": "",
+						"travelerInfoId":null
 					}
 					const payment = await this.paymentService.createTransaction(createTransaction, cronUserId)
 

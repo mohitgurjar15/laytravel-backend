@@ -109,7 +109,8 @@ export class RewordPointService {
 				"currencyId": 1,
 				"amount": points,
 				"paidFor": PaidFor.RewordPoint,
-				"note": ""
+				"note": "",
+				"travelerInfoId":null
 			}
 			const payment = await this.paymentService.createTransaction(createTransaction, user.userId)
 

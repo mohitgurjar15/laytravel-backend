@@ -18,6 +18,8 @@ import { MassCommunication } from 'src/entity/mass-communication.entity';
 import { contentType } from 'src/config/content-type';
 import { extname } from 'path';
 import { LaytripCovidUpdateMail } from 'src/config/new_email_templete/laytrip_covid-mail.html';
+import { TravelerInfo } from 'src/entity/traveler-info.entity';
+import { TravelerInfoModel } from 'src/config/email_template/model/traveler-info.model';
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -291,5 +293,39 @@ export class GeneralService {
             log.attachment = attachment
         }
         return { data: result, TotalReseult: count };
+    }
+
+    async updateTravelerInfo(){
+        const travelers = await getConnection()
+					.createQueryBuilder(TravelerInfo, "traveler")
+					//.where(`"traveler_info" = null`)
+					.getMany()
+        for await (var traveler of travelers) {
+			if (typeof traveler.userId) {
+				var travelerId = traveler.userId;
+				const userData = await getConnection()
+					.createQueryBuilder(User, "user")
+					.where(`"user_id" =:user_id`, { user_id: travelerId })
+					.getOne()
+				const travelerInfo: TravelerInfoModel = {
+					firstName: userData.firstName,
+					passportExpiry: userData.passportExpiry,
+					passportNumber: userData.passportNumber,
+					lastName: userData.lastName,
+					email: userData.email,
+					phoneNo: userData.phoneNo,
+					countryCode: userData.countryCode,
+					dob: userData.dob,
+					countryId: userData.countryId,
+					gender : userData.gender
+				}
+				await getConnection()
+				.createQueryBuilder()
+				.update(TravelerInfo)
+				.set({ travelerInfo: travelerInfo })
+				.where("id = :id", { id: traveler.id })
+				.execute();
+			}
+		}
     }
 }
