@@ -1,20 +1,20 @@
 export class FlightBookingEmailParameterModel {
     user_name: string;
-    flightData: flightData[];
+    flight: flightData[];
     orderId: string;
-    paymentDetail: paymentDetail
-    travelers: traveler[];
     bookingType: number;
     cart: cart;
-    bookingStatus:string;
+    traveler:traveler[]
     // pnr_no: string;
 }
+
 
 class flightData {
     rout: string;
     status: string;
     droups: droups[];
 }
+
 
 class droups {
     airline: string;
@@ -24,16 +24,10 @@ class droups {
 }
 
 class cart {
-    cartId: string;
+    cartId : string
     totalAmount: string;
     totalPaid?: string;
     rememberAmount?: string;
-}
-
-class paymentDetail {
-    amount: string;
-    date: string;
-    status: string;
 }
 
 class traveler {
@@ -50,6 +44,7 @@ class depature {
     date: string;
     flight: string;
     time: string;
+    pnr_no:string;
 }
 
 class arrival {
