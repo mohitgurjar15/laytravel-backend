@@ -3028,12 +3028,16 @@ export class FlightService {
 		}
 
 		if (is_from_location == 'yes') {
-			where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`
+			if(search){
+				where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`
+			}
 			if (alternet_location) {
 				where += `AND ("to_airport_code" = '${alternet_location}') `
 			}
 		} else {
-			where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`
+			if(search){
+				where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`
+			}
 			if (alternet_location) {
 				where += `AND ("from_airport_code" = '${alternet_location}') `
 			}
@@ -3050,15 +3054,20 @@ export class FlightService {
 		}
 		let availableRoute = []
 		let opResult = []
+		let airport:any={};
 		for await (const route of result) {
 			if (is_from_location == 'yes') {
 				if (availableRoute.indexOf(route.fromAirportCode) == -1) {
-					opResult.push(airports[route.fromAirportCode])
+					airport=airports[route.fromAirportCode];
+					airport.key=airport.city.charAt(0)
+					opResult.push(airport)
 					availableRoute.push(route.fromAirportCode)
 				}
 			} else {
 				if (availableRoute.indexOf(route.toAirportCode) == -1) {
-					opResult.push(airports[route.toAirportCode])
+					airport=airports[route.toAirportCode];
+					airport.key=airport.city.charAt(0)
+					opResult.push(airport)
 					availableRoute.push(route.toAirportCode)
 				}
 			}

@@ -174,7 +174,7 @@ export class Mystifly implements StrategyAirline {
         let routeDetails:any =await RouteCategory.flightRouteAvailability(source_location,destination_location)
         console.log("routeDetails:::",routeDetails)
         if(typeof routeDetails=='undefined'){
-            //throw new NotFoundException(`Fligh is not available for search route`)
+            throw new NotFoundException(`Fligh is not available for search route`)
         }
 
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
@@ -1286,7 +1286,7 @@ export class Mystifly implements StrategyAirline {
         //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
         let routeDetails:any =await RouteCategory.flightRouteAvailability(source_location,destination_location)
         if(typeof routeDetails=='undefined'){
-            //throw new NotFoundException(`Fligh is not available for search route`)
+            throw new NotFoundException(`Fligh is not available for search route`)
         }
         let markup = await this.getMarkupDetails(departure_date, bookingDate, user, module)
         let markUpDetails = markup.markUpDetails;
@@ -1869,7 +1869,7 @@ export class Mystifly implements StrategyAirline {
                 route.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(route.net_rate, markUpDetails))
                 let routeDetails:any =await RouteCategory.flightRouteAvailability(route.departure_code,route.arrival_code)
                 if(typeof routeDetails=='undefined'){
-                    //throw new NotFoundException(`Fligh is not available for search route`)
+                    throw new NotFoundException(`Fligh is not available for search route`)
                 }
                 route.start_price = 0;
                 route.secondary_start_price = 0;
