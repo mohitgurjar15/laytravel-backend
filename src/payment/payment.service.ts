@@ -54,10 +54,8 @@ import { Instalment } from "src/utility/instalment.utility";
 @Injectable()
 export class PaymentService {
   constructor(
-    private readonly mailerService: MailerService //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  ) // @InjectRepository(BookingRepository)
-  // private bookingRepository: BookingRepository,
-  {}
+    private readonly mailerService: MailerService //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache, // @InjectRepository(BookingRepository) // private bookingRepository: BookingRepository,
+  ) {}
   async defaultCard(cardId: string, userId: string, guest_id) {
     try {
       if (!uuidValidator(cardId)) {
@@ -1020,7 +1018,7 @@ export class PaymentService {
             date: DateTime.convertDateFormat(
               new Date(cart.bookings[0].bookingInstalments[0].instalmentDate),
               "YYYY-MM-DD",
-              " Do YYYY"
+              "MMM Do, YYYY"
             ),
             userName: cart.user.firstName + " " + cart.user.lastName,
             cardHolderName:
@@ -1036,7 +1034,11 @@ export class PaymentService {
             pendingInstallment: pendingInstallment,
             phoneNo: `+${cart.user.countryCode}` + cart.user.phoneNo,
             bookingId: cart.laytripCartId,
-            nextDate: nextDate,
+            nextDate: DateTime.convertDateFormat(
+              new Date(nextDate),
+              "YYYY-MM-DD",
+              "MMM Do, YYYY"
+            ),
             nextAmount: nextAmount,
           };
           console.log("cart.user.isEmail", cart.user.isEmail);
@@ -1048,7 +1050,7 @@ export class PaymentService {
                 to: cart.user.email,
                 from: mailConfig.from,
                 cc: mailConfig.BCC,
-                subject: `Installment Payment Successed`,
+                subject: `BOOKING ID ${param.bookingId} INSTALLMENT RECEIVED`,
                 html: LaytripInstallmentRecevied(param),
               })
               .then((res) => {
@@ -1176,6 +1178,27 @@ export class PaymentService {
         .set({ paymentStatus: PaymentStatus.CONFIRM, nextInstalmentDate: null })
         .where("id = :id", { id: bookingId })
         .execute();
+
+      const responce = await CartDataUtility.CartMailModelDataGenerate(
+        bookingId
+      );
+      if (responce?.param) {
+        let subject = `BOOKING ID ${responce.param.orderId} COMPLETION NOTICE`;
+        this.mailerService
+          .sendMail({
+            to: responce.email,
+            from: mailConfig.from,
+            bcc: mailConfig.BCC,
+            subject: subject,
+            html: await LaytripCartBookingComplationMail(responce.param),
+          })
+          .then((res) => {
+            console.log("res", res);
+          })
+          .catch((err) => {
+            console.log("err", err);
+          });
+      }
     }
   }
 

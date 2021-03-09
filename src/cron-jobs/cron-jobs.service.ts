@@ -74,10 +74,8 @@ export class CronJobsService {
 
     private readonly mailerService: MailerService,
 
-    private vacationRentalService: VacationRentalService // @InjectTwilio() private readonly client: TwilioClient,
-  ) // private twilioSMS: TwilioSMS,
-
-  {}
+    private vacationRentalService: VacationRentalService // @InjectTwilio() private readonly client: TwilioClient, // private twilioSMS: TwilioSMS,
+  ) {}
 
   async convertCustomer() {
     try {
@@ -569,7 +567,7 @@ export class CronJobsService {
                   cartBooking.bookings[0].bookingInstalments[0].instalmentDate
                 ),
                 "YYYY-MM-DD",
-                " Do YYYY"
+                "MMM Do, YYYY"
               ),
               userName:
                 cartBooking.user.firstName + " " + cartBooking.user.lastName,
@@ -589,7 +587,11 @@ export class CronJobsService {
               phoneNo:
                 `+${cartBooking.user.countryCode}` + cartBooking.user.phoneNo,
               bookingId: cartBooking.laytripCartId,
-              nextDate: nextDate,
+              nextDate: DateTime.convertDateFormat(
+                new Date(nextDate),
+                "YYYY-MM-DD",
+                "MMM Do, YYYY"
+              ),
               nextAmount: nextAmount,
             };
             if (cartBooking.user.isEmail) {

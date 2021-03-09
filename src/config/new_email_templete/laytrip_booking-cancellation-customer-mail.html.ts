@@ -1,9 +1,12 @@
 import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
-import { BaseUrl } from "../base-url";
+import { BaseUrl, TermsConditonLink } from "../base-url";
 
-export function LaytripBookingCancellationCustomerMail(param: { username: string, bookingId }) {
-    const content = `
+export function LaytripBookingCancellationCustomerMail(param: {
+  username: string;
+  bookingId;
+}) {
+  const content = `
 <tr>
     <td align="left" valine="top" style="padding: 10px 15px 15px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
@@ -18,7 +21,9 @@ export function LaytripBookingCancellationCustomerMail(param: { username: string
                 </tr>  
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                        Your payment method will be refunded in accordance with our Laytrip Policy.   
+                        If any refund is applicable per our <a href = '${TermsConditonLink}'
+                         style="color: #f725c5;"><u>Terms</u></a> your original payment method will be refunded. If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
+                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope you will try booking with us again in the future.   
                     </td>
                 </tr>
                 <tr>
@@ -33,5 +38,5 @@ export function LaytripBookingCancellationCustomerMail(param: { username: string
 </tr>
 `;
 
-    return LaytripHeader + content + LaytripFooter;
+  return LaytripHeader + content + LaytripFooter;
 }
