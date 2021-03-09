@@ -7,32 +7,32 @@
  */
 
 import {
-	Controller,
-	Post,
-	Body,
-	ValidationPipe,
-	HttpCode,
-	UseGuards,
-	Get,
-	UseInterceptors,
-	Param,
-	Put,
-	UploadedFiles,
-	Req,
-	BadRequestException,
-	Patch,
-	Query,
-	Delete,
+  Controller,
+  Post,
+  Body,
+  ValidationPipe,
+  HttpCode,
+  UseGuards,
+  Get,
+  UseInterceptors,
+  Param,
+  Put,
+  UploadedFiles,
+  Req,
+  BadRequestException,
+  Patch,
+  Query,
+  Delete,
 } from "@nestjs/common";
 import { AuthCredentialDto } from "./dto/auth-credentials.dto";
 import { AuthService } from "./auth.service";
 import { User } from "../entity/user.entity";
 import {
-	ApiTags,
-	ApiResponse,
-	ApiOperation,
-	ApiBearerAuth,
-	ApiConsumes,
+  ApiTags,
+  ApiResponse,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiConsumes,
 } from "@nestjs/swagger";
 import { CreateUserDto } from "./dto/crete-user.dto";
 import { ForgetPasswordDto } from "./dto/forget-paasword.dto";
@@ -64,564 +64,571 @@ import { DeleteAccountReqDto } from "./dto/delete-account-request.dto";
 import { updateUserPreference } from "./dto/update-user-preference.dto";
 import { UpdateProfilePicDto } from "./dto/update-profile-pic.dto";
 import { GuestUserDto } from "./dto/guest-user.dto";
+import { UpdateAppleUserDto } from "./dto/update-apple-user.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
 @UseInterceptors(SentryInterceptor)
 export class AuthController {
-	constructor(
-		private authService: AuthService,
-		private readonly i18n: I18nService
-	) { }
+  constructor(
+    private authService: AuthService,
+    private readonly i18n: I18nService
+  ) {}
 
-	@Post("/signup")
-	@ApiOperation({ summary: "Signup frontend user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 409, description: "User Already Exist" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	signUp(@Body(ValidationPipe) createUser: CreateUserDto, @Req() req) {
-		return this.authService.signUp(createUser, req);
-	}
+  @Post("/signup")
+  @ApiOperation({ summary: "Signup frontend user" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 409, description: "User Already Exist" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  signUp(@Body(ValidationPipe) createUser: CreateUserDto, @Req() req) {
+    return this.authService.signUp(createUser, req);
+  }
 
-	@Post("/guest-user")
-	@ApiOperation({ summary: "Signup guest user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 409, description: "User Already Exist" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async guestUser (@Body() createUser: GuestUserDto) {
-		return this.authService.guestUser(createUser);
-	}
+  @Post("/guest-user")
+  @ApiOperation({ summary: "Signup guest user" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 409, description: "User Already Exist" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async guestUser(@Body() createUser: GuestUserDto) {
+    return this.authService.guestUser(createUser);
+  }
 
-	@Post(["signin"])
-	@ApiOperation({ summary: "Frontend Sign in without using social media" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async signIn(
-		@Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
-		@SiteUrl() siteUrl: string,
-		@Req() req
-	) {
-		console.log(await this.i18n.translate("TEST"));
-		const roles = [Role.FREE_USER, Role.PAID_USER];
-		const result = await this.authService.validateUserPassword(
-			authCredentialDto,
-			siteUrl,
-			roles,
-			req
-		);
-		return result;
-	}
+  @Post(["signin"])
+  @ApiOperation({ summary: "Frontend Sign in without using social media" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async signIn(
+    @Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
+    @SiteUrl() siteUrl: string,
+    @Req() req
+  ) {
+    console.log(await this.i18n.translate("TEST"));
+    const roles = [Role.FREE_USER, Role.PAID_USER];
+    const result = await this.authService.validateUserPassword(
+      authCredentialDto,
+      siteUrl,
+      roles,
+      req
+    );
+    return result;
+  }
 
-	@Post(["mobile-signin"])
-	@ApiOperation({ summary: "Mobile Sign in without social media" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 409, description: "User Already Exist" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@ApiResponse({
-		status: 403,
-		description: "Forbidden, The user does not have access.",
-	})
-	@HttpCode(200)
-	async mobileSignIn(
-		@Body(ValidationPipe) mobileAuthCredentialDto: MobileAuthCredentialDto,
-		@SiteUrl() siteUrl: string,
-		@Req() req
-	) {
-		const roles = [Role.FREE_USER, Role.PAID_USER];
-		const result = await this.authService.validateUserPasswordMobile(
-			mobileAuthCredentialDto,
-			siteUrl,
-			req,
-			roles
-		);
-		return result;
-	}
+  @Post(["mobile-signin"])
+  @ApiOperation({ summary: "Mobile Sign in without social media" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 409, description: "User Already Exist" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden, The user does not have access.",
+  })
+  @HttpCode(200)
+  async mobileSignIn(
+    @Body(ValidationPipe) mobileAuthCredentialDto: MobileAuthCredentialDto,
+    @SiteUrl() siteUrl: string,
+    @Req() req
+  ) {
+    const roles = [Role.FREE_USER, Role.PAID_USER];
+    const result = await this.authService.validateUserPasswordMobile(
+      mobileAuthCredentialDto,
+      siteUrl,
+      req,
+      roles
+    );
+    return result;
+  }
 
-	@Post(["backend-signin"])
-	@ApiOperation({ summary: "Backend Sign in without social media" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 409, description: "User Already Exist" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@ApiResponse({
-		status: 403,
-		description: "Forbidden, The user does not have access.",
-	})
-	@HttpCode(200)
-	async adminSignIn(
-		@Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
-		@SiteUrl() siteUrl: string,
-		@Req() req
-	) {
-		const roles = [Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT, Role.SUPPLIER];
-		const result = await this.authService.validateUserPassword(
-			authCredentialDto,
-			siteUrl,
-			roles,
-			req
-		);
+  @Post(["backend-signin"])
+  @ApiOperation({ summary: "Backend Sign in without social media" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 409, description: "User Already Exist" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden, The user does not have access.",
+  })
+  @HttpCode(200)
+  async adminSignIn(
+    @Body(ValidationPipe) authCredentialDto: AuthCredentialDto,
+    @SiteUrl() siteUrl: string,
+    @Req() req
+  ) {
+    const roles = [Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT, Role.SUPPLIER];
+    const result = await this.authService.validateUserPassword(
+      authCredentialDto,
+      siteUrl,
+      roles,
+      req
+    );
 
-		return result;
-	}
+    return result;
+  }
 
-	@Post(["social-login"])
-	@ApiOperation({ summary: "Social Media signup & login" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@ApiResponse({
-		status: 403,
-		description: "Forbidden, The user does not have access.",
-	})
-	@HttpCode(200)
-	async socialLogin(
-		@Body(ValidationPipe) socialLoginDto: SocialLoginDto,
-		@Req() req
-	) {
-		const result = await this.authService.socialLogin(socialLoginDto, req);
-		return result;
-	}
+  @Post(["social-login"])
+  @ApiOperation({ summary: "Social Media signup & login" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden, The user does not have access.",
+  })
+  @HttpCode(200)
+  async socialLogin(
+    @Body(ValidationPipe) socialLoginDto: SocialLoginDto,
+    @Req() req
+  ) {
+    const result = await this.authService.socialLogin(socialLoginDto, req);
+    return result;
+  }
 
-	@Post("forgot-password")
-	@ApiOperation({ summary: "Forgot password of user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async forgotPassword(
-		@Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
-		@SiteUrl() siteUrl: string
-	) {
-		var roles = [
-			Role.FREE_USER,
-			Role.PAID_USER,
-		]
-		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl, roles);
-	}
+  @Post("forgot-password")
+  @ApiOperation({ summary: "Forgot password of user" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async forgotPassword(
+    @Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
+    @SiteUrl() siteUrl: string
+  ) {
+    var roles = [Role.FREE_USER, Role.PAID_USER];
+    return await this.authService.forgetPassword(
+      forgetPasswordDto,
+      siteUrl,
+      roles
+    );
+  }
 
-	@Post("backend-forgot-password")
-	@ApiOperation({ summary: "Forgot password for backend user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async forgotPasswordForBackend(
-		@Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
-		@SiteUrl() siteUrl: string
-	) {
-		var roles = [
-			Role.SUPER_ADMIN,
-			Role.ADMIN,
-			Role.SUPPLIER
-		]
-		return await this.authService.forgetPassword(forgetPasswordDto, siteUrl, roles);
-	}
+  @Post("backend-forgot-password")
+  @ApiOperation({ summary: "Forgot password for backend user" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async forgotPasswordForBackend(
+    @Body(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
+    @SiteUrl() siteUrl: string
+  ) {
+    var roles = [Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPLIER];
+    return await this.authService.forgetPassword(
+      forgetPasswordDto,
+      siteUrl,
+      roles
+    );
+  }
 
-	@Get("find-user-from-email-id")
-	@ApiOperation({ summary: "Forgot password for backend user" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async userGet(
-		@Query(ValidationPipe) forgetPasswordDto: ForgetPasswordDto,
-	) {
-		return await this.authService.getUserFromEmail(forgetPasswordDto);
-	}
+  @Get("find-user-from-email-id")
+  @ApiOperation({ summary: "Forgot password for backend user" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async userGet(@Query(ValidationPipe) forgetPasswordDto: ForgetPasswordDto) {
+    return await this.authService.getUserFromEmail(forgetPasswordDto);
+  }
 
-	@ApiOperation({ summary: "Reset password of user" })
-	@Post("reset-password/")
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@ApiResponse({
-		status: 403,
-		description: "Forbidden, The user does not have access.",
-	})
-	@HttpCode(200)
-	async updatePassword(@Body(ValidationPipe) newPasswordDto: NewPasswordDto) {
-		return this.authService.updatePassword(newPasswordDto);
-	}
+  @ApiOperation({ summary: "Reset password of user" })
+  @Post("reset-password/")
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden, The user does not have access.",
+  })
+  @HttpCode(200)
+  async updatePassword(@Body(ValidationPipe) newPasswordDto: NewPasswordDto) {
+    return this.authService.updatePassword(newPasswordDto);
+  }
 
-	@ApiOperation({ summary: "Verify Otp Of User" })
-	@Patch("verify-otp")
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid otp ." })
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@ApiResponse({
-		status: 403,
-		description: "Forbidden, The user does not have access.",
-	})
-	@HttpCode(200)
-	async verifyOtp(
-		@Body(ValidationPipe) otpDto: OtpDto,
-		@Req() req,
-		@SiteUrl() siteUrl: string
-	) {
-		return this.authService.VerifyOtp(otpDto, req, siteUrl);
-	}
+  @ApiOperation({ summary: "Verify Otp Of User" })
+  @Patch("verify-otp")
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid otp ." })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden, The user does not have access.",
+  })
+  @HttpCode(200)
+  async verifyOtp(
+    @Body(ValidationPipe) otpDto: OtpDto,
+    @Req() req,
+    @SiteUrl() siteUrl: string
+  ) {
+    return this.authService.VerifyOtp(otpDto, req, siteUrl);
+  }
 
-	@ApiOperation({ summary: "Resend Otp for User" })
-	@Patch("resend-otp")
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid otp" })
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@ApiResponse({
-		status: 403,
-		description: "Forbidden, The user does not have access.",
-	})
-	@HttpCode(200)
-	async resendOtp(
-		@Body(ValidationPipe) reSendVerifyoOtpDto: ReSendVerifyoOtpDto,
-		@Req() req
-	) {
-		return this.authService.resendOtp(reSendVerifyoOtpDto);
-	}
+  @ApiOperation({ summary: "Resend Otp for User" })
+  @Patch("resend-otp")
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid otp" })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden, The user does not have access.",
+  })
+  @HttpCode(200)
+  async resendOtp(
+    @Body(ValidationPipe) reSendVerifyoOtpDto: ReSendVerifyoOtpDto,
+    @Req() req
+  ) {
+    return this.authService.resendOtp(reSendVerifyoOtpDto);
+  }
 
-	@Post("/logout/:id")
-	@ApiOperation({ summary: "Logout from mobile app" })
-	@HttpCode(200)
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({
-		status: 404,
-		description:
-			"User Details not found!, [Invalid user id! Please enter correct user id]",
-	})
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async logout(@Param("id") id: string): Promise<any> {
-		return this.authService.logout(id);
-	}
+  @Post("/logout/:id")
+  @ApiOperation({ summary: "Logout from mobile app" })
+  @HttpCode(200)
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({
+    status: 404,
+    description:
+      "User Details not found!, [Invalid user id! Please enter correct user id]",
+  })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async logout(@Param("id") id: string): Promise<any> {
+    return this.authService.logout(id);
+  }
 
-	@ApiOperation({ summary: "Verify email id Of User" })
-	@Get("verify-email-id")
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 401, description: "Invalid otp ." })
-	@ApiResponse({ status: 404, description: "email id not found!" })
-	@ApiResponse({ status: 409, description: "your email id exist" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async verifyEmail(@Query() checkEmailConflictDto: CheckEmailConflictDto) {
-		return await this.authService.checkEmailConflict(checkEmailConflictDto);
-	}
+  @ApiOperation({ summary: "Verify email id Of User" })
+  @Get("verify-email-id")
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 401, description: "Invalid otp ." })
+  @ApiResponse({ status: 404, description: "email id not found!" })
+  @ApiResponse({ status: 409, description: "your email id exist" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async verifyEmail(@Query() checkEmailConflictDto: CheckEmailConflictDto) {
+    return await this.authService.checkEmailConflict(checkEmailConflictDto);
+  }
 
-	@Get("/profile")
-	@ApiOperation({ summary: "Get Profile Details" })
-	@HttpCode(200)
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 401, description: "Please login to continue." })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 404,
-		description:
-			"User Details not found!, [Invalid user id! Please enter correct user id]",
-	})
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getProfile(@GetUser() user: User, @SiteUrl() siteUrl: string) {
-		return await this.authService.getProfile(user, siteUrl);
-	}
-	@Put("/update-email-id")
-	@ApiOperation({ summary: "Update user email id" })
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 400, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async updateEmailId(
-		@Body() updateEmailId: UpdateEmailId,
-		@GetUser() user: User
-	): Promise<any> {
-		return await this.authService.UpdateEmailId(updateEmailId, user);
-	}
+  @Get("/profile")
+  @ApiOperation({ summary: "Get Profile Details" })
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 401, description: "Please login to continue." })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({
+    status: 404,
+    description:
+      "User Details not found!, [Invalid user id! Please enter correct user id]",
+  })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async getProfile(@GetUser() user: User, @SiteUrl() siteUrl: string) {
+    return await this.authService.getProfile(user, siteUrl);
+  }
+  @Put("/update-email-id")
+  @ApiOperation({ summary: "Update user email id" })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 400, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async updateEmailId(
+    @Body() updateEmailId: UpdateEmailId,
+    @GetUser() user: User
+  ): Promise<any> {
+    return await this.authService.UpdateEmailId(updateEmailId, user);
+  }
 
-	@Put("/profile")
-	@ApiOperation({ summary: "Update user profile" })
-	@ApiConsumes("multipart/form-data")
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 400, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	@UseInterceptors(
-		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
-			storage: diskStorage({
-				destination: "./assets/profile",
-				filename: editFileName,
-			}),
-			fileFilter: imageFileFilter,
-			limits: { fileSize: 2097152 },
-		})
-	)
-	async updateProfile(
-		@Body() updateProfileDto: UpdateProfileDto,
-		@UploadedFiles() files: ProfilePicDto,
-		@Req() req,
-		@GetUser() user: User,
-		@SiteUrl() siteUrl
-	): Promise<any> {
-		if (req.fileValidationError) {
-			throw new BadRequestException(`${req.fileValidationError}`);
-		}
-		return await this.authService.updateProfile(
-			updateProfileDto,
-			user,
-			files,
-			siteUrl
-		);
-	}
+  @Put("/update/apple-user")
+  @ApiOperation({ summary: "Update user email id" })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 400, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async updateAppleUser(
+    @Body() updateAppleUserDto: UpdateAppleUserDto,
+    @GetUser() user: User
+  ): Promise<any> {
+    return await this.authService.updateAppleUser(updateAppleUserDto, user);
+  }
 
-	@Put("/profile/picture")
-	@ApiOperation({ summary: "Update user profile picture" })
-	@ApiConsumes("multipart/form-data")
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 400, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 404, description: "Not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	@UseInterceptors(
-		FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
-			storage: diskStorage({
-				destination: "./assets/profile",
-				filename: editFileName,
-			}),
-			fileFilter: imageFileFilter,
-			limits: { fileSize: 2097152 },
-		})
-	)
-	async updateProfilePic(
-		@Body() updateProfileDto: UpdateProfilePicDto,
-		@UploadedFiles() files: ProfilePicDto,
-		@Req() req,
-		@GetUser() user: User,
-		@SiteUrl() siteUrl
-	): Promise<any> {
-		if (req.fileValidationError) {
-			throw new BadRequestException(`${req.fileValidationError}`);
-		}
-		return await this.authService.updateProfilePic(
-			updateProfileDto,
-			user,
-			files,
-			siteUrl
-		);
-	}
+  @Put("/profile")
+  @ApiOperation({ summary: "Update user profile" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 400, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
+      storage: diskStorage({
+        destination: "./assets/profile",
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+      limits: { fileSize: 2097152 },
+    })
+  )
+  async updateProfile(
+    @Body() updateProfileDto: UpdateProfileDto,
+    @UploadedFiles() files: ProfilePicDto,
+    @Req() req,
+    @GetUser() user: User,
+    @SiteUrl() siteUrl
+  ): Promise<any> {
+    if (req.fileValidationError) {
+      throw new BadRequestException(`${req.fileValidationError}`);
+    }
+    return await this.authService.updateProfile(
+      updateProfileDto,
+      user,
+      files,
+      siteUrl
+    );
+  }
 
-	@Put("change-password")
-	@ApiOperation({ summary: "Change user password" })
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async changePassword(
-		@Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
-		@GetUser() user: User
-	) {
-		const userId = user.userId;
-		return await this.authService.changePassword(changePasswordDto, userId);
-	}
+  @Put("/profile/picture")
+  @ApiOperation({ summary: "Update user profile picture" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 400, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 404, description: "Not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: "profile_pic", maxCount: 1 }], {
+      storage: diskStorage({
+        destination: "./assets/profile",
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+      limits: { fileSize: 2097152 },
+    })
+  )
+  async updateProfilePic(
+    @Body() updateProfileDto: UpdateProfilePicDto,
+    @UploadedFiles() files: ProfilePicDto,
+    @Req() req,
+    @GetUser() user: User,
+    @SiteUrl() siteUrl
+  ): Promise<any> {
+    if (req.fileValidationError) {
+      throw new BadRequestException(`${req.fileValidationError}`);
+    }
+    return await this.authService.updateProfilePic(
+      updateProfileDto,
+      user,
+      files,
+      siteUrl
+    );
+  }
 
-	@Patch("preffered-language")
-	@ApiOperation({ summary: "Change prefered-language" })
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async preferedLanguage(
-		@Body(ValidationPipe) PrefferedLanguageDto: PrefferedLanguageDto,
-		@GetUser() user: User
-	) {
-		const userId = user.userId;
-		return await this.authService.prefferedLanguage(
-			PrefferedLanguageDto,
-			userId
-		);
-	}
+  @Put("change-password")
+  @ApiOperation({ summary: "Change user password" })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({
+    status: 403,
+    description: "You are not allowed to access this resource.",
+  })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async changePassword(
+    @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+    @GetUser() user: User
+  ) {
+    const userId = user.userId;
+    return await this.authService.changePassword(changePasswordDto, userId);
+  }
 
-	@Patch("prefered-currency")
-	@ApiOperation({ summary: "Change prefered-currency" })
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async prefferedLanguage(
-		@Body(ValidationPipe) PrefferedCurrencyDto: PrefferedCurrencyDto,
-		@GetUser() user: User
-	) {
-		const userId = user.userId;
-		return await this.authService.prefferedCurrency(
-			PrefferedCurrencyDto,
-			userId
-		);
-	}
+  @Patch("preffered-language")
+  @ApiOperation({ summary: "Change prefered-language" })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({
+    status: 403,
+    description: "You are not allowed to access this resource.",
+  })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async preferedLanguage(
+    @Body(ValidationPipe) PrefferedLanguageDto: PrefferedLanguageDto,
+    @GetUser() user: User
+  ) {
+    const userId = user.userId;
+    return await this.authService.prefferedLanguage(
+      PrefferedLanguageDto,
+      userId
+    );
+  }
 
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN)
-	@Post(["signin-other-account"])
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiOperation({ summary: "Signin to other account" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async signInToOtherUser(
-		@Body(ValidationPipe) signInOtherUserDto: SignInOtherUserDto,
-		@SiteUrl() siteUrl: string,
-		@GetUser() user: User,
-		@Req() req
-	) {
-		const result = await this.authService.signInToOtherUser(
-			signInOtherUserDto,
-			siteUrl,
-			user,req
-		);
-		return result;
-	}
+  @Patch("prefered-currency")
+  @ApiOperation({ summary: "Change prefered-currency" })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({
+    status: 403,
+    description: "You are not allowed to access this resource.",
+  })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async prefferedLanguage(
+    @Body(ValidationPipe) PrefferedCurrencyDto: PrefferedCurrencyDto,
+    @GetUser() user: User
+  ) {
+    const userId = user.userId;
+    return await this.authService.prefferedCurrency(
+      PrefferedCurrencyDto,
+      userId
+    );
+  }
 
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post(["signin-other-account"])
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiOperation({ summary: "Signin to other account" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async signInToOtherUser(
+    @Body(ValidationPipe) signInOtherUserDto: SignInOtherUserDto,
+    @SiteUrl() siteUrl: string,
+    @GetUser() user: User,
+    @Req() req
+  ) {
+    const result = await this.authService.signInToOtherUser(
+      signInOtherUserDto,
+      siteUrl,
+      user,
+      req
+    );
+    return result;
+  }
 
-	@Get("validate-user/:token")
-	@ApiOperation({ summary: "validate user token" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async validateuserToken(
-		@Param('token') token: string
-	) {
-		return await this.authService.validateUser(
-			token
-		);
-	}
+  @Get("validate-user/:token")
+  @ApiOperation({ summary: "validate user token" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({
+    status: 403,
+    description: "You are not allowed to access this resource.",
+  })
+  @ApiResponse({ status: 404, description: "User not found!" })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async validateuserToken(@Param("token") token: string) {
+    return await this.authService.validateUser(token);
+  }
 
-	@Roles(Role.FREE_USER, Role.PAID_USER)
-	@Post(["add-notification-token"])
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiOperation({ summary: "Add web push notification token" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async addWebNotificationUser(
-		@Body() addWebNotificationDto: AddWebNotificationDto,
-		@GetUser() user: User
-	) {
-		return await this.authService.addWebPushNotificationToken(
-			user,
-			addWebNotificationDto
-		);
-	}
+  @Roles(Role.FREE_USER, Role.PAID_USER)
+  @Post(["add-notification-token"])
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiOperation({ summary: "Add web push notification token" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async addWebNotificationUser(
+    @Body() addWebNotificationDto: AddWebNotificationDto,
+    @GetUser() user: User
+  ) {
+    return await this.authService.addWebPushNotificationToken(
+      user,
+      addWebNotificationDto
+    );
+  }
 
-	
+  @Get("preference")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiOperation({ summary: "change the preference value " })
+  @ApiOperation({ summary: "request for delete account" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  async getPreference(@GetUser() user: User) {
+    return await this.authService.getPreference(user);
+  }
 
-
-	@Get('preference')
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiOperation({ summary: "change the preference value " })
-	@ApiOperation({ summary: "request for delete account" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getPreference(
-		@GetUser() user: User
-	) {
-		return await this.authService.getPreference(user);
-	}
-
-
-	@Put('preference')
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard())
-	@ApiOperation({ summary: "change the preference value " })
-	@ApiOperation({ summary: "request for delete account" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-	@ApiResponse({ status: 401, description: "Invalid Login credentials." })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@HttpCode(200)
-	async changeUserPreference(
-		@GetUser() user: User,
-		@Body() preferenceDto: updateUserPreference
-	) {
-		return await this.authService.changeUserPreference(user, preferenceDto);
-	}
+  @Put("preference")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @ApiOperation({ summary: "change the preference value " })
+  @ApiOperation({ summary: "request for delete account" })
+  @ApiResponse({ status: 200, description: "Api success" })
+  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+  @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+  @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+  @ApiResponse({ status: 500, description: "Internal server error!" })
+  @HttpCode(200)
+  async changeUserPreference(
+    @GetUser() user: User,
+    @Body() preferenceDto: updateUserPreference
+  ) {
+    return await this.authService.changeUserPreference(user, preferenceDto);
+  }
 }
