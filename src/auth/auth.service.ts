@@ -483,33 +483,16 @@ export class AuthService {
         `This email address is already registered with us. Please enter different email address.`
       );
     user.email = email;
-    user.isVerified = false;
+    user.isRequireToUpdate = false;
     user.firstName = first_name;
     user.lastName = last_name;
-    user.otp = Math.round(new Date().getTime() / 1000);
+
     try {
       await user.save();
-      this.mailerService
-        .sendMail({
-          to: email,
-          from: mailConfig.from,
-          cc: mailConfig.BCC,
-          subject: "Verify Your Email Address",
-          html: LaytripVerifyEmailIdTemplete({
-            username: user.firstName + " " + user.lastName,
-            otp: user.otp,
-          }),
-        })
-        .then((res) => {
-          console.log("res", res);
-        })
-        .catch((err) => {
-          console.log("err", err);
-        });
     } catch (error) {
       throw new InternalServerErrorException(error.sqlMessage);
     }
-    return { message: `Otp send on your email id` };
+    return { message: `Updated successfully` };
   }
 
   async validateUserPassword(
