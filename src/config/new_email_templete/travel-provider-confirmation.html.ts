@@ -3,7 +3,7 @@ import { FlightBookingEmailParameterModel } from "../email_template/model/flight
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function LaytripFlightBookingConfirmtionMail(
+export async function TravelProviderConfiramationMail(
   param: FlightBookingEmailParameterModel
 ) {
   let content = `<tr>
@@ -15,40 +15,22 @@ export async function LaytripFlightBookingConfirmtionMail(
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #000000; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
-                </tr>`;
-  if (param.bookingType == BookingType.NOINSTALMENT) {
-    content += `<tr>
+                </tr>
+                <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
-                       Congratulations on booking your travel with Laytrip. Your Laytrip Booking ID ${param.cart.cartId} , please use this number when referencing your booking with Laytrip. 
+                        Booking ID ${param.cart.cartId} Change Confirmation! 
                     </td>
-                </tr>`;
-    if (param.flight[0].droups[0].depature?.pnr_no) {
-      content += `<tr>
+                </tr>
+                <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px;  line-height: 20px; color: #707070;padding: 15px 0; text-align: left;">
-                        Your Travel Provider Confirmation Number is ${param.flight[0].droups[0].depature?.pnr_no}. As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your Reservation Details:
+                        Your reservation has been changed by the Travel Provider. Please review these changes below:
                         </td>
                 </tr>`;
-    }
-  } else {
-    content += `<tr>
-                    <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
-                       We are re-sending this Travel Provider Confirmation Email as a reminder of your upcoming travel. Your Laytrip Booking ID is ${param.cart.cartId}, please use this number when referencing your booking with Laytrip.
-                    </td>
-                </tr>`;
-    if (param.flight[0].droups[0].depature?.pnr_no) {
-      content += `<tr>
-                    <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px;  line-height: 20px; color: #707070;padding: 15px 0; text-align: left;">
-                        Your Travel Provider Confirmation Number is ${param.flight[0].droups[0].depature?.pnr_no}. As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your Reservation Details:
-                        </td>
-                </tr>`;
-    }
-  }
 
-  content += `    
+  content += `
+                
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070; padding-top:10px; padding-bottom:10px; text-align: left;">
@@ -320,8 +302,8 @@ export async function LaytripFlightBookingConfirmtionMail(
                             id="templateColumns">
                             <tr>
                                 <td>Refer your eTicket for detailed flight itinerary, fare rules & baggage policy.</td>
-                                You can contact us anytime at<a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope you have a great trip!
+                                If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
+                        style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>
                                 </tr>
                         </table>
                     </td>

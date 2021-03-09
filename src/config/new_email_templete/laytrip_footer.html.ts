@@ -1,4 +1,9 @@
-import { FacebookSocialLink, InstagramSocialLink, NewEmailAssets, TwitterSocialLink } from "../base-url";
+import {
+  FacebookSocialLink,
+  InstagramSocialLink,
+  NewEmailAssets,
+  TwitterSocialLink,
+} from "../base-url";
 
 export const LaytripFooter = `<tr>
 <td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
@@ -8,7 +13,7 @@ export const LaytripFooter = `<tr>
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:30px; text-align: left;">Sincerely</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;">Laytrip Support</td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>
@@ -59,4 +64,4 @@ export const LaytripFooter = `<tr>
 </table>
 </body>
 
-</html>`
+</html>`;
