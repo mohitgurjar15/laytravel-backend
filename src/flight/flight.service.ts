@@ -3159,6 +3159,32 @@ export class FlightService {
     }
   }
 
+  async sendFlightBookingMail(bookingId, isNewBooking) {
+    const mailData = await flightDataUtility.flightData(bookingId);
+    if (mailData.userMail) {
+      this.mailerService
+        .sendMail({
+          to: mailData.userMail,
+          from: mailConfig.from,
+          bcc: mailConfig.BCC,
+          subject:
+            isNewBooking == 1
+              ? mailData.sub
+              : `BOOKING ID ${mailData.param.cart.cartId} CHANGE BY TRAVEL PROVIDER`,
+          html:
+            isNewBooking == 1
+              ? await FlightBookingConfirmtionMail(mailData.param)
+              : await TravelProviderConfiramationMail(mailData.param),
+        })
+        .then((res) => {
+          //console.log("res", res);
+        })
+        .catch((err) => {
+          //console.log("err", err);
+        });
+    }
+  }
+
   async addFlightRoute(addFlightRouteDto: AddFlightRouteDto, user: User) {
     const {
       category_id,
@@ -3265,6 +3291,81 @@ export class FlightService {
     };
   }
 
+  async flightRoute(type) {
+    let result;
+    if (type == "from") {
+      result = await getConnection().query(
+        `select
+				"route"."from_airport_code" as code,
+				"route"."from_airport_name" as name,
+				"route"."from_airport_city" as city,
+				"route"."from_airport_country" as country
+				from
+					"flight_route" "route"
+				group by
+					"route"."from_airport_code",
+					"route"."from_airport_name",
+					"route"."from_airport_city",
+					"route"."from_airport_country"
+					`
+      );
+    } else {
+      result = await getConnection().query(
+        `select
+				"route"."to_airport_code" as code,
+				"route"."to_airport_name" as name,
+				"route"."to_airport_city" as city,
+				"route"."to_airport_country" as country
+				from
+					"flight_route" "route"
+				group by
+					"route"."to_airport_code",
+					"route"."to_airport_name",
+					"route"."to_airport_city",
+					"route"."to_airport_country"
+					`
+      );
+    }
+
+    //console.log("result",result)
+    if (!result) {
+      throw new NotFoundException(`No any route available for given location`);
+    }
+
+    let opResult = [];
+    let data;
+    for await (const route of result) {
+      data = {};
+      data = airports[route.code];
+      data.key = route.city.charAt(0);
+      opResult.push(data);
+    }
+
+    opResult = this.groupByKey(opResult, "key");
+    console.log(opResult);
+    let airportArray = [];
+
+    for (const [key, value] of Object.entries(opResult)) {
+      airportArray.push({
+        key: key,
+        value: value,
+      });
+    }
+
+    //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
+    airportArray = airportArray.sort((a, b) => a.key.localeCompare(b.key));
+    return airportArray;
+  }
+
+  groupByKey(array, key) {
+    return array.reduce((hash, obj) => {
+      if (obj[key] === undefined) return hash;
+      return Object.assign(hash, {
+        [obj[key]]: (hash[obj[key]] || []).concat(obj),
+      });
+    }, {});
+  }
+
   async serchRoute(searchRouteDto: SearchRouteDto) {
     let where = `1=1`;
     const { search, is_from_location, alternet_location } = searchRouteDto;
@@ -3278,12 +3379,16 @@ export class FlightService {
     }
 
     if (is_from_location == "yes") {
-      where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`;
+      if (search) {
+        where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`;
+      }
       if (alternet_location) {
         where += `AND ("to_airport_code" = '${alternet_location}') `;
       }
     } else {
-      where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
+      if (search) {
+        where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
+      }
       if (alternet_location) {
         where += `AND ("from_airport_code" = '${alternet_location}') `;
       }
@@ -3299,15 +3404,20 @@ export class FlightService {
     }
     let availableRoute = [];
     let opResult = [];
+    let airport: any = {};
     for await (const route of result) {
       if (is_from_location == "yes") {
         if (availableRoute.indexOf(route.fromAirportCode) == -1) {
-          opResult.push(airports[route.fromAirportCode]);
+          airport = airports[route.fromAirportCode];
+          airport.key = airport.city.charAt(0);
+          opResult.push(airport);
           availableRoute.push(route.fromAirportCode);
         }
       } else {
         if (availableRoute.indexOf(route.toAirportCode) == -1) {
-          opResult.push(airports[route.toAirportCode]);
+          airport = airports[route.toAirportCode];
+          airport.key = airport.city.charAt(0);
+          opResult.push(airport);
           availableRoute.push(route.toAirportCode);
         }
       }
@@ -3364,32 +3474,6 @@ export class FlightService {
         .into(FlightRoute)
         .values(categoryData)
         .execute();
-    }
-  }
-
-  async sendFlightBookingMail(bookingId, isNewBooking) {
-    const mailData = await flightDataUtility.flightData(bookingId);
-    if (mailData.userMail) {
-      this.mailerService
-        .sendMail({
-          to: mailData.userMail,
-          from: mailConfig.from,
-          bcc: mailConfig.BCC,
-          subject:
-            isNewBooking == 1
-              ? mailData.sub
-              : `BOOKING ID ${mailData.param.cart.cartId} CHANGE BY TRAVEL PROVIDER`,
-          html:
-            isNewBooking == 1
-              ? await FlightBookingConfirmtionMail(mailData.param)
-              : await TravelProviderConfiramationMail(mailData.param),
-        })
-        .then((res) => {
-          //console.log("res", res);
-        })
-        .catch((err) => {
-          //console.log("err", err);
-        });
     }
   }
 }

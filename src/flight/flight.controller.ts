@@ -524,37 +524,59 @@ export class FlightController {
     return await this.flightService.bookPartialBooking(booking_id, req.headers);
   }
 
-  @Get("/route/search")
-  @ApiOperation({ summary: "Search flight route" })
-  @ApiResponse({ status: 200, description: "Api success" })
-  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-  @ApiResponse({ status: 404, description: "Not Found" })
-  @ApiResponse({ status: 500, description: "Internal server error!" })
-  async searchFlightRoute(@Query() searchRouteDto: SearchRouteDto) {
-    return await this.flightService.serchRoute(searchRouteDto);
-  }
+  
 
-  @Post("/route/create")
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard(), RolesGuard)
-  @ApiOperation({ summary: "Add new flight route" })
-  @ApiResponse({ status: 200, description: "Api success" })
-  @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-  @ApiResponse({ status: 500, description: "Internal server error!" })
-  @HttpCode(200)
-  async createNewRoute(
-    @Body() addFlightRouteDto: AddFlightRouteDto,
-    @GetUser() user: User
-  ) {
-    return await this.flightService.addFlightRoute(addFlightRouteDto, user);
-  }
+  
 
-  @Post("/import-category")
-  @ApiOperation({ summary: "Import category" })
-  @ApiResponse({ status: 200, description: "Api success" })
-  async importCategory() {
-    return await this.flightService.importCategory();
-    //return await this.flightService.mapChildParentAirport(name);
-  }
+  
+
+  @Get('/route/search')
+    @ApiOperation({ summary: "Search flight route" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async searchFlightRoute(
+        @Query() searchRouteDto: SearchRouteDto
+    ) {
+        return await this.flightService.serchRoute(searchRouteDto);
+    }
+
+    @Get('/route/:type')
+    @ApiOperation({ summary: "Search flight route" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async flightRoute(
+        @Param('type') type: String
+    ) {
+        return await this.flightService.flightRoute(type);
+    }
+
+    @Post('/route/create')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "Add new flight route" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async createNewRoute(
+        @Body() addFlightRouteDto: AddFlightRouteDto,
+        @GetUser() user: User
+    ) {
+        return await this.flightService.addFlightRoute(addFlightRouteDto, user);
+    }
+
+    @Post('/import-category')
+    @ApiOperation({ summary: "Import category" })
+    @ApiResponse({ status: 200, description: 'Api success' })
+    
+    async importCategory(
+    ) {
+        return await this.flightService.importCategory();
+        //return await this.flightService.mapChildParentAirport(name);
+    }
 }

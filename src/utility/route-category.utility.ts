@@ -14,8 +14,8 @@ export class RouteCategory{
                     .where("flight_route.from_airport_code = :departureCode and flight_route.to_airport_code=:arrivalCode", { departureCode,arrivalCode })
                     .leftJoinAndSelect("flight_route.category", "category")
                     .getOne();
-        //return routeDetails;
-        return {
+        return routeDetails;
+        /* return {
             id: 21,
             parentBy: null,
             categoryId: 2,
@@ -43,19 +43,19 @@ export class RouteCategory{
               status: true,
               updateDate: null
             }
-          }
+          } */
           
     }
 
     static checkInstalmentEligibility(checkInDate,bookingDate,days){
 
         let dayDiffernce = moment(checkInDate).diff(moment(bookingDate), 'days')
-        return true;
-        /* if(days>0 && dayDiffernce>=days){
+        //return true;
+        if(days>0 && dayDiffernce>=days){
             return true;
         }
         else{
             return false;
-        } */
+        }
     }
 }

@@ -3,10 +3,11 @@ import { IsNotEmpty } from "class-validator";
 
 export class SearchRouteDto{
     
-    @IsNotEmpty({
+   /*  @IsNotEmpty({
 		message: `Please enter search keyword.&&&source_location`,
-	})
-    @ApiProperty({
+	}) */
+
+    @ApiPropertyOptional({
         description:`Airport Location`,
         example:`JAI`
     })
