@@ -1105,7 +1105,7 @@ export class CartService {
     await getConnection()
       .createQueryBuilder()
       .update(CartBooking)
-      .set({ refundPaymentInfo: refund.meta_data })
+      .set({ refundPaymentInfo: refund })
       .where(`id = (${cartId}) `)
       .execute();
   }
@@ -1182,9 +1182,10 @@ export class CartService {
       cart.moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway";
     const downPayment = selected_down_payment ? selected_down_payment : 0;
     const paidIn =
-      payment_type == "installment"
+      payment_type == PaymentType.INSTALMENT
         ? BookingType.INSTALMENT
         : BookingType.NOINSTALMENT;
+
     let flightRequest;
     if (bookingType == "oneway") {
       let dto = {
