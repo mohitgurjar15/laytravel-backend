@@ -1141,7 +1141,6 @@ export class CartService {
           .createQueryBuilder()
           .update(Booking)
           .set({
-            paymentStatus: PaymentStatus.CONFIRM,
             paymentInfo: captureCardresult.meta_data,
           })
           .where(`id In (:...BookingIds) `, { BookingIds })
