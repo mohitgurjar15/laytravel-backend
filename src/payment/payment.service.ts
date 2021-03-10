@@ -195,7 +195,7 @@ export class PaymentService {
         throw new BadRequestException(`Maximum 5 Cards, please delete one`);
       }
 
-      this.retainCard(card_token, userId || guest_id);
+      await this.retainCard(card_token, userId || guest_id);
 
       let authoriseCode = await this.authorizeCard(
         card_token,
