@@ -1035,7 +1035,7 @@ export class CartService {
   ) {
     var sumOfTotalAmount = await getConnection().query(`
         SELECT sum("booking"."total_amount") as "total_amount" 
-        FROM booking where cart_id = ${cartId} AND booking_status = ${BookingStatus.FAILED}`);
+        FROM booking where cart_id = '${cartId}' AND booking_status = ${BookingStatus.FAILED}`);
     let refundAmount = 0;
     const date = new Date();
     var date1 = date.toISOString();
@@ -1105,8 +1105,8 @@ export class CartService {
     await getConnection()
       .createQueryBuilder()
       .update(CartBooking)
-      .set({ refundPaymentInfo: refund.meta_data })
-      .where(`id = (${cartId}) `)
+      .set({ refundPaymentInfo: refund })
+      .where(`id = '${cartId}' `)
       .execute();
   }
   async capturePayment(
@@ -1182,9 +1182,10 @@ export class CartService {
       cart.moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway";
     const downPayment = selected_down_payment ? selected_down_payment : 0;
     const paidIn =
-      payment_type == "installment"
+      payment_type == PaymentType.INSTALMENT
         ? BookingType.INSTALMENT
         : BookingType.NOINSTALMENT;
+
     let flightRequest;
     if (bookingType == "oneway") {
       let dto = {
