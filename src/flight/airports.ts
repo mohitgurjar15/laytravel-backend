@@ -1,11 +1,5 @@
 
 export const airports ={
-  "0A7": {
-    "code": "0A7",
-    "name": "Hendersonville Arpt.",
-    "city": "Hendersonville",
-    "country": "USA"
-  },
   "AAA": {
     "code": "AAA",
     "name": "AnaaTest",
@@ -95,12 +89,6 @@ export const airports ={
     "name": "Anaco",
     "city": "Anaco",
     "country": "Venezuela"
-  },
-  "AAP": {
-    "code": "AAP",
-    "name": "Andrau Airpark",
-    "city": "Houston",
-    "country": "USA"
   },
   "AAQ": {
     "code": "AAQ",
@@ -504,12 +492,6 @@ export const airports ={
     "city": "Arandis",
     "country": "Namibia"
   },
-  "ADJ": {
-    "code": "ADJ",
-    "name": "Marka Intl. Arpt.",
-    "city": "Amman",
-    "country": "Jordan"
-  },
   "ADK": {
     "code": "ADK",
     "name": "Adak Island Ns",
@@ -558,17 +540,23 @@ export const airports ={
     "city": "Andrews",
     "country": "USA"
   },
+  "ADU": {
+    "code": "ADU",
+    "name": "Ardabil",
+    "city": "Ardabil",
+    "country": "Iran"
+  },
   "ADS": {
     "code": "ADS",
     "name": "Addison Arpt.",
     "city": "Dallas",
     "country": "USA"
   },
-  "ADU": {
-    "code": "ADU",
-    "name": "Ardabil",
-    "city": "Ardabil",
-    "country": "Iran"
+  "AAP": {
+    "code": "AAP",
+    "name": "Andrau Airpark",
+    "city": "Houston",
+    "country": "USA"
   },
   "ADV": {
     "code": "ADV",
@@ -648,12 +636,6 @@ export const airports ={
     "city": "Aioun El Atrouss",
     "country": "Mauritania"
   },
-  "AEP": {
-    "code": "AEP",
-    "name": "Arpt. Jorge Newbery",
-    "city": "Buenos Aires",
-    "country": "Argentina"
-  },
   "AER": {
     "code": "AER",
     "name": "Adler/Sochi",
@@ -677,12 +659,6 @@ export const airports ={
     "name": "Abu Musa",
     "city": "Abu Musa",
     "country": "Iran"
-  },
-  "AEX": {
-    "code": "AEX",
-    "name": "Alexandria Intl.",
-    "city": "Alexandria, LA",
-    "country": "USA"
   },
   "AEY": {
     "code": "AEY",
@@ -755,12 +731,6 @@ export const airports ={
     "name": "Afutara Aerodrome",
     "city": "Afutara",
     "country": "Solomon Islands"
-  },
-  "AFW": {
-    "code": "AFW",
-    "name": "Fort Worth Alliance",
-    "city": "Fort Worth, TX",
-    "country": "USA"
   },
   "AFY": {
     "code": "AFY",
@@ -1134,6 +1104,12 @@ export const airports ={
     "city": "Atiu Island",
     "country": "Cook Islands"
   },
+  "AFW": {
+    "code": "AFW",
+    "name": "Fort Worth Alliance",
+    "city": "Fort Worth",
+    "country": "USA"
+  },
   "AIV": {
     "code": "AIV",
     "name": "George Downer",
@@ -1312,12 +1288,6 @@ export const airports ={
     "code": "AKN",
     "name": "King Salmon",
     "city": "King Salmon",
-    "country": "USA"
-  },
-  "AKO": {
-    "code": "AKO",
-    "name": "Colorado Plains Regional Arpt.",
-    "city": "Akron, CO",
     "country": "USA"
   },
   "AKP": {
@@ -1520,7 +1490,7 @@ export const airports ={
   },
   "ALY": {
     "code": "ALY",
-    "name": "All Airports",
+    "name": "El Nohza",
     "city": "Alexandria",
     "country": "Egypt"
   },
@@ -1528,12 +1498,6 @@ export const airports ={
     "code": "ALZ",
     "name": "Alitak SPB",
     "city": "Alitak",
-    "country": "USA"
-  },
-  "AMA": {
-    "code": "AMA",
-    "name": "Rick Husband Amarillo Intl.",
-    "city": "Amarillo, TX",
     "country": "USA"
   },
   "AMB": {
@@ -1604,7 +1568,7 @@ export const airports ={
   },
   "AMM": {
     "code": "AMM",
-    "name": "All Airports",
+    "name": "Queen Alia Intl",
     "city": "Amman",
     "country": "Jordan"
   },
@@ -1696,6 +1660,12 @@ export const airports ={
     "code": "ANB",
     "name": "Anniston Metropolitan",
     "city": "Anniston",
+    "country": "USA"
+  },
+  "AKO": {
+    "code": "AKO",
+    "name": "Colorado Plains Regional Arpt.",
+    "city": "Akron",
     "country": "USA"
   },
   "ANC": {
@@ -2130,12 +2100,6 @@ export const airports ={
     "city": "New Iberia",
     "country": "USA"
   },
-  "ARB": {
-    "code": "ARB",
-    "name": "Municipal",
-    "city": "Ann Arbor, MI",
-    "country": "USA"
-  },
   "ARC": {
     "code": "ARC",
     "name": "Arctic Village",
@@ -2202,12 +2166,6 @@ export const airports ={
     "city": "Armidale",
     "country": "Australia"
   },
-  "ARN": {
-    "code": "ARN",
-    "name": "Arlanda",
-    "city": "Stockholm",
-    "country": "Sweden"
-  },
   "ARO": {
     "code": "ARO",
     "name": "Arboletas",
@@ -2262,17 +2220,23 @@ export const airports ={
     "city": "Arad",
     "country": "Romania"
   },
-  "ARX": {
-    "code": "ARX",
-    "name": "Asbury Park",
-    "city": "Neptune, NJ",
-    "country": "USA"
-  },
   "ARY": {
     "code": "ARY",
     "name": "Ararat",
     "city": "Ararat",
     "country": "Australia"
+  },
+  "ARB": {
+    "code": "ARB",
+    "name": "Municipal",
+    "city": "Ann Arbor",
+    "country": "USA"
+  },
+  "ARX": {
+    "code": "ARX",
+    "name": "Asbury Park",
+    "city": "Neptune",
+    "country": "USA"
   },
   "ASA": {
     "code": "ASA",
@@ -2315,12 +2279,6 @@ export const airports ={
     "name": "Ashburton",
     "city": "Ashburton",
     "country": "New Zealand"
-  },
-  "ASH": {
-    "code": "ASH",
-    "name": "Boire Field",
-    "city": "Nashua, NH",
-    "country": "USA"
   },
   "ASI": {
     "code": "ASI",
@@ -2470,12 +2428,6 @@ export const airports ={
     "code": "ATK",
     "name": "Atqasuk",
     "city": "Atqasuk",
-    "country": "USA"
-  },
-  "ATL": {
-    "code": "ATL",
-    "name": "All Airports",
-    "city": "Atlanta, GA",
     "country": "USA"
   },
   "ATM": {
@@ -2778,23 +2730,11 @@ export const airports ={
     "city": "Avon Park",
     "country": "USA"
   },
-  "AVP": {
-    "code": "AVP",
-    "name": "Wilkes-Barre/Scranton Intl. Arpt.",
-    "city": "Wilkes-Barre/Scranton, PA",
-    "country": "USA"
-  },
   "AVU": {
     "code": "AVU",
     "name": "Avu Avu",
     "city": "Avu Avu",
     "country": "Solomon Islands"
-  },
-  "AVV": {
-    "code": "AVV",
-    "name": "Avalon",
-    "city": "Melbourne",
-    "country": "Australia"
   },
   "AVX": {
     "code": "AVX",
@@ -2837,6 +2777,24 @@ export const airports ={
     "name": "Wake Island",
     "city": "Wake Island",
     "country": "US Minor Outlying Islands"
+  },
+  "ATL": {
+    "code": "ATL",
+    "name": "Hartsfield-jackson Atlanta Intl.",
+    "city": "Atlanta",
+    "country": "USA"
+  },
+  "AVV": {
+    "code": "AVV",
+    "name": "Avalon",
+    "city": "Melbourne",
+    "country": "Australia"
+  },
+  "ASH": {
+    "code": "ASH",
+    "name": "Boire Field",
+    "city": "Nashua",
+    "country": "USA"
   },
   "AWM": {
     "code": "AWM",
@@ -3084,12 +3042,6 @@ export const airports ={
     "city": "Amityville",
     "country": "USA"
   },
-  "AZA": {
-    "code": "AZA",
-    "name": "Phoenix-Mesa Gateway Airport",
-    "city": "Phoenix",
-    "country": "USA"
-  },
   "AZB": {
     "code": "AZB",
     "name": "Amazon Bay",
@@ -3125,12 +3077,6 @@ export const airports ={
     "name": "Kalamazoo/Battle Creek Intl",
     "city": "Kalamazoo",
     "country": "USA"
-  },
-  "AZP": {
-    "code": "AZP",
-    "name": "Atizapan",
-    "city": "Mexico City",
-    "country": "Mexico"
   },
   "AZR": {
     "code": "AZR",
@@ -3414,11 +3360,11 @@ export const airports ={
     "city": "Berberati",
     "country": "Central African Republic"
   },
-  "BBU": {
-    "code": "BBU",
-    "name": "Baneasa",
-    "city": "Bucharest",
-    "country": "Romania"
+  "AZP": {
+    "code": "AZP",
+    "name": "Atizapan",
+    "city": "Mexico City",
+    "country": "Mexico"
   },
   "BBV": {
     "code": "BBV",
@@ -3672,12 +3618,6 @@ export const airports ={
     "city": "Bondoukou",
     "country": "Cote D'Ivoire"
   },
-  "BDL": {
-    "code": "BDL",
-    "name": "Bradley Intl.",
-    "city": "Windsor Locks, CT",
-    "country": "USA"
-  },
   "BDM": {
     "code": "BDM",
     "name": "Bandirma",
@@ -3866,7 +3806,7 @@ export const airports ={
   },
   "BER": {
     "code": "BER",
-    "name": "All Airports",
+    "name": "Berlin Metropolitan Area",
     "city": "Berlin",
     "country": "Germany"
   },
@@ -3966,17 +3906,23 @@ export const airports ={
     "city": "Curitiba",
     "country": "Brazil"
   },
-  "BFI": {
-    "code": "BFI",
-    "name": "Boeing Field/King County Intl. Arpt.",
-    "city": "Seattle",
-    "country": "USA"
-  },
   "BFJ": {
     "code": "BFJ",
     "name": "Ba",
     "city": "Ba",
     "country": "Fiji"
+  },
+  "BDL": {
+    "code": "BDL",
+    "name": "Bradley Intl.",
+    "city": "Windsor Locks",
+    "country": "USA"
+  },
+  "BFI": {
+    "code": "BFI",
+    "name": "Boeing Field/King County Intl. Arpt.",
+    "city": "Seattle",
+    "country": "USA"
   },
   "BFK": {
     "code": "BFK",
@@ -4028,7 +3974,7 @@ export const airports ={
   },
   "BFS": {
     "code": "BFS",
-    "name": "All Airports",
+    "name": "Aldergrove Intl. Arpt.",
     "city": "Belfast",
     "country": "United Kingdom"
   },
@@ -4128,12 +4074,6 @@ export const airports ={
     "city": "Baglung",
     "country": "Nepal"
   },
-  "BGM": {
-    "code": "BGM",
-    "name": "Greater Binghamton",
-    "city": "Binghamton, NY",
-    "country": "USA"
-  },
   "BGN": {
     "code": "BGN",
     "name": "R.A.F.",
@@ -4170,12 +4110,6 @@ export const airports ={
     "city": "Big Spring",
     "country": "USA"
   },
-  "BGT": {
-    "code": "BGT",
-    "name": "Bagdad",
-    "city": "Bagdad, AZ",
-    "country": "USA"
-  },
   "BGU": {
     "code": "BGU",
     "name": "Bangassou",
@@ -4200,12 +4134,6 @@ export const airports ={
     "city": "Bage",
     "country": "Brazil"
   },
-  "BGY": {
-    "code": "BGY",
-    "name": "Orio al Serio",
-    "city": "Milan",
-    "country": "Italy"
-  },
   "BGZ": {
     "code": "BGZ",
     "name": "Braga",
@@ -4229,12 +4157,6 @@ export const airports ={
     "name": "Bhurban Heliport",
     "city": "Bhurban",
     "country": "USA"
-  },
-  "BHD": {
-    "code": "BHD",
-    "name": "George Best Belfast City",
-    "city": "Belfast",
-    "country": "United Kingdom"
   },
   "BHE": {
     "code": "BHE",
@@ -4364,7 +4286,7 @@ export const airports ={
   },
   "BHZ": {
     "code": "BHZ",
-    "name": "All Airports",
+    "name": "Belo Horizonte Metropolitian Area",
     "city": "Belo Horizonte",
     "country": "Brazil"
   },
@@ -4524,6 +4446,24 @@ export const airports ={
     "city": "Bimin",
     "country": "Papua New Guinea"
   },
+  "BGY": {
+    "code": "BGY",
+    "name": "Orio al Serio",
+    "city": "Milan",
+    "country": "Italy"
+  },
+  "BGM": {
+    "code": "BGM",
+    "name": "Greater Binghamton",
+    "city": "Binghamton",
+    "country": "USA"
+  },
+  "BGT": {
+    "code": "BGT",
+    "name": "Bagdad",
+    "city": "Bagdad",
+    "country": "USA"
+  },
   "BJA": {
     "code": "BJA",
     "name": "Bejaia",
@@ -4668,12 +4608,6 @@ export const airports ={
     "city": "Badajoz",
     "country": "Spain"
   },
-  "BKA": {
-    "code": "BKA",
-    "name": "Bykovo",
-    "city": "Moscow",
-    "country": "Russian Federation"
-  },
   "BKB": {
     "code": "BKB",
     "name": "Bikaner",
@@ -4730,7 +4664,7 @@ export const airports ={
   },
   "BKK": {
     "code": "BKK",
-    "name": "All Airports",
+    "name": "Suvarnabhumi Intl.",
     "city": "Bangkok",
     "country": "Thailand"
   },
@@ -4974,12 +4908,6 @@ export const airports ={
     "city": "Blantyre",
     "country": "Malawi"
   },
-  "BMA": {
-    "code": "BMA",
-    "name": "Bromma",
-    "city": "Stockholm",
-    "country": "Sweden"
-  },
   "BMB": {
     "code": "BMB",
     "name": "Bumba",
@@ -5021,12 +4949,6 @@ export const airports ={
     "name": "Bomai",
     "city": "Bomai",
     "country": "Papua New Guinea"
-  },
-  "BMI": {
-    "code": "BMI",
-    "name": "Central Illinois Regional Arpt.",
-    "city": "Bloomington/Normal, IL",
-    "country": "USA"
   },
   "BMJ": {
     "code": "BMJ",
@@ -5094,6 +5016,18 @@ export const airports ={
     "city": "Beaumont",
     "country": "USA"
   },
+  "BMA": {
+    "code": "BMA",
+    "name": "Bromma",
+    "city": "Stockholm",
+    "country": "Sweden"
+  },
+  "BKA": {
+    "code": "BKA",
+    "name": "Bykovo",
+    "city": "Moscow",
+    "country": "Russian Federation"
+  },
   "BMU": {
     "code": "BMU",
     "name": "Bima",
@@ -5129,12 +5063,6 @@ export const airports ={
     "name": "Bamu",
     "city": "Bamu",
     "country": "Papua New Guinea"
-  },
-  "BNA": {
-    "code": "BNA",
-    "name": "Nashville Intl.",
-    "city": "Nashville, TN",
-    "country": "USA"
   },
   "BNB": {
     "code": "BNB",
@@ -5189,12 +5117,6 @@ export const airports ={
     "name": "Ballina Byron Gateway",
     "city": "Ballina",
     "country": "Australia"
-  },
-  "BNL": {
-    "code": "BNL",
-    "name": "Barnwell Regional",
-    "city": "Barnwell, SC",
-    "country": "USA"
   },
   "BNM": {
     "code": "BNM",
@@ -5310,12 +5232,6 @@ export const airports ={
     "city": "Boundji",
     "country": "Congo"
   },
-  "BOF": {
-    "code": "BOF",
-    "name": "Bolling AFB",
-    "city": "Washington",
-    "country": "USA"
-  },
   "BOG": {
     "code": "BOG",
     "name": "Eldorado Intl.",
@@ -5327,12 +5243,6 @@ export const airports ={
     "name": "Bournemouth Intl.",
     "city": "Bournemouth",
     "country": "United Kingdom"
-  },
-  "BOI": {
-    "code": "BOI",
-    "name": "Boise Air Terminal/Gowen Field",
-    "city": "Boise, ID",
-    "country": "USA"
   },
   "BOJ": {
     "code": "BOJ",
@@ -5628,12 +5538,6 @@ export const airports ={
     "city": "San Carlos DeBariloche",
     "country": "Argentina"
   },
-  "BRD": {
-    "code": "BRD",
-    "name": "Brainerd Lakes Regional",
-    "city": "Brainerd, MN",
-    "country": "USA"
-  },
   "BRE": {
     "code": "BRE",
     "name": "Bremen",
@@ -5657,6 +5561,24 @@ export const airports ={
     "name": "Brahman",
     "city": "Brahman",
     "country": "Papua New Guinea"
+  },
+  "BNA": {
+    "code": "BNA",
+    "name": "Nashville Intl.",
+    "city": "Nashville",
+    "country": "USA"
+  },
+  "BNL": {
+    "code": "BNL",
+    "name": "Barnwell Regional",
+    "city": "Barnwell",
+    "country": "USA"
+  },
+  "BRD": {
+    "code": "BRD",
+    "name": "Brainerd Lakes Regional",
+    "city": "Brainerd",
+    "country": "USA"
   },
   "BRI": {
     "code": "BRI",
@@ -5732,7 +5654,7 @@ export const airports ={
   },
   "BRU": {
     "code": "BRU",
-    "name": "All Airports",
+    "name": "Brussels Arpt.",
     "city": "Brussels",
     "country": "Belgium"
   },
@@ -5753,12 +5675,6 @@ export const airports ={
     "name": "Barahona",
     "city": "Barahona",
     "country": "Dominican Republic"
-  },
-  "BRY": {
-    "code": "BRY",
-    "name": "Samuels Field",
-    "city": "Bardstown, KY",
-    "country": "USA"
   },
   "BRZ": {
     "code": "BRZ",
@@ -5994,12 +5910,6 @@ export const airports ={
     "city": "Battle Creek",
     "country": "USA"
   },
-  "BTM": {
-    "code": "BTM",
-    "name": "Bert Mooney Arpt.",
-    "city": "Butte,",
-    "country": "USA"
-  },
   "BTN": {
     "code": "BTN",
     "name": "Bennettsville",
@@ -6104,15 +6014,9 @@ export const airports ={
   },
   "BUE": {
     "code": "BUE",
-    "name": "All Airports",
+    "name": "Buenos Aires Metropolitan Area",
     "city": "Buenos Aires",
     "country": "Argentina"
-  },
-  "BUF": {
-    "code": "BUF",
-    "name": "Buffalo Niagara Intl.",
-    "city": "Buffalo, NY",
-    "country": "USA"
   },
   "BUG": {
     "code": "BUG",
@@ -6128,7 +6032,7 @@ export const airports ={
   },
   "BUH": {
     "code": "BUH",
-    "name": "All Airports",
+    "name": "Bucharest Metropolitan Area",
     "city": "Bucharest",
     "country": "Romania"
   },
@@ -6204,6 +6108,24 @@ export const airports ={
     "city": "Tibu",
     "country": "Colombia"
   },
+  "BRY": {
+    "code": "BRY",
+    "name": "Samuels Field",
+    "city": "Bardstown",
+    "country": "USA"
+  },
+  "BTM": {
+    "code": "BTM",
+    "name": "Bert Mooney Arpt.",
+    "city": "Butte",
+    "country": "USA"
+  },
+  "BUF": {
+    "code": "BUF",
+    "name": "Buffalo Niagara Intl.",
+    "city": "Buffalo",
+    "country": "USA"
+  },
   "BUT": {
     "code": "BUT",
     "name": "Burtonwood",
@@ -6245,12 +6167,6 @@ export const airports ={
     "name": "Bushehr",
     "city": "Bushehr",
     "country": "Iran"
-  },
-  "BVA": {
-    "code": "BVA",
-    "name": "Beauvais-Tille",
-    "city": "Paris",
-    "country": "France"
   },
   "BVB": {
     "code": "BVB",
@@ -6740,7 +6656,7 @@ export const airports ={
   },
   "BZE": {
     "code": "BZE",
-    "name": "All Airports",
+    "name": "Philip S.W.Goldson Int",
     "city": "Belize City",
     "country": "Belize"
   },
@@ -6767,6 +6683,12 @@ export const airports ={
     "name": "Briansk",
     "city": "Briansk",
     "country": "Russian Federation"
+  },
+  "BVA": {
+    "code": "BVA",
+    "name": "Beauvais-Tille",
+    "city": "Paris",
+    "country": "France"
   },
   "BZL": {
     "code": "BZL",
@@ -6803,12 +6725,6 @@ export const airports ={
     "name": "Beziers Vias",
     "city": "Beziers",
     "country": "France"
-  },
-  "BZS": {
-    "code": "BZS",
-    "name": "Buzzards Pt S",
-    "city": "Washington",
-    "country": "USA"
   },
   "BZT": {
     "code": "BZT",
@@ -6864,12 +6780,6 @@ export const airports ={
     "city": "Cadillac",
     "country": "USA"
   },
-  "CAE": {
-    "code": "CAE",
-    "name": "Metropolitan Arpt.",
-    "city": "Columbia, SC",
-    "country": "USA"
-  },
   "CAF": {
     "code": "CAF",
     "name": "Carauari",
@@ -6899,12 +6809,6 @@ export const airports ={
     "name": "Canaima",
     "city": "Canaima",
     "country": "Venezuela"
-  },
-  "CAK": {
-    "code": "CAK",
-    "name": "Akron/canton Regional",
-    "city": "Akron/Canton, OH",
-    "country": "USA"
   },
   "CAL": {
     "code": "CAL",
@@ -7068,12 +6972,6 @@ export const airports ={
     "city": "Ciudad Bolivar",
     "country": "Venezuela"
   },
-  "CBM": {
-    "code": "CBM",
-    "name": "Columbus AFB",
-    "city": "Columbus, MS",
-    "country": "USA"
-  },
   "CBN": {
     "code": "CBN",
     "name": "Penggung",
@@ -7150,12 +7048,6 @@ export const airports ={
     "code": "CCA",
     "name": "Chaffee AFB",
     "city": "Fort Chaffee",
-    "country": "USA"
-  },
-  "CCB": {
-    "code": "CCB",
-    "name": "Cable Arpt.",
-    "city": "Upland, CA",
     "country": "USA"
   },
   "CCC": {
@@ -7320,12 +7212,6 @@ export const airports ={
     "city": "Caledonia",
     "country": "Panama"
   },
-  "CDG": {
-    "code": "CDG",
-    "name": "Charles  De Gaulle",
-    "city": "Paris",
-    "country": "France"
-  },
   "CDH": {
     "code": "CDH",
     "name": "Harrell Fld",
@@ -7337,6 +7223,30 @@ export const airports ={
     "name": "Cachoeiro Itapemirim",
     "city": "Cachoeiro Itapemirim",
     "country": "Brazil"
+  },
+  "CAE": {
+    "code": "CAE",
+    "name": "Metropolitan Arpt.",
+    "city": "Columbia",
+    "country": "USA"
+  },
+  "BZS": {
+    "code": "BZS",
+    "name": "Buzzards Pt S",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "CBM": {
+    "code": "CBM",
+    "name": "Columbus AFB",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "CCB": {
+    "code": "CCB",
+    "name": "Cable Arpt.",
+    "city": "Upland",
+    "country": "USA"
   },
   "CDJ": {
     "code": "CDJ",
@@ -7402,12 +7312,6 @@ export const airports ={
     "code": "CDV",
     "name": "Mudhole Smith",
     "city": "Cordova",
-    "country": "USA"
-  },
-  "CDW": {
-    "code": "CDW",
-    "name": "Caldwell Wright",
-    "city": "Caldwell, NJ",
     "country": "USA"
   },
   "CDY": {
@@ -7632,12 +7536,6 @@ export const airports ={
     "city": "Camfield",
     "country": "Australia"
   },
-  "CFK": {
-    "code": "CFK",
-    "name": "Chefornak",
-    "city": "Chefornak, AK",
-    "country": "USA"
-  },
   "CFN": {
     "code": "CFN",
     "name": "Donegal",
@@ -7728,12 +7626,6 @@ export const airports ={
     "city": "Cleveland",
     "country": "USA"
   },
-  "CGH": {
-    "code": "CGH",
-    "name": "Congonhas",
-    "city": "Sao Paulo",
-    "country": "Brazil"
-  },
   "CGI": {
     "code": "CGI",
     "name": "Cape Girardeau",
@@ -7745,12 +7637,6 @@ export const airports ={
     "name": "Chingola",
     "city": "Chingola",
     "country": "Zambia"
-  },
-  "CGK": {
-    "code": "CGK",
-    "name": "Soekarno-Hatta Intl.",
-    "city": "Jakarta",
-    "country": "Indonesia"
   },
   "CGM": {
     "code": "CGM",
@@ -7812,12 +7698,6 @@ export const airports ={
     "city": "Caiguna",
     "country": "Australia"
   },
-  "CGX": {
-    "code": "CGX",
-    "name": "Merrill C Meigs",
-    "city": "Chicago",
-    "country": "USA"
-  },
   "CLI": {
     "code": "CLI",
     "name": "Clintonville",
@@ -7834,12 +7714,6 @@ export const airports ={
     "code": "CGZ",
     "name": "Municipal",
     "city": "Casa Grande",
-    "country": "USA"
-  },
-  "CHA": {
-    "code": "CHA",
-    "name": "Lovell Field",
-    "city": "Chattanooga,TN",
     "country": "USA"
   },
   "CHB": {
@@ -7886,8 +7760,38 @@ export const airports ={
   },
   "CHI": {
     "code": "CHI",
-    "name": "All Airports",
+    "name": "Chicago FSS",
     "city": "Chicago",
+    "country": "USA"
+  },
+  "CGH": {
+    "code": "CGH",
+    "name": "Congonhas",
+    "city": "Sao Paulo",
+    "country": "Brazil"
+  },
+  "CFK": {
+    "code": "CFK",
+    "name": "Chefornak",
+    "city": "Chefornak",
+    "country": "USA"
+  },
+  "CGK": {
+    "code": "CGK",
+    "name": "Soekarno-Hatta Intl.",
+    "city": "Jakarta",
+    "country": "Indonesia"
+  },
+  "CDW": {
+    "code": "CDW",
+    "name": "Caldwell Wright",
+    "city": "Caldwell",
+    "country": "USA"
+  },
+  "CHA": {
+    "code": "CHA",
+    "name": "Lovell Field",
+    "city": "Chattanooga",
     "country": "USA"
   },
   "CHJ": {
@@ -7944,12 +7848,6 @@ export const airports ={
     "city": "Chateauroux",
     "country": "France"
   },
-  "CHS": {
-    "code": "CHS",
-    "name": "Charleston, AFB Municipal",
-    "city": "Charleston, SC",
-    "country": "USA"
-  },
   "CHT": {
     "code": "CHT",
     "name": "Karewa",
@@ -7991,12 +7889,6 @@ export const airports ={
     "name": "State",
     "city": "Chiloquin",
     "country": "USA"
-  },
-  "CIA": {
-    "code": "CIA",
-    "name": "Ciampino",
-    "city": "Rome",
-    "country": "Italy"
   },
   "CIB": {
     "code": "CIB",
@@ -8280,12 +8172,6 @@ export const airports ={
     "city": "Chkalovsky",
     "country": "Russian Federation"
   },
-  "CKM": {
-    "code": "CKM",
-    "name": "Fletcher Field",
-    "city": "Clarksdale, MS",
-    "country": "USA"
-  },
   "CKN": {
     "code": "CKN",
     "name": "Municipal",
@@ -8320,12 +8206,6 @@ export const airports ={
     "code": "CKU",
     "name": "City",
     "city": "Cordova",
-    "country": "USA"
-  },
-  "CKV": {
-    "code": "CKV",
-    "name": "Outlaw Field",
-    "city": "Clarksville, TN",
     "country": "USA"
   },
   "CKX": {
@@ -8364,12 +8244,6 @@ export const airports ={
     "city": "Clearlake",
     "country": "USA"
   },
-  "CLD": {
-    "code": "CLD",
-    "name": "Mc Clellan-Palomar Arpt.",
-    "city": "Carlsbad, CA",
-    "country": "USA"
-  },
   "CLE": {
     "code": "CLE",
     "name": "Hopkins Intl.",
@@ -8398,12 +8272,6 @@ export const airports ={
     "code": "CLK",
     "name": "Municipal",
     "city": "Clinton",
-    "country": "USA"
-  },
-  "CLL": {
-    "code": "CLL",
-    "name": "Easterwood Field",
-    "city": "College Station, TX",
     "country": "USA"
   },
   "CLM": {
@@ -8450,14 +8318,38 @@ export const airports ={
   },
   "CLT": {
     "code": "CLT",
-    "name": "All Airports",
+    "name": "Charlotte Douglas",
     "city": "Charlotte",
     "country": "USA"
   },
-  "CLU": {
-    "code": "CLU",
-    "name": "Columbus Municipal",
-    "city": "Columbus",
+  "CKV": {
+    "code": "CKV",
+    "name": "Outlaw Field",
+    "city": "Clarksville",
+    "country": "USA"
+  },
+  "CIA": {
+    "code": "CIA",
+    "name": "Ciampino",
+    "city": "Rome",
+    "country": "Italy"
+  },
+  "CLD": {
+    "code": "CLD",
+    "name": "Mc Clellan-Palomar Arpt.",
+    "city": "Carlsbad",
+    "country": "USA"
+  },
+  "CHS": {
+    "code": "CHS",
+    "name": "Charleston, AFB Municipal",
+    "city": "Charleston",
+    "country": "USA"
+  },
+  "CKM": {
+    "code": "CKM",
+    "name": "Fletcher Field",
+    "city": "Clarksdale",
     "country": "USA"
   },
   "CLV": {
@@ -8498,7 +8390,7 @@ export const airports ={
   },
   "CMB": {
     "code": "CMB",
-    "name": "All Airports",
+    "name": "Bandaranayake",
     "city": "Colombo",
     "country": "Sri Lanka"
   },
@@ -8534,7 +8426,7 @@ export const airports ={
   },
   "CMH": {
     "code": "CMH",
-    "name": "All Airports",
+    "name": "Port Columbus Intl",
     "city": "Columbus",
     "country": "USA"
   },
@@ -8772,12 +8664,6 @@ export const airports ={
     "city": "Canavieiras",
     "country": "Brazil"
   },
-  "CNW": {
-    "code": "CNW",
-    "name": "TSTC Waco Arpt.",
-    "city": "Waco, TX",
-    "country": "USA"
-  },
   "CNX": {
     "code": "CNX",
     "name": "Chiang Mai Intl.",
@@ -8873,12 +8759,6 @@ export const airports ={
     "name": "Cotonou",
     "city": "Cotonou",
     "country": "Benin"
-  },
-  "COP": {
-    "code": "COP",
-    "name": "Cooperstown - Westville Arpt.",
-    "city": "Cooperstown, NY",
-    "country": "USA"
   },
   "COQ": {
     "code": "COQ",
@@ -8984,7 +8864,7 @@ export const airports ={
   },
   "CPH": {
     "code": "CPH",
-    "name": "All Airports",
+    "name": "Kastrup",
     "city": "Copenhagen",
     "country": "Denmark"
   },
@@ -8994,17 +8874,29 @@ export const airports ={
     "city": "Cape Orford",
     "country": "Papua New Guinea"
   },
+  "COP": {
+    "code": "COP",
+    "name": "Cooperstown - Westville Arpt.",
+    "city": "Cooperstown",
+    "country": "USA"
+  },
+  "CLU": {
+    "code": "CLU",
+    "name": "Columbus Municipal",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "CNW": {
+    "code": "CNW",
+    "name": "TSTC Waco Arpt.",
+    "city": "Waco",
+    "country": "USA"
+  },
   "CPL": {
     "code": "CPL",
     "name": "Chaparral",
     "city": "Chaparral",
     "country": "Colombia"
-  },
-  "CPM": {
-    "code": "CPM",
-    "name": "Compton",
-    "city": "Compton, CA",
-    "country": "USA"
   },
   "CPN": {
     "code": "CPN",
@@ -9023,18 +8915,6 @@ export const airports ={
     "name": "Intl.",
     "city": "Campinas",
     "country": "Brazil"
-  },
-  "CPR": {
-    "code": "CPR",
-    "name": "Natrona County Intl. Arpt.",
-    "city": "Casper, WY",
-    "country": "USA"
-  },
-  "CPS": {
-    "code": "CPS",
-    "name": "St. Louis Downtown Arpt.",
-    "city": "St Louis, Il",
-    "country": "USA"
   },
   "CPT": {
     "code": "CPT",
@@ -9156,12 +9036,6 @@ export const airports ={
     "city": "Luzon",
     "country": "Philippines"
   },
-  "CRL": {
-    "code": "CRL",
-    "name": "Charleroi Brussels South",
-    "city": "Brussels",
-    "country": "Belgium"
-  },
   "CRM": {
     "code": "CRM",
     "name": "National",
@@ -9178,12 +9052,6 @@ export const airports ={
     "code": "CRO",
     "name": "Corcoran",
     "city": "Corcoran",
-    "country": "USA"
-  },
-  "CRP": {
-    "code": "CRP",
-    "name": "Corpus Christi Intl. Arpt.",
-    "city": "Corpus Christi, TX",
     "country": "USA"
   },
   "CRQ": {
@@ -9474,12 +9342,6 @@ export const airports ={
     "city": "Cattle Creek",
     "country": "Australia"
   },
-  "CTS": {
-    "code": "CTS",
-    "name": "New Chitose Arpt.",
-    "city": "Sapporo",
-    "country": "Japan"
-  },
   "CTT": {
     "code": "CTT",
     "name": "Le Castellet",
@@ -9552,6 +9414,30 @@ export const airports ={
     "city": "Cuneo",
     "country": "Italy"
   },
+  "CPM": {
+    "code": "CPM",
+    "name": "Compton",
+    "city": "Compton",
+    "country": "USA"
+  },
+  "CTS": {
+    "code": "CTS",
+    "name": "New Chitose Arpt.",
+    "city": "Sapporo",
+    "country": "Japan"
+  },
+  "CPR": {
+    "code": "CPR",
+    "name": "Natrona County Intl. Arpt.",
+    "city": "Casper",
+    "country": "USA"
+  },
+  "CPS": {
+    "code": "CPS",
+    "name": "St. Louis Downtown Arpt.",
+    "city": "St Louis",
+    "country": "USA"
+  },
   "CUG": {
     "code": "CUG",
     "name": "Cudal",
@@ -9594,12 +9480,6 @@ export const airports ={
     "city": "Cumana",
     "country": "Venezuela"
   },
-  "CUN": {
-    "code": "CUN",
-    "name": "CancÃƒÂºn Intl.",
-    "city": "Cancun",
-    "country": "Mexico"
-  },
   "CUO": {
     "code": "CUO",
     "name": "Caruru",
@@ -9623,12 +9503,6 @@ export const airports ={
     "name": "Hato Intl. Arpt.",
     "city": "Curacao",
     "country": "Netherlands Antilles"
-  },
-  "CUS": {
-    "code": "CUS",
-    "name": "Municipal",
-    "city": "Columbus",
-    "country": "USA"
   },
   "CUT": {
     "code": "CUT",
@@ -10110,6 +9984,12 @@ export const airports ={
     "city": "Cape Pole",
     "country": "USA"
   },
+  "CUN": {
+    "code": "CUN",
+    "name": "Cancun Intl.",
+    "city": "Cancun",
+    "country": "Mexico"
+  },
   "CZS": {
     "code": "CZS",
     "name": "Intl. Airpt. Cruzeiro Do Sul",
@@ -10218,12 +10098,6 @@ export const airports ={
     "city": "Dakhla Oasis",
     "country": "Egypt"
   },
-  "DAL": {
-    "code": "DAL",
-    "name": "Love Field",
-    "city": "Dallas",
-    "country": "USA"
-  },
   "DAM": {
     "code": "DAM",
     "name": "Intl.",
@@ -10277,12 +10151,6 @@ export const airports ={
     "name": "Daxian",
     "city": "Daxian",
     "country": "China"
-  },
-  "DAY": {
-    "code": "DAY",
-    "name": "James Cox Dayton Intl",
-    "city": "Dayton, Oh",
-    "country": "USA"
   },
   "DAZ": {
     "code": "DAZ",
@@ -10367,12 +10235,6 @@ export const airports ={
     "name": "Dalby",
     "city": "Dalby",
     "country": "Australia"
-  },
-  "DCA": {
-    "code": "DCA",
-    "name": "Ronald Reagan Washington National Arpt.",
-    "city": "Washington",
-    "country": "USA"
   },
   "DCF": {
     "code": "DCF",
@@ -10536,12 +10398,6 @@ export const airports ={
     "city": "Desroches",
     "country": "Seychelles"
   },
-  "DET": {
-    "code": "DET",
-    "name": "Detroit City",
-    "city": "Detroit",
-    "country": "USA"
-  },
   "DEZ": {
     "code": "DEZ",
     "name": "Al Jafrah",
@@ -10562,7 +10418,7 @@ export const airports ={
   },
   "DFW": {
     "code": "DFW",
-    "name": "All Airports",
+    "name": "Dallas/Fort Worth Intl.",
     "city": "Dallas",
     "country": "USA"
   },
@@ -10679,6 +10535,24 @@ export const airports ={
     "name": "Al Dhafra Military Apt",
     "city": "Abu Dhabi",
     "country": "United Arab Emirates"
+  },
+  "DCA": {
+    "code": "DCA",
+    "name": "Ronald Reagan Washington National Arpt.",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "DAY": {
+    "code": "DAY",
+    "name": "James Cox Dayton Intl",
+    "city": "Dayton",
+    "country": "USA"
+  },
+  "DET": {
+    "code": "DET",
+    "name": "Detroit City",
+    "city": "Detroit",
+    "country": "USA"
   },
   "DHI": {
     "code": "DHI",
@@ -11040,18 +10914,6 @@ export const airports ={
     "city": "Doomadgee",
     "country": "Australia"
   },
-  "DME": {
-    "code": "DME",
-    "name": "Domodedovo",
-    "city": "Moscow",
-    "country": "Russian Federation"
-  },
-  "DMK": {
-    "code": "DMK",
-    "name": "Don Muang",
-    "city": "Bangkok",
-    "country": "Thailand"
-  },
   "DMM": {
     "code": "DMM",
     "name": "King Fahd Intl. Arpt.",
@@ -11118,12 +10980,6 @@ export const airports ={
     "city": "Dundee",
     "country": "United Kingdom"
   },
-  "DNE": {
-    "code": "DNE",
-    "name": "Dallas North Arpt.",
-    "city": "Dallas",
-    "country": "USA"
-  },
   "DNF": {
     "code": "DNF",
     "name": "Martuba",
@@ -11153,12 +11009,6 @@ export const airports ={
     "name": "Dnepropetrovsk",
     "city": "Dnepropetrovsk",
     "country": "Ukraine"
-  },
-  "DNL": {
-    "code": "DNL",
-    "name": "Daniel Field",
-    "city": "Augusta, GA",
-    "country": "USA"
   },
   "DNM": {
     "code": "DNM",
@@ -11214,12 +11064,6 @@ export const airports ={
     "city": "Dinangat",
     "country": "Papua New Guinea"
   },
-  "DNV": {
-    "code": "DNV",
-    "name": "Vermilion County",
-    "city": "Danville, IL",
-    "country": "USA"
-  },
   "DNX": {
     "code": "DNX",
     "name": "Galegu",
@@ -11249,6 +11093,24 @@ export const airports ={
     "name": "Dodoma",
     "city": "Dodoma",
     "country": "Tanzania"
+  },
+  "DNL": {
+    "code": "DNL",
+    "name": "Daniel Field",
+    "city": "Augusta",
+    "country": "USA"
+  },
+  "DNV": {
+    "code": "DNV",
+    "name": "Vermilion County",
+    "city": "Danville",
+    "country": "USA"
+  },
+  "DNE": {
+    "code": "DNE",
+    "name": "Dallas North Arpt.",
+    "city": "Dallas",
+    "country": "USA"
   },
   "DOE": {
     "code": "DOE",
@@ -11294,7 +11156,7 @@ export const airports ={
   },
   "DOM": {
     "code": "DOM",
-    "name": "All Airports",
+    "name": "Melville Hall",
     "city": "Dominica",
     "country": "Dominica"
   },
@@ -11334,12 +11196,6 @@ export const airports ={
     "city": "Dourados",
     "country": "Brazil"
   },
-  "DOV": {
-    "code": "DOV",
-    "name": "Dover AFB",
-    "city": "Dover-Cheswold, DE",
-    "country": "USA"
-  },
   "DOX": {
     "code": "DOX",
     "name": "Dongara",
@@ -11351,12 +11207,6 @@ export const airports ={
     "name": "Dongying",
     "city": "Dongying",
     "country": "China"
-  },
-  "DPA": {
-    "code": "DPA",
-    "name": "Dupage County",
-    "city": "Chicago",
-    "country": "USA"
   },
   "DPE": {
     "code": "DPE",
@@ -11387,12 +11237,6 @@ export const airports ={
     "name": "Devonport",
     "city": "Devonport",
     "country": "Australia"
-  },
-  "DPS": {
-    "code": "DPS",
-    "name": "Ngurah Rai Intl.",
-    "city": "Denpasar, Bali",
-    "country": "Indonesia"
   },
   "DPU": {
     "code": "DPU",
@@ -11550,12 +11394,6 @@ export const airports ={
     "city": "Daru",
     "country": "Sierra Leone"
   },
-  "DSM": {
-    "code": "DSM",
-    "name": "Des Moines Intl.",
-    "city": "Des Moines, IA",
-    "country": "USA"
-  },
   "DSN": {
     "code": "DSN",
     "name": "Dongsheng",
@@ -11604,12 +11442,6 @@ export const airports ={
     "city": "Dortmund",
     "country": "Germany"
   },
-  "DTN": {
-    "code": "DTN",
-    "name": "Shreveport Downtown",
-    "city": "Shreveport, LA",
-    "country": "USA"
-  },
   "DTR": {
     "code": "DTR",
     "name": "Decatur Island",
@@ -11619,12 +11451,6 @@ export const airports ={
   "DTT": {
     "code": "DTT",
     "name": "All Airports",
-    "city": "Detroit",
-    "country": "USA"
-  },
-  "DTW": {
-    "code": "DTW",
-    "name": "Detroit Metropolitan Wayne County",
     "city": "Detroit",
     "country": "USA"
   },
@@ -11657,12 +11483,6 @@ export const airports ={
     "name": "Dundo",
     "city": "Dundo",
     "country": "Angola"
-  },
-  "DUF": {
-    "code": "DUF",
-    "name": "Pine Island Arpt.",
-    "city": "Corolla, NC",
-    "country": "USA"
   },
   "DUG": {
     "code": "DUG",
@@ -11760,12 +11580,6 @@ export const airports ={
     "city": "Daly River",
     "country": "Australia"
   },
-  "DVT": {
-    "code": "DVT",
-    "name": "Phoenix Deer Valley Arpt.",
-    "city": "Phoenix",
-    "country": "USA"
-  },
   "DWA": {
     "code": "DWA",
     "name": "Dwangwa",
@@ -11777,12 +11591,6 @@ export const airports ={
     "name": "Soalala",
     "city": "Soalala",
     "country": "Madagascar"
-  },
-  "DWC": {
-    "code": "DWC",
-    "name": "Al Maktoum International",
-    "city": "Dubai",
-    "country": "United Arab Emirates"
   },
   "DWD": {
     "code": "DWD",
@@ -11796,22 +11604,58 @@ export const airports ={
     "city": "Dayton",
     "country": "USA"
   },
-  "DWH": {
-    "code": "DWH",
-    "name": "David Wayne Hooks",
-    "city": "Houston",
-    "country": "USA"
-  },
   "DWN": {
     "code": "DWN",
     "name": "Downtown Airpark",
     "city": "Oklahoma City",
     "country": "USA"
   },
+  "DTW": {
+    "code": "DTW",
+    "name": "Detroit Metropolitan Wayne County",
+    "city": "Detroit",
+    "country": "USA"
+  },
+  "DWC": {
+    "code": "DWC",
+    "name": "Al Maktoum International",
+    "city": "Dubai",
+    "country": "United Arab Emirates"
+  },
+  "DWH": {
+    "code": "DWH",
+    "name": "David Wayne Hooks",
+    "city": "Houston",
+    "country": "USA"
+  },
   "DWS": {
     "code": "DWS",
     "name": "Walt Disney World",
     "city": "Orlando",
+    "country": "USA"
+  },
+  "DSM": {
+    "code": "DSM",
+    "name": "Des Moines Intl.",
+    "city": "Des Moines",
+    "country": "USA"
+  },
+  "DTN": {
+    "code": "DTN",
+    "name": "Shreveport Downtown",
+    "city": "Shreveport",
+    "country": "USA"
+  },
+  "DOV": {
+    "code": "DOV",
+    "name": "Dover AFB",
+    "city": "Dover-Cheswold",
+    "country": "USA"
+  },
+  "DUF": {
+    "code": "DUF",
+    "name": "Pine Island Arpt.",
+    "city": "Corolla",
     "country": "USA"
   },
   "DXA": {
@@ -11822,7 +11666,7 @@ export const airports ={
   },
   "DXB": {
     "code": "DXB",
-    "name": "All Airports",
+    "name": "Dubai",
     "city": "Dubai",
     "country": "United Arab Emirates"
   },
@@ -11831,12 +11675,6 @@ export const airports ={
     "name": "Dixie",
     "city": "Dixie",
     "country": "Australia"
-  },
-  "DXR": {
-    "code": "DXR",
-    "name": "Danbury Municipal Arpt.",
-    "city": "Danbury, CT",
-    "country": "USA"
   },
   "DYA": {
     "code": "DYA",
@@ -11970,12 +11808,6 @@ export const airports ={
     "city": "Wenatchee",
     "country": "USA"
   },
-  "EAU": {
-    "code": "EAU",
-    "name": "Chippewa Valley Regional Arpt.",
-    "city": "Eau Claire, WI",
-    "country": "USA"
-  },
   "EBA": {
     "code": "EBA",
     "name": "Marina Di Campo",
@@ -12054,12 +11886,6 @@ export const airports ={
     "city": "East Tawas",
     "country": "USA"
   },
-  "ECG": {
-    "code": "ECG",
-    "name": "Elizabeth City",
-    "city": "Elizabeth City, NC",
-    "country": "USA"
-  },
   "ECH": {
     "code": "ECH",
     "name": "Echuca",
@@ -12077,12 +11903,6 @@ export const airports ={
     "name": "El Encanto",
     "city": "El Encanto",
     "country": "Colombia"
-  },
-  "ECP": {
-    "code": "ECP",
-    "name": "Northwest Florida Beaches Intl.",
-    "city": "Panama City, FL",
-    "country": "USA"
   },
   "ECR": {
     "code": "ECR",
@@ -12202,12 +12022,6 @@ export const airports ={
     "code": "EFB",
     "name": "Eight Fathom Bight",
     "city": "Eight Fathom Bight",
-    "country": "USA"
-  },
-  "EFD": {
-    "code": "EFD",
-    "name": "Ellington Field",
-    "city": "Houston",
     "country": "USA"
   },
   "EFG": {
@@ -12378,6 +12192,30 @@ export const airports ={
     "city": "Barrancabermeja",
     "country": "Colombia"
   },
+  "EAU": {
+    "code": "EAU",
+    "name": "Chippewa Valley Regional Arpt.",
+    "city": "Eau Claire",
+    "country": "USA"
+  },
+  "EFD": {
+    "code": "EFD",
+    "name": "Ellington Field",
+    "city": "Houston",
+    "country": "USA"
+  },
+  "ECG": {
+    "code": "ECG",
+    "name": "Elizabeth City",
+    "city": "Elizabeth City",
+    "country": "USA"
+  },
+  "ECP": {
+    "code": "ECP",
+    "name": "Northwest Florida Beaches Intl.",
+    "city": "Panama City",
+    "country": "USA"
+  },
   "EJH": {
     "code": "EJH",
     "name": "Wedjh",
@@ -12389,12 +12227,6 @@ export const airports ={
     "name": "Enijet",
     "city": "Mili Atoll",
     "country": "Marshall Islands"
-  },
-  "EKA": {
-    "code": "EKA",
-    "name": "Murray Field",
-    "city": "Eureka, CA",
-    "country": "USA"
   },
   "EKB": {
     "code": "EKB",
@@ -12424,12 +12256,6 @@ export const airports ={
     "code": "EKN",
     "name": "Elkins",
     "city": "Elkins",
-    "country": "USA"
-  },
-  "EKO": {
-    "code": "EKO",
-    "name": "Elko Regional",
-    "city": "Elko, NV",
     "country": "USA"
   },
   "EKT": {
@@ -12515,12 +12341,6 @@ export const airports ={
     "name": "Ellisras",
     "city": "Ellisras",
     "country": "South Africa"
-  },
-  "ELM": {
-    "code": "ELM",
-    "name": "Elmira Corning Regional",
-    "city": "Corning, NY",
-    "country": "USA"
   },
   "ELN": {
     "code": "ELN",
@@ -12890,7 +12710,7 @@ export const airports ={
   },
   "EPS": {
     "code": "EPS",
-    "name": "All Airports",
+    "name": "Arroyo Barril Intl.",
     "city": "Samana",
     "country": "Dominican Republic"
   },
@@ -12948,6 +12768,24 @@ export const airports ={
     "city": "Erfurt",
     "country": "Germany"
   },
+  "ELM": {
+    "code": "ELM",
+    "name": "Elmira Corning Regional",
+    "city": "Corning",
+    "country": "USA"
+  },
+  "EKA": {
+    "code": "EKA",
+    "name": "Murray Field",
+    "city": "Eureka",
+    "country": "USA"
+  },
+  "EKO": {
+    "code": "EKO",
+    "name": "Elko Regional",
+    "city": "Elko",
+    "country": "USA"
+  },
   "ERH": {
     "code": "ERH",
     "name": "Moulay Ali Cherif",
@@ -12983,12 +12821,6 @@ export const airports ={
     "name": "Errol",
     "city": "Errol",
     "country": "USA"
-  },
-  "ERS": {
-    "code": "ERS",
-    "name": "Eros",
-    "city": "Windhoek",
-    "country": "Namibia"
   },
   "ERT": {
     "code": "ERT",
@@ -13148,7 +12980,7 @@ export const airports ={
   },
   "ETH": {
     "code": "ETH",
-    "name": "All Airports",
+    "name": "Eilat",
     "city": "Eilat",
     "country": "Israel"
   },
@@ -13272,12 +13104,6 @@ export const airports ={
     "city": "Yerevan",
     "country": "Armenia"
   },
-  "EVV": {
-    "code": "EVV",
-    "name": "Evansville Regional Arpt.",
-    "city": "Evansville, IN",
-    "country": "USA"
-  },
   "EVW": {
     "code": "EVW",
     "name": "Evanston",
@@ -13391,12 +13217,6 @@ export const airports ={
     "name": "Intl.",
     "city": "Key West",
     "country": "USA"
-  },
-  "EZE": {
-    "code": "EZE",
-    "name": "Ezeiza Ministro Pistarini",
-    "city": "Buenos Aires",
-    "country": "Argentina"
   },
   "EZS": {
     "code": "EZS",
@@ -13518,6 +13338,12 @@ export const airports ={
     "city": "Fakarava",
     "country": "French Polynesia"
   },
+  "ERS": {
+    "code": "ERS",
+    "name": "Eros",
+    "city": "Windhoek",
+    "country": "Namibia"
+  },
   "FAY": {
     "code": "FAY",
     "name": "Municipal",
@@ -13584,12 +13410,6 @@ export const airports ={
     "city": "Fairbury",
     "country": "USA"
   },
-  "FCA": {
-    "code": "FCA",
-    "name": "Glacier Park Intl.",
-    "city": "Kalispell, MT",
-    "country": "USA"
-  },
   "FCB": {
     "code": "FCB",
     "name": "Ficksburg Sentra Oes",
@@ -13613,12 +13433,6 @@ export const airports ={
     "name": "Cuxhaven/Nordholz",
     "city": "Cuxhaven",
     "country": "Germany"
-  },
-  "FCO": {
-    "code": "FCO",
-    "name": "Leonardo da Vinci Intl.",
-    "city": "Rome",
-    "country": "Italy"
   },
   "FCS": {
     "code": "FCS",
@@ -13794,12 +13608,6 @@ export const airports ={
     "city": "Dayton",
     "country": "USA"
   },
-  "FFT": {
-    "code": "FFT",
-    "name": "Capital City",
-    "city": "Frankfort, KY",
-    "country": "USA"
-  },
   "FFU": {
     "code": "FFU",
     "name": "Futaleufu",
@@ -13874,7 +13682,7 @@ export const airports ={
   },
   "FIH": {
     "code": "FIH",
-    "name": "All Airports",
+    "name": "N'Djili Airport",
     "city": "Kinshasa",
     "country": "Democratic Republic Of Congo"
   },
@@ -14064,10 +13872,28 @@ export const airports ={
     "city": "Flat",
     "country": "USA"
   },
+  "FCO": {
+    "code": "FCO",
+    "name": "Leonardo da Vinci Intl.",
+    "city": "Rome",
+    "country": "Italy"
+  },
+  "FCA": {
+    "code": "FCA",
+    "name": "Glacier Park Intl.",
+    "city": "Kalispell",
+    "country": "USA"
+  },
   "FLU": {
     "code": "FLU",
     "name": "Flushing",
     "city": "New York",
+    "country": "USA"
+  },
+  "FFT": {
+    "code": "FFT",
+    "name": "Capital City",
+    "city": "Frankfort",
     "country": "USA"
   },
   "FLV": {
@@ -14168,7 +13994,7 @@ export const airports ={
   },
   "FNA": {
     "code": "FNA",
-    "name": "All Airports",
+    "name": "Lungi Intl.",
     "city": "Freetown",
     "country": "Sierra Leone"
   },
@@ -14249,18 +14075,6 @@ export const airports ={
     "name": "Fuzhou",
     "city": "Fuzhou",
     "country": "China"
-  },
-  "FOD": {
-    "code": "FOD",
-    "name": "Fort Dodge Regional",
-    "city": "Fort Dodge, IA",
-    "country": "USA"
-  },
-  "FOE": {
-    "code": "FOE",
-    "name": "Forbes Field",
-    "city": "Topeka, KS",
-    "country": "USA"
   },
   "FOG": {
     "code": "FOG",
@@ -14348,7 +14162,7 @@ export const airports ={
   },
   "FRA": {
     "code": "FRA",
-    "name": "All Airports",
+    "name": "Frankfurt Intl. Arpt.",
     "city": "Frankfurt",
     "country": "Germany"
   },
@@ -14376,12 +14190,6 @@ export const airports ={
     "city": "Fera Island",
     "country": "Solomon Islands"
   },
-  "FRF": {
-    "code": "FRF",
-    "name": "Rhein-Main AFB",
-    "city": "Frankfurt",
-    "country": "Germany"
-  },
   "FRG": {
     "code": "FRG",
     "name": "Republic Field",
@@ -14392,12 +14200,6 @@ export const airports ={
     "code": "FRH",
     "name": "Municipal",
     "city": "French Lick",
-    "country": "USA"
-  },
-  "FRI": {
-    "code": "FRI",
-    "name": "Marshall AAF",
-    "city": "Fort Riley, KS",
     "country": "USA"
   },
   "FRJ": {
@@ -14447,12 +14249,6 @@ export const airports ={
     "name": "Feramin",
     "city": "Feramin",
     "country": "Papua New Guinea"
-  },
-  "FRR": {
-    "code": "FRR",
-    "name": "Front Royal-Warren County",
-    "city": "Front Royal,",
-    "country": "USA"
   },
   "FRS": {
     "code": "FRS",
@@ -14622,6 +14418,30 @@ export const airports ={
     "city": "Fulleborn",
     "country": "Papua New Guinea"
   },
+  "FOD": {
+    "code": "FOD",
+    "name": "Fort Dodge Regional",
+    "city": "Fort Dodge",
+    "country": "USA"
+  },
+  "FOE": {
+    "code": "FOE",
+    "name": "Forbes Field",
+    "city": "Topeka",
+    "country": "USA"
+  },
+  "FRI": {
+    "code": "FRI",
+    "name": "Marshall AAF",
+    "city": "Fort Riley",
+    "country": "USA"
+  },
+  "FRR": {
+    "code": "FRR",
+    "name": "Front Royal-Warren County",
+    "city": "Front Royal",
+    "country": "USA"
+  },
   "FUE": {
     "code": "FUE",
     "name": "Fuerteventura",
@@ -14686,12 +14506,6 @@ export const airports ={
     "code": "FWA",
     "name": "Municipal/Baer Field",
     "city": "Fort Wayne",
-    "country": "USA"
-  },
-  "FWH": {
-    "code": "FWH",
-    "name": "Fort Worth NAS Jrb/Carswell Field",
-    "city": "Fort Worth, TX",
     "country": "USA"
   },
   "FWL": {
@@ -15072,18 +14886,6 @@ export const airports ={
     "city": "Guernsey",
     "country": "United Kingdom"
   },
-  "GCJ": {
-    "code": "GCJ",
-    "name": "Grand Central",
-    "city": "Johannesburg",
-    "country": "South Africa"
-  },
-  "GCK": {
-    "code": "GCK",
-    "name": "Garden City Municipal Arpt.",
-    "city": "Garden City, KS",
-    "country": "USA"
-  },
   "GCM": {
     "code": "GCM",
     "name": "GRAND CAYMAN",
@@ -15186,6 +14988,18 @@ export const airports ={
     "city": "Gondar",
     "country": "Ethiopia"
   },
+  "FWH": {
+    "code": "FWH",
+    "name": "Fort Worth NAS Jrb/Carswell Field",
+    "city": "Fort Worth",
+    "country": "USA"
+  },
+  "GCK": {
+    "code": "GCK",
+    "name": "Garden City Municipal Arpt.",
+    "city": "Garden City",
+    "country": "USA"
+  },
   "GDT": {
     "code": "GDT",
     "name": "Grand Turk Is",
@@ -15215,12 +15029,6 @@ export const airports ={
     "name": "Gelendzik",
     "city": "Gelendzik",
     "country": "Russian Federation"
-  },
-  "GEA": {
-    "code": "GEA",
-    "name": "Magenta",
-    "city": "Noumea",
-    "country": "New Caledonia"
   },
   "GEB": {
     "code": "GEB",
@@ -15546,12 +15354,6 @@ export const airports ={
     "city": "Winter Haven",
     "country": "USA"
   },
-  "GIG": {
-    "code": "GIG",
-    "name": "Galeao Antonio Carlos Jobim Intl. Airpt.",
-    "city": "Rio De Janeiro",
-    "country": "Brazil"
-  },
   "GII": {
     "code": "GII",
     "name": "Siguiri",
@@ -15674,7 +15476,7 @@ export const airports ={
   },
   "GLA": {
     "code": "GLA",
-    "name": "All Airports",
+    "name": "Glasgow Intl.",
     "city": "Glasgow",
     "country": "United Kingdom"
   },
@@ -15743,6 +15545,12 @@ export const airports ={
     "name": "Goulimime",
     "city": "Goulimime",
     "country": "Morocco"
+  },
+  "GEA": {
+    "code": "GEA",
+    "name": "Magenta",
+    "city": "Noumea",
+    "country": "New Caledonia"
   },
   "GLO": {
     "code": "GLO",
@@ -15857,12 +15665,6 @@ export const airports ={
     "name": "Gombe ",
     "city": "Gombe ",
     "country": "Nigeria"
-  },
-  "GMP": {
-    "code": "GMP",
-    "name": "Gimpo Intl.",
-    "city": "Seoul",
-    "country": "Korea"
   },
   "GMR": {
     "code": "GMR",
@@ -16242,23 +16044,11 @@ export const airports ={
     "city": "Garuahi",
     "country": "Papua New Guinea"
   },
-  "GRI": {
-    "code": "GRI",
-    "name": "Grand Island",
-    "city": "Grand Island, NE",
-    "country": "USA"
-  },
   "GRJ": {
     "code": "GRJ",
     "name": "George",
     "city": "George",
     "country": "South Africa"
-  },
-  "GRK": {
-    "code": "GRK",
-    "name": "Gray Aaf",
-    "city": "Fort Hood, TX",
-    "country": "USA"
   },
   "GRL": {
     "code": "GRL",
@@ -16314,11 +16104,17 @@ export const airports ={
     "city": "Gujrat",
     "country": "Pakistan"
   },
-  "GRU": {
-    "code": "GRU",
-    "name": "Aeroporto Internacional Guarulhos",
-    "city": "Sao Paulo",
-    "country": "Brazil"
+  "GRI": {
+    "code": "GRI",
+    "name": "Grand Island",
+    "city": "Grand Island",
+    "country": "USA"
+  },
+  "GRK": {
+    "code": "GRK",
+    "name": "Gray Aaf",
+    "city": "Fort Hood",
+    "country": "USA"
   },
   "GRV": {
     "code": "GRV",
@@ -16385,12 +16181,6 @@ export const airports ={
     "name": "Mount Gunson",
     "city": "Mount Gunson",
     "country": "Australia"
-  },
-  "GSO": {
-    "code": "GSO",
-    "name": "Piedmont Triad Intl",
-    "city": "Greensboro, NC",
-    "country": "USA"
   },
   "GSP": {
     "code": "GSP",
@@ -16493,12 +16283,6 @@ export const airports ={
     "name": "Tolotio",
     "city": "Gorontalo",
     "country": "Indonesia"
-  },
-  "GTR": {
-    "code": "GTR",
-    "name": "Golden Triangle Reg.",
-    "city": "Columbus",
-    "country": "USA"
   },
   "GTS": {
     "code": "GTS",
@@ -16782,12 +16566,6 @@ export const airports ={
     "city": "Glendale",
     "country": "USA"
   },
-  "GWW": {
-    "code": "GWW",
-    "name": "Raf Gatow",
-    "city": "Berlin",
-    "country": "Germany"
-  },
   "GWY": {
     "code": "GWY",
     "name": "Carnmore",
@@ -16836,12 +16614,6 @@ export const airports ={
     "city": "Guayaramerin",
     "country": "Bolivia"
   },
-  "GYD": {
-    "code": "GYD",
-    "name": "Heydar Aliyev Intl.",
-    "city": "Baku",
-    "country": "Azerbaijan"
-  },
   "GYE": {
     "code": "GYE",
     "name": "Simon Bolivar",
@@ -16878,6 +16650,24 @@ export const airports ={
     "city": "Gympie",
     "country": "Australia"
   },
+  "GTR": {
+    "code": "GTR",
+    "name": "Golden Triangle Reg.",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "GSO": {
+    "code": "GSO",
+    "name": "Piedmont Triad Intl",
+    "city": "Greensboro",
+    "country": "USA"
+  },
+  "GWW": {
+    "code": "GWW",
+    "name": "Raf Gatow",
+    "city": "Berlin",
+    "country": "Germany"
+  },
   "GYR": {
     "code": "GYR",
     "name": "Litchfield",
@@ -16889,12 +16679,6 @@ export const airports ={
     "name": "Guang Yuan",
     "city": "Guang Yuan",
     "country": "China"
-  },
-  "GYY": {
-    "code": "GYY",
-    "name": "Gary/Chicago Intl.",
-    "city": "Gary, IN",
-    "country": "USA"
   },
   "GZA": {
     "code": "GZA",
@@ -17106,12 +16890,6 @@ export const airports ={
     "city": "Habi",
     "country": "Papua New Guinea"
   },
-  "HBE": {
-    "code": "HBE",
-    "name": "Amiryah West",
-    "city": "Alexandria",
-    "country": "Egypt"
-  },
   "HBG": {
     "code": "HBG",
     "name": "The Hattiesburg-Bobby L. Chain Mun.",
@@ -17146,12 +16924,6 @@ export const airports ={
     "code": "HBO",
     "name": "Municipal",
     "city": "Humboldt",
-    "country": "USA"
-  },
-  "HBR": {
-    "code": "HBR",
-    "name": "Hobart",
-    "city": "Hobart, OK",
     "country": "USA"
   },
   "HBT": {
@@ -17207,12 +16979,6 @@ export const airports ={
     "name": "Holy Cross",
     "city": "Holy Cross",
     "country": "USA"
-  },
-  "HCS": {
-    "code": "HCS",
-    "name": "Randburg Heliport",
-    "city": "Johannesburg",
-    "country": "South Africa"
   },
   "HCW": {
     "code": "HCW",
@@ -17388,12 +17154,6 @@ export const airports ={
     "city": "Athens",
     "country": "Greece"
   },
-  "HEX": {
-    "code": "HEX",
-    "name": "Santo Domingo Herrera",
-    "city": "Santo Domingo",
-    "country": "Dominican Republic"
-  },
   "HEY": {
     "code": "HEY",
     "name": "Hanchey Army Heliport",
@@ -17448,6 +17208,30 @@ export const airports ={
     "city": "Hammerfest",
     "country": "Norway"
   },
+  "HEX": {
+    "code": "HEX",
+    "name": "Santo Domingo Herrera",
+    "city": "Santo Domingo",
+    "country": "Dominican Republic"
+  },
+  "GYY": {
+    "code": "GYY",
+    "name": "Gary/Chicago Intl.",
+    "city": "Gary",
+    "country": "USA"
+  },
+  "HCS": {
+    "code": "HCS",
+    "name": "Randburg Heliport",
+    "city": "Johannesburg",
+    "country": "South Africa"
+  },
+  "HBR": {
+    "code": "HBR",
+    "name": "Hobart",
+    "city": "Hobart",
+    "country": "USA"
+  },
   "HGA": {
     "code": "HGA",
     "name": "Hargeisa",
@@ -17495,12 +17279,6 @@ export const airports ={
     "name": "Wash. County Regional",
     "city": "Hagerstown",
     "country": "USA"
-  },
-  "HGS": {
-    "code": "HGS",
-    "name": "Hastings",
-    "city": "Freetown",
-    "country": "Sierra Leone"
   },
   "HGT": {
     "code": "HGT",
@@ -17826,12 +17604,6 @@ export const airports ={
     "city": "Helena",
     "country": "USA"
   },
-  "HLP": {
-    "code": "HLP",
-    "name": "Halim Perdana Kusuma",
-    "city": "Jakarta",
-    "country": "Indonesia"
-  },
   "HLR": {
     "code": "HLR",
     "name": "Fort Hood AAF",
@@ -17970,12 +17742,6 @@ export const airports ={
     "city": "Hatteras",
     "country": "USA"
   },
-  "HND": {
-    "code": "HND",
-    "name": "Tokyo Haneda Intl.",
-    "city": "Tokyo",
-    "country": "Japan"
-  },
   "HNE": {
     "code": "HNE",
     "name": "Tahneta Pass",
@@ -18011,6 +17777,18 @@ export const airports ={
     "name": "Honolulu Intl.",
     "city": "Honolulu",
     "country": "USA"
+  },
+  "HND": {
+    "code": "HND",
+    "name": "Tokyo Haneda Intl.",
+    "city": "Tokyo",
+    "country": "Japan"
+  },
+  "HLP": {
+    "code": "HLP",
+    "name": "Halim Perdana Kusuma",
+    "city": "Jakarta",
+    "country": "Indonesia"
   },
   "HNM": {
     "code": "HNM",
@@ -18158,7 +17936,7 @@ export const airports ={
   },
   "HOU": {
     "code": "HOU",
-    "name": "All Airports",
+    "name": "William P Hobby",
     "city": "Houston",
     "country": "USA"
   },
@@ -18203,12 +17981,6 @@ export const airports ={
     "name": "Catbi",
     "city": "Haiphong",
     "country": "Viet Nam"
-  },
-  "HPN": {
-    "code": "HPN",
-    "name": "Westchester County Apt",
-    "city": "New York",
-    "country": "USA"
   },
   "HPP": {
     "code": "HPP",
@@ -18408,12 +18180,6 @@ export const airports ={
     "city": "Homestead",
     "country": "USA"
   },
-  "HSV": {
-    "code": "HSV",
-    "name": "Huntsville Intl. - Carl T. Jones Field",
-    "city": "Huntsville, AL",
-    "country": "USA"
-  },
   "HSZ": {
     "code": "HSZ",
     "name": "Hsinchu",
@@ -18586,6 +18352,12 @@ export const airports ={
     "code": "HUM",
     "name": "Terrebonne",
     "city": "Houma",
+    "country": "USA"
+  },
+  "HPN": {
+    "code": "HPN",
+    "name": "Westchester County Apt",
+    "city": "New York",
     "country": "USA"
   },
   "HUN": {
@@ -18840,22 +18612,10 @@ export const airports ={
     "city": "Igarka",
     "country": "Russian Federation"
   },
-  "IAD": {
-    "code": "IAD",
-    "name": "Washington Dulles Intl.",
-    "city": "Washington",
-    "country": "USA"
-  },
   "IAG": {
     "code": "IAG",
     "name": "Intl.",
     "city": "Niagara Falls",
-    "country": "USA"
-  },
-  "IAH": {
-    "code": "IAH",
-    "name": "George Bush Intercontinental",
-    "city": "Houston",
     "country": "USA"
   },
   "IAM": {
@@ -18966,12 +18726,6 @@ export const airports ={
     "city": "Clarinda",
     "country": "USA"
   },
-  "ICN": {
-    "code": "ICN",
-    "name": "Incheon Intl.",
-    "city": "Seoul",
-    "country": "Korea"
-  },
   "ICO": {
     "code": "ICO",
     "name": "Sicogon Island",
@@ -19024,12 +18778,6 @@ export const airports ={
     "code": "IDG",
     "name": "Municipal",
     "city": "Ida Grove",
-    "country": "USA"
-  },
-  "IDI": {
-    "code": "IDI",
-    "name": "ndiana County Arpt.",
-    "city": "Indiana, PA",
     "country": "USA"
   },
   "IDK": {
@@ -19164,6 +18912,18 @@ export const airports ={
     "city": "Izmir",
     "country": "Turkey"
   },
+  "ICN": {
+    "code": "ICN",
+    "name": "Incheon Intl.",
+    "city": "Seoul",
+    "country": "Korea"
+  },
+  "IDI": {
+    "code": "IDI",
+    "name": "ndiana County Arpt.",
+    "city": "Indiana",
+    "country": "USA"
+  },
   "IGM": {
     "code": "IGM",
     "name": "Kingman",
@@ -19277,12 +19037,6 @@ export const airports ={
     "name": "Municipal",
     "city": "Jacksonville",
     "country": "USA"
-  },
-  "IKA": {
-    "code": "IKA",
-    "name": "Imam Khomeini Airport",
-    "city": "Tehran",
-    "country": "Iran"
   },
   "IKB": {
     "code": "IKB",
@@ -19542,12 +19296,6 @@ export const airports ={
     "city": "Yinchuan",
     "country": "China"
   },
-  "IND": {
-    "code": "IND",
-    "name": "Indianapolis Intl.",
-    "city": "Indianapolis, IN",
-    "country": "USA"
-  },
   "INE": {
     "code": "INE",
     "name": "Chinde",
@@ -19650,12 +19398,6 @@ export const airports ={
     "city": "Inverness",
     "country": "United Kingdom"
   },
-  "INW": {
-    "code": "INW",
-    "name": "Winslow-Lindbergh",
-    "city": "Winslow, AZ",
-    "country": "USA"
-  },
   "INX": {
     "code": "INX",
     "name": "Inanwatan",
@@ -19722,17 +19464,23 @@ export const airports ={
     "city": "Ile Ouen",
     "country": "New Caledonia"
   },
-  "IOW": {
-    "code": "IOW",
-    "name": "Iowa City",
-    "city": "Iowa City, IA",
-    "country": "USA"
-  },
   "IPA": {
     "code": "IPA",
     "name": "Ipota",
     "city": "Ipota",
     "country": "Vanuatu"
+  },
+  "IND": {
+    "code": "IND",
+    "name": "Indianapolis Intl.",
+    "city": "Indianapolis",
+    "country": "USA"
+  },
+  "INW": {
+    "code": "INW",
+    "name": "Winslow-Lindbergh",
+    "city": "Winslow",
+    "country": "USA"
   },
   "IPC": {
     "code": "IPC",
@@ -19980,12 +19728,6 @@ export const airports ={
     "city": "Kinston",
     "country": "USA"
   },
-  "ISP": {
-    "code": "ISP",
-    "name": "Long Island Mac Arthur",
-    "city": "New York",
-    "country": "USA"
-  },
   "ISS": {
     "code": "ISS",
     "name": "Wiscasset",
@@ -19994,7 +19736,7 @@ export const airports ={
   },
   "IST": {
     "code": "IST",
-    "name": "All Airports",
+    "name": "Ataturk",
     "city": "Istanbul",
     "country": "Turkey"
   },
@@ -20008,12 +19750,6 @@ export const airports ={
     "code": "ISW",
     "name": "Alexander Field",
     "city": "Wisconsin Rapids",
-    "country": "USA"
-  },
-  "ISZ": {
-    "code": "ISZ",
-    "name": "Cincinnati-Blue Ash Arpt.",
-    "city": "Cincinnati, OH",
     "country": "USA"
   },
   "ITA": {
@@ -20051,12 +19787,6 @@ export const airports ={
     "name": "Itokama",
     "city": "Itokama",
     "country": "Papua New Guinea"
-  },
-  "ITM": {
-    "code": "ITM",
-    "name": "Itami",
-    "city": "Osaka",
-    "country": "Japan"
   },
   "ITN": {
     "code": "ITN",
@@ -20304,6 +20034,18 @@ export const airports ={
     "city": "Along",
     "country": "India"
   },
+  "ITM": {
+    "code": "ITM",
+    "name": "Itami",
+    "city": "Osaka",
+    "country": "Japan"
+  },
+  "ISP": {
+    "code": "ISP",
+    "name": "Long Island Mac Arthur",
+    "city": "New York",
+    "country": "USA"
+  },
   "IXW": {
     "code": "IXW",
     "name": "Sonari",
@@ -20472,12 +20214,6 @@ export const airports ={
     "city": "Ilulissat",
     "country": "Greenland"
   },
-  "JAX": {
-    "code": "JAX",
-    "name": "Jacksonville,",
-    "city": "Jacksonville, FL",
-    "country": "USA"
-  },
   "JBC": {
     "code": "JBC",
     "name": "Boston City Heliport",
@@ -20488,12 +20224,6 @@ export const airports ={
     "code": "JBK",
     "name": "Berkeley",
     "city": "Berkeley",
-    "country": "USA"
-  },
-  "JBP": {
-    "code": "JBP",
-    "name": "Commerce Bus. Plaza",
-    "city": "Los Angeles",
     "country": "USA"
   },
   "JBR": {
@@ -20543,12 +20273,6 @@ export const airports ={
     "name": "Qasigiannguit",
     "city": "Qasigiannguit",
     "country": "Greenland"
-  },
-  "JCI": {
-    "code": "JCI",
-    "name": "New Century Aircenter Arpt.",
-    "city": "Olathe, KS",
-    "country": "USA"
   },
   "JCJ": {
     "code": "JCJ",
@@ -20610,12 +20334,6 @@ export const airports ={
     "city": "John Day",
     "country": "USA"
   },
-  "JDB": {
-    "code": "JDB",
-    "name": "Downtown Heliport",
-    "city": "Dallas",
-    "country": "USA"
-  },
   "JDF": {
     "code": "JDF",
     "name": "Francisco De Assis",
@@ -20628,12 +20346,6 @@ export const airports ={
     "city": "Jodhpur",
     "country": "India"
   },
-  "JDM": {
-    "code": "JDM",
-    "name": "Downtown Heliport",
-    "city": "Miami",
-    "country": "USA"
-  },
   "JDN": {
     "code": "JDN",
     "name": "Jordan",
@@ -20645,12 +20357,6 @@ export const airports ={
     "name": "Regional Do Cariri",
     "city": "Juazeiro Do Norte",
     "country": "Brazil"
-  },
-  "JDP": {
-    "code": "JDP",
-    "name": "Heliport De Paris",
-    "city": "Paris",
-    "country": "France"
   },
   "JDT": {
     "code": "JDT",
@@ -20681,12 +20387,6 @@ export const airports ={
     "name": "Jeremie",
     "city": "Jeremie",
     "country": "Haiti"
-  },
-  "JEF": {
-    "code": "JEF",
-    "name": "Memorial",
-    "city": "Jefferson City, MO",
-    "country": "USA"
   },
   "JEG": {
     "code": "JEG",
@@ -20723,12 +20423,6 @@ export const airports ={
     "name": "Heliport",
     "city": "Evry",
     "country": "France"
-  },
-  "JFK": {
-    "code": "JFK",
-    "name": "John F Kennedy Intl",
-    "city": "New York",
-    "country": "USA"
   },
   "JFM": {
     "code": "JFM",
@@ -20874,10 +20568,46 @@ export const airports ={
     "city": "Djibouti",
     "country": "Djibouti"
   },
-  "JID": {
-    "code": "JID",
-    "name": "City Of Industry H/P",
+  "JDM": {
+    "code": "JDM",
+    "name": "Downtown Heliport",
+    "city": "Miami",
+    "country": "USA"
+  },
+  "JFK": {
+    "code": "JFK",
+    "name": "John F Kennedy Intl",
+    "city": "New York",
+    "country": "USA"
+  },
+  "JDP": {
+    "code": "JDP",
+    "name": "Heliport De Paris",
+    "city": "Paris",
+    "country": "France"
+  },
+  "JEF": {
+    "code": "JEF",
+    "name": "Memorial",
+    "city": "Jefferson City",
+    "country": "USA"
+  },
+  "JBP": {
+    "code": "JBP",
+    "name": "Commerce Bus. Plaza",
     "city": "Los Angeles",
+    "country": "USA"
+  },
+  "JAX": {
+    "code": "JAX",
+    "name": "Jacksonville,",
+    "city": "Jacksonville",
+    "country": "USA"
+  },
+  "JCI": {
+    "code": "JCI",
+    "name": "New Century Aircenter Arpt.",
+    "city": "Olathe",
     "country": "USA"
   },
   "JIJ": {
@@ -20978,15 +20708,9 @@ export const airports ={
   },
   "JKT": {
     "code": "JKT",
-    "name": "All Airports",
+    "name": "Soekarno-hatta Intl",
     "city": "Jakarta",
     "country": "Indonesia"
-  },
-  "JKV": {
-    "code": "JKV",
-    "name": "Cherokee County",
-    "city": "Jacksonville, TX",
-    "country": "USA"
   },
   "JLA": {
     "code": "JLA",
@@ -21012,12 +20736,6 @@ export const airports ={
     "city": "Arlington Heights",
     "country": "USA"
   },
-  "JLN": {
-    "code": "JLN",
-    "name": "Joplin Regional",
-    "city": "Joplin, MO",
-    "country": "USA"
-  },
   "JLO": {
     "code": "JLO",
     "name": "Jesolo",
@@ -21041,18 +20759,6 @@ export const airports ={
     "name": "Jamba",
     "city": "Jamba",
     "country": "Angola"
-  },
-  "JMC": {
-    "code": "JMC",
-    "name": "Marin County",
-    "city": "Sausalito, CA",
-    "country": "USA"
-  },
-  "JMD": {
-    "code": "JMD",
-    "name": "Market Centre H/P",
-    "city": "Dallas",
-    "country": "USA"
   },
   "JMH": {
     "code": "JMH",
@@ -21102,12 +20808,6 @@ export const airports ={
     "city": "Jiamusi",
     "country": "China"
   },
-  "JMY": {
-    "code": "JMY",
-    "name": "Mammy Yoko Heliport",
-    "city": "Freetown",
-    "country": "Sierra Leone"
-  },
   "JNA": {
     "code": "JNA",
     "name": "Januaria",
@@ -21116,7 +20816,7 @@ export const airports ={
   },
   "JNB": {
     "code": "JNB",
-    "name": "All Airports",
+    "name": "Oliver Reginald Tambo Intl.",
     "city": "Johannesburg",
     "country": "South Africa"
   },
@@ -21125,12 +20825,6 @@ export const airports ={
     "name": "Jining",
     "city": "Jining",
     "country": "China"
-  },
-  "JNH": {
-    "code": "JNH",
-    "name": "North Park Inn H/P",
-    "city": "Dallas",
-    "country": "USA"
   },
   "JNI": {
     "code": "JNI",
@@ -21264,23 +20958,11 @@ export const airports ={
     "city": "Pasadena",
     "country": "USA"
   },
-  "JPN": {
-    "code": "JPN",
-    "name": "Pentagon Army",
-    "city": "Washington",
-    "country": "USA"
-  },
   "JPR": {
     "code": "JPR",
     "name": "Ji-Parana",
     "city": "Ji-Parana",
     "country": "Brazil"
-  },
-  "JPU": {
-    "code": "JPU",
-    "name": "La Defense Heliport",
-    "city": "Paris",
-    "country": "France"
   },
   "JQE": {
     "code": "JQE",
@@ -21288,28 +20970,10 @@ export const airports ={
     "city": "Jaque",
     "country": "Panama"
   },
-  "JRA": {
-    "code": "JRA",
-    "name": "West 30th St Heliport",
-    "city": "New York",
-    "country": "USA"
-  },
-  "JRB": {
-    "code": "JRB",
-    "name": "Downtown Manhattan H/p",
-    "city": "New York, NY",
-    "country": "USA"
-  },
   "JRC": {
     "code": "JRC",
     "name": "Municipal Heliport",
     "city": "Rochester",
-    "country": "USA"
-  },
-  "JRE": {
-    "code": "JRE",
-    "name": "East 60th Street H/P",
-    "city": "New York",
     "country": "USA"
   },
   "JRH": {
@@ -21347,12 +21011,6 @@ export const airports ={
     "name": "Jaisalmer",
     "city": "Jaisalmer",
     "country": "India"
-  },
-  "JSD": {
-    "code": "JSD",
-    "name": "Sikorsky Heliport",
-    "city": "Stratford, CT",
-    "country": "USA"
   },
   "JSG": {
     "code": "JSG",
@@ -21437,6 +21095,60 @@ export const airports ={
     "name": "Jatai",
     "city": "Jatai",
     "country": "Brazil"
+  },
+  "JRA": {
+    "code": "JRA",
+    "name": "West 30th St Heliport",
+    "city": "New York",
+    "country": "USA"
+  },
+  "JPU": {
+    "code": "JPU",
+    "name": "La Defense Heliport",
+    "city": "Paris",
+    "country": "France"
+  },
+  "JPN": {
+    "code": "JPN",
+    "name": "Pentagon Army",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "JLN": {
+    "code": "JLN",
+    "name": "Joplin Regional",
+    "city": "Joplin",
+    "country": "USA"
+  },
+  "JMC": {
+    "code": "JMC",
+    "name": "Marin County",
+    "city": "Sausalito",
+    "country": "USA"
+  },
+  "JSD": {
+    "code": "JSD",
+    "name": "Sikorsky Heliport",
+    "city": "Stratford",
+    "country": "USA"
+  },
+  "JMY": {
+    "code": "JMY",
+    "name": "Mammy Yoko Heliport",
+    "city": "Freetown",
+    "country": "Sierra Leone"
+  },
+  "JRB": {
+    "code": "JRB",
+    "name": "Downtown Manhattan H/p",
+    "city": "New York",
+    "country": "USA"
+  },
+  "JKV": {
+    "code": "JKV",
+    "name": "Cherokee County",
+    "city": "Jacksonville",
+    "country": "USA"
   },
   "JTR": {
     "code": "JTR",
@@ -21611,12 +21323,6 @@ export const airports ={
     "name": "Gangneung",
     "city": "Gangneung",
     "country": "Korea"
-  },
-  "KAH": {
-    "code": "KAH",
-    "name": "City Heliport",
-    "city": "Melbourne",
-    "country": "Australia"
   },
   "KAI": {
     "code": "KAI",
@@ -21816,12 +21522,6 @@ export const airports ={
     "city": "Kabalo",
     "country": "Zaire"
   },
-  "KBP": {
-    "code": "KBP",
-    "name": "Borispol",
-    "city": "Kiev",
-    "country": "Ukraine"
-  },
   "KBR": {
     "code": "KBR",
     "name": "Sultan Ismail Petra",
@@ -22020,6 +21720,12 @@ export const airports ={
     "city": "Khuzdar",
     "country": "Pakistan"
   },
+  "KAH": {
+    "code": "KAH",
+    "name": "City Heliport",
+    "city": "Melbourne",
+    "country": "Australia"
+  },
   "KDE": {
     "code": "KDE",
     "name": "Koroba",
@@ -22163,12 +21869,6 @@ export const airports ={
     "name": "Kelle",
     "city": "Kelle",
     "country": "Congo"
-  },
-  "KEF": {
-    "code": "KEF",
-    "name": "Keflavik Intl.",
-    "city": "Reykjavik",
-    "country": "Iceland"
   },
   "KEG": {
     "code": "KEG",
@@ -22715,12 +22415,6 @@ export const airports ={
     "name": "Southdowns",
     "city": "Kitwe",
     "country": "Zambia"
-  },
-  "KIX": {
-    "code": "KIX",
-    "name": "Kansai Intl.",
-    "city": "Osaka",
-    "country": "Japan"
   },
   "KIY": {
     "code": "KIY",
@@ -23333,12 +23027,6 @@ export const airports ={
     "name": "Kenieba",
     "city": "Kenieba",
     "country": "Mali"
-  },
-  "KOA": {
-    "code": "KOA",
-    "name": "Kona Intl. Arpt.",
-    "city": "Kona, HI",
-    "country": "USA"
   },
   "KOB": {
     "code": "KOB",
@@ -24140,7 +23828,7 @@ export const airports ={
   },
   "KUL": {
     "code": "KUL",
-    "name": "All Airports",
+    "name": "Kuala Lumpur Intl. Arpt.",
     "city": "Kuala Lumpur",
     "country": "Malaysia"
   },
@@ -24504,12 +24192,6 @@ export const airports ={
     "city": "Milton Keynes",
     "country": "United Kingdom"
   },
-  "KYO": {
-    "code": "KYO",
-    "name": "Topp Of Tampa",
-    "city": "Tampa",
-    "country": "USA"
-  },
   "KYP": {
     "code": "KYP",
     "name": "Kyaukpyu",
@@ -24746,7 +24428,7 @@ export const airports ={
   },
   "LAX": {
     "code": "LAX",
-    "name": "All Airports",
+    "name": "Los Angeles Intl.",
     "city": "Los Angeles",
     "country": "USA"
   },
@@ -24797,12 +24479,6 @@ export const airports ={
     "name": "Lee Bird Field",
     "city": "North Platte",
     "country": "USA"
-  },
-  "LBG": {
-    "code": "LBG",
-    "name": "Le Bourget",
-    "city": "Paris",
-    "country": "France"
   },
   "LBH": {
     "code": "LBH",
@@ -24869,6 +24545,18 @@ export const airports ={
     "name": "Labasa",
     "city": "Labasa",
     "country": "Fiji"
+  },
+  "KYO": {
+    "code": "KYO",
+    "name": "Topp Of Tampa",
+    "city": "Tampa",
+    "country": "USA"
+  },
+  "LBG": {
+    "code": "LBG",
+    "name": "Le Bourget",
+    "city": "Paris",
+    "country": "France"
   },
   "LBT": {
     "code": "LBT",
@@ -24972,12 +24660,6 @@ export const airports ={
     "city": "Lodz",
     "country": "Poland"
   },
-  "LCK": {
-    "code": "LCK",
-    "name": "Rickenbacker",
-    "city": "Columbus",
-    "country": "USA"
-  },
   "LCL": {
     "code": "LCL",
     "name": "La Coloma",
@@ -25031,12 +24713,6 @@ export const airports ={
     "name": "Liancheng",
     "city": "Longyan",
     "country": "China"
-  },
-  "LCY": {
-    "code": "LCY",
-    "name": "London City Arpt.",
-    "city": "London",
-    "country": "United Kingdom"
   },
   "LDA": {
     "code": "LDA",
@@ -25308,12 +24984,6 @@ export const airports ={
     "city": "Hampton",
     "country": "USA"
   },
-  "LFK": {
-    "code": "LFK",
-    "name": "Lufkin Angelina County",
-    "city": "Lufkin, TX",
-    "country": "USA"
-  },
   "LFM": {
     "code": "LFM",
     "name": "Lamerd",
@@ -25344,29 +25014,11 @@ export const airports ={
     "city": "La Fria",
     "country": "Venezuela"
   },
-  "LFT": {
-    "code": "LFT",
-    "name": "Lafayette Regional",
-    "city": "Lafayette, LA",
-    "country": "USA"
-  },
   "LFW": {
     "code": "LFW",
     "name": "Lome",
     "city": "Lome",
     "country": "Togo"
-  },
-  "LGA": {
-    "code": "LGA",
-    "name": "La Guardia",
-    "city": "New York",
-    "country": "USA"
-  },
-  "LGB": {
-    "code": "LGB",
-    "name": "Long Beach Municipal",
-    "city": "Los Angeles",
-    "country": "USA"
   },
   "LGC": {
     "code": "LGC",
@@ -25440,6 +25092,30 @@ export const airports ={
     "city": "Langeoog",
     "country": "Germany"
   },
+  "LCY": {
+    "code": "LCY",
+    "name": "London City Arpt.",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "LGA": {
+    "code": "LGA",
+    "name": "La Guardia",
+    "city": "New York",
+    "country": "USA"
+  },
+  "LFK": {
+    "code": "LFK",
+    "name": "Lufkin Angelina County",
+    "city": "Lufkin",
+    "country": "USA"
+  },
+  "LFT": {
+    "code": "LFT",
+    "name": "Lafayette Regional",
+    "city": "Lafayette",
+    "country": "USA"
+  },
   "LGP": {
     "code": "LGP",
     "name": "Legazpi",
@@ -25475,12 +25151,6 @@ export const airports ={
     "name": "Cache",
     "city": "Logan",
     "country": "USA"
-  },
-  "LGW": {
-    "code": "LGW",
-    "name": "London Gatwick",
-    "city": "London",
-    "country": "United Kingdom"
   },
   "LGX": {
     "code": "LGX",
@@ -25536,12 +25206,6 @@ export const airports ={
     "city": "Guanghua",
     "country": "China"
   },
-  "LHM": {
-    "code": "LHM",
-    "name": "Lincoln Regional Arpt.",
-    "city": "Lincoln, CA",
-    "country": "USA"
-  },
   "LHN": {
     "code": "LHN",
     "name": "Lishan",
@@ -25553,12 +25217,6 @@ export const airports ={
     "name": "Lehu",
     "city": "Lehu",
     "country": "Papua New Guinea"
-  },
-  "LHR": {
-    "code": "LHR",
-    "name": "London Heathrow",
-    "city": "London",
-    "country": "United Kingdom"
   },
   "LHS": {
     "code": "LHS",
@@ -25662,12 +25320,6 @@ export const airports ={
     "city": "Lima",
     "country": "Peru"
   },
-  "LIN": {
-    "code": "LIN",
-    "name": "Linate",
-    "city": "Milan",
-    "country": "Italy"
-  },
   "LIO": {
     "code": "LIO",
     "name": "Limon",
@@ -25697,18 +25349,6 @@ export const airports ={
     "name": "Portela",
     "city": "Lisbon",
     "country": "Portugal"
-  },
-  "LIT": {
-    "code": "LIT",
-    "name": "Adams Field Arpt.",
-    "city": "Little Rock, AR",
-    "country": "USA"
-  },
-  "LIV": {
-    "code": "LIV",
-    "name": "Livengood",
-    "city": "Livengood, AK",
-    "country": "USA"
   },
   "LIW": {
     "code": "LIW",
@@ -25775,12 +25415,6 @@ export const airports ={
     "name": "Lakeland Downs",
     "city": "Lakeland Downs",
     "country": "Australia"
-  },
-  "LKE": {
-    "code": "LKE",
-    "name": "Kenmore Air Harbor SPB",
-    "city": "Seattle",
-    "country": "USA"
   },
   "LKG": {
     "code": "LKG",
@@ -26016,6 +25650,36 @@ export const airports ={
     "city": "Lae Island",
     "country": "Marshall Islands"
   },
+  "LKE": {
+    "code": "LKE",
+    "name": "Kenmore Air Harbor SPB",
+    "city": "Seattle",
+    "country": "USA"
+  },
+  "LIV": {
+    "code": "LIV",
+    "name": "Livengood",
+    "city": "Livengood",
+    "country": "USA"
+  },
+  "LIN": {
+    "code": "LIN",
+    "name": "Linate",
+    "city": "Milan",
+    "country": "Italy"
+  },
+  "LHM": {
+    "code": "LHM",
+    "name": "Lincoln Regional Arpt.",
+    "city": "Lincoln",
+    "country": "USA"
+  },
+  "LIT": {
+    "code": "LIT",
+    "name": "Adams Field Arpt.",
+    "city": "Little Rock",
+    "country": "USA"
+  },
   "LMM": {
     "code": "LMM",
     "name": "Federal",
@@ -26141,12 +25805,6 @@ export const airports ={
     "name": "Lincang",
     "city": "Lincang",
     "country": "China"
-  },
-  "LNK": {
-    "code": "LNK",
-    "name": "Lincoln",
-    "city": "Lincoln, NE",
-    "country": "USA"
   },
   "LNM": {
     "code": "LNM",
@@ -26550,12 +26208,6 @@ export const airports ={
     "city": "Lemars",
     "country": "USA"
   },
-  "LRK": {
-    "code": "LRK",
-    "name": "Coast Guard",
-    "city": "Lincoln Rock, AK",
-    "country": "USA"
-  },
   "LRL": {
     "code": "LRL",
     "name": "Niamtougou",
@@ -26586,6 +26238,12 @@ export const airports ={
     "city": "Lar",
     "country": "Iran"
   },
+  "LRK": {
+    "code": "LRK",
+    "name": "Coast Guard",
+    "city": "Lincoln Rock",
+    "country": "USA"
+  },
   "LRS": {
     "code": "LRS",
     "name": "Leros",
@@ -26597,12 +26255,6 @@ export const airports ={
     "name": "Lann Bihoue",
     "city": "Lorient",
     "country": "France"
-  },
-  "LRU": {
-    "code": "LRU",
-    "name": "Municipal",
-    "city": "Las Cruces, NM",
-    "country": "USA"
   },
   "LRV": {
     "code": "LRV",
@@ -26628,22 +26280,10 @@ export const airports ={
     "city": "La Serena",
     "country": "Chile"
   },
-  "LSD": {
-    "code": "LSD",
-    "name": "Blue Grass Station Army Heliport",
-    "city": "Lexington, KY",
-    "country": "USA"
-  },
   "LSE": {
     "code": "LSE",
     "name": "Municipal",
     "city": "La Crosse",
-    "country": "USA"
-  },
-  "LSF": {
-    "code": "LSF",
-    "name": "Lawson Aaf",
-    "city": "Columbus",
     "country": "USA"
   },
   "LSH": {
@@ -26723,12 +26363,6 @@ export const airports ={
     "name": "Long Sukang",
     "city": "Long Sukang",
     "country": "Malaysia"
-  },
-  "LSV": {
-    "code": "LSV",
-    "name": "Nellis AFB",
-    "city": "Las Vegas, NV",
-    "country": "USA"
   },
   "LSW": {
     "code": "LSW",
@@ -26820,12 +26454,6 @@ export const airports ={
     "city": "Lethem",
     "country": "Guyana"
   },
-  "LTN": {
-    "code": "LTN",
-    "name": "London Luton",
-    "city": "London",
-    "country": "United Kingdom"
-  },
   "LTO": {
     "code": "LTO",
     "name": "Loreto",
@@ -26910,12 +26538,6 @@ export const airports ={
     "city": "Lucenec",
     "country": "Slovak Republic"
   },
-  "LUF": {
-    "code": "LUF",
-    "name": "Luke Afb",
-    "city": "Phoenix",
-    "country": "USA"
-  },
   "LUG": {
     "code": "LUG",
     "name": "Lugano",
@@ -26939,18 +26561,6 @@ export const airports ={
     "name": "Lusikisiki",
     "city": "Lusikisiki",
     "country": "South Africa"
-  },
-  "LUK": {
-    "code": "LUK",
-    "name": "Cincinnati Municipal-Lunken Field",
-    "city": "Cincinnati, OH",
-    "country": "USA"
-  },
-  "LUL": {
-    "code": "LUL",
-    "name": "Hesler-Noble Field",
-    "city": "Laurel, MS",
-    "country": "USA"
   },
   "LUM": {
     "code": "LUM",
@@ -27155,6 +26765,42 @@ export const airports ={
     "name": "Snilow",
     "city": "Lviv",
     "country": "Ukraine"
+  },
+  "LUF": {
+    "code": "LUF",
+    "name": "Luke Afb",
+    "city": "Phoenix",
+    "country": "USA"
+  },
+  "LRU": {
+    "code": "LRU",
+    "name": "Municipal",
+    "city": "Las Cruces",
+    "country": "USA"
+  },
+  "LTN": {
+    "code": "LTN",
+    "name": "London Luton",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "LSV": {
+    "code": "LSV",
+    "name": "Nellis AFB",
+    "city": "Las Vegas",
+    "country": "USA"
+  },
+  "LUK": {
+    "code": "LUK",
+    "name": "Cincinnati Municipal-Lunken Field",
+    "city": "Cincinnati",
+    "country": "USA"
+  },
+  "LUL": {
+    "code": "LUL",
+    "name": "Hesler-Noble Field",
+    "city": "Laurel",
+    "country": "USA"
   },
   "LWR": {
     "code": "LWR",
@@ -27666,12 +27312,6 @@ export const airports ={
     "city": "Masa",
     "country": "Papua New Guinea"
   },
-  "MBW": {
-    "code": "MBW",
-    "name": "Moorabbin",
-    "city": "Melbourne",
-    "country": "Australia"
-  },
   "MBX": {
     "code": "MBX",
     "name": "Maribor Intl. Arpt.",
@@ -27774,12 +27414,6 @@ export const airports ={
     "city": "Macon",
     "country": "USA"
   },
-  "MCO": {
-    "code": "MCO",
-    "name": "Orlando Intl.",
-    "city": "Orlando",
-    "country": "USA"
-  },
   "MCP": {
     "code": "MCP",
     "name": "Internacional",
@@ -27822,12 +27456,6 @@ export const airports ={
     "city": "Mcarthur River",
     "country": "Australia"
   },
-  "MCW": {
-    "code": "MCW",
-    "name": "Mason City Municipal",
-    "city": "Mason City, IA",
-    "country": "USA"
-  },
   "MCX": {
     "code": "MCX",
     "name": "Makhachkala",
@@ -27845,12 +27473,6 @@ export const airports ={
     "name": "Palmares",
     "city": "Maceio",
     "country": "Brazil"
-  },
-  "MDA": {
-    "code": "MDA",
-    "name": "Martindale Army Heliport",
-    "city": "San Antonio, TX",
-    "country": "USA"
   },
   "MDB": {
     "code": "MDB",
@@ -27872,7 +27494,7 @@ export const airports ={
   },
   "MDE": {
     "code": "MDE",
-    "name": "All Airports",
+    "name": "Jose Maria Cordova",
     "city": "Medellin",
     "country": "Colombia"
   },
@@ -27960,12 +27582,6 @@ export const airports ={
     "city": "Middle Caicos",
     "country": "Turks and Caicos Islands"
   },
-  "MDT": {
-    "code": "MDT",
-    "name": "Harrisburg Intl.",
-    "city": "Harrisburg, PA",
-    "country": "USA"
-  },
   "MDU": {
     "code": "MDU",
     "name": "Mendi",
@@ -27977,12 +27593,6 @@ export const airports ={
     "name": "Medouneu",
     "city": "Medouneu",
     "country": "Gabon"
-  },
-  "MDW": {
-    "code": "MDW",
-    "name": "Midway",
-    "city": "Chicago",
-    "country": "USA"
   },
   "MDX": {
     "code": "MDX",
@@ -28007,12 +27617,6 @@ export const airports ={
     "name": "Macae",
     "city": "Macae",
     "country": "Brazil"
-  },
-  "MEB": {
-    "code": "MEB",
-    "name": "Essendon",
-    "city": "Melbourne",
-    "country": "Australia"
   },
   "MEC": {
     "code": "MEC",
@@ -28070,7 +27674,7 @@ export const airports ={
   },
   "MEL": {
     "code": "MEL",
-    "name": "All Airports",
+    "name": "Tullamarine",
     "city": "Melbourne",
     "country": "Australia"
   },
@@ -28104,12 +27708,6 @@ export const airports ={
     "city": "Meulaboh",
     "country": "Indonesia"
   },
-  "MER": {
-    "code": "MER",
-    "name": "Castle AFB",
-    "city": "Atwater, CA",
-    "country": "USA"
-  },
   "MES": {
     "code": "MES",
     "name": "Polonia",
@@ -28142,7 +27740,7 @@ export const airports ={
   },
   "MEX": {
     "code": "MEX",
-    "name": "All Airports",
+    "name": "Internacional Benito Juarez",
     "city": "Mexico City",
     "country": "Mexico"
   },
@@ -28180,12 +27778,6 @@ export const airports ={
     "code": "MFD",
     "name": "Lahm Municipal",
     "city": "Mansfield",
-    "country": "USA"
-  },
-  "MFE": {
-    "code": "MFE",
-    "name": "Mc Allen Miller Intl.",
-    "city": "Mc Allen, TX",
     "country": "USA"
   },
   "MFF": {
@@ -28272,6 +27864,48 @@ export const airports ={
     "city": "Machu Picchu",
     "country": "Peru"
   },
+  "MCO": {
+    "code": "MCO",
+    "name": "Orlando Intl.",
+    "city": "Orlando",
+    "country": "USA"
+  },
+  "MDT": {
+    "code": "MDT",
+    "name": "Harrisburg Intl.",
+    "city": "Harrisburg",
+    "country": "USA"
+  },
+  "MEB": {
+    "code": "MEB",
+    "name": "Essendon",
+    "city": "Melbourne",
+    "country": "Australia"
+  },
+  "MCW": {
+    "code": "MCW",
+    "name": "Mason City Municipal",
+    "city": "Mason City",
+    "country": "USA"
+  },
+  "MFE": {
+    "code": "MFE",
+    "name": "Mc Allen Miller Intl.",
+    "city": "Mc Allen",
+    "country": "USA"
+  },
+  "MDA": {
+    "code": "MDA",
+    "name": "Martindale Army Heliport",
+    "city": "San Antonio",
+    "country": "USA"
+  },
+  "MER": {
+    "code": "MER",
+    "name": "Castle AFB",
+    "city": "Atwater",
+    "country": "USA"
+  },
   "MFU": {
     "code": "MFU",
     "name": "Mfuwe",
@@ -28337,12 +27971,6 @@ export const airports ={
     "name": "Margate",
     "city": "Margate",
     "country": "South Africa"
-  },
-  "MGI": {
-    "code": "MGI",
-    "name": "Aransas National Wildlife Refuge",
-    "city": "Matagorda Island, TX",
-    "country": "USA"
   },
   "MGJ": {
     "code": "MGJ",
@@ -28536,12 +28164,6 @@ export const airports ={
     "city": "Mariehamn",
     "country": "Finland"
   },
-  "MHR": {
-    "code": "MHR",
-    "name": "Sacramento Mather Arpt.",
-    "city": "Sacramento, CA",
-    "country": "USA"
-  },
   "MHS": {
     "code": "MHS",
     "name": "Rep",
@@ -28592,7 +28214,7 @@ export const airports ={
   },
   "MIA": {
     "code": "MIA",
-    "name": "All Airports",
+    "name": "Miami Intl. Arpt.",
     "city": "Miami",
     "country": "USA"
   },
@@ -28673,12 +28295,6 @@ export const airports ={
     "name": "Minnipa",
     "city": "Minnipa",
     "country": "Australia"
-  },
-  "MIO": {
-    "code": "MIO",
-    "name": "Miami",
-    "city": "Miami",
-    "country": "USA"
   },
   "MIP": {
     "code": "MIP",
@@ -28824,6 +28440,18 @@ export const airports ={
     "city": "Mbuji Mayi",
     "country": "Zaire"
   },
+  "MHR": {
+    "code": "MHR",
+    "name": "Sacramento Mather Arpt.",
+    "city": "Sacramento",
+    "country": "USA"
+  },
+  "MGI": {
+    "code": "MGI",
+    "name": "Aransas National Wildlife Refuge",
+    "city": "Matagorda Island",
+    "country": "USA"
+  },
   "MJN": {
     "code": "MJN",
     "name": "Amborovy",
@@ -28924,12 +28552,6 @@ export const airports ={
     "code": "MKE",
     "name": "General Mitchell Intl.",
     "city": "Milwaukee",
-    "country": "USA"
-  },
-  "MKF": {
-    "code": "MKF",
-    "name": "Mckenna AAF",
-    "city": "Columbus",
     "country": "USA"
   },
   "MKG": {
@@ -29180,7 +28802,7 @@ export const airports ={
   },
   "MLW": {
     "code": "MLW",
-    "name": "All Airports",
+    "name": "Sprigg Payne",
     "city": "Monrovia",
     "country": "Liberia"
   },
@@ -29502,23 +29124,11 @@ export const airports ={
     "city": "Moa",
     "country": "Cuba"
   },
-  "MOB": {
-    "code": "MOB",
-    "name": "Mobile Regional Arpt.",
-    "city": "Alabama, AL",
-    "country": "USA"
-  },
   "MOC": {
     "code": "MOC",
     "name": "Montes Claros",
     "city": "Montes Claros",
     "country": "Brazil"
-  },
-  "MOD": {
-    "code": "MOD",
-    "name": "Municipal",
-    "city": "Modesto, CA",
-    "country": "USA"
   },
   "MOE": {
     "code": "MOE",
@@ -29658,12 +29268,6 @@ export const airports ={
     "city": "Mpacha",
     "country": "Namibia"
   },
-  "MPB": {
-    "code": "MPB",
-    "name": "SPB",
-    "city": "Miami",
-    "country": "USA"
-  },
   "MPC": {
     "code": "MPC",
     "name": "Muko-Muko",
@@ -29777,18 +29381,6 @@ export const airports ={
     "name": "Mapua",
     "city": "Mapua",
     "country": "Papua New Guinea"
-  },
-  "MPV": {
-    "code": "MPV",
-    "name": "Edward F Knapp State",
-    "city": "Montpelier, VT",
-    "country": "USA"
-  },
-  "MPW": {
-    "code": "MPW",
-    "name": "Mariupol",
-    "city": "Mariupol, MN",
-    "country": "Ukraine"
   },
   "MPX": {
     "code": "MPX",
@@ -29951,6 +29543,24 @@ export const airports ={
     "name": "Smyrna",
     "city": "Smyrna",
     "country": "USA"
+  },
+  "MOD": {
+    "code": "MOD",
+    "name": "Municipal",
+    "city": "Modesto",
+    "country": "USA"
+  },
+  "MPV": {
+    "code": "MPV",
+    "name": "Edward F Knapp State",
+    "city": "Montpelier",
+    "country": "USA"
+  },
+  "MPW": {
+    "code": "MPW",
+    "name": "Mariupol",
+    "city": "Mariupol",
+    "country": "Ukraine"
   },
   "MQZ": {
     "code": "MQZ",
@@ -30404,7 +30014,7 @@ export const airports ={
   },
   "MTY": {
     "code": "MTY",
-    "name": "All Airports",
+    "name": "Gen Mariano Escobedo",
     "city": "Monterrey",
     "country": "Mexico"
   },
@@ -30588,12 +30198,6 @@ export const airports ={
     "city": "Montevideo",
     "country": "Uruguay"
   },
-  "MVE": {
-    "code": "MVE",
-    "name": "Montevideo-Chippewa",
-    "city": "Montevideo, MN",
-    "country": "USA"
-  },
   "MVF": {
     "code": "MVF",
     "name": "Dixsept Rosado",
@@ -30634,12 +30238,6 @@ export const airports ={
     "code": "MVL",
     "name": "Morrisville-Stowe",
     "city": "Stowe",
-    "country": "USA"
-  },
-  "MVM": {
-    "code": "MVM",
-    "name": "Monument Valley",
-    "city": "Kayenta, AZ",
     "country": "USA"
   },
   "MVN": {
@@ -30707,12 +30305,6 @@ export const airports ={
     "name": "Minvoul",
     "city": "Minvoul",
     "country": "Gabon"
-  },
-  "MVY": {
-    "code": "MVY",
-    "name": "Marthas Vineyard Airport",
-    "city": "Vineyard Haven, MA",
-    "country": "USA"
   },
   "MVZ": {
     "code": "MVZ",
@@ -30790,12 +30382,6 @@ export const airports ={
     "code": "MWL",
     "name": "Mineral Wells Arpt",
     "city": "Mineral Wells",
-    "country": "USA"
-  },
-  "MWM": {
-    "code": "MWM",
-    "name": "Windom Municipal",
-    "city": "Windom, MN",
     "country": "USA"
   },
   "MWN": {
@@ -30942,12 +30528,6 @@ export const airports ={
     "city": "Monticello",
     "country": "USA"
   },
-  "MXP": {
-    "code": "MXP",
-    "name": "Malpensa",
-    "city": "Milan",
-    "country": "Italy"
-  },
   "MXQ": {
     "code": "MXQ",
     "name": "Mitchell River",
@@ -31078,6 +30658,24 @@ export const airports ={
     "code": "MYL",
     "name": "Mccall",
     "city": "Mccall",
+    "country": "USA"
+  },
+  "MVE": {
+    "code": "MVE",
+    "name": "Montevideo-Chippewa",
+    "city": "Montevideo",
+    "country": "USA"
+  },
+  "MVM": {
+    "code": "MVM",
+    "name": "Monument Valley",
+    "city": "Kayenta",
+    "country": "USA"
+  },
+  "MWM": {
+    "code": "MWM",
+    "name": "Windom Municipal",
+    "city": "Windom",
     "country": "USA"
   },
   "MYM": {
@@ -31452,12 +31050,6 @@ export const airports ={
     "city": "Barbers Point",
     "country": "USA"
   },
-  "NAY": {
-    "code": "NAY",
-    "name": "Nanyuan Arpt.",
-    "city": "Beijing",
-    "country": "China"
-  },
   "NAZ": {
     "code": "NAZ",
     "name": "Nana",
@@ -31508,15 +31100,9 @@ export const airports ={
   },
   "NBO": {
     "code": "NBO",
-    "name": "All Airports",
+    "name": "Jomo Kenyatta Intl.",
     "city": "Nairobi",
     "country": "Kenya"
-  },
-  "NBP": {
-    "code": "NBP",
-    "name": "Battery Pk City/N. Cov",
-    "city": "New York",
-    "country": "USA"
   },
   "NBR": {
     "code": "NBR",
@@ -31602,12 +31188,6 @@ export const airports ={
     "city": "Luzon Is",
     "country": "Philippines"
   },
-  "NCQ": {
-    "code": "NCQ",
-    "name": "Atlanta Nas",
-    "city": "Marietta, GA",
-    "country": "USA"
-  },
   "NCR": {
     "code": "NCR",
     "name": "San Carlos",
@@ -31643,6 +31223,18 @@ export const airports ={
     "name": "Bandanaira",
     "city": "Bandanaira",
     "country": "Indonesia"
+  },
+  "NBP": {
+    "code": "NBP",
+    "name": "Battery Pk City/N. Cov",
+    "city": "New York",
+    "country": "USA"
+  },
+  "NCQ": {
+    "code": "NCQ",
+    "name": "Atlanta Nas",
+    "city": "Marietta",
+    "country": "USA"
   },
   "NDB": {
     "code": "NDB",
@@ -31721,12 +31313,6 @@ export const airports ={
     "name": "La Palma Del Condado",
     "city": "La Palma Del Condado",
     "country": "Spain"
-  },
-  "NDP": {
-    "code": "NDP",
-    "name": "Ellyson NAS",
-    "city": "Pensacola, FL",
-    "country": "USA"
   },
   "NDR": {
     "code": "NDR",
@@ -31811,12 +31397,6 @@ export const airports ={
     "name": "Neryungri",
     "city": "Neryungri",
     "country": "Russian Federation"
-  },
-  "NES": {
-    "code": "NES",
-    "name": "East 34th St Landing",
-    "city": "New York",
-    "country": "USA"
   },
   "NET": {
     "code": "NET",
@@ -31916,7 +31496,7 @@ export const airports ={
   },
   "NGO": {
     "code": "NGO",
-    "name": "All Airports",
+    "name": "Nagoya Chubu Centrair International",
     "city": "Nagoya",
     "country": "Japan"
   },
@@ -31979,12 +31559,6 @@ export const airports ={
     "name": "New Halfa",
     "city": "New Halfa",
     "country": "Sudan"
-  },
-  "NHK": {
-    "code": "NHK",
-    "name": "Patuxent River NAS",
-    "city": "Patuxent River, MD",
-    "country": "USA"
   },
   "NHS": {
     "code": "NHS",
@@ -32106,12 +31680,6 @@ export const airports ={
     "city": "Al Najaf",
     "country": "Iraq"
   },
-  "NJK": {
-    "code": "NJK",
-    "name": "El Centro NAF",
-    "city": "El Centro, CA",
-    "country": "USA"
-  },
   "NKA": {
     "code": "NKA",
     "name": "Nkan",
@@ -32154,12 +31722,6 @@ export const airports ={
     "city": "Nkolo",
     "country": "Zaire"
   },
-  "NKM": {
-    "code": "NKM",
-    "name": "Komaki AFB",
-    "city": "Nagoya",
-    "country": "Japan"
-  },
   "NKN": {
     "code": "NKN",
     "name": "Nankina",
@@ -32190,12 +31752,6 @@ export const airports ={
     "city": "Nkaus",
     "country": "Lesotho"
   },
-  "NKV": {
-    "code": "NKV",
-    "name": "Nichen Cove",
-    "city": "Nichen Cove, AK",
-    "country": "USA"
-  },
   "NKX": {
     "code": "NKX",
     "name": "Miramar MCAS",
@@ -32214,10 +31770,40 @@ export const airports ={
     "city": "Ndola",
     "country": "Zambia"
   },
+  "NDP": {
+    "code": "NDP",
+    "name": "Ellyson NAS",
+    "city": "Pensacola",
+    "country": "USA"
+  },
+  "NES": {
+    "code": "NES",
+    "name": "East 34th St Landing",
+    "city": "New York",
+    "country": "USA"
+  },
+  "NHK": {
+    "code": "NHK",
+    "name": "Patuxent River NAS",
+    "city": "Patuxent River",
+    "country": "USA"
+  },
+  "NJK": {
+    "code": "NJK",
+    "name": "El Centro NAF",
+    "city": "El Centro",
+    "country": "USA"
+  },
+  "NKV": {
+    "code": "NKV",
+    "name": "Nichen Cove",
+    "city": "Nichen Cove",
+    "country": "USA"
+  },
   "NLC": {
     "code": "NLC",
     "name": "Lemoore NAS",
-    "city": "Lemoore, CA",
+    "city": "Lemoore",
     "country": "USA"
   },
   "NLD": {
@@ -32466,12 +32052,6 @@ export const airports ={
     "city": "Nogales",
     "country": "Mexico"
   },
-  "NOH": {
-    "code": "NOH",
-    "name": "Chicago NAS",
-    "city": "Chicago",
-    "country": "USA"
-  },
   "NOI": {
     "code": "NOI",
     "name": "Novorossijsk",
@@ -32534,7 +32114,7 @@ export const airports ={
   },
   "NOU": {
     "code": "NOU",
-    "name": "All Airports",
+    "name": "Tontouta",
     "city": "Noumea",
     "country": "New Caledonia"
   },
@@ -32597,12 +32177,6 @@ export const airports ={
     "name": "San Pedro Uraba",
     "city": "San Pedro Uraba",
     "country": "Colombia"
-  },
-  "NQA": {
-    "code": "NQA",
-    "name": "Millington Regional Jetport",
-    "city": "Millington, TN",
-    "country": "USA"
   },
   "NQI": {
     "code": "NQI",
@@ -32712,12 +32286,6 @@ export const airports ={
     "city": "Imperial Beach",
     "country": "USA"
   },
-  "NRT": {
-    "code": "NRT",
-    "name": "New Tokyo Intl. Arpt.",
-    "city": "Tokyo",
-    "country": "Japan"
-  },
   "NRV": {
     "code": "NRV",
     "name": "USCG Shore Station",
@@ -32778,6 +32346,12 @@ export const airports ={
     "city": "Nelson",
     "country": "New Zealand"
   },
+  "NRT": {
+    "code": "NRT",
+    "name": "New Tokyo Intl. Arpt.",
+    "city": "Tokyo",
+    "country": "Japan"
+  },
   "NSO": {
     "code": "NSO",
     "name": "Scone",
@@ -32831,12 +32405,6 @@ export const airports ={
     "name": "Santa Carolina",
     "city": "Santa Carolina",
     "country": "Mozambique"
-  },
-  "NTD": {
-    "code": "NTD",
-    "name": "Point Mugu NAS",
-    "city": "Port Hueneme, CA",
-    "country": "USA"
   },
   "NTE": {
     "code": "NTE",
@@ -33114,12 +32682,6 @@ export const airports ={
     "city": "Argentia",
     "country": "Canada"
   },
-  "NWS": {
-    "code": "NWS",
-    "name": "Pier 11/Wall St. SPB",
-    "city": "New York",
-    "country": "USA"
-  },
   "NWT": {
     "code": "NWT",
     "name": "Nowata",
@@ -33179,12 +32741,6 @@ export const airports ={
     "name": "Nyngan",
     "city": "Nyngan",
     "country": "Australia"
-  },
-  "NYO": {
-    "code": "NYO",
-    "name": "Skavsta",
-    "city": "Stockholm",
-    "country": "Sweden"
   },
   "NYT": {
     "code": "NYT",
@@ -33264,12 +32820,6 @@ export const airports ={
     "city": "Olanchito",
     "country": "Honduras"
   },
-  "OAR": {
-    "code": "OAR",
-    "name": "Marina Municipal",
-    "city": "Marina, CA",
-    "country": "USA"
-  },
   "OAX": {
     "code": "OAX",
     "name": "Xoxocotlan",
@@ -33336,12 +32886,6 @@ export const airports ={
     "city": "Aubenas",
     "country": "France"
   },
-  "OBT": {
-    "code": "OBT",
-    "name": "Oakland/Coliseum Stat",
-    "city": "Oakland, MD",
-    "country": "USA"
-  },
   "OBU": {
     "code": "OBU",
     "name": "Kobuk/Wien",
@@ -33353,6 +32897,18 @@ export const airports ={
     "name": "Obo",
     "city": "Obo",
     "country": "Papua New Guinea"
+  },
+  "NTD": {
+    "code": "NTD",
+    "name": "Point Mugu NAS",
+    "city": "Port Hueneme",
+    "country": "USA"
+  },
+  "OBT": {
+    "code": "OBT",
+    "name": "Oakland/Coliseum Stat",
+    "city": "Oakland",
+    "country": "USA"
   },
   "OBY": {
     "code": "OBY",
@@ -33384,12 +32940,6 @@ export const airports ={
     "city": "Ocala",
     "country": "USA"
   },
-  "OCH": {
-    "code": "OCH",
-    "name": "A L Mangham Jr. Regional",
-    "city": "Nacogdoches, TX",
-    "country": "USA"
-  },
   "OCI": {
     "code": "OCI",
     "name": "Oceanic",
@@ -33413,12 +32963,6 @@ export const airports ={
     "name": "Aguasclaras",
     "city": "Ocana",
     "country": "Colombia"
-  },
-  "OCW": {
-    "code": "OCW",
-    "name": "Warren Field",
-    "city": "Washington",
-    "country": "USA"
   },
   "ODA": {
     "code": "ODA",
@@ -33576,12 +33120,6 @@ export const airports ={
     "city": "Ogeranang",
     "country": "Papua New Guinea"
   },
-  "OGG": {
-    "code": "OGG",
-    "name": "Kahului",
-    "city": "Maui, HI",
-    "country": "USA"
-  },
   "OGL": {
     "code": "OGL",
     "name": "Ogle",
@@ -33696,12 +33234,6 @@ export const airports ={
     "city": "Norwich",
     "country": "USA"
   },
-  "OIL": {
-    "code": "OIL",
-    "name": "Splane Memorial",
-    "city": "Oil City, PA",
-    "country": "USA"
-  },
   "OIM": {
     "code": "OIM",
     "name": "Oshima",
@@ -33743,12 +33275,6 @@ export const airports ={
     "name": "Will Rogers World Arpt.",
     "city": "Oklahoma City",
     "country": "USA"
-  },
-  "OKD": {
-    "code": "OKD",
-    "name": "Okadama",
-    "city": "Sapporo",
-    "country": "Japan"
   },
   "OKE": {
     "code": "OKE",
@@ -33809,12 +33335,6 @@ export const airports ={
     "name": "Okondja",
     "city": "Okondja",
     "country": "Gabon"
-  },
-  "OKO": {
-    "code": "OKO",
-    "name": "Yokota Afb",
-    "city": "Tokyo",
-    "country": "Japan"
   },
   "OKP": {
     "code": "OKP",
@@ -33930,6 +33450,30 @@ export const airports ={
     "city": "Colonia Sarmiento",
     "country": "Argentina"
   },
+  "OCW": {
+    "code": "OCW",
+    "name": "Warren Field",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "OGG": {
+    "code": "OGG",
+    "name": "Kahului",
+    "city": "Maui",
+    "country": "USA"
+  },
+  "OKO": {
+    "code": "OKO",
+    "name": "Yokota Afb",
+    "city": "Tokyo",
+    "country": "Japan"
+  },
+  "OIL": {
+    "code": "OIL",
+    "name": "Splane Memorial",
+    "city": "Oil City",
+    "country": "USA"
+  },
   "OLO": {
     "code": "OLO",
     "name": "Olomouc",
@@ -33952,12 +33496,6 @@ export const airports ={
     "code": "OLS",
     "name": "Intl.",
     "city": "Nogales",
-    "country": "USA"
-  },
-  "OLU": {
-    "code": "OLU",
-    "name": "Columbus Municipal",
-    "city": "Columbus, NE",
     "country": "USA"
   },
   "OLV": {
@@ -34242,12 +33780,6 @@ export const airports ={
     "city": "Open Bay",
     "country": "Papua New Guinea"
   },
-  "OPF": {
-    "code": "OPF",
-    "name": "Opa Locka",
-    "city": "Miami",
-    "country": "USA"
-  },
   "OPI": {
     "code": "OPI",
     "name": "Oenpelli",
@@ -34302,12 +33834,6 @@ export const airports ={
     "city": "Orocue",
     "country": "Colombia"
   },
-  "ORD": {
-    "code": "ORD",
-    "name": "Chicago O'hare Intl.",
-    "city": "Chicago",
-    "country": "USA"
-  },
   "ORE": {
     "code": "ORE",
     "name": "Orleans",
@@ -34319,12 +33845,6 @@ export const airports ={
     "name": "Norfolk Intl. Arpt.",
     "city": "Norfolk",
     "country": "USA"
-  },
-  "ORG": {
-    "code": "ORG",
-    "name": "Zorg En Hoop",
-    "city": "Paramaribo",
-    "country": "Suriname"
   },
   "ORH": {
     "code": "ORH",
@@ -34352,7 +33872,7 @@ export const airports ={
   },
   "ORL": {
     "code": "ORL",
-    "name": "All Airports",
+    "name": "Orlando Executive",
     "city": "Orlando",
     "country": "USA"
   },
@@ -34428,12 +33948,6 @@ export const airports ={
     "city": "Oriximina",
     "country": "Brazil"
   },
-  "ORY": {
-    "code": "ORY",
-    "name": "Orly",
-    "city": "Paris",
-    "country": "France"
-  },
   "ORZ": {
     "code": "ORZ",
     "name": "Orange Walk",
@@ -34442,7 +33956,7 @@ export const airports ={
   },
   "OSA": {
     "code": "OSA",
-    "name": "All Airports",
+    "name": "Osaka Metropolitan Area",
     "city": "Osaka",
     "country": "Japan"
   },
@@ -34494,9 +34008,33 @@ export const airports ={
     "city": "Oskarshamn",
     "country": "Sweden"
   },
+  "ORY": {
+    "code": "ORY",
+    "name": "Orly",
+    "city": "Paris",
+    "country": "France"
+  },
+  "ORG": {
+    "code": "ORG",
+    "name": "Zorg En Hoop",
+    "city": "Paramaribo",
+    "country": "Suriname"
+  },
+  "OLU": {
+    "code": "OLU",
+    "name": "Columbus Municipal",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "OPF": {
+    "code": "OPF",
+    "name": "Opa Locka",
+    "city": "Miami",
+    "country": "USA"
+  },
   "OSL": {
     "code": "OSL",
-    "name": "All Airports",
+    "name": "Oslo Arpt., Gardermoen",
     "city": "Oslo",
     "country": "Norway"
   },
@@ -34541,12 +34079,6 @@ export const airports ={
     "name": "Ostend/Bruges Intl. Arpt.",
     "city": "Ostend",
     "country": "Belgium"
-  },
-  "OSU": {
-    "code": "OSU",
-    "name": "Ohio State University",
-    "city": "Columbus",
-    "country": "USA"
   },
   "OSW": {
     "code": "OSW",
@@ -34637,12 +34169,6 @@ export const airports ={
     "name": "Vor",
     "city": "Otto",
     "country": "USA"
-  },
-  "OTP": {
-    "code": "OTP",
-    "name": "Henri Coanda Intl.",
-    "city": "Bucharest",
-    "country": "Romania"
   },
   "OTR": {
     "code": "OTR",
@@ -34842,12 +34368,6 @@ export const airports ={
     "city": "Bissau",
     "country": "Guinea-bissau"
   },
-  "OXC": {
-    "code": "OXC",
-    "name": "Waterbury-oxford",
-    "city": "Oxford, CT",
-    "country": "USA"
-  },
   "OXD": {
     "code": "OXD",
     "name": "Miami University",
@@ -34986,12 +34506,6 @@ export const airports ={
     "city": "Bilaspur",
     "country": "India"
   },
-  "PAC": {
-    "code": "PAC",
-    "name": "Paitilla-Marcos A. Gelabert",
-    "city": "Panama City",
-    "country": "Panama"
-  },
   "PAD": {
     "code": "PAD",
     "name": "Paderborn/lippstadt",
@@ -35015,12 +34529,6 @@ export const airports ={
     "name": "Pagadian",
     "city": "Pagadian",
     "country": "Philippines"
-  },
-  "PAH": {
-    "code": "PAH",
-    "name": "Barkley Regional",
-    "city": "Paducah, KY",
-    "country": "USA"
   },
   "PAI": {
     "code": "PAI",
@@ -35046,12 +34554,6 @@ export const airports ={
     "city": "Palanquero",
     "country": "Colombia"
   },
-  "PAM": {
-    "code": "PAM",
-    "name": "Tyndall AFB",
-    "city": "Panama City, FL",
-    "country": "USA"
-  },
   "PAN": {
     "code": "PAN",
     "name": "Pattani",
@@ -35069,6 +34571,30 @@ export const airports ={
     "name": "Toussaint Louverture Intl.",
     "city": "Port Au Prince",
     "country": "Haiti"
+  },
+  "PAC": {
+    "code": "PAC",
+    "name": "Paitilla-Marcos A. Gelabert",
+    "city": "Panama City",
+    "country": "Panama"
+  },
+  "OXC": {
+    "code": "OXC",
+    "name": "Waterbury-oxford",
+    "city": "Oxford",
+    "country": "USA"
+  },
+  "OSU": {
+    "code": "OSU",
+    "name": "Ohio State University",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "PAH": {
+    "code": "PAH",
+    "name": "Barkley Regional",
+    "city": "Paducah",
+    "country": "USA"
   },
   "PAQ": {
     "code": "PAQ",
@@ -35178,12 +34704,6 @@ export const airports ={
     "city": "Paro",
     "country": "Bhutan"
   },
-  "PBI": {
-    "code": "PBI",
-    "name": "Palm Beach Intl.",
-    "city": "Miami",
-    "country": "USA"
-  },
   "PBJ": {
     "code": "PBJ",
     "name": "Paama",
@@ -35204,7 +34724,7 @@ export const airports ={
   },
   "PBM": {
     "code": "PBM",
-    "name": "All Airports",
+    "name": "Zanderij Intl",
     "city": "Paramaribo",
     "country": "Suriname"
   },
@@ -35291,12 +34811,6 @@ export const airports ={
     "name": "Portage Creek",
     "city": "Portage Creek",
     "country": "USA"
-  },
-  "PCB": {
-    "code": "PCB",
-    "name": "Pondok Cabe",
-    "city": "Jakarta",
-    "country": "Indonesia"
   },
   "PCC": {
     "code": "PCC",
@@ -35454,12 +34968,6 @@ export const airports ={
     "city": "Pindiu",
     "country": "Papua New Guinea"
   },
-  "PDK": {
-    "code": "PDK",
-    "name": "Dekalb-Peachtree",
-    "city": "Atlanta, GA",
-    "country": "USA"
-  },
   "PDL": {
     "code": "PDL",
     "name": "Nordela",
@@ -35507,12 +35015,6 @@ export const airports ={
     "name": "Plovdiv",
     "city": "Plovdiv",
     "country": "Bulgaria"
-  },
-  "PDX": {
-    "code": "PDX",
-    "name": "Portland Intl.",
-    "city": "Portland, OR",
-    "country": "USA"
   },
   "PDZ": {
     "code": "PDZ",
@@ -35580,12 +35082,6 @@ export const airports ={
     "city": "Peschiei",
     "country": "Italy"
   },
-  "PEK": {
-    "code": "PEK",
-    "name": "Beijing Capital Int.",
-    "city": "Beijing",
-    "country": "China"
-  },
   "PEL": {
     "code": "PEL",
     "name": "Pelaneng",
@@ -35621,6 +35117,24 @@ export const airports ={
     "name": "Perth Intl.",
     "city": "Perth",
     "country": "Australia"
+  },
+  "PBI": {
+    "code": "PBI",
+    "name": "Palm Beach Intl.",
+    "city": "Miami",
+    "country": "USA"
+  },
+  "PDX": {
+    "code": "PDX",
+    "name": "Portland Intl.",
+    "city": "Portland",
+    "country": "USA"
+  },
+  "PEK": {
+    "code": "PEK",
+    "name": "Beijing Capital Int.",
+    "city": "Beijing",
+    "country": "China"
   },
   "PES": {
     "code": "PES",
@@ -35675,12 +35189,6 @@ export const airports ={
     "name": "Passo Fundo",
     "city": "Passo Fundo",
     "country": "Brazil"
-  },
-  "PFC": {
-    "code": "PFC",
-    "name": "Pacific City State",
-    "city": "Pacific City, OH",
-    "country": "USA"
   },
   "PFD": {
     "code": "PFD",
@@ -35747,12 +35255,6 @@ export const airports ={
     "name": "Llabanere",
     "city": "Perpignan",
     "country": "France"
-  },
-  "PGG": {
-    "code": "PGG",
-    "name": "Progresso",
-    "city": "Sao Paulo",
-    "country": "Brazil"
   },
   "PGH": {
     "code": "PGH",
@@ -35828,7 +35330,7 @@ export const airports ={
   },
   "PHC": {
     "code": "PHC",
-    "name": "All Airports",
+    "name": "Port Harcourt",
     "city": "Port Harcourt",
     "country": "Nigeria"
   },
@@ -35849,12 +35351,6 @@ export const airports ={
     "name": "Newport News/williamsb",
     "city": "Newport News",
     "country": "USA"
-  },
-  "PHG": {
-    "code": "PHG",
-    "name": "Port Harcourt City",
-    "city": "Port Harcourt",
-    "country": "Nigeria"
   },
   "PHH": {
     "code": "PHH",
@@ -35942,7 +35438,7 @@ export const airports ={
   },
   "PHX": {
     "code": "PHX",
-    "name": "All Airports",
+    "name": "Sky Harbor Intl",
     "city": "Phoenix",
     "country": "USA"
   },
@@ -35957,18 +35453,6 @@ export const airports ={
     "name": "Phi Phi Island",
     "city": "Phi Phi Island",
     "country": "Thailand"
-  },
-  "PIA": {
-    "code": "PIA",
-    "name": "Greater Peoria",
-    "city": "Peoria, IL",
-    "country": "USA"
-  },
-  "PIB": {
-    "code": "PIB",
-    "name": "Hattiesburg-Laurel Regional",
-    "city": "Hattiesburg/Laurel, MS",
-    "country": "USA"
   },
   "PIC": {
     "code": "PIC",
@@ -36011,12 +35495,6 @@ export const airports ={
     "name": "Phillips Field",
     "city": "Fairbanks",
     "country": "USA"
-  },
-  "PIK": {
-    "code": "PIK",
-    "name": "Prestwick",
-    "city": "Glasgow",
-    "country": "United Kingdom"
   },
   "PIL": {
     "code": "PIL",
@@ -36065,12 +35543,6 @@ export const airports ={
     "name": "Biard",
     "city": "Poitiers",
     "country": "France"
-  },
-  "PIT": {
-    "code": "PIT",
-    "name": "Pittsburgh Intl.",
-    "city": "Pittsburgh, PA",
-    "country": "USA"
   },
   "PIU": {
     "code": "PIU",
@@ -36166,6 +35638,36 @@ export const airports ={
     "code": "PKD",
     "name": "Park Rapids",
     "city": "Park Rapids",
+    "country": "USA"
+  },
+  "PGG": {
+    "code": "PGG",
+    "name": "Progresso",
+    "city": "Sao Paulo",
+    "country": "Brazil"
+  },
+  "PFC": {
+    "code": "PFC",
+    "name": "Pacific City State",
+    "city": "Pacific City",
+    "country": "USA"
+  },
+  "PIA": {
+    "code": "PIA",
+    "name": "Greater Peoria",
+    "city": "Peoria",
+    "country": "USA"
+  },
+  "PIB": {
+    "code": "PIB",
+    "name": "Hattiesburg-Laurel Regional",
+    "city": "Hattiesburg/Laurel",
+    "country": "USA"
+  },
+  "PIT": {
+    "code": "PIT",
+    "name": "Pittsburgh Intl.",
+    "city": "Pittsburgh",
     "country": "USA"
   },
   "PKE": {
@@ -36390,12 +35892,6 @@ export const airports ={
     "city": "Plato",
     "country": "Colombia"
   },
-  "PLU": {
-    "code": "PLU",
-    "name": "Pampulha Domestic",
-    "city": "Belo Horizonte",
-    "country": "Brazil"
-  },
   "PLV": {
     "code": "PLV",
     "name": "Poltava",
@@ -36444,12 +35940,6 @@ export const airports ={
     "city": "Puerto Montt",
     "country": "Chile"
   },
-  "PMD": {
-    "code": "PMD",
-    "name": "La Palmdale Regional Arpt.",
-    "city": "Palmdale, CA",
-    "country": "USA"
-  },
   "PME": {
     "code": "PME",
     "name": "Portsmouth",
@@ -36467,12 +35957,6 @@ export const airports ={
     "name": "Intl.",
     "city": "Ponta Pora",
     "country": "Brazil"
-  },
-  "PMH": {
-    "code": "PMH",
-    "name": "Greater Portsmouth Regional",
-    "city": "Portsmouth, OH",
-    "country": "USA"
   },
   "PMI": {
     "code": "PMI",
@@ -36714,17 +36198,23 @@ export const airports ={
     "city": "Petrolina",
     "country": "Brazil"
   },
+  "PMD": {
+    "code": "PMD",
+    "name": "La Palmdale Regional Arpt.",
+    "city": "Palmdale",
+    "country": "USA"
+  },
+  "PMH": {
+    "code": "PMH",
+    "name": "Greater Portsmouth Regional",
+    "city": "Portsmouth",
+    "country": "USA"
+  },
   "POA": {
     "code": "POA",
     "name": "Salgado Filho",
     "city": "Porto Alegre",
     "country": "Brazil"
-  },
-  "POB": {
-    "code": "POB",
-    "name": "Pope AFB",
-    "city": "Fayetteville, NC",
-    "country": "USA"
   },
   "POC": {
     "code": "POC",
@@ -36845,12 +36335,6 @@ export const airports ={
     "name": "Portoroz",
     "city": "Portoroz",
     "country": "Slovenia"
-  },
-  "POX": {
-    "code": "POX",
-    "name": "Paris Cergy Pontoise",
-    "city": "Paris",
-    "country": "France"
   },
   "POY": {
     "code": "POY",
@@ -37224,12 +36708,6 @@ export const airports ={
     "city": "Bellefonte",
     "country": "USA"
   },
-  "PSC": {
-    "code": "PSC",
-    "name": "Tri-cities",
-    "city": "Pasco, WA",
-    "country": "USA"
-  },
   "PSD": {
     "code": "PSD",
     "name": "Port Said",
@@ -37246,12 +36724,6 @@ export const airports ={
     "code": "PSF",
     "name": "Pittsfield",
     "city": "Pittsfield",
-    "country": "USA"
-  },
-  "PSG": {
-    "code": "PSG",
-    "name": "Petersburg James A Johnson",
-    "city": "Petersburg, AK",
     "country": "USA"
   },
   "PSH": {
@@ -37272,6 +36744,18 @@ export const airports ={
     "city": "Poso",
     "country": "Indonesia"
   },
+  "PSC": {
+    "code": "PSC",
+    "name": "Tri-cities",
+    "city": "Pasco",
+    "country": "USA"
+  },
+  "POB": {
+    "code": "POB",
+    "name": "Pope AFB",
+    "city": "Fayetteville",
+    "country": "USA"
+  },
   "PSK": {
     "code": "PSK",
     "name": "New River Valley",
@@ -37283,18 +36767,6 @@ export const airports ={
     "name": "Perth",
     "city": "Perth",
     "country": "United Kingdom"
-  },
-  "PSM": {
-    "code": "PSM",
-    "name": "Pease Intl.",
-    "city": "Portsmouth, NH",
-    "country": "USA"
-  },
-  "PSN": {
-    "code": "PSN",
-    "name": "Palestine Municipal Arpt.",
-    "city": "Palestine, TX",
-    "country": "USA"
   },
   "PSO": {
     "code": "PSO",
@@ -37508,7 +36980,7 @@ export const airports ={
   },
   "PTY": {
     "code": "PTY",
-    "name": "All Airports",
+    "name": "Tocumen Intl.",
     "city": "Panama City",
     "country": "Panama"
   },
@@ -37571,12 +37043,6 @@ export const airports ={
     "name": "Pureni",
     "city": "Pureni",
     "country": "Papua New Guinea"
-  },
-  "PUJ": {
-    "code": "PUJ",
-    "name": "Punta Cana Intl.",
-    "city": "Higuey",
-    "country": "Dominican Republic"
   },
   "PUK": {
     "code": "PUK",
@@ -37698,12 +37164,6 @@ export const airports ={
     "city": "Placerville",
     "country": "USA"
   },
-  "PVG": {
-    "code": "PVG",
-    "name": "Pu Dong",
-    "city": "Shanghai",
-    "country": "China"
-  },
   "PVH": {
     "code": "PVH",
     "name": "Governador Jorge Teixeira",
@@ -37800,12 +37260,6 @@ export const airports ={
     "city": "Pawi",
     "country": "Ethiopia"
   },
-  "PWK": {
-    "code": "PWK",
-    "name": "Pal-Waukee",
-    "city": "Chicago",
-    "country": "USA"
-  },
   "PWL": {
     "code": "PWL",
     "name": "Purwokerto",
@@ -37829,6 +37283,30 @@ export const airports ={
     "name": "Pweto",
     "city": "Pweto",
     "country": "Zaire"
+  },
+  "PVG": {
+    "code": "PVG",
+    "name": "Pu Dong",
+    "city": "Shanghai",
+    "country": "China"
+  },
+  "PUJ": {
+    "code": "PUJ",
+    "name": "Punta Cana Intl.",
+    "city": "Punta Cana",
+    "country": "Dominican Republic"
+  },
+  "PWK": {
+    "code": "PWK",
+    "name": "Pal-Waukee",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "PSM": {
+    "code": "PSM",
+    "name": "Pease Intl.",
+    "city": "Portsmouth",
+    "country": "USA"
   },
   "PWQ": {
     "code": "PWQ",
@@ -38022,12 +37500,6 @@ export const airports ={
     "city": "Ajman",
     "country": "United Arab Emirates"
   },
-  "QBC": {
-    "code": "QBC",
-    "name": "Bella Coola",
-    "city": "Bella Coola, BC",
-    "country": "Canada"
-  },
   "QCE": {
     "code": "QCE",
     "name": "Van Service",
@@ -38087,12 +37559,6 @@ export const airports ={
     "name": "Heliport",
     "city": "Attu",
     "country": "Greenland"
-  },
-  "QGV": {
-    "code": "QGV",
-    "name": "Neu Isenburg",
-    "city": "Frankfurt",
-    "country": "Germany"
   },
   "QGY": {
     "code": "QGY",
@@ -38172,35 +37638,11 @@ export const airports ={
     "city": "Ayia Napa ",
     "country": "Cyprus"
   },
-  "QNY": {
-    "code": "QNY",
-    "name": "Marine Air Terminal",
-    "city": "New York",
-    "country": "USA"
-  },
-  "QOF": {
-    "code": "QOF",
-    "name": "Darnitsa Bus Station",
-    "city": "Kiev",
-    "country": "Ukraine"
-  },
-  "QOH": {
-    "code": "QOH",
-    "name": "Hotel Rus Bus Station",
-    "city": "Kiev",
-    "country": "Ukraine"
-  },
   "QOW": {
     "code": "QOW",
     "name": "Owerri",
     "city": "Owerri",
     "country": "Nigeria"
-  },
-  "QPG": {
-    "code": "QPG",
-    "name": "Paya Lebar",
-    "city": "Singapore",
-    "country": "Singapore"
   },
   "QPJ": {
     "code": "QPJ",
@@ -38219,12 +37661,6 @@ export const airports ={
     "name": "Railway Station",
     "city": "Saint Pancras Intl",
     "country": "United Kingdom"
-  },
-  "QRA": {
-    "code": "QRA",
-    "name": "Rand/Germiston",
-    "city": "Johannesburg",
-    "country": "South Africa"
   },
   "QRL": {
     "code": "QRL",
@@ -38302,12 +37738,6 @@ export const airports ={
     "code": "QWF",
     "name": "Fort Collins Bus Servi",
     "city": "Fort Collins/Loveland",
-    "country": "USA"
-  },
-  "QWG": {
-    "code": "QWG",
-    "name": "Wilgrove Air Park",
-    "city": "Charlotte, NC",
     "country": "USA"
   },
   "QWP": {
@@ -38392,6 +37822,42 @@ export const airports ={
     "code": "RAL",
     "name": "Riverside Municipal",
     "city": "Riverside",
+    "country": "USA"
+  },
+  "QRA": {
+    "code": "QRA",
+    "name": "Rand/Germiston",
+    "city": "Johannesburg",
+    "country": "South Africa"
+  },
+  "QNY": {
+    "code": "QNY",
+    "name": "Marine Air Terminal",
+    "city": "New York",
+    "country": "USA"
+  },
+  "QPG": {
+    "code": "QPG",
+    "name": "Paya Lebar",
+    "city": "Singapore",
+    "country": "Singapore"
+  },
+  "QBC": {
+    "code": "QBC",
+    "name": "Bella Coola",
+    "city": "Bella Coola",
+    "country": "Canada"
+  },
+  "QOF": {
+    "code": "QOF",
+    "name": "Darnitsa Bus Station",
+    "city": "Kiev",
+    "country": "Ukraine"
+  },
+  "QWG": {
+    "code": "QWG",
+    "name": "Wilgrove Air Park",
+    "city": "Charlotte",
     "country": "USA"
   },
   "RAM": {
@@ -38495,12 +37961,6 @@ export const airports ={
     "name": "Robinvale",
     "city": "Robinvale",
     "country": "Australia"
-  },
-  "RBD": {
-    "code": "RBD",
-    "name": "Redbird",
-    "city": "Dallas",
-    "country": "USA"
   },
   "RBE": {
     "code": "RBE",
@@ -38778,12 +38238,6 @@ export const airports ={
     "city": "Richard Toll",
     "country": "Senegal"
   },
-  "RDU": {
-    "code": "RDU",
-    "name": "Raleigh-durham Intl. Arpt.",
-    "city": "Raleigh/Durham, NC",
-    "country": "USA"
-  },
   "RDV": {
     "code": "RDV",
     "name": "Red Devil",
@@ -38846,7 +38300,7 @@ export const airports ={
   },
   "REK": {
     "code": "REK",
-    "name": "All Airports",
+    "name": "Reykjavik Metropolitan Area",
     "city": "Reykjavik",
     "country": "Iceland"
   },
@@ -38922,12 +38376,6 @@ export const airports ={
     "city": "Rafai",
     "country": "Central African Republic"
   },
-  "RFD": {
-    "code": "RFD",
-    "name": "Greater Rockford Arpt.",
-    "city": "Chicago",
-    "country": "USA"
-  },
   "RFG": {
     "code": "RFG",
     "name": "Rooke Field",
@@ -38963,6 +38411,18 @@ export const airports ={
     "name": "Rio Grande",
     "city": "Rio Grande",
     "country": "Argentina"
+  },
+  "RDU": {
+    "code": "RDU",
+    "name": "Raleigh-durham Intl. Arpt.",
+    "city": "Raleigh/Durham",
+    "country": "USA"
+  },
+  "RBD": {
+    "code": "RBD",
+    "name": "Redbird",
+    "city": "Dallas",
+    "country": "USA"
   },
   "RGE": {
     "code": "RGE",
@@ -39066,29 +38526,11 @@ export const airports ={
     "city": "San Jose",
     "country": "USA"
   },
-  "RIA": {
-    "code": "RIA",
-    "name": "Base Aerea De Santa Maria",
-    "city": "Santa Maria, Rs",
-    "country": "Brazil"
-  },
   "RIB": {
     "code": "RIB",
     "name": "Gen Buech",
     "city": "Riberalta",
     "country": "Bolivia"
-  },
-  "RIC": {
-    "code": "RIC",
-    "name": "Richmond Intl. Arpt.",
-    "city": "Richmond, VA",
-    "country": "USA"
-  },
-  "RID": {
-    "code": "RID",
-    "name": "Richmond Municipal Arpt.",
-    "city": "Richmond, IN",
-    "country": "USA"
   },
   "RIE": {
     "code": "RIE",
@@ -39160,12 +38602,6 @@ export const airports ={
     "code": "RIV",
     "name": "March ARB",
     "city": "Riverside",
-    "country": "USA"
-  },
-  "RIW": {
-    "code": "RIW",
-    "name": "Riverton Regional",
-    "city": "Riverton, WY",
     "country": "USA"
   },
   "RIX": {
@@ -39240,12 +38676,6 @@ export const airports ={
     "city": "Rockland",
     "country": "USA"
   },
-  "RKE": {
-    "code": "RKE",
-    "name": "Roskilde Arpt.",
-    "city": "Copenhagen",
-    "country": "Denmark"
-  },
   "RKH": {
     "code": "RKH",
     "name": "Rock Hill",
@@ -39293,12 +38723,6 @@ export const airports ={
     "name": "Kairuku",
     "city": "Yule Island",
     "country": "Papua New Guinea"
-  },
-  "RKV": {
-    "code": "RKV",
-    "name": "Keflavik",
-    "city": "Reykjavik",
-    "country": "Iceland"
   },
   "RKW": {
     "code": "RKW",
@@ -39377,12 +38801,6 @@ export const airports ={
     "name": "Ramagundam",
     "city": "Ramagundam",
     "country": "India"
-  },
-  "RME": {
-    "code": "RME",
-    "name": "Griffiss AFB",
-    "city": "Rome, NY",
-    "country": "USA"
   },
   "RMF": {
     "code": "RMF",
@@ -39498,12 +38916,6 @@ export const airports ={
     "city": "Ronne",
     "country": "Denmark"
   },
-  "RNO": {
-    "code": "RNO",
-    "name": "Reno-Tahoe Intl.",
-    "city": "Reno, NV",
-    "country": "USA"
-  },
   "RNP": {
     "code": "RNP",
     "name": "Rongelap Island",
@@ -39522,12 +38934,6 @@ export const airports ={
     "city": "Rennes",
     "country": "France"
   },
-  "RNT": {
-    "code": "RNT",
-    "name": "Renton",
-    "city": "Renton, WA",
-    "country": "USA"
-  },
   "RNU": {
     "code": "RNU",
     "name": "Ranau",
@@ -39540,22 +38946,46 @@ export const airports ={
     "city": "Rensselaer",
     "country": "USA"
   },
+  "RIW": {
+    "code": "RIW",
+    "name": "Riverton Regional",
+    "city": "Riverton",
+    "country": "USA"
+  },
+  "RME": {
+    "code": "RME",
+    "name": "Griffiss AFB",
+    "city": "Rome",
+    "country": "USA"
+  },
+  "RNT": {
+    "code": "RNT",
+    "name": "Renton",
+    "city": "Renton",
+    "country": "USA"
+  },
+  "RID": {
+    "code": "RID",
+    "name": "Richmond Municipal Arpt.",
+    "city": "Richmond",
+    "country": "USA"
+  },
+  "RIC": {
+    "code": "RIC",
+    "name": "Richmond Intl. Arpt.",
+    "city": "Richmond",
+    "country": "USA"
+  },
+  "RNO": {
+    "code": "RNO",
+    "name": "Reno-Tahoe Intl.",
+    "city": "Reno",
+    "country": "USA"
+  },
   "ROA": {
     "code": "ROA",
     "name": "Roanoke Regional Arpt.",
     "city": "Roanoke",
-    "country": "USA"
-  },
-  "ROB": {
-    "code": "ROB",
-    "name": "Roberts Intl",
-    "city": "Monrovia",
-    "country": "Liberia"
-  },
-  "ROC": {
-    "code": "ROC",
-    "name": "Greater Rochester Intl.",
-    "city": "Rochester, NY",
     "country": "USA"
   },
   "ROD": {
@@ -40128,12 +39558,6 @@ export const airports ={
     "city": "Redwood Falls",
     "country": "USA"
   },
-  "RWI": {
-    "code": "RWI",
-    "name": "Rocky Mount-wilson",
-    "city": "Rocky Mount,",
-    "country": "USA"
-  },
   "RWL": {
     "code": "RWL",
     "name": "Rawlins",
@@ -40169,12 +39593,6 @@ export const airports ={
     "name": "Rybinsk",
     "city": "Rybinsk",
     "country": "Russia"
-  },
-  "RYG": {
-    "code": "RYG",
-    "name": "Moss Airport, Rygge",
-    "city": "Oslo",
-    "country": "Norway"
   },
   "RYK": {
     "code": "RYK",
@@ -40368,12 +39786,6 @@ export const airports ={
     "city": "Savannah",
     "country": "USA"
   },
-  "SAW": {
-    "code": "SAW",
-    "name": "Sabiha Gokcen",
-    "city": "Istanbul",
-    "country": "Turkey"
-  },
   "SAX": {
     "code": "SAX",
     "name": "Sambu",
@@ -40391,12 +39803,6 @@ export const airports ={
     "name": "Sasstown",
     "city": "Sasstown",
     "country": "Liberia"
-  },
-  "SBA": {
-    "code": "SBA",
-    "name": "Municipal",
-    "city": "Santa Barbara, CA",
-    "country": "USA"
   },
   "SBB": {
     "code": "SBB",
@@ -40578,23 +39984,11 @@ export const airports ={
     "city": "State College",
     "country": "USA"
   },
-  "SCF": {
-    "code": "SCF",
-    "name": "Scottsdale Municipal",
-    "city": "Phoenix",
-    "country": "USA"
-  },
   "SCG": {
     "code": "SCG",
     "name": "Spring Creek",
     "city": "Spring Creek",
     "country": "Australia"
-  },
-  "SCH": {
-    "code": "SCH",
-    "name": "Schenectady County",
-    "city": "Schenectady, NY",
-    "country": "USA"
   },
   "SCI": {
     "code": "SCI",
@@ -40674,6 +40068,30 @@ export const airports ={
     "city": "Suceava",
     "country": "Romania"
   },
+  "SBA": {
+    "code": "SBA",
+    "name": "Municipal",
+    "city": "Santa Barbara",
+    "country": "USA"
+  },
+  "RYG": {
+    "code": "RYG",
+    "name": "Moss Airport, Rygge",
+    "city": "Oslo",
+    "country": "Norway"
+  },
+  "SCH": {
+    "code": "SCH",
+    "name": "Schenectady County",
+    "city": "Schenectady",
+    "country": "USA"
+  },
+  "RWI": {
+    "code": "RWI",
+    "name": "Rocky Mount-wilson",
+    "city": "Rocky Mount",
+    "country": "USA"
+  },
   "SCW": {
     "code": "SCW",
     "name": "Syktyvkar",
@@ -40727,12 +40145,6 @@ export const airports ={
     "name": "Santiago Del Estero",
     "city": "Santiago Del Estero",
     "country": "Argentina"
-  },
-  "SDF": {
-    "code": "SDF",
-    "name": "Louisville Intl.",
-    "city": "Louisville, KY",
-    "country": "USA"
   },
   "SDG": {
     "code": "SDG",
@@ -40796,7 +40208,7 @@ export const airports ={
   },
   "SDQ": {
     "code": "SDQ",
-    "name": "All Airports",
+    "name": "Las Americas",
     "city": "Santo Domingo",
     "country": "Dominican Republic"
   },
@@ -40818,18 +40230,6 @@ export const airports ={
     "city": "Saidu Sharif",
     "country": "Pakistan"
   },
-  "SDU": {
-    "code": "SDU",
-    "name": "Santos Dumont",
-    "city": "Rio De Janeiro",
-    "country": "Brazil"
-  },
-  "SDV": {
-    "code": "SDV",
-    "name": "Sde Dov",
-    "city": "Tel Aviv",
-    "country": "Israel"
-  },
   "SDW": {
     "code": "SDW",
     "name": "Sandwip",
@@ -40850,7 +40250,7 @@ export const airports ={
   },
   "SEA": {
     "code": "SEA",
-    "name": "All Airports",
+    "name": "Seattleâ€“Tacoma International Airport",
     "city": "Seattle",
     "country": "USA"
   },
@@ -40870,12 +40270,6 @@ export const airports ={
     "code": "SEE",
     "name": "Gillespie Field",
     "city": "San Diego",
-    "country": "USA"
-  },
-  "SEF": {
-    "code": "SEF",
-    "name": "Sebring Regional Arpt.",
-    "city": "Sebring, Fl",
     "country": "USA"
   },
   "SEG": {
@@ -40910,7 +40304,7 @@ export const airports ={
   },
   "SEL": {
     "code": "SEL",
-    "name": "All Airports",
+    "name": "Seoul Metropolitan Area",
     "city": "Seoul",
     "country": "Korea"
   },
@@ -40919,12 +40313,6 @@ export const airports ={
     "name": "Craig AFB",
     "city": "Selma",
     "country": "USA"
-  },
-  "SEN": {
-    "code": "SEN",
-    "name": "London Southend",
-    "city": "London",
-    "country": "United Kingdom"
   },
   "SEO": {
     "code": "SEO",
@@ -41094,12 +40482,6 @@ export const airports ={
     "city": "Sanliurfa",
     "country": "Turkey"
   },
-  "SFR": {
-    "code": "SFR",
-    "name": "San Fernando",
-    "city": "San Fernando, CA",
-    "country": "Columbia"
-  },
   "SFT": {
     "code": "SFT",
     "name": "Skelleftea",
@@ -41129,12 +40511,6 @@ export const airports ={
     "name": "San Felix",
     "city": "San Felix",
     "country": "Venezuela"
-  },
-  "SFZ": {
-    "code": "SFZ",
-    "name": "North Central",
-    "city": "Pawtucket, RI",
-    "country": "USA"
   },
   "SGA": {
     "code": "SGA",
@@ -41202,6 +40578,36 @@ export const airports ={
     "city": "Sangapi",
     "country": "Papua New Guinea"
   },
+  "SDV": {
+    "code": "SDV",
+    "name": "Sde Dov",
+    "city": "Tel Aviv",
+    "country": "Israel"
+  },
+  "SEF": {
+    "code": "SEF",
+    "name": "Sebring Regional Arpt.",
+    "city": "Sebring",
+    "country": "USA"
+  },
+  "SDU": {
+    "code": "SDU",
+    "name": "Santos Dumont",
+    "city": "Rio De Janeiro",
+    "country": "Brazil"
+  },
+  "SFZ": {
+    "code": "SFZ",
+    "name": "North Central",
+    "city": "Pawtucket",
+    "country": "USA"
+  },
+  "SFR": {
+    "code": "SFR",
+    "name": "San Fernando",
+    "city": "San Fernando",
+    "country": "Columbia"
+  },
   "SGL": {
     "code": "SGL",
     "name": "Sangley Point NAS",
@@ -41238,23 +40644,11 @@ export const airports ={
     "city": "Sanggata",
     "country": "Indonesia"
   },
-  "SGR": {
-    "code": "SGR",
-    "name": "Sugar Land Regional",
-    "city": "Houston, TX",
-    "country": "USA"
-  },
   "SGS": {
     "code": "SGS",
     "name": "Sanga Sanga",
     "city": "Sanga Sanga",
     "country": "Philippines"
-  },
-  "SGT": {
-    "code": "SGT",
-    "name": "Stuttgart Municipal",
-    "city": "Stuttgart, AR",
-    "country": "USA"
   },
   "SGU": {
     "code": "SGU",
@@ -41294,7 +40688,7 @@ export const airports ={
   },
   "SHA": {
     "code": "SHA",
-    "name": "All Airports",
+    "name": "Hongqiao",
     "city": "Shanghai",
     "country": "China"
   },
@@ -41484,12 +40878,6 @@ export const airports ={
     "city": "Simara",
     "country": "Nepal"
   },
-  "SIG": {
-    "code": "SIG",
-    "name": "Isla Grande",
-    "city": "San Juan",
-    "country": "Puerto Rico"
-  },
   "SIH": {
     "code": "SIH",
     "name": "Silgadi Doti",
@@ -41528,7 +40916,7 @@ export const airports ={
   },
   "SIN": {
     "code": "SIN",
-    "name": "All Airports",
+    "name": "Changi",
     "city": "Singapore",
     "country": "Singapore"
   },
@@ -41684,7 +41072,7 @@ export const airports ={
   },
   "SJO": {
     "code": "SJO",
-    "name": "All Airports",
+    "name": "Juan Santamaria Intl",
     "city": "San Jose",
     "country": "Costa Rica"
   },
@@ -41720,7 +41108,7 @@ export const airports ={
   },
   "SJU": {
     "code": "SJU",
-    "name": "All Airports",
+    "name": "Luis Munoz Marin Intl",
     "city": "San Juan",
     "country": "Puerto Rico"
   },
@@ -41729,6 +41117,24 @@ export const airports ={
     "name": "San Javier",
     "city": "San Javier",
     "country": "Bolivia"
+  },
+  "SIG": {
+    "code": "SIG",
+    "name": "Isla Grande",
+    "city": "San Juan",
+    "country": "Puerto Rico"
+  },
+  "SGT": {
+    "code": "SGT",
+    "name": "Stuttgart Municipal",
+    "city": "Stuttgart",
+    "country": "USA"
+  },
+  "SGR": {
+    "code": "SGR",
+    "name": "Sugar Land Regional",
+    "city": "Houston",
+    "country": "USA"
   },
   "SJW": {
     "code": "SJW",
@@ -41916,12 +41322,6 @@ export const airports ={
     "city": "Storm Lake",
     "country": "USA"
   },
-  "SLC": {
-    "code": "SLC",
-    "name": "Salt Lake City Intl.",
-    "city": "Salt Lake City, UT",
-    "country": "USA"
-  },
   "SLD": {
     "code": "SLD",
     "name": "Sliac",
@@ -42078,22 +41478,10 @@ export const airports ={
     "city": "Santa Maria",
     "country": "Colombia"
   },
-  "SMD": {
-    "code": "SMD",
-    "name": "Smith Field",
-    "city": "Fort Wayne, IN",
-    "country": "USA"
-  },
   "SME": {
     "code": "SME",
     "name": "Pulaski County",
     "city": "Somerset",
-    "country": "USA"
-  },
-  "SMF": {
-    "code": "SMF",
-    "name": "Sacramento Intl.",
-    "city": "Sacramento, CA",
     "country": "USA"
   },
   "SMG": {
@@ -42287,6 +41675,18 @@ export const airports ={
     "name": "San Ignacio De M",
     "city": "San Ignacio De M",
     "country": "Bolivia"
+  },
+  "SMD": {
+    "code": "SMD",
+    "name": "Smith Field",
+    "city": "Fort Wayne",
+    "country": "USA"
+  },
+  "SMF": {
+    "code": "SMF",
+    "name": "Sacramento Intl.",
+    "city": "Sacramento",
+    "country": "USA"
   },
   "SNN": {
     "code": "SNN",
@@ -42492,12 +41892,6 @@ export const airports ={
     "city": "Seldovia",
     "country": "USA"
   },
-  "SOW": {
-    "code": "SOW",
-    "name": "Show Low",
-    "city": "Show Low, AZ",
-    "country": "USA"
-  },
   "SOX": {
     "code": "SOX",
     "name": "Alberto Lleras Camargo",
@@ -42515,12 +41909,6 @@ export const airports ={
     "name": "Solenzara",
     "city": "Solenzara",
     "country": "France"
-  },
-  "SPA": {
-    "code": "SPA",
-    "name": "Spartanburg, Downtown Memorial",
-    "city": "Spartanburg, SC",
-    "country": "USA"
   },
   "SPC": {
     "code": "SPC",
@@ -42566,7 +41954,7 @@ export const airports ={
   },
   "SPK": {
     "code": "SPK",
-    "name": "All Airports",
+    "name": "Metropolitan Area",
     "city": "Sapporo",
     "country": "Japan"
   },
@@ -42840,6 +42228,18 @@ export const airports ={
     "city": "Samarinda",
     "country": "Indonesia"
   },
+  "SPA": {
+    "code": "SPA",
+    "name": "Spartanburg, Downtown Memorial",
+    "city": "Spartanburg",
+    "country": "USA"
+  },
+  "SOW": {
+    "code": "SOW",
+    "name": "Show Low",
+    "city": "Show Low",
+    "country": "USA"
+  },
   "SRJ": {
     "code": "SRJ",
     "name": "Capitan G Q Guardia",
@@ -42881,12 +42281,6 @@ export const airports ={
     "name": "Stord Arpt.",
     "city": "Stord",
     "country": "Norway"
-  },
-  "SRQ": {
-    "code": "SRQ",
-    "name": "Sarasota-Bradenton Intl. Arpt.",
-    "city": "Sarasota, FL",
-    "country": "USA"
   },
   "SRR": {
     "code": "SRR",
@@ -42938,7 +42332,7 @@ export const airports ={
   },
   "SRZ": {
     "code": "SRZ",
-    "name": "All Airports",
+    "name": "El Trompillo",
     "city": "Santa Cruz",
     "country": "Bolivia"
   },
@@ -43007,12 +42401,6 @@ export const airports ={
     "name": "Santa Rosalia",
     "city": "Santa Rosalia",
     "country": "Colombia"
-  },
-  "SSN": {
-    "code": "SSN",
-    "name": "Seoul Ab",
-    "city": "Seoul",
-    "country": "Korea"
   },
   "SSO": {
     "code": "SSO",
@@ -43157,12 +42545,6 @@ export const airports ={
     "name": "Eduardo Gomes",
     "city": "Santarem",
     "country": "Brazil"
-  },
-  "STN": {
-    "code": "STN",
-    "name": "London Stansted",
-    "city": "London",
-    "country": "United Kingdom"
   },
   "STO": {
     "code": "STO",
@@ -43392,6 +42774,18 @@ export const airports ={
     "city": "Savoonga",
     "country": "USA"
   },
+  "SRQ": {
+    "code": "SRQ",
+    "name": "Sarasota-Bradenton Intl. Arpt.",
+    "city": "Sarasota",
+    "country": "USA"
+  },
+  "SSN": {
+    "code": "SSN",
+    "name": "Seoul Ab",
+    "city": "Seoul",
+    "country": "Korea"
+  },
   "SVB": {
     "code": "SVB",
     "name": "Sambava",
@@ -43457,18 +42851,6 @@ export const airports ={
     "name": "Savonlinna",
     "city": "Savonlinna",
     "country": "Finland"
-  },
-  "SVN": {
-    "code": "SVN",
-    "name": "Hunter AAF",
-    "city": "Savannah, GA",
-    "country": "USA"
-  },
-  "SVO": {
-    "code": "SVO",
-    "name": "Sheremetyevo",
-    "city": "Moscow",
-    "country": "Russian Federation"
   },
   "SVP": {
     "code": "SVP",
@@ -43566,12 +42948,6 @@ export const airports ={
     "city": "Siwea",
     "country": "Papua New Guinea"
   },
-  "SWF": {
-    "code": "SWF",
-    "name": "Stewart",
-    "city": "New York",
-    "country": "USA"
-  },
   "SWG": {
     "code": "SWG",
     "name": "Satwag",
@@ -43595,12 +42971,6 @@ export const airports ={
     "name": "South West Bay",
     "city": "South West Bay",
     "country": "Vanuatu"
-  },
-  "SWK": {
-    "code": "SWK",
-    "name": "Segrate",
-    "city": "Milan",
-    "country": "Italy"
   },
   "SWL": {
     "code": "SWL",
@@ -43709,12 +43079,6 @@ export const airports ={
     "name": "Sale",
     "city": "Sale",
     "country": "Australia"
-  },
-  "SXF": {
-    "code": "SXF",
-    "name": "Berlin Schonefeld Airport",
-    "city": "Berlin",
-    "country": "Germany"
   },
   "SXG": {
     "code": "SXG",
@@ -43968,6 +43332,24 @@ export const airports ={
     "city": "Sylvester",
     "country": "USA"
   },
+  "SWF": {
+    "code": "SWF",
+    "name": "Stewart",
+    "city": "New York",
+    "country": "USA"
+  },
+  "SVN": {
+    "code": "SVN",
+    "name": "Hunter AAF",
+    "city": "Savannah",
+    "country": "USA"
+  },
+  "SWK": {
+    "code": "SWK",
+    "name": "Segrate",
+    "city": "Milan",
+    "country": "Italy"
+  },
   "SYW": {
     "code": "SYW",
     "name": "Sehwen Sharif",
@@ -43997,12 +43379,6 @@ export const airports ={
     "name": "Soyo",
     "city": "Soyo",
     "country": "Angola"
-  },
-  "SZB": {
-    "code": "SZB",
-    "name": "Sultan Abdul Aziz Shah",
-    "city": "Kuala Lumpur",
-    "country": "Malaysia"
   },
   "SZC": {
     "code": "SZC",
@@ -44376,12 +43752,6 @@ export const airports ={
     "city": "Tarabo",
     "country": "Papua New Guinea"
   },
-  "TBR": {
-    "code": "TBR",
-    "name": "Statesboro-Bulloch County Arpt.",
-    "city": "Statesboro, GA",
-    "country": "USA"
-  },
   "TBS": {
     "code": "TBS",
     "name": "Lochini",
@@ -44480,7 +43850,7 @@ export const airports ={
   },
   "TCI": {
     "code": "TCI",
-    "name": "All Airports",
+    "name": "Tenerife",
     "city": "Tenerife",
     "country": "Spain"
   },
@@ -44495,18 +43865,6 @@ export const airports ={
     "name": "Tinboli Arpt.",
     "city": "Tinboli",
     "country": "Papua New Guinea"
-  },
-  "TCL": {
-    "code": "TCL",
-    "name": "Van De Graaf",
-    "city": "Tuscaloosa, AL",
-    "country": "USA"
-  },
-  "TCM": {
-    "code": "TCM",
-    "name": "McChord AFB",
-    "city": "Tacoma, WA",
-    "country": "USA"
   },
   "TCN": {
     "code": "TCN",
@@ -44531,6 +43889,18 @@ export const airports ={
     "name": "Tacna",
     "city": "Tacna",
     "country": "Peru"
+  },
+  "TCM": {
+    "code": "TCM",
+    "name": "McChord AFB",
+    "city": "Tacoma",
+    "country": "USA"
+  },
+  "TCL": {
+    "code": "TCL",
+    "name": "Van De Graaf",
+    "city": "Tuscaloosa",
+    "country": "USA"
   },
   "TCR": {
     "code": "TCR",
@@ -44832,23 +44202,11 @@ export const airports ={
     "city": "Telefomin",
     "country": "Papua New Guinea"
   },
-  "TFN": {
-    "code": "TFN",
-    "name": "Tenerife Norte",
-    "city": "Tenerife",
-    "country": "Spain"
-  },
   "TFR": {
     "code": "TFR",
     "name": "Ramadan",
     "city": "Ramadan",
     "country": "Egypt"
-  },
-  "TFS": {
-    "code": "TFS",
-    "name": "Sur Reina Sofia",
-    "city": "Tenerife",
-    "country": "Spain"
   },
   "TFT": {
     "code": "TFT",
@@ -44982,12 +44340,6 @@ export const airports ={
     "city": "Tuxtla Gutierrez",
     "country": "Mexico"
   },
-  "THA": {
-    "code": "THA",
-    "name": "Tullahoma/William Northern Field",
-    "city": "Tullahoma, TN",
-    "country": "USA"
-  },
   "THB": {
     "code": "THB",
     "name": "Thaba-Tseka",
@@ -45005,12 +44357,6 @@ export const airports ={
     "name": "Senador PetrÃƒÂ´nio Portella",
     "city": "Teresina",
     "country": "Brazil"
-  },
-  "THF": {
-    "code": "THF",
-    "name": "Tempelhof",
-    "city": "Berlin",
-    "country": "Germany"
   },
   "THG": {
     "code": "THG",
@@ -45062,7 +44408,7 @@ export const airports ={
   },
   "THR": {
     "code": "THR",
-    "name": "All Airports",
+    "name": "Mehrabad/ghaleh Morghi",
     "city": "Tehran",
     "country": "Iran"
   },
@@ -45107,6 +44453,18 @@ export const airports ={
     "name": "Rinas Mother Teresa",
     "city": "Tirana",
     "country": "Albania"
+  },
+  "THA": {
+    "code": "THA",
+    "name": "Tullahoma/William Northern Field",
+    "city": "Tullahoma",
+    "country": "USA"
+  },
+  "TFN": {
+    "code": "TFN",
+    "name": "Tenerife Norte",
+    "city": "Tenerife",
+    "country": "Spain"
   },
   "TIC": {
     "code": "TIC",
@@ -45336,12 +44694,6 @@ export const airports ={
     "city": "Tenakee Springs",
     "country": "USA"
   },
-  "TKF": {
-    "code": "TKF",
-    "name": "Truckee-Tahoe",
-    "city": "Truckee, CA",
-    "country": "USA"
-  },
   "TKG": {
     "code": "TKG",
     "name": "Branti",
@@ -45546,12 +44898,6 @@ export const airports ={
     "city": "Tumolbil",
     "country": "Papua New Guinea"
   },
-  "TLR": {
-    "code": "TLR",
-    "name": "Mefford Field",
-    "city": "Tulare, CA",
-    "country": "USA"
-  },
   "TLS": {
     "code": "TLS",
     "name": "Blagnac",
@@ -45572,7 +44918,7 @@ export const airports ={
   },
   "TLV": {
     "code": "TLV",
-    "name": "All Airports",
+    "name": "Ben Gurion Intl",
     "city": "Tel Aviv",
     "country": "Israel"
   },
@@ -45593,18 +44939,6 @@ export const airports ={
     "name": "Catalao",
     "city": "Catalao",
     "country": "Brazil"
-  },
-  "TMA": {
-    "code": "TMA",
-    "name": "Henry Tift Myers",
-    "city": "Tifton, GA",
-    "country": "USA"
-  },
-  "TMB": {
-    "code": "TMB",
-    "name": "Tamiami",
-    "city": "Miami",
-    "country": "USA"
   },
   "TMC": {
     "code": "TMC",
@@ -45665,6 +44999,18 @@ export const airports ={
     "name": "Tamana Island",
     "city": "Tamana Island",
     "country": "Kiribati"
+  },
+  "TLR": {
+    "code": "TLR",
+    "name": "Mefford Field",
+    "city": "Tulare",
+    "country": "USA"
+  },
+  "TMA": {
+    "code": "TMA",
+    "name": "Henry Tift Myers",
+    "city": "Tifton",
+    "country": "USA"
   },
   "TMO": {
     "code": "TMO",
@@ -45743,12 +45089,6 @@ export const airports ={
     "name": "Tanah Grogot",
     "city": "Tanah Grogot",
     "country": "Indonesia"
-  },
-  "TNC": {
-    "code": "TNC",
-    "name": "Tin City Afs",
-    "city": "Tin City, AK",
-    "country": "USA"
   },
   "TND": {
     "code": "TND",
@@ -45840,12 +45180,6 @@ export const airports ={
     "city": "Antananarivo",
     "country": "Madagascar"
   },
-  "TNT": {
-    "code": "TNT",
-    "name": "Dade Collier",
-    "city": "Miami",
-    "country": "USA"
-  },
   "TNU": {
     "code": "TNU",
     "name": "Municipal",
@@ -45930,12 +45264,6 @@ export const airports ={
     "city": "Torokina",
     "country": "Papua New Guinea"
   },
-  "TOL": {
-    "code": "TOL",
-    "name": "Toledo Express",
-    "city": "Toledo, OH",
-    "country": "USA"
-  },
   "TOM": {
     "code": "TOM",
     "name": "Tombouctou",
@@ -46016,13 +45344,13 @@ export const airports ={
   },
   "TPA": {
     "code": "TPA",
-    "name": "All Airports",
+    "name": "Tampa Intl.",
     "city": "Tampa",
     "country": "USA"
   },
   "TPE": {
     "code": "TPE",
-    "name": "All Airports",
+    "name": "Taiwan Taoyuan Intl.",
     "city": "Taipei",
     "country": "Taiwan"
   },
@@ -46055,12 +45383,6 @@ export const airports ={
     "name": "Tapaktuan",
     "city": "Tapaktuan",
     "country": "Indonesia"
-  },
-  "TPL": {
-    "code": "TPL",
-    "name": "Draughon-miller Central Texas Regional",
-    "city": "Temple, TX",
-    "country": "USA"
   },
   "TPN": {
     "code": "TPN",
@@ -46158,12 +45480,6 @@ export const airports ={
     "city": "Tiree",
     "country": "United Kingdom"
   },
-  "TRF": {
-    "code": "TRF",
-    "name": "Sandefjord",
-    "city": "Oslo",
-    "country": "Norway"
-  },
   "TRG": {
     "code": "TRG",
     "name": "Tauranga City",
@@ -46222,6 +45538,30 @@ export const airports ={
     "code": "TRP",
     "name": "Coast Guard Heliport",
     "city": "Tree Point",
+    "country": "USA"
+  },
+  "TPL": {
+    "code": "TPL",
+    "name": "Draughon-miller Central Texas Regional",
+    "city": "Temple",
+    "country": "USA"
+  },
+  "TRF": {
+    "code": "TRF",
+    "name": "Sandefjord",
+    "city": "Oslo",
+    "country": "Norway"
+  },
+  "TNC": {
+    "code": "TNC",
+    "name": "Tin City Afs",
+    "city": "Tin City",
+    "country": "USA"
+  },
+  "TOL": {
+    "code": "TOL",
+    "name": "Toledo Express",
+    "city": "Toledo",
     "country": "USA"
   },
   "TRQ": {
@@ -46284,12 +45624,6 @@ export const airports ={
     "city": "Tiruchirapally",
     "country": "India"
   },
-  "TSA": {
-    "code": "TSA",
-    "name": "Taipei Songshan",
-    "city": "Taipei",
-    "country": "Taiwan"
-  },
   "TSD": {
     "code": "TSD",
     "name": "Tshipise",
@@ -46344,12 +45678,6 @@ export const airports ={
     "city": "Isles Of Scilly",
     "country": "United Kingdom"
   },
-  "TSP": {
-    "code": "TSP",
-    "name": "Kern County",
-    "city": "Tehachapi, CA",
-    "country": "USA"
-  },
   "TSQ": {
     "code": "TSQ",
     "name": "Torres",
@@ -46361,12 +45689,6 @@ export const airports ={
     "name": "Timisoara",
     "city": "Timisoara",
     "country": "Romania"
-  },
-  "TSS": {
-    "code": "TSS",
-    "name": "East 34th St Heliport",
-    "city": "New York",
-    "country": "USA"
   },
   "TST": {
     "code": "TST",
@@ -46451,12 +45773,6 @@ export const airports ={
     "name": "Tablon De Tamara",
     "city": "Tablon De Tamara",
     "country": "Colombia"
-  },
-  "TTN": {
-    "code": "TTN",
-    "name": "Trenton Mercer Arpt.",
-    "city": "Trenton, NJ",
-    "country": "USA"
   },
   "TTO": {
     "code": "TTO",
@@ -46602,12 +45918,6 @@ export const airports ={
     "city": "Tucurui",
     "country": "Brazil"
   },
-  "TUS": {
-    "code": "TUS",
-    "name": "Tucson Intl. Arpt.",
-    "city": "Tucson, AZ",
-    "country": "USA"
-  },
   "TUT": {
     "code": "TUT",
     "name": "Tauta",
@@ -46722,12 +46032,6 @@ export const airports ={
     "city": "Busuanga",
     "country": "Philippines"
   },
-  "TWF": {
-    "code": "TWF",
-    "name": "Joslin Field - Magic Valley Regional",
-    "city": "Twin Falls, ID",
-    "country": "USA"
-  },
   "TWH": {
     "code": "TWH",
     "name": "Two Harbors",
@@ -46782,11 +46086,35 @@ export const airports ={
     "city": "Taichung",
     "country": "Taiwan"
   },
-  "TXL": {
-    "code": "TXL",
-    "name": "Berlin Tegel Airport",
-    "city": "Berlin",
-    "country": "Germany"
+  "TSA": {
+    "code": "TSA",
+    "name": "Taipei Songshan",
+    "city": "Taipei",
+    "country": "Taiwan"
+  },
+  "TWF": {
+    "code": "TWF",
+    "name": "Joslin Field - Magic Valley Regional",
+    "city": "Twin Falls",
+    "country": "USA"
+  },
+  "TSS": {
+    "code": "TSS",
+    "name": "East 34th St Heliport",
+    "city": "New York",
+    "country": "USA"
+  },
+  "TSP": {
+    "code": "TSP",
+    "name": "Kern County",
+    "city": "Tehachapi",
+    "country": "USA"
+  },
+  "TUS": {
+    "code": "TUS",
+    "name": "Tucson Intl. Arpt.",
+    "city": "Tucson",
+    "country": "USA"
   },
   "TXM": {
     "code": "TXM",
@@ -46862,7 +46190,7 @@ export const airports ={
   },
   "TYO": {
     "code": "TYO",
-    "name": "All Airports",
+    "name": "Tokyo Metropolitan Area",
     "city": "Tokyo",
     "country": "Japan"
   },
@@ -46895,12 +46223,6 @@ export const airports ={
     "name": "Taylor",
     "city": "Taylor",
     "country": "USA"
-  },
-  "TZA": {
-    "code": "TZA",
-    "name": "Municipal",
-    "city": "Belize City",
-    "country": "Belize"
   },
   "TZL": {
     "code": "TZL",
@@ -47033,12 +46355,6 @@ export const airports ={
     "name": "Ubrub",
     "city": "Ubrub",
     "country": "Indonesia"
-  },
-  "UBS": {
-    "code": "UBS",
-    "name": "Lowndes County",
-    "city": "Columbus",
-    "country": "USA"
   },
   "UBT": {
     "code": "UBT",
@@ -47316,12 +46632,6 @@ export const airports ={
     "city": "Ukunda",
     "country": "Kenya"
   },
-  "UKB": {
-    "code": "UKB",
-    "name": "Kobe",
-    "city": "Osaka",
-    "country": "Japan"
-  },
   "UKI": {
     "code": "UKI",
     "name": "Ukiah",
@@ -47356,6 +46666,18 @@ export const airports ={
     "code": "UKT",
     "name": "Upper Bucks",
     "city": "Quakertown",
+    "country": "USA"
+  },
+  "UKB": {
+    "code": "UKB",
+    "name": "Kobe",
+    "city": "Osaka",
+    "country": "Japan"
+  },
+  "UBS": {
+    "code": "UBS",
+    "name": "Lowndes County",
+    "city": "Columbus",
     "country": "USA"
   },
   "UKU": {
@@ -47621,12 +46943,6 @@ export const airports ={
     "name": "Baltasound",
     "city": "Unst Shetland Is",
     "country": "United Kingdom"
-  },
-  "UNU": {
-    "code": "UNU",
-    "name": "Dodge County",
-    "city": "Juneau, WI",
-    "country": "USA"
   },
   "UOL": {
     "code": "UOL",
@@ -48212,7 +47528,7 @@ export const airports ={
   },
   "VCE": {
     "code": "VCE",
-    "name": "All Airports",
+    "name": "Marco Polo",
     "city": "Venice",
     "country": "Italy"
   },
@@ -48234,12 +47550,6 @@ export const airports ={
     "city": "Tamky",
     "country": "Viet Nam"
   },
-  "VCP": {
-    "code": "VCP",
-    "name": "Viracopos",
-    "city": "Sao Paulo",
-    "country": "Brazil"
-  },
   "VCR": {
     "code": "VCR",
     "name": "Carora",
@@ -48257,18 +47567,6 @@ export const airports ={
     "name": "County-Foster",
     "city": "Victoria",
     "country": "USA"
-  },
-  "VCV": {
-    "code": "VCV",
-    "name": "Southern California Logistics",
-    "city": "Victorville, CA",
-    "country": "USA"
-  },
-  "VDA": {
-    "code": "VDA",
-    "name": "Ovda",
-    "city": "Eilat",
-    "country": "Israel"
   },
   "VDB": {
     "code": "VDB",
@@ -48353,12 +47651,6 @@ export const airports ={
     "name": "Vejle",
     "city": "Vejle",
     "country": "Denmark"
-  },
-  "VEL": {
-    "code": "VEL",
-    "name": "Vernal",
-    "city": "Vernal, UT",
-    "country": "USA"
   },
   "VER": {
     "code": "VER",
@@ -48486,6 +47778,18 @@ export const airports ={
     "city": "Vienna",
     "country": "Austria"
   },
+  "VEL": {
+    "code": "VEL",
+    "name": "Vernal",
+    "city": "Vernal",
+    "country": "USA"
+  },
+  "VCP": {
+    "code": "VCP",
+    "name": "Viracopos",
+    "city": "Sao Paulo",
+    "country": "Brazil"
+  },
   "VIG": {
     "code": "VIG",
     "name": "El Vigia",
@@ -48593,12 +47897,6 @@ export const airports ={
     "name": "Rach Gia",
     "city": "Rach Gia",
     "country": "Viet Nam"
-  },
-  "VKO": {
-    "code": "VKO",
-    "name": "Vnukovo",
-    "city": "Moscow",
-    "country": "Russian Federation"
   },
   "VKT": {
     "code": "VKT",
@@ -48726,12 +48024,6 @@ export const airports ={
     "city": "Saravane",
     "country": "Laos"
   },
-  "VNC": {
-    "code": "VNC",
-    "name": "Venice Municipal",
-    "city": "Venice, FL",
-    "country": "USA"
-  },
   "VND": {
     "code": "VND",
     "name": "Vangaindrano",
@@ -48773,12 +48065,6 @@ export const airports ={
     "name": "Vilanculos",
     "city": "Vilanculos",
     "country": "Mozambique"
-  },
-  "VNY": {
-    "code": "VNY",
-    "name": "Van Nuys",
-    "city": "Los Angeles, CA",
-    "country": "USA"
   },
   "VOG": {
     "code": "VOG",
@@ -48833,12 +48119,6 @@ export const airports ={
     "name": "Vopnafjordur",
     "city": "Vopnafjordur",
     "country": "Iceland"
-  },
-  "VPS": {
-    "code": "VPS",
-    "name": "Eglin AFB",
-    "city": "Valparaiso, FL",
-    "country": "USA"
   },
   "VPZ": {
     "code": "VPZ",
@@ -48954,12 +48234,6 @@ export const airports ={
     "city": "Phuoclong",
     "country": "Viet Nam"
   },
-  "VST": {
-    "code": "VST",
-    "name": "Vasteras/Hasslo",
-    "city": "Stockholm",
-    "country": "Sweden"
-  },
   "VTA": {
     "code": "VTA",
     "name": "Victoria",
@@ -49038,17 +48312,35 @@ export const airports ={
     "city": "Villavicencio",
     "country": "Colombia"
   },
+  "VVK": {
+    "code": "VVK",
+    "name": "Vastervik",
+    "city": "Vastervik",
+    "country": "Sweden"
+  },
+  "VST": {
+    "code": "VST",
+    "name": "Vasteras/Hasslo",
+    "city": "Stockholm",
+    "country": "Sweden"
+  },
   "VVI": {
     "code": "VVI",
     "name": "Viru Viru Intl",
     "city": "Santa Cruz",
     "country": "Bolivia"
   },
-  "VVK": {
-    "code": "VVK",
-    "name": "Vastervik",
-    "city": "Vastervik",
-    "country": "Sweden"
+  "VNC": {
+    "code": "VNC",
+    "name": "Venice Municipal",
+    "city": "Venice",
+    "country": "USA"
+  },
+  "VPS": {
+    "code": "VPS",
+    "name": "Eglin AFB",
+    "city": "Valparaiso",
+    "country": "USA"
   },
   "VVO": {
     "code": "VVO",
@@ -49320,12 +48612,6 @@ export const airports ={
     "city": "Boulder",
     "country": "USA"
   },
-  "WBW": {
-    "code": "WBW",
-    "name": "Wilkes-Barre/Wyoming Valley",
-    "city": "Wilkes-Barre, PA",
-    "country": "USA"
-  },
   "WCA": {
     "code": "WCA",
     "name": "Gamboa",
@@ -49364,7 +48650,7 @@ export const airports ={
   },
   "WDH": {
     "code": "WDH",
-    "name": "All Airports",
+    "name": "Hosea Kutako Intl.",
     "city": "Windhoek",
     "country": "Namibia"
   },
@@ -49590,12 +48876,6 @@ export const airports ={
     "city": "Franz Josef",
     "country": "New Zealand"
   },
-  "WHP": {
-    "code": "WHP",
-    "name": "Whiteman",
-    "city": "Los Angeles",
-    "country": "USA"
-  },
   "WHS": {
     "code": "WHS",
     "name": "Whalsay",
@@ -49637,12 +48917,6 @@ export const airports ={
     "name": "Surfdale",
     "city": "Surfdale",
     "country": "New Zealand"
-  },
-  "WIL": {
-    "code": "WIL",
-    "name": "Wilson",
-    "city": "Nairobi",
-    "country": "Kenya"
   },
   "WIN": {
     "code": "WIN",
@@ -50136,12 +49410,6 @@ export const airports ={
     "city": "Wrightstown, New Jersey",
     "country": "USA"
   },
-  "WRL": {
-    "code": "WRL",
-    "name": "Worland",
-    "city": "Worland, WY",
-    "country": "USA"
-  },
   "WRO": {
     "code": "WRO",
     "name": "Copernicus Arpt.",
@@ -50190,16 +49458,22 @@ export const airports ={
     "city": "Sarichef",
     "country": "USA"
   },
-  "WSG": {
-    "code": "WSG",
-    "name": "County",
-    "city": "Washington",
-    "country": "USA"
-  },
   "WSH": {
     "code": "WSH",
     "name": "Brookhaven",
     "city": "Shirley",
+    "country": "USA"
+  },
+  "WRL": {
+    "code": "WRL",
+    "name": "Worland",
+    "city": "Worland",
+    "country": "USA"
+  },
+  "WSG": {
+    "code": "WSG",
+    "name": "County",
+    "city": "Washington",
     "country": "USA"
   },
   "WSJ": {
@@ -50273,12 +49547,6 @@ export const airports ={
     "name": "Tambohorano",
     "city": "Tambohorano",
     "country": "Madagascar"
-  },
-  "WTC": {
-    "code": "WTC",
-    "name": "World Trade Center",
-    "city": "New York",
-    "country": "USA"
   },
   "WTD": {
     "code": "WTD",
@@ -50832,12 +50100,6 @@ export const airports ={
     "city": "Ahmed Al Jaber",
     "country": "Kuwait"
   },
-  "XIK": {
-    "code": "XIK",
-    "name": "Central Station",
-    "city": "Milan",
-    "country": "Italy"
-  },
   "XIL": {
     "code": "XIL",
     "name": "Xilinhot",
@@ -50958,12 +50220,6 @@ export const airports ={
     "city": "Quebec",
     "country": "Canada"
   },
-  "XLM": {
-    "code": "XLM",
-    "name": "St Lambert Rail Svce.",
-    "city": "Montreal",
-    "country": "Canada"
-  },
   "XLO": {
     "code": "XLO",
     "name": "Long Xuyen",
@@ -50993,12 +50249,6 @@ export const airports ={
     "name": "Maramag",
     "city": "Maramag",
     "country": "Philippines"
-  },
-  "XMB": {
-    "code": "XMB",
-    "name": "Dubai EY Bus Station",
-    "city": "Dubai",
-    "country": "United Arab Emirates"
   },
   "XMC": {
     "code": "XMC",
@@ -51059,18 +50309,6 @@ export const airports ={
     "name": "Yam Island",
     "city": "Yam Island",
     "country": "Australia"
-  },
-  "XNA": {
-    "code": "XNA",
-    "name": "Northwest Arkansas Regional",
-    "city": "Fayetteville, AR",
-    "country": "USA"
-  },
-  "XNB": {
-    "code": "XNB",
-    "name": "Dubai Chelsea Bus Station",
-    "city": "Dubai",
-    "country": "United Arab Emirates"
   },
   "XNG": {
     "code": "XNG",
@@ -51174,12 +50412,6 @@ export const airports ={
     "city": "Balad",
     "country": "Iraq"
   },
-  "XQE": {
-    "code": "XQE",
-    "name": "Ebbsfleet Kent Station",
-    "city": "London",
-    "country": "United Kingdom"
-  },
   "XQH": {
     "code": "XQH",
     "name": "Railway Station",
@@ -51221,12 +50453,6 @@ export const airports ={
     "name": "Richmond AFB",
     "city": "Richmond",
     "country": "Australia"
-  },
-  "XRJ": {
-    "code": "XRJ",
-    "name": "Termini Rail Stn.",
-    "city": "Rome",
-    "country": "Italy"
   },
   "XRR": {
     "code": "XRR",
@@ -51276,12 +50502,6 @@ export const airports ={
     "city": "Siocon",
     "country": "Philippines"
   },
-  "XSP": {
-    "code": "XSP",
-    "name": "Seletar",
-    "city": "Singapore",
-    "country": "Singapore"
-  },
   "XTA": {
     "code": "XTA",
     "name": "Econ/Tech Dev. Area",
@@ -51299,12 +50519,6 @@ export const airports ={
     "name": "Thargomindah",
     "city": "Thargomindah",
     "country": "Australia"
-  },
-  "XTL": {
-    "code": "XTL",
-    "name": "Tadoule Lake",
-    "city": "Tadoule Lake, MB",
-    "country": "Canada"
   },
   "XTM": {
     "code": "XTM",
@@ -51336,6 +50550,42 @@ export const airports ={
     "city": "Storekvina",
     "country": "Norway"
   },
+  "XIK": {
+    "code": "XIK",
+    "name": "Central Station",
+    "city": "Milan",
+    "country": "Italy"
+  },
+  "XRJ": {
+    "code": "XRJ",
+    "name": "Termini Rail Stn.",
+    "city": "Rome",
+    "country": "Italy"
+  },
+  "XSP": {
+    "code": "XSP",
+    "name": "Seletar",
+    "city": "Singapore",
+    "country": "Singapore"
+  },
+  "XLM": {
+    "code": "XLM",
+    "name": "St Lambert Rail Svce.",
+    "city": "Montreal",
+    "country": "Canada"
+  },
+  "XQE": {
+    "code": "XQE",
+    "name": "Ebbsfleet Kent Station",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "XTL": {
+    "code": "XTL",
+    "name": "Tadoule Lake",
+    "city": "Tadoule Lake",
+    "country": "Canada"
+  },
   "XUW": {
     "code": "XUW",
     "name": "Storen Railway",
@@ -51353,18 +50603,6 @@ export const airports ={
     "name": "Vinh Long",
     "city": "Vinh Long",
     "country": "Viet Nam"
-  },
-  "XVQ": {
-    "code": "XVQ",
-    "name": "Santa Lucia Rail",
-    "city": "Venice",
-    "country": "Italy"
-  },
-  "XVY": {
-    "code": "XVY",
-    "name": "Mestre Rail Stn.",
-    "city": "Rome",
-    "country": "Italy"
   },
   "XWC": {
     "code": "XWC",
@@ -51726,12 +50964,6 @@ export const airports ={
     "city": "St Anthony",
     "country": "Canada"
   },
-  "YAZ": {
-    "code": "YAZ",
-    "name": "Tofino Arpt.",
-    "city": "Tofino, BC",
-    "country": "Canada"
-  },
   "YBA": {
     "code": "YBA",
     "name": "Banff",
@@ -51864,12 +51096,6 @@ export const airports ={
     "city": "Blanc Sablon",
     "country": "Canada"
   },
-  "YBY": {
-    "code": "YBY",
-    "name": "Bonnyville",
-    "city": "Bonnyville, AB",
-    "country": "Canada"
-  },
   "YCA": {
     "code": "YCA",
     "name": "Courtenay",
@@ -51904,6 +51130,24 @@ export const airports ={
     "code": "YCG",
     "name": "Castlegar",
     "city": "Castlegar",
+    "country": "Canada"
+  },
+  "YAZ": {
+    "code": "YAZ",
+    "name": "Tofino Arpt.",
+    "city": "Tofino",
+    "country": "Canada"
+  },
+  "XVQ": {
+    "code": "XVQ",
+    "name": "Santa Lucia Rail",
+    "city": "Venice",
+    "country": "Italy"
+  },
+  "YBY": {
+    "code": "YBY",
+    "name": "Bonnyville",
+    "city": "Bonnyville",
     "country": "Canada"
   },
   "YCH": {
@@ -52142,7 +51386,7 @@ export const airports ={
   },
   "YEA": {
     "code": "YEA",
-    "name": "All Airports",
+    "name": "Edmonton Metropolitan Area",
     "city": "Edmonton",
     "country": "Canada"
   },
@@ -52151,18 +51395,6 @@ export const airports ={
     "name": "Yecheon",
     "city": "Yecheon",
     "country": "Korea"
-  },
-  "YED": {
-    "code": "YED",
-    "name": "Namao Fld",
-    "city": "Edmonton",
-    "country": "Canada"
-  },
-  "YEG": {
-    "code": "YEG",
-    "name": "Edmonton Intl.",
-    "city": "Edmonton",
-    "country": "Canada"
   },
   "YEH": {
     "code": "YEH",
@@ -52506,12 +51738,6 @@ export const airports ={
     "city": "Gjoa Haven",
     "country": "Canada"
   },
-  "YHM": {
-    "code": "YHM",
-    "name": "Hamilton",
-    "city": "Toronto",
-    "country": "Canada"
-  },
   "YHN": {
     "code": "YHN",
     "name": "Hornepayne",
@@ -52548,22 +51774,10 @@ export const airports ={
     "city": "Haines Junction",
     "country": "Canada"
   },
-  "YHU": {
-    "code": "YHU",
-    "name": "St Hubert",
-    "city": "Montreal",
-    "country": "Canada"
-  },
   "YHY": {
     "code": "YHY",
     "name": "Hay River",
     "city": "Hay River",
-    "country": "Canada"
-  },
-  "YHZ": {
-    "code": "YHZ",
-    "name": "Halifax Intl.",
-    "city": "Halifax, NS",
     "country": "Canada"
   },
   "YIB": {
@@ -52613,12 +51827,6 @@ export const airports ={
     "name": "Pond Inlet",
     "city": "Pond Inlet",
     "country": "Canada"
-  },
-  "YIP": {
-    "code": "YIP",
-    "name": "Willow Run",
-    "city": "Detroit, MI",
-    "country": "USA"
   },
   "YIV": {
     "code": "YIV",
@@ -52788,12 +51996,6 @@ export const airports ={
     "city": "Kindersley",
     "country": "Canada"
   },
-  "YKZ": {
-    "code": "YKZ",
-    "name": "Buttonville Municipal",
-    "city": "Toronto",
-    "country": "Canada"
-  },
   "YLA": {
     "code": "YLA",
     "name": "Langara",
@@ -52848,12 +52050,6 @@ export const airports ={
     "city": "Meadow Lake",
     "country": "Canada"
   },
-  "YLL": {
-    "code": "YLL",
-    "name": "Lloydminster",
-    "city": "Lloydminster, AB",
-    "country": "Canada"
-  },
   "YLM": {
     "code": "YLM",
     "name": "Clinton Creek",
@@ -52900,12 +52096,6 @@ export const airports ={
     "code": "YLT",
     "name": "Alert",
     "city": "Alert",
-    "country": "Canada"
-  },
-  "YLW": {
-    "code": "YLW",
-    "name": "Kelowna Arpt.",
-    "city": "Kelowna, BC",
     "country": "Canada"
   },
   "YLX": {
@@ -52968,12 +52158,6 @@ export const airports ={
     "city": "Moose Jaw",
     "country": "Canada"
   },
-  "YML": {
-    "code": "YML",
-    "name": "Charlevoix",
-    "city": "Murray Bay, NT",
-    "country": "Canada"
-  },
   "YMM": {
     "code": "YMM",
     "name": "Fort Mcmurray",
@@ -52986,12 +52170,6 @@ export const airports ={
     "city": "Makkovik",
     "country": "Canada"
   },
-  "YMO": {
-    "code": "YMO",
-    "name": "Moosonee",
-    "city": "Moosonee, ON",
-    "country": "Canada"
-  },
   "YMP": {
     "code": "YMP",
     "name": "Port McNeil",
@@ -53000,7 +52178,7 @@ export const airports ={
   },
   "YMQ": {
     "code": "YMQ",
-    "name": "All Airports",
+    "name": "Montreal Metropolitan Area",
     "city": "Montreal",
     "country": "Canada"
   },
@@ -53016,6 +52194,54 @@ export const airports ={
     "city": "Yurimaguas",
     "country": "Peru"
   },
+  "YHZ": {
+    "code": "YHZ",
+    "name": "Halifax Intl.",
+    "city": "Halifax",
+    "country": "Canada"
+  },
+  "YIP": {
+    "code": "YIP",
+    "name": "Willow Run",
+    "city": "Detroit",
+    "country": "USA"
+  },
+  "YHM": {
+    "code": "YHM",
+    "name": "Hamilton",
+    "city": "Toronto",
+    "country": "Canada"
+  },
+  "YKZ": {
+    "code": "YKZ",
+    "name": "Buttonville Municipal",
+    "city": "Toronto",
+    "country": "Canada"
+  },
+  "YLL": {
+    "code": "YLL",
+    "name": "Lloydminster",
+    "city": "Lloydminster",
+    "country": "Canada"
+  },
+  "YLW": {
+    "code": "YLW",
+    "name": "Kelowna Arpt.",
+    "city": "Kelowna",
+    "country": "Canada"
+  },
+  "YML": {
+    "code": "YML",
+    "name": "Charlevoix",
+    "city": "Murray Bay",
+    "country": "Canada"
+  },
+  "YMO": {
+    "code": "YMO",
+    "name": "Moosonee",
+    "city": "Moosonee",
+    "country": "Canada"
+  },
   "YMT": {
     "code": "YMT",
     "name": "Chibougamau",
@@ -53026,12 +52252,6 @@ export const airports ={
     "code": "YMW",
     "name": "Maniwaki",
     "city": "Maniwaki",
-    "country": "Canada"
-  },
-  "YMX": {
-    "code": "YMX",
-    "name": "Mirabel",
-    "city": "Montreal",
     "country": "Canada"
   },
   "YNA": {
@@ -53050,12 +52270,6 @@ export const airports ={
     "code": "YNC",
     "name": "Wemindji",
     "city": "Wemindji",
-    "country": "Canada"
-  },
-  "YND": {
-    "code": "YND",
-    "name": "Executive Gatineau-Ottawa",
-    "city": "Ottawa",
     "country": "Canada"
   },
   "YNE": {
@@ -53112,22 +52326,10 @@ export const airports ={
     "city": "Yandicoogina",
     "country": "Australia"
   },
-  "YNO": {
-    "code": "YNO",
-    "name": "North Spirit Lake",
-    "city": "North Spirit Lake, ON",
-    "country": "Canada"
-  },
   "YNP": {
     "code": "YNP",
     "name": "Natuashish",
     "city": "Natuashish",
-    "country": "Canada"
-  },
-  "YNR": {
-    "code": "YNR",
-    "name": "Arnes",
-    "city": "Arnes, MB",
     "country": "Canada"
   },
   "YNS": {
@@ -53234,7 +52436,7 @@ export const airports ={
   },
   "YOW": {
     "code": "YOW",
-    "name": "All Airports",
+    "name": "Ottawa Macdonald-Cartier Intl.",
     "city": "Ottawa",
     "country": "Canada"
   },
@@ -53242,12 +52444,6 @@ export const airports ={
     "code": "YOY",
     "name": "Valcartier",
     "city": "Valcartier",
-    "country": "Canada"
-  },
-  "YPA": {
-    "code": "YPA",
-    "name": "Glass Field",
-    "city": "Prince Albert, SK",
     "country": "Canada"
   },
   "YPB": {
@@ -53430,12 +52626,6 @@ export const airports ={
     "city": "Watson Lake",
     "country": "Canada"
   },
-  "YQI": {
-    "code": "YQI",
-    "name": "Yarmouth",
-    "city": "Yarmouth, NS",
-    "country": "Canada"
-  },
   "YQK": {
     "code": "YQK",
     "name": "Kenora",
@@ -53508,12 +52698,6 @@ export const airports ={
     "city": "Gander",
     "country": "Canada"
   },
-  "YQY": {
-    "code": "YQY",
-    "name": "Sydney",
-    "city": "Sydney, NS",
-    "country": "Canada"
-  },
   "YQZ": {
     "code": "YQZ",
     "name": "Quesnel",
@@ -53568,6 +52752,36 @@ export const airports ={
     "city": "Roberval",
     "country": "Canada"
   },
+  "YNO": {
+    "code": "YNO",
+    "name": "North Spirit Lake",
+    "city": "North Spirit Lake",
+    "country": "Canada"
+  },
+  "YNR": {
+    "code": "YNR",
+    "name": "Arnes",
+    "city": "Arnes",
+    "country": "Canada"
+  },
+  "YPA": {
+    "code": "YPA",
+    "name": "Glass Field",
+    "city": "Prince Albert",
+    "country": "Canada"
+  },
+  "YQI": {
+    "code": "YQI",
+    "name": "Yarmouth",
+    "city": "Yarmouth",
+    "country": "Canada"
+  },
+  "YQY": {
+    "code": "YQY",
+    "name": "Sydney",
+    "city": "Sydney",
+    "country": "Canada"
+  },
   "YRL": {
     "code": "YRL",
     "name": "Red Lake",
@@ -53586,12 +52800,6 @@ export const airports ={
     "city": "Owekeno Village",
     "country": "Canada"
   },
-  "YRO": {
-    "code": "YRO",
-    "name": "Rockcliffe St",
-    "city": "Ottawa",
-    "country": "Canada"
-  },
   "YRQ": {
     "code": "YRQ",
     "name": "Trois-Rivieres",
@@ -53608,12 +52816,6 @@ export const airports ={
     "code": "YRS",
     "name": "Red Sucker Lake",
     "city": "Red Sucker Lake",
-    "country": "Canada"
-  },
-  "YRT": {
-    "code": "YRT",
-    "name": "Nuuk",
-    "city": "Rankin Inlet, NT",
     "country": "Canada"
   },
   "YRV": {
@@ -53874,18 +53076,6 @@ export const airports ={
     "city": "Trenton",
     "country": "Canada"
   },
-  "YTS": {
-    "code": "YTS",
-    "name": "Timmins",
-    "city": "Timmins, ON",
-    "country": "Canada"
-  },
-  "YTT": {
-    "code": "YTT",
-    "name": "Tisdale",
-    "city": "Tisdale, sk",
-    "country": "Canada"
-  },
   "YTX": {
     "code": "YTX",
     "name": "Telegraph Creek",
@@ -53897,12 +53087,6 @@ export const airports ={
     "name": "Yangzhou Taizhou Airport",
     "city": "Yangzhou",
     "country": "China"
-  },
-  "YTZ": {
-    "code": "YTZ",
-    "name": "Toronto City Centre Arpt.",
-    "city": "Toronto",
-    "country": "Canada"
   },
   "YUA": {
     "code": "YUA",
@@ -53927,12 +53111,6 @@ export const airports ={
     "name": "Yuendumu",
     "city": "Yuendumu",
     "country": "Australia"
-  },
-  "YUL": {
-    "code": "YUL",
-    "name": "Pierre Elliott Trudeau International Airport",
-    "city": "Montreal",
-    "country": "Canada"
   },
   "YUM": {
     "code": "YUM",
@@ -54030,12 +53208,6 @@ export const airports ={
     "city": "Buffalo Narrows",
     "country": "Canada"
   },
-  "YVV": {
-    "code": "YVV",
-    "name": "Wiarton/Keppel Arpt.",
-    "city": "Wiarton, ON",
-    "country": "Canada"
-  },
   "YVZ": {
     "code": "YVZ",
     "name": "Deer Lake",
@@ -54120,6 +53292,36 @@ export const airports ={
     "city": "Chute-Des-Passes",
     "country": "Canada"
   },
+  "YRT": {
+    "code": "YRT",
+    "name": "Nuuk",
+    "city": "Rankin Inlet",
+    "country": "Canada"
+  },
+  "YTS": {
+    "code": "YTS",
+    "name": "Timmins",
+    "city": "Timmins",
+    "country": "Canada"
+  },
+  "YRO": {
+    "code": "YRO",
+    "name": "Rockcliffe St",
+    "city": "Ottawa",
+    "country": "Canada"
+  },
+  "YTT": {
+    "code": "YTT",
+    "name": "Tisdale",
+    "city": "Tisdale",
+    "country": "Canada"
+  },
+  "YVV": {
+    "code": "YVV",
+    "name": "Wiarton/Keppel Arpt.",
+    "city": "Wiarton",
+    "country": "Canada"
+  },
   "YWR": {
     "code": "YWR",
     "name": "White River",
@@ -54142,12 +53344,6 @@ export const airports ={
     "code": "YXC",
     "name": "Cranbrook",
     "city": "Cranbrook",
-    "country": "Canada"
-  },
-  "YXD": {
-    "code": "YXD",
-    "name": "Edmonton City Center Arpt.",
-    "city": "Edmonton",
     "country": "Canada"
   },
   "YXE": {
@@ -54222,12 +53418,6 @@ export const airports ={
     "city": "Prince George",
     "country": "Canada"
   },
-  "YXT": {
-    "code": "YXT",
-    "name": "Terrace",
-    "city": "Terrace, BC",
-    "country": "Canada"
-  },
   "YXU": {
     "code": "YXU",
     "name": "London Intl.",
@@ -54262,12 +53452,6 @@ export const airports ={
     "code": "YYB",
     "name": "North Bay",
     "city": "North Bay",
-    "country": "Canada"
-  },
-  "YYC": {
-    "code": "YYC",
-    "name": "Calgary Intl. Arpt.",
-    "city": "Calgary, AB",
     "country": "Canada"
   },
   "YYD": {
@@ -54342,12 +53526,6 @@ export const airports ={
     "city": "Goose Bay",
     "country": "Canada"
   },
-  "YYT": {
-    "code": "YYT",
-    "name": "St. JohnÃ‚Â´s Intl.",
-    "city": "St. John's, NL",
-    "country": "Canada"
-  },
   "YYU": {
     "code": "YYU",
     "name": "Kapuskasing",
@@ -54366,12 +53544,6 @@ export const airports ={
     "city": "Mont Joli",
     "country": "Canada"
   },
-  "YYZ": {
-    "code": "YYZ",
-    "name": "Lester B. Pearson Intl.",
-    "city": "Toronto",
-    "country": "Canada"
-  },
   "YZA": {
     "code": "YZA",
     "name": "Ashcroft",
@@ -54382,12 +53554,6 @@ export const airports ={
     "code": "YZC",
     "name": "Beatton River",
     "city": "Beatton River",
-    "country": "Canada"
-  },
-  "YZD": {
-    "code": "YZD",
-    "name": "Downsview Arpt.",
-    "city": "Toronto",
     "country": "Canada"
   },
   "YZE": {
@@ -54678,6 +53844,30 @@ export const airports ={
     "city": "She Kou",
     "country": "China"
   },
+  "YXT": {
+    "code": "YXT",
+    "name": "Terrace",
+    "city": "Terrace",
+    "country": "Canada"
+  },
+  "YYZ": {
+    "code": "YYZ",
+    "name": "Lester B. Pearson Intl.",
+    "city": "Toronto",
+    "country": "Canada"
+  },
+  "YYC": {
+    "code": "YYC",
+    "name": "Calgary Intl. Arpt.",
+    "city": "Calgary",
+    "country": "Canada"
+  },
+  "YYT": {
+    "code": "YYT",
+    "name": "St. JohnÃ‚Â´s Intl.",
+    "city": "St. John's",
+    "country": "Canada"
+  },
   "ZDH": {
     "code": "ZDH",
     "name": "Basel/Mulhouse Railway Station",
@@ -54731,12 +53921,6 @@ export const airports ={
     "name": "Zenag",
     "city": "Zenag",
     "country": "Papua New Guinea"
-  },
-  "ZEP": {
-    "code": "ZEP",
-    "name": "Victoria Railway Station",
-    "city": "London",
-    "country": "United Kingdom"
   },
   "ZER": {
     "code": "ZER",
@@ -54960,12 +54144,6 @@ export const airports ={
     "city": "Vulcano",
     "country": "Italy"
   },
-  "ZIF": {
-    "code": "ZIF",
-    "name": "Fallowfield Railway",
-    "city": "Ottawa",
-    "country": "Canada"
-  },
   "ZIG": {
     "code": "ZIG",
     "name": "Ziguinchor",
@@ -55170,12 +54348,6 @@ export const airports ={
     "city": "Bintulu",
     "country": "Malaysia"
   },
-  "ZML": {
-    "code": "ZML",
-    "name": "Milwaukee General Mitchell",
-    "city": "Milwaukee,",
-    "country": "USA"
-  },
   "ZMM": {
     "code": "ZMM",
     "name": "Zamora",
@@ -55242,17 +54414,23 @@ export const airports ={
     "city": "Negginan",
     "country": "Canada"
   },
-  "ZNU": {
-    "code": "ZNU",
-    "name": "Namu",
-    "city": "Namu, BC",
-    "country": "Canada"
-  },
   "ZNZ": {
     "code": "ZNZ",
     "name": "Kisauni",
     "city": "Zanzibar",
     "country": "Tanzania"
+  },
+  "ZNU": {
+    "code": "ZNU",
+    "name": "Namu",
+    "city": "Namu",
+    "country": "Canada"
+  },
+  "ZIF": {
+    "code": "ZIF",
+    "name": "Fallowfield Railway",
+    "city": "Ottawa",
+    "country": "Canada"
   },
   "ZOF": {
     "code": "ZOF",
@@ -55372,12 +54550,6 @@ export const airports ={
     "code": "ZRV",
     "name": "Providence Rail",
     "city": "Providence",
-    "country": "USA"
-  },
-  "ZRZ": {
-    "code": "ZRZ",
-    "name": "New Carrolton RR",
-    "city": "Washington",
     "country": "USA"
   },
   "ZSA": {
@@ -55644,12 +54816,6 @@ export const airports ={
     "city": "Antwerp",
     "country": "Belgium"
   },
-  "ZWH": {
-    "code": "ZWH",
-    "name": "Railway Station",
-    "city": "Windhoek",
-    "country": "Namibia"
-  },
   "ZWI": {
     "code": "ZWI",
     "name": "Wilmington Rail",
@@ -55692,12 +54858,6 @@ export const airports ={
     "city": "Buffalo",
     "country": "USA"
   },
-  "ZXT": {
-    "code": "ZXT",
-    "name": "Heydar Aliyev",
-    "city": "Baku",
-    "country": "Azerbaijan"
-  },
   "ZYD": {
     "code": "ZYD",
     "name": "Lisbon TP",
@@ -55734,12 +54894,6 @@ export const airports ={
     "city": "Sylhet",
     "country": "Bangladesh"
   },
-  "ZYR": {
-    "code": "ZYR",
-    "name": "Brussels Midi",
-    "city": "Brussels",
-    "country": "Belgium"
-  },
   "ZYZ": {
     "code": "ZYZ",
     "name": "Berchem Railway Stn.",
@@ -55756,6 +54910,852 @@ export const airports ={
     "code": "ZZV",
     "name": "Zanesville",
     "city": "Zanesville",
+    "country": "USA"
+  },
+  "0A7": {
+    "code": "0A7",
+    "name": "Hendersonville Arpt.",
+    "city": "Hendersonville",
+    "country": "USA"
+  },
+  "ZWH": {
+    "code": "ZWH",
+    "name": "Railway Station",
+    "city": "Windhoek",
+    "country": "Namibia"
+  },
+  "GYD": {
+    "code": "GYD",
+    "name": "Heydar Aliyev Intl.",
+    "city": "Baku",
+    "country": "Azerbaijan"
+  },
+  "ZXT": {
+    "code": "ZXT",
+    "name": "Heydar Aliyev",
+    "city": "Baku",
+    "country": "Azerbaijan"
+  },
+  "SXF": {
+    "code": "SXF",
+    "name": "Berlin Schonefeld Airport",
+    "city": "Berlin",
+    "country": "Germany"
+  },
+  "ZRZ": {
+    "code": "ZRZ",
+    "name": "New Carrolton RR",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "PLU": {
+    "code": "PLU",
+    "name": "Pampulha Domestic",
+    "city": "Belo Horizonte",
+    "country": "Brazil"
+  },
+  "NAY": {
+    "code": "NAY",
+    "name": "Nanyuan Arpt.",
+    "city": "Beijing",
+    "country": "China"
+  },
+  "DMK": {
+    "code": "DMK",
+    "name": "Don Muang",
+    "city": "Bangkok",
+    "country": "Thailand"
+  },
+  "CRL": {
+    "code": "CRL",
+    "name": "Charleroi Brussels South",
+    "city": "Brussels",
+    "country": "Belgium"
+  },
+  "AEP": {
+    "code": "AEP",
+    "name": "Arpt. Jorge Newbery",
+    "city": "Buenos Aires",
+    "country": "Argentina"
+  },
+  "BBU": {
+    "code": "BBU",
+    "name": "Baneasa",
+    "city": "Bucharest",
+    "country": "Romania"
+  },
+  "OTP": {
+    "code": "OTP",
+    "name": "Henri Coanda Intl.",
+    "city": "Bucharest",
+    "country": "Romania"
+  },
+  "TZA": {
+    "code": "TZA",
+    "name": "Municipal",
+    "city": "Belize City",
+    "country": "Belize"
+  },
+  "CGX": {
+    "code": "CGX",
+    "name": "Merrill C Meigs",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "DPA": {
+    "code": "DPA",
+    "name": "Dupage County",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "CUS": {
+    "code": "CUS",
+    "name": "Municipal",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "LCK": {
+    "code": "LCK",
+    "name": "Rickenbacker",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "LSF": {
+    "code": "LSF",
+    "name": "Lawson Aaf",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "MKF": {
+    "code": "MKF",
+    "name": "Mckenna AAF",
+    "city": "Columbus",
+    "country": "USA"
+  },
+  "RKE": {
+    "code": "RKE",
+    "name": "Roskilde Arpt.",
+    "city": "Copenhagen",
+    "country": "Denmark"
+  },
+  "DAL": {
+    "code": "DAL",
+    "name": "Love Field",
+    "city": "Dallas",
+    "country": "USA"
+  },
+  "JDB": {
+    "code": "JDB",
+    "name": "Downtown Heliport",
+    "city": "Dallas",
+    "country": "USA"
+  },
+  "JMD": {
+    "code": "JMD",
+    "name": "Market Centre H/P",
+    "city": "Dallas",
+    "country": "USA"
+  },
+  "JNH": {
+    "code": "JNH",
+    "name": "North Park Inn H/P",
+    "city": "Dallas",
+    "country": "USA"
+  },
+  "XMB": {
+    "code": "XMB",
+    "name": "Dubai EY Bus Station",
+    "city": "Dubai",
+    "country": "United Arab Emirates"
+  },
+  "XNB": {
+    "code": "XNB",
+    "name": "Dubai Chelsea Bus Station",
+    "city": "Dubai",
+    "country": "United Arab Emirates"
+  },
+  "VDA": {
+    "code": "VDA",
+    "name": "Ovda",
+    "city": "Eilat",
+    "country": "Israel"
+  },
+  "HGS": {
+    "code": "HGS",
+    "name": "Hastings",
+    "city": "Freetown",
+    "country": "Sierra Leone"
+  },
+  "FRF": {
+    "code": "FRF",
+    "name": "Rhein-Main AFB",
+    "city": "Frankfurt",
+    "country": "Germany"
+  },
+  "QGV": {
+    "code": "QGV",
+    "name": "Neu Isenburg",
+    "city": "Frankfurt",
+    "country": "Germany"
+  },
+  "PIK": {
+    "code": "PIK",
+    "name": "Prestwick",
+    "city": "Glasgow",
+    "country": "United Kingdom"
+  },
+  "IAH": {
+    "code": "IAH",
+    "name": "George Bush Intercontinental",
+    "city": "Houston",
+    "country": "USA"
+  },
+  "KBP": {
+    "code": "KBP",
+    "name": "Borispol",
+    "city": "Kiev",
+    "country": "Ukraine"
+  },
+  "QOH": {
+    "code": "QOH",
+    "name": "Hotel Rus Bus Station",
+    "city": "Kiev",
+    "country": "Ukraine"
+  },
+  "SAW": {
+    "code": "SAW",
+    "name": "Sabiha Gokcen",
+    "city": "Istanbul",
+    "country": "Turkey"
+  },
+  "PCB": {
+    "code": "PCB",
+    "name": "Pondok Cabe",
+    "city": "Jakarta",
+    "country": "Indonesia"
+  },
+  "GCJ": {
+    "code": "GCJ",
+    "name": "Grand Central",
+    "city": "Johannesburg",
+    "country": "South Africa"
+  },
+  "SZB": {
+    "code": "SZB",
+    "name": "Sultan Abdul Aziz Shah",
+    "city": "Kuala Lumpur",
+    "country": "Malaysia"
+  },
+  "JID": {
+    "code": "JID",
+    "name": "City Of Industry H/P",
+    "city": "Los Angeles",
+    "country": "USA"
+  },
+  "LGW": {
+    "code": "LGW",
+    "name": "London Gatwick",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "LHR": {
+    "code": "LHR",
+    "name": "London Heathrow",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "SEN": {
+    "code": "SEN",
+    "name": "London Southend",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "MBW": {
+    "code": "MBW",
+    "name": "Moorabbin",
+    "city": "Melbourne",
+    "country": "Australia"
+  },
+  "MIO": {
+    "code": "MIO",
+    "name": "Miami",
+    "city": "Miami",
+    "country": "USA"
+  },
+  "MPB": {
+    "code": "MPB",
+    "name": "SPB",
+    "city": "Miami",
+    "country": "USA"
+  },
+  "TMB": {
+    "code": "TMB",
+    "name": "Tamiami",
+    "city": "Miami",
+    "country": "USA"
+  },
+  "MXP": {
+    "code": "MXP",
+    "name": "Malpensa",
+    "city": "Milan",
+    "country": "Italy"
+  },
+  "ROB": {
+    "code": "ROB",
+    "name": "Roberts Intl",
+    "city": "Monrovia",
+    "country": "Liberia"
+  },
+  "VKO": {
+    "code": "VKO",
+    "name": "Vnukovo",
+    "city": "Moscow",
+    "country": "Russian Federation"
+  },
+  "WIL": {
+    "code": "WIL",
+    "name": "Wilson",
+    "city": "Nairobi",
+    "country": "Kenya"
+  },
+  "NKM": {
+    "code": "NKM",
+    "name": "Komaki AFB",
+    "city": "Nagoya",
+    "country": "Japan"
+  },
+  "NWS": {
+    "code": "NWS",
+    "name": "Pier 11/Wall St. SPB",
+    "city": "New York",
+    "country": "USA"
+  },
+  "WTC": {
+    "code": "WTC",
+    "name": "World Trade Center",
+    "city": "New York",
+    "country": "USA"
+  },
+  "HBE": {
+    "code": "HBE",
+    "name": "Amiryah West",
+    "city": "Alexandria",
+    "country": "Egypt"
+  },
+  "ADJ": {
+    "code": "ADJ",
+    "name": "Marka Intl. Arpt.",
+    "city": "Amman",
+    "country": "Jordan"
+  },
+  "THF": {
+    "code": "THF",
+    "name": "Tempelhof",
+    "city": "Berlin",
+    "country": "Germany"
+  },
+  "TXL": {
+    "code": "TXL",
+    "name": "Berlin Tegel Airport",
+    "city": "Berlin",
+    "country": "Germany"
+  },
+  "BHD": {
+    "code": "BHD",
+    "name": "George Best Belfast City",
+    "city": "Belfast",
+    "country": "United Kingdom"
+  },
+  "ZYR": {
+    "code": "ZYR",
+    "name": "Brussels Midi",
+    "city": "Brussels",
+    "country": "Belgium"
+  },
+  "EZE": {
+    "code": "EZE",
+    "name": "Ezeiza Ministro Pistarini",
+    "city": "Buenos Aires",
+    "country": "Argentina"
+  },
+  "MDW": {
+    "code": "MDW",
+    "name": "Midway",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "NOH": {
+    "code": "NOH",
+    "name": "Chicago NAS",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "ORD": {
+    "code": "ORD",
+    "name": "Chicago O'hare Intl.",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "RFD": {
+    "code": "RFD",
+    "name": "Greater Rockford Arpt.",
+    "city": "Chicago",
+    "country": "USA"
+  },
+  "LGB": {
+    "code": "LGB",
+    "name": "Long Beach Municipal",
+    "city": "Los Angeles",
+    "country": "USA"
+  },
+  "WHP": {
+    "code": "WHP",
+    "name": "Whiteman",
+    "city": "Los Angeles",
+    "country": "USA"
+  },
+  "STN": {
+    "code": "STN",
+    "name": "London Stansted",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "ZEP": {
+    "code": "ZEP",
+    "name": "Victoria Railway Station",
+    "city": "London",
+    "country": "United Kingdom"
+  },
+  "TNT": {
+    "code": "TNT",
+    "name": "Dade Collier",
+    "city": "Miami",
+    "country": "USA"
+  },
+  "DME": {
+    "code": "DME",
+    "name": "Domodedovo",
+    "city": "Moscow",
+    "country": "Russian Federation"
+  },
+  "SVO": {
+    "code": "SVO",
+    "name": "Sheremetyevo",
+    "city": "Moscow",
+    "country": "Russian Federation"
+  },
+  "JRE": {
+    "code": "JRE",
+    "name": "East 60th Street H/P",
+    "city": "New York",
+    "country": "USA"
+  },
+  "KIX": {
+    "code": "KIX",
+    "name": "Kansai Intl.",
+    "city": "Osaka",
+    "country": "Japan"
+  },
+  "CDG": {
+    "code": "CDG",
+    "name": "Charles  De Gaulle",
+    "city": "Paris",
+    "country": "France"
+  },
+  "POX": {
+    "code": "POX",
+    "name": "Paris Cergy Pontoise",
+    "city": "Paris",
+    "country": "France"
+  },
+  "PHG": {
+    "code": "PHG",
+    "name": "Port Harcourt City",
+    "city": "Port Harcourt",
+    "country": "Nigeria"
+  },
+  "SCF": {
+    "code": "SCF",
+    "name": "Scottsdale Municipal",
+    "city": "Phoenix",
+    "country": "USA"
+  },
+  "AZA": {
+    "code": "AZA",
+    "name": "Phoenix-Mesa Gateway Airport",
+    "city": "Phoenix",
+    "country": "USA"
+  },
+  "DVT": {
+    "code": "DVT",
+    "name": "Phoenix Deer Valley Arpt.",
+    "city": "Phoenix",
+    "country": "USA"
+  },
+  "RKV": {
+    "code": "RKV",
+    "name": "Keflavik",
+    "city": "Reykjavik",
+    "country": "Iceland"
+  },
+  "KEF": {
+    "code": "KEF",
+    "name": "Keflavik Intl.",
+    "city": "Reykjavik",
+    "country": "Iceland"
+  },
+  "GIG": {
+    "code": "GIG",
+    "name": "Galeao Antonio Carlos Jobim Intl. Airpt.",
+    "city": "Rio De Janeiro",
+    "country": "Brazil"
+  },
+  "XVY": {
+    "code": "XVY",
+    "name": "Mestre Rail Stn.",
+    "city": "Rome",
+    "country": "Italy"
+  },
+  "GRU": {
+    "code": "GRU",
+    "name": "Aeroporto Internacional Guarulhos",
+    "city": "Sao Paulo",
+    "country": "Brazil"
+  },
+  "GMP": {
+    "code": "GMP",
+    "name": "Gimpo Intl.",
+    "city": "Seoul",
+    "country": "Korea"
+  },
+  "OKD": {
+    "code": "OKD",
+    "name": "Okadama",
+    "city": "Sapporo",
+    "country": "Japan"
+  },
+  "ARN": {
+    "code": "ARN",
+    "name": "Arlanda",
+    "city": "Stockholm",
+    "country": "Sweden"
+  },
+  "NYO": {
+    "code": "NYO",
+    "name": "Skavsta",
+    "city": "Stockholm",
+    "country": "Sweden"
+  },
+  "TFS": {
+    "code": "TFS",
+    "name": "Sur Reina Sofia",
+    "city": "Tenerife",
+    "country": "Spain"
+  },
+  "IKA": {
+    "code": "IKA",
+    "name": "Imam Khomeini Airport",
+    "city": "Tehran",
+    "country": "Iran"
+  },
+  "BOF": {
+    "code": "BOF",
+    "name": "Bolling AFB",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "IAD": {
+    "code": "IAD",
+    "name": "Washington Dulles Intl.",
+    "city": "Washington",
+    "country": "USA"
+  },
+  "YED": {
+    "code": "YED",
+    "name": "Namao Fld",
+    "city": "Edmonton",
+    "country": "Canada"
+  },
+  "YEG": {
+    "code": "YEG",
+    "name": "Edmonton Intl.",
+    "city": "Edmonton",
+    "country": "Canada"
+  },
+  "YXD": {
+    "code": "YXD",
+    "name": "Edmonton City Center Arpt.",
+    "city": "Edmonton",
+    "country": "Canada"
+  },
+  "YHU": {
+    "code": "YHU",
+    "name": "St Hubert",
+    "city": "Montreal",
+    "country": "Canada"
+  },
+  "YMX": {
+    "code": "YMX",
+    "name": "Mirabel",
+    "city": "Montreal",
+    "country": "Canada"
+  },
+  "YUL": {
+    "code": "YUL",
+    "name": "Pierre Elliott Trudeau International Airport",
+    "city": "Montreal",
+    "country": "Canada"
+  },
+  "YND": {
+    "code": "YND",
+    "name": "Executive Gatineau-Ottawa",
+    "city": "Ottawa",
+    "country": "Canada"
+  },
+  "YTZ": {
+    "code": "YTZ",
+    "name": "Toronto City Centre Arpt.",
+    "city": "Toronto",
+    "country": "Canada"
+  },
+  "YZD": {
+    "code": "YZD",
+    "name": "Downsview Arpt.",
+    "city": "Toronto",
+    "country": "Canada"
+  },
+  "PDK": {
+    "code": "PDK",
+    "name": "Dekalb-Peachtree",
+    "city": "Atlanta",
+    "country": "USA"
+  },
+  "CLL": {
+    "code": "CLL",
+    "name": "Easterwood Field",
+    "city": "College Station",
+    "country": "USA"
+  },
+  "CRP": {
+    "code": "CRP",
+    "name": "Corpus Christi Intl. Arpt.",
+    "city": "Corpus Christi",
+    "country": "USA"
+  },
+  "DXR": {
+    "code": "DXR",
+    "name": "Danbury Municipal Arpt.",
+    "city": "Danbury",
+    "country": "USA"
+  },
+  "EVV": {
+    "code": "EVV",
+    "name": "Evansville Regional Arpt.",
+    "city": "Evansville",
+    "country": "USA"
+  },
+  "AEX": {
+    "code": "AEX",
+    "name": "Alexandria Intl.",
+    "city": "Alexandria",
+    "country": "USA"
+  },
+  "AMA": {
+    "code": "AMA",
+    "name": "Rick Husband Amarillo Intl.",
+    "city": "Amarillo",
+    "country": "USA"
+  },
+  "AVP": {
+    "code": "AVP",
+    "name": "Wilkes-Barre/Scranton Intl. Arpt.",
+    "city": "Wilkes-Barre/Scranton",
+    "country": "USA"
+  },
+  "BMI": {
+    "code": "BMI",
+    "name": "Central Illinois Regional Arpt.",
+    "city": "Bloomington/Normal",
+    "country": "USA"
+  },
+  "BOI": {
+    "code": "BOI",
+    "name": "Boise Air Terminal/Gowen Field",
+    "city": "Boise",
+    "country": "USA"
+  },
+  "CAK": {
+    "code": "CAK",
+    "name": "Akron/canton Regional",
+    "city": "Akron/Canton",
+    "country": "USA"
+  },
+  "DPS": {
+    "code": "DPS",
+    "name": "Ngurah Rai Intl.",
+    "city": "Denpasar",
+    "country": "Indonesia"
+  },
+  "HSV": {
+    "code": "HSV",
+    "name": "Huntsville Intl. - Carl T. Jones Field",
+    "city": "Huntsville",
+    "country": "USA"
+  },
+  "IOW": {
+    "code": "IOW",
+    "name": "Iowa City",
+    "city": "Iowa City",
+    "country": "USA"
+  },
+  "ISZ": {
+    "code": "ISZ",
+    "name": "Cincinnati-Blue Ash Arpt.",
+    "city": "Cincinnati",
+    "country": "USA"
+  },
+  "SDF": {
+    "code": "SDF",
+    "name": "Louisville Intl.",
+    "city": "Louisville",
+    "country": "USA"
+  },
+  "KOA": {
+    "code": "KOA",
+    "name": "Kona Intl. Arpt.",
+    "city": "Kona",
+    "country": "USA"
+  },
+  "LNK": {
+    "code": "LNK",
+    "name": "Lincoln",
+    "city": "Lincoln",
+    "country": "USA"
+  },
+  "LSD": {
+    "code": "LSD",
+    "name": "Blue Grass Station Army Heliport",
+    "city": "Lexington",
+    "country": "USA"
+  },
+  "ZML": {
+    "code": "ZML",
+    "name": "Milwaukee General Mitchell",
+    "city": "Milwaukee",
+    "country": "USA"
+  },
+  "PSG": {
+    "code": "PSG",
+    "name": "Petersburg James A Johnson",
+    "city": "Petersburg",
+    "country": "USA"
+  },
+  "TTN": {
+    "code": "TTN",
+    "name": "Trenton Mercer Arpt.",
+    "city": "Trenton",
+    "country": "USA"
+  },
+  "PSN": {
+    "code": "PSN",
+    "name": "Palestine Municipal Arpt.",
+    "city": "Palestine",
+    "country": "USA"
+  },
+  "MOB": {
+    "code": "MOB",
+    "name": "Mobile Regional Arpt.",
+    "city": "Alabama",
+    "country": "USA"
+  },
+  "UNU": {
+    "code": "UNU",
+    "name": "Dodge County",
+    "city": "Juneau",
+    "country": "USA"
+  },
+  "VCV": {
+    "code": "VCV",
+    "name": "Southern California Logistics",
+    "city": "Victorville",
+    "country": "USA"
+  },
+  "RIA": {
+    "code": "RIA",
+    "name": "Base Aerea De Santa Maria",
+    "city": "Santa Maria",
+    "country": "Brazil"
+  },
+  "VNY": {
+    "code": "VNY",
+    "name": "Van Nuys",
+    "city": "Los Angeles",
+    "country": "USA"
+  },
+  "SLC": {
+    "code": "SLC",
+    "name": "Salt Lake City Intl.",
+    "city": "Salt Lake City",
+    "country": "USA"
+  },
+  "WBW": {
+    "code": "WBW",
+    "name": "Wilkes-Barre/Wyoming Valley",
+    "city": "Wilkes-Barre",
+    "country": "USA"
+  },
+  "XNA": {
+    "code": "XNA",
+    "name": "Northwest Arkansas Regional",
+    "city": "Fayetteville",
+    "country": "USA"
+  },
+  "MVY": {
+    "code": "MVY",
+    "name": "Marthas Vineyard Airport",
+    "city": "Vineyard Haven",
+    "country": "USA"
+  },
+  "NQA": {
+    "code": "NQA",
+    "name": "Millington Regional Jetport",
+    "city": "Millington",
+    "country": "USA"
+  },
+  "OAR": {
+    "code": "OAR",
+    "name": "Marina Municipal",
+    "city": "Marina",
+    "country": "USA"
+  },
+  "OCH": {
+    "code": "OCH",
+    "name": "A L Mangham Jr. Regional",
+    "city": "Nacogdoches",
+    "country": "USA"
+  },
+  "PAM": {
+    "code": "PAM",
+    "name": "Tyndall AFB",
+    "city": "Panama City",
+    "country": "USA"
+  },
+  "TBR": {
+    "code": "TBR",
+    "name": "Statesboro-Bulloch County Arpt.",
+    "city": "Statesboro",
+    "country": "USA"
+  },
+  "TKF": {
+    "code": "TKF",
+    "name": "Truckee-Tahoe",
+    "city": "Truckee",
+    "country": "USA"
+  },
+  "ROC": {
+    "code": "ROC",
+    "name": "Greater Rochester Intl.",
+    "city": "Rochester",
     "country": "USA"
   }
 }
