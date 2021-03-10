@@ -1035,7 +1035,7 @@ export class CartService {
   ) {
     var sumOfTotalAmount = await getConnection().query(`
         SELECT sum("booking"."total_amount") as "total_amount" 
-        FROM booking where cart_id = ${cartId} AND booking_status = ${BookingStatus.FAILED}`);
+        FROM booking where cart_id = '${cartId}' AND booking_status = ${BookingStatus.FAILED}`);
     let refundAmount = 0;
     const date = new Date();
     var date1 = date.toISOString();
@@ -1106,7 +1106,7 @@ export class CartService {
       .createQueryBuilder()
       .update(CartBooking)
       .set({ refundPaymentInfo: refund })
-      .where(`id = (${cartId}) `)
+      .where(`id = '${cartId}' `)
       .execute();
   }
   async capturePayment(
