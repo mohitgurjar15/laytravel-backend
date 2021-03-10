@@ -1,4 +1,5 @@
 import { BookingType } from "src/enum/booking-type.enum";
+import { DateTime } from "src/utility/datetime.utility";
 import { FlightBookingEmailParameterModel } from "../email_template/model/flight-booking-email-parameter.model";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
@@ -64,7 +65,6 @@ export async function TravelProviderConfiramationMail(
                                     style="padding: 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
                                         <span>${flight.rout}</span>
-                                        <span>status: ${flight.status}</span>
                                     </div>
                                 </td>
                             </tr>`;
@@ -74,8 +74,12 @@ export async function TravelProviderConfiramationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;"> ${droup.flight}</span>
-                                                <span style="display: block;">${droup.airline}</span>
+                                                <span style="display: block;"> ${
+                                                    droup.flight
+                                                }</span>
+                                                <span style="display: block;">${
+                                                    droup.airline
+                                                }</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -84,12 +88,26 @@ export async function TravelProviderConfiramationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">Airport :- ${droup.depature.code} (La Guardia)</span>
-                                                <span style="display: block;">City :- ${droup.depature.city}</span>
-                                                <span style="display: block;">Country:- ${droup.depature.country}</span>
-                                                <span style="display: block;"> Date :- ${droup.depature.date}</span>
-                                                <span style="display: block;">time :- ${droup.depature.time}</span>
-                                                <span style="display: block;">Pnr No :- ${droup.depature.pnr_no}</span>
+                                                <span style="display: block;">Airport : ${
+                                                    droup.depature.code
+                                                } (La Guardia)</span>
+                                                <span style="display: block;">City : ${
+                                                    droup.depature.city
+                                                }</span>
+                                                <span style="display: block;">Country: ${
+                                                    droup.depature.country
+                                                }</span>
+                                                <span style="display: block;"> Date : ${DateTime.convertDateFormat(
+                                                    droup.depature.date,
+                                                    "MM/DD/YYYY",
+                                                    "MMM DD, YYYY"
+                                                )}</span>
+                                                <span style="display: block;">time : ${
+                                                    droup.depature.time
+                                                }</span>
+                                                <span style="display: block;">PNR no : ${
+                                                    droup.depature.pnr_no
+                                                }</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -98,11 +116,23 @@ export async function TravelProviderConfiramationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">Airport :- ${droup.arrival.code}</span>
-                                                <span style="display: block;">City :- ${droup.arrival.city}</span>
-                                                <span style="display: block;">Country:- ${droup.arrival.country}</span>
-                                                <span style="display: block;"> Date :- ${droup.arrival.date}</span>
-                                                <span style="display: block;">time :- ${droup.arrival.time}</span>
+                                                <span style="display: block;">Airport : ${
+                                                    droup.arrival.code
+                                                }</span>
+                                                <span style="display: block;">City : ${
+                                                    droup.arrival.city
+                                                }</span>
+                                                <span style="display: block;">Country: ${
+                                                    droup.arrival.country
+                                                }</span>
+                                                <span style="display: block;"> Date : ${DateTime.convertDateFormat(
+                                                    droup.arrival.date,
+                                                    "MM/DD/YYYY",
+                                                    "MMM DD, YYYY"
+                                                )}</span>
+                                                <span style="display: block;">time : ${
+                                                    droup.arrival.time
+                                                }</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -203,11 +233,7 @@ export async function TravelProviderConfiramationMail(
                                 </td>
                             </tr>
                             <tr>
-                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
-                                    width="15%" class="header_txt"
-                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
-                                    No
-                                </th>
+                                
                                 <th align="center" valign="center" cellpadding="10" cellspacing="0"
                                     width="30%" class="header_txt"
                                     style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
@@ -227,11 +253,12 @@ export async function TravelProviderConfiramationMail(
   for (let index = 0; index < param.traveler.length; index++) {
     const traveler = param.traveler[index];
     content += `<tr>
-                                <td class="templateColumnContainer" width="15%">
+                                
+                                <td class="templateColumnContainer" width="25%">
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
-                                            <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">1</span>
+                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                                <span style="display: block;">${traveler.name}</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -240,16 +267,7 @@ export async function TravelProviderConfiramationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">viral mithani</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td class="templateColumnContainer" width="25%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">viral@gmail.com</span>
+                                                <span style="display: block;">${traveler.email}</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -258,7 +276,7 @@ export async function TravelProviderConfiramationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">adult</span>
+                                                <span style="display: block;">${traveler.type}</span>
                                             </td>
                                         </tr>
                                     </table>

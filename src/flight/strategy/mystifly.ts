@@ -1657,7 +1657,7 @@ export class Mystifly implements StrategyAirline {
             requestBody,
             "TripDetails"
         );
-
+        
         return tripDetailsResult;
     }
 

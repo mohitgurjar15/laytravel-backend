@@ -2518,15 +2518,25 @@ export class FlightService {
       ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
         "a:totalfare"
       ][0]["a:amount"][0];
-
+  console.log(moduleInfo["net_rate"]);
+  
     var depatureIndex = 0;
     var arrivalIndex = 0;
+    
+    
     moduleInfo.routes[0].stops = [];
-    moduleInfo.routes[1].stops = [];
+    if(moduleInfo.routes[1]){
+      moduleInfo.routes[1].stops = [];
+    }
+    
     for await (const reservation of ticketDetails.data["a:itineraryinfo"][0][
       "a:reservationitems"
     ][0]["a:reservationitem"]) {
       if (reservation != null) {
+        console.log('reservation["a:airlinepnr"][0]',reservation["a:airlinepnr"][0]);
+        console.log('reservation["a:airlinepnr"]',reservation["a:airlinepnr"]);
+        
+        
         var data = {
           departure_code: reservation["a:departureairportlocationcode"][0],
           departure_date: await (
@@ -2565,7 +2575,7 @@ export class FlightService {
           remaining_seat: 0,
           below_minimum_seat: false,
           is_layover: false,
-          airline_name: "",
+          airline_name: reservation["a:airlinename"],
           airline_logo: `http://d2q1prebf1m2s9.cloudfront.net/assets/images/airline/108x92/${reservation["a:marketingairlinecode"][0]}.png`,
         };
         if (reservation["a:isreturn"][0] == "true") {
@@ -2573,6 +2583,8 @@ export class FlightService {
         } else {
           moduleInfo.routes[0].stops.push(data);
         }
+        console.log(data);
+        
       }
     }
 
