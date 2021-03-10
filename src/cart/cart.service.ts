@@ -975,14 +975,14 @@ export class CartService {
         );
         if (failedResult && payment.status) {
           await this.refundCart(
-            cartData.id,
-            Headers,
-            payment_type,
-            instalment_type,
-            smallestDate,
-            selected_down_payment,
-            payment.token,
-            user.userId
+              cartData.id,
+              Headers,
+              payment_type,
+              instalment_type,
+              smallestDate,
+              selected_down_payment,
+              payment.reference_token,
+              user.userId
           );
         }
       } else {
@@ -1036,6 +1036,7 @@ export class CartService {
     var sumOfTotalAmount = await getConnection().query(`
         SELECT sum("booking"."total_amount") as "total_amount" 
         FROM booking where cart_id = '${cartId}' AND booking_status = ${BookingStatus.FAILED}`);
+    
     let refundAmount = 0;
     const date = new Date();
     var date1 = date.toISOString();
@@ -1131,6 +1132,7 @@ export class CartService {
             paymentStatus: PaymentStatus.CONFIRM,
             paymentInfo: captureCardresult.meta_data,
             transactionToken: captureCardresult.token,
+            attempt : 1
           })
           .where(
             `booking_id In (:...BookingIds) AND instalment_status = 1 AND payment_status = ${PaymentStatus.PENDING}`,

@@ -531,6 +531,7 @@ export class PaymentService {
                 status: true,
                 token: captureRes.transaction.token,
                 meta_data: captureRes,
+                reference_token: captureRes.transaction?.reference_token,
             };
         } else {
             return {

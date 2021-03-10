@@ -1654,14 +1654,14 @@ export class FlightService {
       layCreditReedem.redeemBy = userId;
       await layCreditReedem.save();
     }
-
+    let nextInstallmentDate = ''
     if (instalmentDetails) {
       booking.totalInstallments = instalmentDetails.instalment_date.length;
       if (instalmentDetails.instalment_date.length > 1) {
         booking.nextInstalmentDate =
           instalmentDetails.instalment_date[1].instalment_date;
       }
-
+  
       booking.bookingStatus =
         supplierBookingData != null && supplierBookingData.supplier_booking_id
           ? BookingStatus.CONFIRM
