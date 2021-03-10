@@ -3299,15 +3299,13 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<soapenv:Body>`;
         requestBody += `<mys:TripDetails>`;
         requestBody += `<mys:rq>`;
-        requestBody += `<mys1:SessionId>5A14E536-B141-4A44-821C-06E74CDAEBE5-1847</mys1:SessionId>            `;
-        requestBody += `<mys1:Target>Test</mys1:Target>            `;
+        requestBody += `<mys1:SessionId>${sessionToken}</mys1:SessionId>            `;
+        requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>            `;
         requestBody += `<mys1:UniqueID>${tripId}</mys1:UniqueID>`;
         requestBody += `</mys:rq>`;
         requestBody += `</mys:TripDetails>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-        mystiflyConfig.url =
-            "http://onepointdemo.myfarebox.com/V2/OnePoint.svc";
         let tripDetailsResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
             requestBody,
