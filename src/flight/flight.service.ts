@@ -3428,22 +3428,9 @@ export class FlightService {
 
   async importCategory() {
     let categories = [
-      "BOS-BWI",
-      "BOS-EWR",
-      "BOS-FLL",
-      "BOS-PBI",
-      "BOS-PHL",
-      "EWR-PBI",
-      "JFK-FLL",
-      "LAX-OAK",
-      "LAX-PHX",
-      "LGA-FLL",
-      "LGA-PBI",
-      "OAK-BUR",
-      "SFO-LAS",
-      "SFO-PHX",
+      "BOS-ATL","BOS-BNA","BOS-CLT","BOS-DFW","BOS-DTW","BOS-LGA","BOS-MCO","BOS-MSP","BOS-ORD","BOS-RDU","EWR-BOS","EWR-CLT","EWR-FLL","JFK-ATL","JFK-MCO","JFK-MIA","LAX-DFW","LAX-DTW","LAX-FLL","LAX-LAS","LAX-MCO","LAX-MIA","LAX-MSP","LAX-ORD","LAX-SFO","LAX-SLC","LAX-SMF","LGA-ATL","LGA-BNA","LGA-BOS","LGA-CLT","LGA-DTW","LGA-IAH","LGA-MCO","LGA-MIA","LGA-ORD","LGA-RDU","OAK-LAS","OAK-LAX","SEA-BOS","SEA-DEN","SEA-DFW","SEA-GEG","SEA-MSP","SEA-OAK","SEA-ORD","SEA-SFO","SEA-SLC","SFO-ATL","SFO-AUS","SFO-DFW","SFO-LAX","SFO-SAN","SFO-SEA"
     ];
-    let categoryId = 6;
+    let categoryId = 4;
 
     for (let category of categories) {
       let categoryArr = category.split("-");

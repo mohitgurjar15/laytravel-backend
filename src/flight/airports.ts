@@ -1,6 +1,6 @@
 
 export const airports ={
-  "0A7" : {
+  "0A7": {
     "code": "0A7",
     "name": "Hendersonville Arpt.",
     "city": "Hendersonville",
@@ -1172,7 +1172,7 @@ export const airports ={
   },
   "AJI": {
     "code": "AJI",
-    "name": "AÄŸri",
+    "name": "AÃ„Å¸ri",
     "city": "Agri",
     "country": "Turkey"
   },
@@ -3140,7 +3140,7 @@ export const airports ={
   },
   "AZS": {
     "code": "AZS",
-    "name": "SamanÃ¡ El Catey Intl.",
+    "name": "SamanÃƒÂ¡ El Catey Intl.",
     "city": "El Catey",
     "country": "Dominican Republic"
   },
@@ -4652,8 +4652,8 @@ export const airports ={
   },
   "BJX": {
     "code": "BJX",
-    "name": "Del BajÃ­o Intl.",
-    "city": "LeÃ³n",
+    "name": "Del BajÃƒÂ­o Intl.",
+    "city": "LeÃƒÂ³n",
     "country": "Mexico"
   },
   "BJY": {
@@ -5300,7 +5300,7 @@ export const airports ={
   },
   "BOD": {
     "code": "BOD",
-    "name": "MÃ©rignac",
+    "name": "MÃƒÂ©rignac",
     "city": "Bordeaux",
     "country": "France"
   },
@@ -5775,7 +5775,7 @@ export const airports ={
   "BSB": {
     "code": "BSB",
     "name": "Presidente Juscelino Kubitschek",
-    "city": "BrasÃ­lia, Distrito Federal",
+    "city": "BrasÃƒÂ­lia, Distrito Federal",
     "country": "Brazil"
   },
   "BSC": {
@@ -5924,8 +5924,8 @@ export const airports ={
   },
   "BTA": {
     "code": "BTA",
-    "name": "YaoundÃ©",
-    "city": "YaoundÃ©",
+    "name": "YaoundÃƒÂ©",
+    "city": "YaoundÃƒÂ©",
     "country": "Cameroon"
   },
   "BTB": {
@@ -6032,7 +6032,7 @@ export const airports ={
   },
   "BTS": {
     "code": "BTS",
-    "name": "M. R. Å tefÃ¡nika",
+    "name": "M. R. Ã…Â tefÃƒÂ¡nika",
     "city": "Bratislava",
     "country": "Slovakia"
   },
@@ -9596,7 +9596,7 @@ export const airports ={
   },
   "CUN": {
     "code": "CUN",
-    "name": "Cancun Intl.",
+    "name": "CancÃƒÂºn Intl.",
     "city": "Cancun",
     "country": "Mexico"
   },
@@ -10892,7 +10892,7 @@ export const airports ={
   },
   "DKR": {
     "code": "DKR",
-    "name": "Dakar-Yoff-LÃ©opold SÃ©dar Senghor Intl.",
+    "name": "Dakar-Yoff-LÃƒÂ©opold SÃƒÂ©dar Senghor Intl.",
     "city": "Dakar",
     "country": "Senegal"
   },
@@ -12813,7 +12813,7 @@ export const airports ={
   "EOH": {
     "code": "EOH",
     "name": "Enrique Olaya Herrera Intl. Arpt.",
-    "city": "MedellÃ­n",
+    "city": "MedellÃƒÂ­n",
     "country": "Colombia"
   },
   "EOI": {
@@ -13425,7 +13425,7 @@ export const airports ={
   "FAE": {
     "code": "FAE",
     "name": "Vagar",
-    "city": "SorvÃ¡gur",
+    "city": "SorvÃƒÂ¡gur",
     "country": "Faroe Islands"
   },
   "FAF": {
@@ -14138,7 +14138,7 @@ export const airports ={
   },
   "FMM": {
     "code": "FMM",
-    "name": "Memmingen-AllgÃ¤u",
+    "name": "Memmingen-AllgÃƒÂ¤u",
     "city": "Memmingen",
     "country": "Germany"
   },
@@ -20366,8 +20366,8 @@ export const airports ={
   },
   "JAE": {
     "code": "JAE",
-    "name": "Jaén Airport",
-    "city": "Jaén",
+    "name": "JaÃ©n Airport",
+    "city": "JaÃ©n",
     "country": "Pery"
   },
   "JAF": {
@@ -23354,7 +23354,7 @@ export const airports ={
   },
   "KOD": {
     "code": "KOD",
-    "name": "Sabiha GÃ¶kÃ§en HavaalanÄ±",
+    "name": "Sabiha GÃƒÂ¶kÃƒÂ§en HavaalanÃ„Â±",
     "city": "Kotabangun",
     "country": "Indonesia"
   },
@@ -24698,7 +24698,7 @@ export const airports ={
   },
   "LAP": {
     "code": "LAP",
-    "name": "General Manuel MÃ¡rquez De LeÃ³n Intl. Arpt.",
+    "name": "General Manuel MÃƒÂ¡rquez De LeÃƒÂ³n Intl. Arpt.",
     "city": "La Paz",
     "country": "Mexico"
   },
@@ -24776,8 +24776,8 @@ export const airports ={
   },
   "LBC": {
     "code": "LBC",
-    "name": "LÃ¼beck Blankensee",
-    "city": "LÃ¼beck",
+    "name": "LÃƒÂ¼beck Blankensee",
+    "city": "LÃƒÂ¼beck",
     "country": "Germany"
   },
   "LBD": {
@@ -26252,7 +26252,7 @@ export const airports ={
   },
   "LOH": {
     "code": "LOH",
-    "name": "Camilo Ponce EnrÃ­quez Arpt.",
+    "name": "Camilo Ponce EnrÃƒÂ­quez Arpt.",
     "city": "Catamayo, Loja",
     "country": "Ecuador"
   },
@@ -28688,8 +28688,8 @@ export const airports ={
   },
   "MIQ": {
     "code": "MIQ",
-    "name": "SimÃ³n BolÃ­var Intl.",
-    "city": "MaiquetÃ­a",
+    "name": "SimÃƒÂ³n BolÃƒÂ­var Intl.",
+    "city": "MaiquetÃƒÂ­a",
     "country": "Venezuela"
   },
   "MIR": {
@@ -29720,7 +29720,7 @@ export const airports ={
   },
   "MPL": {
     "code": "MPL",
-    "name": "Montpellier MÃ©diterranÃ©e",
+    "name": "Montpellier MÃƒÂ©diterranÃƒÂ©e",
     "city": "Montpellier",
     "country": "France"
   },
@@ -31892,7 +31892,7 @@ export const airports ={
   },
   "NGI": {
     "code": "NGI",
-    "name": "Zürich-Klote",
+    "name": "ZÃ¼rich-Klote",
     "city": "Ngau Island",
     "country": "Fiji"
   },
@@ -34262,7 +34262,7 @@ export const airports ={
   },
   "OPO": {
     "code": "OPO",
-    "name": "Francisco SÃ¡ Carneiro",
+    "name": "Francisco SÃƒÂ¡ Carneiro",
     "city": "Porto",
     "country": "Portugal"
   },
@@ -37550,7 +37550,7 @@ export const airports ={
   },
   "PUF": {
     "code": "PUF",
-    "name": "Pau-PyrÃ©nÃ©es",
+    "name": "Pau-PyrÃƒÂ©nÃƒÂ©es",
     "city": "Pau",
     "country": "France"
   },
@@ -37575,7 +37575,7 @@ export const airports ={
   "PUJ": {
     "code": "PUJ",
     "name": "Punta Cana Intl.",
-    "city": "Punta Cana",
+    "city": "Higuey",
     "country": "Dominican Republic"
   },
   "PUK": {
@@ -37736,7 +37736,7 @@ export const airports ={
   },
   "PVR": {
     "code": "PVR",
-    "name": "Licenciado Gustavo DÃ­az Ordaz Intl.",
+    "name": "Licenciado Gustavo DÃƒÂ­az Ordaz Intl.",
     "city": "Puerto Vallarta",
     "country": "Mexico"
   },
@@ -42057,7 +42057,7 @@ export const airports ={
   "SLZ": {
     "code": "SLZ",
     "name": "Marechal Cunha Machado",
-    "city": "SÃ£o Luis",
+    "city": "SÃƒÂ£o Luis",
     "country": "Brazil"
   },
   "SMA": {
@@ -42710,8 +42710,8 @@ export const airports ={
   },
   "SQM": {
     "code": "SQM",
-    "name": "SÃ£o Miguel de Aragao",
-    "city": "SÃ£o Miguel de Aragao",
+    "name": "SÃƒÂ£o Miguel de Aragao",
+    "city": "SÃƒÂ£o Miguel de Aragao",
     "country": "Brazil"
   },
   "SQN": {
@@ -43934,8 +43934,8 @@ export const airports ={
   },
   "SYQ": {
     "code": "SYQ",
-    "name": "Tobias BolaÃ±os Intl.",
-    "city": "San JosÃ©",
+    "name": "Tobias BolaÃƒÂ±os Intl.",
+    "city": "San JosÃƒÂ©",
     "country": "Costa Rica"
   },
   "SYR": {
@@ -45002,7 +45002,7 @@ export const airports ={
   },
   "THE": {
     "code": "THE",
-    "name": "Senador PetrÃ´nio Portella",
+    "name": "Senador PetrÃƒÂ´nio Portella",
     "city": "Teresina",
     "country": "Brazil"
   },
@@ -46148,7 +46148,7 @@ export const airports ={
   },
   "TRD": {
     "code": "TRD",
-    "name": "VÃ¦rnes",
+    "name": "VÃƒÂ¦rnes",
     "city": "Trondheim",
     "country": "Norway"
   },
@@ -49077,7 +49077,7 @@ export const airports ={
   "VXO": {
     "code": "VXO",
     "name": "Smaland Arpt.",
-    "city": "VÃ¤xjÃ¶",
+    "city": "VÃƒÂ¤xjÃƒÂ¶",
     "country": "Sweden"
   },
   "VYD": {
@@ -53961,7 +53961,7 @@ export const airports ={
   "YUY": {
     "code": "YUY",
     "name": "Rouyn-Noranda",
-    "city": "Rouyn-Noranda, QuÃ©bec",
+    "city": "Rouyn-Noranda, QuÃƒÂ©bec",
     "country": "Canada"
   },
   "YVA": {
@@ -54344,7 +54344,7 @@ export const airports ={
   },
   "YYT": {
     "code": "YYT",
-    "name": "St. JohnÂ´s Intl.",
+    "name": "St. JohnÃ‚Â´s Intl.",
     "city": "St. John's, NL",
     "country": "Canada"
   },
