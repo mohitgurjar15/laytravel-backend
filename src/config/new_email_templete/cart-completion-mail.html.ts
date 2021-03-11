@@ -11,17 +11,17 @@ export async function LaytripCartBookingComplationMail(
 ) {
   let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
-            style="width: 100%; font-family: 'Poppins', sans-serif; ">
+        <table width="550px" border="0" cellspacing="0" cellpadding="0" align="center"
+            style="width: 550px; font-family: 'Poppins', sans-serif; ">
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Congratulations on completing your installment plan! We have processed your final payment for Booking ID ${
                           param.orderId
                         }.
@@ -47,7 +47,7 @@ export async function LaytripCartBookingComplationMail(
     if (booking.moduleId == ModulesName.FLIGHT) {
       content += `<tr>
                     <td>
-                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+                        <table border="1" cellpadding="0" cellspacing="0" width="550" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <th align="center" valign="center" cellpadding="10" cellspacing="0"
@@ -69,7 +69,7 @@ export async function LaytripCartBookingComplationMail(
       for await (const flight of booking.flighData) {
         content += `<tr>
                                 <td colspan="3"
-                                    style="padding: 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                    style="padding: 0 0 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
                                         <span>${flight.rout}</span>
                                         
@@ -152,7 +152,7 @@ export async function LaytripCartBookingComplationMail(
                 
                 <tr>
                     <td>
-                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+                        <table border="1" cellpadding="0" cellspacing="0" width="550" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <td colspan="4"
@@ -224,7 +224,7 @@ export async function LaytripCartBookingComplationMail(
   }
   content += `<tr>
                     <td>
-                        <table border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
+                        <table border="1" cellpadding="3" cellspacing="0" width="550" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID:</span></td>
@@ -250,7 +250,7 @@ export async function LaytripCartBookingComplationMail(
                 </tr>
                 <tr>
                     <td>
-                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+                        <table border="1" cellpadding="0" cellspacing="0" width="550" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>`;
   if (param.paymentDetail.length) {
@@ -346,7 +346,7 @@ export async function LaytripCartBookingComplationMail(
                             <tbody>
                                 <tr>
                                     <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; " height="48">
-                                        <a class="" style="color: #f725c5;" href = '${BookingLink}' >Booking details</a>
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}' >GO TO MY BOOKINGS</a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -355,7 +355,7 @@ export async function LaytripCartBookingComplationMail(
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         You can contact us any time at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope you have a great trip!
                     </td>

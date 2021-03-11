@@ -10,17 +10,17 @@ export async function TravelProviderConfiramationMail(
 ) {
   let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
+        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Booking ID ${param.cart.cartId} Change Confirmation!
                     </td>
                 </tr>
@@ -37,7 +37,7 @@ export async function TravelProviderConfiramationMail(
                 </tr>
                 <tr>
                     <td>
-                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+                        <table class="oc_wrapper" border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <th align="center" valign="center" cellpadding="10" cellspacing="0"
@@ -59,7 +59,7 @@ export async function TravelProviderConfiramationMail(
       for await (const flight of param.flight) {
         content += `<tr>
                                 <td colspan="3"
-                                    style="padding: 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                                    style="padding: 0 0 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
                                         <span>${flight.rout}</span>
                                     </div>
@@ -68,7 +68,7 @@ export async function TravelProviderConfiramationMail(
         for await (const droup of flight.droups) {
           content += `<tr>
                                 <td class="templateColumnContainer">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                    <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;"> ${
@@ -82,7 +82,7 @@ export async function TravelProviderConfiramationMail(
                                     </table>
                                 </td>
                                 <td class="templateColumnContainer">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                    <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">Airport : ${
@@ -115,7 +115,7 @@ export async function TravelProviderConfiramationMail(
                                     </table>
                                 </td>
                                 <td class="templateColumnContainer">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                    <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">Airport : ${
@@ -149,7 +149,7 @@ export async function TravelProviderConfiramationMail(
                 
                 <tr>
                     <td>
-                        <table border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+                        <table class="oc_wrapper" border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <td colspan="4"
@@ -182,7 +182,7 @@ export async function TravelProviderConfiramationMail(
         content += `<tr>
                                 
                                 <td class="templateColumnContainer" width="25%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                    <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">${traveler.name}</span>
@@ -191,7 +191,7 @@ export async function TravelProviderConfiramationMail(
                                     </table>
                                 </td>
                                 <td class="templateColumnContainer" width="25%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                    <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">${traveler.email}</span>
@@ -200,7 +200,7 @@ export async function TravelProviderConfiramationMail(
                                     </table>
                                 </td>
                                 <td class="templateColumnContainer" width="35%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                                    <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">${traveler.type}</span>
@@ -214,7 +214,7 @@ export async function TravelProviderConfiramationMail(
                     </td>
                 </tr><tr><td>   <br/></td></tr><tr>
                     <td>
-                        <table border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
+                        <table class="oc_wrapper" border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID:</span></td>
@@ -241,7 +241,7 @@ export async function TravelProviderConfiramationMail(
                 
                 <tr>
                     <td style="padding: 15px 0;">
-                        <table align="center" border="0" cellpadding="0" cellspacing="0">
+                        <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>
                                     <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; " height="48">
@@ -254,7 +254,7 @@ export async function TravelProviderConfiramationMail(
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                          If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>!
                     </td>

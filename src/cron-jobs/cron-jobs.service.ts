@@ -54,6 +54,7 @@ import { LaytripPaymentFailedTemplete } from "src/config/new_email_templete/inst
 import { LaytripCartBookingComplationMail } from "src/config/new_email_templete/cart-completion-mail.html";
 import { LaytripMissedPaymentTemplete } from "src/config/new_email_templete/missed-installment.html";
 import { LaytripPaymentReminderTemplete } from "src/config/new_email_templete/payment-reminder.html";
+import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -877,7 +878,8 @@ export class CronJobsService {
 
                     this.sendFlightFailerMail(
                         booking.user.email,
-                        booking.laytripBookingId
+                        booking.laytripBookingId,
+                        booking?.user?.firstName || ''
                     );
 
                     PushNotification.sendNotificationTouser(
@@ -992,19 +994,17 @@ export class CronJobsService {
         return `${date[2]}-${date[1]}-${date[0]}`;
     }
 
-    async sendFlightFailerMail(email, bookingId, error = null) {
+    async sendFlightFailerMail(email, bookingId, userName) {
         this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: "Booking Failed Mail",
-                html: BookingFailerMail(
-                    {
-                        error: error,
-                    },
-                    bookingId
-                ),
+                html: LaytripCancellationTravelProviderMail({
+                    userName,
+                    bookingId,
+                }),
             })
             .then((res) => {
                 console.log("res", res);
@@ -1786,23 +1786,27 @@ export class CronJobsService {
             .replace(/\..+/, "")
             .split(" ")[0];
 
-        let bookings = await getConnection().createQueryBuilder(
-            Booking,
-            "Booking"
-        )
-		.where(`"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`)
-		.getMany()
+        let bookings = await getConnection()
+            .createQueryBuilder(Booking, "Booking")
+            .where(
+                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
+            )
+            .getMany();
 
-		if(!bookings.length){
-			return {
-				message : `Upcommig booking not found`
-			}
-		}
-		for await (const booking of bookings) {
-			await this.flightService.bookingUpdateFromSupplierside(booking.laytripBookingId,{supplier_booking_id : booking.supplierBookingId},booking.checkInDate == date1 ? 2 : 3)
-		}
-		return {
-			message : `Emails send succeesfully`
-		}
+        if (!bookings.length) {
+            return {
+                message: `Upcommig booking not found`,
+            };
+        }
+        for await (const booking of bookings) {
+            await this.flightService.bookingUpdateFromSupplierside(
+                booking.laytripBookingId,
+                { supplier_booking_id: booking.supplierBookingId },
+                booking.checkInDate == date1 ? 2 : 3
+            );
+        }
+        return {
+            message: `Emails send succeesfully`,
+        };
     }
 }

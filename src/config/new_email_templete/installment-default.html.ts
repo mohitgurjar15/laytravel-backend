@@ -12,16 +12,16 @@ export function LaytripPaymentFailedTemplete(param: {
 }) {
   const content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">Booking ID ${param.bookingId} Cancellation Notice! </td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">Booking ID ${param.bookingId} Cancellation Notice! </td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">We have made ${param.try} unsuccessful attempts to collect your installment payment of ${param.amount} originally scheduled for ${param.date}.</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">We have made ${param.try} unsuccessful attempts to collect your installment payment of ${param.amount} originally scheduled for ${param.date}.</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding-top:10px; text-align: left;">Per our <a href="${TermsConditonLink}" style="color: #f725c5;"><u>Terms</u></a> and the information in our previous notifications to you, we have unfortunately had to cancel your booking and we will not be able to issue any refunds.</td>
