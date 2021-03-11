@@ -9,10 +9,10 @@ export function LaytripCompletedTripReminderMail(param: { username: string }) {
                                         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">Hi ${param.username},</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">Hi ${param.username},</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                                                       Thank you for booking your travel with us! Please let us know how we did by providing a quick review: 
                                                     </td>
                                                 </tr>
@@ -26,7 +26,7 @@ export function LaytripCompletedTripReminderMail(param: { username: string }) {
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                                                         Want to share your trip with other Laytripers? Click the social icons below, and don’t forget to tag #laytrip.
                                                     </td>
                                                 </tr>													
