@@ -72,7 +72,7 @@ export async function LaytripCartBookingComplationMail(
                                     style="padding: 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
                                         <span>${flight.rout}</span>
-                                        <span>Product Id : ${booking.productId}</span>
+                                        
                                     </div>
                                 </td>
                             </tr>`;
@@ -96,21 +96,21 @@ export async function LaytripCartBookingComplationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">Airport :- ${
+                                                <span style="display: block;">Airport : ${
                                                   droup.depature.code
                                                 } (La Guardia)</span>
-                                                <span style="display: block;">City :- ${
+                                                <span style="display: block;">City : ${
                                                   droup.depature.city
                                                 }</span>
-                                                <span style="display: block;">Country:- ${
+                                                <span style="display: block;">Country: ${
                                                   droup.depature.country
                                                 }</span>
-                                                <span style="display: block;"> Date :- ${DateTime.convertDateFormat(
+                                                <span style="display: block;"> Date : ${DateTime.convertDateFormat(
                                                   droup.depature.date,
                                                   "MM/DD/YYYY",
                                                   "MMM DD, YYYY"
                                                 )}</span>
-                                                <span style="display: block;">time :- ${
+                                                <span style="display: block;">time : ${
                                                   droup.depature.time
                                                 }</span>
                                             </td>
@@ -121,21 +121,21 @@ export async function LaytripCartBookingComplationMail(
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">Airport :- ${
+                                                <span style="display: block;">Airport : ${
                                                   droup.arrival.code
                                                 }</span>
-                                                <span style="display: block;">City :- ${
+                                                <span style="display: block;">City : ${
                                                   droup.arrival.city
                                                 }</span>
-                                                <span style="display: block;">Country:- ${
+                                                <span style="display: block;">Country: ${
                                                   droup.arrival.country
                                                 }</span>
-                                                <span style="display: block;"> Date :- ${DateTime.convertDateFormat(
+                                                <span style="display: block;"> Date : ${DateTime.convertDateFormat(
                                                   droup.arrival.date,
                                                   "MM/DD/YYYY",
                                                   "MMM DD, YYYY"
                                                 )}</span>
-                                                <span style="display: block;">time :- ${
+                                                <span style="display: block;">time : ${
                                                   droup.arrival.time
                                                 }</span>
                                             </td>
@@ -164,11 +164,6 @@ export async function LaytripCartBookingComplationMail(
                             </tr>
                             <tr>
                                 <th align="center" valign="center" cellpadding="10" cellspacing="0"
-                                    width="15%" class="header_txt"
-                                    style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
-                                    No
-                                </th>
-                                <th align="center" valign="center" cellpadding="10" cellspacing="0"
                                     width="30%" class="header_txt"
                                     style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
                                     Name
@@ -187,16 +182,6 @@ export async function LaytripCartBookingComplationMail(
       for (let index = 0; index < booking.travelers.length; index++) {
         const traveler = booking.travelers[index];
         content += `<tr>
-                                <td class="templateColumnContainer" width="15%">
-                                    <table border="0" cellpadding="5" cellspacing="0" width="100%">
-                                        <tr>
-                                            <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                                                <span style="display: block;">${index +
-                                                  1}</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
                                 <td class="templateColumnContainer" width="25%">
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
