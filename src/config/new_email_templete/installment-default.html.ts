@@ -28,7 +28,7 @@ export function LaytripPaymentFailedTemplete(param: {
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding-top:10px; text-align: left;">
                         If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope to be able to try again with you on a future booking.
                     </td>

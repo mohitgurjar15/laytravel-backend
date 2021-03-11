@@ -1489,7 +1489,7 @@ export class CartService {
       .getOne();
 
     if (!cart) {
-      throw new NotFoundException(`Given booking id noy found`);
+      throw new NotFoundException(`Given cart id not found`);
     }
     const currency = cart.bookings[0].currency2;
     const baseBooking = cart.bookings[0].bookingInstalments;

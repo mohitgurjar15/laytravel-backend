@@ -5,15 +5,18 @@ import { getConnection } from "typeorm";
 import { Generic } from "./generic.utility";
 import * as moment from "moment";
 import { User } from "src/entity/user.entity";
+import { BookingStatus } from "src/enum/booking-status.enum";
 
 export class CartDataUtility {
   static async cartData(cart_id) {
     const query = getConnection()
-      .createQueryBuilder(CartBooking, "cartBooking")
-      .leftJoinAndSelect("cartBooking.bookings", "booking")
-      .leftJoinAndSelect("booking.bookingInstalments", "instalments")
-      .leftJoinAndSelect("booking.currency2", "currency")
-      .where(`"cartBooking"."id" =  '${cart_id}'`);
+        .createQueryBuilder(CartBooking, "cartBooking")
+        .leftJoinAndSelect("cartBooking.bookings", "booking")
+        .leftJoinAndSelect("booking.bookingInstalments", "instalments")
+        .leftJoinAndSelect("booking.currency2", "currency")
+        .where(
+            `"cartBooking"."id" =  '${cart_id}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+        );
 
     const cart = await query.getOne();
     if (!cart) {
@@ -76,18 +79,21 @@ export class CartDataUtility {
     }
 
     return {
-      paidAmount: currency.symbol + `${paidAmount}`,
-      remainAmount: currency.symbol + `${remainAmount}`,
-      pandinginstallment: pandinginstallment,
-      totalAmount: currency.symbol + `${totalAmount}`,
-      paidAmountNumeric: paidAmount,
-      remainAmountNumeric: remainAmount,
-      totalAmounNumerict: totalAmount,
+        paidAmount:
+            currency.symbol + `${await Generic.formatPriceDecimal(paidAmount)}`,
+        remainAmount:
+            currency.symbol + `${await Generic.formatPriceDecimal(remainAmount)}`,
+        pandinginstallment: pandinginstallment,
+        totalAmount:
+            currency.symbol + `${await Generic.formatPriceDecimal(totalAmount)}`,
+        paidAmountNumeric: paidAmount,
+        remainAmountNumeric: remainAmount,
+        totalAmounNumerict: totalAmount,
     };
   }
 
   static async CartMailModelDataGenerate(cart_id) {
-    const where = `("cartBooking"."laytrip_cart_id" =  '${cart_id}')`;
+    const where = `("cartBooking"."laytrip_cart_id" =  '${cart_id}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`;
     const query = getConnection()
       .createQueryBuilder(CartBooking, "cartBooking")
       .leftJoinAndSelect("cartBooking.bookings", "booking")
