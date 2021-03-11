@@ -192,25 +192,12 @@ export class GeneralController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async testEmail(
-        @Body() dto: MassCommunicationDto,
         @Param('emailId') email: string
     ) {
         return await this.generalService.testEmail(
-            dto, email
+           email
         );
     }
     
-    @Post(["test/update/traveler-info/"])
-    @ApiOperation({ summary: "update traveler information" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({ status: 422, description: "Bad Request or API error message" })
-    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async travelerInfo(
-    ) {
-        return await this.generalService.updateTravelerInfo(
-        );
-    }
+    
 }

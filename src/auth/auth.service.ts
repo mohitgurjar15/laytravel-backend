@@ -120,15 +120,15 @@ export class AuthService {
     if (userExist) {
       if (userExist.status != 1) {
         throw new UnauthorizedException(
-          `Your account has been disabled. Please contact administrator person.`
+          `Your account has been disabled. Please contact customerservice@laytrip.com.`
         );
       } else if (userExist.isDeleted == true) {
         throw new UnauthorizedException(
-          `Your account has been deleted. Please contact administrator person.`
+          `Your account has been deleted. Please contact customerservice@laytrip.com.`
         );
       } else {
         throw new ConflictException(
-          `This email address is already registered with us. Please enter different email address.`
+          `Email already registered. Please enter another email. `
         );
       }
     }
@@ -273,11 +273,11 @@ export class AuthService {
     if (userExist) {
       if (userExist.status != 1) {
         throw new UnauthorizedException(
-          `Your account has been disabled. Please contact administrator person.`
+          `Your account has been disabled. Please contact customerservice@laytrip.com.`
         );
       } else if (userExist.isDeleted == true) {
         throw new UnauthorizedException(
-          `Your account has been deleted. Please contact administrator person.`
+          `Your account has been deleted. Please contact customerservice@laytrip.com.`
         );
       } else {
         throw new ConflictException(
@@ -350,12 +350,12 @@ export class AuthService {
 
     if (!user)
       throw new NotFoundException(
-        `Email is not registered with us. Please check the email.&&&email`
+        `Not a registered email.`
       );
 
     if (user.status != 1)
       throw new UnauthorizedException(
-        `Your account has been disabled. Please contact administrator person.`
+        `Your account has been disabled. Please contact customerservice@laytrip.com.`
       );
 
     if (user.isVerified)
@@ -403,12 +403,12 @@ export class AuthService {
 
     if (!user)
       throw new NotFoundException(
-        `Email is not registered with us. Please check the email.&&&email`
+        `Not a registered email.`
       );
 
     if (user.status != 1)
       throw new UnauthorizedException(
-        `Your account has been disabled. Please contact administrator person.`
+        `Your account has been disabled. Please contact customerservice@laytrip.com.`
       );
     const roles = [Role.FREE_USER, Role.PAID_USER];
     const userExist = await this.userRepository.findOne({
@@ -418,7 +418,7 @@ export class AuthService {
 
     if (userExist)
       throw new ConflictException(
-        `This email address is already registered with us. Please enter different email address.`
+        `Email already registered. Please enter another email. `
       );
     user.email = newEmail;
     //user.isVerified = false;
@@ -465,12 +465,12 @@ export class AuthService {
 
     if (!user)
       throw new NotFoundException(
-        `Email is not registered with us. Please check the email.&&&email`
+        `Not a registered email.`
       );
 
     if (user.status != 1)
       throw new UnauthorizedException(
-        `Your account has been disabled. Please contact administrator person.`
+        `Your account has been disabled. Please contact customerservice@laytrip.com.`
       );
     const roles = [Role.FREE_USER, Role.PAID_USER];
     const userExist = await this.userRepository.findOne({
@@ -480,7 +480,7 @@ export class AuthService {
 
     if (userExist)
       throw new ConflictException(
-        `This email address is already registered with us. Please enter different email address.`
+        `Email already registered. Please enter another email. `
       );
     user.email = email;
     user.isRequireToUpdate = false;
@@ -509,7 +509,7 @@ export class AuthService {
     if (user && (await user.validatePassword(password))) {
       if (user.status != 1)
         throw new UnauthorizedException(
-          `Your account has been disabled. Please contact administrator person.`
+          `Your account has been disabled. Please contact customerservice@laytrip.com.`
         );
       if (!user.isVerified) {
         throw new NotAcceptableException(
@@ -539,7 +539,7 @@ export class AuthService {
       return token;
     } else {
       throw new UnauthorizedException(
-        `Invalid login credentials! Please enter correct email address and password.`
+        `Invalid login credentials. Please enter correct email and password.`
       );
     }
   }
@@ -563,12 +563,12 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException(
-        `Email is not registered with us. Please check the email.`
+        `Not a registered email.`
       );
     }
     if (user.isDeleted == true || user.status == 0) {
       throw new NotFoundException(
-        `Your account has been disabled. Please contact administrator person&&&email&&&Your account has been disabled. Please contact administrator person`
+        `Your account has been disabled. Please contact customerservice@laytrip.com.`
       );
     }
     if (!user.isVerified) {
@@ -670,7 +670,7 @@ export class AuthService {
 
       if (!user) {
         throw new NotFoundException(
-          `Email is not registered with us. Please check the email.&&&email`
+          `Not a registered email.`
         );
       }
       if (!user.isVerified) {
@@ -735,9 +735,7 @@ export class AuthService {
           );
         }
       } else {
-        throw new BadRequestException(
-          `Incorrect OTP. Please try again!&&&otp&&&Incorrect OTP. Please try again!`
-        );
+        throw new BadRequestException(`Wrong OTP. Please try again.`);
       }
     } catch (error) {
       if (typeof error.response !== "undefined") {
@@ -794,7 +792,7 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException(
-        `Email is not registered with us. Please check the email.&&&email`
+        `Not a registered email.`
       );
     }
     let accessToken;
@@ -950,7 +948,7 @@ export class AuthService {
     if (user && (await user.validatePassword(password))) {
       if (user.status != 1)
         throw new UnauthorizedException(
-          `Your account has been disabled. Please contact administrator person.`
+          `Your account has been disabled. Please contact customerservice@laytrip.com.`
         );
       if (!user.isVerified) {
         throw new NotAcceptableException(
@@ -1023,7 +1021,7 @@ export class AuthService {
       }
     } else {
       throw new NotFoundException(
-        `Invalid login credentials! Please enter correct email address and password.`
+        `Invalid login credentials. Please enter correct email and password.`
       );
     }
   }
@@ -1071,11 +1069,11 @@ export class AuthService {
     if (userExist) {
       if (userExist.status != 1) {
         throw new UnauthorizedException(
-          `Your account has been disabled. Please contact administrator person.`
+          `Your account has been disabled. Please contact customerservice@laytrip.com.`
         );
       } else if (userExist.isDeleted == true) {
         throw new UnauthorizedException(
-          `Your account has been deleted. Please contact administrator person.`
+          `Your account has been deleted. Please contact customerservice@laytrip.com.`
         );
       }
     }
@@ -1696,12 +1694,12 @@ export class AuthService {
 
     if (user.status != 1) {
       throw new UnauthorizedException(
-        `Your account has been disabled. Please contact administrator person.`
+        `Your account has been disabled. Please contact customerservice@laytrip.com.`
       );
     }
     if (user.isDeleted == true) {
       throw new UnauthorizedException(
-        `Your account has been deleted. Please contact administrator person.`
+        `Your account has been deleted. Please contact customerservice@laytrip.com.`
       );
     }
 

@@ -6,7 +6,7 @@ export function BookingNotCompletedMail(param: { userName: string }) {
   const content = `
                                 <tr>
                                     <td align="left" valine="top" style="padding: 10px 15px 30px; background: #ffffff;">
-                                        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="left" style="width: 100%">
+                                        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="left" style="width: 100%">
                                             <tbody>
                                                 <tr>
                                                     <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 24px; color: #707070; padding-top: 15px; text-align: left;">Hi ${param.userName}</td>

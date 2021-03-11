@@ -31,12 +31,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         if (user.status != 1) {
             throw new UnauthorizedException(
-                `Your account has been disabled. Please contact administrator person.`
+                `Your account has been disabled. Please contact customerservice@laytrip.com.`
             );
         }
         if (user.isDeleted == true) {
             throw new UnauthorizedException(
-                `Your account has been deleted. Please contact administrator person.`
+                `Your account has been deleted. Please contact customerservice@laytrip.com.`
             );
         }
 

@@ -5,28 +5,23 @@ import { LaytripHeader } from "./laytrip_header.html";
 export function LaytripInstallmentRecevied(param: {
   date: string;
   userName: string;
-  cardHolderName: string;
-  cardNo: string;
   orderId: string;
   amount: number;
   installmentId: number;
   complitedAmount: number;
   totalAmount: number;
-  pendingInstallment: string | number;
   currencySymbol: string;
-  currency: string;
   nextDate: string;
-  nextAmount: number;
 }) {
   let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">We have successfully processed your payment for ${param.currencySymbol}${param.amount} on ${param.date}, thank you!
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">We have successfully processed your payment for ${param.currencySymbol}${param.amount} on ${param.date}, thank you!
                     <br/>Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}</td>
                 </tr>`;
   // <tr>
@@ -46,7 +41,7 @@ export function LaytripInstallmentRecevied(param: {
   // </tr>
   content += `<tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Please contact <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. if you have any questions.
                     </td>
