@@ -10,7 +10,7 @@ export async function TravelProviderConfiramationMail(
 ) {
   let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
+        <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
                 <tr>

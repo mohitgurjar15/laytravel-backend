@@ -167,7 +167,7 @@ export const LaytripHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Trans
                     </tr>
                     <!-- logo section -->
                     <tr>
-                        <td align="left" valign="top" style="padding: 20px 25px 0px;">
+                        <td align="left" valign="top" style="padding: 0 20px 25px 0px;">
                             <table border="0" cellspacing="0" cellpadding="0" align="left">
                                 <tr>
                                     <td align="left" valign="top">

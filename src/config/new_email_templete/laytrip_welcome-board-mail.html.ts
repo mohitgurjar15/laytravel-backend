@@ -5,7 +5,7 @@ import { FrontEndUrl } from "../base-url";
 export function LaytripWelcomeBoardMail() {
   const content = `<tr>
                                         <td align="center" valine="top" style="padding: 10px 15px 30px; background: #ffffff;">
-                                            <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+                                            <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                                 <tbody>
                                                     <tr>
                                                         <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
