@@ -455,7 +455,7 @@ export class AuthService {
 
   async updateAppleUser(
     updateAppleUserDto: UpdateAppleUserDto,
-    userData: User
+    userData: User,siteUrl
   ) {
     const { email, first_name, last_name } = updateAppleUserDto;
 
@@ -489,10 +489,28 @@ export class AuthService {
 
     try {
       await user.save();
+      const payload: JwtPayload = {
+        user_id: user.userId,
+        email,
+        username: user.firstName + " " + user.lastName,
+        firstName: user.firstName,
+        phone: user.phoneNo,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        salt: user.salt,
+        profilePic: user.profilePic
+          ? `${siteUrl}/profile/${user.profilePic}`
+          : "",
+        roleId: user.roleId,
+        createdDate: user.createdDate,
+        socialAccountId: user.socialAccountId,
+      };
+      let accessToken = this.jwtService.sign(payload);
+      return { message: `Updated successfully`, token: accessToken };
     } catch (error) {
       throw new InternalServerErrorException(error.sqlMessage);
     }
-    return { message: `Updated successfully` };
+    
   }
 
   async validateUserPassword(

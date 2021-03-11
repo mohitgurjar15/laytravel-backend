@@ -12,7 +12,7 @@ export function LaytripPaymentFailedTemplete(param: {
 }) {
   const content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>

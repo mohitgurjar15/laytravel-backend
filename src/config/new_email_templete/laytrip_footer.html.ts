@@ -23,7 +23,7 @@ export const LaytripFooter = `<tr>
 </tr>
 <tr>
 <td align="center" valign="top" style="padding: 20px 0;">
-    <table border="0" cellspacing="0" cellpadding="0" align="center">
+    <table  border="0" cellspacing="0" cellpadding="0" align="center">
         <tbody>
             <tr>
                 <td align="left" valign="middle">

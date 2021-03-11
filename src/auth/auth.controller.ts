@@ -386,9 +386,11 @@ export class AuthController {
   @HttpCode(200)
   async updateAppleUser(
     @Body() updateAppleUserDto: UpdateAppleUserDto,
-    @GetUser() user: User
+    @GetUser() user: User,
+    @SiteUrl() siteUrl: string,
   ): Promise<any> {
-    return await this.authService.updateAppleUser(updateAppleUserDto, user);
+
+    return await this.authService.updateAppleUser(updateAppleUserDto, user , siteUrl);
   }
 
   @Put("/profile")

@@ -9,7 +9,7 @@ export function LaytripCancellationTravelProviderMail(param: {
   const content = `
                                 <tr>
                                     <td align="left" valine="top" style="padding: 10px 15px 15px; background: #ffffff;">
-                                        <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+                                        <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
                                                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">Hi ${param.userName},</td>
