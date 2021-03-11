@@ -10,7 +10,7 @@ const content = `
         <table class="oc_wrapper" width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
+                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                         Thank you for contacting Laytrip Customer Service. A member of our team will get back to you within 24 hours.
                     </td>
                 </tr>

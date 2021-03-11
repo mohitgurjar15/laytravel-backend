@@ -11,3 +11,5 @@ export const TwitterSocialLink = `https://twitter.com/LaytripTravel`;
 export const BookingLink = `https://alpha.laytrip.com/account/bookings`;
 export const TermsConditonLink = `https://alpha.laytrip.com/terms`;
 export const covidLink = `https://alpha.laytrip.com/covid-19`;
+export const reviewLink = `https://alpha.laytrip.com/cart/confirm/`;
+
