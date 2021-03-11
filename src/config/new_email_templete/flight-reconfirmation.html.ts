@@ -5,10 +5,10 @@ import { FlightBookingEmailParameterModel } from "../email_template/model/flight
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function LaytripFlightBookingConfirmtionMail(
-  param: FlightBookingEmailParameterModel
+export async function TravelProviderReconfirmationMail(
+    param: FlightBookingEmailParameterModel
 ) {
-  let content = `<tr>
+    let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
@@ -21,20 +21,20 @@ export async function LaytripFlightBookingConfirmtionMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
-                        Congratulations on booking your travel with Laytrip. Your Laytrip Booking ID ${
+                        We are re-sending this Travel Provider Confirmation Email as a reminder of your upcoming travel. Your Laytrip Booking ID${
                             param.cart.cartId
-                        } , please use this number when referencing your booking with Laytrip.
+                        }, please use this number when referencing your booking with Laytrip.
                     </td>
                 </tr>`;
-  if (param.flight[0].droups[0].depature?.pnr_no) {
-      content += `<tr>
+    if (param.flight[0].droups[0].depature?.pnr_no) {
+        content += `<tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 20px 0; text-align: left;">
                         Your Travel Provider Confirmation Number is ${param.flight[0].droups[0].depature?.pnr_no}. As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your Reservation Details:
                     </td>
                 </tr>`;
-  }
-  content += `       
+    }
+    content += `       
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070; padding-top:10px; padding-bottom:10px; text-align: left;">
@@ -62,8 +62,8 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     Arrival
                                 </th>
                             </tr>`;
-  for await (const flight of param.flight) {
-      content += `<tr>
+    for await (const flight of param.flight) {
+        content += `<tr>
                                 <td colspan="3"
                                     style="padding: 20px 0; background-color: #ecf1ff; color: #000000; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
@@ -71,8 +71,8 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     </div>
                                 </td>
                             </tr>`;
-      for await (const droup of flight.droups) {
-          content += `<tr>
+        for await (const droup of flight.droups) {
+            content += `<tr>
                                 <td class="templateColumnContainer">
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
@@ -108,11 +108,11 @@ export async function LaytripFlightBookingConfirmtionMail(
                                                 <span style="display: block;">time : ${
                                                     droup.depature.time
                                                 }</span>`;
-          if (droup.depature.pnr_no) {
-              content += `<span style="display: block;">PNR no : ${droup.depature.pnr_no}</span>`;
-          }
+            if (droup.depature.pnr_no) {
+                content += `<span style="display: block;">PNR no : ${droup.depature.pnr_no}</span>`;
+            }
 
-          content += `</td>
+            content += `</td>
                                         </tr>
                                     </table>
                                 </td>
@@ -142,10 +142,10 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     </table>
                                 </td>
                             </tr>`;
-      }
-  }
+        }
+    }
 
-  content += `</table>
+    content += `</table>
                     </td>
                 </tr>
                 
@@ -179,9 +179,9 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     Type
                                 </th>
                             </tr>`;
-  for (let index = 0; index < param.traveler.length; index++) {
-      const traveler = param.traveler[index];
-      content += `<tr>
+    for (let index = 0; index < param.traveler.length; index++) {
+        const traveler = param.traveler[index];
+        content += `<tr>
                                 
                                 <td class="templateColumnContainer" width="25%">
                                     <table border="0" cellpadding="5" cellspacing="0" width="100%">
@@ -211,8 +211,8 @@ export async function LaytripFlightBookingConfirmtionMail(
                                     </table>
                                 </td>
                             </tr>`;
-  }
-  content += `</table>
+    }
+    content += `</table>
                     </td>
                 </tr><tr><td>   <br/></td></tr><tr>
                     <td>
@@ -226,8 +226,8 @@ export async function LaytripFlightBookingConfirmtionMail(
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price:</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalAmount}</span></td>
                             </tr>`;
-  if (param.cart.totalPaid != "$0") {
-      content += `<tr>
+    if (param.cart.totalPaid != "$0") {
+        content += `<tr>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Paid:</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalPaid}</span></td>
                             </tr>
@@ -235,8 +235,8 @@ export async function LaytripFlightBookingConfirmtionMail(
                                 <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Blance Due:</span></td>
                                 <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">${param.cart.rememberAmount}</span></td>
                             </tr>`;
-  }
-  content += `
+    }
+    content += `
                         </table>
                     </td>
                 </tr>
@@ -265,5 +265,5 @@ export async function LaytripFlightBookingConfirmtionMail(
         </table>
     </td>
 </tr>`;
-  return LaytripHeader + content + LaytripFooter;
+    return LaytripHeader + content + LaytripFooter;
 }
