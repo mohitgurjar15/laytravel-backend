@@ -24,6 +24,11 @@ import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/la
 import { LaytripVerifyEmailIdTemplete } from "src/config/new_email_templete/laytrip_email-id-verify-mail.html";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
+import { BookingNotCompletedMail } from "src/config/new_email_templete/laytrip_booking-not-completed-mail.html";
+import { LaytripResetPasswordMail } from "src/config/new_email_templete/laytrip_reset-password-mail.html";
+import { LaytripWelcomeBoardMail } from "src/config/new_email_templete/laytrip_welcome-board-mail.html";
+import { LaytripForgotPasswordMail } from "src/config/new_email_templete/laytrip_forgot-password-mail.html";
+import { LaytripCompletedTripReminderMail } from "src/config/new_email_templete/laytipr_complete-trip-reminder-mail.html";
 const mailConfig = config.get("email");
 
 @Injectable()
@@ -253,11 +258,11 @@ export class GeneralService {
       .sendMail({
         to: email,
         from: mailConfig.from,
-        bcc: mailConfig.BCC,
-        subject: "BOOKING ID LTCA678GFJ PROVIDER CANCELLATION NOTICE",
-        html: await LaytripCancellationTravelProviderMail({
-          userName: "Parth",
-          bookingId: "LTCA678GFJ",
+        // bcc: mailConfig.BCC,
+        subject: "COVID TRAVEL UPDATE",
+        html: await LaytripCovidUpdateMail({
+          username: "Chintan",
+          // otp: 587965,
         }), //await LaytripFlightBookingConfirmtionMail(),
       })
       .then((res) => {
@@ -267,41 +272,41 @@ export class GeneralService {
         console.log("err", err);
       });
 
-    this.mailerService
-      .sendMail({
-        to: email,
-        from: mailConfig.from,
-        bcc: mailConfig.BCC,
-        subject: "BOOKING ID LTCA678GFJ CUSTOMER CANCELLATION",
-        html: await LaytripBookingCancellationCustomerMail({
-          username: "Parth",
-          bookingId: "LTCA678GFJ",
-        }), //await LaytripFlightBookingConfirmtionMail(),
-      })
-      .then((res) => {
-        console.log("res", res);
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
+    // this.mailerService
+    //   .sendMail({
+    //     to: email,
+    //     from: mailConfig.from,
+    //     bcc: mailConfig.BCC,
+    //     subject: "BOOKING ID LTCA678GFJ CUSTOMER CANCELLATION",
+    //     html: await LaytripBookingCancellationCustomerMail({
+    //       username: "Parth",
+    //       bookingId: "LTCA678GFJ",
+    //     }), //await LaytripFlightBookingConfirmtionMail(),
+    //   })
+    //   .then((res) => {
+    //     console.log("res", res);
+    //   })
+    //   .catch((err) => {
+    //     console.log("err", err);
+    //   });
 
-    this.mailerService
-      .sendMail({
-        to: email,
-        from: mailConfig.from,
-        bcc: mailConfig.BCC,
-        subject: "PAYMENT METHOD CHANGE CONFIRMATION",
-        html: await LaytripPaymentMethodChangeMail({
-          username: "Parth",
-          otp: 324232,
-        }), //await LaytripFlightBookingConfirmtionMail(),
-      })
-      .then((res) => {
-        console.log("res", res);
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
+    // this.mailerService
+    //   .sendMail({
+    //     to: "chintanvasoya@itoneclick.com",
+    //     from: mailConfig.from,
+    //     // bcc: mailConfig.BCC,
+    //     subject: "BOOKING ID LTFKL8DLA PROVIDER CANCELLATION NOTICE",
+    //     html: await LaytripCancellationTravelProviderMail({
+    //       userName:"chintann",
+    //       bookingId:"LTFKL8DLA"
+    //     }), //await LaytripFlightBookingConfirmtionMail(),
+    //   })
+    //   .then((res) => {
+    //     console.log("res", res);
+    //   })
+    //   .catch((err) => {
+    //     console.log("err", err);
+    //   });
 
     return {
       message: `email send succesfully`,

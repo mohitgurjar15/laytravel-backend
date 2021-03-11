@@ -14,18 +14,18 @@ export function LaytripWelcomeBoardMail() {
                                                     </tr>
                                                     <tr>
                                                          <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                                                            We provide <span style="font-family: 'bold'; font-weight:800 "> real-time access </span> to <span style="font-family: 'bold'; font-weight:800 ">  industry-best pricing </span> so you no longer have to shop countless sites, and we offer <span style="font-family: 'bold'; font-weight:800 "> customizable layaway installment plans, with no interest and no credit check </span> to make all your travel now affordable! 
+                                                            We provide <b style="font-family: 'bold'; font-weight:800; font-size: 14px; "> real-time access </b> to <b style="font-family: 'bold'; font-weight:800;font-size: 14px; ">  industry-best pricing </b> so you no longer have to shop countless sites, and we offer <b style="font-family: 'bold'; font-weight:800;font-size: 14px; "> customizable layaway installment plans, with no interest and no credit check </b> to make all your travel now affordable. 
                                                          </td>
                                                     </tr>
                                                     <tr>
                                                          <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: left;">
-                                                            We're looking forward to serving you as your one-stop travel LTA (Layaway Travel Agency)!               
+                                                            We're looking forward to serving you as your one-stop travel LTA (Layaway Travel Agency).      
                                                          </td>
                                                     </tr>
                                                     <tr>
                                                          <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
                                                             <a href = '${FrontEndUrl}'
-                                                            style="color: #f725c5;"><u>SEARCH TRAVEL</u></a>!               
+                                                            style="color: #f725c5;"><u>SEARCH TRAVEL</u></a>.              
                                                          </td>
                                                     </tr>
                                                 </tbody>

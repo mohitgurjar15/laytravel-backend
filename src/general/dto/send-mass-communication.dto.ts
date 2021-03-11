@@ -14,9 +14,9 @@ export class MassCommunicationDto {
     })
     subject: string
 
-    @IsNotEmpty({
-        message: `Please enter email body`
-    })
+    // @IsNotEmpty({
+    //     message: `Please enter email body`
+    // })
     @ApiProperty({
         description: `email body`,
         example: ``
