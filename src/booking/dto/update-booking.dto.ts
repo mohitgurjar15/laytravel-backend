@@ -1,10 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
-    IsArray,
-    IsEnum,
     IsNotEmpty,
-    IsOptional,
     ValidateIf,
     ValidateNested,
     ValidationArguments,
@@ -12,7 +9,6 @@ import {
 import { errorMessage } from "src/config/common.config";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { ModulesName } from "src/enum/module.enum";
-import { PaymentType } from "src/enum/payment-type.enum";
 export class updateBookingDto {
     @IsNotEmpty({
         message: `Please enter module id &&&module_id`,
