@@ -51,6 +51,8 @@ import { PaymentService } from "src/payment/payment.service";
 import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
 import { Activity } from "src/utility/activity.utility";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
+import { Role } from "src/enum/role.enum";
+import { LaytripBookingCancellationCustomerMail } from "src/config/new_email_templete/laytrip_booking-cancellation-customer-mail.html";
 
 @Injectable()
 export class BookingService {
@@ -2217,14 +2219,14 @@ export class BookingService {
                 )
                 .execute();
         }
-
-        this.mailerService
+        if(user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER){
+            this.mailerService
             .sendMail({
                 to: query.user.email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: `BOOKING ID ${booking_id} PROVIDER CANCELLATION NOTICE`,
-                html: LaytripCancellationTravelProviderMail({
+                html: await  LaytripCancellationTravelProviderMail({
                     userName: query.user.firstName || "",
                     bookingId: booking_id,
                 }),
@@ -2235,6 +2237,27 @@ export class BookingService {
             .catch((err) => {
                 console.log("err", err);
             });
+        }
+        else{
+            this.mailerService
+            .sendMail({
+                to: query.user.email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${booking_id} CUSTOMER CANCELLATION`,
+                html: await LaytripBookingCancellationCustomerMail({
+                    username: query.user.firstName || "",
+                    bookingId: booking_id,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        }
+        
         if (product_id) {
             return {
                 message: `Selected product cancel successfully `,

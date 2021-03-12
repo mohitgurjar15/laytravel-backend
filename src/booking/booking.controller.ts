@@ -358,7 +358,7 @@ export class BookingController {
 	}
 
 	@Delete()
-	@ApiOperation({ summary: "Delete booking listing by admin" })
+	@ApiOperation({ summary: "Delete booking" })
 	@ApiResponse({ status: 200, description: "Api success" })
 	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
 	@ApiResponse({
