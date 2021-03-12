@@ -1398,7 +1398,7 @@ export class CartService {
     booking.cartId = cartId;
     booking.locationInfo = {
       journey_type: moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
-      source_location: moduleInfo[0].departure_date,
+      source_location: moduleInfo[0].departure_code,
       destination_location: moduleInfo[0].arrival_code,
     };
 

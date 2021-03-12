@@ -50,6 +50,8 @@ import { Cart } from "src/entity/cart.entity";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
+import { isUUID } from "class-validator";
+import { isNull } from "util";
 
 @Injectable()
 export class PaymentService {
@@ -748,36 +750,104 @@ export class PaymentService {
             paidFor,
             travelerInfoId,
             note,
+            productId
         } = creteTransactionDto;
+        try {
+            if (!isUUID(userId)) {
+                throw new BadRequestException(`Given user id not exiest.`);
+            }
+            let cart: CartBooking;
+            if (bookingId) {
+                cart = await getConnection()
+                    .createQueryBuilder(CartBooking, "cartBooking")
+                    .where(
+                        `laytrip_cart_id = '${bookingId}' AND user_id = '${userId}'`
+                    )
+                    .getOne();
+                if (!cart) {
+                    throw new BadRequestException(
+                        `Given booking id not exiest for selected user.`
+                    );
+                }
+            }
+            let booking: Booking;
+            if (productId) {
+                let whr = `laytrip_booking_id = '${productId}' AND user_id = '${userId}'`;
+                if (cart) {
+                    whr += `AND cart_id = '${cart.id}'`;
+                }
+                booking = await getConnection()
+                    .createQueryBuilder(Booking, "booking")
+                    .where(whr)
+                    .getOne();
+                if (!booking) {
+                    throw new BadRequestException(
+                        `Given product id not exiest.`
+                    );
+                }
+            }
+            const result = await this.getPayment(
+                card_token,
+                Math.ceil(amount * 100),
+                "USD",
+                createdBy
+            );
 
-        const result = await this.getPayment(
-            card_token,
-            Math.ceil(amount * 100),
-            "USD",
-            createdBy
-        );
+            const transaction = new OtherPayments();
 
-        const transaction = new OtherPayments();
+            transaction.bookingId = booking?.id || null;
+            transaction.cartBookingId = cart?.id || null;
+            transaction.userId = userId;
+            transaction.travelerInfoId = travelerInfoId || null;
+            transaction.currencyId = currencyId;
+            transaction.amount = `${amount}`;
+            transaction.paidFor = paidFor;
+            transaction.comment = note;
+            transaction.transactionId = result.token;
+            transaction.paymentInfo = result.meta_data;
+            transaction.paymentStatus =
+                result.status == true
+                    ? PaymentStatus.CONFIRM
+                    : PaymentStatus.FAILED;
+            transaction.createdBy = createdBy;
+            transaction.createdDate = new Date();
 
-        transaction.bookingId = bookingId || null;
-        transaction.userId = userId;
-        transaction.travelerInfoId = travelerInfoId;
-        transaction.currencyId = currencyId;
-        transaction.amount = `${amount}`;
-        transaction.paidFor = paidFor;
-        transaction.comment = note;
-        transaction.transactionId = result.token;
-        transaction.paymentInfo = result.meta_data;
-        transaction.paymentStatus =
-            result.status == true
-                ? PaymentStatus.CONFIRM
-                : PaymentStatus.FAILED;
-        transaction.createdBy = createdBy;
-        transaction.createdDate = new Date();
+            const transactionData = await transaction.save();
 
-        const transactionData = await transaction.save();
-
-        return transactionData;
+            return transactionData;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async deleteCard(cardId: string, user: User) {
