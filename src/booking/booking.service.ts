@@ -1844,7 +1844,7 @@ export class BookingService {
                         booking.totalAmount;
                     predictiveBookingData["paid_amount"] = totalPaidAmount;
                     predictiveBookingData["is_installation_on_track"] =
-                        paidAmount.attempt <= 1 ? true : false;
+                        paidAmount?.attempt <= 1 ? true : false;
                     predictiveBookingData["paid_amount_in_percentage"] =
                         (totalPaidAmount * 100) /
                         parseFloat(booking.totalAmount);
