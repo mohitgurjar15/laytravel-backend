@@ -62,7 +62,7 @@ export class PaymentService {
         try {
             if (!uuidValidator(cardId)) {
                 throw new NotFoundException(
-                    "Given card id not avilable&&&card_id&&&" + errorMessage
+                    "No payment cards found.&&&card_id&&&" + errorMessage
                 );
             }
             let whr;
@@ -90,7 +90,7 @@ export class PaymentService {
                 .where(whr)
                 .getOne();
             if (!card) {
-                throw new NotFoundException("Given card id not avilable");
+                throw new NotFoundException("No payment cards found.");
             }
 
             await getConnection()
@@ -325,7 +325,7 @@ export class PaymentService {
             .limit(5)
             .getMany();
 
-        if (!cardList.length) throw new NotFoundException(`No card founds`);
+        if (!cardList.length) throw new NotFoundException(`No payment cards found.`);
 
         return cardList;
     }
@@ -429,7 +429,7 @@ export class PaymentService {
                 throw new InternalServerErrorException(errorMessage);
             }
         } else {
-            throw new BadRequestException(`Invalid card!`);
+            throw new BadRequestException(`No payment cards found.`);
         }
     }
 
@@ -896,7 +896,7 @@ export class PaymentService {
             )
             .getOne();
 
-        if (!card) throw new NotFoundException(`Card id not founds`);
+        if (!card) throw new NotFoundException(`Invalid payment card.`);
 
         let booking = await getManager()
             .createQueryBuilder(Booking, "booking")
@@ -933,7 +933,7 @@ export class PaymentService {
             )
             .getOne();
 
-        if (!card) throw new NotFoundException(`Card id not founds`);
+        if (!card) throw new NotFoundException(`Invalid payment card.`);
         const newCard = await this.addCard(addCardDto, user.userId, "");
         await getConnection()
             .createQueryBuilder()

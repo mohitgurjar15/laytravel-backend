@@ -31,7 +31,7 @@ export class SocialLoginDto {
 		{
 			message: (args: ValidationArguments) => {
 				if (typeof args.value != "undefined" || args.value != "") {
-					return `Please Enter valid email address.&&&email`;
+					return `Please enter valid email address.&&&email`;
 				}
 			},
 		},

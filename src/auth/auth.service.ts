@@ -128,7 +128,7 @@ export class AuthService {
         );
       } else {
         throw new ConflictException(
-          `Email already registered. Please enter another email. `
+          `You have already added your email.`
         );
       }
     }
@@ -418,7 +418,7 @@ export class AuthService {
 
     if (userExist)
       throw new ConflictException(
-        `Email already registered. Please enter another email. `
+        `You have already added your email.`
       );
     user.email = newEmail;
     //user.isVerified = false;
@@ -480,7 +480,7 @@ export class AuthService {
 
     if (userExist)
       throw new ConflictException(
-        `Email already registered. Please enter another email. `
+        `You have already added your email.`
       );
     user.email = email;
     user.isRequireToUpdate = false;
@@ -531,7 +531,7 @@ export class AuthService {
         );
       if (!user.isVerified) {
         throw new NotAcceptableException(
-          `Please verify your email id&&&email&&&Please verify your email id`
+          `Your email has been verified.&&&email&&&Your email has been verified.`
         );
       }
 
@@ -557,7 +557,7 @@ export class AuthService {
       return token;
     } else {
       throw new UnauthorizedException(
-        `Invalid login credentials. Please enter correct email and password.`
+          `Invalid login credentials. Please enter correct email and password.`
       );
     }
   }
@@ -591,7 +591,7 @@ export class AuthService {
     }
     if (!user.isVerified) {
       throw new NotAcceptableException(
-        `Please verify your email id&&&email&&&Please verify your email id`
+        `Your email has been verified.&&&email&&&Your email has been verified.`
       );
     }
     var unixTimestamp = Math.round(new Date().getTime() / 1000);
@@ -693,7 +693,7 @@ export class AuthService {
       }
       if (!user.isVerified) {
         throw new NotAcceptableException(
-          `Please verify your email id&&&email&&&Please verify your email id`
+          `Your email has been verified.&&&email&&&Your email has been verified.`
         );
       }
       // Activity.logActivity(
@@ -929,7 +929,7 @@ export class AuthService {
         );
       }
     } else {
-      throw new BadRequestException(`Incorrect OTP.Please try again!&&&token.`);
+      throw new BadRequestException(`Wrong OTP. Please try again.`);
     }
   }
 
@@ -970,7 +970,7 @@ export class AuthService {
         );
       if (!user.isVerified) {
         throw new NotAcceptableException(
-          `Please verify your email id&&&email&&&Please verify your email id`
+          `Your email has been verified.&&&email&&&Your email has been verified.`
         );
       }
 
@@ -1039,7 +1039,7 @@ export class AuthService {
       }
     } else {
       throw new NotFoundException(
-        `Invalid login credentials. Please enter correct email and password.`
+          `Invalid login credentials. Please enter correct email and password.`
       );
     }
   }
@@ -1049,7 +1049,7 @@ export class AuthService {
       const user = await this.userRepository.findOne({ userId: id });
       if (!user) {
         throw new NotFoundException(
-          `Invalid user id! Please enter correct user id&&&user_id&&&${errorMessage}`
+            `Wrong User ID. Please enter User ID again.&&&user_id&&&${errorMessage}`
         );
       }
       await UserDeviceDetail.delete({ user: user });
@@ -1057,7 +1057,7 @@ export class AuthService {
       return userData;
     } catch (error) {
       throw new NotFoundException(
-        `Invalid user id! Please enter correct user id.&&&user_id&&&${errorMessage}`
+          `Wrong User ID. Please enter User ID again..&&&user_id&&&${errorMessage}`
       );
     }
   }
@@ -1281,16 +1281,12 @@ export class AuthService {
           .getOne();
 
         if (!countryDetails)
-          throw new BadRequestException(
-            `Country id not exist with database.&&&country_id`
-          );
+          throw new BadRequestException(`No existing Country.`);
       }
 
       if (state_id) {
         if (!country_id) {
-          throw new BadRequestException(
-            `Please enter country code&&&country&&&Please enter country code`
-          );
+          throw new BadRequestException(`Enter country code.`);
         }
         let stateDetails = await getManager()
           .createQueryBuilder(States, "states")
@@ -1301,7 +1297,7 @@ export class AuthService {
           .getOne();
         if (!stateDetails)
           throw new BadRequestException(
-            `State id not exist with country id.&&&country_id`
+              `No existing State in this Country.&&&country_id`
           );
       }
 
@@ -1313,7 +1309,7 @@ export class AuthService {
 
         if (!currencyDetails)
           throw new BadRequestException(
-            `Currency id not exist with database.&&&currency_id`
+              `Currency not available.&&&currency_id`
           );
       }
 
@@ -1553,7 +1549,7 @@ export class AuthService {
     });
     if (!user.isVerified) {
       throw new NotAcceptableException(
-        `Please verify your email id&&&email&&&Please verify your email id`
+        `Your email has been verified.&&&email&&&Your email has been verified.`
       );
     }
 
@@ -1594,7 +1590,7 @@ export class AuthService {
     });
     if (!user.isVerified) {
       throw new NotAcceptableException(
-        `Please Verify Your Email Id&&&email&&&Please Verify Your Email Id`
+        `Your email has been verified.&&&email&&&Your email has been verified.`
       );
     }
     user.preferredCurrency = currencyId;
@@ -1632,7 +1628,7 @@ export class AuthService {
 
       if (!user) {
         throw new UnauthorizedException(
-          `Invalid user id! Please enter valid user id.`
+            `Wrong User ID. Please enter User ID again.`
         );
       } else {
         if (user.status != 1) {
@@ -1723,7 +1719,7 @@ export class AuthService {
 
     if (!user.isVerified) {
       throw new NotAcceptableException(
-        `Please verify your email id&&&email&&&Please verify your email id`
+        `Your email has been verified.&&&email&&&Your email has been verified.`
       );
     }
 

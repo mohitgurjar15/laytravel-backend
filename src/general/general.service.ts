@@ -376,6 +376,21 @@ export class GeneralService {
                 console.log("err", err);
             });
 
+            this.mailerService
+                .sendMail({
+                    to: email,
+                    from: mailConfig.from,
+                    // bcc: mailConfig.BCC,
+                    subject: "BOOKING ID LTCKLUSXYJL CONFIRMATION",
+                    html: await LaytripCartBookingConfirmtionMail(mail1.param),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
+
         let mail2 = await CartDataUtility.CartMailModelDataGenerate(
             partialBooking
         );

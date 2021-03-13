@@ -71,7 +71,7 @@ export class SaveTravelerDto {
 				if (typeof args.value == "undefined" || args.value == "") {
 					return `Please enter travelers email address.&&&email`;
 				} else {
-					return `Please Enter valid email address.&&&email`;
+					return `Please enter valid email address.&&&email`;
 				}
 			},
 		}

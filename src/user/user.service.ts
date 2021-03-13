@@ -51,6 +51,7 @@ import { CartBooking } from "src/entity/cart-booking.entity";
 import { CartTravelers } from "src/entity/cart-traveler.entity";
 import { Cart } from "src/entity/cart.entity";
 import { LoginLog } from "src/entity/login-log.entity";
+import { Notification } from "src/entity/notification.entity";
 import { SearchLog } from "src/entity/search-log.entity";
 import { LaytripFeedback } from "src/entity/laytrip_feedback.entity";
 import { ExportDeleteRequestDto } from "./dto/export-deleted-user.dto";
@@ -1381,6 +1382,21 @@ export class UserService {
 			)
 			.execute()
 
+		await getConnection()
+            .createQueryBuilder()
+            .delete()
+            .from(Notification)
+            .where(`"from_user_id" = '${userId}' OR "to_user_id" = '${userId}'`)
+            .execute();
+
+		await getConnection()
+			.createQueryBuilder()
+			.delete()
+			.from(BookingFeedback)
+			.where(
+				`"user_id" = '${userId}'`
+			)
+			.execute()
 		await getConnection()
 			.createQueryBuilder()
 			.delete()

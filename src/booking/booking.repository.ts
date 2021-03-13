@@ -562,6 +562,7 @@ export class BookingRepository extends Repository<Booking> {
 
 			.select([
 				"booking.bookingType",
+				"booking.updateBy",
 				"booking.bookingStatus",
 				"booking.checkInDate",
 				"booking.currency",
@@ -597,7 +598,7 @@ export class BookingRepository extends Repository<Booking> {
 				"cart.laytripCartId"
 			])
 
-			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)  AND booking.booking_status In (${BookingStatus.PENDING})`, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
+			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)  AND booking.booking_status In (${BookingStatus.PENDING}) AND predictiveBookingData.is_resedule = false `, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
 
 
 		const [data, count] = await query.getManyAndCount();
@@ -656,7 +657,7 @@ export class BookingRepository extends Repository<Booking> {
 				"predictiveBookingData.remainSeat"
 			])
 
-			.where(`booking.laytripBookingId = '${bookingId}'`)
+			.where(`booking.laytripBookingId = '${bookingId}' AND predictiveBookingData.isResedule = false`)
 
 
 		const data = await query.getOne();

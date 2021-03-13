@@ -26,7 +26,7 @@ export async function LaytripCartBookingConfirmtionMail(
                             param.orderId
                         }. Please use this number when referencing your booking.`
                         if (param.bookingType == BookingType.NOINSTALMENT) {
-                           content += `Here are your booking details:` 
+                           content += ` Here are your booking details:` 
                         }
                     content += `</td>
                 </tr>`;
@@ -36,7 +36,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px;  line-height: 20px; color: #707070;padding:0 0 15px 0; text-align: left;">
                         We will send you your airline, hotel, car and home rental reservation number(s) once we have received your final installment payment. Until your final installment is received, our  
                         <a href="${TermsConditonLink}" style="color: #f725c5;"><u>Laytrip Terms</u></a> for changes and cancellations apply. 
-                        <br/>Here are your booking details:</td>
+                        Here are your booking details:
                 </tr>`;
   }
   content += `
@@ -105,7 +105,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                 <span style="display: block;">City : ${
                                                   droup.depature.city
                                                 }</span>
-                                                <span style="display: block;">Country: ${
+                                                <span style="display: block;">Country : ${
                                                   droup.depature.country
                                                 }</span>
                                                 <span style="display: block;"> Date : ${DateTime.convertDateFormat(
@@ -113,7 +113,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                   "MM/DD/YYYY",
                                                   "MMM DD, YYYY"
                                                 )}</span>
-                                                <span style="display: block;">time : ${
+                                                <span style="display: block;">Time : ${
                                                   droup.depature.time
                                                 }</span>
                                             </td>
@@ -130,7 +130,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                 <span style="display: block;">City : ${
                                                   droup.arrival.city
                                                 }</span>
-                                                <span style="display: block;">Country: ${
+                                                <span style="display: block;">Country : ${
                                                   droup.arrival.country
                                                 }</span>
                                                 <span style="display: block;"> Date : ${DateTime.convertDateFormat(
@@ -138,7 +138,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                   "MM/DD/YYYY",
                                                   "MMM DD, YYYY"
                                                 )}</span>
-                                                <span style="display: block;">time : ${
+                                                <span style="display: block;">Time : ${
                                                   droup.arrival.time
                                                 }</span>
                                             </td>
@@ -161,7 +161,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                 <td colspan="4"
                                     style="padding: 10px 0; background-color: #ecf1ff; color: #000000; font-weight: 800; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
-                                        <span>Traveler details</span>
+                                        <span>Traveler Details</span>
                                     </div>
                                 </td>
                             </tr>
@@ -226,20 +226,20 @@ export async function LaytripCartBookingConfirmtionMail(
                         <table class="oc_wrapper" border="1" cellpadding="3" cellspacing="0" width="100%" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID:</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.orderId}</span></td>
                             </tr>
                             <tr>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price:</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalAmount}</span></td>
                             </tr>`;
   if (param.cart.totalPaid != "$0") {
     content += `<tr>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Paid:</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Paid</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalPaid}</span></td>
                             </tr>
                             <tr>
-                                <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Blance Due:</span></td>
+                                <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Blance Due</span></td>
                                 <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">${param.cart.rememberAmount}</span></td>
                             </tr>`;
   }
@@ -345,20 +345,31 @@ export async function LaytripCartBookingConfirmtionMail(
                             <tbody>
                                 <tr>
                                     <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; " height="48">
-                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>Booking details</a>
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>GO TO MY BOOKINGS</a>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </td>
-                </tr>
-                <tr>
+                </tr>`;
+                if (param.bookingType == BookingType.INSTALMENT){
+                    content += `<tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
                         You can contact us any time at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope you have a great trip!
                     </td>
-                </tr>
+                </tr>`
+                }else{
+                    content += `<tr>
+                    <td align="left" valign="top"
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
+                        Contact us anytime at <a href = 'mailto:customerservice@laytrip.com'
+                        style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>. We hope you have a great trip!
+                    </td>
+                </tr>`
+                }
+            content += `    
             </tbody>
         </table>
     </td>

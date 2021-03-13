@@ -48,7 +48,6 @@ import { FullCalenderRateDto } from "./dto/full-calender-date-rate.dto";
 //import { Airport } from 'src/entity/airport.entity';
 //import { allAirpots } from './all-airports';
 import * as config from "config";
-import { BookingService } from "src/booking/booking.service";
 import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { PriceMarkup } from "src/utility/markup.utility";
 import { NetRateDto } from "./dto/net-rate.dto";
@@ -281,6 +280,13 @@ export class FlightService {
         headers,
         user
     ) {
+
+        if(user?.roleId < Role.PAID_USER){
+            
+            user.user_id = searchFlightDto.user_id
+            user.roleId = Role.FREE_USER;
+        }
+        
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
@@ -1246,6 +1252,10 @@ export class FlightService {
         headers,
         user
     ) {
+         if (user?.roleId < Role.PAID_USER) {
+             user.user_id = searchFlightDto.user_id;
+             user.roleId = Role.FREE_USER
+         }
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
@@ -2057,7 +2067,7 @@ export class FlightService {
             })
             .getOne();
         if (!currencyDetails) {
-            throw new BadRequestException(`Invalid currency code sent!`);
+            throw new BadRequestException(`Currency not available.`);
         }
 
         let languageDetails = await getManager()
@@ -2070,7 +2080,7 @@ export class FlightService {
             )
             .getOne();
         if (!languageDetails) {
-            throw new BadRequestException(`Invalid language code sent!`);
+            throw new BadRequestException(`Language not available.`);
         }
         return {
             currency: currencyDetails,
