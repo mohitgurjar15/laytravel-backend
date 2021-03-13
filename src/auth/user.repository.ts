@@ -37,9 +37,7 @@ export class UserRepository extends Repository<User> {
 			user.updatedDate = new Date();
 			user.updatedBy = user.userId;
 		} else {
-			throw new BadRequestException(
-				`Old password is incorrect.`
-			);
+			throw new BadRequestException(`Current password doesn't match.`);
 		}
 
 		try {

@@ -15,13 +15,13 @@ export async function FlightChangeAsperUserRequestMail(
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #000000;padding: 0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        Booking ID${param.cart.cartId} Change Confirmation!
+                        Booking ID ${param.cart.cartId} Change Confirmation!
                     </td>
                 </tr>
                 <tr>
@@ -92,15 +92,15 @@ export async function FlightChangeAsperUserRequestMail(
                                                 <span style="display: block;">City : ${
                                                     droup.depature.city
                                                 }</span>
-                                                <span style="display: block;">Country: ${
+                                                <span style="display: block;">Country : ${
                                                     droup.depature.country
                                                 }</span>
-                                                <span style="display: block;"> Date : ${DateTime.convertDateFormat(
+                                                <span style="display: block;">Date : ${DateTime.convertDateFormat(
                                                     droup.depature.date,
                                                     "MM/DD/YYYY",
                                                     "MMM DD, YYYY"
                                                 )}</span>
-                                                <span style="display: block;">time : ${
+                                                <span style="display: block;">Time : ${
                                                     droup.depature.time
                                                 }</span>`;
             if (droup.depature.pnr_no) {
@@ -121,15 +121,15 @@ export async function FlightChangeAsperUserRequestMail(
                                                 <span style="display: block;">City : ${
                                                     droup.arrival.city
                                                 }</span>
-                                                <span style="display: block;">Country: ${
+                                                <span style="display: block;">Country : ${
                                                     droup.arrival.country
                                                 }</span>
-                                                <span style="display: block;"> Date : ${DateTime.convertDateFormat(
+                                                <span style="display: block;">Date : ${DateTime.convertDateFormat(
                                                     droup.arrival.date,
                                                     "MM/DD/YYYY",
                                                     "MMM DD, YYYY"
                                                 )}</span>
-                                                <span style="display: block;">time : ${
+                                                <span style="display: block;">Time : ${
                                                     droup.arrival.time
                                                 }</span>
                                             </td>
@@ -211,23 +211,23 @@ export async function FlightChangeAsperUserRequestMail(
                     </td>
                 </tr><tr><td>   <br/></td></tr><tr>
                     <td>
-                        <table class="oc_wrapper" border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; font-family: 'Poppins', sans-serif;"
+                        <table class="oc_wrapper" border="1" cellpadding="3" cellspacing="0" width="600" style="border: 1px solid #dddddd; margin-top: 15px; font-weight: 300; font-size: 12px; padding: 0 0 20px 0; font-family: 'Poppins', sans-serif;"
                             id="templateColumns">
                             <tr>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID:</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Booking ID</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.orderId}</span></td>
                             </tr>
                             <tr>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price:</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Price</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalAmount}</span></td>
                             </tr>`;
     if (param.cart.totalPaid != "$0") {
         content += `<tr>
-                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Paid:</span></td>
+                                <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">Total Paid</span></td>
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalPaid}</span></td>
                             </tr>
                             <tr>
-                                <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Blance Due:</span></td>
+                                <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Balance Due</span></td>
                                 <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">${param.cart.rememberAmount}</span></td>
                             </tr>`;
     }
@@ -238,6 +238,8 @@ export async function FlightChangeAsperUserRequestMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                        </br>
+                        </br>
                          If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>
                     </td>
@@ -245,6 +247,19 @@ export async function FlightChangeAsperUserRequestMail(
             </tbody>
         </table>
     </td>
+</tr><tr>
+<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <tbody> 
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+            </tr>
+        </tbody>
+    </table>
+</td>
 </tr>`;
     return LaytripHeader + content + LaytripFooter;
 }

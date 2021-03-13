@@ -4,23 +4,11 @@ import {
   LinkedInSocialLink,
   NewEmailAssets,
   PintrestSocialLink,
+  TermsConditonLink,
   TwitterSocialLink,
 } from "../base-url";
 
-export const LaytripFooter = `<tr>
-<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
-        <tbody> 
-            <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
-            </tr>
-            <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
-            </tr>
-        </tbody>
-    </table>
-</td>
-</tr>
+export const LaytripFooter = `
 <tr>
 <td align="center" valign="top" style="padding: 20px 0;">
     <table  border="0" cellspacing="0" cellpadding="0" align="center">
@@ -67,7 +55,7 @@ export const LaytripFooter = `<tr>
             <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 12px; line-height: 16px; color: #707070; font-weight: 400;">Need help? Go to our home page Customer Service chat or <a href="mailto:contactus@laytrip.com" target="_blank" style="text-decoration: none; color: #0942ff;">Contact Us</a>.</td>
         </tr>
         <tr>
-            <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 12px; line-height: 16px; font-weight: 400; color: #707070; padding-top: 20px; ">We have sent you this email because as a Laytrip account holder you agreed to our <a href="#" target="_blank" style="text-decoration: none; color: #0942ff;">Terms</a>. To Change your preferences, sign in and go to your My Account menu.</td>
+            <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 12px; line-height: 16px; font-weight: 400; color: #707070; padding-top: 20px; ">We have sent you this email because as a Laytrip account holder you agreed to our <a href="${TermsConditonLink}" target="_blank" style="text-decoration: none; color: #0942ff;">Terms</a>. To Change your preferences, sign in and go to your My Account menu.</td>
         </tr>
     </table>
 </td>

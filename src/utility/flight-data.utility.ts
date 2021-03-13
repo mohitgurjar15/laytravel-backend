@@ -81,7 +81,7 @@ export class flightDataUtility {
             flight: flight,
             depature: depature,
             arrival: arrival,
-            airline: stop.airline_name,
+            airline: stop.airline_name || '',
           });
         }
         //console.log();
@@ -122,7 +122,7 @@ export class flightDataUtility {
           user_type = "Adult";
         }
         travelerInfo.push({
-          name: traveler.userData.firstName + " " + traveler.userData.lastName,
+          name: traveler.userData.firstName || '',
           email: traveler.userData.email,
           type: user_type,
         });

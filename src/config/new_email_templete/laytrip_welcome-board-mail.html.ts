@@ -4,7 +4,7 @@ import { FrontEndUrl } from "../base-url";
 
 export function LaytripWelcomeBoardMail() {
   const content = `<tr>
-                                        <td align="center" valine="top" style="padding: 10px 15px 30px; background: #ffffff;">
+                                        <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
                                             <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                                 <tbody>
                                                     <tr>
@@ -14,7 +14,7 @@ export function LaytripWelcomeBoardMail() {
                                                     </tr>
                                                     <tr>
                                                          <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
-                                                            We provide <b style="font-family: 'bold'; font-weight:800; font-size: 14px; "> real-time access </b> to <b style="font-family: 'bold'; font-weight:800;font-size: 14px; ">  industry-best pricing </b> so you no longer have to shop countless sites, and we offer <b style="font-family: 'bold'; font-weight:800;font-size: 14px; "> customizable layaway installment plans, with no interest and no credit check </b> to make all your travel now affordable. 
+                                                            We provide <b style="font-family: 'bold'; font-weight:800; font-size: 14px; color: #000000"> real-time access </b> to <b style="font-family: 'bold'; font-weight:800;font-size: 14px; color: #000000">  industry-best pricing </b> so you no longer have to shop countless sites, and we offer <b style="font-family: 'bold';  font-weight:800;font-size: 14px; color: #000000"> customizable layaway installment plans, with no interest and no credit check </b> to make all your travel now affordable. 
                                                          </td>
                                                     </tr>
                                                     <tr>
