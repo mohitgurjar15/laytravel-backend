@@ -16,7 +16,7 @@ export async function LaytripCartBookingConfirmtionMail(
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #000000;padding:0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
@@ -24,7 +24,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
                         Congratulations on booking your travel! Your Laytrip Booking ID is ${
                             param.orderId
-                        }. Please use this number when referencing your booking.`
+                        }. Please use this number when referencing your booking.`;
                         if (param.bookingType == BookingType.NOINSTALMENT) {
                            content += ` Here are your booking details:` 
                         }
@@ -35,7 +35,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px;  line-height: 20px; color: #707070;padding:0 0 15px 0; text-align: left;">
                         We will send you your airline, hotel, car and home rental reservation number(s) once we have received your final installment payment. Until your final installment is received, our  
-                        <a href="${TermsConditonLink}" style="color: #f725c5;"><u>Laytrip Terms</u></a> for changes and cancellations apply. 
+                        <a href="${TermsConditonLink}" style="color: #f725c5;"><u>Terms</u></a> for changes and cancellations apply. 
                         Here are your booking details:
                 </tr>`;
   }
@@ -89,7 +89,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                                   droup.flight
                                                 }</span>
                                                 <span style="display: block;">${
-                                                  droup.airline
+                                                  droup.airline || ''
                                                 }</span>
                                             </td>
                                         </tr>
@@ -239,7 +239,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                 <td><span style="font-weight: 500; font-size: 13px; padding-right:10px; color: #000000; font-family: 'Poppins', sans-serif;">${param.cart.totalPaid}</span></td>
                             </tr>
                             <tr>
-                                <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Blance Due</span></td>
+                                <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">Balance Due</span></td>
                                 <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">${param.cart.rememberAmount}</span></td>
                             </tr>`;
   }
@@ -373,6 +373,19 @@ export async function LaytripCartBookingConfirmtionMail(
             </tbody>
         </table>
     </td>
+</tr><tr>
+<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <tbody> 
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+            </tr>
+        </tbody>
+    </table>
+</td>
 </tr>`;
   return LaytripHeader + content + LaytripFooter;
 }

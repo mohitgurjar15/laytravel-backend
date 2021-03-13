@@ -18,11 +18,11 @@ export function LaytripInstallmentRecevied(param: {
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #000000; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #000000; padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">We have successfully processed your payment for ${param.currencySymbol}${param.amount} on ${param.date}, thank you!
-                    <br/>Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">We have successfully processed your payment for ${param.currencySymbol}${param.amount} on ${param.date}, thank you!
+                    Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}</td>
                 </tr>`;
   // <tr>
   //     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding-top:10px; text-align: left;"><span style="font-weight: 700; padding-right:10px; color: #000000;">Billed to:</span>${param.cardHolderName}</td>
@@ -49,6 +49,20 @@ export function LaytripInstallmentRecevied(param: {
             </tbody>
         </table>
     </td>
+</tr>
+<tr>
+<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <tbody> 
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+            </tr>
+        </tbody>
+    </table>
+</td>
 </tr>
 `;
   return LaytripHeader + content + LaytripFooter;

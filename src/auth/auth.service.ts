@@ -213,7 +213,7 @@ export class AuthService {
           cc: mailConfig.BCC,
           subject: "Verify Your Email Address",
           html: LaytripVerifyEmailIdTemplete({
-            username: first_name + " " + last_name,
+            username: first_name || '',
             otp: user.otp,
           }),
         })

@@ -16,20 +16,21 @@ export function LaytripMissedPaymentTemplete(param: {
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #000000;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 `;
   if (param.try == 2) {
     content += `<tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">2nd Notice!`;
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">2nd Notice!`;
   }
   if (param.try == 3) {
     content += `<tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">3rd and final missed payment notice!</td> </tr>`;
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">3rd and final missed payment notice!</td>
+                     </tr>`;
   }
   content += `
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">We’re ${
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">We’re ${
                       param.try > 1 ? "still" : ""
                     } having trouble processing your installment payment for ${
     param.amount
@@ -39,9 +40,9 @@ export function LaytripMissedPaymentTemplete(param: {
                 </tr>`;
   if (param.try < 3) {
     content += `<tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">${
-                      param.try == 1 ? "We understand things happen so" : ""
-                    }we will automatically attempt to process it again on ${
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">${
+                      param.try == 1 ? "We understand things happen so." : ""
+                    } We will automatically attempt to process it again on ${
       param.nextDate
     }.</td>
                 </tr>`;
@@ -59,6 +60,20 @@ export function LaytripMissedPaymentTemplete(param: {
             </tbody>
         </table>
     </td>
+</tr>
+<tr>
+<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <tbody> 
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+            </tr>
+        </tbody>
+    </table>
+</td>
 </tr>
 `;
   return LaytripHeader + content + LaytripFooter;
