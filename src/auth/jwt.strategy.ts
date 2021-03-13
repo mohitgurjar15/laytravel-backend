@@ -42,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         if (!user.isVerified) {
             throw new NotAcceptableException(
-                `Please verify your email id&&&email&&&Please verify your email id`
+                `Your email has been verified.&&&email&&&Your email has been verified.`
             );
         }
 

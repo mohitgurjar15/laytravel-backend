@@ -2,7 +2,6 @@ import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGenera
 import { Booking } from "./booking.entity";
 
 @Index("booking_id_idx2", ["bookingId"], {})
-
 @Entity("predictive_booking_data")
 export class PredictiveBookingData extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
@@ -12,13 +11,13 @@ export class PredictiveBookingData extends BaseEntity {
     bookingId: string;
 
     @Column("numeric", { name: "price", precision: 15, scale: 3 })
-    price: number ;
+    price: number;
 
     @Column("integer", { name: "remain_seat" })
-    remainSeat: number ;
+    remainSeat: number;
 
     @Column("numeric", { name: "net_price", precision: 15, scale: 3 })
-    netPrice: number ;
+    netPrice: number;
 
     @Column("date", { name: "created_date", nullable: true })
     date: Date;
@@ -26,10 +25,12 @@ export class PredictiveBookingData extends BaseEntity {
     @Column("boolean", { name: "is_below_minimum", default: false })
     isBelowMinimum: boolean;
 
+    @Column("boolean", { name: "is_resedule", default: false })
+    isResedule: boolean;
 
     @ManyToOne(
         () => Booking,
-        booking => booking.id
+        (booking) => booking.id
     )
     @JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
     booking: Booking;

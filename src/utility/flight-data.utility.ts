@@ -115,11 +115,11 @@ export class flightDataUtility {
 
         var user_type = "";
         if (age < 2) {
-          user_type = "infant";
+          user_type = "Infant";
         } else if (age < 12) {
-          user_type = "child";
+          user_type = "Child";
         } else {
-          user_type = "adult";
+          user_type = "Adult";
         }
         travelerInfo.push({
           name: traveler.userData.firstName + " " + traveler.userData.lastName,

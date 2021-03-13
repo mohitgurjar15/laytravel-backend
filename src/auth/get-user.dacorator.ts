@@ -39,7 +39,7 @@ export const LogInUser = createParamDecorator(
 
             // if (!user.isVerified) {
             //     throw new NotAcceptableException(
-            //         `Please verify your email id&&&email&&&Please verify your email id`
+            //         `Your email has been verified.&&&email&&&Your email has been verified.`
             //     );
             // }
 

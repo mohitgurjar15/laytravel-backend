@@ -18,7 +18,7 @@ export class newEnquiryDto {
                 if (typeof args.value == "undefined" || args.value == "") {
                     return `Please enter your email address.&&&email`;
                 } else {
-                    return `Please Enter valid email address.&&&email`;
+                    return `Please enter valid email address.&&&email`;
                 }
             },
         },

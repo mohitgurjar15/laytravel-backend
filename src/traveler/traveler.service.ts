@@ -57,13 +57,13 @@ export class TravelerService {
 
 					const userId = traveler.traveler_id
 					if (!uuidValidator(userId)) {
-						throw new NotFoundException('Given traveler id not avilable')
+						throw new NotFoundException("Traveler not registered.");
 					}
 
 					const travelerData = await this.userRepository.findOne({ userId });
 					if (!travelerData) {
 						throw new NotFoundException(
-							`Traveler not found &&&id&&&Traveler not found`
+							`Traveler not registered.`
 						);
 					}
 				} else {
@@ -107,7 +107,7 @@ export class TravelerService {
 							error.response.message ==
 							"This user does not exist&&&email&&&This user does not exist"
 						) {
-							error.response.message = `This traveler does not exist&&&email&&&This traveler not exist`;
+							error.response.message = `Traveler not registered.`;
 						}
 						throw new NotFoundException(error.response.message);
 					case 409:
@@ -203,7 +203,7 @@ export class TravelerService {
 				const userData = await this.userRepository.getUserData(parent_user_id);
 				if (userData.email == user.email) {
 					throw new ConflictException(
-						`This email address is already registered with us. Please enter different email address.&&& email &&& Parents user email id and traveler email id both are same`
+						`You have already added your email.`
 					);
 				}
 				return this.userRepository.createtraveler(user);

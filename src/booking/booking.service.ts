@@ -53,6 +53,11 @@ import { Activity } from "src/utility/activity.utility";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 import { Role } from "src/enum/role.enum";
 import { LaytripBookingCancellationCustomerMail } from "src/config/new_email_templete/laytrip_booking-cancellation-customer-mail.html";
+import { updateBookingDto } from "./dto/update-booking.dto";
+import { FlightService } from "src/flight/flight.service";
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { flightDataUtility } from "src/utility/flight-data.utility";
+import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
 
 @Injectable()
 export class BookingService {
@@ -60,7 +65,8 @@ export class BookingService {
         @InjectRepository(BookingRepository)
         private bookingRepository: BookingRepository,
         private paymentService: PaymentService,
-        public readonly mailerService: MailerService
+        public readonly mailerService: MailerService,
+        private flightService: FlightService
     ) {}
 
     async resendCartEmail(bookingDetail: getBookingDetailsDto) {
@@ -94,7 +100,7 @@ export class BookingService {
             };
         } else {
             return {
-                message: `We could not find your booking id please correct it.`,
+                message: `Booking ID not found.`,
             };
         }
     }
@@ -109,7 +115,7 @@ export class BookingService {
 
             if (!bookingData) {
                 throw new NotFoundException(
-                    "Given booking id not found&&&booking_id&&&Given booking id not found"
+                    "Booking ID not found."
                 );
             }
             //console.log(bookingData);
@@ -1058,7 +1064,7 @@ export class BookingService {
 
             if (!cart) {
                 throw new NotFoundException(
-                    `Given cart booking id not found&&&id&&&Given cart booking id not found`
+                    `Booking ID not found.&&&id&&&Booking ID not found.`
                 );
             }
             let paidAmount = 0;
@@ -1729,6 +1735,7 @@ export class BookingService {
                     bookingData.laytripBookingId;
                 predictiveBookingData["bookIt"] = false;
                 predictiveBookingData["module_name"] = bookingData.module.name;
+                 predictiveBookingData["is_reseduled"] = bookingData?.updateBy ? true : false;
                 predictiveBookingData["booking_time_net_rate"] =
                     bookingData.netRate;
 
@@ -1842,6 +1849,7 @@ export class BookingService {
                     predictiveBookingData["is_below_minimum"] = false;
                     predictiveBookingData["remain_seat"] = 0;
                     predictiveBookingData["module_name"] = booking.module.name;
+                    predictiveBookingData["is_reseduled"] = booking?.updateBy ? true : false;
                     predictiveBookingData["selling_price"] =
                         booking.totalAmount;
                     predictiveBookingData["paid_amount"] = totalPaidAmount;
@@ -2164,7 +2172,7 @@ export class BookingService {
             };
         } else {
             return {
-                message: `We could not find your booking id please correct it.`,
+                message: `Booking ID not found.`,
             };
         }
     }
@@ -2190,7 +2198,7 @@ export class BookingService {
             .getOne();
 
         if (!query && !query.bookings.length) {
-            throw new BadRequestException(`Given booking id not found`);
+            throw new BadRequestException(`Booking ID not found.`);
         }
 
         for await (const booking of query.bookings) {
@@ -2219,45 +2227,44 @@ export class BookingService {
                 )
                 .execute();
         }
-        if(user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER){
+        if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
             this.mailerService
-            .sendMail({
-                to: query.user.email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `BOOKING ID ${booking_id} PROVIDER CANCELLATION NOTICE`,
-                html: await  LaytripCancellationTravelProviderMail({
-                    userName: query.user.firstName || "",
-                    bookingId: booking_id,
-                }),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-        }
-        else{
+                .sendMail({
+                    to: query.user.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: `BOOKING ID ${booking_id} PROVIDER CANCELLATION NOTICE`,
+                    html: await LaytripCancellationTravelProviderMail({
+                        userName: query.user.firstName || "",
+                        bookingId: booking_id,
+                    }),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
+        } else {
             this.mailerService
-            .sendMail({
-                to: query.user.email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `BOOKING ID ${booking_id} CUSTOMER CANCELLATION`,
-                html: await LaytripBookingCancellationCustomerMail({
-                    username: query.user.firstName || "",
-                    bookingId: booking_id,
-                }),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
+                .sendMail({
+                    to: query.user.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: `BOOKING ID ${booking_id} CUSTOMER CANCELLATION`,
+                    html: await LaytripBookingCancellationCustomerMail({
+                        username: query.user.firstName || "",
+                        bookingId: booking_id,
+                    }),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
         }
-        
+
         if (product_id) {
             return {
                 message: `Selected product cancel successfully `,
@@ -2326,5 +2333,97 @@ export class BookingService {
         return {
             message: `Traveler detail update successfully`,
         };
+    }
+
+    async updateBookingByAdmin(
+        updateBookingDto: updateBookingDto,
+        Header,
+        admin: User
+    ) {
+        const { product_id, route_code } = updateBookingDto;
+
+        let booking = await getManager()
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect("booking.user", "User")
+            .where(`laytrip_booking_id = '${product_id}'`)
+            .getOne();
+        if (!booking) {
+            throw new NotFoundException(`Booking ID not found.`);
+        }
+        let flightInfo;
+        switch (booking.moduleId) {
+            case ModulesName.FLIGHT:
+                flightInfo = await this.updateFlightBooking(
+                    route_code,
+                    Header,
+                    booking.user
+                );
+                break;
+
+            default:
+                break;
+        }
+        const responce = {}
+        console.log(flightInfo);
+        
+        responce['oldProductPrice'] = parseFloat(booking.totalAmount)
+        responce["newProductPrice"] = parseFloat(flightInfo[0].selling_price);
+
+        booking.updateBy = admin.userId;
+        //booking.totalAmount = flightInfo[0].selling_price;
+        booking.netRate = flightInfo[0].net_rate;
+        booking.oldBookingInfo = JSON.parse(JSON.stringify(booking));
+        booking.updatedDate = new Date();
+        booking.moduleInfo = flightInfo;
+        booking.locationInfo = {
+            journey_type:
+                flightInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
+            source_location: flightInfo[0].departure_code,
+            destination_location: flightInfo[0].arrival_code,
+        };
+        const newBooking = await booking.save();
+
+        const updatedValue = await getConnection()
+            .createQueryBuilder()
+            .update(PredictiveBookingData)
+            .set({ isResedule: true })
+            .where(`booking_id =:id `, { id: booking.id })
+            .execute();
+
+        const  dailyPrice = new PredictiveBookingData
+        dailyPrice.bookingId = newBooking.id    
+        dailyPrice.date = new Date()
+        dailyPrice.isBelowMinimum = false
+        dailyPrice.netPrice = parseFloat(newBooking.netRate);
+        dailyPrice.price = flightInfo[0].selling_price
+        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0
+        await dailyPrice.save()
+        let mail = await flightDataUtility.flightData(newBooking.laytripBookingId);
+        this.mailerService
+            .sendMail({
+                to: mail.userMail,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${mail.param.cart.cartId} CUSTOMER CHANGE`,
+                html: await FlightChangeAsperUserRequestMail(mail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        return {
+            message : `Given booking updated successfully.`,
+            prices : responce
+        }
+    }
+    async updateFlightBooking(routCode, Header, user: User) {
+        return await this.flightService.airRevalidate(
+            { route_code: routCode },
+            Header,
+            user ? user : null
+        );
+        
     }
 }
