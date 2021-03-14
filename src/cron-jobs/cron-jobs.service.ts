@@ -55,6 +55,8 @@ import { LaytripCartBookingComplationMail } from "src/config/new_email_templete/
 import { LaytripMissedPaymentTemplete } from "src/config/new_email_templete/missed-installment.html";
 import { LaytripPaymentReminderTemplete } from "src/config/new_email_templete/payment-reminder.html";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
+import { flightDataUtility } from "src/utility/flight-data.utility";
+import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -879,7 +881,7 @@ export class CronJobsService {
                     this.sendFlightFailerMail(
                         booking.user.email,
                         booking.laytripBookingId,
-                        booking?.user?.firstName || ''
+                        booking?.user?.firstName || ""
                     );
 
                     PushNotification.sendNotificationTouser(
@@ -1769,7 +1771,7 @@ export class CronJobsService {
         return { message: `today booking price added for pending booking` };
     }
 
-    async upcommingBookingDetail() {
+    async ChangesFromTravelProvider() {
         var after7Day = new Date();
         after7Day.setDate(after7Day.getDate() + 7);
         var date1 = after7Day.toISOString();
@@ -1804,6 +1806,57 @@ export class CronJobsService {
                 { supplier_booking_id: booking.supplierBookingId },
                 booking.checkInDate == date1 ? 2 : 3
             );
+        }
+        return {
+            message: `Emails send succeesfully`,
+        };
+    }
+
+    async upcommingBookingDetail() {
+        var after7Day = new Date();
+        after7Day.setDate(after7Day.getDate() + 7);
+        var date1 = after7Day.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
+
+        var after5Day = new Date();
+        after5Day.setDate(after5Day.getDate() + 5);
+        var date2 = after5Day.toISOString();
+        date2 = date2
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
+
+        let bookings = await getConnection()
+            .createQueryBuilder(Booking, "Booking")
+            .where(
+                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
+            )
+            .getMany();
+
+        if (!bookings.length) {
+            return {
+                message: `Upcommig booking not found`,
+            };
+        }
+        for await (const booking of bookings) {
+            let mail = await flightDataUtility.flightData(booking.laytripBookingId);
+            await this.mailerService
+                .sendMail({
+                    to: mail.userMail,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: `BOOKING ID ${mail.param.cart.cartId} REMINDER FOR YOUR UPCOMING TRIP`,
+                    html: await LaytripFlightReminderMail(mail.param),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
         }
         return {
             message: `Emails send succeesfully`,

@@ -20,7 +20,7 @@ export function LaytripPaymentReminderTemplete(param: {
                 </tr>
                 <tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding-top:10px; text-align: left;">Please contact <a href = 'mailto:customerservice@laytrip.com'
-                    style="color: #f725c5;"><u>customerservice@laytrip.com</u></a> if you have any questions.</td>
+                    style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a> if you have any questions.</td>
                 </tr>
                 
             </tbody>
@@ -35,7 +35,7 @@ export function LaytripPaymentReminderTemplete(param: {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>
