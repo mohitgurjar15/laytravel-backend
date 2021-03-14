@@ -23,7 +23,7 @@ export function LaytripForgotPasswordMail(param: {
             <tr>
                  <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                     If you did not request a password reset, please ignore this email or contact us at  <a href = 'mailto:customerservice@laytrip.com'
-                    style="color: #f725c5;"><u>customerservice@laytrip.com</u></a>.               
+                    style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>.               
                  </td>
             </tr>
         </tbody>
@@ -38,7 +38,7 @@ export function LaytripForgotPasswordMail(param: {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0942ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

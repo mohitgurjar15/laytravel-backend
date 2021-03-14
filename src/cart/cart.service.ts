@@ -1040,7 +1040,7 @@ more than 5.`
                     cartData.laytripCartId,
                     cartData.userId
                 );
-                if (failedResult && payment.status) {
+                if (failedResult > 0 && payment.status == true) {
                     await this.refundCart(
                         cartData.id,
                         Headers,
@@ -1117,7 +1117,10 @@ more than 5.`
             .replace(/T/, " ") // replace T with a space
             .replace(/\..+/, "")
             .split(" ")[0];
+
         const totalAmount = parseFloat(sumOfTotalAmount[0].total_amount);
+        console.log(totalAmount);
+        
         if (payment_type == PaymentType.INSTALMENT) {
             let instalmentDetails;
 
@@ -1158,19 +1161,19 @@ more than 5.`
             let firstInstalemntAmount =
                 instalmentDetails.instalment_date[0].instalment_amount;
 
-            refundAmount = Generic.formatPriceDecimal(firstInstalemntAmount);
+            refundAmount = firstInstalemntAmount;
         } else if (payment_type == PaymentType.NOINSTALMENT) {
             let sellingPrice = totalAmount;
 
             if (sellingPrice > 0) {
-                refundAmount = Generic.formatPriceDecimal(sellingPrice);
+                refundAmount = sellingPrice;
             }
         }
 
         const valideHeader = await this.flightService.validateHeaders(Headers);
 
         const refund = await this.paymentService.refund(
-            refundAmount,
+            Math.ceil(refundAmount * 100),
             transactionToken,
             valideHeader.currency.code,
             userId
@@ -1695,4 +1698,20 @@ more than 5.`
 
         return `${date[2]}-${date[1]}-${date[0]}`;
     }
+
+    // async testRefaund(bookingId , header){
+    //     let query = await getConnection().createQueryBuilder(CartBooking, "cart")
+    //     .where(`laytrip_cart_id = '${bookingId}' `).getOne()
+        
+    //     this.refundCart(
+    //         "fc140356-8230-477a-ae1d-60c26d2fde0e",
+    //         header,
+    //         PaymentType.INSTALMENT,
+    //         InstalmentType.WEEKLY,
+    //         "2021-06-21",
+    //         0,
+    //         "R4cq32SjOLRxngQr2vkmgy9NeQ3",
+    //         query.userId
+    //     );   
+    // }
 }

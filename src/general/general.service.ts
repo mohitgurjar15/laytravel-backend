@@ -253,7 +253,7 @@ export class GeneralService {
 
         for await (const email of emails) {
             // allemail += email.email + ','
-            this.mailerService
+            await this.mailerService
                 .sendMail({
                     to: email.email,
                     from: mailConfig.from,
@@ -362,7 +362,7 @@ export class GeneralService {
 
         
 
-            this.mailerService
+            await this.mailerService
                 .sendMail({
                     to: email,
                     from: mailConfig.from,
@@ -381,7 +381,7 @@ export class GeneralService {
             partialBooking
         );
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -396,7 +396,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -416,7 +416,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -438,7 +438,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -460,7 +460,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -482,7 +482,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -506,7 +506,7 @@ export class GeneralService {
             partialBooking
         );
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -521,7 +521,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -541,7 +541,7 @@ export class GeneralService {
         let mail10 = await CartDataUtility.cartData(
             "7135e9e5-63cd-4188-95fe-bef628881695"
         );
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -566,7 +566,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -584,7 +584,7 @@ export class GeneralService {
                 console.log("err", err);
             });
         let mail18 = await flightDataUtility.flightData(ConfirmFlight);
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -599,7 +599,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -616,7 +616,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -633,7 +633,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -649,7 +649,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             }); 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -663,7 +663,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -678,7 +678,7 @@ export class GeneralService {
                 console.log("err", err);
             });
          
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -692,7 +692,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -710,7 +710,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -729,7 +729,7 @@ export class GeneralService {
             });
 
         
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -744,7 +744,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -762,7 +762,7 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -778,7 +778,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -794,7 +794,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
@@ -808,7 +808,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        this.mailerService
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
