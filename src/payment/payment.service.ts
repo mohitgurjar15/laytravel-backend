@@ -20,7 +20,6 @@ import { PaymentGateway } from "src/entity/payment-gateway.entity";
 import { errorMessage } from "src/config/common.config";
 import { UserCard } from "src/entity/user-card.entity";
 import { v4 as uuidv4 } from "uuid";
-import { User } from "src/entity/user.entity";
 import Axios from "axios";
 import { AddCardDto } from "./dto/add-card.dto";
 import { CreteTransactionDto } from "./dto/create-transaction.dto";
@@ -52,6 +51,8 @@ import { InstalmentType } from "src/enum/instalment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
 import { isUUID } from "class-validator";
 import { isNull } from "util";
+import { User } from "src/entity/user.entity";
+import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
 
 @Injectable()
 export class PaymentService {
@@ -106,7 +107,32 @@ export class PaymentService {
                 .set({ isDefault: true })
                 .where(whr)
                 .execute();
-
+            if(userId){
+                const user = await getManager()
+                .createQueryBuilder(User, "user")
+                .where(`user_id = '${userId}'`)
+                .getOne()
+                if(user){
+                    this.mailerService
+                    .sendMail({
+                        to: user.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `PAYMENT METHOD CHANGE CONFIRMATION`,
+                        html: await LaytripPaymentMethodChangeMail({
+                            username: user.firstName || '',
+                        }),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
+                }
+                
+            }
+            
             return {
                 message: `Card successfully updated as a default card`,
             };
@@ -325,7 +351,8 @@ export class PaymentService {
             .limit(5)
             .getMany();
 
-        if (!cardList.length) throw new NotFoundException(`No payment cards found.`);
+        if (!cardList.length)
+            throw new NotFoundException(`No payment cards found.`);
 
         return cardList;
     }
@@ -750,7 +777,7 @@ export class PaymentService {
             paidFor,
             travelerInfoId,
             note,
-            productId
+            productId,
         } = creteTransactionDto;
         try {
             if (!isUUID(userId)) {
