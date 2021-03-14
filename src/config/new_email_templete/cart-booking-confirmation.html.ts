@@ -22,9 +22,9 @@ export async function LaytripCartBookingConfirmtionMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
-                        Congratulations on booking your travel! Your Laytrip Booking ID is ${
+                        Congratulations on booking your travel! <b style = "color: #000000">Your Laytrip Booking ID is ${
                             param.orderId
-                        }. Please use this number when referencing your booking.`;
+                        }.</b> Please use this number when referencing your booking.`;
                         if (param.bookingType == BookingType.NOINSTALMENT) {
                            content += ` Here are your booking details:` 
                         }
