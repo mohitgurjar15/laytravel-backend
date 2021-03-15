@@ -701,7 +701,7 @@ export class AuthService {
 
                 console.log(diff);
 
-                if (diff >= 30) {
+                if (diff > 3) {
                     throw new BadRequestException(
                         `OTP expired. Please try again!&&&otp&&&OTP expired. Please try again!`
                     );

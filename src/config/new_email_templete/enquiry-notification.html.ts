@@ -1,6 +1,8 @@
-import { EmailHeader } from "./header.html";
-import {  EmailFooter} from "./footer.html";
+import { EmailHeader } from "../email_template/header.html";
+import {  EmailFooter} from "../email_template/footer.html";
 import { BaseUrl } from "../base-url";
+import { LaytripHeader } from "./laytrip_header.html";
+import { LaytripFooter } from "./laytrip_footer.html";
 
 export function EnquiryNotificationHTML(param:{ name:string , message:any ,id:string  })
 {
@@ -49,5 +51,5 @@ const content = `
 </table>
 <!-- header text section End -->
 `;
-return EmailHeader + content + EmailFooter;
+return LaytripHeader + content + LaytripFooter;
 }
