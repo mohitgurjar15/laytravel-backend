@@ -2426,4 +2426,39 @@ export class BookingService {
         );
         
     }
+
+    async updatePrimaryTraveler(productId,travelInfoId){
+        let booking = await getManager()
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect("booking.user", "User")
+            .where(`laytrip_booking_id = '${productId}'`)
+            .getOne();
+
+        let travelerInfo = await getManager()
+            .createQueryBuilder(TravelerInfo, "traveler")
+            .where(`booking_id = '${booking.id}' AND id = ${travelInfoId}`)
+            .getOne();
+
+        if(!travelerInfo){
+            throw new BadRequestException(`Given product id and traveler id not match.`)
+        }
+
+        const updatedValue = await getConnection()
+            .createQueryBuilder()
+            .update(TravelerInfo)
+            .set({ isPrimary : false})
+            .where(`booking_id =:id `, { id: booking.id })
+            .execute();
+
+        await getConnection()
+            .createQueryBuilder()
+            .update(TravelerInfo)
+            .set({ isPrimary : true})
+            .where(`booking_id = '${booking.id}' AND id = ${travelInfoId}`)
+            .execute();
+
+        return {
+            message :`Traveler changed to primary traveler.`
+        }
+    }
 }

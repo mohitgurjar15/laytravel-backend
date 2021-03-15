@@ -32,6 +32,7 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
 			for (let i = 0; i < message.length; i++) {
 				let errors = message[i].split("&&&");
 				let error = {};
+				
 				if (errors.length > 2) {
 					result.push({ key: errors[1], error_type: "system", actual_error: errors[0], display_error: errors[2] });
 				} else {

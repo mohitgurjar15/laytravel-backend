@@ -95,14 +95,14 @@ export async function FlightChangeAsperUserRequestMail(
                                                 <span style="display: block;">Country : ${
                                                     droup.depature.country
                                                 }</span>
-                                                <span style="display: block;">Date : ${DateTime.convertDateFormat(
+                                                <span style="font-weight: 500; display: block;"><b>Date : ${DateTime.convertDateFormat(
                                                     droup.depature.date,
                                                     "MM/DD/YYYY",
                                                     "MMM DD, YYYY"
-                                                )}</span>
-                                                <span style="display: block;">Time : ${
+                                                )}</b></span>
+                                                <span style="font-weight: 500; display: block;"><b>Time : ${
                                                     droup.depature.time
-                                                }</span>`;
+                                                }</b></span>`;
             if (droup.depature.pnr_no) {
                 content += `<span style="display: block;">PNR no : ${droup.depature.pnr_no}</span>`;
             }
@@ -124,14 +124,14 @@ export async function FlightChangeAsperUserRequestMail(
                                                 <span style="display: block;">Country : ${
                                                     droup.arrival.country
                                                 }</span>
-                                                <span style="display: block;">Date : ${DateTime.convertDateFormat(
+                                                <span style="font-weight: 500; display: block;"><b>Date : ${DateTime.convertDateFormat(
                                                     droup.arrival.date,
                                                     "MM/DD/YYYY",
                                                     "MMM DD, YYYY"
-                                                )}</span>
-                                                <span style="display: block;">Time : ${
+                                                )}</b></span>
+                                                <span style="font-weight: 500; display: block;"><b>Time : ${
                                                     droup.arrival.time
-                                                }</span>
+                                                }</b></span>
                                             </td>
                                         </tr>
                                     </table>

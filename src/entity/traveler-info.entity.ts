@@ -16,45 +16,46 @@ import { OtherPayments } from "./other-payment.entity";
 
 @Index("userId_idx", ["userId"], {})
 @Index("bookingId_idx", ["bookingId"], {})
-
 @Entity("traveler_info")
 export class TravelerInfo extends BaseEntity {
-	@PrimaryGeneratedColumn({ type: "integer", name: "id" })
-	id: number;
+    @PrimaryGeneratedColumn({ type: "integer", name: "id" })
+    id: number;
 
-	@Column("uuid", { name: "booking_id" })
-	bookingId: string;
+    @Column("uuid", { name: "booking_id" })
+    bookingId: string;
 
-	@Column("uuid", { name: "user_id" })
-	userId: string;
+    @Column("uuid", { name: "user_id" })
+    userId: string;
 
-	@Column("character varying", { name: "role_id" })
-	roleId: number;
+    @Column("character varying", { name: "role_id" })
+    roleId: number;
 
-	@Column("json", { name: "traveler_info", nullable: true })
-	travelerInfo: TravelerInfoModel;
+    @Column("json", { name: "traveler_info", nullable: true })
+    travelerInfo: TravelerInfoModel;
 
-	@Column("uuid", { name: "update_by", nullable: true })
-	updateBy: string;
+    @Column("uuid", { name: "update_by", nullable: true })
+    updateBy: string;
 
-	@ManyToOne(
-		() => Booking,
-		booking => booking.travelers
-	)
-	@JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
-	bookingData: Booking;
+    @Column("boolean", { name: "is_primary", default: () => false })
+    isPrimary: boolean;
 
-	@ManyToOne(
-		() => User,
-		User => User.traveler
-	)
-	@JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
-	userData: User;
+    @ManyToOne(
+        () => Booking,
+        (booking) => booking.travelers
+    )
+    @JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
+    bookingData: Booking;
 
+    @ManyToOne(
+        () => User,
+        (User) => User.traveler
+    )
+    @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
+    userData: User;
 
-	@OneToMany(
-		() => OtherPayments,
-		otherPayments => otherPayments.travelerInfo
-	)
-	charges: OtherPayments[];
+    @OneToMany(
+        () => OtherPayments,
+        (otherPayments) => otherPayments.travelerInfo
+    )
+    charges: OtherPayments[];
 }
