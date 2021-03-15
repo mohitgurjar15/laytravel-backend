@@ -23,7 +23,7 @@ export class AppVersionService {
 			appVersion.uploadDate = new Date();
 			await appVersion.save();
 
-			return { message: `version added succefully` }
+			return { message: `version added successfully` }
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");

@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EnquiryRepository } from './enquiry.repository';
 import { EnquiryListDto } from './dto/enquiry-list.dto';
@@ -8,8 +8,10 @@ import { newEnquiryDto } from './dto/new-enquiry.dto';
 import { v4 as uuidv4 } from "uuid";
 import { MailerService } from '@nestjs-modules/mailer';
 import * as config from "config";
-import { EnquiryNotificationHTML } from 'src/config/email_template/enquiry-notification.html';
+import { EnquiryNotificationHTML } from 'src/config/new_email_templete/enquiry-notification.html';
+import { LaytripInquiryAutoReplayMail } from 'src/config/new_email_templete/laytrip_inquiry-auto-replay-mail.html';
 const mailConfig = config.get("email");
+import * as uuidValidator from "uuid-validate";
 
 @Injectable()
 export class EnqiryService {
@@ -73,6 +75,23 @@ export class EnqiryService {
 				.catch((err) => {
 					console.log("err", err);
 				});
+
+			 this.mailerService
+                 .sendMail({
+                     to: email,
+                     from: mailConfig.from,
+                     bcc: mailConfig.BCC,
+                     subject: `MESSAGE RECEIVED`,
+                     html: await LaytripInquiryAutoReplayMail({
+                         username: name || "",
+                     }),
+                 })
+                 .then((res) => {
+                     console.log("res", res);
+                 })
+                 .catch((err) => {
+                     console.log("err", err);
+                 });
 			return { message: `Your enquiry is sent successfully to our team. our team will back to you on your query.` };
 		} catch (error) {
 			if (
@@ -91,21 +110,47 @@ export class EnqiryService {
 
 	async getEnquiry(id: string): Promise<Enquiry> {
 		try {
-			const EnqiryData = await this.EnquiryRepository.findOne({ id });
-			if (!EnqiryData) {
-				throw new NotFoundException(`Enqiry Id Not Found`);
-			}
-			return EnqiryData;
-		} catch (error) {
-			if (
-				typeof error.response !== "undefined" &&
-				error.response.statusCode == 404
-			) {
-				throw new NotFoundException(`No Enqiry Found.&&&id`);
-			}
-			throw new InternalServerErrorException(
-				`${error.message}&&&id&&&${errorMessage}`
-			);
-		}
+            if (!uuidValidator(id)) {
+                throw new BadRequestException("Given id not avilable");
+            }
+            const EnqiryData = await this.EnquiryRepository.findOne({ id });
+            if (!EnqiryData) {
+                throw new NotFoundException(`Enqiry Id Not Found`);
+            }
+            return EnqiryData;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log('m');
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
+        }
 	}
 }

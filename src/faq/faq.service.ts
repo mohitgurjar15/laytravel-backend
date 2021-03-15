@@ -98,6 +98,7 @@ export class FaqService {
 		user: User
 	): Promise<{ message: string }> {
 		const { categoryId, question, answer } = InsertFaqDto;
+
 		const adminId = user.id;
 		const checkfaq = await this.FaqRepository.count({
 			categoryId: categoryId,
@@ -117,7 +118,7 @@ export class FaqService {
 		try {
 			await faq.save();
 			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
-			return { message: "Faq Careated successfully" };
+			return { message: "Faq created successfully" };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
