@@ -356,428 +356,428 @@ export class GeneralService {
         let partialBooking = "LTCKM3BOFDB";
         let ConfirmFlight = "LTFKM3BQ5QW";
 
-        // let mail1 = await CartDataUtility.CartMailModelDataGenerate(
-        //     fullBookingConfirm
-        // );
+        let mail1 = await CartDataUtility.CartMailModelDataGenerate(
+            fullBookingConfirm
+        );
 
         
 
-        //     await this.mailerService
-        //         .sendMail({
-        //             to: email,
-        //             from: mailConfig.from,
-        //             // bcc: mailConfig.BCC,
-        //             subject: "BOOKING ID LTCKLUSXYJL CONFIRMATION",
-        //             html: await LaytripCartBookingConfirmtionMail(mail1.param),
-        //         })
-        //         .then((res) => {
-        //             console.log("res", res);
-        //         })
-        //         .catch((err) => {
-        //             console.log("err", err);
-        //         });
+            await this.mailerService
+                .sendMail({
+                    to: email,
+                    from: mailConfig.from,
+                    // bcc: mailConfig.BCC,
+                    subject: "BOOKING ID LTCKLUSXYJL CONFIRMATION",
+                    html: await LaytripCartBookingConfirmtionMail(mail1.param),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
 
-        // let mail2 = await CartDataUtility.CartMailModelDataGenerate(
-        //     partialBooking
-        // );
+        let mail2 = await CartDataUtility.CartMailModelDataGenerate(
+            partialBooking
+        );
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: "BOOKING ID LTCKM3BOFDB CONFIRMATION",
-        //         html: await LaytripCartBookingConfirmtionMail(mail2.param),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: "BOOKING ID LTCKM3BOFDB CONFIRMATION",
+                html: await LaytripCartBookingConfirmtionMail(mail2.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} UPCOMING PAYMENT REMINDER`,
-        //         html: await LaytripPaymentReminderTemplete({
-        //             userName: "Parth",
-        //             amount: "$55.40",
-        //             date: "June 20, 2021",
-        //             bookingId: partialBooking,
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} UPCOMING PAYMENT REMINDER`,
+                html: await LaytripPaymentReminderTemplete({
+                    userName: "Parth",
+                    amount: "$55.40",
+                    date: "June 20, 2021",
+                    bookingId: partialBooking,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} MISSED PAYMENT REMINDER #1`,
-        //         html: await LaytripMissedPaymentTemplete({
-        //             userName: "Parth",
-        //             amount: "$55.40",
-        //             date: "June 20, 2021",
-        //             bookingId: partialBooking,
-        //             try: 1,
-        //             nextDate: "June 23, 2021",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} MISSED PAYMENT REMINDER #1`,
+                html: await LaytripMissedPaymentTemplete({
+                    userName: "Parth",
+                    amount: "$55.40",
+                    date: "June 20, 2021",
+                    bookingId: partialBooking,
+                    try: 1,
+                    nextDate: "June 23, 2021",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} MISSED PAYMENT REMINDER #2`,
-        //         html: await LaytripMissedPaymentTemplete({
-        //             userName: "Parth",
-        //             amount: "$55.40",
-        //             date: "June 20, 2021",
-        //             bookingId: partialBooking,
-        //             try: 2,
-        //             nextDate: "June 27, 2021",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} MISSED PAYMENT REMINDER #2`,
+                html: await LaytripMissedPaymentTemplete({
+                    userName: "Parth",
+                    amount: "$55.40",
+                    date: "June 20, 2021",
+                    bookingId: partialBooking,
+                    try: 2,
+                    nextDate: "June 27, 2021",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} FINAL MISSED PAYMENT REMINDER #3`,
-        //         html: await LaytripMissedPaymentTemplete({
-        //             userName: "Parth",
-        //             amount: "$55.40",
-        //             date: "June 20, 2021",
-        //             bookingId: partialBooking,
-        //             try: 3,
-        //             nextDate: "June 30, 2021",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} FINAL MISSED PAYMENT REMINDER #3`,
+                html: await LaytripMissedPaymentTemplete({
+                    userName: "Parth",
+                    amount: "$55.40",
+                    date: "June 20, 2021",
+                    bookingId: partialBooking,
+                    try: 3,
+                    nextDate: "June 30, 2021",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} NOTICE OF DEFAULT AND CANCELLATION`,
-        //         html: await LaytripPaymentFailedTemplete({
-        //             userName: "Parth",
-        //             amount: "$55.40",
-        //             date: "June 20, 2021",
-        //             bookingId: partialBooking,
-        //             try: 4,
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
-        // let mail8 = await CartDataUtility.CartMailModelDataGenerate(
-        //     partialBooking
-        // );
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} NOTICE OF DEFAULT AND CANCELLATION`,
+                html: await LaytripPaymentFailedTemplete({
+                    userName: "Parth",
+                    amount: "$55.40",
+                    date: "June 20, 2021",
+                    bookingId: partialBooking,
+                    try: 4,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        let mail8 = await CartDataUtility.CartMailModelDataGenerate(
+            partialBooking
+        );
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} COMPLETION NOTICE`,
-        //         html: await LaytripCartBookingComplationMail(mail8.param),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} COMPLETION NOTICE`,
+                html: await LaytripCartBookingComplationMail(mail8.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} PROVIDER CANCELLATION NOTICE`,
-        //         html: await LaytripCancellationTravelProviderMail({
-        //             userName: "Parth",
-        //             bookingId: partialBooking,
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
-        // let mail10 = await CartDataUtility.cartData(
-        //     "7135e9e5-63cd-4188-95fe-bef628881695"
-        // );
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} INSTALLMENT RECEIVED`,
-        //         html: await LaytripInstallmentRecevied({
-        //             userName: "Parth",
-        //             orderId: partialBooking,
-        //             date: "March 11, 2021",
-        //             amount: 5.66,
-        //             installmentId: 3,
-        //             complitedAmount: mail10.paidAmountNumeric,
-        //             totalAmount: mail10.totalAmounNumerict,
-        //             currencySymbol: "$",
-        //             nextDate: "March 18, 2021",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} PROVIDER CANCELLATION NOTICE`,
+                html: await LaytripCancellationTravelProviderMail({
+                    userName: "Parth",
+                    bookingId: partialBooking,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        let mail10 = await CartDataUtility.cartData(
+            "7135e9e5-63cd-4188-95fe-bef628881695"
+        );
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} INSTALLMENT RECEIVED`,
+                html: await LaytripInstallmentRecevied({
+                    userName: "Parth",
+                    orderId: partialBooking,
+                    date: "March 11, 2021",
+                    amount: 5.66,
+                    installmentId: 3,
+                    complitedAmount: mail10.paidAmountNumeric,
+                    totalAmount: mail10.totalAmounNumerict,
+                    currencySymbol: "$",
+                    nextDate: "March 18, 2021",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} CUSTOMER CANCELLATION`,
-        //         html: await LaytripBookingCancellationCustomerMail({
-        //             username: "Parth",
-        //             bookingId: partialBooking,
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} CUSTOMER CANCELLATION`,
+                html: await LaytripBookingCancellationCustomerMail({
+                    username: "Parth",
+                    bookingId: partialBooking,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
         let mail18 = await flightDataUtility.flightData(ConfirmFlight);
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${mail18.param.cart.cartId} CUSTOMER CHANGE`,
-        //         html: await FlightChangeAsperUserRequestMail(mail18.param),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${mail18.param.cart.cartId} CUSTOMER CHANGE`,
+                html: await FlightChangeAsperUserRequestMail(mail18.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING NOT COMPLETED`,
-        //         html: await BookingNotCompletedMail({
-        //             userName: "Parth",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING NOT COMPLETED`,
+                html: await BookingNotCompletedMail({
+                    userName: "Parth",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `PASSWORD RESET`,
-        //         html: await LaytripResetPasswordMail({
-        //             username: "Parth",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `PASSWORD RESET`,
+                html: await LaytripResetPasswordMail({
+                    username: "Parth",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `PAYMENT METHOD CHANGE CONFIRMATION`,
-        //         html: await LaytripPaymentMethodChangeMail({
-        //             username: "Parth",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     }); 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `WELCOME TO LAYTRIP!`,
-        //         html: await NewsLetterMail(),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `WELCOME TO LAYTRIP!`,
-        //         html: await LaytripWelcomeBoardMail(),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `PAYMENT METHOD CHANGE CONFIRMATION`,
+                html: await LaytripPaymentMethodChangeMail({
+                    username: "Parth",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            }); 
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `WELCOME TO LAYTRIP!`,
+                html: await NewsLetterMail(),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `WELCOME TO LAYTRIP!`,
+                html: await LaytripWelcomeBoardMail(),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
          
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${mail18.param.cart.cartId} CHANGE BY TRAVEL PROVIDER`,
-        //         html: await TravelProviderConfiramationMail(mail18.param),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `PASSWORD RESET ONE TIME PIN`,
-        //         html: await LaytripForgotPasswordMail({
-        //             username: "Parth",
-        //             otp: 645343,
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${mail18.param.cart.cartId} CHANGE BY TRAVEL PROVIDER`,
+                html: await TravelProviderConfiramationMail(mail18.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `PASSWORD RESET ONE TIME PIN`,
+                html: await LaytripForgotPasswordMail({
+                    username: "Parth",
+                    otp: 645343,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `Verify your Account`,
-        //         html: await LaytripVerifyEmailIdTemplete({
-        //             username: "Parth",
-        //             otp: 254656,
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Verify your Account`,
+                html: await LaytripVerifyEmailIdTemplete({
+                    username: "Parth",
+                    otp: 254656,
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
         
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `BOOKING ID ${partialBooking} REMINDER FOR YOUR UPCOMING TRIP`,
-        //         html: await LaytripFlightReminderMail(mail18.param),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING ID ${partialBooking} REMINDER FOR YOUR UPCOMING TRIP`,
+                html: await LaytripFlightReminderMail(mail18.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         // bcc: mailConfig.BCC,
-        //         subject: "HOW DID WE DO?",
-        //         html: await HowDidWeDoMail({
-        //             username: "Parth",
-        //             bookingId: "LTCKM3BOFDB",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                // bcc: mailConfig.BCC,
+                subject: "HOW DID WE DO?",
+                html: await HowDidWeDoMail({
+                    username: "Parth",
+                    bookingId: "LTCKM3BOFDB",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `COVID TRAVEL UPDATE`,
-        //         html: await LaytripCovidUpdateMail({
-        //             username: "Parth",
-        //         }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `COVID TRAVEL UPDATE`,
+                html: await LaytripCovidUpdateMail({
+                    username: "Parth",
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
         await this.mailerService
             .sendMail({
                 to: email,
@@ -794,20 +794,20 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        // await this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: `TRAVEL PROVIDER RESERVATION CONFIRMATION #${mail18.param.flight[0].droups[0].depature.pnr_no}`,
-        //         html: await LaytripFlightBookingConfirmtionMail(mail18.param),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `TRAVEL PROVIDER RESERVATION CONFIRMATION #${mail18.param.flight[0].droups[0].depature.pnr_no}`,
+                html: await LaytripFlightBookingConfirmtionMail(mail18.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
         await this.mailerService
             .sendMail({
                 to: email,
