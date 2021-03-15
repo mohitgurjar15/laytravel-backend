@@ -115,9 +115,7 @@ export class CartDataUtility {
       let param = new CartBookingEmailParameterModel();
       param.user_name = user.firstName
         ? user.firstName
-        : "" + " " + user.lastName
-        ? user.lastName
-        : "";
+        : "" 
       let paidAmount = 0;
       let remainAmount = 0;
       let pandinginstallment = 0;

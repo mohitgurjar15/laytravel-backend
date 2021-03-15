@@ -128,7 +128,7 @@ export class flightDataUtility {
         });
       }
       const cartData = await CartDataUtility.cartData(bookingData.cartId);
-      param.user_name = `${user.firstName}  ${user.lastName}`;
+      param.user_name = `${user.firstName}`;
       param.flight = flightData;
       param.orderId = bookingData.laytripBookingId;
       param.traveler = travelerInfo;
