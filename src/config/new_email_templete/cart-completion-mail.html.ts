@@ -280,7 +280,7 @@ export async function LaytripCartBookingComplationMail(
                             </tr>`;
         for (let index = 0; index < param.paymentDetail.length; index++) {
             const payment = param.paymentDetail[index];
-            console.log(payment.amount);
+            
             if (index > 0) {
                 content += `<tr>
                                 <td class="templateColumnContainer" width="15%">
