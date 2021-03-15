@@ -199,45 +199,47 @@ export class TravelerService {
 			user.updatedDate = new Date();
 			user.isDeleted = false;
 			user.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
-			if (parent_user_id != undefined && parent_user_id != "") {
-				const userData = await this.userRepository.getUserData(parent_user_id);
-				if (userData.email == user.email) {
-					throw new ConflictException(
-						`You have already added your email.`
-					);
-				}
-				return this.userRepository.createtraveler(user);
-			} else if (guest_id) {
-				return this.userRepository.createtraveler(user);
-			}
-			else {
-				user.roleId = Role.GUEST_USER;
-				if (user.email == "") {
-					throw new NotFoundException(
-						`Please enter your email id &&&email&&&Please enter your email id`
-					);
-				}
-				const roles = [Role.TRAVELER_USER]
-				const data = await this.userRepository.createUser(user, roles);
-				const payload: JwtPayload = {
-					user_id: data.userId,
-					email: data.email,
-					username: data.firstName + " " + data.lastName,
-					firstName: data.firstName,
-					phone: data.phoneNo,
-					middleName: data.middleName,
-					lastName: data.lastName,
-					salt: "",
 
-					profilePic: "",
-					roleId: data.roleId,
-				};
-				var userdata: any = {};
-				userdata = data;
-				userdata.token = this.jwtService.sign(payload);
+			return this.userRepository.createtraveler(user);
+			// if (parent_user_id != undefined && parent_user_id != "") {
+			// 	// const userData = await this.userRepository.getUserData(parent_user_id);
+			// 	// if (userData.email == user.email) {
+			// 	// 	throw new ConflictException(
+			// 	// 		`You have already added your email.`
+			// 	// 	);
+			// 	// }
+			// 	return this.userRepository.createtraveler(user);
+			// } else if (guest_id) {
+				
+			// }
+			// else {
+			// 	user.roleId = Role.GUEST_USER;
+			// 	if (user.email == "") {
+			// 		throw new NotFoundException(
+			// 			`Please enter your email id &&&email&&&Please enter your email id`
+			// 		);
+			// 	}
+			// 	const roles = [Role.TRAVELER_USER]
+			// 	const data = await this.userRepository.createUser(user, roles);
+			// 	const payload: JwtPayload = {
+			// 		user_id: data.userId,
+			// 		email: data.email,
+			// 		username: data.firstName + " " + data.lastName,
+			// 		firstName: data.firstName,
+			// 		phone: data.phoneNo,
+			// 		middleName: data.middleName,
+			// 		lastName: data.lastName,
+			// 		salt: "",
 
-				return userdata;
-			}
+			// 		profilePic: "",
+			// 		roleId: data.roleId,
+			// 	};
+			// 	var userdata: any = {};
+			// 	userdata = data;
+			// 	userdata.token = this.jwtService.sign(payload);
+
+			// 	return userdata;
+			// }
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				console.log("m");
