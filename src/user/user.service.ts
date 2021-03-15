@@ -459,13 +459,21 @@ export class UserService {
 					`You are not allowed to access this resource.`
 				);
 			} else {
-				const previousData = JSON.stringify(user)
-				user.isDeleted = true;
-				user.updatedBy = adminId;
-				user.updatedDate = new Date();
-				await user.save();
-				const currentData = JSON.stringify(user)
-				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`, previousData, currentData);
+				Activity.logActivity(adminId, "user", `${user.email} user is deleted by admin`, user);
+				const newReq = new DeleteUserAccountRequest();
+                newReq.userId = user.userId;
+                newReq.status = DeleteAccountRequestStatus.PENDING;
+                newReq.createdDate = new Date();
+                newReq.email = user.email;
+                newReq.requestForData = false;
+                newReq.userName =
+                    user.full_name || user.firstName + " " + user.lastName;
+				newReq.deleteBy = adminId;
+
+                const userRequest = await newReq.save();
+
+                await this.deleteRequestAccept(userRequest.id, user);
+				
 				return { messge: `User deleted successfully` };
 			}
 		} catch (error) {
@@ -888,8 +896,7 @@ export class UserService {
 
 		await this.deleteuserData(userId, bookingData.bookingIds, bookingInstallment.installmentIds, cartBookingData.bookingIds)
 
-		req.status = DeleteAccountRequestStatus.CONFIRM
-		
+		req.status = DeleteAccountRequestStatus.CONFIRM		
 		req.updatedDate = new Date()
 
 		await req.save()
