@@ -1244,8 +1244,10 @@ export class AuthService {
         checkEmailConflictDto: CheckEmailConflictDto
     ): Promise<{ is_available: boolean }> {
         const { email } = checkEmailConflictDto;
+        const roles = [Role.FREE_USER, Role.PAID_USER];   
         const userExist = await this.userRepository.findOne({
             email,
+            roleId: In(roles),
         });
         if (userExist && userExist.roleId != Role.GUEST_USER) {
             return { is_available: true };

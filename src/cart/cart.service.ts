@@ -259,10 +259,23 @@ more than 5.`
                     `Please enter guest user id &&&user_id&&&${errorMessage}`
                 );
             }
+
+            let userDefaultCard = await  getConnection()
+                .createQueryBuilder(UserCard, "card")
+                .where(`is_default = true AND user_id = '${user.userId}'`)
+                .getCount
+            let whr = {
+                userId: user.userId,
+                guestUserId: null,
+            };
+            if(userDefaultCard){
+                whr["isDefault"] = false
+            }
+
             await getConnection()
                 .createQueryBuilder()
                 .update(UserCard)
-                .set({ userId: user.userId, guestUserId: null })
+                .set(whr)
                 .where("guest_user_id =:id", { id: guestUserId })
                 .execute();
 

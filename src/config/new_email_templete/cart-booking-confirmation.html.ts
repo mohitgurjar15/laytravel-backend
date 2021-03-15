@@ -286,14 +286,14 @@ export async function LaytripCartBookingConfirmtionMail(
                             </tr>`;
     for (let index = 0; index < param.paymentDetail.length; index++) {
       const payment = param.paymentDetail[index];
-
-      content += `<tr>
+        if(index > 0 ){
+            content += `<tr>
                                 <td class="templateColumnContainer" width="15%">
                                     <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="leftColumnContent">
                                                 <span style="display: block;">${index +
-                                                  1}</span>
+                                                    1}</span>
                                             </td>
                                         </tr>
                                     </table>
@@ -303,7 +303,7 @@ export async function LaytripCartBookingConfirmtionMail(
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">${
-                                                  payment.amount
+                                                    payment.amount
                                                 }</span>
                                             </td>
                                         </tr>
@@ -314,9 +314,9 @@ export async function LaytripCartBookingConfirmtionMail(
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">${DateTime.convertDateFormat(
-                                                  payment.date,
-                                                  "YYYY-MM-DD",
-                                                  "MMM DD, YYYY"
+                                                    payment.date,
+                                                    "YYYY-MM-DD",
+                                                    "MMM DD, YYYY"
                                                 )}</span>
                                             </td>
                                         </tr>
@@ -327,13 +327,15 @@ export async function LaytripCartBookingConfirmtionMail(
                                         <tr>
                                             <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
                                                 <span style="display: block;">${
-                                                  payment.status
+                                                    payment.status
                                                 }</span>
                                             </td>
                                         </tr>
                                     </table>
                                 </td>
                             </tr>`;
+        }
+      
     }
   }
   content += `</table>
