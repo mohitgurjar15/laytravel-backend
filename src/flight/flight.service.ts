@@ -2125,6 +2125,7 @@ export class FlightService {
                 var travelerUser = new TravelerInfo();
                 travelerUser.bookingId = bookingId;
                 travelerUser.userId = travelerId;
+                travelerUser.isPrimary = traveler?.is_primary_traveler ? true :false
                 travelerUser.roleId = Role.TRAVELER_USER;
                 travelerUser.travelerInfo = travelerInfo;
                 await travelerUser.save();

@@ -27,6 +27,9 @@ export class InternalServerErrorExceptionFilter implements ExceptionFilter {
 			let result = [];
 			for (let i = 0; i < msg.length; i++) {
 				let errors = msg[i].split("&&&");
+				console.log(errors);
+				console.log(errors.length);
+				
 				if (errors.length > 2) {
 					result.push({ key: errors[1], error_type: "system", actual_error: errors[0], display_error: errors[2] });
 				} else {

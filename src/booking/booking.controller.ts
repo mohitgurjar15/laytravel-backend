@@ -518,4 +518,30 @@ export class BookingController {
             admin
         );
     }
+
+    @Put('primary-travel/:booking_id/:traveler_info_id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiOperation({ summary: "Update traveler to primery traveler" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "User not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async primaryTraveler(
+        @Param('booking_id') bookingId : string,
+        @Param('traveler_info_id') travelerId : number
+    ) {
+        return await this.bookingService.updatePrimaryTraveler(
+            bookingId,
+            travelerId
+        );
+    }
 }
+

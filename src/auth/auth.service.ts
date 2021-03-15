@@ -744,7 +744,10 @@ export class AuthService {
                 throw new BadRequestException(`Wrong OTP. Please try again.`);
             }
         } catch (error) {
+            console.log(error);
+            
             if (typeof error.response !== "undefined") {
+                
                 switch (error.response.statusCode) {
                     case 404:
                         if (
@@ -756,7 +759,7 @@ export class AuthService {
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
-                    case 422:
+                    case 400:
                         throw new BadRequestException(error.response.message);
                     case 403:
                         throw new ForbiddenException(error.response.message);

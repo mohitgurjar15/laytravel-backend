@@ -416,6 +416,7 @@ more than 5.`
                 .from(CartTravelers)
                 .where(`"cart_id" = '${result.id}'`)
                 .execute();
+            let isPrimaryCount = 0
             for (let index = 0; index < travelers.length; index++) {
                 const element = travelers[index];
                 if (!uuidValidator(element.traveler_id)) {
@@ -434,13 +435,27 @@ more than 5.`
                             `Dublicate traveler found in list. please change it.`
                         );
                     }
+
+
+                }
+                if(element?.is_primary_traveler == true){
+                    isPrimaryCount ++   
                 }
             }
+
+            // if(isPrimaryCount == 0){
+            //     throw new BadRequestException(`Please select primary traveler.`)
+            // }else if(isPrimaryCount > 1){
+            //     throw new BadRequestException(`Please select 1 primary traveler.`)
+            // }
 
             for await (const traveler of travelers) {
                 let cartTraveler = new CartTravelers();
                 cartTraveler.cartId = result.id;
                 cartTraveler.userId = traveler.traveler_id;
+                cartTraveler.isPrimary = traveler?.is_primary_traveler
+                    ? true
+                    : false;
                 cartTraveler.baggageServiceCode = traveler.baggage_service_code;
                 await cartTraveler.save();
             }
@@ -944,6 +959,7 @@ more than 5.`
                     "travelers.id",
                     "travelers.baggageServiceCode",
                     "travelers.userId",
+                    "travelers.isPrimary",
                     "userData.roleId",
                     "userData.email",
                     "userData.firstName",
@@ -1368,6 +1384,7 @@ more than 5.`
                     //console.log(traveler);
                     let travelerUser = {
                         traveler_id: traveler.userId,
+                        is_primary_traveler : traveler.isPrimary
                     };
                     travelers.push(travelerUser);
                 }
