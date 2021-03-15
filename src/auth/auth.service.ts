@@ -1247,7 +1247,7 @@ export class AuthService {
         const roles = [Role.FREE_USER, Role.PAID_USER];   
         const userExist = await this.userRepository.findOne({
             email,
-            roleId: In(roles),
+            roleId: In(roles),isDeleted : false
         });
         if (userExist && userExist.roleId != Role.GUEST_USER) {
             return { is_available: true };
