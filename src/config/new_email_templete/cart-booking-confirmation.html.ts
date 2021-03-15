@@ -286,14 +286,14 @@ export async function LaytripCartBookingConfirmtionMail(
                             </tr>`;
     for (let index = 0; index < param.paymentDetail.length; index++) {
       const payment = param.paymentDetail[index];
+    //   console.log(payment.amount);
         if(index > 0 ){
             content += `<tr>
                                 <td class="templateColumnContainer" width="15%">
                                     <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
                                         <tr>
                                             <td valign="top" class="leftColumnContent">
-                                                <span style="display: block;">${index +
-                                                    1}</span>
+                                                <span style="display: block;">${index}</span>
                                             </td>
                                         </tr>
                                     </table>
