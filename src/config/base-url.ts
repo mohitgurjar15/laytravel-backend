@@ -5,9 +5,9 @@ export const NewEmailAssets =
 export const FrontEndUrl = "https://alpha.laytrip.com/";
 export const InstagramSocialLink = `https://www.instagram.com/laytrip_travel/`;
 export const FacebookSocialLink = `https://www.facebook.com/LaytripTravel`;
-export const LinkedInSocialLink = `https://www.linkedin.com/company/laytriptravels`;
-export const PintrestSocialLink = `https://in.pinterest.com/laytriptravel/`;
-export const TwitterSocialLink = `https://twitter.com/LaytripTravel`;
+export const LinkedInSocialLink = `https://www.linkedin.com/company/laytrip/mycompany/?viewAsMember=true`;
+export const PintrestSocialLink = `https://www.pinterest.com/Laytrip/`;
+export const TwitterSocialLink = `https://twitter.com/Laytrip_travel`;
 export const BookingLink = `https://alpha.laytrip.com/account/bookings`;
 export const TermsConditonLink = `https://alpha.laytrip.com/terms`;
 export const covidLink = `https://alpha.laytrip.com/covid-19`;
