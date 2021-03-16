@@ -16,12 +16,12 @@ export async function LaytripCartBookingConfirmtionMail(
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 20px; color: #000000;padding:0 0 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #000000;padding:0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">
                         Congratulations on booking your travel! <b style = "color: #000000">Your Laytrip Booking ID is ${
                             param.orderId
                         }.</b> Please use this number when referencing your booking.`;
@@ -33,20 +33,13 @@ export async function LaytripCartBookingConfirmtionMail(
     if (param.bookingType == BookingType.INSTALMENT) {
         content += `<tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 20px; color: #707070;padding:0 0 15px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 25px; color: #707070;padding:0 0 15px 0; text-align: left;">
                         We will send you your airline, hotel, car and home rental reservation number(s) once we have received your final installment payment. Until your final installment is received, our  
                         <a href="${TermsConditonLink}" style="color: #0c7bff;"><u>Terms</u></a> for changes and cancellations apply. 
                         Here are your booking details:
                 </tr>`;
     }
-    content += `
-                
-               <tr>
-                    <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:10px; padding-bottom:10px; text-align: left;">
-                        Itinerary Details:
-                    </td>
-                </tr>`;
+    
     for await (const booking of param.bookings) {
         let traveleName = "";
         let travelerEmail = "";
@@ -74,17 +67,17 @@ export async function LaytripCartBookingConfirmtionMail(
             //                         <tr>
             //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
             //                                 width="20%" class="header_txt"
-            //                                 style="padding: 15px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+            //                                 style="padding: 15px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
             //                                 flight
             //                             </th>
             //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
             //                                 width="40%" class="header_txt"
-            //                                 style="padding: 15px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+            //                                 style="padding: 15px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
             //                                 Departure
             //                             </th>
             //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
             //                                 width="40%" class="header_txt"
-            //                                 style="padding: 15px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+            //                                 style="padding: 15px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
             //                                 Arrival
             //                             </th>
             //                         </tr>`;
@@ -93,7 +86,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     <td
                         align="left"
                         valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:10px; padding-bottom:5px; text-align: left;"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; padding-bottom:5px; text-align: left;"
                     >
                         <b style="color: #000000">
                         Traveler:
@@ -107,7 +100,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     <td
                         align="left"
                         valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                     >
                         <b style="color: #000000">
                         Email:
@@ -134,10 +127,10 @@ export async function LaytripCartBookingConfirmtionMail(
                         <td
                             align="left"
                             valign="top"
-                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
+                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                         >
                             <b style="color: #000000">${droup.flight}:</b>
-                            <span style="font-size: 14px" >Depart ${
+                            Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
                          droup.depature.date,
@@ -146,11 +139,7 @@ export async function LaytripCartBookingConfirmtionMail(
                      )} ${droup.depature.time.replace(/\s/g, "")},
                             Arrive ${
                                 droup.arrival.code
-                            } ${DateTime.convertDateFormat(
-                         droup.arrival.date,
-                         "MM/DD/YYYY",
-                         "MMM D, YYYY"
-                     )} ${droup.arrival.time.replace(/\s/g, "")} </span>
+                            } ${droup.arrival.time.replace(/\s/g, "")}
                         </td>
                     </tr>`;
                 //   content += `<tr>
@@ -220,18 +209,18 @@ export async function LaytripCartBookingConfirmtionMail(
                 //                         </td>
                 //                     </tr>`;
                  }
-                 if (flight.droups[0].depature?.pnr_no) {
-                     content += `<tr>
-                <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
-                >
-                    <b style="color: #000000">Provider Reservation Number: ${flight.droups[0].depature.pnr_no}</b>
-                    </span>
-                </td>
-            </tr>`;
-                 }
+            //      if (flight.droups[0].depature?.pnr_no) {
+            //          content += `<tr>
+            //     <td
+            //         align="left"
+            //         valign="top"
+            //         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
+            //     >
+            //         <b style="color: #000000">Provider Reservation Number: ${flight.droups[0].depature.pnr_no}</b>
+            //         </span>
+            //     </td>
+            // </tr>`;
+            //      }
             }
 
             //   content += `</table>
@@ -254,17 +243,17 @@ export async function LaytripCartBookingConfirmtionMail(
 
             //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
             //                                 width="30%" class="header_txt"
-            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
             //                                 Name
             //                             </th>
             //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
             //                                 width="35%" class="header_txt"
-            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
             //                                 Email
             //                             </th>
             //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
             //                                 width="20%" class="header_txt"
-            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 20px;">
+            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
             //                                 Type
             //                             </th>
             //                         </tr>`;
@@ -336,16 +325,18 @@ export async function LaytripCartBookingConfirmtionMail(
                 <td
                     align="left"
                     valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:10px; padding-bottom:5px; text-align: left;"
+                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px; padding-bottom:5px; text-align: left;"
                 >
                     <b style="color: #000000">Total Price:</b> <span style="font-size: 16px" >${param.cart.totalAmount}</span>
                 </td>
-            </tr>
-            <tr>
+            </tr>`
+if (param.bookingType == BookingType.INSTALMENT){
+    content += `
+    <tr>
                 <td
                     align="left"
                     valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
+                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
                     <b style="color: #000000">Total Paid:</b> <span style="font-size: 16px" >${param.cart.totalPaid}</span>
                 </td>
@@ -354,18 +345,18 @@ export async function LaytripCartBookingConfirmtionMail(
                 <td
                     align="left"
                     valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
+                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
                     <b style="color: #000000">Balance Due:</b> <span style="font-size: 16px" >${param.cart.rememberAmount}</span>
                 </td>
-            </tr>
-             `;
+            </tr>`
+}
     if (param.paymentDetail.length) {
         content += `<tr>
                 <td
                     align="left"
                     valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
+                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
                     <b style="color: #000000">Installments</b>
                 </td>
@@ -379,7 +370,7 @@ export async function LaytripCartBookingConfirmtionMail(
                 <td
                     align="left"
                     valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
+                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
                     #${index} ${payment.amount} ${
                     payment.status
@@ -454,18 +445,11 @@ export async function LaytripCartBookingConfirmtionMail(
                         </table>
                     </td>
                 </tr>`;
-    if (param.bookingType == BookingType.INSTALMENT) {
+    if (param.bookingType != BookingType.INSTALMENT) {
+        
         content += `<tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
-                        You can contact us any time at <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>. We hope you have a great trip!
-                    </td>
-                </tr>`;
-    } else {
-        content += `<tr>
-                    <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">
                         Contact us anytime at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>. We hope you have a great trip!
                     </td>
@@ -480,7 +464,7 @@ export async function LaytripCartBookingConfirmtionMail(
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070;padding-top:27px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
