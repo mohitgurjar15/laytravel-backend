@@ -12,7 +12,7 @@ export function BookingNotCompletedMail(param: { userName: string }) {
                                                     <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 24px; color: #000000; padding-top: 15px; text-align: left;">Hi ${param.userName},</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                                                         Unfortunately we were unable to process your booking. You will not be charged for this attempt. Please return to <a href = '${FrontEndUrl}'
                                                         style="color: #0c7bff;"><u>Laytrip.com</u></a> and try again or if you have questions, contact us at <a href = 'mailto:customerservice@laytrip.com'
                                                         style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>.
@@ -27,10 +27,10 @@ export function BookingNotCompletedMail(param: { userName: string }) {
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>
