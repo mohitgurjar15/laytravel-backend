@@ -9,31 +9,28 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #000000;padding-top: 15px; text-align: left;">Hi ${
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #000000;padding-top: 15px; text-align: left;">Hi ${
                                                         param.username
                                                     },</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                                                       Thank you for booking your travel with us! Please let us know how we did by providing a quick review: 
                                                     </td>
-                                                </tr>
-                                                <tr>
-                                                    <td align="center" valign="top" style="padding-top: 20px;">
-                                                        <table class="oc_wrapper" border="0" cellspacing="0" cellpadding="0" align="center">
-                                                            <tr>
-                                                                <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; " height="48">
-                                        <a class="" style="color: #0c7bff;" href = '${reviewLink +
-                                            param.bookingId}'>REVIEW</a>
-                                    </td>
+                                                </tr><tr>
+                <td align="center" valign="top" style="padding-top: 20px;">
+                    <table class="oc_wrapper" border="0" cellspacing="0" cellpadding="0" align="center">
+                        <tr>
+                            <td mc:edit="text4" align="center" valign="middle" height="50" style="background-color: #f725c5;  font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; color: #ffffff; border-radius: 4px;"><a href = '${reviewLink +
+                                param.bookingId}'style="display: block; text-decoration: none; padding: 0px 20px;  line-height: 48px; color: #ffffff;">Review</a></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
 
-                                                            </tr>
-
-                                                        </table>
-                                                    </td>
-                                                </tr>
+                                                        
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                                                         Want to share your travel experience with other Laytrippers? Click the social icons below, and tag #laytrip.
                                                     </td>
                                                 </tr>													
@@ -45,10 +42,11 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
             </tr>
+            
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

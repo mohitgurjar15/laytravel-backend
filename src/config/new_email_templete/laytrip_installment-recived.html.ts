@@ -18,10 +18,10 @@ export function LaytripInstallmentRecevied(param: {
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #000000; padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #000000; padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">We have successfully processed your payment for ${param.currencySymbol}${param.amount} on ${param.date}, thank you!
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070;padding:0 0 20px 0; text-align: left;">We have successfully processed your payment for ${param.currencySymbol}${param.amount} on ${param.date}, thank you!
                     Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}</td>
                 </tr>`;
   // <tr>
@@ -41,7 +41,7 @@ export function LaytripInstallmentRecevied(param: {
   // </tr>
   content += `<tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 14px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 20px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Please contact <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>. if you have any questions.
                     </td>
@@ -55,10 +55,10 @@ export function LaytripInstallmentRecevied(param: {
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

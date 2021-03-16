@@ -192,7 +192,7 @@ export class CartDataUtility {
           var droups = [];
           //console.log('24');
           for await (const stop of element.stops) {
-            var flight = `${stop.airline}-${stop.flight_number}`;
+            var flight = `${stop.airline}${stop.flight_number}`;
             var depature = {
               code: stop.departure_info.code,
               name: stop.departure_info.name,
@@ -201,6 +201,9 @@ export class CartDataUtility {
               date: await this.formatDate(stop.departure_date_time),
               time: stop.departure_time,
             };
+            if (stop?.pnr_no) {
+                depature["pnr_no"] = stop?.pnr_no || "";
+            }
             //console.log('25');
             var arrival = {
               code: stop.arrival_info.code,
@@ -210,6 +213,7 @@ export class CartDataUtility {
               date: await this.formatDate(stop.arrival_date_time),
               time: stop.arrival_time,
             };
+            
             //console.log('26');
             droups.push({
               flight: flight,

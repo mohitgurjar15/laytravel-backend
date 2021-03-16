@@ -10,22 +10,17 @@ const content = `
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                                                         To complete your Sign Up, please verify below otp with your email address. 
                                                     </td>
                                                 </tr>
-                                                
                                                 <tr>
-                                                    <td align="center" valign="top" style="padding-top: 20px;">
-                                                        <table class="oc_wrapper" border="0" cellspacing="0" cellpadding="0" align="center">
-                                                            <tr>
-                                                                <td mc:edit="text4" align="center" valign="middle" height="50" style="background-color: #1943FF;  font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: bold; color: #ffffff; border-radius: 4px;"><a style="display: block; text-decoration: none; padding: 0px 20px;  line-height: 48px; color: #ffffff;">Your OTP - ${param.otp}</a></td>
-                                                            </tr>
-                                                        </table>
+                                                    <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 18px; color: #000000;padding-top: 15px; text-align: center;">
+                                                        <b>ONE TIME PIN - ${param.otp}</b>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: left;">
                                                     If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
                                                     style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>.
                                                     </td>
@@ -39,10 +34,10 @@ const content = `
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:0px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 14px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

@@ -3381,7 +3381,7 @@ export class FlightService {
                         to: mailData.userMail,
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
-                        subject: `REMINDER - TRAVEL PROVIDER RESERVATION CONFIRMATION #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
+                        subject: `TRAVEL PROVIDER RESERVATION CONFIRMATION #${mailData.param.flight[0].droups[0].depature.pnr_no} REMINDER`,
                         html:await  TravelProviderReconfirmationMail(mailData.param)
                     })
                     .then((res) => {
