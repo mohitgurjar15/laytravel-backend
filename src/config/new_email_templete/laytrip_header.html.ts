@@ -177,4 +177,4 @@ export const LaytripHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Trans
                                 </tr>
                             </table>
                         </td>
-                    </tr>`;
+                    </tr>`

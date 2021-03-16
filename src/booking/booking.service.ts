@@ -2319,7 +2319,11 @@ export class BookingService {
         const updatedValue = await getConnection()
             .createQueryBuilder()
             .update(TravelerInfo)
-            .set({ travelerInfo: travelerInfo, updateBy: admin.userId })
+            .set({
+                travelerInfo: travelerInfo,
+                updateBy: admin.userId,
+                oldTravelerInfo: JSON.parse(previousValue),
+            })
             .where(`id=:id `, { id })
             .execute();
         const currentValue = JSON.stringify(updatedValue);

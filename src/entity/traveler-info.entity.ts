@@ -39,6 +39,9 @@ export class TravelerInfo extends BaseEntity {
     @Column("boolean", { name: "is_primary", default: () => false })
     isPrimary: boolean;
 
+     @Column("json", { name: "old_traveler_info", nullable: true })
+    oldTravelerInfo: TravelerInfoModel;
+
     @ManyToOne(
         () => Booking,
         (booking) => booking.travelers

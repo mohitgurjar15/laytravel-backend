@@ -16,31 +16,31 @@ export const LaytripFooter = `
             <tr>
                 <td align="left" valign="middle">
                     <a href="${InstagramSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/instagram.png" alt="instagram" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 14px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/instagram.png" alt="instagram" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${TwitterSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/twitter.png" alt="twitter" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 14px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/twitter.png" alt="twitter" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${FacebookSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/facebook.png" alt="facebook" width="40" height="40" border="0" style="display: block; max-width:40px;font-size: 14px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/facebook.png" alt="facebook" width="40" height="40" border="0" style="display: block; max-width:40px;font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${PintrestSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/pintrest.png" alt="pintrest" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 14px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/pintrest.png" alt="pintrest" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${LinkedInSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/linked-in.png" alt="linked-in" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 14px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/linked-in.png" alt="linked-in" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
             </tr>

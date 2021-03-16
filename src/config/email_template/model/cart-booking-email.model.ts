@@ -55,6 +55,7 @@ class depature {
     date: string;
     flight: string;
     time: string;
+    pnr_no?:string
 }
 
 class arrival {
