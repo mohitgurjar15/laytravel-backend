@@ -3191,16 +3191,16 @@ export class FlightService {
                     );
                     let bookingResult;
                     console.log("dayDiff", dayDiff);
-                    if (dayDiff <= 90) {
-                        const mystifly = new Strategy(
-                            new Mystifly(headers, this.cacheManager)
-                        );
-                        bookingResult = await mystifly.bookFlight(
-                            bookFlightDto,
-                            travelersDetails,
-                            isPassportRequired
-                        );
-                    }
+                    // if (dayDiff <= 90) {
+                    //     const mystifly = new Strategy(
+                    //         new Mystifly(headers, this.cacheManager)
+                    //     );
+                    //     bookingResult = await mystifly.bookFlight(
+                    //         bookFlightDto,
+                    //         travelersDetails,
+                    //         isPassportRequired
+                    //     );
+                    // }
 
                     let authCardToken = transaction_token;
 
@@ -3218,16 +3218,16 @@ export class FlightService {
                         travelers,
                         cartId
                     );
-                    if (dayDiff <= 90) {
-                        this.bookingUpdateFromSupplierside(
-                            laytripBookingResult.laytripBookingId,
-                            {
-                                supplier_booking_id:
-                                    laytripBookingResult.supplierBookingId,
-                            },
-                            1
-                        );
-                    }
+                    // if (dayDiff <= 90) {
+                    //     this.bookingUpdateFromSupplierside(
+                    //         laytripBookingResult.laytripBookingId,
+                    //         {
+                    //             supplier_booking_id:
+                    //                 laytripBookingResult.supplierBookingId,
+                    //         },
+                    //         1
+                    //     );
+                    // }
                     return {
                         laytrip_booking_id: laytripBookingResult.id,
                         booking_status: "pending",
