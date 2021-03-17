@@ -1,6 +1,7 @@
 import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { BaseUrl } from "../base-url";
+import { LaytripFooter2 } from "./laytrip-second-footer.html";
 
 export function LaytripInquiryAutoReplayMail(param:{ username:string })
 {
@@ -33,5 +34,5 @@ const content = `
 </td>
 </tr>
 `;
-return LaytripHeader + content + LaytripFooter;
+return LaytripHeader + content + LaytripFooter2;
 }
