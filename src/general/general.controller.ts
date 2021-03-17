@@ -198,6 +198,20 @@ export class GeneralController {
            email
         );
     }
+
+     @Post(["test/travelerInfo/addforall"])
+    @ApiOperation({ summary: "Update traveler info of user" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async update(
+    ) {
+        return await this.generalService.updateTravelerInfo(
+        );
+    }
     
     
 }

@@ -46,6 +46,7 @@ import { MarketingModule } from './marketing/marketing.module';
 import { CartModule } from './cart/cart.module';
 import { DealModule } from './deal/deal.module';
 import { LaytripCategoryModule } from './laytrip-category/laytrip-category.module';
+console.log(typeOrmConfig);
 
 @Module({
   imports: [
