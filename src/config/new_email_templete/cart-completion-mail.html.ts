@@ -11,8 +11,8 @@ export async function LaytripCartBookingComplationMail(
 ) {
       let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
-        <table width="550px" border="0" cellspacing="0" cellpadding="0" align="center"
-            style="width: 550px; font-family: 'Poppins', sans-serif; ">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
+            style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
                 <tr>
                     <td align="left" valign="top"
