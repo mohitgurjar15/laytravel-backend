@@ -19,7 +19,7 @@ export async function FlightChangeAsperUserRequestMail(
             travelerEmail += ", ";
         }
         traveleName += traveler.name
-            ? traveler.name + "(" + traveler.type + ")"
+            ? traveler.name 
             : "";
         travelerEmail += traveler.email
             ? '<span style="color: #0c7bff;"><u>' + traveler.email + "</u></span>"

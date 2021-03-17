@@ -780,7 +780,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Message Recived`,
+                subject: `Message to Laytrip Received`,
                 html: await LaytripInquiryAutoReplayMail({
                     username: "Parth",
                 }),
