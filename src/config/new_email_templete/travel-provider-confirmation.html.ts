@@ -46,11 +46,6 @@ export async function TravelProviderConfiramationMail(
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 25px; color: #707070;padding: 15px 0; text-align: left;">
                         Your reservation has been changed by the Travel Provider. Please review these changes below:</td>
-                </tr><tr>
-                    <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px; padding-bottom:10px; text-align: left;">
-                        Itinerary Details:
-                    </td>
                 </tr>
                 <tr>
                     <td
