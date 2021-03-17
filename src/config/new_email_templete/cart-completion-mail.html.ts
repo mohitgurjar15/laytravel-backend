@@ -46,7 +46,7 @@ export async function LaytripCartBookingComplationMail(
                   travelerEmail += ", ";
               }
               traveleName += traveler.name
-                  ? traveler.name + "(" + traveler.type + ")"
+                  ? traveler.name 
                   : "";
               travelerEmail += traveler.email
                   ? '<span style="color: #0c7bff;"><u>' +
@@ -406,7 +406,7 @@ export async function LaytripCartBookingComplationMail(
                             <tbody>
                                 <tr>
                                     <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: 200; " height="48">
-                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'><u>My  Bookings</u></a>
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>My  Bookings</a>
                                     </td>
                                 </tr>
                             </tbody>
