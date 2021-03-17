@@ -101,11 +101,12 @@ export class flightDataUtility {
             var EmailSubject = "";
             if (bookingData.bookingType == BookingType.INSTALMENT) {
                 EmailSubject =
-                    `REMINDER - TRAVEL PROVIDER RESERVATION CONFIRMATION` +
-                    flightId;
+                    `Travel Provider Reservation Confirmation #` +
+                    flightData[0].droups[0].depature?.pnr_no + 'Reminder';
             } else {
                 EmailSubject =
-                    `TRAVEL PROVIDER RESERVATION CONFIRMATION` + flightId;
+                    `Travel Provider Reservation Confirmation #` +
+                    flightData[0].droups[0].depature?.pnr_no;
             }
             const d = await CartDataUtility.formatDate(bookingData.bookingDate);
             const installmentDetail = {

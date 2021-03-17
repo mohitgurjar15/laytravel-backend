@@ -1,5 +1,4 @@
 environments:
     static:
         - dev : ${config/dev.yml}
-        - test 
-        - prod 
+        - prod : ${config/prod.yml}

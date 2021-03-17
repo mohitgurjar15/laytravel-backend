@@ -211,7 +211,7 @@ export class AuthService {
                     to: email,
                     from: mailConfig.from,
                     cc: mailConfig.BCC,
-                    subject: "Verify Your Email Address",
+                    subject: "Verify your Account",
                     html: LaytripVerifyEmailIdTemplete({
                         username: first_name || "",
                         otp: user.otp,
@@ -369,7 +369,7 @@ export class AuthService {
                     to: email,
                     from: mailConfig.from,
                     cc: mailConfig.BCC,
-                    subject: "Verify Your Email Address",
+                    subject: "Verify your Account",
                     html: LaytripVerifyEmailIdTemplete({
                         username: user.firstName + " " + user.lastName,
                         otp: user.otp,
@@ -422,7 +422,7 @@ export class AuthService {
                     to: newEmail,
                     from: mailConfig.from,
                     cc: mailConfig.BCC,
-                    subject: "Verify Your Email Address",
+                    subject: "Verify your Account",
                     html: LaytripVerifyEmailIdTemplete({
                         username: user.firstName + " " + user.lastName,
                         otp: user.otp,

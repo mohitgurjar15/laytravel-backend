@@ -58,9 +58,9 @@ export async function TravelProviderConfiramationMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px; padding-bottom:5px; text-align: left;"
                     >
-                        <b style="color: #000000">
+                        <span style="color: #000000">
                         Traveler:
-                        </b>
+                        </span>
                         <span style="font-size: 16px" >
                         ${traveleName}
                         </span>
@@ -72,9 +72,9 @@ export async function TravelProviderConfiramationMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                     >
-                        <b style="color: #000000">
+                        <span style="color: #000000">
                         Email:
-                        </b>
+                        </span>
                         <span style="font-size: 18px" >
                         ${travelerEmail}
                         </span>
@@ -88,7 +88,7 @@ export async function TravelProviderConfiramationMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                         >
-                            <b style="color: #000000">${droup.flight}:</b>
+                            <span style="color: #000000">${droup.flight}:</span>
                             <span style="font-size: 16px" >Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
@@ -114,7 +114,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Total Price:</b> <span style="font-size: 16px" >${param.cart.totalAmount}</span>
+                    <span style="color: #000000">Total Price:</span> <span style="font-size: 16px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
@@ -123,7 +123,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Total Paid:</b> <span style="font-size: 16px" >${param.cart.totalPaid}</span>
+                    <span style="color: #000000">Total Paid:</span> <span style="font-size: 16px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -132,7 +132,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Balance Due:</b> <span style="font-size: 16px" >${param.cart.rememberAmount}</span>
+                    <span style="color: #000000">Balance Due:</span> <span style="font-size: 16px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
   if (param.flight[0].droups[0].depature?.pnr_no) {
@@ -142,7 +142,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
                 >
-                    <b style="color: #000000">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</b>
+                    <span style="color: #000000">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;

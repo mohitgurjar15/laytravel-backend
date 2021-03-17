@@ -25,10 +25,24 @@ import { timeout } from "rxjs/operators";
 async function bootstrap() {
   const serverConfig = config.get("server");
   const sentryConfig = config.get("Sentry");
+  const env = process.env.NODE_ENV
   let httpsOptions = {
     key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem")),
     cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem")),
   };
+
+  if(env == 'prod'){
+    console.log(env);
+    httpsOptions = {
+        key: fs.readFileSync(path.resolve("src/config/cert/live_privkey.pem")),
+        cert: fs.readFileSync(
+            path.resolve("src/config/cert/live_fullchain.pem")
+        ),
+    };
+  }
+
+  console.log(env);
+  
 
   const server = express();
   const app = await NestFactory.create<NestExpressApplication>(

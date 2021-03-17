@@ -77,8 +77,8 @@ export class BookingService {
         if (responce?.param) {
             let subject =
                 responce.param.bookingType == BookingType.INSTALMENT
-                    ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`
-                    : `BOOKING ID ${responce.param.orderId} CONFIRMATION`;
+                    ? `Booking ID ${responce.param.orderId} Confirmation`
+                    : `Booking ID ${responce.param.orderId} Confirmation`;
             this.mailerService
                 .sendMail({
                     to: responce.email,
@@ -2144,8 +2144,8 @@ export class BookingService {
         if (responce?.param) {
             let subject =
                 responce.param.bookingType == BookingType.INSTALMENT
-                    ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`
-                    : `BOOKING ID ${responce.param.orderId} CONFIRMATION`;
+                    ? `Booking ID ${responce.param.orderId} Confirmation`
+                    : `Booking ID ${responce.param.orderId} Confirmation`;
             let emailId = "";
             for await (const email of emails) {
                 emailId += email.email + ",";
@@ -2233,7 +2233,7 @@ export class BookingService {
                     to: query.user.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `BOOKING ID ${booking_id} PROVIDER CANCELLATION NOTICE`,
+                    subject: `Booking ID ${booking_id} Provider Cancellation Notice`,
                     html: await LaytripCancellationTravelProviderMail({
                         userName: query.user.firstName || "",
                         bookingId: booking_id,
@@ -2251,7 +2251,7 @@ export class BookingService {
                     to: query.user.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `BOOKING ID ${booking_id} CUSTOMER CANCELLATION`,
+                    subject: `Booking ID ${booking_id} Custom Cancellation`,
                     html: await LaytripBookingCancellationCustomerMail({
                         username: query.user.firstName || "",
                         bookingId: booking_id,
@@ -2408,7 +2408,7 @@ export class BookingService {
                 to: mail.userMail,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `BOOKING ID ${mail.param.cart.cartId} CUSTOMER CHANGE`,
+                subject: `Booking ID ${mail.param.cart.cartId} Customer Change`,
                 html: await FlightChangeAsperUserRequestMail(mail.param),
             })
             .then((res) => {

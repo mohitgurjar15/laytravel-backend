@@ -1542,8 +1542,8 @@ more than 5.`
         if (responce?.param) {
             let subject =
                 responce.param.bookingType == BookingType.INSTALMENT
-                    ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`
-                    : `BOOKING ID ${responce.param.orderId} CONFIRMATION`;
+                    ? `Booking ID ${responce.param.orderId} Confirmation`
+                    : `Booking ID ${responce.param.orderId} Confirmation`;
             this.mailerService
                 .sendMail({
                     to: responce.email,
@@ -1568,7 +1568,7 @@ more than 5.`
                 ? user.lastName
                 : "";
 
-            const subject = `BOOKING NOT COMPLETED`;
+            const subject = `Booking Not Completed`;
             this.mailerService
                 .sendMail({
                     to: user.email,
