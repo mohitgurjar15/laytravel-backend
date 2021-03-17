@@ -2110,17 +2110,30 @@ export class FlightService {
                     .createQueryBuilder(User, "user")
                     .where(`"user_id" =:user_id`, { user_id: travelerId })
                     .getOne();
+                var birthDate = new Date(userData.dob);
+                var age = moment(new Date()).diff(moment(birthDate), "years");
+
+                var user_type = "";
+                if (age < 2) {
+                    user_type = "infant";
+                } else if (age < 12) {
+                    user_type = "child";
+                } else {
+                    user_type = "adult";
+                }
                 const travelerInfo: TravelerInfoModel = {
                     firstName: userData.firstName,
-                    passportExpiry: userData.passportExpiry,
-                    passportNumber: userData.passportNumber,
-                    lastName: userData.lastName,
-                    email: userData.email,
-                    phoneNo: userData.phoneNo,
-                    countryCode: userData.countryCode,
+                    passportExpiry: userData.passportExpiry || '',
+                    passportNumber: userData.passportNumber || '',
+                    lastName: userData.lastName || '',
+                    email: userData.email || '',
+                    phoneNo: userData.phoneNo || '',
+                    countryCode: userData.countryCode || '',
                     dob: userData.dob,
                     countryId: userData.countryId,
                     gender: userData.gender,
+                    age : age,
+                    user_type: user_type
                 };
                 var travelerUser = new TravelerInfo();
                 travelerUser.bookingId = bookingId;

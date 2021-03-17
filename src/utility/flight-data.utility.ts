@@ -124,25 +124,25 @@ export class flightDataUtility {
             };
             var travelerInfo = [];
             for await (const traveler of travelers) {
-                var today = new Date();
-                var birthDate = new Date(traveler.travelerInfo.dob);
-                var age = moment(new Date()).diff(moment(birthDate), "years");
+                // var today = new Date();
+                // var birthDate = new Date(traveler.travelerInfo.dob);
+                // var age = moment(new Date()).diff(moment(birthDate), "years");
 
-                var user_type = "";
-                if (age < 2) {
-                    user_type = "Infant";
-                } else if (age < 12) {
-                    user_type = "Child";
-                } else {
-                    user_type = "Adult";
-                }
+                // var user_type = "";
+                // if (age < 2) {
+                //     user_type = "Infant";
+                // } else if (age < 12) {
+                //     user_type = "Child";
+                // } else {
+                //     user_type = "Adult";
+                // }
                 travelerInfo.push({
                     name:
                         traveler.travelerInfo.firstName +
                             " " +
                             traveler.travelerInfo.lastName || "",
                     email: traveler.travelerInfo.email,
-                    type: user_type,
+                    type: traveler.travelerInfo.user_type,
                 });
             }
             const cartData = await CartDataUtility.cartData(bookingData.cartId);
