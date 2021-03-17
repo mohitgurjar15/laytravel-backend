@@ -5,10 +5,33 @@ db:
     type: "postgres"
     port: 5432
     username: "postgres"
-    host: "laytrip-dev.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
+    host: "laytrip-live.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
     database: "laytrip"
-    password: "nOEbFEONMcWpZNPzdcQ1"
+    password: "PIpFGqsd2hwqOKoINa4D"
     synchronize: false
 
 ppn:
     url: "https://api-sandbox.rezserver.com/api/hotel/"
+
+email:
+    host: "smtp.office365.com"
+    user: "no-reply@laytrip.com"
+    pass: "Autoanswer21!"
+    port: 587
+    secure: true
+    from: '"Laytrip Customer Service" <no-reply@laytrip.com>'
+    BCC:  'suresh@itoneclick.com,gaurav@itoneclick.com,hitendra@laytrip.com,ashfaq@itoneclick.com,customerservice@laytrip.com'
+    admin: 'suresh@itoneclick.com,jimeet@itoneclick.com'
+    contactUs: 'contactus@laytrip.com'
+    customerService: 'customerservice@laytrip.com'
+
+webNotificationkeys:
+    publicKey: 'BMWEQPsZU4d0Le2OKMiM7S7ZUvnpaBj5WpJuJuVshYjzHWsCwaFgHjm5FpT2zjexvyqPZyvSTqh_g7pF2fjbS2Q'
+    privateKey: 'pwDOYDpxsPqj2wQq0udzPl20v4R5qub7Z2idsREOWFU'
+    mailTo : 'mailto:example@yourdomain.org'
+    icon : 'assets/main-page-logo-small-hat.png'
+
+twilio:
+    accountSid: "AC080cf0989448504dcfafe87401fa32af"
+    authToken: "8e64f879600ab3c26d45e451b0230109"
+    smsNumber: "+12623261171"

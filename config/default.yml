@@ -10,11 +10,6 @@ server:
 
 db:
     type: "postgres"
-    port: 5432
-    username: "postgres"
-    host: "localhost"
-    database: "laytravel"
-    password: "Oneclick1@"
 
 jwt:
     ExpireIn: 1576800000
