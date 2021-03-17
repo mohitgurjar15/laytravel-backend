@@ -11,6 +11,7 @@ import { User } from "src/entity/user.entity";
 import { MailerService } from "@nestjs-modules/mailer";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
+import * as moment from "moment";
 import { massCommunicationMail } from "src/config/email_template/mass-communication.html";
 import { TestTemplete } from "src/config/new_email_templete/test.html";
 import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
