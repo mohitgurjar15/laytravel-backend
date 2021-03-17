@@ -14,7 +14,7 @@ export function LaytripWelcomeBoardMail() {
                                                     </tr>
                                                     <tr>
                                                          <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
-                                                            We provide <b style="font-family: 'bold'; font-weight:800; font-size: 18px; color: #000000"> real-time access </b> to <b style="font-family: 'bold'; font-weight:800;font-size: 18px; color: #000000">  industry-best pricing </b> so you no longer have to shop countless sites, and we offer <b style="font-family: 'bold';  font-weight:800;font-size: 18px; color: #000000"> customizable layaway installment plans, with no interest and no credit check </b> to make all your travel now affordable. 
+                                                            We provide real-time access to  industry-best pricing so you no longer have to shop countless sites, and we offer customizable layaway installment plans, with no interest and no credit check to make all your travel now affordable. 
                                                          </td>
                                                     </tr>
                                                     <tr>
