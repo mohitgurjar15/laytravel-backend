@@ -251,25 +251,25 @@ export class BookingService {
             };
             var travelerInfo = [];
             for await (const traveler of travelers) {
-                var today = new Date();
-                var birthDate = new Date(traveler.travelerInfo.dob);
-                var age = moment(new Date()).diff(moment(birthDate), "years");
+                // var today = new Date();
+                // var birthDate = new Date(traveler.travelerInfo.dob);
+                // var age = moment(new Date()).diff(moment(birthDate), "years");
 
-                var user_type = "";
-                if (age < 2) {
-                    user_type = "infant";
-                } else if (age < 12) {
-                    user_type = "child";
-                } else {
-                    user_type = "adult";
-                }
+                // var user_type = "";
+                // if (age < 2) {
+                //     user_type = "infant";
+                // } else if (age < 12) {
+                //     user_type = "child";
+                // } else {
+                //     user_type = "adult";
+                // }
                 travelerInfo.push({
                     name:
                         traveler.travelerInfo.firstName +
                         " " +
                         traveler.travelerInfo.lastName,
                     email: traveler.travelerInfo.email,
-                    type: user_type,
+                    type: traveler.travelerInfo.user_type,
                 });
             }
             const cartData = await CartDataUtility.cartData(bookingData.cartId);
@@ -400,28 +400,28 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
-                for (let j in result.data[i].travelers) {
-                    if (result.data[i].travelers[j].travelerInfo?.dob) {
-                        var birthDate = new Date(
-                            result.data[i].travelers[j].travelerInfo.dob
-                        );
-                        var age = moment(new Date()).diff(
-                            moment(birthDate),
-                            "years"
-                        );
+                // for (let j in result.data[i].travelers) {
+                //     if (result.data[i].travelers[j].travelerInfo?.dob) {
+                //         var birthDate = new Date(
+                //             result.data[i].travelers[j].travelerInfo.dob
+                //         );
+                //         var age = moment(new Date()).diff(
+                //             moment(birthDate),
+                //             "years"
+                //         );
 
-                        if (age < 2) {
-                            result.data[i].travelers[j].travelerInfo.user_type =
-                                "infant";
-                        } else if (age < 12) {
-                            result.data[i].travelers[j].travelerInfo.user_type =
-                                "child";
-                        } else {
-                            result.data[i].travelers[j].travelerInfo.user_type =
-                                "adult";
-                        }
-                    }
-                }
+                //         if (age < 2) {
+                //             result.data[i].travelers[j].travelerInfo.user_type =
+                //                 "infant";
+                //         } else if (age < 12) {
+                //             result.data[i].travelers[j].travelerInfo.user_type =
+                //                 "child";
+                //         } else {
+                //             result.data[i].travelers[j].travelerInfo.user_type =
+                //                 "adult";
+                //         }
+                //     }
+                // }
             }
             return result;
         } catch (error) {
@@ -506,25 +506,25 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
-                for (let j in result.data[i].travelers) {
-                    var birthDate = new Date(
-                        result.data[i].travelers[j].travelerInfo.dob
-                    );
-                    var age = moment(new Date()).diff(
-                        moment(birthDate),
-                        "years"
-                    );
-                    if (age < 2) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "infant";
-                    } else if (age < 12) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "child";
-                    } else {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "adult";
-                    }
-                }
+                // for (let j in result.data[i].travelers) {
+                //     var birthDate = new Date(
+                //         result.data[i].travelers[j].travelerInfo.dob
+                //     );
+                //     var age = moment(new Date()).diff(
+                //         moment(birthDate),
+                //         "years"
+                //     );
+                //     if (age < 2) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "infant";
+                //     } else if (age < 12) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "child";
+                //     } else {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "adult";
+                //     }
+                // }
             }
             return result;
         } catch (error) {
@@ -1285,25 +1285,25 @@ export class BookingService {
             delete result.user.updatedDate;
             delete result.user.salt;
             delete result.user.password;
-            for (let j in result.travelers) {
-                if (result.travelers[j].travelerInfo?.dob) {
-                    var birthDate = new Date(
-                        result.travelers[j].travelerInfo.dob
-                    );
-                    var age = moment(new Date()).diff(
-                        moment(birthDate),
-                        "years"
-                    );
+            // for (let j in result.travelers) {
+            //     if (result.travelers[j].travelerInfo?.dob) {
+            //         var birthDate = new Date(
+            //             result.travelers[j].travelerInfo.dob
+            //         );
+            //         var age = moment(new Date()).diff(
+            //             moment(birthDate),
+            //             "years"
+            //         );
 
-                    if (age < 2) {
-                        result.travelers[j].travelerInfo.user_type = "infant";
-                    } else if (age < 12) {
-                        result.travelers[j].travelerInfo.user_type = "child";
-                    } else {
-                        result.travelers[j].travelerInfo.user_type = "adult";
-                    }
-                }
-            }
+            //         if (age < 2) {
+            //             result.travelers[j].travelerInfo.user_type = "infant";
+            //         } else if (age < 12) {
+            //             result.travelers[j].travelerInfo.user_type = "child";
+            //         } else {
+            //             result.travelers[j].travelerInfo.user_type = "adult";
+            //         }
+            //     }
+            // }
 
             return result;
         } catch (error) {
@@ -2074,26 +2074,26 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
-                for (let j in result.data[i].travelers) {
-                    var birthDate = new Date(
-                        result.data[i].travelers[j].travelerInfo.dob
-                    );
-                    var age = moment(new Date()).diff(
-                        moment(birthDate),
-                        "years"
-                    );
+                // for (let j in result.data[i].travelers) {
+                //     var birthDate = new Date(
+                //         result.data[i].travelers[j].travelerInfo.dob
+                //     );
+                //     var age = moment(new Date()).diff(
+                //         moment(birthDate),
+                //         "years"
+                //     );
 
-                    if (age < 2) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "infant";
-                    } else if (age < 12) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "child";
-                    } else {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "adult";
-                    }
-                }
+                //     if (age < 2) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "infant";
+                //     } else if (age < 12) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "child";
+                //     } else {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "adult";
+                //     }
+                // }
             }
             return result;
         } catch (error) {
