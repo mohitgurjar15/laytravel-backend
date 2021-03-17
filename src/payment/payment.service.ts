@@ -114,21 +114,21 @@ export class PaymentService {
                 .getOne()
                 if(user){
                     this.mailerService
-                    .sendMail({
-                        to: user.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `PAYMENT METHOD CHANGE CONFIRMATION`,
-                        html: await LaytripPaymentMethodChangeMail({
-                            username: user.firstName || '',
-                        }),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
+                        .sendMail({
+                            to: user.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: `Payment Method Change Confirmation`,
+                            html: await LaytripPaymentMethodChangeMail({
+                                username: user.firstName || "",
+                            }),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
                 }
                 
             }
@@ -1192,7 +1192,7 @@ export class PaymentService {
                                 to: cart.user.email,
                                 from: mailConfig.from,
                                 cc: mailConfig.BCC,
-                                subject: `BOOKING ID ${param.bookingId} INSTALLMENT RECEIVED`,
+                                subject: `Booking ID ${param.bookingId} Installment Recevied`,
                                 html: LaytripInstallmentRecevied(param),
                             })
                             .then((res) => {
@@ -1334,7 +1334,7 @@ export class PaymentService {
                 bookingId
             );
             if (responce?.param) {
-                let subject = `BOOKING ID ${responce.param.orderId} COMPLETION NOTICE`;
+                let subject = `Booking ID ${responce.param.orderId} Complition Notice`;
                 this.mailerService
                     .sendMail({
                         to: responce.email,

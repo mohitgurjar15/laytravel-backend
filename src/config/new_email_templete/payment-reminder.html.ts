@@ -16,10 +16,10 @@ export function LaytripPaymentReminderTemplete(param: {
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #000000; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; text-align: left;">This is a reminder that your installment payment for ${param.amount} will be processed on ${param.date} for Booking ID ${param.bookingId}. </td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; padding-top:15px; line-height: 25px; color: #707070; text-align: left;">This is a reminder that your installment payment for ${param.amount} will be processed on ${param.date} for Booking ID ${param.bookingId}. </td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:10px; text-align: left;">Please contact <a href = 'mailto:customerservice@laytrip.com'
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:0px; text-align: left;">Please contact <a href = 'mailto:customerservice@laytrip.com'
                     style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a> if you have any questions.</td>
                 </tr>
                 

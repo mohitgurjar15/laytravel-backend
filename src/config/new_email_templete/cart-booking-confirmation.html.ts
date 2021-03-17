@@ -22,9 +22,9 @@ export async function LaytripCartBookingConfirmtionMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">
-                        Congratulations on booking your travel! <b style = "color: #000000">Your Laytrip Booking ID is ${
+                        Congratulations on booking your travel! <span style = "color: #000000">Your Laytrip Booking ID is ${
                             param.orderId
-                        }.</b> Please use this number when referencing your booking.`;
+                        }.</span>  Please use this number when referencing your booking.`;
     if (param.bookingType == BookingType.NOINSTALMENT) {
         content += ` Here are your booking details:`;
     }
@@ -88,9 +88,9 @@ export async function LaytripCartBookingConfirmtionMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; padding-bottom:5px; text-align: left;"
                     >
-                        <b style="color: #000000">
+                        <span style="color: #000000">
                         Traveler:
-                        </b>
+                        </span> 
                         <span style="font-size: 16px" >
                         ${traveleName}
                         </span>
@@ -102,9 +102,9 @@ export async function LaytripCartBookingConfirmtionMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                     >
-                        <b style="color: #000000">
+                        <span style="color: #000000">
                         Email:
-                        </b>
+                        </span> 
                         <span style="font-size: 18px" >
                         ${travelerEmail}
                         </span>
@@ -129,7 +129,7 @@ export async function LaytripCartBookingConfirmtionMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                         >
-                            <b style="color: #000000">${droup.flight}:</b>
+                            <span style="color: #000000">${droup.flight}:</span> 
                             Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
@@ -216,7 +216,7 @@ export async function LaytripCartBookingConfirmtionMail(
             //         valign="top"
             //         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
             //     >
-            //         <b style="color: #000000">Provider Reservation Number: ${flight.droups[0].depature.pnr_no}</b>
+            //         <span style="color: #000000">Provider Reservation Number: ${flight.droups[0].depature.pnr_no}</span> 
             //         </span>
             //     </td>
             // </tr>`;
@@ -327,7 +327,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Total Price:</b> <span style="font-size: 16px" >${param.cart.totalAmount}</span>
+                    <span style="color: #000000">Total Price:</span>  <span style="font-size: 16px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>`
 if (param.bookingType == BookingType.INSTALMENT){
@@ -338,7 +338,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Total Paid:</b> <span style="font-size: 16px" >${param.cart.totalPaid}</span>
+                    <span style="color: #000000">Total Paid:</span>  <span style="font-size: 16px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -347,7 +347,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Balance Due:</b> <span style="font-size: 16px" >${param.cart.rememberAmount}</span>
+                    <span style="color: #000000">Balance Due:</span>  <span style="font-size: 16px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`
 }
@@ -358,7 +358,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Installments</b>
+                    <span style="color: #000000">Installments</span> 
                 </td>
             </tr> `;
     for (let index = 0; index < param.paymentDetail.length; index++) {
@@ -437,7 +437,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                         <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>
-                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: bold; " height="48">
+                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: 200; " height="48">
                                         <a class="" style="color: #f725c5;" href = '${BookingLink}'><u>My  Bookings</u></a>
                                     </td>
                                 </tr>

@@ -61,9 +61,9 @@ export async function TravelProviderReconfirmationMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; padding-bottom:5px; text-align: left;"
                     >
-                        <b style="color: #000000">
+                        <span style="color: #000000">
                         Traveler:
-                        </b>
+                        </span>
                         <span style="font-size: 18px" >
                         ${traveleName}
                         </span>
@@ -75,9 +75,9 @@ export async function TravelProviderReconfirmationMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                     >
-                        <b style="color: #000000">
+                        <span style="color: #000000">
                         Email:
-                        </b>
+                        </span>
                         <span style="font-size: 18px" >
                         ${travelerEmail}
                         </span>
@@ -91,7 +91,7 @@ export async function TravelProviderReconfirmationMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                         >
-                            <b style="color: #000000">${droup.flight}:</b>
+                            <span style="color: #000000">${droup.flight}:</span>
                             <span style="font-size: 18px" >Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
@@ -117,7 +117,7 @@ export async function TravelProviderReconfirmationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Total Price:</b> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span style="color: #000000">Total Price:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
@@ -126,7 +126,7 @@ export async function TravelProviderReconfirmationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Total Paid:</b> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                    <span style="color: #000000">Total Paid:</span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -135,7 +135,7 @@ export async function TravelProviderReconfirmationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:5px; text-align: left;"
                 >
-                    <b style="color: #000000">Balance Due:</b> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                    <span style="color: #000000">Balance Due:</span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
             if(param.flight[0].droups[0].depature?.pnr_no){
@@ -145,7 +145,7 @@ export async function TravelProviderReconfirmationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
                 >
-                    <b style="color: #000000">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</b>
+                    <span style="color: #000000">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;
@@ -362,7 +362,7 @@ export async function TravelProviderReconfirmationMail(
                         <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>
-                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: bold; " height="48">
+                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: 200; " height="48">
                                         <a class="" style="color: #f725c5;" href = '${BookingLink}'><u>My Bookings</u></a>
                                     </td>
                                 </tr>

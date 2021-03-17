@@ -81,7 +81,7 @@ export class EnqiryService {
                      to: email,
                      from: mailConfig.from,
                      bcc: mailConfig.BCC,
-                     subject: `MESSAGE RECEIVED`,
+                     subject: `Message Recived`,
                      html: await LaytripInquiryAutoReplayMail({
                          username: name || "",
                      }),
