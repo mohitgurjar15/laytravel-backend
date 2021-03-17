@@ -2210,7 +2210,7 @@ export class BookingService {
                     paymentStatus: PaymentStatus.CANCELLED,
                 })
                 .where(
-                    `id =:id AND payment_status = ${PaymentStatus.PENDING}`,
+                    `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,
                     {
                         id: booking.id,
                     }
