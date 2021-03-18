@@ -11,6 +11,9 @@ server:
 db:
     type: "postgres"
 
+env: 
+    name: "dev"
+
 jwt:
     ExpireIn: 1576800000
     SecretKey: "mySecre@tKey"
