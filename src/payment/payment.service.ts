@@ -491,8 +491,8 @@ export class PaymentService {
             let threeDS = {
                 redirect_url: redirection,
                 callback_url: redirection,
-                three_ds_version: "2",
-                attempt_3dsecure: true,
+                // three_ds_version: "2",
+                // attempt_3dsecure: true,
                 browser_info,
             };
 
