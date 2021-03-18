@@ -1,5 +1,8 @@
 var path = require("path");
-const env = process.env.NODE_ENV || "dev";
+import * as config from 'config'
+const conf = config.get('env');
+
+const env = process.env.NODE_ENV || conf.name;
 export const BaseUrl = "http://d2q1prebf1m2s9.cloudfront.net/";
 export const NewEmailAssets =
     "http://d2q1prebf1m2s9.cloudfront.net/assets/email";

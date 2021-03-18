@@ -4,23 +4,6 @@ import * as config from 'config'
 
 const dbConfig = config.get('db');
 
-console.log(dbConfig);
-console.log('-----------------------------');
-
-console.log({
-    type: dbConfig.type,
-    host: process.env.RDS_Host || dbConfig.host,
-    port: process.env.RDS_Port || dbConfig.port,
-    username: process.env.RDS_Username || dbConfig.username,
-    password: process.env.RDS_Password || dbConfig.password,
-    database: process.env.RDS_Database || dbConfig.database,
-    logging:true,
-    cache: true,
-    entities: [
-        __dirname + '/../**/entity/*.entity{.ts,.js}',
-    ],
-    synchronize: process.env.Typeorm_Sync|| dbConfig.synchronize,
-} );
 
 
 export const typeOrmConfig: TypeOrmModuleOptions={
