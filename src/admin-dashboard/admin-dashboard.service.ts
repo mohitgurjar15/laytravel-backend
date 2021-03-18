@@ -476,13 +476,15 @@ export class AdminDashboardService {
       response["revenue_from_full_price"] = (Math.round(revenueFromNoInstallment * 100) / 100).toFixed(2);
 
       var revenueFromInstallment = revenues[0].total_profit - revenueNoInstallment[0].total_profit;
-      response["revenue_from_installment"] = (Math.round(revenueFromInstallment * 100) / 100).toFixed(2);
+      response["revenue_from_installment"] = (Math.round(revenueFromInstallment * 100) / 100).toFixed(2) || 0;
 
-      var revenueFromNoInstallmentPercent = revenueFromNoInstallment * 100 / revenues[0].total_profit
-      response["revenue_from_full_price_percentage"] = (Math.round(revenueFromNoInstallmentPercent * 100) / 100).toFixed(2);
+      var revenueFromNoInstallmentPercent = revenueFromNoInstallment * 100 / revenues[0].total_profit || 0
+      response["revenue_from_full_price_percentage"] = (Math.round(revenueFromNoInstallmentPercent * 100) / 100).toFixed(2) || 0;
 
-      var revenueFromInstallmentPercent = revenueFromInstallment * 100 / revenues[0].total_profit
-      response["revenue_from_installment_percentage"] = (Math.round(revenueFromInstallmentPercent * 100) / 100).toFixed(2);
+      var revenueFromInstallmentPercent = revenueFromInstallment || 0 * 100 / revenues[0].total_profit || 0
+      response["revenue_from_installment_percentage"] =
+          (Math.round(revenueFromInstallmentPercent * 100) / 100).toFixed(2) ||
+          0;
 
       var installmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
