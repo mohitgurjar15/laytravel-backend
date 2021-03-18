@@ -12,7 +12,7 @@ db:
     type: "postgres"
 
 env: 
-    name: "dev"
+    name: "prod"
 
 jwt:
     ExpireIn: 1576800000
