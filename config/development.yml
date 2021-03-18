@@ -1,3 +1,4 @@
+
 #
 # Created on Tue May 12 2020
 #
@@ -10,9 +11,9 @@ db:
     type: "postgres"
     port: 5432
     username: "postgres"
-    host: "laytrip-dev.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
+    host: "laytrip-live.co7ivhdiz1jp.us-east-2.rds.amazonaws.com"
     database: "laytrip"
-    password: "nOEbFEONMcWpZNPzdcQ1"
+    password: "PIpFGqsd2hwqOKoINa4D"
     synchronize: false
 
 jwt:

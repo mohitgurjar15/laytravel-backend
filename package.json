@@ -72,7 +72,7 @@
     "rxjs": "^6.5.4",
     "simple-git": "^2.31.0",
     "swagger-ui-express": "^4.1.4",
-    "twilio": "^3.55.0",
+    "twilio": "^3.58.0",
     "typeorm": "^0.2.29",
     "typeorm-encrypted": "^0.5.6",
     "uniqid": "^5.2.0",
