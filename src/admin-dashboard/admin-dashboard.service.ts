@@ -519,10 +519,11 @@ export class AdminDashboardService {
       var paidbyCustomerpartialPoint = await getConnection().query(`
       select sum(amount) as total_amount from booking_instalments where payment_status = ${PaymentStatus.CONFIRM}  
 			`);
+      
       response["paid_by_customer"] =
-        parseFloat(paidbyCustomerpartialPoint[0].total_amount) +
-        parseFloat(paidbyCustomerFullPayment[0].total_amount) +
-        parseFloat(paidbyCustomerPoint[0].total_point) || 0;
+        parseFloat(paidbyCustomerpartialPoint[0].total_amount || 0) +
+        parseFloat(paidbyCustomerFullPayment[0].total_amount || 0) +
+        parseFloat(paidbyCustomerPoint[0].total_point || 0);
 
       var totalBooking = await getConnection().query(`
                 SELECT  count(id) as cnt from booking where ${moduleIdCondition} AND ${dateConditon}  

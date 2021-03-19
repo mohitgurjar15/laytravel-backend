@@ -26,20 +26,20 @@ async function bootstrap() {
   const serverConfig = config.get("server");
   const sentryConfig = config.get("Sentry");
   const env = process.env.NODE_ENV
-  let httpsOptions = {
-    key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem")),
-    cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem")),
-  };
+  // let httpsOptions = {
+  //   key: fs.readFileSync(path.resolve("src/config/cert/privkey.pem")),
+  //   cert: fs.readFileSync(path.resolve("src/config/cert/fullchain.pem")),
+  // };
 
-  if(env == 'prod'){
-    console.log(env);
-    httpsOptions = {
-        key: fs.readFileSync(path.resolve("src/config/cert/live_privkey.pem")),
-        cert: fs.readFileSync(
-            path.resolve("src/config/cert/live_fullchain.pem")
-        ),
-    };
-  }
+  // if(env == 'prod'){
+  //   console.log(env);
+  //   httpsOptions = {
+  //       key: fs.readFileSync(path.resolve("src/config/cert/live_privkey.pem")),
+  //       cert: fs.readFileSync(
+  //           path.resolve("src/config/cert/live_fullchain.pem")
+  //       ),
+  //   };
+  // }
 
   console.log(env);
   
@@ -100,7 +100,7 @@ async function bootstrap() {
 
   server.use(timeout(3600));
   http.createServer(server).listen(port);
-  https.createServer(httpsOptions, server).listen(4047);
+  //https.createServer(httpsOptions, server).listen(4047);
 }
 
 bootstrap();
