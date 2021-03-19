@@ -157,29 +157,9 @@ export class UserService {
                 adminId,
                 "user",
                 `New user ${user.email} created by admin `,
-                null,
+                '',
                 JSON.stringify(user)
             );
-            this.mailerService
-                .sendMail({
-                    to: userdata.email,
-                    from: mailConfig.from,
-                    subject: `Welcome on board`,
-                    bcc: mailConfig.BCC,
-                    template: "welcome.html",
-                    context: {
-                        // Data to be sent to template files.
-                        username: userdata.firstName + " " + userdata.lastName,
-                        email: userdata.email,
-                        password: password,
-                    },
-                })
-                .then((res) => {
-                    console.log("res", res);
-                })
-                .catch((err) => {
-                    console.log("err", err);
-                });
         }
         return userdata;
     }
