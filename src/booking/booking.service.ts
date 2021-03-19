@@ -1259,6 +1259,17 @@ export class BookingService {
             let remainAmount = 0;
 
             ////console.log(result);
+            const cardData = await getConnection()
+                .createQueryBuilder(UserCard, "card")
+                .select(
+                    ["card.cardType",
+                "card.cardHolderName",
+                "card.cardDigits",
+                "card.id"])
+                .where(
+                    `card_token = '${result.cardToken}' AND user_id = '${result.userId}'`
+                )
+                .getOne();
 
             if (result.bookingInstalments.length > 0) {
                 result.bookingInstalments.sort((a, b) => a.id - b.id);
@@ -1304,8 +1315,9 @@ export class BookingService {
             //         }
             //     }
             // }
-
-            return result;
+            let responce : any = result
+            responce["userData"] = cardData;
+            return responce;
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 //console.log("m");
