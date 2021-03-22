@@ -674,9 +674,9 @@ export class PaymentService {
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
-            logData["responce"] = error.data;
-            logData["responce"]['error'] = error;
-            logData["responce"]['message'] = error.message;
+            logData["responce"] = error?.data;
+            logData['error'] = error;
+            logData['message'] = error?.message;
             let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
             if (userId) {
                 fileName += "_" + userId;
