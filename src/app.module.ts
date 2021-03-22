@@ -46,6 +46,7 @@ import { MarketingModule } from './marketing/marketing.module';
 import { CartModule } from './cart/cart.module';
 import { DealModule } from './deal/deal.module';
 import { LaytripCategoryModule } from './laytrip-category/laytrip-category.module';
+import { FlightRouteModule } from './flight-route/flight-route.module';
 console.log(typeOrmConfig);
 
 @Module({
@@ -120,6 +121,7 @@ console.log(typeOrmConfig);
     CartModule,
     DealModule,
     LaytripCategoryModule,
+    FlightRouteModule,
     /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

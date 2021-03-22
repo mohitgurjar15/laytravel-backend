@@ -674,8 +674,12 @@ export class PaymentService {
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
-            logData["responce"] = error;
+            logData["responce"] = error.data;
+            logData["responce"]['message'] = error.message;
             let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
+            if (userId) {
+                fileName += "_" + userId;
+            }
             Activity.createlogFile(fileName, logData, "payment");
             //console.log(error.response.status);
 
