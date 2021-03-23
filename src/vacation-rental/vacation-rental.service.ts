@@ -746,22 +746,22 @@ export class VacationRentalService {
 
 			var travelerInfo = [];
 			for await (const traveler of travelers) {
-				var today = new Date();
-				var birthDate = new Date(traveler.travelerInfo.dob);
-				var age = moment(new Date()).diff(moment(birthDate), 'years');
+				// var today = new Date();
+				// var birthDate = new Date(traveler.travelerInfo.dob);
+				// var age = moment(new Date()).diff(moment(birthDate), 'years');
 
-				var user_type = '';
-				if (age < 2) {
-					user_type = "infant";
-				} else if (age < 12) {
-					user_type = "child";
-				} else {
-					user_type = "adult";
-				}
+				// var user_type = '';
+				// if (age < 2) {
+				// 	user_type = "infant";
+				// } else if (age < 12) {
+				// 	user_type = "child";
+				// } else {
+				// 	user_type = "adult";
+				// }
 				travelerInfo.push({
 					name: traveler.travelerInfo.firstName + ' ' + traveler.travelerInfo.lastName,
 					email: traveler.travelerInfo.email,
-					type: user_type
+					type: traveler.travelerInfo.user_type
 				})
 
 			}

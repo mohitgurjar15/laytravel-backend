@@ -448,15 +448,17 @@ more than 5.`
             // }else if(isPrimaryCount > 1){
             //     throw new BadRequestException(`Please select 1 primary traveler.`)
             // }
-
+            let travelerNo = 0
             for await (const traveler of travelers) {
                 let cartTraveler = new CartTravelers();
                 cartTraveler.cartId = result.id;
                 cartTraveler.userId = traveler.traveler_id;
-                cartTraveler.isPrimary = traveler?.is_primary_traveler
+                cartTraveler.isPrimary = travelerNo == 0
                     ? true
                     : false;
+                 
                 cartTraveler.baggageServiceCode = traveler.baggage_service_code;
+                travelerNo++
                 await cartTraveler.save();
             }
 
@@ -759,6 +761,9 @@ more than 5.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
+                }
+                if(cart.travelers.length){
+                    cart.travelers.sort((a, b) => a.id - b.id);
                 }
                 newCart["oldModuleInfo"] = cart.oldModuleInfo || {};
                 newCart["id"] = cart.id;
@@ -1537,8 +1542,8 @@ more than 5.`
         if (responce?.param) {
             let subject =
                 responce.param.bookingType == BookingType.INSTALMENT
-                    ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`
-                    : `BOOKING ID ${responce.param.orderId} CONFIRMATION`;
+                    ? `Booking ID ${responce.param.orderId} Confirmation`
+                    : `Booking ID ${responce.param.orderId} Confirmation`;
             this.mailerService
                 .sendMail({
                     to: responce.email,
@@ -1563,7 +1568,7 @@ more than 5.`
                 ? user.lastName
                 : "";
 
-            const subject = `BOOKING NOT COMPLETED`;
+            const subject = `Booking Not Completed`;
             this.mailerService
                 .sendMail({
                     to: user.email,

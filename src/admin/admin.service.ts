@@ -40,6 +40,7 @@ import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ExportUserDto } from "src/user/dto/export-user.dto";
+import { LaytripWelcomeBoardMail } from "src/config/new_email_templete/laytrip_welcome-board-mail.html";
 
 @Injectable()
 export class AdminService {
@@ -92,25 +93,19 @@ export class AdminService {
 		if (userdata) {
 			Activity.logActivity(adminId, "Admin", ` New admin ${userdata.email} created By super admin ${adminId}`, null, JSON.stringify(userdata));
 			this.mailerService
-				.sendMail({
-					to: userdata.email,
-					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: `Welcome on board`,
-					template: "welcome.html",
-					context: {
-						// Data to be sent to template files.
-						username: userdata.firstName + " " + userdata.lastName,
-						email: userdata.email,
-						password: password,
-					},
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
+                .sendMail({
+                    to: email,
+                    from: mailConfig.from,
+                    cc: mailConfig.BCC,
+                    subject: "Welcome To Laytrip!",
+                    html: LaytripWelcomeBoardMail(),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
 		}
 		return userdata;
 	}

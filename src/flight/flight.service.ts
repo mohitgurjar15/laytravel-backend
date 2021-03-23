@@ -2110,17 +2110,30 @@ export class FlightService {
                     .createQueryBuilder(User, "user")
                     .where(`"user_id" =:user_id`, { user_id: travelerId })
                     .getOne();
+                var birthDate = new Date(userData.dob);
+                var age = moment(new Date()).diff(moment(birthDate), "years");
+
+                var user_type = "";
+                if (age < 2) {
+                    user_type = "infant";
+                } else if (age < 12) {
+                    user_type = "child";
+                } else {
+                    user_type = "adult";
+                }
                 const travelerInfo: TravelerInfoModel = {
                     firstName: userData.firstName,
-                    passportExpiry: userData.passportExpiry,
-                    passportNumber: userData.passportNumber,
-                    lastName: userData.lastName,
-                    email: userData.email,
-                    phoneNo: userData.phoneNo,
-                    countryCode: userData.countryCode,
+                    passportExpiry: userData.passportExpiry || '',
+                    passportNumber: userData.passportNumber || '',
+                    lastName: userData.lastName || '',
+                    email: userData.email || '',
+                    phoneNo: userData.phoneNo || '',
+                    countryCode: userData.countryCode || '',
                     dob: userData.dob,
                     countryId: userData.countryId,
                     gender: userData.gender,
+                    age : age,
+                    user_type: user_type
                 };
                 var travelerUser = new TravelerInfo();
                 travelerUser.bookingId = bookingId;
@@ -2418,12 +2431,7 @@ export class FlightService {
                 });
             }
 
-            var EmailSubject = "";
-            if (bookingData.bookingType == BookingType.INSTALMENT) {
-                EmailSubject = "Flight Booking Details";
-            } else {
-                EmailSubject = "Flight Booking Confirmation";
-            }
+            
             const d = await this.formatDate(bookingData.bookingDate);
             const installmentDetail = {
                 amount:
@@ -2478,6 +2486,13 @@ export class FlightService {
                     cartId: bookingData.cart.laytripCartId,
                     totalAmount: cartData.totalAmount,
                 };
+            }
+
+            var EmailSubject = "";
+            if (bookingData.bookingType == BookingType.INSTALMENT) {
+                EmailSubject = "Flight Booking Details";
+            } else {
+                EmailSubject = "Flight Booking Confirmation";
             }
 
             param.bookingType = bookingData.bookingType;
@@ -3191,16 +3206,16 @@ export class FlightService {
                     );
                     let bookingResult;
                     console.log("dayDiff", dayDiff);
-                    if (dayDiff <= 90) {
-                        const mystifly = new Strategy(
-                            new Mystifly(headers, this.cacheManager)
-                        );
-                        bookingResult = await mystifly.bookFlight(
-                            bookFlightDto,
-                            travelersDetails,
-                            isPassportRequired
-                        );
-                    }
+                    // if (dayDiff <= 90) {
+                    //     const mystifly = new Strategy(
+                    //         new Mystifly(headers, this.cacheManager)
+                    //     );
+                    //     bookingResult = await mystifly.bookFlight(
+                    //         bookFlightDto,
+                    //         travelersDetails,
+                    //         isPassportRequired
+                    //     );
+                    // }
 
                     let authCardToken = transaction_token;
 
@@ -3218,16 +3233,16 @@ export class FlightService {
                         travelers,
                         cartId
                     );
-                    if (dayDiff <= 90) {
-                        this.bookingUpdateFromSupplierside(
-                            laytripBookingResult.laytripBookingId,
-                            {
-                                supplier_booking_id:
-                                    laytripBookingResult.supplierBookingId,
-                            },
-                            1
-                        );
-                    }
+                    // if (dayDiff <= 90) {
+                    //     this.bookingUpdateFromSupplierside(
+                    //         laytripBookingResult.laytripBookingId,
+                    //         {
+                    //             supplier_booking_id:
+                    //                 laytripBookingResult.supplierBookingId,
+                    //         },
+                    //         1
+                    //     );
+                    // }
                     return {
                         laytrip_booking_id: laytripBookingResult.id,
                         booking_status: "pending",
@@ -3366,7 +3381,7 @@ export class FlightService {
                         to: mailData.userMail,
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
-                        subject: `TRAVEL PROVIDER RESERVATION CONFIRMATION #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
+                        subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
                         html:await LaytripFlightBookingConfirmtionMail(mailData.param)
                     })
                     .then((res) => {
@@ -3381,8 +3396,10 @@ export class FlightService {
                         to: mailData.userMail,
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
-                        subject: `REMINDER - TRAVEL PROVIDER RESERVATION CONFIRMATION #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
-                        html:await  TravelProviderReconfirmationMail(mailData.param)
+                        subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no} REMINDER`,
+                        html: await TravelProviderReconfirmationMail(
+                            mailData.param
+                        ),
                     })
                     .then((res) => {
                         console.log("res", res);
@@ -3399,7 +3416,7 @@ export class FlightService {
                         subject:
                             isNewBooking == 1
                                 ? mailData.sub
-                                : `BOOKING ID ${mailData.param.cart.cartId} CHANGE BY TRAVEL PROVIDER`,
+                                : `Booking ID ${mailData.param.cart.cartId} Change By Travel Provider`,
                         html:
                             isNewBooking == 1
                                 ? await FlightBookingConfirmtionMail(

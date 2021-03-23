@@ -81,7 +81,7 @@ export class EnqiryService {
                      to: email,
                      from: mailConfig.from,
                      bcc: mailConfig.BCC,
-                     subject: `MESSAGE RECEIVED`,
+                     subject: `Message to Laytrip Received`,
                      html: await LaytripInquiryAutoReplayMail({
                          username: name || "",
                      }),
@@ -92,7 +92,7 @@ export class EnqiryService {
                  .catch((err) => {
                      console.log("err", err);
                  });
-			return { message: `Your enquiry is sent successfully to our team. our team will back to you on your query.` };
+			return { message: `Message sent successfully.` };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

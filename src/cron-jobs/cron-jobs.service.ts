@@ -301,7 +301,8 @@ export class CronJobsService {
                         cardToken,
                         amount,
                         currencyCode,
-                        cartBooking.userId
+                        cartBooking.userId,
+                        true
                     );
                     console.log("transaction done");
                     for await (const booking of cartBooking.bookings) {
@@ -464,7 +465,7 @@ export class CronJobsService {
                                         to: cartBooking.user.email,
                                         from: mailConfig.from,
                                         bcc: mailConfig.BCC,
-                                        subject: `BOOKING ID ${param.bookingId} NOTICE OF DEFAULT AND CANCELLATION`,
+                                        subject: `Booking ID ${param.bookingId} Notice Of Default And Cancellation`,
                                         html: await LaytripPaymentFailedTemplete(
                                             param
                                         ),
@@ -481,7 +482,7 @@ export class CronJobsService {
                                         to: cartBooking.user.email,
                                         from: mailConfig.from,
                                         bcc: mailConfig.BCC,
-                                        subject: `BOOKING ID ${param.bookingId} MISSED PAYMENT REMINDER #${param.try}`,
+                                        subject: `Booking ID ${param.bookingId} ${param.try == 3 ? 'Final' : ''}Missed Payment Reminder #${param.try}`,
                                         html: await LaytripMissedPaymentTemplete(
                                             param
                                         ),
@@ -632,7 +633,7 @@ export class CronJobsService {
                                         to: cartBooking.user.email,
                                         from: mailConfig.from,
                                         bcc: mailConfig.BCC,
-                                        subject: `BOOKING ID ${param.bookingId} INSTALLMENT RECEIVED`,
+                                        subject: `Booking ID ${param.bookingId} Installment Recevied`,
                                         html: LaytripInstallmentRecevied(param),
                                     })
                                     .then((res) => {
@@ -646,7 +647,7 @@ export class CronJobsService {
                                     cartBooking.laytripCartId
                                 );
                                 if (responce?.param) {
-                                    let subject = `BOOKING ID ${cartBooking.laytripCartId} COMPLETION NOTICE`;
+                                    let subject = `Booking ID ${cartBooking.laytripCartId} Complition Notice`;
                                     this.mailerService
                                         .sendMail({
                                             to: responce.email,
@@ -1002,7 +1003,7 @@ export class CronJobsService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: "Booking Failed Mail",
+                subject: `Booking ID ${bookingId} Provider Cancellation Notice`,
                 html: LaytripCancellationTravelProviderMail({
                     userName,
                     bookingId,
@@ -1251,7 +1252,7 @@ export class CronJobsService {
                             to: booking.user.email,
                             from: mailConfig.from,
                             bcc: mailConfig.BCC,
-                            subject: `BOOKING ID ${param.bookingId} UPCOMING PAYMENT REMINDER`,
+                            subject: `Booking ID ${param.bookingId} Upcoming Payment Reminder`,
                             html: LaytripPaymentReminderTemplete(param),
                         })
                         .then((res) => {
@@ -1848,7 +1849,7 @@ export class CronJobsService {
                     to: mail.userMail,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `BOOKING ID ${mail.param.cart.cartId} REMINDER FOR YOUR UPCOMING TRIP`,
+                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For Your Upcoming Trip`,
                     html: await LaytripFlightReminderMail(mail.param),
                 })
                 .then((res) => {

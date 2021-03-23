@@ -77,8 +77,8 @@ export class BookingService {
         if (responce?.param) {
             let subject =
                 responce.param.bookingType == BookingType.INSTALMENT
-                    ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`
-                    : `BOOKING ID ${responce.param.orderId} CONFIRMATION`;
+                    ? `Booking ID ${responce.param.orderId} Confirmation`
+                    : `Booking ID ${responce.param.orderId} Confirmation`;
             this.mailerService
                 .sendMail({
                     to: responce.email,
@@ -251,25 +251,25 @@ export class BookingService {
             };
             var travelerInfo = [];
             for await (const traveler of travelers) {
-                var today = new Date();
-                var birthDate = new Date(traveler.travelerInfo.dob);
-                var age = moment(new Date()).diff(moment(birthDate), "years");
+                // var today = new Date();
+                // var birthDate = new Date(traveler.travelerInfo.dob);
+                // var age = moment(new Date()).diff(moment(birthDate), "years");
 
-                var user_type = "";
-                if (age < 2) {
-                    user_type = "infant";
-                } else if (age < 12) {
-                    user_type = "child";
-                } else {
-                    user_type = "adult";
-                }
+                // var user_type = "";
+                // if (age < 2) {
+                //     user_type = "infant";
+                // } else if (age < 12) {
+                //     user_type = "child";
+                // } else {
+                //     user_type = "adult";
+                // }
                 travelerInfo.push({
                     name:
                         traveler.travelerInfo.firstName +
                         " " +
                         traveler.travelerInfo.lastName,
                     email: traveler.travelerInfo.email,
-                    type: user_type,
+                    type: traveler.travelerInfo.user_type,
                 });
             }
             const cartData = await CartDataUtility.cartData(bookingData.cartId);
@@ -400,28 +400,28 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
-                for (let j in result.data[i].travelers) {
-                    if (result.data[i].travelers[j].travelerInfo?.dob) {
-                        var birthDate = new Date(
-                            result.data[i].travelers[j].travelerInfo.dob
-                        );
-                        var age = moment(new Date()).diff(
-                            moment(birthDate),
-                            "years"
-                        );
+                // for (let j in result.data[i].travelers) {
+                //     if (result.data[i].travelers[j].travelerInfo?.dob) {
+                //         var birthDate = new Date(
+                //             result.data[i].travelers[j].travelerInfo.dob
+                //         );
+                //         var age = moment(new Date()).diff(
+                //             moment(birthDate),
+                //             "years"
+                //         );
 
-                        if (age < 2) {
-                            result.data[i].travelers[j].travelerInfo.user_type =
-                                "infant";
-                        } else if (age < 12) {
-                            result.data[i].travelers[j].travelerInfo.user_type =
-                                "child";
-                        } else {
-                            result.data[i].travelers[j].travelerInfo.user_type =
-                                "adult";
-                        }
-                    }
-                }
+                //         if (age < 2) {
+                //             result.data[i].travelers[j].travelerInfo.user_type =
+                //                 "infant";
+                //         } else if (age < 12) {
+                //             result.data[i].travelers[j].travelerInfo.user_type =
+                //                 "child";
+                //         } else {
+                //             result.data[i].travelers[j].travelerInfo.user_type =
+                //                 "adult";
+                //         }
+                //     }
+                // }
             }
             return result;
         } catch (error) {
@@ -506,25 +506,25 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
-                for (let j in result.data[i].travelers) {
-                    var birthDate = new Date(
-                        result.data[i].travelers[j].travelerInfo.dob
-                    );
-                    var age = moment(new Date()).diff(
-                        moment(birthDate),
-                        "years"
-                    );
-                    if (age < 2) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "infant";
-                    } else if (age < 12) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "child";
-                    } else {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "adult";
-                    }
-                }
+                // for (let j in result.data[i].travelers) {
+                //     var birthDate = new Date(
+                //         result.data[i].travelers[j].travelerInfo.dob
+                //     );
+                //     var age = moment(new Date()).diff(
+                //         moment(birthDate),
+                //         "years"
+                //     );
+                //     if (age < 2) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "infant";
+                //     } else if (age < 12) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "child";
+                //     } else {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "adult";
+                //     }
+                // }
             }
             return result;
         } catch (error) {
@@ -1259,6 +1259,17 @@ export class BookingService {
             let remainAmount = 0;
 
             ////console.log(result);
+            const cardData = await getConnection()
+                .createQueryBuilder(UserCard, "card")
+                .select(
+                    ["card.cardType",
+                "card.cardHolderName",
+                "card.cardDigits",
+                "card.id"])
+                .where(
+                    `card_token = '${result.cardToken}' AND user_id = '${result.userId}'`
+                )
+                .getOne();
 
             if (result.bookingInstalments.length > 0) {
                 result.bookingInstalments.sort((a, b) => a.id - b.id);
@@ -1285,27 +1296,28 @@ export class BookingService {
             delete result.user.updatedDate;
             delete result.user.salt;
             delete result.user.password;
-            for (let j in result.travelers) {
-                if (result.travelers[j].travelerInfo?.dob) {
-                    var birthDate = new Date(
-                        result.travelers[j].travelerInfo.dob
-                    );
-                    var age = moment(new Date()).diff(
-                        moment(birthDate),
-                        "years"
-                    );
+            // for (let j in result.travelers) {
+            //     if (result.travelers[j].travelerInfo?.dob) {
+            //         var birthDate = new Date(
+            //             result.travelers[j].travelerInfo.dob
+            //         );
+            //         var age = moment(new Date()).diff(
+            //             moment(birthDate),
+            //             "years"
+            //         );
 
-                    if (age < 2) {
-                        result.travelers[j].travelerInfo.user_type = "infant";
-                    } else if (age < 12) {
-                        result.travelers[j].travelerInfo.user_type = "child";
-                    } else {
-                        result.travelers[j].travelerInfo.user_type = "adult";
-                    }
-                }
-            }
-
-            return result;
+            //         if (age < 2) {
+            //             result.travelers[j].travelerInfo.user_type = "infant";
+            //         } else if (age < 12) {
+            //             result.travelers[j].travelerInfo.user_type = "child";
+            //         } else {
+            //             result.travelers[j].travelerInfo.user_type = "adult";
+            //         }
+            //     }
+            // }
+            let responce : any = result
+            responce["userData"] = cardData;
+            return responce;
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 //console.log("m");
@@ -2074,26 +2086,26 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
-                for (let j in result.data[i].travelers) {
-                    var birthDate = new Date(
-                        result.data[i].travelers[j].travelerInfo.dob
-                    );
-                    var age = moment(new Date()).diff(
-                        moment(birthDate),
-                        "years"
-                    );
+                // for (let j in result.data[i].travelers) {
+                //     var birthDate = new Date(
+                //         result.data[i].travelers[j].travelerInfo.dob
+                //     );
+                //     var age = moment(new Date()).diff(
+                //         moment(birthDate),
+                //         "years"
+                //     );
 
-                    if (age < 2) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "infant";
-                    } else if (age < 12) {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "child";
-                    } else {
-                        result.data[i].travelers[j].travelerInfo.user_type =
-                            "adult";
-                    }
-                }
+                //     if (age < 2) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "infant";
+                //     } else if (age < 12) {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "child";
+                //     } else {
+                //         result.data[i].travelers[j].travelerInfo.user_type =
+                //             "adult";
+                //     }
+                // }
             }
             return result;
         } catch (error) {
@@ -2144,8 +2156,8 @@ export class BookingService {
         if (responce?.param) {
             let subject =
                 responce.param.bookingType == BookingType.INSTALMENT
-                    ? `BOOKING ID ${responce.param.orderId} CONFIRMATION`
-                    : `BOOKING ID ${responce.param.orderId} CONFIRMATION`;
+                    ? `Booking ID ${responce.param.orderId} Confirmation`
+                    : `Booking ID ${responce.param.orderId} Confirmation`;
             let emailId = "";
             for await (const email of emails) {
                 emailId += email.email + ",";
@@ -2210,7 +2222,7 @@ export class BookingService {
                     paymentStatus: PaymentStatus.CANCELLED,
                 })
                 .where(
-                    `id =:id AND payment_status = ${PaymentStatus.PENDING}`,
+                    `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,
                     {
                         id: booking.id,
                     }
@@ -2233,7 +2245,7 @@ export class BookingService {
                     to: query.user.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `BOOKING ID ${booking_id} PROVIDER CANCELLATION NOTICE`,
+                    subject: `Booking ID ${booking_id} Provider Cancellation Notice`,
                     html: await LaytripCancellationTravelProviderMail({
                         userName: query.user.firstName || "",
                         bookingId: booking_id,
@@ -2251,7 +2263,7 @@ export class BookingService {
                     to: query.user.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `BOOKING ID ${booking_id} CUSTOMER CANCELLATION`,
+                    subject: `Booking ID ${booking_id} Custom Cancellation`,
                     html: await LaytripBookingCancellationCustomerMail({
                         username: query.user.firstName || "",
                         bookingId: booking_id,
@@ -2319,7 +2331,11 @@ export class BookingService {
         const updatedValue = await getConnection()
             .createQueryBuilder()
             .update(TravelerInfo)
-            .set({ travelerInfo: travelerInfo, updateBy: admin.userId })
+            .set({
+                travelerInfo: travelerInfo,
+                updateBy: admin.userId,
+                oldTravelerInfo: JSON.parse(previousValue),
+            })
             .where(`id=:id `, { id })
             .execute();
         const currentValue = JSON.stringify(updatedValue);
@@ -2404,7 +2420,7 @@ export class BookingService {
                 to: mail.userMail,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `BOOKING ID ${mail.param.cart.cartId} CUSTOMER CHANGE`,
+                subject: `Booking ID ${mail.param.cart.cartId} Customer Change`,
                 html: await FlightChangeAsperUserRequestMail(mail.param),
             })
             .then((res) => {

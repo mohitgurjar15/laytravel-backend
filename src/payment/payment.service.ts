@@ -49,10 +49,11 @@ import { Cart } from "src/entity/cart.entity";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
-import { isUUID } from "class-validator";
+import { isUUID, Length, length } from "class-validator";
 import { isNull } from "util";
 import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
+import { Role } from "src/enum/role.enum";
 
 @Injectable()
 export class PaymentService {
@@ -114,21 +115,21 @@ export class PaymentService {
                 .getOne()
                 if(user){
                     this.mailerService
-                    .sendMail({
-                        to: user.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `PAYMENT METHOD CHANGE CONFIRMATION`,
-                        html: await LaytripPaymentMethodChangeMail({
-                            username: user.firstName || '',
-                        }),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
+                        .sendMail({
+                            to: user.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: `Payment Method Change Confirmation`,
+                            html: await LaytripPaymentMethodChangeMail({
+                                username: user.firstName || "",
+                            }),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
                 }
                 
             }
@@ -241,7 +242,8 @@ export class PaymentService {
                 "",
                 "",
                 userId || guest_id,
-                userId || guest_id
+                userId || guest_id,
+                true
             );
             if (authoriseCode.status == false) {
                 throw new BadRequestException(
@@ -467,14 +469,21 @@ export class PaymentService {
         browser_info?: any,
         redirection: string = "",
         userId?: string,
-        description = ""
+        description = "",
+        is_2ds = false
     ) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
-        const gatewayToken = GatewayCredantial.credentials.token;
+        let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
+        
+        
+        if(is_2ds == true){
+            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+        }
 
+        
         const headers = {
             Accept: "application/json",
             Authorization: authorization,
@@ -570,7 +579,7 @@ export class PaymentService {
         }
     }
 
-    async voidCard(captureToken, userId) {
+    async voidCard(captureToken, userId ) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         const authorization = GatewayCredantial.credentials.authorization;
@@ -674,8 +683,13 @@ export class PaymentService {
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
-            logData["responce"] = error;
+            logData["responce"] = error?.data;
+            logData['error'] = error;
+            logData['message'] = error?.message;
             let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
+            if (userId) {
+                fileName += "_" + userId;
+            }
             Activity.createlogFile(fileName, logData, "payment");
             //console.log(error.response.status);
 
@@ -716,12 +730,16 @@ export class PaymentService {
         }
     }
 
-    async getPayment(card_token, amount, currency_code, userId) {
+    async getPayment(card_token, amount, currency_code, userId,is_2ds = true) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
-        const gatewayToken = GatewayCredantial.credentials.token;
+        let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
+
+        if(is_2ds == true){
+            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+        }
 
         const headers = {
             Accept: "application/json",
@@ -817,7 +835,8 @@ export class PaymentService {
                 card_token,
                 Math.ceil(amount * 100),
                 "USD",
-                createdBy
+                createdBy,
+                true
             );
 
             const transaction = new OtherPayments();
@@ -878,12 +897,19 @@ export class PaymentService {
     }
 
     async deleteCard(cardId: string, user: User) {
+        let where = `is_deleted = false and id = '${cardId}'`
+        if(user.roleId >= Role.PAID_USER)
+        {
+            if(user.roleId == Role.GUEST_USER){
+                where += `and guest_user_id = '${user.userId}'`;
+            }else{
+                where += `and user_id = '${user.userId}'`
+            }
+            
+        }
         let card = await getManager()
             .createQueryBuilder(UserCard, "user_card")
-            .where(
-                "user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
-                { user_id: user.userId, is_deleted: false, cardId }
-            )
+            .where(where)
             .getOne();
 
         if (!card) throw new NotFoundException(`No card founds`);
@@ -891,7 +917,7 @@ export class PaymentService {
         let booking = await getManager()
             .createQueryBuilder(Booking, "booking")
             .where(
-                `booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus`,
+                `booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND payment_status=:paymentStatus`,
                 {
                     booking_type: BookingType.INSTALMENT,
                     card_token: card.cardToken,
@@ -1047,7 +1073,8 @@ export class PaymentService {
                     cardToken,
                     totalAmount,
                     currencyCode,
-                    user_id
+                    user_id,
+                    true
                 );
 
                 for await (const booking of cart.bookings) {
@@ -1192,7 +1219,7 @@ export class PaymentService {
                                 to: cart.user.email,
                                 from: mailConfig.from,
                                 cc: mailConfig.BCC,
-                                subject: `BOOKING ID ${param.bookingId} INSTALLMENT RECEIVED`,
+                                subject: `Booking ID ${param.bookingId} Installment Recevied`,
                                 html: LaytripInstallmentRecevied(param),
                             })
                             .then((res) => {
@@ -1334,7 +1361,7 @@ export class PaymentService {
                 bookingId
             );
             if (responce?.param) {
-                let subject = `BOOKING ID ${responce.param.orderId} COMPLETION NOTICE`;
+                let subject = `Booking ID ${responce.param.orderId} Complition Notice`;
                 this.mailerService
                     .sendMail({
                         to: responce.email,

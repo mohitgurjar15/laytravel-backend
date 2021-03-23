@@ -153,17 +153,17 @@ export class BookingRepository extends Repository<Booking> {
 		for (let j in result.travelers) {
 			
 
-			var birthDate = new Date(result.travelers[j].travelerInfo.dob);
-			var age = moment(new Date()).diff(moment(birthDate), 'years');
+			// var birthDate = new Date(result.travelers[j].travelerInfo.dob);
+			// var age = moment(new Date()).diff(moment(birthDate), 'years');
 
-			result.travelers[j].travelerInfo.age = age;
-			if (age < 2) {
-				result.travelers[j].travelerInfo.user_type = "infant";
-			} else if (age < 12) {
-				result.travelers[j].travelerInfo.user_type = "child";
-			} else {
-				result.travelers[j].travelerInfo.user_type = "adult";
-			}
+			// result.travelers[j].travelerInfo.age = age;
+			// if (age < 2) {
+			// 	result.travelers[j].travelerInfo.user_type = "infant";
+			// } else if (age < 12) {
+			// 	result.travelers[j].travelerInfo.user_type = "child";
+			// } else {
+			// 	result.travelers[j].travelerInfo.user_type = "adult";
+			// }
 		}
 
 

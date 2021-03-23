@@ -2,9 +2,11 @@
 /dist
 /node_modules
 package-lock.json
+/config
 src/flight/mystifly-session.json
 .scannerwork/*
 sonar-project.properties
+*.yml
 # Logs
 logs
 *.log
