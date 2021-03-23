@@ -1,13 +1,12 @@
 import { IsEmail, IsNotEmpty, ValidationArguments } from "class-validator";
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 export class newEnquiryDto {
-
     @IsNotEmpty({
-        message: `Please enter user name&&&subject&&&Please enter user name`
+        message: `Please enter user name&&&subject&&&Please enter user name`,
     })
     @ApiProperty({
-        description: 'Enter user name',
-        example: 'USA'
+        description: "Enter user name",
+        example: "USA",
     })
     name: string;
 
@@ -21,14 +20,13 @@ export class newEnquiryDto {
                     return `Please enter valid email address.&&&email`;
                 }
             },
-        },
+        }
     )
     @ApiProperty({
-        description: 'User Email',
-        example: 'jon.doe@gmail.com'
+        description: "User Email",
+        example: "jon.doe@gmail.com",
     })
     email: string;
-
 
     // @ApiPropertyOptional({
     //     type: "string",
@@ -39,8 +37,6 @@ export class newEnquiryDto {
     //     example: `+1`
     // })
     // country_code: string;
-
-
 
     // @ApiPropertyOptional({
     //     type: "string",
@@ -53,11 +49,19 @@ export class newEnquiryDto {
     // phone_no: string;
 
     @IsNotEmpty({
-        message: `Please enter message&&&message&&&Please enter message`
+        message: `Please enter message&&&message&&&Please enter message`,
     })
     @ApiProperty({
-        description: 'Enter message',
-        example: `how many bad in primium room `
+        description: "Enter message",
+        example: `how many bad in primium room `,
     })
     message: string;
+
+    @ApiPropertyOptional({
+        type: "string",
+        format: "binary",
+        description: "file url",
+        example: "",
+    })
+    file: string;
 }

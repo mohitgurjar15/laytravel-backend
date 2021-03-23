@@ -278,7 +278,8 @@ export class FlightService {
     async searchOneWayFlight(
         searchFlightDto: OneWaySearchFlightDto,
         headers,
-        user
+        user,
+        userIp
     ) {
 
         if(user?.roleId < Role.PAID_USER){
@@ -296,7 +297,8 @@ export class FlightService {
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
-            user.user_id
+            user.user_id,
+            userIp
         );
         return result;
     }
@@ -1250,7 +1252,7 @@ export class FlightService {
     async searchRoundTripFlight(
         searchFlightDto: RoundtripSearchFlightDto,
         headers,
-        user
+        user,userIp
     ) {
          if (user?.roleId < Role.PAID_USER) {
              user.user_id = searchFlightDto.user_id;
@@ -1264,7 +1266,8 @@ export class FlightService {
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
-            user.user_id
+            user.user_id,
+            userIp
         );
         return result;
     }
@@ -2917,7 +2920,7 @@ export class FlightService {
                         : 0,
                 };
                 console.log("oneway dto", dto);
-                flights = await this.searchOneWayFlight(
+                flights = await this.searchOneWayZipFlight(
                     dto,
                     Headers,
                     bookingData.user
@@ -2946,7 +2949,7 @@ export class FlightService {
                         bookingData.moduleInfo[0].arrival_code
                     ),
                 };
-                flights = await this.searchOneWayFlight(
+                flights = await this.searchRoundTripZipFlight(
                     dto,
                     Headers,
                     bookingData.user

@@ -22,6 +22,7 @@ import {
     BadRequestException,
     NotAcceptableException,
     ForbiddenException,
+    ParseBoolPipe,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -745,9 +746,8 @@ export class AuthService {
             }
         } catch (error) {
             console.log(error);
-            
+
             if (typeof error.response !== "undefined") {
-                
                 switch (error.response.statusCode) {
                     case 404:
                         if (
@@ -1247,10 +1247,11 @@ export class AuthService {
         checkEmailConflictDto: CheckEmailConflictDto
     ): Promise<{ is_available: boolean }> {
         const { email } = checkEmailConflictDto;
-        const roles = [Role.FREE_USER, Role.PAID_USER];   
+        const roles = [Role.FREE_USER, Role.PAID_USER];
         const userExist = await this.userRepository.findOne({
             email,
-            roleId: In(roles),isDeleted : false
+            roleId: In(roles),
+            isDeleted: false,
         });
         if (userExist && userExist.roleId != Role.GUEST_USER) {
             return { is_available: true };
@@ -1470,30 +1471,38 @@ export class AuthService {
     ): Promise<any> {
         try {
             const userId = loginUser.userId;
-            const { profile_pic } = updateProfilePicDto;
+            const { profile_pic , remove_dp } = updateProfilePicDto;
             const user = new User();
             var oldProfile = user.profilePic;
-
-            if (typeof files.profile_pic != "undefined") {
+            const removeDp :any = remove_dp
+            // console.log(remove_dp);
+            // console.log(remove_dp == true);
+            // console.log(typeof remove_dp);
+            //console.log(new ParseBoolPipe(remove_dp));
+            if(removeDp == "true"){
+                user.profilePic = null
+                console.log('abcc');
+                
+            }
+            else if (typeof files.profile_pic != "undefined") {
                 user.profilePic = files.profile_pic[0].filename;
+                if (oldProfile) {
+                    await fs.unlink(
+                        `/var/www/html/api-staging/assets/profile/${oldProfile}`,
+                        function(err) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                console.log(`${oldProfile} image  deleted!`);
+                            }
+                            // if no error, file has been deleted successfully
+                        }
+                    );
+                }
             } else {
                 throw new BadRequestException(`please select your image`);
             }
             await this.userRepository.update(userId, user);
-
-            if (oldProfile) {
-                await fs.unlink(
-                    `/var/www/html/api-staging/assets/profile/${oldProfile}`,
-                    function(err) {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log(`${oldProfile} image  deleted!`);
-                        }
-                        // if no error, file has been deleted successfully
-                    }
-                );
-            }
 
             const roleId = [
                 Role.ADMIN,
