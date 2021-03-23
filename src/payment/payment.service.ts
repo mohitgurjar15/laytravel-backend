@@ -898,8 +898,14 @@ export class PaymentService {
 
     async deleteCard(cardId: string, user: User) {
         let where = `is_deleted = false and id = '${cardId}'`
-        if(user.roleId >= Role.PAID_USER){
-            where += `and user_id = '${user.userId}'`
+        if(user.roleId >= Role.PAID_USER)
+        {
+            if(user.roleId == Role.GUEST_USER){
+                where += `and guest_user_id = '${user.userId}'`;
+            }else{
+                where += `and user_id = '${user.userId}'`
+            }
+            
         }
         let card = await getManager()
             .createQueryBuilder(UserCard, "user_card")
