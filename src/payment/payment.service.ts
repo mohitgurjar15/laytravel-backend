@@ -49,7 +49,7 @@ import { Cart } from "src/entity/cart.entity";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
-import { isUUID } from "class-validator";
+import { isUUID, Length, length } from "class-validator";
 import { isNull } from "util";
 import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
@@ -241,7 +241,8 @@ export class PaymentService {
                 "",
                 "",
                 userId || guest_id,
-                userId || guest_id
+                userId || guest_id,
+                true
             );
             if (authoriseCode.status == false) {
                 throw new BadRequestException(
@@ -467,14 +468,21 @@ export class PaymentService {
         browser_info?: any,
         redirection: string = "",
         userId?: string,
-        description = ""
+        description = "",
+        is_2ds = false
     ) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
-        const gatewayToken = GatewayCredantial.credentials.token;
+        let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
+        
+        
+        if(is_2ds == true){
+            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+        }
 
+        
         const headers = {
             Accept: "application/json",
             Authorization: authorization,
@@ -570,7 +578,7 @@ export class PaymentService {
         }
     }
 
-    async voidCard(captureToken, userId) {
+    async voidCard(captureToken, userId ) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         const authorization = GatewayCredantial.credentials.authorization;
@@ -674,9 +682,9 @@ export class PaymentService {
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
-            logData["responce"] = error.data;
-            logData["responce"]['error'] = error;
-            logData["responce"]['message'] = error.message;
+            logData["responce"] = error?.data;
+            logData['error'] = error;
+            logData['message'] = error?.message;
             let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
             if (userId) {
                 fileName += "_" + userId;
