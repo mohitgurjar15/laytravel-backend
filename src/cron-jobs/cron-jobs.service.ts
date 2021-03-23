@@ -301,7 +301,8 @@ export class CronJobsService {
                         cardToken,
                         amount,
                         currencyCode,
-                        cartBooking.userId
+                        cartBooking.userId,
+                        true
                     );
                     console.log("transaction done");
                     for await (const booking of cartBooking.bookings) {

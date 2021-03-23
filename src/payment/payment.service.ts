@@ -53,6 +53,7 @@ import { isUUID, Length, length } from "class-validator";
 import { isNull } from "util";
 import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
+import { Role } from "src/enum/role.enum";
 
 @Injectable()
 export class PaymentService {
@@ -729,12 +730,16 @@ export class PaymentService {
         }
     }
 
-    async getPayment(card_token, amount, currency_code, userId) {
+    async getPayment(card_token, amount, currency_code, userId,is_2ds = true) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
-        const gatewayToken = GatewayCredantial.credentials.token;
+        let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
+
+        if(is_2ds == true){
+            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+        }
 
         const headers = {
             Accept: "application/json",
@@ -830,7 +835,8 @@ export class PaymentService {
                 card_token,
                 Math.ceil(amount * 100),
                 "USD",
-                createdBy
+                createdBy,
+                true
             );
 
             const transaction = new OtherPayments();
@@ -891,12 +897,13 @@ export class PaymentService {
     }
 
     async deleteCard(cardId: string, user: User) {
+        let where = `is_deleted = false and id = '${cardId}'`
+        if(user.roleId >= Role.PAID_USER){
+            where += `and user_id = '${user.userId}'`
+        }
         let card = await getManager()
             .createQueryBuilder(UserCard, "user_card")
-            .where(
-                "user_card.user_id = :user_id and user_card.is_deleted=:is_deleted and id =:cardId",
-                { user_id: user.userId, is_deleted: false, cardId }
-            )
+            .where(where)
             .getOne();
 
         if (!card) throw new NotFoundException(`No card founds`);
@@ -904,7 +911,7 @@ export class PaymentService {
         let booking = await getManager()
             .createQueryBuilder(Booking, "booking")
             .where(
-                `booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND user_id =:user_id AND payment_status=:paymentStatus`,
+                `booking_type=:booking_type AND card_token=:card_token AND check_in_date >=:today AND payment_status=:paymentStatus`,
                 {
                     booking_type: BookingType.INSTALMENT,
                     card_token: card.cardToken,
@@ -1060,7 +1067,8 @@ export class PaymentService {
                     cardToken,
                     totalAmount,
                     currencyCode,
-                    user_id
+                    user_id,
+                    true
                 );
 
                 for await (const booking of cart.bookings) {
