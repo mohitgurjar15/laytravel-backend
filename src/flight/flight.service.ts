@@ -74,6 +74,7 @@ import { ModuleTokenFactory } from "@nestjs/core/injector/module-token-factory";
 import { ModulesName } from "src/enum/module.enum";
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
+import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
 import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
@@ -276,7 +277,8 @@ export class FlightService {
     async searchOneWayFlight(
         searchFlightDto: OneWaySearchFlightDto,
         headers,
-        user
+        user,
+        userIp
     ) {
 
         if(user?.roleId < Role.PAID_USER){
@@ -294,7 +296,8 @@ export class FlightService {
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
-            user.user_id
+            user.user_id,
+            userIp
         );
         return result;
     }
@@ -1248,7 +1251,7 @@ export class FlightService {
     async searchRoundTripFlight(
         searchFlightDto: RoundtripSearchFlightDto,
         headers,
-        user
+        user,userIp
     ) {
          if (user?.roleId < Role.PAID_USER) {
              user.user_id = searchFlightDto.user_id;
@@ -1262,8 +1265,10 @@ export class FlightService {
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
-            user.user_id
+            user.user_id,
+            userIp
         );
+
         return result;
     }
 
@@ -2915,7 +2920,7 @@ export class FlightService {
                         : 0,
                 };
                 console.log("oneway dto", dto);
-                flights = await this.searchOneWayFlight(
+                flights = await this.searchOneWayZipFlight(
                     dto,
                     Headers,
                     bookingData.user
@@ -2944,7 +2949,7 @@ export class FlightService {
                         bookingData.moduleInfo[0].arrival_code
                     ),
                 };
-                flights = await this.searchOneWayFlight(
+                flights = await this.searchRoundTripZipFlight(
                     dto,
                     Headers,
                     bookingData.user
@@ -3434,7 +3439,6 @@ export class FlightService {
         }
     }
 
-    
 
     async flightRoute(type) {
         let result;

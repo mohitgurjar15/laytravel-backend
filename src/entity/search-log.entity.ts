@@ -15,7 +15,6 @@ import { User } from "./user.entity";
 @Index("search_log_user_id", ["userId"], {})
 @Entity("search_log")
 export class SearchLog extends BaseEntity {
-
     @Column("uuid", { primary: true, name: "id" })
     id: string;
 
@@ -31,16 +30,22 @@ export class SearchLog extends BaseEntity {
     @Column("json", { name: "search_log" })
     searchLog: object;
 
+    @Column("character varying", {
+        name: "ip_address",
+        length: 255,nullable : true
+    })
+    ipAddress: string;
+
     @ManyToOne(
         () => User,
-        user => user.activityLogs
+        (user) => user.activityLogs
     )
     @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
     user: User;
 
     @ManyToOne(
         () => Module,
-        module => module.searchLog
+        (module) => module.searchLog
     )
     @JoinColumn([{ name: "module_id", referencedColumnName: "id" }])
     module: Module;

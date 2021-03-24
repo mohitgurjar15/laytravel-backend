@@ -24,14 +24,15 @@ export class Activity {
             .execute();
     }
 
-    static addSearchLog(moduleId: number, searchDto: object, userId: string = null) {
+    static addSearchLog(moduleId: number, searchDto: object, userId: string = null , userIp = '') {
 
         const activity = new SearchLog();
         activity.id = uuidv4()
         activity.userId = userId;
         activity.moduleId = moduleId;
         activity.searchLog = searchDto;
-        activity.createdDate = new Date();
+        activity.createdDate = new Date()
+        activity.ipAddress = userIp || null
 
         getConnection()
             .createQueryBuilder()

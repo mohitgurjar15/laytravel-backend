@@ -29,3 +29,9 @@ export const reviewLink =
     env == "prod"
         ? `https://laytrip.com/cart/confirm/`
         : `https://alpha.laytrip.com/cart/confirm/`;
+export const logUrl =
+           env == "prod"
+               ? `https://laytrip.com/logs/`
+               : `https://ip.laytrip.com/logs/`;
+
+    
