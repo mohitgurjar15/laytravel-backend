@@ -46,6 +46,7 @@ import { LaytripInquiryAutoReplayMail } from "src/config/new_email_templete/layt
 import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
 import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
 import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
+import { Booking } from "src/entity/booking.entity";
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -851,5 +852,24 @@ export class GeneralService {
     //     });
     // }
 
-    
+    async bookingCategoryName(){
+
+        const res = await getManager()
+            .createQueryBuilder(Booking, "log")
+            .getMany()
+        for await (const booking of res) {
+        if (
+            booking.moduleInfo[0]?.departure_code &&
+            booking.moduleInfo[0]?.arrival_code
+        ) {
+            const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${booking.moduleInfo[0].departure_code}' and to_airport_code = '${booking.moduleInfo[0].arrival_code}'`);
+            booking.categoryName = caegory?.categoryname || null;
+            await booking.save();
+        }
+            
+        }
+    }   
 }

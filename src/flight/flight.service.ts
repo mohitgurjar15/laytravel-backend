@@ -1728,6 +1728,12 @@ export class FlightService {
             source_location,
             destination_location,
         };
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        booking.categoryName = caegory?.categoryname || null;
+        
         booking.fareType = fare_type;
         booking.isTicketd = fare_type == "LCC" ? true : false;
 

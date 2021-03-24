@@ -1513,7 +1513,11 @@ more than 5.`
             source_location: moduleInfo[0].departure_code,
             destination_location: moduleInfo[0].arrival_code,
         };
-
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${moduleInfo[0].departure_code}' and to_airport_code = '${moduleInfo[0].arrival_code}'`);
+        booking.categoryName = caegory?.categoryname || null;
         booking.fareType = "";
         booking.isTicketd = false;
 
