@@ -74,7 +74,6 @@ import { ModuleTokenFactory } from "@nestjs/core/injector/module-token-factory";
 import { ModulesName } from "src/enum/module.enum";
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
-import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
@@ -278,7 +277,8 @@ export class FlightService {
     async searchOneWayFlight(
         searchFlightDto: OneWaySearchFlightDto,
         headers,
-        user
+        user,
+        userIp
     ) {
 
         if(user?.roleId < Role.PAID_USER){
@@ -296,7 +296,8 @@ export class FlightService {
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
-            user.user_id
+            user.user_id,
+            userIp
         );
         return result;
     }
@@ -1250,7 +1251,7 @@ export class FlightService {
     async searchRoundTripFlight(
         searchFlightDto: RoundtripSearchFlightDto,
         headers,
-        user
+        user,userIp
     ) {
          if (user?.roleId < Role.PAID_USER) {
              user.user_id = searchFlightDto.user_id;
@@ -1264,8 +1265,10 @@ export class FlightService {
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
-            user.user_id
+            user.user_id,
+            userIp
         );
+
         return result;
     }
 
@@ -2917,7 +2920,7 @@ export class FlightService {
                         : 0,
                 };
                 console.log("oneway dto", dto);
-                flights = await this.searchOneWayFlight(
+                flights = await this.searchOneWayZipFlight(
                     dto,
                     Headers,
                     bookingData.user
@@ -2946,7 +2949,7 @@ export class FlightService {
                         bookingData.moduleInfo[0].arrival_code
                     ),
                 };
-                flights = await this.searchOneWayFlight(
+                flights = await this.searchRoundTripZipFlight(
                     dto,
                     Headers,
                     bookingData.user
@@ -3436,111 +3439,6 @@ export class FlightService {
         }
     }
 
-    async addFlightRoute(addFlightRouteDto: AddFlightRouteDto, user: User) {
-        const {
-            category_id,
-            from_airport_codes,
-            to_airport_codes,
-        } = addFlightRouteDto;
-
-        const category = await getManager()
-            .createQueryBuilder(LaytripCategory, "category")
-            .where(`"id" =:id `, { id: category_id })
-            .getOne();
-
-        if (!category) {
-            throw new BadRequestException("Given category id not found.");
-        }
-        let parentFromCode = "";
-        let parentToCode = "";
-        let parentFromCount = 0;
-        for await (const airport of from_airport_codes) {
-            if (airport.is_parent == true) {
-                parentFromCount++;
-                parentFromCode = airport.airport_code;
-            }
-            if (typeof airports[airport.airport_code] == "undefined") {
-                throw new BadRequestException(
-                    `${airport.airport_code} is not available please check it`
-                );
-            }
-        }
-        if (parentFromCount > 1) {
-            throw new BadRequestException(
-                "You have pass only one parent in from locations"
-            );
-        }
-        let parentToCount = 0;
-        for await (const airport of to_airport_codes) {
-            if (airport.is_parent == true) {
-                parentToCount++;
-                parentToCode = airport.airport_code;
-            }
-            if (typeof airports[airport.airport_code] == "undefined") {
-                throw new BadRequestException(
-                    `${airport.airport_code} is not available please check it`
-                );
-            }
-        }
-        if (parentToCount > 1) {
-            throw new BadRequestException(
-                "You have pass only one parent in to locations"
-            );
-        }
-
-        let parentRoute: FlightRoute;
-        if (parentFromCode && parentToCode && parentToCode != parentToCode) {
-            const fromAirport = airports[parentFromCode];
-            const toAirport = airports[parentToCode];
-            const route = new FlightRoute();
-            route.categoryId = category.id;
-            route.createBy = user.userId;
-            route.fromAirportCity = fromAirport.city;
-            route.fromAirportCode = fromAirport.code;
-            route.fromAirportCountry = fromAirport.country;
-            route.fromAirportName = fromAirport.name;
-            route.toAirportCity = toAirport.city;
-            route.toAirportCode = toAirport.code;
-            route.toAirportCountry = toAirport.country;
-            route.toAirportName = toAirport.name;
-            route.status = true;
-            route.isDeleted = false;
-            route.createDate = new Date();
-            parentRoute = await route.save();
-        }
-
-        for await (const fromCode of from_airport_codes) {
-            const fromAirport = airports[fromCode.airport_code];
-            for await (const toCode of to_airport_codes) {
-                const toAirport = airports[toCode.airport_code];
-                if (
-                    parentFromCode != fromCode.airport_code ||
-                    parentToCode != toCode.airport_code
-                ) {
-                    const route = new FlightRoute();
-                    route.categoryId = category.id;
-                    route.createBy = user.userId;
-                    route.parentRoute = parentRoute || null;
-                    route.fromAirportCity = fromAirport.city;
-                    route.fromAirportCode = fromAirport.code;
-                    route.fromAirportCountry = fromAirport.country;
-                    route.fromAirportName = fromAirport.name;
-                    route.toAirportCity = toAirport.city;
-                    route.toAirportCode = toAirport.code;
-                    route.toAirportCountry = toAirport.country;
-                    route.toAirportName = toAirport.name;
-                    route.status = true;
-                    route.createDate = new Date();
-                    route.isDeleted = false;
-                    await route.save();
-                }
-            }
-        }
-
-        return {
-            message: `Your routes added in ${category.name} category`,
-        };
-    }
 
     async flightRoute(type) {
         let result;

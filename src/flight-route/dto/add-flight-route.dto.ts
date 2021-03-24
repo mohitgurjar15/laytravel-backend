@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsNotEmpty, ValidateNested, ValidationArguments } from "class-validator";
-import * as airports from '../airports'
 
 export class AddFlightRouteDto {
 

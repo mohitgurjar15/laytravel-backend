@@ -38,7 +38,7 @@ import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
 import { User } from "src/entity/user.entity";
 import { query } from "express";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
-import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
+import { UserIpAddress } from "src/decorator/ip-address.decorator";
 
 @ApiTags("Flight")
 @Controller("flight")
@@ -92,7 +92,8 @@ export class FlightController {
   async searchOneWayFlight(
     @Body() searchFlightDto: OneWaySearchFlightDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @UserIpAddress() userIp : string
   ) {
     if (
       moment(searchFlightDto.departure_date).isBefore(
@@ -117,7 +118,8 @@ export class FlightController {
     return await this.flightService.searchOneWayFlight(
       searchFlightDto,
       req.headers,
-      user
+      user,
+      userIp
     );
   }
 
@@ -140,7 +142,8 @@ export class FlightController {
   async searchRoundTrip(
     @Body() searchFlightDto: RoundtripSearchFlightDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @UserIpAddress() userIp : string
   ) {
     if (
       moment(searchFlightDto.departure_date).isBefore(
@@ -164,7 +167,8 @@ export class FlightController {
     return await this.flightService.searchRoundTripFlight(
       searchFlightDto,
       req.headers,
-      user
+      user,
+      userIp
     );
   }
 
@@ -554,21 +558,7 @@ export class FlightController {
         return await this.flightService.flightRoute(type);
     }
 
-    @Post('/route/create')
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @ApiOperation({ summary: "Add new flight route" })
-    @ApiResponse({ status: 200, description: 'Api success' })
-    @ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async createNewRoute(
-        @Body() addFlightRouteDto: AddFlightRouteDto,
-        @GetUser() user: User
-    ) {
-        return await this.flightService.addFlightRoute(addFlightRouteDto, user);
-    }
+    
 
     @Post('/import-category')
     @ApiOperation({ summary: "Import category" })
