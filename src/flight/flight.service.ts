@@ -292,17 +292,12 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.oneWaySearch(searchFlightDto, user))
         );
-        const caegory = await getConnection().query(`select 
-        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
-        from flight_route 
-        where from_airport_code  = '${searchFlightDto.source_location}' and to_airport_code = '${searchFlightDto.destination_location}'`)
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
             user.user_id,
             userIp
         );
-        result[`destination_location`] = caegory[0]?.categoryName
         return result;
     }
 
@@ -1266,17 +1261,14 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.roundTripSearch(searchFlightDto, user))
         );
-        const caegory = await getConnection().query(`select 
-        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
-        from flight_route 
-        where from_airport_code  = '${searchFlightDto.source_location}' and to_airport_code = '${searchFlightDto.destination_location}'`)
+        
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
             user.user_id,
             userIp
         );
-        result[`destination_location`] = caegory[0]?.categoryName;
+        
         return result;
     }
 
