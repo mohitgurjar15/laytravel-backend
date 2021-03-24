@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LaytripCategory } from 'src/entity/laytrip-category.entity';
 import { User } from 'src/entity/user.entity';
+import { getConnection } from 'typeorm';
 import { CreateLaytripCategoryDto } from './dto/add-category.dto';
 
 @Injectable()
@@ -21,5 +22,9 @@ export class LaytripCategoryService {
         return {
             message : `Category ${name} added successfully.`
         }
+    }
+
+    async listLaytripCategory(){
+        return await getConnection().createQueryBuilder(LaytripCategory, "category").getMany();
     }
 }

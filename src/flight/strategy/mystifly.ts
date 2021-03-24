@@ -217,7 +217,6 @@ export class Mystifly implements StrategyAirline {
             source_location,
             destination_location
         );
-        console.log("routeDetails:::", routeDetails);
         if (typeof routeDetails == "undefined") {
             throw new NotFoundException(
                 `Fligh is not available for search route`
@@ -479,55 +478,49 @@ export class Mystifly implements StrategyAirline {
                     bookingDate,
                     routeDetails.category.installmentAvailableAfter
                 );
-                //console.log("instalmentEligibility:::",instalmentEligibility)
                 if (instalmentEligibility) {
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         moment(stops[0].departure_date, "DD/MM/YYYY").format(
                             "YYYY-MM-DD"
                         ),
-                        bookingDate,
-                        0
+                        bookingDate
                     );
-                    let instalmentDetails2 = Instalment.weeklyInstalment(
+                    let instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
                         moment(stops[0].departure_date, "DD/MM/YYYY").format(
                             "YYYY-MM-DD"
                         ),
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        1
+                        bookingDate
                     );
-                    let instalmentDetails3 = Instalment.weeklyInstalment(
+                    let instalmentDetails3 = Instalment.monthlyInstalment(
                         route.selling_price,
                         moment(stops[0].departure_date, "DD/MM/YYYY").format(
                             "YYYY-MM-DD"
                         ),
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        2
+                        bookingDate
                     );
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
                             instalmentDetails.instalment_date[0].instalment_amount;
+
                         route.secondary_start_price =
-                            instalmentDetails.instalment_date[1].instalment_amount;
+                            instalmentDetails.instalment_date[1].instalment_amount;    
                         route.no_of_weekly_installment =
                             instalmentDetails.instalment_date.length - 1;
-                        route.secondary_start_price_2 =
-                            instalmentDetails2.instalment_date[1].instalment_amount;
+
+                        
                         route.second_down_payment =
                             instalmentDetails2.instalment_date[0].instalment_amount;
+                        route.secondary_start_price_2 =
+                            instalmentDetails2.instalment_date[1].instalment_amount;
                         route.no_of_weekly_installment_2 =
                             instalmentDetails2.instalment_date.length - 1;
-                        route.secondary_start_price_3 =
-                            instalmentDetails3.instalment_date[1].instalment_amount;
+                            
                         route.third_down_payment =
                             instalmentDetails3.instalment_date[0].instalment_amount;
+                        route.secondary_start_price_3 =
+                            instalmentDetails3.instalment_date[1].instalment_amount;
                         route.no_of_weekly_installment_3 =
                             instalmentDetails3.instalment_date.length - 1;
                     }
@@ -2278,7 +2271,9 @@ export class Mystifly implements StrategyAirline {
                 route.no_of_weekly_installment = 0;
                 route.instalment_avail_after =
                     routeDetails.category.installmentAvailableAfter;
-                let instalmentDetails;
+                let instalmentDetails:any={};
+                let instalmentDetails2:any={};
+                let instalmentDetails3:any={};
                 let instalmentEligibility = RouteCategory.checkInstalmentEligibility(
                     departure_date,
                     bookingDate,
@@ -2287,33 +2282,19 @@ export class Mystifly implements StrategyAirline {
                 if (instalmentEligibility) {
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate,
-                        0
+                        departure_date,
+                        bookingDate
                     );
-                    let instalmentDetails2 = Instalment.weeklyInstalment(
+                    
+                    instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        1
+                        departure_date,
+                        bookingDate
                     );
-                    let instalmentDetails3 = Instalment.weeklyInstalment(
+                    instalmentDetails3 = Instalment.monthlyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        2
+                        departure_date,
+                        bookingDate
                     );
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
@@ -2322,12 +2303,14 @@ export class Mystifly implements StrategyAirline {
                             instalmentDetails.instalment_date[1].instalment_amount;
                         route.no_of_weekly_installment =
                             instalmentDetails.instalment_date.length - 1;
+
                         route.secondary_start_price_2 =
                             instalmentDetails2.instalment_date[1].instalment_amount;
                         route.second_down_payment =
                             instalmentDetails2.instalment_date[0].instalment_amount;
                         route.no_of_weekly_installment_2 =
                             instalmentDetails2.instalment_date.length - 1;
+
                         route.secondary_start_price_3 =
                             instalmentDetails3.instalment_date[1].instalment_amount;
                         route.third_down_payment =
@@ -2640,6 +2623,7 @@ export class Mystifly implements StrategyAirline {
             let totalDuration;
             let uniqueCode;
             let otherSegments;
+            let departureDate='';
             for (let i = 0; i < flightRoutes.length; i++) {
                 route = new Route();
                 stops = [];
@@ -2672,6 +2656,11 @@ export class Mystifly implements StrategyAirline {
                     stop.departure_date = moment(
                         flightSegment["a:departuredatetime"][0]
                     ).format("DD/MM/YYYY");
+                    if(departureDate==''){
+                        departureDate = stop.departure_date = moment(
+                            flightSegment["a:departuredatetime"][0]
+                        ).format("DD/MM/YYYY");
+                    }
                     stop.departure_time = moment(
                         flightSegment["a:departuredatetime"][0]
                     ).format("h:mm A");
@@ -2895,6 +2884,7 @@ export class Mystifly implements StrategyAirline {
                     route.routes[1] = routeType;
                 }
 
+                
                 let markup = await this.getMarkupDetails(
                     moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
@@ -2951,9 +2941,10 @@ export class Mystifly implements StrategyAirline {
                 );
                 let instalmentDetails;
                 if (instalmentEligibility) {
+                    
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
+                        moment(departureDate, "DD/MM/YYYY").format(
                             "YYYY-MM-DD"
                         ),
                         bookingDate,
@@ -3017,7 +3008,7 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
                 route.unique_code = md5(uniqueCode);
-                console.log("uniqueCode", uniqueCode);
+                
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
                 ][0]["a:ptc_farebreakdowns"][0]["a:ptc_farebreakdown"]) {
@@ -3488,7 +3479,6 @@ export class Mystifly implements StrategyAirline {
             SB: "Standard Baggage",
         };
 
-        //console.log(code);
         if (typeof bags[code] !== "undefined" && code !== "0PC") {
             return bags[code];
         } else if (code == "0PC") {
