@@ -198,12 +198,17 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
-        const caegory = await getConnection().query(`select 
-        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
-        let categoryName = caegory[0]?.categoryName;
-
+        let categoryName = caegory?.categoryname;
+        console.log(caegory);
+        console.log(categoryName);
+        console.log(caegory?.categoryname);
+        
+        
+        
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: "flight" })
@@ -695,11 +700,11 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
-        const caegory = await getConnection().query(`select 
+        const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryName 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
-        let categoryName = caegory[0]?.categoryName;
+        let categoryName = caegory?.categoryname;
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 
         let isInstalmentAvaible = Instalment.instalmentAvailbility(
@@ -1107,11 +1112,11 @@ export class Mystifly implements StrategyAirline {
         } = searchFlightDto;
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-        const caegory = await getConnection().query(`select 
+        const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryName 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
-        let categoryName = caegory[0]?.categoryName;
+        let categoryName = caegory?.categoryname;
         //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
         let markup = await this.getMarkupDetails(
             departure_date,
@@ -1885,11 +1890,11 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
-        const caegory = await getConnection().query(`select 
+        const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryName 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
-        let categoryName = caegory[0]?.categoryName;
+        let categoryName = caegory?.categoryname;
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: "flight" })
@@ -3029,12 +3034,12 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
                 route.unique_code = md5(uniqueCode);
-                const caegory = await getConnection().query(`select 
+                const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryName 
         from flight_route 
         where from_airport_code  = '${route.departure_code}' and to_airport_code = '${route.arrival_code}'`);
 
-                let categoryName = caegory[0]?.categoryName;
+                let categoryName = caegory?.categoryname;
                 route.category_name = categoryName;
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
