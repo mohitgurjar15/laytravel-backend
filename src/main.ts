@@ -14,6 +14,7 @@ import { NotFoundExceptionFilter } from "./not-found-exception.filter";
 import { UnauthorizedExceptionFilter } from "./unauthorized-exception.filter";
 import { ConflictExcepionFilter } from "./conflict-exception.filter";
 import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing"
 import { InternalServerErrorExceptionFilter } from "./internal-server-exception.filter";
 import { ForbiddenExceptionFilter } from "./forbidden-resources-exception.filter";
 import * as path from "path";
@@ -49,7 +50,7 @@ async function bootstrap() {
     AppModule,
     new ExpressAdapter(server)
   );
-
+  //const app = express();
   app.setGlobalPrefix("v1");
   app.useGlobalFilters(new BadRequestExceptionFilter());
   app.useGlobalFilters(new ConflictExcepionFilter());
@@ -68,9 +69,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, options);
 
-  Sentry.init({
-    dsn: process.env.DSN || sentryConfig.DSN,
-  });
+  
+
 
   SwaggerModule.setup("api-docs", app, document);
 
@@ -97,6 +97,25 @@ async function bootstrap() {
   app.useStaticAssets(path.join(__dirname, "/../assets"));
   // console.log(process.env.PORT)
   await app.init();
+
+  Sentry.init({
+      dsn: process.env.DSN || sentryConfig.DSN,
+      integrations: [
+          // enable HTTP calls tracing
+          new Sentry.Integrations.Http({ tracing: true }),
+          // enable Express.js middleware tracing
+          new Tracing.Integrations.Express(),
+      ],
+
+      // We recommend adjusting this value in production, or using tracesSampler
+      // for finer control
+      tracesSampleRate: 1.0,
+  });
+  app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
+
+  app.use(Sentry.Handlers.tracingHandler());
+
+  app.use(Sentry.Handlers.errorHandler() as express.ErrorRequestHandler);
 
   server.use(timeout(3600));
   http.createServer(server).listen(port);

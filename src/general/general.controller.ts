@@ -36,6 +36,7 @@ import { diskStorage } from "multer";
 import { GeneralService } from "./general.service";
 import { uploadFileDto } from "./dto/upload-file.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
+import { UserIpAddress } from "src/decorator/ip-address.decorator";
 
 @ApiTags("Generic")
 @Controller("generic")
@@ -259,5 +260,23 @@ export class GeneralController {
     @HttpCode(200)
     async updatebooking() {
         return await this.generalService.bookingCategoryName();
+    }
+
+    @Post(["test/ip_adress/log"])
+    @ApiOperation({ summary: "Update traveler info of user" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async test(
+        @UserIpAddress() ip
+    ) {
+        console.log(ip);
+        
     }
 }
