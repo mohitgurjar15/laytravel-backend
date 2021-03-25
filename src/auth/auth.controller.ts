@@ -450,7 +450,7 @@ export class AuthController {
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
-      limits: { fileSize: 2097152 },
+      limits: { fileSize: 10097152 },
     })
   )
   async updateProfilePic(
