@@ -31,4 +31,10 @@ export class ListFlightRouteDto {
         example:""
     })
     status: boolean;
+
+    @ApiPropertyOptional({
+        description:'category id',
+        example:1
+    })
+    category_id: number;
 }
