@@ -843,6 +843,14 @@ export class CronJobsService {
             );
         }
 
+        if(message != ''){
+            this.cronfailedmail(
+                "Partial booking price : <br/><pre>" +
+                    message,
+                "Partial booking price"
+            );
+        }
+
         return { message: `today booking price added for pending booking` };
     }
     async campareBookingPrice(newPrice,oldPrice){
