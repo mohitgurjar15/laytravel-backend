@@ -97,14 +97,16 @@ async function bootstrap() {
   app.useStaticAssets(path.join(__dirname, "/../assets"));
   // console.log(process.env.PORT)
   await app.init();
-
+  //const router = express.Router();
   Sentry.init({
       dsn: process.env.DSN || sentryConfig.DSN,
       integrations: [
           // enable HTTP calls tracing
           new Sentry.Integrations.Http({ tracing: true }),
           // enable Express.js middleware tracing
-          new Tracing.Integrations.Express(),
+          new Tracing.Integrations.Express({
+              methods:['all','get']
+          }),
       ],
 
       // We recommend adjusting this value in production, or using tracesSampler
