@@ -779,6 +779,8 @@ export class CronJobsService {
         if (!result.length) {
             throw new NotFoundException(`No booking found`);
         }
+
+        let message = ''
         // return result;
         var total = 0;
         var failedlogArray = "";
@@ -786,10 +788,17 @@ export class CronJobsService {
             try {
                 switch (result[index].moduleId) {
                     case ModulesName.FLIGHT:
-                        await this.getDailyPriceOfFlight(
+                        const flightPrice = await this.getDailyPriceOfFlight(
                             result[index],
                             Headers
                         );
+                        if(flightPrice){
+                            const priceDiff = await this.campareBookingPrice(flightPrice ,result[index].netRate)
+                            if(priceDiff != 0){
+                                message += `Product Id ${result[index].laytripBookingId} Net price diffrence is ${priceDiff} <br/>`;
+                            }
+                        }
+                        
                         break;
                     case ModulesName.VACATION_RENTEL:
                         await this.getDailyPriceOfVacationRental(
@@ -834,9 +843,24 @@ export class CronJobsService {
             );
         }
 
+        if(message != ''){
+            this.cronfailedmail(
+                "Partial booking price : <br/><pre>" +
+                    message,
+                "Partial booking price"
+            );
+        }
+
         return { message: `today booking price added for pending booking` };
     }
-
+    async campareBookingPrice(newPrice,oldPrice){
+        let priceDiff=((parseFloat(newPrice) - parseFloat(oldPrice)) * 100) /
+            parseFloat(oldPrice);
+            if(priceDiff > 5 || priceDiff < -5){
+                return priceDiff
+            }
+            return 0
+    }
     async updateFlightBookingInProcess() {
         Activity.cronActivity("Update flight booking (In process status) cron");
         let query = getManager()
@@ -996,6 +1020,9 @@ export class CronJobsService {
 
         return `${date[2]}-${date[1]}-${date[0]}`;
     }
+
+
+
 
     async sendFlightFailerMail(email, bookingId, userName) {
         this.mailerService
@@ -1618,6 +1645,7 @@ export class CronJobsService {
                             //predictiveBookingData.bookIt = false;
                             await predictiveBookingData.save();
                         }
+                        return flight.net_rate;
                     }
                 }
             }

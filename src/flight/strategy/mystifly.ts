@@ -489,26 +489,22 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
+                    console.log(stops[0].departure_date,"--",departure_date,route.selling_price)
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate
+                        departure_date,
+                        bookingDate,0,null,null,0
                     );
+                    //console.log("instalmentDetails",instalmentDetails)
                     let instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate
+                        departure_date,
+                        bookingDate,0,null,null,0
                     );
                     let instalmentDetails3 = Instalment.monthlyInstalment(
                         route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate
+                        departure_date,
+                        bookingDate,0,null,null,0
                     );
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
@@ -2310,18 +2306,18 @@ export class Mystifly implements StrategyAirline {
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
-                        bookingDate
+                        bookingDate,0,null,null,0
                     );
 
                     instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
                         departure_date,
-                        bookingDate
+                        bookingDate,0,null,null,0
                     );
                     instalmentDetails3 = Instalment.monthlyInstalment(
                         route.selling_price,
                         departure_date,
-                        bookingDate
+                        bookingDate,0,null,null,0
                     );
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
@@ -2973,8 +2969,7 @@ export class Mystifly implements StrategyAirline {
                         moment(departureDate, "DD/MM/YYYY").format(
                             "YYYY-MM-DD"
                         ),
-                        bookingDate,
-                        0
+                        bookingDate,0,null,null,0
                     );
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
