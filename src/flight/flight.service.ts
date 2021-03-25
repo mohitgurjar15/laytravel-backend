@@ -116,7 +116,13 @@ export class FlightService {
 
             if (!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`);
-            return result;
+            let airports = []
+            for await (const flight of result) {
+               let  airport : any = flight
+                airport.key = flight.city.charAt(0);
+                airports.push(airport)
+            }
+            return airports;
         } catch (error) {
             if (
                 typeof error.response !== "undefined" &&
@@ -3524,7 +3530,7 @@ export class FlightService {
     }
 
     async serchRoute(searchRouteDto: SearchRouteDto) {
-        let where = `1=1`;
+        let where = `status = true AND is_deleted = false `;
         const { search, is_from_location, alternet_location } = searchRouteDto;
         if (alternet_location) {
             const alternetAirport = airports[alternet_location];
