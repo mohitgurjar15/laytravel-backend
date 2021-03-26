@@ -47,6 +47,7 @@ import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/
 import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
 import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
 import { Booking } from "src/entity/booking.entity";
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -344,17 +345,17 @@ export class GeneralService {
                 }
                 const travelerInfo: TravelerInfoModel = {
                     firstName: userData.firstName,
-                    passportExpiry: userData.passportExpiry || '',
-                    passportNumber: userData.passportNumber || '',
-                    lastName: userData.lastName || '',
-                    email: userData.email || '',
-                    phoneNo: userData.phoneNo || '',
-                    countryCode: userData.countryCode || '',
+                    passportExpiry: userData.passportExpiry || "",
+                    passportNumber: userData.passportNumber || "",
+                    lastName: userData.lastName || "",
+                    email: userData.email || "",
+                    phoneNo: userData.phoneNo || "",
+                    countryCode: userData.countryCode || "",
                     dob: userData.dob,
                     countryId: userData.countryId,
                     gender: userData.gender,
-                    age : age,
-                    user_type: user_type
+                    age: age,
+                    user_type: user_type,
                 };
                 await getConnection()
                     .createQueryBuilder()
@@ -375,20 +376,20 @@ export class GeneralService {
             fullBookingConfirm
         );
 
-            await this.mailerService
-                .sendMail({
-                    to: email,
-                    from: mailConfig.from,
-                    // bcc: mailConfig.BCC,
-                    subject: "Booking ID LTCKLUSXYJL Confirmation",
-                    html: await LaytripCartBookingConfirmtionMail(mail1.param),
-                })
-                .then((res) => {
-                    console.log("res", res);
-                })
-                .catch((err) => {
-                    console.log("err", err);
-                });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                // bcc: mailConfig.BCC,
+                subject: "Booking ID LTCKLUSXYJL Confirmation",
+                html: await LaytripCartBookingConfirmtionMail(mail1.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
 
         let mail2 = await CartDataUtility.CartMailModelDataGenerate(
             partialBooking
@@ -852,24 +853,38 @@ export class GeneralService {
     //     });
     // }
 
-    async bookingCategoryName(){
-
+    async bookingCategoryName() {
         const res = await getManager()
             .createQueryBuilder(Booking, "log")
-            .getMany()
+            .getMany();
         for await (const booking of res) {
-        if (
-            booking.moduleInfo[0]?.departure_code &&
-            booking.moduleInfo[0]?.arrival_code
-        ) {
-            const [caegory] = await getConnection().query(`select 
+            if (
+                booking.moduleInfo[0]?.departure_code &&
+                booking.moduleInfo[0]?.arrival_code
+            ) {
+                const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${booking.moduleInfo[0].departure_code}' and to_airport_code = '${booking.moduleInfo[0].arrival_code}'`);
-            booking.categoryName = caegory?.categoryname || null;
-            await booking.save();
+                booking.categoryName = caegory?.categoryname || null;
+                await booking.save();
+            }
         }
-            
-        }
-    }   
+    }
+
+    async predictiveData() {
+        const oldData = await getConnection()
+            .query(`SELECT id, booking_id, created_date, is_below_minimum, price, remain_seat, net_price, is_resedule
+                    FROM old_predictive_booking_data;`);
+            console.log(oldData[0]);
+            for await (const row of oldData) {
+                
+                await getConnection()
+                    .createQueryBuilder()
+                    .update(PredictiveBookingData)
+                    .set({ date: new Date(row.created_date) })
+                    .where("id = :id", { id: row.id })
+                    .execute();
+            }  
+    }
 }

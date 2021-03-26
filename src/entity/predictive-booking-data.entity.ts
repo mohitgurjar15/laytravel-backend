@@ -19,7 +19,10 @@ export class PredictiveBookingData extends BaseEntity {
     @Column("numeric", { name: "net_price", precision: 15, scale: 3 })
     netPrice: number;
 
-    @Column("date", { name: "created_date", nullable: true })
+    @Column("timestamp with time zone", {
+        name: "created_date",
+        nullable: true,
+    })
     date: Date;
 
     @Column("boolean", { name: "is_below_minimum", default: false })
