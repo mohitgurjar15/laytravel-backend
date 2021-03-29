@@ -267,7 +267,7 @@ export class CronJobsService {
             .leftJoinAndSelect("BookingInstalments.currency", "currency")
             .leftJoinAndSelect("cartBooking.user", "User")
             .where(
-                `("BookingInstalments".instalment_date In ('${date1}','${date2}','${date3}','${date4}')) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
+                `("BookingInstalments".instalment_date In ('${date2}','${date3}','${date4}')) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
             )
             .getMany();
         if (!cartBookings.length) {
@@ -277,446 +277,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                let amount: number = 0;
-
-                for await (const booking of cartBooking.bookings) {
-                    for await (const instalment of booking.bookingInstalments) {
-                        amount += Generic.formatPriceDecimal(
-                            parseFloat(instalment.amount)
-                        );
-                    }
-                }
-
-                let currencyCode =
-                    cartBooking.bookings[0].bookingInstalments[0].currency.code;
-                let cardToken = cartBooking.bookings[0].cardToken;
-                const cartAmount = amount;
-                amount = amount * 100;
-                amount = Math.ceil(amount);
-
-                console.log("1");
-
-                if (cardToken) {
-                    let transaction = await this.paymentService.getPayment(
-                        cardToken,
-                        amount,
-                        currencyCode,
-                        cartBooking.userId,
-                        true
-                    );
-                    console.log("transaction done");
-                    for await (const booking of cartBooking.bookings) {
-                        for await (const instalment of booking.bookingInstalments) {
-                            instalment.paymentStatus =
-                                transaction.status == true
-                                    ? PaymentStatus.CONFIRM
-                                    : PaymentStatus.PENDING;
-                            instalment.paymentInfo = transaction.meta_data;
-                            instalment.transactionToken = transaction.token;
-                            instalment.paymentCaptureDate = new Date();
-                            instalment.attempt = instalment.attempt
-                                ? instalment.attempt + 1
-                                : 1;
-                            instalment.instalmentStatus =
-                                transaction.status == true
-                                    ? PaymentStatus.CONFIRM
-                                    : PaymentStatus.PENDING;
-                            instalment.comment = `try to get Payment by cron on ${new Date()}`;
-                            await instalment.save();
-                        }
-                    }
-                    console.log("2");
-                    let nextDate;
-                    let nextAmount: number = 0;
-                    if (transaction.status == false) {
-                        console.log("transaction false");
-                        let faildTransaction = new FailedPaymentAttempt();
-                        faildTransaction.instalmentId =
-                            cartBooking.bookings[0].bookingInstalments[0].id;
-                        faildTransaction.paymentInfo = transaction.meta_data;
-                        faildTransaction.date = new Date();
-
-                        await faildTransaction.save();
-
-                        const instalment =
-                            cartBooking.bookings[0].bookingInstalments[0];
-                        let nextInstalmentDate: string = "";
-                        switch (instalment.attempt) {
-                            case 1:
-                                var nDate = new Date(
-                                    cartBooking.bookings[0].bookingInstalments[0].instalmentDate
-                                );
-                                nDate.setDate(nDate.getDate() + 3);
-                                nextInstalmentDate = nDate.toISOString();
-                                nextInstalmentDate = nextInstalmentDate
-                                    .replace(/T/, " ") // replace T with a space
-                                    .replace(/\..+/, "")
-                                    .split(" ")[0];
-                                break;
-                            case 2:
-                                var nDate = new Date(
-                                    cartBooking.bookings[0].bookingInstalments[0].instalmentDate
-                                );
-                                nDate.setDate(nDate.getDate() + 7);
-                                nextInstalmentDate = nDate.toISOString();
-                                nextInstalmentDate = nextInstalmentDate
-                                    .replace(/T/, " ") // replace T with a space
-                                    .replace(/\..+/, "")
-                                    .split(" ")[0];
-                                break;
-                            case 3:
-                                var nDate = new Date(
-                                    cartBooking.bookings[0].bookingInstalments[0].instalmentDate
-                                );
-                                nDate.setDate(nDate.getDate() + 10);
-                                nextInstalmentDate = nDate.toISOString();
-                                nextInstalmentDate = nextInstalmentDate
-                                    .replace(/T/, " ") // replace T with a space
-                                    .replace(/\..+/, "")
-                                    .split(" ")[0];
-                                break;
-
-                            default:
-                                break;
-                        }
-                        let param: any = {
-                            userName: cartBooking.user.firstName,
-                            amount:
-                                cartBooking.bookings[0].bookingInstalments[0]
-                                    .currency.symbol +
-                                `${Generic.formatPriceDecimal(cartAmount)}`,
-                            date: DateTime.convertDateFormat(
-                                cartBooking.bookings[0].bookingInstalments[0]
-                                    .instalmentDate,
-                                "YYYY-MM-DD",
-                                "MMM DD, YYYY"
-                            ),
-                            bookingId: cartBooking.laytripCartId,
-                            try: instalment.attempt,
-                        };
-                        if (nextInstalmentDate) {
-                            param.nextDate = DateTime.convertDateFormat(
-                                nextInstalmentDate,
-                                "YYYY-MM-DD",
-                                "MMM DD, YYYY"
-                            );
-                        }
-
-                        if (instalment.attempt >= 4) {
-                            console.log("transaction failed");
-                            await getConnection()
-                                .createQueryBuilder()
-                                .update(Booking)
-                                .set({
-                                    bookingStatus: BookingStatus.NOTCOMPLETED,
-                                    paymentStatus: PaymentStatus.FAILED,
-                                })
-                                .where("id = :id", { id: instalment.bookingId })
-                                .execute();
-                            instalment.paymentStatus = PaymentStatus.FAILED;
-                            await instalment.save();
-                            // if (cartBooking.user.isEmail) {
-                            // 	console.log('transaction incomplete mail')
-                            // 	await this.sendFlightIncompleteMail(cartBooking.user.email, cartBooking.laytripCartId, 'we not able to get payment from your card', `${param.amount}`)
-                            // }
-
-                            if (cartBooking.user.isSMS) {
-                                TwilioSMS.sendSMS({
-                                    toSMS: cartBooking.user.phoneNo,
-                                    message: `we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`,
-                                });
-                            }
-
-                            PushNotification.sendNotificationTouser(
-                                cartBooking.user.userId,
-                                {
-                                    //you can send only notification or only data(or include both)
-                                    module_name: "booking",
-                                    task: "booking_cancelled",
-                                    bookingId: cartBooking.laytripCartId,
-                                },
-                                {
-                                    title: "booking Cancelled",
-                                    body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`,
-                                },
-                                cronUserId
-                            );
-                            WebNotification.sendNotificationTouser(
-                                cartBooking.user.userId,
-                                {
-                                    //you can send only notification or only data(or include both)
-                                    module_name: "booking",
-                                    task: "booking_cancelled",
-                                    bookingId: cartBooking.laytripCartId,
-                                },
-                                {
-                                    title: "booking Cancelled",
-                                    body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`,
-                                },
-                                cronUserId
-                            );
-                        }
-
-                        if (cartBooking.user.isEmail) {
-                            console.log("transaction payment failed ");
-                            if (param.try >= 4) {
-                                this.mailerService
-                                    .sendMail({
-                                        to: cartBooking.user.email,
-                                        from: mailConfig.from,
-                                        bcc: mailConfig.BCC,
-                                        subject: `Booking ID ${param.bookingId} Notice Of Default And Cancellation`,
-                                        html: await LaytripPaymentFailedTemplete(
-                                            param
-                                        ),
-                                    })
-                                    .then((res) => {
-                                        console.log("res", res);
-                                    })
-                                    .catch((err) => {
-                                        console.log("err", err);
-                                    });
-                            } else {
-                                this.mailerService
-                                    .sendMail({
-                                        to: cartBooking.user.email,
-                                        from: mailConfig.from,
-                                        bcc: mailConfig.BCC,
-                                        subject: `Booking ID ${param.bookingId} ${param.try == 3 ? 'Final' : ''}Missed Payment Reminder #${param.try}`,
-                                        html: await LaytripMissedPaymentTemplete(
-                                            param
-                                        ),
-                                    })
-                                    .then((res) => {
-                                        console.log("res", res);
-                                    })
-                                    .catch((err) => {
-                                        console.log("err", err);
-                                    });
-                            }
-                        }
-
-                        // if (cartBooking.user.isSMS) {
-                        // 	TwilioSMS.sendSMS({
-                        // 		toSMS: cartBooking.user.phoneNo,
-                        // 		message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
-                        // 	})
-                        // }
-                        PushNotification.sendNotificationTouser(
-                            cartBooking.user.userId,
-                            {
-                                //you can send only notification or only data(or include both)
-                                module_name: "instalment",
-                                task: "instalment_failed",
-                                bookingId: cartBooking.laytripCartId,
-                                instalmentId: instalment.id,
-                            },
-                            {
-                                title: "Instalment Failed",
-                                body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`,
-                            },
-                            cronUserId
-                        );
-                        WebNotification.sendNotificationTouser(
-                            cartBooking.user.userId,
-                            {
-                                //you can send only notification or only data(or include both)
-                                module_name: "instalment",
-                                task: "instalment_failed",
-                                bookingId: cartBooking.laytripCartId,
-                                instalmentId: instalment.id,
-                            },
-                            {
-                                title: "Instalment Failed",
-                                body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`,
-                            },
-                            cronUserId
-                        );
-                    } else {
-                        console.log("transaction token true");
-                        //console.log('nextDate');
-
-                        for await (const booking of cartBooking.bookings) {
-                            const nextInstalmentDate = await getManager()
-                                .createQueryBuilder(
-                                    BookingInstalments,
-                                    "BookingInstalments"
-                                )
-                                .select([
-                                    "BookingInstalments.instalmentDate",
-                                    "BookingInstalments.amount",
-                                ])
-                                .where(
-                                    `"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${booking.id}'`
-                                )
-                                .orderBy(`"BookingInstalments"."id"`)
-                                .getOne();
-                            let update = {
-                                nextInstalmentDate:
-                                    nextInstalmentDate?.instalmentDate || null,
-                            };
-                            if (!nextInstalmentDate) {
-                                update["paymentStatus"] = PaymentStatus.CONFIRM;
-                            }
-
-                            await getConnection()
-                                .createQueryBuilder()
-                                .update(Booking)
-                                .set(update)
-                                .where("id = :id", { id: booking.id })
-                                .execute();
-                            if (nextInstalmentDate) {
-                                nextAmount += nextInstalmentDate.amount
-                                    ? parseFloat(nextInstalmentDate.amount)
-                                    : 0;
-                                nextDate = nextInstalmentDate.instalmentDate;
-                            }
-                        }
-
-                        // console.log(nextDate);
-                        const cartData = await CartDataUtility.cartData(
-                            cartBooking.id
-                        );
-
-                        console.log("cartData", cartData);
-
-                        for await (const booking of cartBooking.bookings) {
-                            await this.checkAllinstallmentPaid(booking.id);
-                        }
-                        let param = {
-                            date: DateTime.convertDateFormat(
-                                new Date(
-                                    cartBooking.bookings[0].bookingInstalments[0].instalmentDate
-                                ),
-                                "YYYY-MM-DD",
-                                "MMM Do, YYYY"
-                            ),
-                            userName:
-                                cartBooking.user.firstName +
-                                " " +
-                                cartBooking.user.lastName,
-                            cardHolderName:
-                                transaction.meta_data.transaction.payment_method
-                                    .full_name,
-                            cardNo:
-                                transaction.meta_data.transaction.payment_method
-                                    .number,
-                            orderId: cartBooking.laytripCartId,
-                            amount: Generic.formatPriceDecimal(cartAmount),
-                            installmentId:
-                                cartBooking.bookings[0].bookingInstalments[0]
-                                    .id,
-                            complitedAmount: cartData.paidAmountNumeric,
-                            totalAmount: cartData.totalAmounNumerict,
-                            currencySymbol:
-                                cartBooking.bookings[0].bookingInstalments[0]
-                                    .currency.symbol,
-                            currency:
-                                cartBooking.bookings[0].bookingInstalments[0]
-                                    .currency.code,
-                            pendingInstallment: cartData.pandinginstallment,
-                            phoneNo:
-                                `+${cartBooking.user.countryCode}` +
-                                cartBooking.user.phoneNo,
-                            bookingId: cartBooking.laytripCartId,
-                            nextDate: DateTime.convertDateFormat(
-                                new Date(nextDate),
-                                "YYYY-MM-DD",
-                                "MMM Do, YYYY"
-                            ),
-                            nextAmount: nextAmount,
-                        };
-                        if (cartBooking.user.isEmail) {
-                            if (nextAmount > 0) {
-                                this.mailerService
-                                    .sendMail({
-                                        to: cartBooking.user.email,
-                                        from: mailConfig.from,
-                                        bcc: mailConfig.BCC,
-                                        subject: `Booking ID ${param.bookingId} Installment Recevied`,
-                                        html: LaytripInstallmentRecevied(param),
-                                    })
-                                    .then((res) => {
-                                        console.log("res", res);
-                                    })
-                                    .catch((err) => {
-                                        console.log("err", err);
-                                    });
-                            } else {
-                                const responce = await CartDataUtility.CartMailModelDataGenerate(
-                                    cartBooking.laytripCartId
-                                );
-                                if (responce?.param) {
-                                    let subject = `Booking ID ${cartBooking.laytripCartId} Complition Notice`;
-                                    this.mailerService
-                                        .sendMail({
-                                            to: responce.email,
-                                            from: mailConfig.from,
-                                            bcc: mailConfig.BCC,
-                                            subject: subject,
-                                            html: await LaytripCartBookingComplationMail(
-                                                responce.param
-                                            ),
-                                        })
-                                        .then((res) => {
-                                            //console.log("res", res);
-                                        })
-                                        .catch((err) => {
-                                            //console.log("err", err);
-                                        });
-                                }
-                            }
-                            console.log(
-                                "mail successed",
-                                param,
-                                cartBooking.user.email
-                            );
-                        }
-
-                        // if (cartBooking.user.isSMS) {
-                        // 	TwilioSMS.sendSMS({
-                        // 		toSMS: param.phoneNo,
-                        // 		message: `We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
-                        // 	})
-                        // }
-
-                        PushNotification.sendNotificationTouser(
-                            cartBooking.user.userId,
-                            {
-                                //you can send only notification or only data(or include both)
-                                module_name: "instalment",
-                                task: "instalment_received",
-                                bookingId: cartBooking.laytripCartId,
-                                instalmentId:
-                                    cartBooking.bookings[0]
-                                        .bookingInstalments[0].id,
-                            },
-                            {
-                                title: "Installment Received",
-                                body: `We have received your payment of $${cartAmount}.`,
-                            },
-                            cronUserId
-                        );
-                        WebNotification.sendNotificationTouser(
-                            cartBooking.user.userId,
-                            {
-                                //you can send only notification or only data(or include both)
-                                module_name: "instalment",
-                                task: "instalment_received",
-                                bookingId: cartBooking.laytripCartId,
-                                instalmentId:
-                                    cartBooking.bookings[0]
-                                        .bookingInstalments[0].id,
-                            },
-                            {
-                                title: "Installment Received",
-                                body: `We have received your payment of $${cartAmount}.`,
-                            },
-                            cronUserId
-                        );
-                    }
-                    console.log("3");
-                }
+                await this.getPaymentsOfBooking(cartBooking);
             } catch (error) {
                 console.log("error", error);
                 const filename =
@@ -780,7 +341,7 @@ export class CronJobsService {
             throw new NotFoundException(`No booking found`);
         }
 
-        let message = ''
+        let message = "";
         // return result;
         var total = 0;
         var failedlogArray = "";
@@ -792,13 +353,16 @@ export class CronJobsService {
                             result[index],
                             Headers
                         );
-                        if(flightPrice){
-                            const priceDiff = await this.campareBookingPrice(flightPrice ,result[index].netRate)
-                            if(priceDiff != 0){
+                        if (flightPrice) {
+                            const priceDiff = await this.campareBookingPrice(
+                                flightPrice,
+                                result[index].netRate
+                            );
+                            if (priceDiff != 0) {
                                 message += `Product Id ${result[index].laytripBookingId} Net price diffrence is ${priceDiff} <br/>`;
                             }
                         }
-                        
+
                         break;
                     case ModulesName.VACATION_RENTEL:
                         await this.getDailyPriceOfVacationRental(
@@ -843,23 +407,23 @@ export class CronJobsService {
             );
         }
 
-        if(message != ''){
+        if (message != "") {
             this.cronfailedmail(
-                "Partial booking price : <br/><pre>" +
-                    message,
+                "Partial booking price : <br/><pre>" + message,
                 "Partial booking price"
             );
         }
 
         return { message: `today booking price added for pending booking` };
     }
-    async campareBookingPrice(newPrice,oldPrice){
-        let priceDiff=((parseFloat(newPrice) - parseFloat(oldPrice)) * 100) /
+    async campareBookingPrice(newPrice, oldPrice) {
+        let priceDiff =
+            ((parseFloat(newPrice) - parseFloat(oldPrice)) * 100) /
             parseFloat(oldPrice);
-            if(priceDiff > 5 || priceDiff < -5){
-                return priceDiff
-            }
-            return 0
+        if (priceDiff > 5 || priceDiff < -5) {
+            return priceDiff;
+        }
+        return 0;
     }
     async updateFlightBookingInProcess() {
         Activity.cronActivity("Update flight booking (In process status) cron");
@@ -1020,9 +584,6 @@ export class CronJobsService {
 
         return `${date[2]}-${date[1]}-${date[0]}`;
     }
-
-
-
 
     async sendFlightFailerMail(email, bookingId, userName) {
         this.mailerService
@@ -1871,7 +1432,9 @@ export class CronJobsService {
             };
         }
         for await (const booking of bookings) {
-            let mail = await flightDataUtility.flightData(booking.laytripBookingId);
+            let mail = await flightDataUtility.flightData(
+                booking.laytripBookingId
+            );
             await this.mailerService
                 .sendMail({
                     to: mail.userMail,
@@ -1889,6 +1452,531 @@ export class CronJobsService {
         }
         return {
             message: `Emails send succeesfully`,
+        };
+    }
+
+    async getPaymentsOfBooking(cartBooking:CartBooking) {
+        
+        let amount: number = 0;
+
+        for await (const booking of cartBooking.bookings) {
+            for await (const instalment of booking.bookingInstalments) {
+                amount += Generic.formatPriceDecimal(
+                    parseFloat(instalment.amount)
+                );
+            }
+        }
+
+        let currencyCode =
+            cartBooking.bookings[0].bookingInstalments[0].currency.code;
+        let cardToken = cartBooking.bookings[0].cardToken;
+        const cartAmount = amount;
+        amount = amount * 100;
+        amount = Math.ceil(amount);
+
+        console.log("1");
+
+        if (cardToken) {
+            let transaction = await this.paymentService.getPayment(
+                cardToken,
+                amount,
+                currencyCode,
+                cartBooking.userId,
+                true
+            );
+            console.log("transaction done");
+            for await (const booking of cartBooking.bookings) {
+                for await (const instalment of booking.bookingInstalments) {
+                    instalment.paymentStatus =
+                        transaction.status == true
+                            ? PaymentStatus.CONFIRM
+                            : PaymentStatus.PENDING;
+                    instalment.paymentInfo = transaction.meta_data;
+                    instalment.transactionToken = transaction.token;
+                    //instalment.paymentCaptureDate = new Date();
+                    instalment.attempt = instalment.attempt
+                        ? instalment.attempt + 1
+                        : 1;
+                    instalment.instalmentStatus =
+                        transaction.status == true
+                            ? PaymentStatus.CONFIRM
+                            : PaymentStatus.PENDING;
+                    instalment.paymentCaptureDate = transaction.status == true ? new Date() : null
+                    instalment.comment = `try to get Payment by cron on ${new Date()}`;
+                    await instalment.save();
+                }
+            }
+            console.log("2");
+            let nextDate;
+            let nextAmount: number = 0;
+            if (transaction.status == false) {
+                console.log("transaction false");
+                let faildTransaction = new FailedPaymentAttempt();
+                faildTransaction.instalmentId =
+                    cartBooking.bookings[0].bookingInstalments[0].id;
+                faildTransaction.paymentInfo = transaction.meta_data;
+                faildTransaction.date = new Date();
+
+                await faildTransaction.save();
+
+                const instalment =
+                    cartBooking.bookings[0].bookingInstalments[0];
+                let nextInstalmentDate: string = "";
+                switch (instalment.attempt) {
+                    case 2:
+                        var nDate = new Date(
+                            cartBooking.bookings[0].bookingInstalments[0].instalmentDate
+                        );
+                        nDate.setDate(nDate.getDate() + 3);
+                        nextInstalmentDate = nDate.toISOString();
+                        nextInstalmentDate = nextInstalmentDate
+                            .replace(/T/, " ") // replace T with a space
+                            .replace(/\..+/, "")
+                            .split(" ")[0];
+                        break;
+                    case 3:
+                        var nDate = new Date(
+                            cartBooking.bookings[0].bookingInstalments[0].instalmentDate
+                        );
+                        nDate.setDate(nDate.getDate() + 7);
+                        nextInstalmentDate = nDate.toISOString();
+                        nextInstalmentDate = nextInstalmentDate
+                            .replace(/T/, " ") // replace T with a space
+                            .replace(/\..+/, "")
+                            .split(" ")[0];
+                        break;
+                    case 4:
+                        var nDate = new Date(
+                            cartBooking.bookings[0].bookingInstalments[0].instalmentDate
+                        );
+                        nDate.setDate(nDate.getDate() + 10);
+                        nextInstalmentDate = nDate.toISOString();
+                        nextInstalmentDate = nextInstalmentDate
+                            .replace(/T/, " ") // replace T with a space
+                            .replace(/\..+/, "")
+                            .split(" ")[0];
+                        break;
+
+                    default:
+                        break;
+                }
+                let param: any = {
+                    userName: cartBooking.user.firstName,
+                    amount:
+                        cartBooking.bookings[0].bookingInstalments[0].currency
+                            .symbol +
+                        `${Generic.formatPriceDecimal(cartAmount)}`,
+                    date: DateTime.convertDateFormat(
+                        cartBooking.bookings[0].bookingInstalments[0]
+                            .instalmentDate,
+                        "YYYY-MM-DD",
+                        "MMM DD, YYYY"
+                    ),
+                    bookingId: cartBooking.laytripCartId,
+                    try: instalment.attempt,
+                };
+                if (nextInstalmentDate) {
+                    param.nextDate = DateTime.convertDateFormat(
+                        nextInstalmentDate,
+                        "YYYY-MM-DD",
+                        "MMM DD, YYYY"
+                    );
+                }
+
+                if (instalment.attempt >= 5) {
+                    console.log("transaction failed");
+                    await getConnection()
+                        .createQueryBuilder()
+                        .update(Booking)
+                        .set({
+                            bookingStatus: BookingStatus.NOTCOMPLETED,
+                            paymentStatus: PaymentStatus.FAILED,
+                        })
+                        .where("id = :id", { id: instalment.bookingId })
+                        .execute();
+                    instalment.paymentStatus = PaymentStatus.FAILED;
+                    await instalment.save();
+                    // if (cartBooking.user.isEmail) {
+                    // 	console.log('transaction incomplete mail')
+                    // 	await this.sendFlightIncompleteMail(cartBooking.user.email, cartBooking.laytripCartId, 'we not able to get payment from your card', `${param.amount}`)
+                    // }
+
+                    if (cartBooking.user.isSMS) {
+                        TwilioSMS.sendSMS({
+                            toSMS: cartBooking.user.phoneNo,
+                            message: `we have unfortunately had to cancel your booking because your 3 attemp finished and we will not be able to issue any refund.`,
+                        });
+                    }
+
+                    PushNotification.sendNotificationTouser(
+                        cartBooking.user.userId,
+                        {
+                            //you can send only notification or only data(or include both)
+                            module_name: "booking",
+                            task: "booking_cancelled",
+                            bookingId: cartBooking.laytripCartId,
+                        },
+                        {
+                            title: "booking Cancelled",
+                            body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`,
+                        },
+                        cronUserId
+                    );
+                    WebNotification.sendNotificationTouser(
+                        cartBooking.user.userId,
+                        {
+                            //you can send only notification or only data(or include both)
+                            module_name: "booking",
+                            task: "booking_cancelled",
+                            bookingId: cartBooking.laytripCartId,
+                        },
+                        {
+                            title: "booking Cancelled",
+                            body: `we have unfortunately had to cancel your booking and we will not be able to issue any refund.`,
+                        },
+                        cronUserId
+                    );
+                }
+
+                if (cartBooking.user.isEmail) {
+                    console.log("transaction payment failed ");
+                    if (param.try >= 5) {
+                        this.mailerService
+                            .sendMail({
+                                to: cartBooking.user.email,
+                                from: mailConfig.from,
+                                bcc: mailConfig.BCC,
+                                subject: `Booking ID ${param.bookingId} Notice Of Default And Cancellation`,
+                                html: await LaytripPaymentFailedTemplete(param),
+                            })
+                            .then((res) => {
+                                console.log("res", res);
+                            })
+                            .catch((err) => {
+                                console.log("err", err);
+                            });
+                    } else if (param.try >= 2) {
+                        this.mailerService
+                            .sendMail({
+                                to: cartBooking.user.email,
+                                from: mailConfig.from,
+                                bcc: mailConfig.BCC,
+                                subject: `Booking ID ${param.bookingId} ${
+                                    param.try == 4 ? "Final" : ""
+                                }Missed Payment Reminder #${param.try - 1}`,
+                                html: await LaytripMissedPaymentTemplete(param),
+                            })
+                            .then((res) => {
+                                console.log("res", res);
+                            })
+                            .catch((err) => {
+                                console.log("err", err);
+                            });
+                    }
+                }
+
+                // if (cartBooking.user.isSMS) {
+                // 	TwilioSMS.sendSMS({
+                // 		toSMS: cartBooking.user.phoneNo,
+                // 		message: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`
+                // 	})
+                // }
+                PushNotification.sendNotificationTouser(
+                    cartBooking.user.userId,
+                    {
+                        //you can send only notification or only data(or include both)
+                        module_name: "instalment",
+                        task: "instalment_failed",
+                        bookingId: cartBooking.laytripCartId,
+                        instalmentId: instalment.id,
+                    },
+                    {
+                        title: "Instalment Failed",
+                        body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`,
+                    },
+                    cronUserId
+                );
+                WebNotification.sendNotificationTouser(
+                    cartBooking.user.userId,
+                    {
+                        //you can send only notification or only data(or include both)
+                        module_name: "instalment",
+                        task: "instalment_failed",
+                        bookingId: cartBooking.laytripCartId,
+                        instalmentId: instalment.id,
+                    },
+                    {
+                        title: "Instalment Failed",
+                        body: `We were not able on our ${instalment.attempt} time and final try to successfully collect your $${instalment.amount} installment payment from your credit card on file that was scheduled for ${instalment.instalmentDate}`,
+                    },
+                    cronUserId
+                );
+            } else {
+                console.log("transaction token true");
+                //console.log('nextDate');
+
+                for await (const booking of cartBooking.bookings) {
+                    const nextInstalmentDate = await getManager()
+                        .createQueryBuilder(
+                            BookingInstalments,
+                            "BookingInstalments"
+                        )
+                        .select([
+                            "BookingInstalments.instalmentDate",
+                            "BookingInstalments.amount",
+                        ])
+                        .where(
+                            `"BookingInstalments"."instalment_status" =${InstalmentStatus.PENDING} AND "BookingInstalments"."booking_id" = '${booking.id}'`
+                        )
+                        .orderBy(`"BookingInstalments"."id"`)
+                        .getOne();
+                    let update = {
+                        nextInstalmentDate:
+                            nextInstalmentDate?.instalmentDate || null,
+                    };
+                    if (!nextInstalmentDate) {
+                        update["paymentStatus"] = PaymentStatus.CONFIRM;
+                    }
+
+                    await getConnection()
+                        .createQueryBuilder()
+                        .update(Booking)
+                        .set(update)
+                        .where("id = :id", { id: booking.id })
+                        .execute();
+                    if (nextInstalmentDate) {
+                        nextAmount += nextInstalmentDate.amount
+                            ? parseFloat(nextInstalmentDate.amount)
+                            : 0;
+                        nextDate = nextInstalmentDate.instalmentDate;
+                    }
+                }
+
+                // console.log(nextDate);
+                const cartData = await CartDataUtility.cartData(cartBooking.id);
+
+                console.log("cartData", cartData);
+
+                for await (const booking of cartBooking.bookings) {
+                    await this.checkAllinstallmentPaid(booking.id);
+                }
+                let param = {
+                    date: DateTime.convertDateFormat(
+                        new Date(
+                            cartBooking.bookings[0].bookingInstalments[0].instalmentDate
+                        ),
+                        "YYYY-MM-DD",
+                        "MMM Do, YYYY"
+                    ),
+                    userName:
+                        cartBooking.user.firstName,
+                    cardHolderName:
+                        transaction.meta_data.transaction.payment_method
+                            .full_name,
+                    cardNo:
+                        transaction.meta_data.transaction.payment_method.number,
+                    orderId: cartBooking.laytripCartId,
+                    amount: Generic.formatPriceDecimal(cartAmount),
+                    installmentId:
+                        cartBooking.bookings[0].bookingInstalments[0].id,
+                    complitedAmount: cartData.paidAmountNumeric,
+                    totalAmount: cartData.totalAmounNumerict,
+                    currencySymbol:
+                        cartBooking.bookings[0].bookingInstalments[0].currency
+                            .symbol,
+                    currency:
+                        cartBooking.bookings[0].bookingInstalments[0].currency
+                            .code,
+                    pendingInstallment: cartData.pandinginstallment,
+                    phoneNo:
+                        `+${cartBooking.user.countryCode}` +
+                        cartBooking.user.phoneNo,
+                    bookingId: cartBooking.laytripCartId,
+                    nextDate: DateTime.convertDateFormat(
+                        new Date(nextDate),
+                        "YYYY-MM-DD",
+                        "MMM Do, YYYY"
+                    ),
+                    nextAmount: nextAmount,
+                };
+                if (cartBooking.user.isEmail) {
+                    if (nextAmount > 0) {
+                        this.mailerService
+                            .sendMail({
+                                to: cartBooking.user.email,
+                                from: mailConfig.from,
+                                bcc: mailConfig.BCC,
+                                subject: `Booking ID ${param.bookingId} Installment Recevied`,
+                                html: LaytripInstallmentRecevied(param),
+                            })
+                            .then((res) => {
+                                console.log("res", res);
+                            })
+                            .catch((err) => {
+                                console.log("err", err);
+                            });
+                    } else {
+                        const responce = await CartDataUtility.CartMailModelDataGenerate(
+                            cartBooking.laytripCartId
+                        );
+                        if (responce?.param) {
+                            let subject = `Booking ID ${cartBooking.laytripCartId} Complition Notice`;
+                            this.mailerService
+                                .sendMail({
+                                    to: responce.email,
+                                    from: mailConfig.from,
+                                    bcc: mailConfig.BCC,
+                                    subject: subject,
+                                    html: await LaytripCartBookingComplationMail(
+                                        responce.param
+                                    ),
+                                })
+                                .then((res) => {
+                                    //console.log("res", res);
+                                })
+                                .catch((err) => {
+                                    //console.log("err", err);
+                                });
+                        }
+                    }
+                    console.log(
+                        "mail successed",
+                        param,
+                        cartBooking.user.email
+                    );
+                }
+
+                // if (cartBooking.user.isSMS) {
+                // 	TwilioSMS.sendSMS({
+                // 		toSMS: param.phoneNo,
+                // 		message: `We have received your payment of ${param.currencySymbol}${param.amount} for booking number ${param.bookingId}`
+                // 	})
+                // }
+
+                PushNotification.sendNotificationTouser(
+                    cartBooking.user.userId,
+                    {
+                        //you can send only notification or only data(or include both)
+                        module_name: "instalment",
+                        task: "instalment_received",
+                        bookingId: cartBooking.laytripCartId,
+                        instalmentId:
+                            cartBooking.bookings[0].bookingInstalments[0].id,
+                    },
+                    {
+                        title: "Installment Received",
+                        body: `We have received your payment of $${cartAmount}.`,
+                    },
+                    cronUserId
+                );
+                WebNotification.sendNotificationTouser(
+                    cartBooking.user.userId,
+                    {
+                        //you can send only notification or only data(or include both)
+                        module_name: "instalment",
+                        task: "instalment_received",
+                        bookingId: cartBooking.laytripCartId,
+                        instalmentId:
+                            cartBooking.bookings[0].bookingInstalments[0].id,
+                    },
+                    {
+                        title: "Installment Received",
+                        body: `We have received your payment of $${cartAmount}.`,
+                    },
+                    cronUserId
+                );
+            }
+            console.log("3");
+        }
+    }
+
+    async dailyPayment() {
+        Activity.cronActivity("Partial payment cron");
+
+        const date = new Date();
+        var date1 = date.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
+
+        
+        let cartBookings = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("BookingInstalments.currency", "currency")
+            .leftJoinAndSelect("cartBooking.user", "User")
+            .where(
+                `("BookingInstalments".instalment_date In ('${date1}')) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("BookingInstalments"."attempt" < 2) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
+            )
+            .getMany();
+        if (!cartBookings.length) {
+            throw new NotFoundException(`Partial Payment not available`);
+        }
+
+        var failedlogArray = "";
+        for await (const cartBooking of cartBookings) {
+            try {
+                await this.getPaymentsOfBooking(cartBooking);
+            } catch (error) {
+                console.log("error", error);
+                const filename =
+                    `partial-payment-cron-error-log-` +
+                    cartBooking.laytripCartId +
+                    "-" +
+                    new Date().getTime() +
+                    ".json";
+
+                Activity.createlogFile(
+                    filename,
+                    JSON.stringify(cartBooking.laytripCartId) +
+                        "-----------------------error-----------------------" +
+                        JSON.stringify(error),
+                    "payment"
+                );
+                failedlogArray += `<p>instalmentId:- ${cartBooking.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
+            }
+        }
+        if (failedlogArray != "") {
+            this.cronfailedmail(
+                "cron fail for given installment id please check log files: <br/><pre>" +
+                    failedlogArray,
+                "Daily payment cron error log"
+            );
+            Activity.cronUpdateActivity("Partial payment cron", failedlogArray);
+        }
+
+        return {
+            message: `${new Date()} date installation payment capture successfully`,
+        };
+    }
+
+    async deleteLog(folderName){
+        const path = require("path");
+        const fs = require("fs");
+        const directoryPath = path.join("/var/www/html/logs/" + folderName);
+        //passsing directoryPath and callback function
+        fs.readdir(directoryPath, function(err, files) {
+            //handling error
+            if (err) {
+                return console.log("Unable to scan directory: " + err);
+            }
+            //listing all files using forEach
+            files.forEach(function(file) {
+                // Do whatever you want to do with the file
+                const fileName =
+                    "/var/www/html/logs/" + folderName + "/" + file;
+
+                fs.unlinkSync(fileName)
+            });
+        });
+
+        return {
+            message: `${folderName} log uploaded on s3 bucket`,
         };
     }
 }

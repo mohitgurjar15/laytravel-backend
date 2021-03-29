@@ -19,11 +19,11 @@ export function LaytripMissedPaymentTemplete(param: {
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #000000;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 `;
-  if (param.try == 2) {
+  if (param.try == 3) {
     content += `<tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">2nd Notice!`;
   }
-  if (param.try == 3) {
+  if (param.try == 4) {
     content += `<tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">3rd and final missed payment notice!</td>
                      </tr>`;
@@ -31,17 +31,17 @@ export function LaytripMissedPaymentTemplete(param: {
   content += `
                 <tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">We’re ${
-                      param.try > 1 ? "still" : ""
+                      param.try > 2 ? "still" : ""
                     } having trouble processing your installment payment for ${
     param.amount
   }, originally scheduled for ${param.date} for Booking ID ${
     param.bookingId
   }.</td>
                 </tr>`;
-  if (param.try < 3) {
+  if (param.try < 4) {
     content += `<tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">${
-                      param.try == 1 ? "We understand things happen so." : ""
+                      param.try == 2 ? "We understand things happen so." : ""
                     } We will automatically attempt to process it again on ${
       param.nextDate
     }.</td>
