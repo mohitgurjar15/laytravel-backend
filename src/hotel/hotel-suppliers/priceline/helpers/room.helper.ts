@@ -11,9 +11,10 @@ export class RoomHelper{
         this.rateHelper = new RateHelper();
     }
 
-    processRoom(hotel: any, roomsReqDto: any) {
+    processRoom(hotel: any, roomsReqDto: any,inputData=null) {
         
         let roomData = hotel.room_data;
+        //console.log("Hotel",hotel)
         // return roomData;
         let rooms = collect(roomData).pluck('rate_data').map((rates: any) => {
             
@@ -28,8 +29,12 @@ export class RoomHelper{
                 let { retail, selling, saving_percent } = this.rateHelper.getRates(rate, roomsReqDto);
 
                 let board_type = rate.board_type != 'NONE' ? rate.board_type : '';
-
                 newItem = {
+                    hotel_id : hotel.id,
+                    hotel_name : hotel.name,
+                    input_data  : inputData?inputData:{},
+                    amenity_data:hotel.amenity_data,
+                    address : hotel.address,
                     room_id: rate.room_id,
                     title: rate.title,
                     description: rate.description,

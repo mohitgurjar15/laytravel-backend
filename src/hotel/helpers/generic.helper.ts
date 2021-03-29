@@ -1,4 +1,4 @@
-export class Generic{
+export class GenericHotel{
     static httpBuildQuery(
         obj: any,
         numPrefix?: any,

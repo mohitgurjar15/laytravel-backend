@@ -8,7 +8,7 @@ import { AvailabilityDto } from "src/hotel/dto/availability-req.dto";
 import { DetailReqDto } from "src/hotel/dto/detail-req.dto";
 import { RoomsReqDto } from "src/hotel/dto/rooms-req.dto";
 import { SearchReqDto } from "src/hotel/dto/search-req.dto";
-import { Generic } from "src/hotel/helpers/generic.helper";
+import { GenericHotel } from "src/hotel/helpers/generic.helper";
 import { HotelInterface } from "../hotel.interface";
 import { BookDto, BookDto as PPNBookDto } from "./dto/book.dto";
 import { CommonHelper } from "./helpers/common.helper";
@@ -38,7 +38,7 @@ export class Priceline implements HotelInterface{
             get_pois:true,
         };
         
-        let url = CommonHelper.generateUrl('getAutoSuggestV2', parameters);
+        let url =await CommonHelper.generateUrl('getAutoSuggestV2', parameters);
 
         let locations = await this.httpsService.get(url).pipe(
             map(res => new AutoComplete().processSearchLocationResult(res)),
@@ -87,11 +87,12 @@ export class Priceline implements HotelInterface{
             ...extra
         }
 
-        let url = CommonHelper.generateUrl('getExpress.Results', parameters);
+        let url =await CommonHelper.generateUrl('getExpress.Results', parameters);
         
         let res = await this.httpsService.get(url).pipe(
             map(res => new Search().processSearchResult(res, parameters)),
             catchError(err => {
+                console.log("Error",err)
                 throw new BadRequestException(err +" &&&search&&&" + errorMessage);
             })
         ).toPromise();
@@ -109,7 +110,7 @@ export class Priceline implements HotelInterface{
             reviews: true
         };
 
-        let url = CommonHelper.generateUrl('getHotelDetails', parameters);
+        let url =await CommonHelper.generateUrl('getHotelDetails', parameters);
         
         let res = await this.httpsService.get(url).pipe(
             map(res => new Detail().processDetailResult(res, parameters)),
@@ -127,7 +128,7 @@ export class Priceline implements HotelInterface{
             ppn_bundle : roomsReqDto.bundle,
         };
 
-        let url = CommonHelper.generateUrl('getExpress.MultiContract', parameters);
+        let url =await CommonHelper.generateUrl('getExpress.MultiContract', parameters);
         
         let res = await this.httpsService.get(url).pipe(
             map(res => new Rooms().processRoomsResult(res, roomsReqDto)),
@@ -142,10 +143,10 @@ export class Priceline implements HotelInterface{
     async availability(availabilityDto: AvailabilityDto) {
         
         let parameters = {
-            ppn_bundle: availabilityDto.bundle
+            ppn_bundle: availabilityDto.room_ppn
         };
     
-        let url = CommonHelper.generateUrl('getExpress.Contract', parameters);
+        let url =await CommonHelper.generateUrl('getExpress.Contract', parameters);
         
         let res = await this.httpsService.get(url).pipe(
             map(res => new Availability().processAvailabilityResult(res, availabilityDto)),
@@ -160,9 +161,9 @@ export class Priceline implements HotelInterface{
 
     async book(bookDto: BookDto) {
     
-        let url = CommonHelper.generateUrl('getExpress.Book');
+        let url =await CommonHelper.generateUrl('getExpress.Book');
         
-        let parameters = Generic.httpBuildQuery(bookDto);
+        let parameters = GenericHotel.httpBuildQuery(bookDto);
         
         let res = await this.httpsService.post(url, parameters).pipe(
             map(res => new Book().processBookResult(res)),

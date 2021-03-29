@@ -39,7 +39,7 @@ export class SearchReqDto{
     
     @ApiProperty({
         description: 'Latitude of the searched location',
-        example: "51.5074",
+        example: "",
         required: true
     })
     @IsString()
@@ -47,7 +47,7 @@ export class SearchReqDto{
     
     @ApiProperty({
         description: 'Longitude of the searched location',
-        example: "-0.1276",
+        example: "",
         required: true
     })
     @IsString()
@@ -55,7 +55,7 @@ export class SearchReqDto{
    
     @ApiProperty({
         description: 'If search location is of Hotel type than pass the Hotel ID here',
-        example: "700762337",
+        example: "702305676",
     })
     @IsString()
     @IsOptional()

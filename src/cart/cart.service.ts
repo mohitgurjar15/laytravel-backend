@@ -56,6 +56,7 @@ import { Booking } from "src/entity/booking.entity";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
 import { InstalmentType } from "src/enum/instalment-type.enum";
+import { HotelService } from "src/hotel/hotel.service";
 
 @Injectable()
 export class CartService {
@@ -68,7 +69,8 @@ export class CartService {
         @InjectRepository(AirportRepository)
         private airportRepository: AirportRepository,
 
-        public readonly mailerService: MailerService
+        public readonly mailerService: MailerService,
+        private hotelService:HotelService
     ) {}
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
@@ -121,6 +123,10 @@ more than 5.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
+                    return await this.addHotelIntoCart(
+                        route_code,
+                        userData
+                    )
                     break;
 
                 case ModulesName.FLIGHT:
@@ -551,14 +557,14 @@ more than 5.`
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
 
-            let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`;
+            let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}' OR "cart"."module_id" = '${ModulesName.HOTEL}')`;
             if (user.roleId == Role.GUEST_USER) {
                 if (!uuidValidator(user.user_id)) {
                     throw new NotFoundException(
                         `Please enter guest user id &&&user_id&&&${errorMessage}`
                     );
                 }
-                where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`;
+                where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}' OR "cart"."module_id" = '${ModulesName.HOTEL}')`;
             }
             let query = getConnection()
                 .createQueryBuilder(Cart, "cart")
@@ -1749,4 +1755,38 @@ more than 5.`
     //         query.userId
     //     );   
     // }
+
+    async addHotelIntoCart(ppnBundle:string,user){
+
+        try{
+            let roomDetails =await this.hotelService.availability({
+                'room_ppn' : ppnBundle
+            })
+
+            const cart = new Cart();
+
+            if (user.roleId != Role.GUEST_USER) {
+                cart.userId = user.userId;
+            } else {
+                cart.guestUserId = user.userId;
+            }
+
+            cart.moduleId = ModulesName.HOTEL;
+            cart.moduleInfo = roomDetails;
+            cart.oldModuleInfo = roomDetails;
+            cart.expiryDate = new Date();
+            cart.isDeleted = false;
+            cart.createdDate = new Date();
+
+            let savedCart = await cart.save();
+            
+            return {
+                message: `Hotel added to cart`,
+                data: savedCart,
+            };
+        }
+        catch(e){
+
+        }
+    }
 }

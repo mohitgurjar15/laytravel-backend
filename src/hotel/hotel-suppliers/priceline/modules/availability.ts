@@ -22,7 +22,7 @@ export class Availability{
             let res = results.results
             let hotel = res.hotel_data[0];
             
-            let room = this.roomHelper.processRoom(hotel, availabilityDto);
+            let room = this.roomHelper.processRoom(hotel, availabilityDto,res.input_data);
 
             return room;
 
