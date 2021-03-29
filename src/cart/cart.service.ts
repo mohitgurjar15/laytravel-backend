@@ -282,7 +282,7 @@ more than 5.`
             await getConnection()
                 .createQueryBuilder()
                 .update(User)
-                .set({ createdBy: user.userId, parentGuestUserId: null })
+                .set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
                 .where("parent_guest_user_id =:id", { id: guestUserId })
                 .execute();
 

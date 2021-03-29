@@ -1217,7 +1217,7 @@ export class CronJobsService {
             .replace(/T/, " ") // replace T with a space
             .replace(/\..+/, "");
         var fromDate = new Date();
-        fromDate.setDate(fromDate.getDate() + 3);
+        fromDate.setDate(fromDate.getDate() + 1);
         var toDate = fromDate.toISOString();
         toDate = toDate
             .replace(/T/, " ") // replace T with a space
@@ -1235,7 +1235,7 @@ export class CronJobsService {
             .leftJoinAndSelect("BookingInstalments.currency", "currency")
             .leftJoinAndSelect("booking.user", "User")
             .where(
-                `(DATE("BookingInstalments".instalment_date) >= DATE('${currentDate}') ) AND (DATE("BookingInstalments".instalment_date) <= DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
+                `(DATE("BookingInstalments".instalment_date) = DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
             )
             .getMany();
         for await (const cartBooking of cartBookings) {

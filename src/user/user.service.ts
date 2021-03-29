@@ -395,7 +395,7 @@ export class UserService {
             console.log(mondayDate);
 
             const result = await this.userRepository.query(
-                `SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`
+                `SELECT DATE("created_date"),COUNT(DISTINCT("User"."user_id")) as "count" FROM "user" "User" WHERE role_id In (${Role.FREE_USER},${Role.PAID_USER}) and DATE(created_date) >= '${mondayDate}' AND DATE(created_date) <= '${todayDate}' GROUP BY DATE("created_date")`
             );
             return { result };
         } catch (error) {
@@ -415,7 +415,7 @@ export class UserService {
     async getCounts(): Promise<{ result: any }> {
         try {
             const activeUser = await this.userRepository.query(
-                `SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) GROUP BY status`
+                `SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND role_id In (${Role.FREE_USER},${Role.PAID_USER}) GROUP BY status`
             );
             return { result: activeUser };
         } catch (error) {
