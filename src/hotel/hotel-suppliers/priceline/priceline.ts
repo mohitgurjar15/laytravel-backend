@@ -92,7 +92,7 @@ export class Priceline implements HotelInterface{
         let res = await this.httpsService.get(url).pipe(
             map(res => new Search().processSearchResult(res, parameters)),
             catchError(err => {
-                console.log("Error",err)
+                //console.log("Error",err)
                 throw new BadRequestException(err +" &&&search&&&" + errorMessage);
             })
         ).toPromise();
