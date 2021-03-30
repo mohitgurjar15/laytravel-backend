@@ -9,13 +9,16 @@ export class Availability {
     }
 
     static processAvailabilityResult(res, availabilityDto) {
-        let results = res.data["getHotelExpress.Contract"];
+        let results = res["getHotelExpress.Contract"];
 
         if (results.error) {
             throw new NotFoundException(
                 "No result found &&&availability&&&" + errorMessage
             );
         }
+
+        console.log(res);
+        
 
         if (results.results.status && results.results.status === "Success") {
             let res = results.results;
