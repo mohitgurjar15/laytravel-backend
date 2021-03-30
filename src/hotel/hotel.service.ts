@@ -189,27 +189,6 @@ export class HotelService{
 
     async availability(availabilityDto: AvailabilityDto) {
 
-        /* let cached = await this.cacheManager.get(availabilityDto.token);
-
-        if (!cached) {
-            throw new BadRequestException(invalidToken);
-        }
-        
-        if (!cached.rooms) {
-            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
-        }
-        
-        let room = collect(cached.rooms).where('room_id', availabilityDto.room_id).first();
-        
-        if (!room) {
-            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
-        } */
-
-        //let details = cached.details;
-        
-        //availabilityDto.bundle = room['bundle'];
-        //availabilityDto.rooms = details.occupancies.length;
-
         let availability = await this.hotel.availability(availabilityDto);
         // return availability;
 

@@ -88,8 +88,12 @@ export class Priceline implements HotelInterface {
             rooms,
             adults,
             children,
+            field_blacklist : 'hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage',
+            rate_limit : 1
         };
-        let extra = {};
+        let extra:any = {
+            
+        };
 
         if (hotel_id) {
             extra = {

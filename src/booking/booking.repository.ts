@@ -106,7 +106,6 @@ export class BookingRepository extends Repository<Booking> {
 			.skip(skip)
 			.orderBy(`booking.bookingDate`, 'DESC')
 		const [data, count] = await query.getManyAndCount();
-
 		if (!data.length) {
 			throw new NotFoundException(`No booking found&&&id&&&No booking found`);
 		}
@@ -229,82 +228,87 @@ export class BookingRepository extends Repository<Booking> {
 		const skip = (page_no - 1) * limit || 0;
 
 		let query = getManager()
-			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.cart", "cart")
-			.leftJoinAndSelect("booking.bookingInstalments", "BookingInstalments")
-			.leftJoinAndSelect("booking.currency2", "currency")
-			.leftJoinAndSelect("booking.user", "User")
-			.leftJoinAndSelect("booking.module", "moduleData")
-			.leftJoinAndSelect("User.state", "state")
-			.leftJoinAndSelect("User.country", "countries")
-			// .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
-			.leftJoinAndSelect(
-				"BookingInstalments.failedPaymentAttempts",
-				"failedPaymentAttempts"
-			)
-			.select([
-				"BookingInstalments.id",
-				"BookingInstalments.bookingId",
-				"BookingInstalments.userId",
-				"BookingInstalments.moduleId",
-				"BookingInstalments.supplierId",
-				"BookingInstalments.instalmentType",
-				"BookingInstalments.instalmentNo",
-				"BookingInstalments.instalmentDate",
-				"BookingInstalments.currencyId",
-				"BookingInstalments.amount",
-				"BookingInstalments.instalmentStatus",
-				"BookingInstalments.paymentGatewayId",
-				"BookingInstalments.paymentInfo",
-				"BookingInstalments.paymentStatus",
-				"BookingInstalments.isPaymentProcessedToSupplier",
-				"BookingInstalments.isInvoiceGenerated",
-				"BookingInstalments.comment", "BookingInstalments.transactionToken",
-				"booking.laytripBookingId",
-				"booking.id",
-				"booking.moduleId",
-				"booking.bookingType",
-				"booking.bookingStatus",
-				"booking.currency",
-				"booking.totalAmount",
-				"booking.netRate",
-				"booking.markupAmount",
-				"booking.usdFactor",
-				"booking.bookingDate",
-				"booking.totalInstallments",
-				"booking.locationInfo",
-				"booking.paymentGatewayId",
-				"booking.paymentStatus",
-				"booking.paymentInfo",
-				"booking.isPredictive",
-				"booking.layCredit",
-				"booking.fareType",
-				"booking.isTicketd",
-				"booking.paymentGatewayProcessingFee",
-				"booking.supplierId",
-				"booking.nextInstalmentDate",
-				"booking.supplierBookingId",
-				"currency.id",
-				"currency.code",
-				"currency.symbol",
-				"currency.liveRate",
-				"User.userId",
-				"User.firstName",
-				"User.lastName",
-				"User.socialAccountId",
-				"User.email",
-				"User.phoneNo",
-				"User.roleId",
-				"moduleData.name",
-				"moduleData.id",
-				"failedPaymentAttempts.id",
-				"failedPaymentAttempts.instalmentId",
-				"failedPaymentAttempts.date",
-				"cart.laytripCartId"
-			])
-			.take(take)
-			.skip(skip)
-			.where(`"User"."user_id" =:userId`, { userId: user.userId })
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("booking.currency2", "currency")
+            .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("booking.module", "moduleData")
+            .leftJoinAndSelect("User.state", "state")
+            .leftJoinAndSelect("User.country", "countries")
+            // .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+            .leftJoinAndSelect(
+                "BookingInstalments.failedPaymentAttempts",
+                "failedPaymentAttempts"
+            )
+            .select([
+                "BookingInstalments.id",
+                "BookingInstalments.bookingId",
+                "BookingInstalments.userId",
+                "BookingInstalments.moduleId",
+                "BookingInstalments.supplierId",
+                "BookingInstalments.instalmentType",
+                "BookingInstalments.instalmentNo",
+                "BookingInstalments.instalmentDate",
+                "BookingInstalments.currencyId",
+                "BookingInstalments.amount",
+                "BookingInstalments.instalmentStatus",
+                "BookingInstalments.paymentGatewayId",
+                "BookingInstalments.paymentInfo",
+                "BookingInstalments.paymentStatus",
+                "BookingInstalments.isPaymentProcessedToSupplier",
+                "BookingInstalments.isInvoiceGenerated",
+                "BookingInstalments.comment",
+                "BookingInstalments.transactionToken",
+                "booking.laytripBookingId",
+                "booking.id",
+                "booking.categoryName",
+                "booking.moduleId",
+                "booking.bookingType",
+                "booking.bookingStatus",
+                "booking.currency",
+                "booking.totalAmount",
+                "booking.netRate",
+                "booking.markupAmount",
+                "booking.usdFactor",
+                "booking.bookingDate",
+                "booking.totalInstallments",
+                "booking.locationInfo",
+                "booking.paymentGatewayId",
+                "booking.paymentStatus",
+                "booking.paymentInfo",
+                "booking.isPredictive",
+                "booking.layCredit",
+                "booking.fareType",
+                "booking.isTicketd",
+                "booking.paymentGatewayProcessingFee",
+                "booking.supplierId",
+                "booking.nextInstalmentDate",
+                "booking.supplierBookingId",
+                "currency.id",
+                "currency.code",
+                "currency.symbol",
+                "currency.liveRate",
+                "User.userId",
+                "User.firstName",
+                "User.lastName",
+                "User.socialAccountId",
+                "User.email",
+                "User.phoneNo",
+                "User.roleId",
+                "moduleData.name",
+                "moduleData.id",
+                "failedPaymentAttempts.id",
+                "failedPaymentAttempts.instalmentId",
+                "failedPaymentAttempts.date",
+                "cart.laytripCartId",
+            ])
+            .take(take)
+            .skip(skip)
+            .where(`"User"."user_id" =:userId`, { userId: user.userId });
 		//.orderBy("BookingInstalments.id", 'DESC')
 
 
@@ -356,91 +360,92 @@ export class BookingRepository extends Repository<Booking> {
 		const skip = (page_no - 1) * limit || 0;
 
 		let query = getConnection()
-			.createQueryBuilder(BookingInstalments, "BookingInstalments")
-			.leftJoinAndSelect("BookingInstalments.booking", "booking")
-			.leftJoinAndSelect("booking.cart", "cart")
-			.leftJoinAndSelect("booking.bookingInstalments", "installment")
-			.leftJoinAndSelect("BookingInstalments.currency", "currency")
-			.leftJoinAndSelect("BookingInstalments.user", "User")
-			.leftJoinAndSelect("BookingInstalments.module", "moduleData")
-			.leftJoinAndSelect("BookingInstalments.captureByUser", "captureBy")
-			.select([
-				"BookingInstalments.attempt",
-				"BookingInstalments.id",
-				"BookingInstalments.bookingId",
-				"BookingInstalments.userId",
-				"BookingInstalments.moduleId",
-				"BookingInstalments.supplierId",
-				"BookingInstalments.instalmentType",
-				"BookingInstalments.instalmentNo",
-				"BookingInstalments.instalmentDate",
-				"BookingInstalments.currencyId",
-				"BookingInstalments.amount",
-				"BookingInstalments.instalmentStatus",
-				"BookingInstalments.paymentGatewayId",
-				"BookingInstalments.paymentInfo",
-				"BookingInstalments.paymentStatus",
-				"BookingInstalments.isPaymentProcessedToSupplier",
-				"BookingInstalments.isInvoiceGenerated",
-				"BookingInstalments.transactionToken",
-				"BookingInstalments.paymentCaptureDate",
-				"BookingInstalments.comment",
-				"installment.id",
-				"installment.instalmentDate",
-				"installment.currencyId",
-				"installment.amount",
-				"installment.instalmentStatus",
-				"installment.paymentInfo",
-				"installment.paymentStatus",
-				"booking.bookingType",
-				"booking.bookingStatus",
-				"booking.currency",
-				"booking.totalAmount",
-				"booking.netRate",
-				"booking.markupAmount",
-				"booking.usdFactor",
-				"booking.bookingDate",
-				"booking.totalInstallments",
-				"booking.locationInfo",
-				"booking.moduleInfo",
-				"booking.paymentGatewayId",
-				"booking.paymentStatus",
-				"booking.paymentInfo",
-				"booking.isPredictive",
-				"booking.layCredit",
-				"booking.fareType",
-				"booking.isTicketd",
-				"booking.laytripBookingId",
-				"booking.paymentGatewayProcessingFee",
-				"booking.supplierId",
-				"booking.nextInstalmentDate",
-				"booking.supplierBookingId",
-				"currency.id",
-				"currency.code",
-				"currency.symbol",
-				"currency.liveRate",
-				"User.userId",
-				"User.firstName",
-				"User.lastName",
-				"User.socialAccountId",
-				"User.email",
-				"User.phoneNo",
-				"User.roleId",
-				"moduleData.name",
-				"cart.laytripCartId",
-				"BookingInstalments.isManually",
-				"captureBy.firstName",
-				"captureBy.lastName",
-				"captureBy.socialAccountId",
-				"captureBy.email",
-				"captureBy.phoneNo",
-				"captureBy.roleId"
-			])
+            .createQueryBuilder(BookingInstalments, "BookingInstalments")
+            .leftJoinAndSelect("BookingInstalments.booking", "booking")
+            .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect("booking.bookingInstalments", "installment")
+            .leftJoinAndSelect("BookingInstalments.currency", "currency")
+            .leftJoinAndSelect("BookingInstalments.user", "User")
+            .leftJoinAndSelect("BookingInstalments.module", "moduleData")
+            .leftJoinAndSelect("BookingInstalments.captureByUser", "captureBy")
+            .select([
+                "BookingInstalments.attempt",
+                "BookingInstalments.id",
+                "BookingInstalments.bookingId",
+                "BookingInstalments.userId",
+                "BookingInstalments.moduleId",
+                "BookingInstalments.supplierId",
+                "BookingInstalments.instalmentType",
+                "BookingInstalments.instalmentNo",
+                "BookingInstalments.instalmentDate",
+                "BookingInstalments.currencyId",
+                "BookingInstalments.amount",
+                "BookingInstalments.instalmentStatus",
+                "BookingInstalments.paymentGatewayId",
+                "BookingInstalments.paymentInfo",
+                "BookingInstalments.paymentStatus",
+                "BookingInstalments.isPaymentProcessedToSupplier",
+                "BookingInstalments.isInvoiceGenerated",
+                "BookingInstalments.transactionToken",
+                "BookingInstalments.paymentCaptureDate",
+                "BookingInstalments.comment",
+                "installment.id",
+                "installment.instalmentDate",
+                "installment.currencyId",
+                "installment.amount",
+                "installment.instalmentStatus",
+                "installment.paymentInfo",
+                "installment.paymentStatus",
+                "booking.bookingType",
+                "booking.bookingStatus",
+                "booking.currency",
+                "booking.totalAmount",
+                "booking.categoryName",
+                "booking.netRate",
+                "booking.markupAmount",
+                "booking.usdFactor",
+                "booking.bookingDate",
+                "booking.totalInstallments",
+                "booking.locationInfo",
+                "booking.moduleInfo",
+                "booking.paymentGatewayId",
+                "booking.paymentStatus",
+                "booking.paymentInfo",
+                "booking.isPredictive",
+                "booking.layCredit",
+                "booking.fareType",
+                "booking.isTicketd",
+                "booking.laytripBookingId",
+                "booking.paymentGatewayProcessingFee",
+                "booking.supplierId",
+                "booking.nextInstalmentDate",
+                "booking.supplierBookingId",
+                "currency.id",
+                "currency.code",
+                "currency.symbol",
+                "currency.liveRate",
+                "User.userId",
+                "User.firstName",
+                "User.lastName",
+                "User.socialAccountId",
+                "User.email",
+                "User.phoneNo",
+                "User.roleId",
+                "moduleData.name",
+                "cart.laytripCartId",
+                "BookingInstalments.isManually",
+                "captureBy.firstName",
+                "captureBy.lastName",
+                "captureBy.socialAccountId",
+                "captureBy.email",
+                "captureBy.phoneNo",
+                "captureBy.roleId",
+            ])
 
-			.where(where)
-			.take(take)
-			.skip(skip)
-			.orderBy("BookingInstalments.id", 'DESC')
+            .where(where)
+            .take(take)
+            .skip(skip)
+            .orderBy("BookingInstalments.id", "DESC");
 		const [data, count] = await query.getManyAndCount();
 		// const count = await query.getCount();
 		if (!data.length) {
@@ -506,6 +511,7 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.markupAmount",
 				"booking.usdFactor",
 				"booking.bookingDate",
+				"booking.categoryName",
 				"booking.totalInstallments",
 				"booking.locationInfo",
 				// "booking.moduleInfo",
@@ -590,6 +596,7 @@ export class BookingRepository extends Repository<Booking> {
 				"predictiveBookingData.bookingId",
 				"predictiveBookingData.price",
 				"predictiveBookingData.date",
+				"booking.categoryName",
 				"predictiveBookingData.isBelowMinimum",
 				"predictiveBookingData.netPrice",
 				"predictiveBookingData.remainSeat",
@@ -642,22 +649,28 @@ export class BookingRepository extends Repository<Booking> {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 		let query = getManager()
-			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.cart", "cart")
-			.leftJoinAndSelect("booking.predictiveBookingData", "predictiveBookingData")
-			.select([
-				"booking.laytripBookingId",
-				"booking.id",
-				"predictiveBookingData.id",
-				"predictiveBookingData.bookingId",
-				"predictiveBookingData.price",
-				"predictiveBookingData.date",
-				"predictiveBookingData.isBelowMinimum",
-				"predictiveBookingData.netPrice",
-				"predictiveBookingData.remainSeat"
-			])
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect(
+                "booking.predictiveBookingData",
+                "predictiveBookingData"
+            )
+            .select([
+                "booking.laytripBookingId",
+                "booking.id",
+                "booking.categoryName",
+                "predictiveBookingData.id",
+                "predictiveBookingData.bookingId",
+                "predictiveBookingData.price",
+                "predictiveBookingData.date",
+                "predictiveBookingData.isBelowMinimum",
+                "predictiveBookingData.netPrice",
+                "predictiveBookingData.remainSeat",
+            ])
 
-			.where(`booking.laytripBookingId = '${bookingId}' AND predictiveBookingData.isResedule = false`)
+            .where(
+                `booking.laytripBookingId = '${bookingId}' AND predictiveBookingData.isResedule = false`
+            );
 
 
 		const data = await query.getOne();

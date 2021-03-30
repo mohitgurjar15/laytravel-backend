@@ -15,9 +15,10 @@ export class GenericHotel{
             let query = this.httpBuildQuery(obj[val], null, key)
             output_string.push(query)
             } else {
-            let value = encodeURIComponent(
+            /* let value = encodeURIComponent(
                 String(obj[val]).replace(/[!'()*]/g, encodeURI),
-            )
+            ) */
+            let value = String(obj[val]).replace(/[!'()*]/g, encodeURI);
             output_string.push(key + "=" + value)
             }
         })
