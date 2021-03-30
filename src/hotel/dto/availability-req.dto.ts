@@ -4,11 +4,18 @@ import { InternalDto } from "./internal.dto";
 
 export class AvailabilityDto extends InternalDto{
 
-    @ApiProperty({
+    /* @ApiProperty({
         description: 'Room ID which is selected for booking',
         required:true
     })
     @IsString()
-    room_id: string;
+    room_id: string; */
+
+    @ApiProperty({
+        description: 'Room PPN bundle',
+        required:true
+    })
+    @IsString()
+    room_ppn: string;
 
 }

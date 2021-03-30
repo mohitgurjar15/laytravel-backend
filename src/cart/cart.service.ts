@@ -56,6 +56,7 @@ import { Booking } from "src/entity/booking.entity";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
 import { InstalmentType } from "src/enum/instalment-type.enum";
+import { HotelService } from "src/hotel/hotel.service";
 
 @Injectable()
 export class CartService {
@@ -68,7 +69,8 @@ export class CartService {
         @InjectRepository(AirportRepository)
         private airportRepository: AirportRepository,
 
-        public readonly mailerService: MailerService
+        public readonly mailerService: MailerService,
+        private hotelService: HotelService
     ) {}
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
@@ -121,6 +123,7 @@ more than 5.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
+                    return await this.addHotelIntoCart(route_code, userData);
                     break;
 
                 case ModulesName.FLIGHT:
@@ -260,16 +263,16 @@ more than 5.`
                 );
             }
 
-            let userDefaultCard = await  getConnection()
+            let userDefaultCard = await getConnection()
                 .createQueryBuilder(UserCard, "card")
                 .where(`is_default = true AND user_id = '${user.userId}'`)
-                .getCount
+                .getCount;
             let whr = {
                 userId: user.userId,
                 guestUserId: null,
             };
-            if(userDefaultCard){
-                whr["isDefault"] = false
+            if (userDefaultCard) {
+                whr["isDefault"] = false;
             }
 
             await getConnection()
@@ -417,7 +420,7 @@ more than 5.`
                 .from(CartTravelers)
                 .where(`"cart_id" = '${result.id}'`)
                 .execute();
-            let isPrimaryCount = 0
+            let isPrimaryCount = 0;
             for (let index = 0; index < travelers.length; index++) {
                 const element = travelers[index];
                 if (!uuidValidator(element.traveler_id)) {
@@ -436,11 +439,9 @@ more than 5.`
                             `Dublicate traveler found in list. please change it.`
                         );
                     }
-
-
                 }
-                if(element?.is_primary_traveler == true){
-                    isPrimaryCount ++   
+                if (element?.is_primary_traveler == true) {
+                    isPrimaryCount++;
                 }
             }
 
@@ -449,17 +450,15 @@ more than 5.`
             // }else if(isPrimaryCount > 1){
             //     throw new BadRequestException(`Please select 1 primary traveler.`)
             // }
-            let travelerNo = 0
+            let travelerNo = 0;
             for await (const traveler of travelers) {
                 let cartTraveler = new CartTravelers();
                 cartTraveler.cartId = result.id;
                 cartTraveler.userId = traveler.traveler_id;
-                cartTraveler.isPrimary = travelerNo == 0
-                    ? true
-                    : false;
-                 
+                cartTraveler.isPrimary = travelerNo == 0 ? true : false;
+
                 cartTraveler.baggageServiceCode = traveler.baggage_service_code;
-                travelerNo++
+                travelerNo++;
                 await cartTraveler.save();
             }
 
@@ -552,14 +551,14 @@ more than 5.`
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
 
-            let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`;
+            let where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}' OR "cart"."module_id" = '${ModulesName.HOTEL}')`;
             if (user.roleId == Role.GUEST_USER) {
                 if (!uuidValidator(user.user_id)) {
                     throw new NotFoundException(
                         `Please enter guest user id &&&user_id&&&${errorMessage}`
                     );
                 }
-                where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}')`;
+                where = `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}' OR "cart"."module_id" = '${ModulesName.HOTEL}')`;
             }
             let query = getConnection()
                 .createQueryBuilder(Cart, "cart")
@@ -600,6 +599,7 @@ more than 5.`
                 typeof live_availiblity != "undefined" &&
                 live_availiblity == "yes"
             ) {
+               
                 await this.flightService.validateHeaders(headers);
 
                 const mystifly = new Strategy(
@@ -631,84 +631,89 @@ more than 5.`
                     headers.currency
                 );
                 for await (const cart of result) {
-                    const bookingType =
-                        cart.moduleInfo[0].routes.length > 1
-                            ? "RoundTrip"
-                            : "oneway";
+                    if(cart.moduleId == ModulesName.FLIGHT){
+                        const bookingType =
+                            cart.moduleInfo[0].routes.length > 1
+                                ? "RoundTrip"
+                                : "oneway";
 
-                    if (bookingType == "oneway") {
-                        let dto = {
-                            source_location: cart.moduleInfo[0].departure_code,
-                            destination_location:
-                                cart.moduleInfo[0].arrival_code,
-                            departure_date: await this.flightService.changeDateFormat(
-                                cart.moduleInfo[0].departure_date
-                            ),
-                            flight_class:
-                                cart.moduleInfo[0].routes[0].stops[0]
-                                    .cabin_class,
-                            adult_count: cart.moduleInfo[0].adult_count
-                                ? cart.moduleInfo[0].adult_count
-                                : 0,
-                            child_count: cart.moduleInfo[0].child_count
-                                ? cart.moduleInfo[0].child_count
-                                : 0,
-                            infant_count: cart.moduleInfo[0].infant_count
-                                ? cart.moduleInfo[0].infant_count
-                                : 0,
-                        };
-                        //console.log(dto);
+                        if (bookingType == "oneway") {
+                            let dto = {
+                                source_location:
+                                    cart.moduleInfo[0].departure_code,
+                                destination_location:
+                                    cart.moduleInfo[0].arrival_code,
+                                departure_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].departure_date
+                                ),
+                                flight_class:
+                                    cart.moduleInfo[0].routes[0].stops[0]
+                                        .cabin_class,
+                                adult_count: cart.moduleInfo[0].adult_count
+                                    ? cart.moduleInfo[0].adult_count
+                                    : 0,
+                                child_count: cart.moduleInfo[0].child_count
+                                    ? cart.moduleInfo[0].child_count
+                                    : 0,
+                                infant_count: cart.moduleInfo[0].infant_count
+                                    ? cart.moduleInfo[0].infant_count
+                                    : 0,
+                            };
+                            //console.log(dto);
 
-                        flightRequest[resultIndex] = new Promise((resolve) =>
-                            resolve(
-                                mystifly.oneWaySearchZip(
-                                    dto,
-                                    user,
-                                    mystiflyConfig,
-                                    sessionToken,
-                                    module,
-                                    currencyDetails
+                            flightRequest[cart.id] = new Promise((resolve) =>
+                                resolve(
+                                    mystifly.oneWaySearchZip(
+                                        dto,
+                                        user,
+                                        mystiflyConfig,
+                                        sessionToken,
+                                        module,
+                                        currencyDetails
+                                    )
                                 )
-                            )
-                        );
-                    } else {
-                        let dto = {
-                            source_location: cart.moduleInfo[0].departure_code,
-                            destination_location:
-                                cart.moduleInfo[0].arrival_code,
-                            departure_date: await this.flightService.changeDateFormat(
-                                cart.moduleInfo[0].departure_date
-                            ),
-                            flight_class:
-                                cart.moduleInfo[0].routes[0].stops[0]
-                                    .cabin_class,
-                            adult_count: cart.moduleInfo[0].adult_count
-                                ? cart.moduleInfo[0].adult_count
-                                : 0,
-                            child_count: cart.moduleInfo[0].child_count
-                                ? cart.moduleInfo[0].child_count
-                                : 0,
-                            infant_count: cart.moduleInfo[0].infant_count
-                                ? cart.moduleInfo[0].infant_count
-                                : 0,
-                            arrival_date: await this.flightService.changeDateFormat(
-                                cart.moduleInfo[0].arrival_date
-                            ),
-                        };
-                        //console.log(dto);
-                        flightRequest[resultIndex] = new Promise((resolve) =>
-                            resolve(
-                                mystifly.roundTripSearchZip(
-                                    dto,
-                                    user,
-                                    mystiflyConfig,
-                                    sessionToken,
-                                    module,
-                                    currencyDetails
+                            );
+                        } else {
+                            let dto = {
+                                source_location:
+                                    cart.moduleInfo[0].departure_code,
+                                destination_location:
+                                    cart.moduleInfo[0].arrival_code,
+                                departure_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].departure_date
+                                ),
+                                flight_class:
+                                    cart.moduleInfo[0].routes[0].stops[0]
+                                        .cabin_class,
+                                adult_count: cart.moduleInfo[0].adult_count
+                                    ? cart.moduleInfo[0].adult_count
+                                    : 0,
+                                child_count: cart.moduleInfo[0].child_count
+                                    ? cart.moduleInfo[0].child_count
+                                    : 0,
+                                infant_count: cart.moduleInfo[0].infant_count
+                                    ? cart.moduleInfo[0].infant_count
+                                    : 0,
+                                arrival_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].arrival_date
+                                ),
+                            };
+                            //console.log(dto);
+                            flightRequest[cart.id] = new Promise((resolve) =>
+                                resolve(
+                                    mystifly.roundTripSearchZip(
+                                        dto,
+                                        user,
+                                        mystiflyConfig,
+                                        sessionToken,
+                                        module,
+                                        currencyDetails
+                                    )
                                 )
-                            )
-                        );
+                            );
+                        }
                     }
+                    
                     resultIndex++;
                 }
                 flightResponse = await Promise.all(flightRequest);
@@ -723,47 +728,84 @@ more than 5.`
                     typeof live_availiblity != "undefined" &&
                     live_availiblity == "yes"
                 ) {
-                    const value = await this.flightAvailiblity(
-                        cart,
-                        flightResponse[index]
-                    );
-                    //return value
-                    if (typeof value.message == "undefined") {
-                        newCart["moduleInfo"] = [value];
-                        newCart["is_available"] = true;
+                    if (cart.moduleId == ModulesName.FLIGHT) {
+                        const value = await this.flightAvailiblity(
+                            cart,
+                            flightResponse[cart.id]
+                        );
+                        //return value
+                        if (typeof value.message == "undefined") {
+                            newCart["moduleInfo"] = [value];
+                            newCart["is_available"] = true;
 
-                        cart.moduleInfo = [value];
-                        await getConnection()
-                            .createQueryBuilder()
-                            .update(Cart)
-                            .set({ moduleInfo: [value] })
-                            .where("id = :id", { id: cart.id })
-                            .execute();
-                        await cart.save();
-                    } else {
-                        newCart["is_available"] = false;
-                        newCart["moduleInfo"] = cart.moduleInfo;
-                        // await getConnection()
-                        //     .createQueryBuilder()
-                        //     .delete()
-                        //     .from(CartTravelers)
-                        //     .where(
-                        //         `"cart_id" = '${cart.id}'`
-                        //     )
-                        //     .execute()
-                        // await getConnection()
-                        //     .createQueryBuilder()
-                        //     .delete()
-                        //     .from(Cart)
-                        //     .where(
-                        //         `"id" = '${cart.id}'`
-                        //     )
-                        //     .execute()
+                            cart.moduleInfo = [value];
+                            await getConnection()
+                                .createQueryBuilder()
+                                .update(Cart)
+                                .set({ moduleInfo: [value] })
+                                .where("id = :id", { id: cart.id })
+                                .execute();
+                            await cart.save();
+                        } else {
+                            newCart["is_available"] = false;
+                            newCart["moduleInfo"] = cart.moduleInfo;
+                            // await getConnection()
+                            //     .createQueryBuilder()
+                            //     .delete()
+                            //     .from(CartTravelers)
+                            //     .where(
+                            //         `"cart_id" = '${cart.id}'`
+                            //     )
+                            //     .execute()
+                            // await getConnection()
+                            //     .createQueryBuilder()
+                            //     .delete()
+                            //     .from(Cart)
+                            //     .where(
+                            //         `"id" = '${cart.id}'`
+                            //     )
+                            //     .execute()
+                        }
+                    } else if (cart.moduleId == ModulesName.HOTEL) {
+                        const moduleInfo: any = cart.moduleInfo;
+                        if (moduleInfo[0]?.bundle) {
+                            let roomDetails
+                            try {
+                                roomDetails = await this.hotelService.availability(
+                                {
+                                    room_ppn: moduleInfo[0].bundle,
+                                }
+                            );
+                            }catch(error){
+                                newCart["is_available"] = false;
+                                newCart["moduleInfo"] = cart.moduleInfo;
+                                newCart["error"] = error?.message;
+                            }
+                            
+                            if (roomDetails) {
+                                newCart["moduleInfo"] = roomDetails;
+                                newCart["is_available"] = true;
+
+                                cart.moduleInfo = roomDetails;
+                                await getConnection()
+                                    .createQueryBuilder()
+                                    .update(Cart)
+                                    .set({ moduleInfo: roomDetails })
+                                    .where("id = :id", { id: cart.id })
+                                    .execute();
+                            } else {
+                                newCart["is_available"] = false;
+                                newCart["moduleInfo"] = cart.moduleInfo;
+                            }
+                        } else {
+                            newCart["is_available"] = false;
+                            newCart["moduleInfo"] = cart.moduleInfo;
+                        }
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
                 }
-                if(cart.travelers.length){
+                if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);
                 }
                 newCart["oldModuleInfo"] = cart.oldModuleInfo || {};
@@ -1155,7 +1197,7 @@ more than 5.`
 
         const totalAmount = parseFloat(sumOfTotalAmount[0].total_amount);
         console.log(totalAmount);
-        
+
         if (payment_type == PaymentType.INSTALMENT) {
             let instalmentDetails;
 
@@ -1390,7 +1432,7 @@ more than 5.`
                     //console.log(traveler);
                     let travelerUser = {
                         traveler_id: traveler.userId,
-                        is_primary_traveler : traveler.isPrimary
+                        is_primary_traveler: traveler.isPrimary,
                     };
                     travelers.push(travelerUser);
                 }
@@ -1742,7 +1784,7 @@ more than 5.`
     // async testRefaund(bookingId , header){
     //     let query = await getConnection().createQueryBuilder(CartBooking, "cart")
     //     .where(`laytrip_cart_id = '${bookingId}' `).getOne()
-        
+
     //     this.refundCart(
     //         "fc140356-8230-477a-ae1d-60c26d2fde0e",
     //         header,
@@ -1752,6 +1794,35 @@ more than 5.`
     //         0,
     //         "R4cq32SjOLRxngQr2vkmgy9NeQ3",
     //         query.userId
-    //     );   
+    //     );
     // }
+
+    async addHotelIntoCart(ppnBundle: string, user) {
+            let roomDetails = await this.hotelService.availability({
+                room_ppn: ppnBundle,
+            });
+
+            const cart = new Cart();
+
+            if (user.roleId != Role.GUEST_USER) {
+                cart.userId = user.userId;
+            } else {
+                cart.guestUserId = user.userId;
+            }
+
+            cart.moduleId = ModulesName.HOTEL;
+            cart.moduleInfo = roomDetails.data;
+            cart.oldModuleInfo = roomDetails.data;
+            cart.expiryDate = new Date();
+            cart.isDeleted = false;
+            cart.createdDate = new Date();
+
+            let savedCart = await cart.save();
+
+            return {
+                message: `Hotel added to cart`,
+                data: savedCart,
+            };
+       
+    }
 }
