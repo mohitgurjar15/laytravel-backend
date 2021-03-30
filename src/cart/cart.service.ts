@@ -285,11 +285,8 @@ more than 5.`
             await getConnection()
                 .createQueryBuilder()
                 .update(User)
-                .set({
-                    createdBy: user.userId,
-                    parentGuestUserId: null,
-                    email: user.email,
-                })
+                //.set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
+                .set({ createdBy: user.userId, parentGuestUserId: null })
                 .where("parent_guest_user_id =:id", { id: guestUserId })
                 .execute();
 
@@ -772,11 +769,19 @@ more than 5.`
                     } else if (cart.moduleId == ModulesName.HOTEL) {
                         const moduleInfo: any = cart.moduleInfo;
                         if (moduleInfo?.data[0]?.bundle) {
-                            let roomDetails = await this.hotelService.availability(
+                            let roomDetails
+                            try {
+                                roomDetails = await this.hotelService.availability(
                                 {
                                     room_ppn: moduleInfo.data[0].bundle,
                                 }
                             );
+                            }catch(error){
+                                newCart["is_available"] = false;
+                                newCart["moduleInfo"] = cart.moduleInfo;
+                                newCart["error"] = error?.message;
+                            }
+                            
                             if (roomDetails) {
                                 newCart["moduleInfo"] = roomDetails;
                                 newCart["is_available"] = true;
