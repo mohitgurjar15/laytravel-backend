@@ -206,12 +206,14 @@ export class Priceline implements HotelInterface {
                 "",
                 "availiblity"
             );
+            console.log("call 1");
+            
             if (res) {
                 const response = await Availability.processAvailabilityResult(
                     res,
                     availabilityDto
                 );
-               return  response.data
+               return  response
             }
         } catch (error) {
             throw new BadRequestException(

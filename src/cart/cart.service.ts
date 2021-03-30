@@ -1798,7 +1798,6 @@ more than 5.`
     // }
 
     async addHotelIntoCart(ppnBundle: string, user) {
-        try {
             let roomDetails = await this.hotelService.availability({
                 room_ppn: ppnBundle,
             });
@@ -1812,8 +1811,8 @@ more than 5.`
             }
 
             cart.moduleId = ModulesName.HOTEL;
-            cart.moduleInfo = roomDetails;
-            cart.oldModuleInfo = roomDetails;
+            cart.moduleInfo = roomDetails.data;
+            cart.oldModuleInfo = roomDetails.data;
             cart.expiryDate = new Date();
             cart.isDeleted = false;
             cart.createdDate = new Date();
@@ -1824,6 +1823,6 @@ more than 5.`
                 message: `Hotel added to cart`,
                 data: savedCart,
             };
-        } catch (e) {}
+       
     }
 }
