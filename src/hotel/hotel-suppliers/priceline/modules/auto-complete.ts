@@ -1,15 +1,15 @@
 import { NotFoundException, UsePipes, ValidationPipe } from "@nestjs/common";
 import { collect } from "collect.js";
-import { Generic } from "src/hotel/helpers/generic.helper";
+import { GenericHotel } from "src/hotel/helpers/generic.helper";
 import { errorMessage } from "src/config/common.config";
 
 @UsePipes(new ValidationPipe({whitelist:true, forbidNonWhitelisted: true}))
 export class AutoComplete{
     
-    private genericHelper: Generic;
+    private genericHelper: GenericHotel;
     
     constructor() {
-        this.genericHelper = new Generic;
+        this.genericHelper = new GenericHotel;
     }
     
     processSearchLocationResult(res: any) {

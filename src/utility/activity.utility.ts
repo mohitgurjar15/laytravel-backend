@@ -53,6 +53,7 @@ export class Activity {
             fs.mkdirSync(path);
         }
         fs.promises.writeFile(filename, JSON.stringify(logData))
+        //fs.promises.writeFile(filename,logData)
     }
 
     static cronActivity(cronName: string) {

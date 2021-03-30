@@ -25,7 +25,7 @@ export class Search{
     processSearchResult(res, parameters) {
         
         let results = res.data['getHotelExpress.Results'];
-
+        //console.log(results,"---")
         if (results.error) {
 
             throw new NotFoundException("No result found &&&search&&&"+errorMessage);
