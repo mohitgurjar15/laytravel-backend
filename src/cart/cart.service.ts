@@ -768,12 +768,12 @@ more than 5.`
                         }
                     } else if (cart.moduleId == ModulesName.HOTEL) {
                         const moduleInfo: any = cart.moduleInfo;
-                        if (moduleInfo?.data[0]?.bundle) {
+                        if (moduleInfo[0]?.bundle) {
                             let roomDetails
                             try {
                                 roomDetails = await this.hotelService.availability(
                                 {
-                                    room_ppn: moduleInfo.data[0].bundle,
+                                    room_ppn: moduleInfo[0].bundle,
                                 }
                             );
                             }catch(error){

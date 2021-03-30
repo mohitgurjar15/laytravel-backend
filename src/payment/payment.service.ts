@@ -1456,14 +1456,14 @@ export class PaymentService {
                 totalAmount += parseFloat(item.moduleInfo[0].selling_price);
                 console.log("totalAmount", totalAmount);
             } else if (item.moduleId == ModulesName.HOTEL) {
-                const dipatureDate = item.moduleInfo["data"].input_data.check_in;
+                const dipatureDate = item.moduleInfo[0].input_data.check_in;
                 if (smallestDate == "") {
                     smallestDate = dipatureDate;
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
                 totalAmount += parseFloat(
-                    item.moduleInfo["data"].selling.total
+                    item.moduleInfo[0].selling.total
                 );
 
                 console.log("totalAmount", totalAmount);

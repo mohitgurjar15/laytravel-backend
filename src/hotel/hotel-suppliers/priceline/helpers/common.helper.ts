@@ -20,7 +20,7 @@ export class CommonHelper {
         
         let query = GenericHotel.httpBuildQuery(parameters);
         
-        console.log("query",ppnConfig.url+api+'?'+query)
+        //console.log("ppnConfig.url+api+'?'+query",ppnConfig.url+api+'?'+query)
         return ppnConfig.url+api+'?'+query;
     }
 }
