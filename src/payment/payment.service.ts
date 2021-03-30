@@ -54,6 +54,7 @@ import { isNull } from "util";
 import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
 import { Role } from "src/enum/role.enum";
+import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
 
 @Injectable()
 export class PaymentService {
@@ -1444,6 +1445,8 @@ export class PaymentService {
             console.log("moduleId", item.moduleId);
 
             if (item.moduleId == ModulesName.FLIGHT) {
+                console.log("1");
+                console.log(result[0].moduleInfo[0].departure_date);
                 const dipatureDate = await this.changeDateFormat(
                     item.moduleInfo[0].departure_date
                 );
@@ -1453,18 +1456,10 @@ export class PaymentService {
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
+                console.log("smallestDate", smallestDate);
+                console.log(item.moduleInfo[0].selling_price);
+
                 totalAmount += parseFloat(item.moduleInfo[0].selling_price);
-                console.log("totalAmount", totalAmount);
-            } else if (item.moduleId == ModulesName.HOTEL) {
-                const dipatureDate = item.moduleInfo[0].input_data.check_in;
-                if (smallestDate == "") {
-                    smallestDate = dipatureDate;
-                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
-                    smallestDate = dipatureDate;
-                }
-                totalAmount += parseFloat(
-                    item.moduleInfo[0].selling.total
-                );
 
                 console.log("totalAmount", totalAmount);
             }
@@ -1694,5 +1689,163 @@ export class PaymentService {
                 meta_data: cardResult,
             };
         }
+    }
+
+    async listExstraPayment(listPaymentUserDto: ListPaymentUserDto) {
+        const {
+            page_no,
+            limit,
+            booking_id,
+            end_date,
+            start_date,
+            module_id,
+            status,
+            product_id,
+        } = listPaymentUserDto;
+
+        const take = limit || 10;
+        const skip = (page_no - 1) * limit || 0;
+        let payment = new OtherPayments();
+
+        let query = getManager()
+            .createQueryBuilder(OtherPayments, "payment")
+            .leftJoinAndSelect("payment.cart", "cart")
+            .leftJoinAndSelect("payment.booking", "booking")
+            .leftJoinAndSelect("payment.createdBy2", "User")
+            .leftJoinAndSelect("booking.user", "user2")
+            //.leftJoinAndSelect("booking.module", "moduleData")
+            // .leftJoinAndSelect("User.state", "state")
+            // .leftJoinAndSelect("User.country", "countries")
+            // .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+            // .leftJoinAndSelect(
+            //     "BookingInstalments.failedPaymentAttempts",
+            //     "failedPaymentAttempts"
+            // )
+            .select([
+                // "BookingInstalments.id",
+                // "BookingInstalments.bookingId",
+                // "BookingInstalments.userId",
+                // "BookingInstalments.moduleId",
+                // "BookingInstalments.supplierId",
+                // "BookingInstalments.instalmentType",
+                // "BookingInstalments.instalmentNo",
+                // "BookingInstalments.instalmentDate",
+                // "BookingInstalments.currencyId",
+                // "BookingInstalments.amount",
+                // "BookingInstalments.instalmentStatus",
+                // "BookingInstalments.paymentGatewayId",
+                // "BookingInstalments.paymentInfo",
+                // "BookingInstalments.paymentStatus",
+                // "BookingInstalments.isPaymentProcessedToSupplier",
+                // "BookingInstalments.isInvoiceGenerated",
+                // "BookingInstalments.comment",
+                // "BookingInstalments.transactionToken",
+                "booking.laytripBookingId",
+                "booking.id",
+                "booking.categoryName",
+                "booking.moduleId",
+                "booking.bookingType",
+                "booking.bookingStatus",
+                "booking.currency",
+                "booking.totalAmount",
+                "booking.netRate",
+                "booking.markupAmount",
+                "booking.usdFactor",
+                "booking.bookingDate",
+                "booking.totalInstallments",
+                "booking.locationInfo",
+                "booking.paymentGatewayId",
+                "booking.paymentStatus",
+                "booking.paymentInfo",
+                "booking.isPredictive",
+                "booking.layCredit",
+                "booking.fareType",
+                "booking.isTicketd",
+                "booking.paymentGatewayProcessingFee",
+                "booking.supplierId",
+                "booking.nextInstalmentDate",
+                "booking.supplierBookingId",
+                // "currency.id",
+                // "currency.code",
+                // "currency.symbol",
+                // "currency.liveRate",
+                "User.userId",
+                "User.firstName",
+                "User.lastName",
+                "User.socialAccountId",
+                "User.email",
+                "User.phoneNo",
+                "User.roleId",
+                "user2.userId",
+                "user2.firstName",
+                "user2.lastName",
+                "user2.socialAccountId",
+                "user2.email",
+                "user2.phoneNo",
+                "user2.roleId",
+                "payment.comment",
+                "payment.amount",
+                "payment.createdDate",
+                "payment.currencyId",
+                "payment.transactionId",
+                "payment.paymentInfo",
+                "payment.paidFor",
+                "payment.paymentStatus",
+                "payment.id",
+                // "failedPaymentAttempts.id",
+                // "failedPaymentAttempts.instalmentId",
+                // "failedPaymentAttempts.date",
+                "cart.laytripCartId",
+            ])
+            .take(take)
+            .skip(skip)
+            .where(`1=1`)
+            .orderBy("payment.id", "DESC");
+
+        if (product_id) {
+            query = query.andWhere(
+                `("booking"."laytrip_booking_id" =  '${product_id}')`
+            );
+        }
+
+        if (booking_id) {
+            query = query.andWhere(
+                `("cart"."laytrip_cart_id" =  '${booking_id}')`
+            );
+        }
+
+        if (module_id)
+            query = query.andWhere(`"booking"."module_id"=:module_id`, {
+                module_id,
+            });
+        if (status) {
+            query = query.andWhere(
+                `"payment"."payment_status"=:payment_status`,
+                {
+                    payment_status:status
+                }
+            );
+        }
+        if (start_date && end_date) {
+            query = query.andWhere(
+                `"payment"."created_date" >=:payment_start_date and "payment"."created_date" <=:payment_end_date`,
+                { payment_start_date: start_date, payment_end_date: end_date }
+            );
+        } else if (start_date) {
+            query = query.andWhere(
+                `"payment"."created_date"=:payment_start_date`,
+                { payment_start_date: end_date }
+            );
+        }
+
+        const [result, count] = await query.getManyAndCount();
+
+         if (!result.length)
+            throw new NotFoundException(`No data found.`);
+
+        return {
+            result,
+            count,
+        };
     }
 }
