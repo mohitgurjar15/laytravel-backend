@@ -56,6 +56,8 @@ console.log(typeOrmConfig);
     UserModule,
     MailerModule.forRoot({
       transport: {
+        maxConnections:3,
+        pull:true,
         host: mailConfig.host,
         port: mailConfig.port,
         secure: mailConfig.secure,

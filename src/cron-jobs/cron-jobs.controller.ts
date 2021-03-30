@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Put, Query, Req } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Put, Query, Req } from '@nestjs/common';
 import { CronJobsService } from './cron-jobs.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { getBookingDailyPriceDto } from './dto/get-daily-booking-price.dto';
@@ -61,6 +61,23 @@ export class CronJobsController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async getPartialPoint() {
         return await this.cronJobsService.partialPayment();
+    }
+
+    @Get("payment/daily")
+    @ApiOperation({ summary: "Get Partial paymnt from the user " })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Admin not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async dailyInstallmentPayment() {
+        return await this.cronJobsService.dailyPayment();
     }
 
     @Get("partial-booking-price")
@@ -129,6 +146,15 @@ export class CronJobsController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async uploadPaymentLog() {
         return await this.cronJobsService.uploadLogIntoS3Bucket("payment");
+    }
+
+    @Delete("log")
+    @ApiOperation({ summary: "delete logs" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async deletelogs() {
+        await this.cronJobsService.deleteLog("flights");
+       return await this.cronJobsService.deleteLog("payment");
     }
 
     @Get("database-backup")

@@ -105,7 +105,7 @@ export class AdminDashboardService {
         .replace(/\..+/, "");
 
       const { moduleId, startDate, toDate } = filterOption;
-      var where = `role_id In (${Role.FREE_USER},${Role.PAID_USER} ) `;
+      var where = `role_id In (${Role.FREE_USER},${Role.PAID_USER}) `;
       if (startDate) {
         where += `AND (DATE(created_date) >= '${startDate}') `;
       } else {
@@ -224,7 +224,7 @@ export class AdminDashboardService {
 				COUNT(DISTINCT("User"."user_id")) as "count" 
 				FROM "user" "User" 
 				where 
-					role_id In (${Role.FREE_USER},${Role.PAID_USER} )
+					role_id In (${Role.FREE_USER},${Role.PAID_USER})
 			`
       );
 

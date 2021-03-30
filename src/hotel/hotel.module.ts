@@ -1,7 +1,7 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
 import { PaymentService } from 'src/payment/payment.service';
-import { Generic } from './helpers/generic.helper';
+import { GenericHotel } from './helpers/generic.helper';
 import { RateHelper } from './helpers/rate.helper';
 import { UserHelper } from './helpers/user.helper';
 import { HotelController } from './hotel.controller';
@@ -15,7 +15,7 @@ import { BookingRepository } from 'src/booking/booking.repository';
   controllers: [HotelController],
   providers: [
     HotelService,
-    Generic,
+    GenericHotel,
     RateHelper,
     UserHelper,
     BookingHelper,

@@ -1,4 +1,4 @@
-import { Generic } from "src/hotel/helpers/generic.helper";
+import { GenericHotel } from "src/hotel/helpers/generic.helper";
 import * as config from 'config';
 import { collect } from "collect.js";
 
@@ -6,9 +6,9 @@ export class DetailHelper {
 
     private hotel: any;
 
-    private genericHelper: Generic;
+    private genericHelper: GenericHotel;
     constructor() {
-        this.genericHelper = new Generic();
+        this.genericHelper = new GenericHotel();
     }
     private default_amenities = {
         "Free Breakfast" : "breakfast",
@@ -31,7 +31,7 @@ export class DetailHelper {
         
         parameters = { ...defaults, ...parameters };
         
-        let query = Generic.httpBuildQuery(parameters);
+        let query = GenericHotel.httpBuildQuery(parameters);
         
         return ppnConfig.url+api+'?'+query;
     }

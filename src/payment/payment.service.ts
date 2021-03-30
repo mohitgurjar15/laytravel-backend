@@ -108,12 +108,12 @@ export class PaymentService {
                 .set({ isDefault: true })
                 .where(whr)
                 .execute();
-            if(userId){
+            if (userId) {
                 const user = await getManager()
-                .createQueryBuilder(User, "user")
-                .where(`user_id = '${userId}'`)
-                .getOne()
-                if(user){
+                    .createQueryBuilder(User, "user")
+                    .where(`user_id = '${userId}'`)
+                    .getOne();
+                if (user) {
                     this.mailerService
                         .sendMail({
                             to: user.email,
@@ -131,9 +131,8 @@ export class PaymentService {
                             console.log("err", err);
                         });
                 }
-                
             }
-            
+
             return {
                 message: `Card successfully updated as a default card`,
             };
@@ -477,13 +476,13 @@ export class PaymentService {
         let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
-        
-        
-        if(is_2ds == true){
-            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+
+        if (is_2ds == true) {
+            gatewayToken =
+                GatewayCredantial.credentials.token_without_3ds ||
+                GatewayCredantial.credentials.token;
         }
 
-        
         const headers = {
             Accept: "application/json",
             Authorization: authorization,
@@ -579,7 +578,7 @@ export class PaymentService {
         }
     }
 
-    async voidCard(captureToken, userId ) {
+    async voidCard(captureToken, userId) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         const authorization = GatewayCredantial.credentials.authorization;
@@ -684,8 +683,8 @@ export class PaymentService {
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
             logData["responce"] = error?.data;
-            logData['error'] = error;
-            logData['message'] = error?.message;
+            logData["error"] = error;
+            logData["message"] = error?.message;
             let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
             if (userId) {
                 fileName += "_" + userId;
@@ -730,15 +729,17 @@ export class PaymentService {
         }
     }
 
-    async getPayment(card_token, amount, currency_code, userId,is_2ds = true) {
+    async getPayment(card_token, amount, currency_code, userId, is_2ds = true) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
 
-        if(is_2ds == true){
-            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+        if (is_2ds == true) {
+            gatewayToken =
+                GatewayCredantial.credentials.token_without_3ds ||
+                GatewayCredantial.credentials.token;
         }
 
         const headers = {
@@ -897,15 +898,13 @@ export class PaymentService {
     }
 
     async deleteCard(cardId: string, user: User) {
-        let where = `is_deleted = false and id = '${cardId}'`
-        if(user.roleId >= Role.PAID_USER)
-        {
-            if(user.roleId == Role.GUEST_USER){
+        let where = `is_deleted = false and id = '${cardId}'`;
+        if (user.roleId >= Role.PAID_USER) {
+            if (user.roleId == Role.GUEST_USER) {
                 where += `and guest_user_id = '${user.userId}'`;
-            }else{
-                where += `and user_id = '${user.userId}'`
+            } else {
+                where += `and user_id = '${user.userId}'`;
             }
-            
         }
         let card = await getManager()
             .createQueryBuilder(UserCard, "user_card")
@@ -1445,8 +1444,6 @@ export class PaymentService {
             console.log("moduleId", item.moduleId);
 
             if (item.moduleId == ModulesName.FLIGHT) {
-                console.log("1");
-                console.log(result[0].moduleInfo[0].departure_date);
                 const dipatureDate = await this.changeDateFormat(
                     item.moduleInfo[0].departure_date
                 );
@@ -1456,10 +1453,18 @@ export class PaymentService {
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
-                console.log("smallestDate", smallestDate);
-                console.log(item.moduleInfo[0].selling_price);
-
                 totalAmount += parseFloat(item.moduleInfo[0].selling_price);
+                console.log("totalAmount", totalAmount);
+            } else if (item.moduleId == ModulesName.HOTEL) {
+                const dipatureDate = item.moduleInfo[0].input_data.check_in;
+                if (smallestDate == "") {
+                    smallestDate = dipatureDate;
+                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                    smallestDate = dipatureDate;
+                }
+                totalAmount += parseFloat(
+                    item.moduleInfo[0].selling.total
+                );
 
                 console.log("totalAmount", totalAmount);
             }

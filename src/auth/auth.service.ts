@@ -575,11 +575,6 @@ export class AuthService {
                 `Your account has been disabled. Please contact customerservice@laytrip.com.`
             );
         }
-        if (!user.isVerified) {
-            throw new NotAcceptableException(
-                `Your email has been verified.&&&email&&&Your email has been verified.`
-            );
-        }
         var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
         // const tokenhash = crypto

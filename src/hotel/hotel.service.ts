@@ -12,7 +12,7 @@ import { FilterHelper } from './helpers/filter.helper';
 import { FilterReqDto } from './dto/filter-req.dto';
 import { RateHelper } from './helpers/rate.helper';
 import { AvailabilityDto } from './dto/availability-req.dto';
-import { Generic } from './helpers/generic.helper';
+import { GenericHotel } from './helpers/generic.helper';
 import { BookDto } from './dto/book-req.dto';
 import { BookDto as PPNBookDto } from './hotel-suppliers/priceline/dto/book.dto';
 import { UserHelper } from './helpers/user.helper';
@@ -27,9 +27,6 @@ import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { BookingStatus } from 'src/enum/booking-status.enum';
 import { BookingRepository } from 'src/booking/booking.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
-import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
-import { HotelBookingParam } from 'src/config/email_template/model/hotel-booking-param.model';
 import { Booking } from 'src/entity/booking.entity';
 
 @Injectable()
@@ -41,7 +38,7 @@ export class HotelService{
     
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-        private generic: Generic,
+        private generic: GenericHotel,
         private rate: RateHelper,
         private user: UserHelper,
         private booking: BookingHelper,
@@ -192,34 +189,13 @@ export class HotelService{
 
     async availability(availabilityDto: AvailabilityDto) {
 
-        let cached = await this.cacheManager.get(availabilityDto.token);
-
-        if (!cached) {
-            throw new BadRequestException(invalidToken);
-        }
-        
-        if (!cached.rooms) {
-            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
-        }
-        
-        let room = collect(cached.rooms).where('room_id', availabilityDto.room_id).first();
-        
-        if (!room) {
-            throw new NotFoundException("No record found for Room ID: "+availabilityDto.room_id);
-        }
-
-        let details = cached.details;
-        
-        availabilityDto.bundle = room['bundle'];
-        availabilityDto.rooms = details.occupancies.length;
-
         let availability = await this.hotel.availability(availabilityDto);
         // return availability;
 
         /* Add any type of Business logic for Room object's */
-        availability = this.rate.generateInstalments(availability, details.check_in);
+        //availability = this.rate.generateInstalments(availability, details.check_in);
 
-        availability = availability.map((item) => {
+        /* availability = availability.map((item) => {
                 
             item['price_change'] = (item.selling.total != room['selling']['total']);
 
@@ -232,7 +208,7 @@ export class HotelService{
         
         cached.availability = availability;
 
-        await this.cacheManager.set(availabilityDto.token, cached, { ttl: this.ttl });
+        await this.cacheManager.set(availabilityDto.token, cached, { ttl: this.ttl }); */
 
         let response = {
             data: availability,
@@ -512,8 +488,8 @@ export class HotelService{
                     let room: any = priceRes.data.room;
                     
                     let availabilityDto: AvailabilityDto = {
-                        room_id: room.room_id,
-                        bundle: room.bundle
+                        bundle: room.bundle,
+                        room_ppn : room.ppn
                     };
                     
                     let availabilityRes = await this.hotel.availability(availabilityDto);
