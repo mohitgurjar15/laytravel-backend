@@ -782,15 +782,15 @@ more than 5.`
                                 newCart["error"] = error?.message;
                             }
                             
-                            if (roomDetails) {
-                                newCart["moduleInfo"] = roomDetails;
+                            if (roomDetails?.data) {
+                                newCart["moduleInfo"] = roomDetails.data;
                                 newCart["is_available"] = true;
 
                                 cart.moduleInfo = roomDetails;
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails })
+                                    .set({ moduleInfo: roomDetails.data })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {

@@ -1422,10 +1422,11 @@ export class CronJobsService {
         let bookings = await getConnection()
             .createQueryBuilder(Booking, "Booking")
             .where(
-                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
+                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM} AND "Booking"."module_id" IN (${ModulesName.FLIGHT})`
             )
             .getMany();
-
+        console.log(bookings);
+        
         if (!bookings.length) {
             return {
                 message: `Upcommig booking not found`,
@@ -1761,10 +1762,15 @@ export class CronJobsService {
                     await this.checkAllinstallmentPaid(booking.id);
                 }
                 let param = {
+                    // date: DateTime.convertDateFormat(
+                    //     new Date(
+                    //         cartBooking.bookings[0].bookingInstalments[0].instalmentDate
+                    //     ),
+                    //     "YYYY-MM-DD",
+                    //     "MMM Do, YYYY"
+                    // ),
                     date: DateTime.convertDateFormat(
-                        new Date(
-                            cartBooking.bookings[0].bookingInstalments[0].instalmentDate
-                        ),
+                        new Date(),
                         "YYYY-MM-DD",
                         "MMM Do, YYYY"
                     ),
