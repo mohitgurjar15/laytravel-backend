@@ -11,17 +11,17 @@ export async function LaytripFlightReminderMail(
     let traveleName = "";
     let travelerEmail = "";
     for await (const traveler of param.traveler) {
-        if(traveleName != ''){
-            traveleName += ', '
+        if (traveleName != "") {
+            traveleName += ", ";
         }
         if (travelerEmail != "") {
             travelerEmail += ", ";
         }
-        traveleName += traveler.name
-            ? traveler.name 
-            : "";
+        traveleName += traveler.name ? traveler.name : "";
         travelerEmail += traveler.email
-            ? '<span style="color: #0c7bff;"><u>' + traveler.email + "</u></span>"
+            ? '<span style="color: #0c7bff;"><u>' +
+              traveler.email +
+              "</u></span>"
             : "";
     }
     let content = `<tr>
@@ -116,8 +116,9 @@ export async function LaytripFlightReminderMail(
                 >
                     <span style="color: #000000">Total Price:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
-            </tr>
-            <tr>
+            </tr>`;
+    if (param.cart.rememberAmount && param.cart.rememberAmount != "$0") {
+        content += `<tr>
                 <td
                     align="left"
                     valign="top"
@@ -135,8 +136,9 @@ export async function LaytripFlightReminderMail(
                     <span style="color: #000000">Balance Due:</span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
-            if(param.flight[0].droups[0].depature?.pnr_no){
-                content += `<tr>
+    }
+    if (param.flight[0].droups[0].depature?.pnr_no) {
+        content += `<tr>
                 <td
                     align="left"
                     valign="top"
@@ -146,7 +148,7 @@ export async function LaytripFlightReminderMail(
                     </span>
                 </td>
             </tr>`;
-            }
+    }
 
     //     <td>
     //         <table class="oc_wrapper" border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"

@@ -80,15 +80,18 @@ export class CartDataUtility {
 
     return {
         paidAmount:
-            currency.symbol + `${await Generic.formatPriceDecimal(paidAmount)}`,
+            currency.symbol +
+            `${(await Generic.formatPriceDecimal(paidAmount)) || 0}`,
         remainAmount:
-            currency.symbol + `${await Generic.formatPriceDecimal(remainAmount)}`,
-        pandinginstallment: pandinginstallment,
+            currency.symbol +
+            `${(await Generic.formatPriceDecimal(remainAmount)) || 0}`,
+        pandinginstallment: pandinginstallment || 0,
         totalAmount:
-            currency.symbol + `${await Generic.formatPriceDecimal(totalAmount)}`,
-        paidAmountNumeric: paidAmount,
-        remainAmountNumeric: remainAmount,
-        totalAmounNumerict: totalAmount,
+            currency.symbol +
+            `${(await Generic.formatPriceDecimal(totalAmount)) || 0}`,
+        paidAmountNumeric: paidAmount || 0,
+        remainAmountNumeric: remainAmount || 0,
+        totalAmounNumerict: totalAmount || 0,
     };
   }
 
