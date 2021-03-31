@@ -273,10 +273,22 @@ export class GeneralController {
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    async test(
-        @UserIpAddress() ip
-    ) {
+    async test(@UserIpAddress() ip) {
         console.log(ip);
-        
+    }
+
+    @Post(["test/predictive_dance/update"])
+    @ApiOperation({ summary: "" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async test2(@UserIpAddress() ip) {
+       return await this.generalService.predictiveData()
     }
 }

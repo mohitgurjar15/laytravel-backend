@@ -1,19 +1,35 @@
-import { Controller, Get, Query, UseGuards, HttpCode, Param, Post, Body, UseInterceptors, UploadedFiles } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
-import { EnquiryListDto } from './dto/enquiry-list.dto';
-import { Enquiry } from 'src/entity/enquiry.entity';
-import { EnqiryService } from './enqiry.service';
-import { Role } from 'src/enum/role.enum';
-import { RolesGuard } from 'src/guards/role.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/guards/role.decorator';
-import { newEnquiryDto } from './dto/new-enquiry.dto'
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import {
+    Controller,
+    Get,
+    Query,
+    UseGuards,
+    HttpCode,
+    Param,
+    Post,
+    Body,
+    UseInterceptors,
+    UploadedFiles,
+} from "@nestjs/common";
+import {
+    ApiBearerAuth,
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiConsumes,
+} from "@nestjs/swagger";
+import { EnquiryListDto } from "./dto/enquiry-list.dto";
+import { Enquiry } from "src/entity/enquiry.entity";
+import { EnqiryService } from "./enqiry.service";
+import { Role } from "src/enum/role.enum";
+import { RolesGuard } from "src/guards/role.guard";
+import { AuthGuard } from "@nestjs/passport";
+import { Roles } from "src/guards/role.decorator";
+import { newEnquiryDto } from "./dto/new-enquiry.dto";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
-import { editFileName } from 'src/auth/file-validator';
-import { SiteUrl } from 'src/decorator/site-url.decorator';
-import { uploadFileDto } from 'src/general/dto/attachment.dto';
-
+import { editFileName } from "src/auth/file-validator";
+import { SiteUrl } from "src/decorator/site-url.decorator";
+import { uploadFileDto } from "src/general/dto/attachment.dto";
 
 @ApiTags("Enquiry")
 @Controller("enqiry")
@@ -65,21 +81,41 @@ export class EnqiryController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @Post()
     @ApiConsumes("multipart/form-data")
+    // @UseInterceptors(
+    //     FileFieldsInterceptor([{ name: "file" }], {
+    //         storage: diskStorage({
+    //             destination: "/var/www/html/logs/enquiry/",
+    //             filename: editFileName,
+    //         }),
+    //         limits: { fileSize: 1097152 },
+    //     })
+    // )
     @UseInterceptors(
-        FileFieldsInterceptor([{ name: "file" }], {
-            storage: diskStorage({
-                destination: "/var/www/html/logs/enquiry/",
-                filename: editFileName,
-            }),
-            limits: { fileSize: 1097152 },
-        })
+        FileFieldsInterceptor(
+            [
+                { name: "file", maxCount: 5 },
+                { name: "file1", maxCount: 1 },
+            ],
+            {
+                storage: diskStorage({
+                    destination: "/var/www/html/logs/enquiry/",
+                    filename: editFileName,
+                }),
+                limits: { fileSize: 1097152 },
+            }
+        )
     )
     @HttpCode(200)
     async createEnquiry(
         @Body() newEnquiryDto: newEnquiryDto,
         @SiteUrl() siteUrl,
-        @UploadedFiles() files: uploadFileDto
+        // @UploadedFiles() files: uploadFileDto
+        @UploadedFiles() files
     ): Promise<{ message: string }> {
-        return await this.enqiryService.newEnquiry(newEnquiryDto, files , siteUrl);
+        return await this.enqiryService.newEnquiry(
+            newEnquiryDto,
+            files,
+            siteUrl
+        );
     }
 }
