@@ -1762,10 +1762,15 @@ export class CronJobsService {
                     await this.checkAllinstallmentPaid(booking.id);
                 }
                 let param = {
+                    // date: DateTime.convertDateFormat(
+                    //     new Date(
+                    //         cartBooking.bookings[0].bookingInstalments[0].instalmentDate
+                    //     ),
+                    //     "YYYY-MM-DD",
+                    //     "MMM Do, YYYY"
+                    // ),
                     date: DateTime.convertDateFormat(
-                        new Date(
-                            cartBooking.bookings[0].bookingInstalments[0].instalmentDate
-                        ),
+                        new Date(),
                         "YYYY-MM-DD",
                         "MMM Do, YYYY"
                     ),
