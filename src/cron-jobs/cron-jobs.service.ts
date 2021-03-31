@@ -1422,10 +1422,11 @@ export class CronJobsService {
         let bookings = await getConnection()
             .createQueryBuilder(Booking, "Booking")
             .where(
-                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
+                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM} AND "Booking"."module_id" IN (${ModulesName.FLIGHT})`
             )
             .getMany();
-
+        console.log(bookings);
+        
         if (!bookings.length) {
             return {
                 message: `Upcommig booking not found`,
