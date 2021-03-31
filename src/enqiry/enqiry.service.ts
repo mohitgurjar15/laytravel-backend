@@ -100,7 +100,7 @@ export class EnqiryService {
                     console.log(cn);
 
                     const attachment = {
-                        content: fs.readFileSync(fileName).toString("base64"),
+                        content: fs.readFileSync(fileName),
                         filename: file.filename,
                         contentType: cn,
                     };
