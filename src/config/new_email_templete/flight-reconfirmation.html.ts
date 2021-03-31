@@ -17,16 +17,13 @@ export async function TravelProviderReconfirmationMail(
         if (travelerEmail != "") {
             travelerEmail += ", ";
         }
-        traveleName += traveler.name
-            ? traveler.name 
-            : "";
+        traveleName += traveler.name ? traveler.name : "";
         travelerEmail += traveler.email
             ? '<span style="color: #0c7bff;"><u>' +
               traveler.email +
               "</u></span>"
             : "";
     }
-
 
     let content = `<tr>
     <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
@@ -54,7 +51,7 @@ export async function TravelProviderReconfirmationMail(
                     </td>
                 </tr>`;
     }
-     content += `
+    content += `
                 <tr>
                     <td
                         align="left"
@@ -119,8 +116,9 @@ export async function TravelProviderReconfirmationMail(
                 >
                     <span style="color: #000000">Total Price:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
-            </tr>
-            <tr>
+            </tr>`;
+    if (param.cart.rememberAmount && param.cart.rememberAmount != "$0") {
+        content += `<tr>
                 <td
                     align="left"
                     valign="top"
@@ -138,8 +136,10 @@ export async function TravelProviderReconfirmationMail(
                     <span style="color: #000000">Balance Due:</span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
-            if(param.flight[0].droups[0].depature?.pnr_no){
-                content += `<tr>
+    }
+
+    if (param.flight[0].droups[0].depature?.pnr_no) {
+        content += `<tr>
                 <td
                     align="left"
                     valign="top"
@@ -149,8 +149,8 @@ export async function TravelProviderReconfirmationMail(
                     </span>
                 </td>
             </tr>`;
-            }
-    // content += `       
+    }
+    // content += `
     //             <tr>
     //                 <td align="left" valign="top"
     //                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px; padding-bottom:10px; text-align: left;">
@@ -264,7 +264,7 @@ export async function TravelProviderReconfirmationMail(
     // content += `</table>
     //                 </td>
     //             </tr>
-                
+
     //             <tr>
     //                 <td>
     //                     <table class="oc_wrapper" border="1" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
@@ -278,7 +278,7 @@ export async function TravelProviderReconfirmationMail(
     //                             </td>
     //                         </tr>
     //                         <tr>
-                                
+
     //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
     //                                 width="30%" class="header_txt"
     //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #0043ff; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
@@ -298,7 +298,7 @@ export async function TravelProviderReconfirmationMail(
     // for (let index = 0; index < param.traveler.length; index++) {
     //     const traveler = param.traveler[index];
     //     content += `<tr>
-                                
+
     //                             <td class="templateColumnContainer" width="25%">
     //                                 <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
     //                                     <tr>
@@ -352,12 +352,12 @@ export async function TravelProviderReconfirmationMail(
     //                             <td><span style="font-weight: 700; font-size: 13px; padding-right:10px; color: #000000;  font-family: 'Poppins', sans-serif;">${param.cart.rememberAmount}</span></td>
     //                         </tr>`;
     // }
-    
+
     //                     </table>
     //                 </td>
     //             </tr>
-                
-          content += `      <tr>
+
+    content += `      <tr>
                     <td style="padding: 15px 0;">
                         <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
