@@ -25,7 +25,7 @@ import { RolesGuard } from "src/guards/role.guard";
 import { AuthGuard } from "@nestjs/passport";
 import { Roles } from "src/guards/role.decorator";
 import { newEnquiryDto } from "./dto/new-enquiry.dto";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { editFileName } from "src/auth/file-validator";
 import { SiteUrl } from "src/decorator/site-url.decorator";
@@ -101,10 +101,11 @@ export class EnqiryController {
                     destination: "/var/www/html/logs/enquiry/",
                     filename: editFileName,
                 }),
-                limits: { fileSize: 1097152 },
+                limits: { fileSize: 20097152 },
             }
         )
     )
+    //@UseInterceptors(FilesInterceptor('files[]', 20))
     @HttpCode(200)
     async createEnquiry(
         @Body() newEnquiryDto: newEnquiryDto,
