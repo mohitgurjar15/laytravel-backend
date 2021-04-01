@@ -45,8 +45,8 @@ export class FlightRouteService {
         if (status) {
             where += `AND ("route"."status" = ${status} )`;
         }
-        if(category_id){
-             where += `AND ("route"."category_id" = ${category_id} )`;
+        if (category_id) {
+            where += `AND ("route"."category_id" = ${category_id} )`;
         }
 
         let [result, count] = await getConnection()
@@ -55,7 +55,7 @@ export class FlightRouteService {
             .where(where)
             .skip(skip)
             .take(take)
-            .orderBy(`route.id`,'DESC')
+            .orderBy(`route.id`, "DESC")
             .getManyAndCount();
 
         if (!result) {
@@ -212,7 +212,7 @@ export class FlightRouteService {
             "flight-route",
             `Flight routes added in ${category.name} category`
         );
-        
+
         return {
             message: `Your routes added in ${category.name} category`,
             dublicateRoutes,
@@ -329,7 +329,7 @@ export class FlightRouteService {
         const array = await csv().fromFile("./" + file[0].path);
 
         let errors = [];
-        let dublicateRoutes = []
+        let dublicateRoutes = [];
 
         for (let index = 0; index < array.length; index++) {
             var row = array[index];
@@ -352,43 +352,43 @@ export class FlightRouteService {
                         ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
 
                         errors.push(error_message);
-                    }
-
-                    let where = ` "route"."is_deleted" = false AND
+                    } else {
+                        let where = ` "route"."is_deleted" = false AND
                         "route"."to_airport_code" = '${row.to_airport_code}' AND
                         "route"."from_airport_code" = '${row.from_airport_code}'`;
 
-                    const dublicate = await getConnection()
-                        .createQueryBuilder(FlightRoute, "route")
-                        .where(where)
-                        .getOne();
-                    if (dublicate) {
-                        let r = {
-                            fromCode: row.from_airport_code,
-                            ToCode: row.to_airport_code,
-                        };
-                        dublicateRoutes.push(r);
-                        //throw new ConflictException("Given route already added.");
-                    } else {
-                        const fromAirport = airports[row.from_airport_code];
-                        const toAirport = airports[row.to_airport_code];
-                        const route = new FlightRoute();
-                        route.categoryId = category.id;
-                        route.createBy = userId;
-                        route.parentRoute = null;
-                        route.fromAirportCity = fromAirport.city;
-                        route.fromAirportCode = fromAirport.code;
-                        route.fromAirportCountry = fromAirport.country;
-                        route.fromAirportName = fromAirport.name;
-                        route.toAirportCity = toAirport.city;
-                        route.toAirportCode = toAirport.code;
-                        route.toAirportCountry = toAirport.country;
-                        route.toAirportName = toAirport.name;
-                        route.status = true;
-                        route.createDate = new Date();
-                        route.isDeleted = false;
-                        await route.save();
-                        count++;
+                        const dublicate = await getConnection()
+                            .createQueryBuilder(FlightRoute, "route")
+                            .where(where)
+                            .getOne();
+                        if (dublicate) {
+                            let r = {
+                                fromCode: row.from_airport_code,
+                                ToCode: row.to_airport_code,
+                            };
+                            dublicateRoutes.push(r);
+                            //throw new ConflictException("Given route already added.");
+                        } else {
+                            const fromAirport = airports[row.from_airport_code];
+                            const toAirport = airports[row.to_airport_code];
+                            const route = new FlightRoute();
+                            route.categoryId = category.id;
+                            route.createBy = userId;
+                            route.parentRoute = null;
+                            route.fromAirportCity = fromAirport.city;
+                            route.fromAirportCode = fromAirport.code;
+                            route.fromAirportCountry = fromAirport.country;
+                            route.fromAirportName = fromAirport.name;
+                            route.toAirportCity = toAirport.city;
+                            route.toAirportCode = toAirport.code;
+                            route.toAirportCountry = toAirport.country;
+                            route.toAirportName = toAirport.name;
+                            route.status = true;
+                            route.createDate = new Date();
+                            route.isDeleted = false;
+                            await route.save();
+                            count++;
+                        }
                     }
                 } else {
                     var error_message = {};
@@ -411,15 +411,11 @@ export class FlightRouteService {
                 }
             }
         }
-        Activity.logActivity(
-            userId,
-            "flight-route",
-            `Import flight route`
-        );
+        Activity.logActivity(userId, "flight-route", `Import flight route`);
         return { importCount: count, unsuccessRecord: errors, dublicateRoutes };
     }
 
-    async getFlightRoute(id){
+    async getFlightRoute(id) {
         const route = await getConnection()
             .createQueryBuilder(FlightRoute, "route")
             .leftJoinAndSelect("route.category", "category")
