@@ -441,7 +441,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 1,
+                    try: 2,
                     nextDate: "June 23, 2021",
                 }),
             })
@@ -463,7 +463,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 2,
+                    try: 3,
                     nextDate: "June 27, 2021",
                 }),
             })
@@ -485,7 +485,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 3,
+                    try: 4,
                     nextDate: "June 30, 2021",
                 }),
             })
@@ -507,7 +507,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 4,
+                    try: 5,
                 }),
             })
             .then((res) => {

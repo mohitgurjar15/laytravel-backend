@@ -1571,7 +1571,7 @@ export class CronJobsService {
                         cartBooking.bookings[0].bookingInstalments[0]
                             .instalmentDate,
                         "YYYY-MM-DD",
-                        "MMM DD, YYYY"
+                        "MMMM DD, yyyy"
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
@@ -1580,7 +1580,7 @@ export class CronJobsService {
                     param.nextDate = DateTime.convertDateFormat(
                         nextInstalmentDate,
                         "YYYY-MM-DD",
-                        "MMM DD, YYYY"
+                        "MMMM DD, YYYY"
                     );
                 }
 
@@ -1772,10 +1772,9 @@ export class CronJobsService {
                     date: DateTime.convertDateFormat(
                         new Date(),
                         "YYYY-MM-DD",
-                        "MMM Do, YYYY"
+                        "MMMM DD, yyyy"
                     ),
-                    userName:
-                        cartBooking.user.firstName,
+                    userName: cartBooking.user.firstName,
                     cardHolderName:
                         transaction.meta_data.transaction.payment_method
                             .full_name,
@@ -1801,7 +1800,7 @@ export class CronJobsService {
                     nextDate: DateTime.convertDateFormat(
                         new Date(nextDate),
                         "YYYY-MM-DD",
-                        "MMM Do, YYYY"
+                        "MMMM DD, yyyy"
                     ),
                     nextAmount: nextAmount,
                 };

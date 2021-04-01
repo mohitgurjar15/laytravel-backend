@@ -9,7 +9,7 @@ export function LaytripCovidUpdateMail(param: { username: string }) {
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
-                                                    <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 24px; color: #000000; padding-top: 15px; text-align: left;">Hi ${param.username},</td>
+                                                    <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 24px; color: #707070; padding-top: 15px; text-align: left;">Hi ${param.username},</td>
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
@@ -19,7 +19,7 @@ export function LaytripCovidUpdateMail(param: { username: string }) {
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                                                         Please review our new Covid Update at <a href = '${covidLink}'
-                    style="color: #0c7bff;"><u>laytrip.com/covid-19</u></a>. Also, visit your Travel Provider directly for additional Covid-19 information prior to your trip departure.
+                    style="color: #707070;">laytrip.com/covid-19</a>. Also, visit your Travel Provider directly for additional Covid-19 information prior to your trip departure.
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -34,7 +34,7 @@ export function LaytripCovidUpdateMail(param: { username: string }) {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

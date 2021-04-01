@@ -16,7 +16,7 @@ export function LaytripMissedPaymentTemplete(param: {
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #000000;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 `;
   if (param.try == 3) {
@@ -52,8 +52,8 @@ export function LaytripMissedPaymentTemplete(param: {
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">
                         If you believe this happened in error please contact us at <a href = 'mailto:customerservice@laytrip.com'
-                    style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>. We will make every effort to avoid booking cancellation without refund per our 
-                    <a href="${TermsConditonLink}" style="color: #0c7bff;"><u>Terms</u></a> which occurs after multiple missed payments and the delivery of 
+                    style="color: #707070;">customerservice@laytrip.com</a>. We will make every effort to avoid booking cancellation without refund per our 
+                    <a href="${TermsConditonLink}" style="color: #707070;">Terms</a> which occurs after multiple missed payments and the delivery of 
                     a default and cancellation notice.
                     </td>               
                 </tr>
@@ -69,7 +69,7 @@ export function LaytripMissedPaymentTemplete(param: {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

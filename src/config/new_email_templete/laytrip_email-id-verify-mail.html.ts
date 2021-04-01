@@ -15,14 +15,14 @@ const content = `
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #000000;padding-top: 15px; text-align: center;">
+                                                    <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: center;">
                                                         <b>ONE TIME PIN : ${param.otp}</b>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                                                     If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
-                                                    style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>.
+                                                    style="color: #707070;">customerservice@laytrip.com</a>.
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -37,7 +37,7 @@ const content = `
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

@@ -1181,7 +1181,7 @@ export class PaymentService {
                                 cart.bookings[0].bookingInstalments[0].instalmentDate
                             ),
                             "YYYY-MM-DD",
-                            "MMM Do, YYYY"
+                            "MMMM DD, YYYY"
                         ),
                         userName:
                             cart.user.firstName + " " + cart.user.lastName,
@@ -1206,7 +1206,7 @@ export class PaymentService {
                         nextDate: DateTime.convertDateFormat(
                             new Date(nextDate),
                             "YYYY-MM-DD",
-                            "MMM Do, YYYY"
+                            "MMMM DD, YYYY"
                         ),
                         nextAmount: nextAmount,
                     };

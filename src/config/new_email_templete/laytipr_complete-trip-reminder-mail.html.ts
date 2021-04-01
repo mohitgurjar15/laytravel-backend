@@ -9,7 +9,7 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #000000;padding-top: 15px; text-align: left;">Hi ${
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">Hi ${
                                                         param.username
                                                     },</td>
                                                 </tr>
@@ -20,8 +20,8 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #F826C1;padding-top: 25px; text-align: left;">
-                                                    <u><a href = '${reviewLink +
-                                                        param.bookingId}'style="color: #F826C1;">Review</a></u>
+                                                    <a href = '${reviewLink +
+                                                        param.bookingId}'style="color: #F826C1;">Review</a>
                                                     </td>
                                                 </tr>
                                                 
@@ -44,7 +44,7 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
             </tr>
             
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

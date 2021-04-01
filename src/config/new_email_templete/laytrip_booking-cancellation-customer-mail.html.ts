@@ -12,7 +12,7 @@ export function LaytripBookingCancellationCustomerMail(param: {
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color:#000000;padding-top: 15px; text-align: left;">Hi ${param.username},</td>
+                    <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color:#707070;padding-top: 15px; text-align: left;">Hi ${param.username},</td>
                 </tr>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
@@ -22,13 +22,13 @@ export function LaytripBookingCancellationCustomerMail(param: {
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                         If any refund is applicable per our <a href = '${TermsConditonLink}'
-                         style="color: #0c7bff;"><u>Terms</u></a> your original payment method will be refunded. 
+                         style="color: #707070;">Terms</a> your original payment method will be refunded. 
                     </td>
                 </tr>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                          If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
-                         style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>. We hope you will try booking with us again in the future.                                              
+                         style="color: #707070;">customerservice@laytrip.com</a>. We hope you will try booking with us again in the future.                                              
                     </td>
                 </tr>													
             </tbody>
@@ -43,7 +43,7 @@ export function LaytripBookingCancellationCustomerMail(param: {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>
