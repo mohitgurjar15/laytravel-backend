@@ -16,31 +16,31 @@ export const LaytripFooter = `
             <tr>
                 <td align="left" valign="middle">
                     <a href="${InstagramSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/ic_instagram_new.png" alt="instagram" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/instagram_new.png" alt="instagram" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${TwitterSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/ic_twitter_new.png" alt="twitter" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/twitter_new.png" alt="twitter" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${FacebookSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/ic_facebook_new.png" alt="facebook" width="40" height="40" border="0" style="display: block; max-width:40px;font-size: 18px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/facebook_new.png" alt="facebook" width="40" height="40" border="0" style="display: block; max-width:40px;font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${PintrestSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/ic_pinterest_new.png" alt="pintrest" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/pinterest_new.png" alt="pintrest" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
                 <td width="24" style="width: 24px;">&nbsp;</td>
                 <td align="left" valign="middle">
                     <a href="${LinkedInSocialLink}" target="_blank" style="text-decoration: none;">
-                        <img src="${NewEmailAssets}/ic_linkedin_new.png" alt="linked-in" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
+                        <img src="${NewEmailAssets}/linkedin_new.png" alt="linked-in" width="40" height="40" border="0" style="display: block; max-width:40px; font-size: 18px; line-height: 40px; color: #ffffff; " />
                     </a>
                 </td>
             </tr>
@@ -55,7 +55,7 @@ export const LaytripFooter = `
             <td align="center" valign="top" style="font-family: 'Helvetica Neue', sans-serif;font-size: 11px; line-height: 12px; color: #BABABA; font-weight: 400;">Need help? Go to our home page Customer Service chat or <a href="mailto:contactus@laytrip.com" target="_blank" style="text-decoration: none;">Contact Us</a>.</td>
         </tr>
         <tr>
-            <td align="center" valign="top" style="font-family: 'Helvetica Neue', sans-serif;font-size: 11px; line-height: 12px; color: #BABABA; padding-top: 20px; ">We have sent you this email because as a Laytrip account holder you agreed to our <a href="${TermsConditonLink}" target="_blank" style="text-decoration: none;">Terms</a>. To Change your preferences, sign in and go to your My Account menu.</td>
+            <td align="center" valign="top" style="font-family: 'Helvetica Neue', sans-serif;font-size: 11px; line-height: 12px; color: #BABABA; padding-top: 15px; ">We have sent you this email because as a Laytrip account holder you agreed to our <a href="${TermsConditonLink}" target="_blank" style="text-decoration: none;">Terms</a>. To Change your preferences, sign in and go to your My Account menu.</td>
         </tr>
     </table>
 </td>
