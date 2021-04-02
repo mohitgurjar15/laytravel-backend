@@ -58,20 +58,29 @@ export class DealService {
                 );
             }
 
-            // if(module.id == ModulesName.HOTEL){
-            //     let loc = {
-            //         title: hotel_location.title,
-            //         city: hotel_location.city,
-            //         state: hotel_location.state,
-            //         country: hotel_location.country,
-            //         type: hotel_location.type,
-            //         hotel_id: hotel_location.hotel_id,
+            if(module.id == ModulesName.HOTEL){
+                let loc:any = hotel_location
 
-            //         lat: "42.9998",
-            //         long: "-81.2734",
-            //     };
+                if(!loc?.title){
+                    throw new BadRequestException(`Enter title`)
+                }
+                if(!loc?.city){
+                    throw new BadRequestException(`Enter city`)
+                }
+                if(!loc?.state){
+                    throw new BadRequestException(`Enter state`)
+                }
+                if(!loc?.type){
+                    throw new BadRequestException(`Enter type`)
+                }
+                if(!loc?.lat){
+                    throw new BadRequestException(`Enter lat`)
+                }
+                if(!loc?.long){
+                    throw new BadRequestException(`Enter long`)
+                }
                 
-            // }
+            }
             const deal = new Deal();
 
             deal.image = files.image[0].filename;
@@ -130,6 +139,7 @@ export class DealService {
 
             const deal = await getConnection()
                 .createQueryBuilder(Deal, "deal")
+                .leftJoinAndSelect("deal.module", "module")
                 .where(where)
                 .getOne();
 
@@ -151,6 +161,28 @@ export class DealService {
             }
 
             if (hotel_location) {
+                if (deal.module.id == ModulesName.HOTEL) {
+                    let loc: any = hotel_location;
+
+                    if (!loc?.title) {
+                        throw new BadRequestException(`Enter title`);
+                    }
+                    if (!loc?.city) {
+                        throw new BadRequestException(`Enter city`);
+                    }
+                    if (!loc?.state) {
+                        throw new BadRequestException(`Enter state`);
+                    }
+                    if (!loc?.type) {
+                        throw new BadRequestException(`Enter type`);
+                    }
+                    if (!loc?.lat) {
+                        throw new BadRequestException(`Enter lat`);
+                    }
+                    if (!loc?.long) {
+                        throw new BadRequestException(`Enter long`);
+                    }
+                }
                 deal.hotelLocation = hotel_location;
             }
 

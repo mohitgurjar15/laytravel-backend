@@ -2,8 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsNotEmpty, ValidateIf, ValidateNested } from "class-validator";
 import { ModulesName } from "src/enum/module.enum";
-import { HotelLocationDeal } from "./update-deal.dto";
-
 export class AddDealDto {
            @IsNotEmpty({
                message: `Please enter module id&&&subject&&&Please enter module id.`,
@@ -33,8 +31,8 @@ export class AddDealDto {
            location: string;
 
            @ValidateIf((o) => o.module_id == ModulesName.HOTEL)
-           @ValidateNested({ each: true })
-           @Type(() => HotelLocationDeal)
+        //    @ValidateNested({ each: true })
+        //    @Type(() => hotelLocation)
            @ApiProperty({
                description: `hotel_location`,
                example: `{
@@ -48,73 +46,73 @@ export class AddDealDto {
             long: "-81.2734",
         }`,
            })
-           hotel_location: HotelLocationDeal;
+           hotel_location: object;
        }
-// export class HotelLocationDeal {
-//     @IsNotEmpty({
-//         message: `Please select title.`,
-//     })
-//     @ApiProperty({
-//         description: `title`,
-//         example: ``,
-//     })
-//     title: string;
+class hotelLocation {
+    @IsNotEmpty({
+        message: `Please select title.`,
+    })
+    @ApiProperty({
+        description: `title`,
+        example: ``,
+    })
+    title: string;
 
-//     @IsNotEmpty({
-//         message: `Please select city.`,
-//     })
-//     @ApiProperty({
-//         description: `city`,
-//         example: ``,
-//     })
-//     city: string;
+    @IsNotEmpty({
+        message: `Please select city.`,
+    })
+    @ApiProperty({
+        description: `city`,
+        example: ``,
+    })
+    city: string;
 
-//     @IsNotEmpty({
-//         message: `Please select state.`,
-//     })
-//     @ApiProperty({
-//         description: `state`,
-//         example: ``,
-//     })
-//     state: string;
+    @IsNotEmpty({
+        message: `Please select state.`,
+    })
+    @ApiProperty({
+        description: `state`,
+        example: ``,
+    })
+    state: string;
 
-//     @IsNotEmpty({
-//         message: `Please select country.`,
-//     })
-//     @ApiProperty({
-//         description: `country`,
-//         example: ``,
-//     })
-//     country: string;
+    @IsNotEmpty({
+        message: `Please select country.`,
+    })
+    @ApiProperty({
+        description: `country`,
+        example: ``,
+    })
+    country: string;
 
-//     @IsNotEmpty({
-//         message: `Please select type.`,
-//     })
-//     @ApiProperty({
-//         description: `type`,
-//         example: ``,
-//     })
-//     type: string;
-//     @IsNotEmpty({
-//         message: `Please select lat.`,
-//     })
-//     @ApiProperty({
-//         description: `lat`,
-//         example: ``,
-//     })
-//     lat: string;
-//     @IsNotEmpty({
-//         message: `Please select long.`,
-//     })
-//     @ApiProperty({
-//         description: `long`,
-//         example: ``,
-//     })
-//     long: string;
+    @IsNotEmpty({
+        message: `Please select type.`,
+    })
+    @ApiProperty({
+        description: `type`,
+        example: ``,
+    })
+    type: string;
+    @IsNotEmpty({
+        message: `Please select lat.`,
+    })
+    @ApiProperty({
+        description: `lat`,
+        example: ``,
+    })
+    lat: string;
+    @IsNotEmpty({
+        message: `Please select long.`,
+    })
+    @ApiProperty({
+        description: `long`,
+        example: ``,
+    })
+    long: string;
 
-//     @ApiPropertyOptional({
-//         description: "hotel_id",
-//         example: "",
-//     })
-//     hotel_id: string;
-// }
+    @ApiPropertyOptional({
+        description: "hotel_id",
+        example: "",
+    })
+    hotel_id: string;
+}

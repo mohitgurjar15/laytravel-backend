@@ -64,8 +64,7 @@ export class UpdateTravelerDto {
            last_name: string;
            @ValidateIf(
                (o) =>
-                   o.module_id == ModulesName.HOTEL &&
-                   o.is_primary_traveler == true
+                   o.module_id != ModulesName.HOTEL 
            )
            @IsValidDate("", {
                message: (args: ValidationArguments) => {

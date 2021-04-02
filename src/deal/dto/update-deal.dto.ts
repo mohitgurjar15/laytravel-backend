@@ -2,46 +2,46 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsNotEmpty } from "class-validator";
 
 export class UpdateDealDto {
-    @IsNotEmpty({
-        message: `Please enter id&&&subject&&&Please enter id.`,
-    })
-    @ApiProperty({
-        description: "Enter id",
-        example: "",
-    })
-    id: number;
+           @IsNotEmpty({
+               message: `Please enter id&&&subject&&&Please enter id.`,
+           })
+           @ApiProperty({
+               description: "Enter id",
+               example: "",
+           })
+           id: number;
 
-    @ApiPropertyOptional({
-        type: "string",
-        format: "binary",
-        description: "deal image (Allow Only 'JPG,JPEG,PNG')",
-        example: "",
-    })
-    image: string;
+           @ApiPropertyOptional({
+               type: "string",
+               format: "binary",
+               description: "deal image (Allow Only 'JPG,JPEG,PNG')",
+               example: "",
+           })
+           image: string;
 
-    @ApiPropertyOptional({
-        description: "Enter location",
-        example: "",
-    })
-    location: string;
+           @ApiPropertyOptional({
+               description: "Enter location",
+               example: "",
+           })
+           location: string;
 
-    @ApiPropertyOptional({
-        description: `hotel_location`,
-        example: {
-            title: "TD Waterhouse Stadium, London, Ontario, Canada",
-            city: "London",
-            state: "Ontario",
-            country: "Canada",
-            type: "poi",
-            hotel_id: "",
-            lat: "42.9998",
-            long: "-81.2734",
-        },
-    })
-    hotel_location: HotelLocationDeal;
-}
+           @ApiPropertyOptional({
+               description: `hotel_location`,
+               example: {
+                   title: "TD Waterhouse Stadium, London, Ontario, Canada",
+                   city: "London",
+                   state: "Ontario",
+                   country: "Canada",
+                   type: "poi",
+                   hotel_id: "",
+                   lat: "42.9998",
+                   long: "-81.2734",
+               },
+           })
+           hotel_location: object;
+       }
 
-export class HotelLocationDeal {
+class hotelLocation {
     @IsNotEmpty({
         message: `Please select title.`,
     })
