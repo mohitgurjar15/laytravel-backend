@@ -16,8 +16,15 @@ export class Deal extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
 
-    @Column("character varying", { name: "location", length: 255 , nullable : true})
+    @Column("character varying", {
+        name: "location",
+        length: 255,
+        nullable: true,
+    })
     location: string;
+
+    @Column("json", { name: "hotel_location" })
+    hotelLocation: object;
 
     @Column("character varying", { name: "image", length: 255 })
     image: string;
@@ -36,18 +43,15 @@ export class Deal extends BaseEntity {
 
     @ManyToOne(
         () => User,
-        user => user.deal
+        (user) => user.deal
     )
     @JoinColumn([{ name: "update_by", referencedColumnName: "userId" }])
     updateBy: User;
 
-
     @ManyToOne(
         () => Module,
-        module => module.notifications
+        (module) => module.notifications
     )
     @JoinColumn([{ name: "module_id", referencedColumnName: "id" }])
     module: Module;
-
-
 }
