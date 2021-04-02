@@ -1441,7 +1441,7 @@ export class CronJobsService {
                     to: mail.userMail,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For Your Upcoming Trip`,
+                    subject: `Booking ID ${mail.param.cart.cartId} Reminder for your Upcoming Trip`,
                     html: await LaytripFlightReminderMail(mail.param),
                 })
                 .then((res) => {
@@ -1647,7 +1647,7 @@ export class CronJobsService {
                                 to: cartBooking.user.email,
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
-                                subject: `Booking ID ${param.bookingId} Notice Of Default And Cancellation`,
+                                subject: `Booking ID ${param.bookingId} Notice of Default and Cancellation`,
                                 html: await LaytripPaymentFailedTemplete(param),
                             })
                             .then((res) => {
@@ -1825,7 +1825,7 @@ export class CronJobsService {
                             cartBooking.laytripCartId
                         );
                         if (responce?.param) {
-                            let subject = `Booking ID ${cartBooking.laytripCartId} Complition Notice`;
+                            let subject = `Booking ID ${cartBooking.laytripCartId} Completion Notice`;
                             this.mailerService
                                 .sendMail({
                                     to: responce.email,

@@ -1361,7 +1361,7 @@ export class PaymentService {
                 bookingId
             );
             if (responce?.param) {
-                let subject = `Booking ID ${responce.param.orderId} Complition Notice`;
+                let subject = `Booking ID ${responce.param.orderId} Completion Notice`;
                 this.mailerService
                     .sendMail({
                         to: responce.email,

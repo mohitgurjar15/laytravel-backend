@@ -19,7 +19,7 @@ export function LaytripWelcomeBoardMail() {
                                                     </tr>
                                                     <tr>
                                                          <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
-                                                            We're looking forward to serving you as your one-stop travel LTA (Layaway Travel Agency).      
+                                                            We're looking forward to serving you as your one-stop travel LTA (Layaway Travel Agency)!   
                                                          </td>
                                                     </tr>
                                                     <tr>

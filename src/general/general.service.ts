@@ -501,7 +501,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Notice Of Default And Cancellation`,
+                subject: `Booking ID ${partialBooking} Notice of Default and Cancellation`,
                 html: await LaytripPaymentFailedTemplete({
                     userName: "Parth",
                     amount: "$55.40",
@@ -525,7 +525,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Complition Notice`,
+                subject: `Booking ID ${partialBooking} Completion Notice`,
                 html: await LaytripCartBookingComplationMail(mail8.param),
             })
             .then((res) => {
@@ -585,7 +585,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Custom Cancellation`,
+                subject: `Booking ID ${partialBooking} Customer Cancellation`,
                 html: await LaytripBookingCancellationCustomerMail({
                     username: "Parth",
                     bookingId: partialBooking,
@@ -682,7 +682,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Welcome To Laytrip!`,
+                subject: `Welcome to Laytrip!`,
                 html: await LaytripWelcomeBoardMail(),
             })
             .then((res) => {
@@ -697,7 +697,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail18.param.cart.cartId} Change By Travel Provider`,
+                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
                 html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
@@ -747,7 +747,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Reminder For Your Upcoming Trip`,
+                subject: `Booking ID ${partialBooking} Reminder for your Upcoming Trip`,
                 html: await LaytripFlightReminderMail(mail18.param),
             })
             .then((res) => {

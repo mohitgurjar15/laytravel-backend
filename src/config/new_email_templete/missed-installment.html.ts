@@ -41,7 +41,7 @@ export function LaytripMissedPaymentTemplete(param: {
   if (param.try < 4) {
     content += `<tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">${
-                      param.try == 2 ? "We understand things happen so." : ""
+                      param.try == 2 ? "we understand things happen so" : ""
                     } We will automatically attempt to process it again on ${
       param.nextDate
     }.</td>

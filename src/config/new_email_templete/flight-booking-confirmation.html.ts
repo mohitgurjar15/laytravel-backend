@@ -42,7 +42,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Congratulations on booking your travel with Laytrip. <span style = "color: #707070">Your Laytrip Booking ID is ${
                             param.cart.cartId
-                        },</span> Please use this number when referencing your booking with Laytrip.
+                        }.</span> Please use this number when referencing your booking with Laytrip.
                     </td>
                 </tr>`;
   if (param.flight[0].droups[0].depature?.pnr_no) {

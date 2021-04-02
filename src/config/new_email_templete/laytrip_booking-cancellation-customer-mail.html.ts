@@ -13,24 +13,24 @@ export function LaytripBookingCancellationCustomerMail(param: {
             <tbody>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color:#707070;padding-top: 15px; text-align: left;">Hi ${param.username},</td>
-                </tr>
+                </tr><br>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                     Booking ID ${param.bookingId} Cancellation Confirmation!  
                     </td>
-                </tr>  
+                </tr><br>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                         If any refund is applicable per our <a href = '${TermsConditonLink}'
                          style="color: #707070;">Terms</a> your original payment method will be refunded. 
                     </td>
-                </tr>
+                </tr><br>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                          If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
                          style="color: #707070;">customerservice@laytrip.com</a>. We hope you will try booking with us again in the future.                                              
                     </td>
-                </tr>													
+                </tr><br>													
             </tbody>
         </table>
     </td>

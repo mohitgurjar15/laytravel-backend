@@ -26,7 +26,7 @@ export async function LaytripCartBookingConfirmtionMail(
                             param.orderId
                         }.</span>  Please use this number when referencing your booking.`;
     if (param.bookingType == BookingType.NOINSTALMENT) {
-        content += ` Here are your booking details:`;
+        content += ` Here are your Booking Details:`;
     }
     content += `</td>
                 </tr>`;
@@ -89,11 +89,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
                     >
                         <span style="color: #707070">
-                        Traveler:
-                        </span> 
-                        <span style="font-size: 18px" >
-                        ${traveleName}
-                        </span>
+                        Traveler:</span><span style="font-size: 18px">${traveleName}</span>
                     </td>
                 </tr>
                 <tr>
@@ -102,12 +98,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
                     >
-                        <span style="color: #707070">
-                        Email:
-                        </span> 
-                        <span style="font-size: 18px" >
-                        ${travelerEmail}
-                        </span>
+                        <span style="color: #707070">Email:</span><span style="font-size: 18px">${travelerEmail}</span>
                     </td>
                 </tr>`;
             for await (const flight of booking.flighData) {
@@ -131,8 +122,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         >
                             <span style="color: #707070">${
                                 droup.flight
-                            }:</span> 
-                            Depart ${
+                            }:</span>Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
                          droup.depature.date,
@@ -329,7 +319,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px; font-size: 18px text-align: left;"
                 >
-                    <span style="color: #707070">Total Price:</span>  <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span style="color: #707070">Total Price:</span><span style="font-size: 18px">${param.cart.totalAmount}</span>
                 </td>
             </tr>`;
 if (param.bookingType == BookingType.INSTALMENT){
@@ -340,7 +330,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
                 >
-                    <span style="color: #707070">Total Paid:</span>  <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                    <span style="color: #707070">Total Paid:</span><span style="font-size: 18px">${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
