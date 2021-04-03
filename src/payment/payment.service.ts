@@ -1463,6 +1463,23 @@ export class PaymentService {
 
                 console.log("totalAmount", totalAmount);
             }
+            else if (item.moduleId == ModulesName.HOTEL) {
+                console.log("3");
+                console.log(item.moduleInfo[0].input_data.check_in);
+                const dipatureDate = 
+                    item.moduleInfo[0].input_data.check_in
+                if (smallestDate == "") {
+                    smallestDate = dipatureDate;
+                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                    smallestDate = dipatureDate;
+                }
+                console.log("smallestDate", smallestDate);
+                console.log(item.moduleInfo[0].selling.total);
+
+                totalAmount += parseFloat(item.moduleInfo[0].selling.total);
+
+                console.log("totalAmount", totalAmount);
+            }
         }
 
         if (payment_type == PaymentType.INSTALMENT) {
