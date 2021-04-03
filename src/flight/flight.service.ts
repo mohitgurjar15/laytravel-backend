@@ -81,6 +81,7 @@ import { TravelerInfoModel } from "src/config/email_template/model/traveler-info
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
 import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
+import { Countries } from "src/entity/countries.entity";
 
 @Injectable()
 export class FlightService {
@@ -280,13 +281,11 @@ export class FlightService {
         user,
         userIp
     ) {
-
-        if(user?.roleId < Role.PAID_USER){
-            
-            user.user_id = searchFlightDto.user_id
+        if (user?.roleId < Role.PAID_USER) {
+            user.user_id = searchFlightDto.user_id;
             user.roleId = Role.FREE_USER;
         }
-        
+
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
@@ -1251,12 +1250,13 @@ export class FlightService {
     async searchRoundTripFlight(
         searchFlightDto: RoundtripSearchFlightDto,
         headers,
-        user,userIp
+        user,
+        userIp
     ) {
-         if (user?.roleId < Role.PAID_USER) {
-             user.user_id = searchFlightDto.user_id;
-             user.roleId = Role.FREE_USER
-         }
+        if (user?.roleId < Role.PAID_USER) {
+            user.user_id = searchFlightDto.user_id;
+            user.roleId = Role.FREE_USER;
+        }
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
@@ -2126,22 +2126,24 @@ export class FlightService {
                 }
                 const travelerInfo: TravelerInfoModel = {
                     firstName: userData.firstName,
-                    passportExpiry: userData.passportExpiry || '',
-                    passportNumber: userData.passportNumber || '',
-                    lastName: userData.lastName || '',
-                    email: userData.email || '',
-                    phoneNo: userData.phoneNo || '',
-                    countryCode: userData.countryCode || '',
+                    passportExpiry: userData.passportExpiry || "",
+                    passportNumber: userData.passportNumber || "",
+                    lastName: userData.lastName || "",
+                    email: userData.email || "",
+                    phoneNo: userData.phoneNo || "",
+                    countryCode: userData.countryCode || "",
                     dob: userData.dob,
                     countryId: userData.countryId,
                     gender: userData.gender,
-                    age : age,
-                    user_type: user_type
+                    age: age,
+                    user_type: user_type,
                 };
                 var travelerUser = new TravelerInfo();
                 travelerUser.bookingId = bookingId;
                 travelerUser.userId = travelerId;
-                travelerUser.isPrimary = traveler?.is_primary_traveler ? true :false
+                travelerUser.isPrimary = traveler?.is_primary_traveler
+                    ? true
+                    : false;
                 travelerUser.roleId = Role.TRAVELER_USER;
                 travelerUser.travelerInfo = travelerInfo;
                 await travelerUser.save();
@@ -2434,7 +2436,6 @@ export class FlightService {
                 });
             }
 
-            
             const d = await this.formatDate(bookingData.bookingDate);
             const installmentDetail = {
                 amount:
@@ -2893,7 +2894,19 @@ export class FlightService {
             let travelersDetail: TravelerInfoModel[] = [];
 
             for await (const traveler of bookingData.travelers) {
-                travelersDetail.push(traveler.travelerInfo);
+                let travelerInfo: any = traveler.travelerInfo;
+                if (traveler.travelerInfo.countryId) {
+                    let countryDetails = await getManager()
+                        .createQueryBuilder(Countries, "country")
+                        .where(`id=:country_id`, {
+                            country_id: traveler.travelerInfo.countryId,
+                        })
+                        .getOne();
+                    if (countryDetails) {
+                        travelerInfo.country = countryDetails;
+                    }
+                }
+                travelersDetail.push(travelerInfo);
             }
 
             // Headers['currency'] = bookingData.currency2.code
@@ -3385,7 +3398,9 @@ export class FlightService {
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
                         subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
-                        html:await LaytripFlightBookingConfirmtionMail(mailData.param)
+                        html: await LaytripFlightBookingConfirmtionMail(
+                            mailData.param
+                        ),
                     })
                     .then((res) => {
                         console.log("res", res);
@@ -3438,7 +3453,6 @@ export class FlightService {
             }
         }
     }
-
 
     async flightRoute(type) {
         let result;
@@ -3709,7 +3723,7 @@ export class FlightService {
             "SLC-PHX",
             "SLC-SAN",
             "SLC-SEA",
-            "STL-DEN"
+            "STL-DEN",
         ];
         let categoryId = 4;
 
@@ -3719,11 +3733,17 @@ export class FlightService {
             let toAirport = airports[categoryArr[1]];
             const categoryData = new FlightRoute();
 
-            let isExist= await getManager()
-            .createQueryBuilder(FlightRoute, "flight_route")
-            .where(`"from_airport_code"=:from_airport_code and "to_airport_code"=:to_airport_code `, { from_airport_code: categoryArr[0],to_airport_code:categoryArr[1] })
-            .getOne();
-            if(isExist){
+            let isExist = await getManager()
+                .createQueryBuilder(FlightRoute, "flight_route")
+                .where(
+                    `"from_airport_code"=:from_airport_code and "to_airport_code"=:to_airport_code `,
+                    {
+                        from_airport_code: categoryArr[0],
+                        to_airport_code: categoryArr[1],
+                    }
+                )
+                .getOne();
+            if (isExist) {
                 continue;
             }
 
