@@ -600,7 +600,6 @@ more than 5.`
                 typeof live_availiblity != "undefined" &&
                 live_availiblity == "yes"
             ) {
-               
                 await this.flightService.validateHeaders(headers);
 
                 const mystifly = new Strategy(
@@ -632,7 +631,7 @@ more than 5.`
                     headers.currency
                 );
                 for await (const cart of result) {
-                    if(cart.moduleId == ModulesName.FLIGHT){
+                    if (cart.moduleId == ModulesName.FLIGHT) {
                         const bookingType =
                             cart.moduleInfo[0].routes.length > 1
                                 ? "RoundTrip"
@@ -714,7 +713,7 @@ more than 5.`
                             );
                         }
                     }
-                    
+
                     resultIndex++;
                 }
                 flightResponse = await Promise.all(flightRequest);
@@ -770,19 +769,19 @@ more than 5.`
                     } else if (cart.moduleId == ModulesName.HOTEL) {
                         const moduleInfo: any = cart.moduleInfo;
                         if (moduleInfo[0]?.bundle) {
-                            let roomDetails
+                            let roomDetails;
                             try {
                                 roomDetails = await this.hotelService.availability(
-                                {
-                                    room_ppn: moduleInfo[0].bundle,
-                                }
-                            );
-                            }catch(error){
+                                    {
+                                        room_ppn: moduleInfo[0].bundle,
+                                    }
+                                );
+                            } catch (error) {
                                 newCart["is_available"] = false;
                                 newCart["moduleInfo"] = cart.moduleInfo;
                                 newCart["error"] = error?.message;
                             }
-                            
+
                             if (roomDetails?.data) {
                                 newCart["moduleInfo"] = roomDetails.data;
                                 newCart["is_available"] = true;
@@ -1052,9 +1051,9 @@ more than 5.`
                     } else if (new Date(largestDate) > new Date(arrivalDate)) {
                         largestDate = arrivalDate;
                     }
-                } else  if (item.moduleId == ModulesName.HOTEL) {
-                    const dipatureDate = item.moduleInfo[0].input_data.check_in
-                    
+                } else if (item.moduleId == ModulesName.HOTEL) {
+                    const dipatureDate = item.moduleInfo[0].input_data.check_in;
+
                     if (smallestDate == "") {
                         smallestDate = dipatureDate;
                     } else if (
@@ -1109,6 +1108,28 @@ more than 5.`
 
                             BookingIds.push(
                                 flightResponce["detail"]["laytrip_booking_id"]
+                            );
+                        } else {
+                            failedResult++;
+                        }
+                        break;
+
+                    case ModulesName.HOTEL:
+                        let hotelResponce = await this.bookHotel(
+                            item,
+                            user,
+                            Headers,
+                            bookCart,
+                            smallestDate,
+                            cartData
+                        );
+                        responce.push(hotelResponce);
+
+                        if (hotelResponce["status"] == 1) {
+                            successedResult++;
+
+                            BookingIds.push(
+                                hotelResponce["detail"]["laytrip_booking_id"]
                             );
                         } else {
                             failedResult++;
@@ -1530,7 +1551,7 @@ more than 5.`
         return newCart;
     }
 
-     async bookHotel(
+    async bookHotel(
         cart: Cart,
         user: User,
         Headers,
@@ -1556,9 +1577,9 @@ more than 5.`
 
         let flightRequest;
         
-        const value = await this.hotelService.availability(
-            cart.moduleInfo[0].bundle
-        );
+        const value = cart.moduleInfo
+        console.log('hhhhh',cart.travelers.length);
+        
         let newCart = {};
         newCart["id"] = cart.id;
         newCart["userId"] = cart.userId;
@@ -1569,7 +1590,7 @@ more than 5.`
         newCart["type"] = cart.module.name;
         if (value) {
             let travelers = [];
-            if (!cart.travelers.length) {
+            if (!cart.travelers?.length) {
                 newCart["status"] = BookingStatus.FAILED;
                 newCart["detail"] = {
                     statusCode: 422,
@@ -1610,7 +1631,8 @@ more than 5.`
                     custom_instalment_amount: 0,
                     custom_instalment_no: 0,
                     card_token,
-                    booking_through,bundle:""
+                    booking_through,
+                    bundle: "",
                 };
 
                 console.log("cartBook request");
@@ -1629,7 +1651,7 @@ more than 5.`
             }
         } else {
             newCart["detail"] = {
-                message: value.message,
+                message: value['message'],
             };
             newCart["status"] = BookingStatus.FAILED;
             await this.saveFailedBooking(
@@ -1962,31 +1984,30 @@ more than 5.`
     // }
 
     async addHotelIntoCart(ppnBundle: string, user) {
-            let roomDetails = await this.hotelService.availability({
-                room_ppn: ppnBundle,
-            });
+        let roomDetails = await this.hotelService.availability({
+            room_ppn: ppnBundle,
+        });
 
-            const cart = new Cart();
+        const cart = new Cart();
 
-            if (user.roleId != Role.GUEST_USER) {
-                cart.userId = user.userId;
-            } else {
-                cart.guestUserId = user.userId;
-            }
+        if (user.roleId != Role.GUEST_USER) {
+            cart.userId = user.userId;
+        } else {
+            cart.guestUserId = user.userId;
+        }
 
-            cart.moduleId = ModulesName.HOTEL;
-            cart.moduleInfo = roomDetails.data;
-            cart.oldModuleInfo = roomDetails.data;
-            cart.expiryDate = new Date();
-            cart.isDeleted = false;
-            cart.createdDate = new Date();
+        cart.moduleId = ModulesName.HOTEL;
+        cart.moduleInfo = roomDetails.data;
+        cart.oldModuleInfo = roomDetails.data;
+        cart.expiryDate = new Date();
+        cart.isDeleted = false;
+        cart.createdDate = new Date();
 
-            let savedCart = await cart.save();
+        let savedCart = await cart.save();
 
-            return {
-                message: `Hotel added to cart`,
-                data: savedCart,
-            };
-       
+        return {
+            message: `Hotel added to cart`,
+            data: savedCart,
+        };
     }
 }
