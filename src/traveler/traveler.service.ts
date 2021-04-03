@@ -153,15 +153,18 @@ export class TravelerService {
 			country_id,
 		} = saveTravelerDto;
 		try {
-			let countryDetails = await getManager()
-				.createQueryBuilder(Countries, "country")
-				.where(`id=:country_id`, { country_id })
-				.getOne();
+			if(country_id){
+				let countryDetails = await getManager()
+                    .createQueryBuilder(Countries, "country")
+                    .where(`id=:country_id`, { country_id })
+                    .getOne();
 
-			if (!countryDetails)
-				throw new BadRequestException(
-					`Country code not exist with database.&&&country_id`
-				);
+                if (!countryDetails)
+                    throw new BadRequestException(
+                        `Country code not exist with database.&&&country_id`
+                    );
+			}
+			
 			if (!parent_user_id) {
 				if (!uuidValidator(guest_id)) {
 					throw new UnauthorizedException(`Please login to continue.`)
@@ -172,13 +175,16 @@ export class TravelerService {
 			user.accountType = 1;
 			user.socialAccountId = "";
 			user.phoneNo = "";
-			user.title = gender == Gender.M ? 'mr' : 'ms';
-			user.dob = dob;
-			user.countryCode = country_code;
+			if(gender){
+				user.title = gender == Gender.M ? "mr" : "ms";
+			}
+			
+			user.dob = dob || null;
+			user.countryCode = country_code||null;
 			user.timezone = "";
 			user.status = 1;
-			user.gender = gender;
-			user.countryId = country_id;
+			user.gender = gender||null;
+			user.countryId = country_id || null;
 			user.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			user.passportNumber = passport_number == "" ? null : passport_number;
 			user.roleId = Role.TRAVELER_USER;
@@ -472,28 +478,34 @@ export class TravelerService {
 				phone_no,
 				country_id,
 			} = updateTravelerDto;
-			let countryDetails = await getManager()
-				.createQueryBuilder(Countries, "country")
-				.where(`id=${country_id}`)
-				.getOne();
+			if(country_id){
+				let countryDetails = await getManager()
+                    .createQueryBuilder(Countries, "country")
+                    .where(`id=${country_id}`)
+                    .getOne();
 
-			if (!countryDetails)
-				throw new BadRequestException(
-					`Country code not exist with database.&&&country_id`
-				);
+                if (!countryDetails)
+                    throw new BadRequestException(
+                        `Country code not exist with database.&&&country_id`
+                    );
+			}
+			
 			traveler.countryCode = country_code;
 			traveler.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			traveler.passportNumber = passport_number == "" ? null : passport_number;
 			traveler.firstName = first_name;
 			traveler.lastName = last_name;
 			traveler.isVerified = true;
-			traveler.title = gender == Gender.M ? 'mr' : 'ms';
+			if(gender){
+				traveler.title = gender == Gender.M ? "mr" : "ms";
+			}
+			
 			traveler.dob = dob;
-			traveler.gender = gender;
+			traveler.gender = gender || null;
 			traveler.updatedBy = updateBy ? updateBy : guest_id;
 			traveler.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
 			traveler.updatedDate = new Date();
-			traveler.countryId = countryDetails.id;
+			traveler.countryId = country_id || null
 			traveler.status = 1;
 			//console.log("countryDetails.id",traveler)
 			await traveler.save();
