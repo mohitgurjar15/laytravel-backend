@@ -23,7 +23,7 @@ export class Deal extends BaseEntity {
     })
     location: string;
 
-    @Column("json", { name: "hotel_location" })
+    @Column("json", { name: "hotel_location", nullable: true })
     hotelLocation: object;
 
     @Column("character varying", { name: "image", length: 255 })

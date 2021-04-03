@@ -57,6 +57,7 @@ import { PaymentType } from "src/enum/payment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { HotelService } from "src/hotel/hotel.service";
+import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 
 @Injectable()
 export class CartService {
@@ -1051,6 +1052,24 @@ more than 5.`
                     } else if (new Date(largestDate) > new Date(arrivalDate)) {
                         largestDate = arrivalDate;
                     }
+                } else  if (item.moduleId == ModulesName.HOTEL) {
+                    const dipatureDate = item.moduleInfo[0].input_data.check_in
+                    
+                    if (smallestDate == "") {
+                        smallestDate = dipatureDate;
+                    } else if (
+                        new Date(smallestDate) > new Date(dipatureDate)
+                    ) {
+                        smallestDate = dipatureDate;
+                    }
+                    //console.log(item.moduleInfo[0]);
+
+                    const arrivalDate = item.moduleInfo[0].input_data.check_out;
+                    if (largestDate == "") {
+                        largestDate = arrivalDate;
+                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                        largestDate = arrivalDate;
+                    }
                 }
             }
             const cartBook = new CartBooking();
@@ -1453,6 +1472,151 @@ more than 5.`
 
                 //console.log(bookingdto);
                 newCart["detail"] = await this.flightService.cartBook(
+                    bookingdto,
+                    Headers,
+                    user,
+                    smallestDate,
+                    cartData.id,
+                    selected_down_payment,
+                    transaction_token
+                );
+                //console.log(JSON.stringify(newCart['detail']));
+            }
+        } else {
+            newCart["detail"] = {
+                message: value.message,
+            };
+            newCart["status"] = BookingStatus.FAILED;
+            await this.saveFailedBooking(
+                cartData.id,
+                cart.moduleInfo,
+                cart.userId,
+                value,
+                {
+                    bookingType: paidIn,
+                    currencyId: 1,
+                    booking_through: "web",
+                }
+            );
+            return newCart;
+        }
+        if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
+            newCart["status"] = BookingStatus.CONFIRM;
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(`"cart_id" = '${cart.id}'`)
+                .execute();
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(`"id" = '${cart.id}'`)
+                .execute();
+        } else {
+            await this.saveFailedBooking(
+                cartData.id,
+                cart.moduleInfo,
+                cart.userId,
+                newCart["detail"],
+                {
+                    bookingType: paidIn,
+                    currencyId: 1,
+                    booking_through: "web",
+                }
+            );
+        }
+        return newCart;
+    }
+
+     async bookHotel(
+        cart: Cart,
+        user: User,
+        Headers,
+        bookCart: CartBookDto,
+        smallestDate: string,
+        cartData: CartBooking
+    ) {
+        const {
+            payment_type,
+            laycredit_points,
+            card_token,
+            instalment_type,
+            additional_amount,
+            booking_through,
+            selected_down_payment,
+            transaction_token,
+        } = bookCart;
+        const downPayment = selected_down_payment ? selected_down_payment : 0;
+        const paidIn =
+            payment_type == PaymentType.INSTALMENT
+                ? BookingType.INSTALMENT
+                : BookingType.NOINSTALMENT;
+
+        let flightRequest;
+        
+        const value = await this.hotelService.availability(
+            cart.moduleInfo[0].bundle
+        );
+        let newCart = {};
+        newCart["id"] = cart.id;
+        newCart["userId"] = cart.userId;
+        newCart["moduleId"] = cart.moduleId;
+        newCart["isDeleted"] = cart.isDeleted;
+        newCart["createdDate"] = cart.createdDate;
+        newCart["status"] = BookingStatus.FAILED;
+        newCart["type"] = cart.module.name;
+        if (value) {
+            let travelers = [];
+            if (!cart.travelers.length) {
+                newCart["status"] = BookingStatus.FAILED;
+                newCart["detail"] = {
+                    statusCode: 422,
+                    status: BookingStatus.FAILED,
+                    message: `Please update traveler details.`,
+                };
+                await this.saveFailedBooking(
+                    cartData.id,
+                    cart.moduleInfo,
+                    cart.userId,
+                    {
+                        statusCode: 422,
+                        status: BookingStatus.FAILED,
+                        message: `Please update traveler details.`,
+                    },
+                    {
+                        bookingType: paidIn,
+                        currencyId: 1,
+                        booking_through: "web",
+                    }
+                );
+            } else {
+                for await (const traveler of cart.travelers) {
+                    //console.log(traveler);
+                    let travelerUser = {
+                        traveler_id: traveler.userId,
+                        is_primary_traveler: traveler.isPrimary,
+                    };
+                    travelers.push(travelerUser);
+                }
+                const bookingdto: BookHotelCartDto = {
+                    travelers,
+                    payment_type,
+                    instalment_type,
+                    ppn: value[0].bundle,
+                    additional_amount,
+                    laycredit_points,
+                    custom_instalment_amount: 0,
+                    custom_instalment_no: 0,
+                    card_token,
+                    booking_through,bundle:""
+                };
+
+                console.log("cartBook request");
+
+                //console.log(bookingdto);
+                newCart["detail"] = await this.hotelService.cartBook(
                     bookingdto,
                     Headers,
                     user,

@@ -1,41 +1,64 @@
-import { BadRequestException, CACHE_MANAGER, HttpException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { HotelSearchLocationDto } from './dto/search-location.dto';
-import { SearchReqDto } from './dto/search-req.dto';
-import { Hotel } from './hotel-suppliers/hotel.manager';
-import { Priceline } from './hotel-suppliers/priceline/priceline';
-import { Cache } from 'cache-manager';
-import { v4 as uuidv4 } from 'uuid';
-import { DetailReqDto } from './dto/detail-req.dto';
-import { RoomsReqDto } from './dto/rooms-req.dto';
-import { collect } from 'collect.js';
-import { FilterHelper } from './helpers/filter.helper';
-import { FilterReqDto } from './dto/filter-req.dto';
-import { RateHelper } from './helpers/rate.helper';
-import { AvailabilityDto } from './dto/availability-req.dto';
-import { GenericHotel } from './helpers/generic.helper';
-import { BookDto } from './dto/book-req.dto';
-import { BookDto as PPNBookDto } from './hotel-suppliers/priceline/dto/book.dto';
-import { UserHelper } from './helpers/user.helper';
-import { PaymentService } from 'src/payment/payment.service';
-import { PaymentType } from 'src/enum/payment-type.enum';
+import {
+    BadRequestException,
+    CACHE_MANAGER,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from "@nestjs/common";
+import { HotelSearchLocationDto } from "./dto/search-location.dto";
+import { SearchReqDto } from "./dto/search-req.dto";
+import * as uniqid from "uniqid";
+import { Hotel } from "./hotel-suppliers/hotel.manager";
+import { Priceline } from "./hotel-suppliers/priceline/priceline";
+import { Cache } from "cache-manager";
+import { v4 as uuidv4 } from "uuid";
+import { DetailReqDto } from "./dto/detail-req.dto";
+import { RoomsReqDto } from "./dto/rooms-req.dto";
+import { collect } from "collect.js";
+import { FilterHelper } from "./helpers/filter.helper";
+import { FilterReqDto } from "./dto/filter-req.dto";
+import { RateHelper } from "./helpers/rate.helper";
+import { AvailabilityDto } from "./dto/availability-req.dto";
+import { GenericHotel } from "./helpers/generic.helper";
+import { BookDto } from "./dto/book-req.dto";
+import { BookDto as PPNBookDto } from "./hotel-suppliers/priceline/dto/book.dto";
+import { UserHelper } from "./helpers/user.helper";
+import { PaymentService } from "src/payment/payment.service";
+import { PaymentType } from "src/enum/payment-type.enum";
 import * as moment from "moment";
-import { errorMessage, invalidToken } from 'src/config/common.config';
-import { BookingHelper } from './helpers/booking.helper';
-import { BookingType } from 'src/enum/booking-type.enum';
-import { DateTime } from 'src/utility/datetime.utility';
-import { PaymentStatus } from 'src/enum/payment-status.enum';
-import { BookingStatus } from 'src/enum/booking-status.enum';
-import { BookingRepository } from 'src/booking/booking.repository';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Booking } from 'src/entity/booking.entity';
+import { errorMessage, invalidToken } from "src/config/common.config";
+import { BookingHelper } from "./helpers/booking.helper";
+import { BookingType } from "src/enum/booking-type.enum";
+import { DateTime } from "src/utility/datetime.utility";
+import { PaymentStatus } from "src/enum/payment-status.enum";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { BookingRepository } from "src/booking/booking.repository";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Booking } from "src/entity/booking.entity";
+import { BookHotelCartDto } from "./dto/cart-book.dto";
+import { User } from "src/entity/user.entity";
+import { getConnection, getManager } from "typeorm";
+import { Currency } from "src/entity/currency.entity";
+import { Language } from "src/entity/language.entity";
+import { InstalmentType } from "src/enum/instalment-type.enum";
+import { Instalment } from "src/utility/instalment.utility";
+import { Module } from "src/entity/module.entity";
+import { LayCreditRedeem } from "src/entity/lay-credit-redeem.entity";
+import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
+import { TravelerInfo } from "src/entity/traveler-info.entity";
+import { Role } from "src/enum/role.enum";
+import { BookingInstalments } from "src/entity/booking-instalments.entity";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
+import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 @Injectable()
-export class HotelService{
-    
+export class HotelService {
     private hotel: Hotel;
 
     private ttl: number = 3000;
-    
+
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private generic: GenericHotel,
@@ -43,28 +66,25 @@ export class HotelService{
         private user: UserHelper,
         private booking: BookingHelper,
         private paymentService: PaymentService,
-        
+
         @InjectRepository(BookingRepository)
-        private bookingRepository: BookingRepository,
-        
+        private bookingRepository: BookingRepository
     ) {
         this.hotel = new Hotel(new Priceline());
     }
 
     async autoComplete(searchLocationDto: HotelSearchLocationDto) {
-        
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
-        
+
         // locations = plainToClass(Location, locations, );
-        
+
         return {
             data: locations,
-            message: locations.length ? 'Result found' : 'No result Found'
+            message: locations.length ? "Result found" : "No result Found",
         };
     }
-    
+
     async search(searchReqDto: SearchReqDto) {
-        
         /* This should return direct hotel response (Directly from supplier's and as per our decided structure) */
         let hotels = await this.hotel.search(searchReqDto);
         // return hotels;
@@ -73,34 +93,33 @@ export class HotelService{
 
         let token = uuidv4();
 
-        searchReqDto['token'] = token;
-        searchReqDto['total'] = hotels.count();
+        searchReqDto["token"] = token;
+        searchReqDto["total"] = hotels.count();
 
         let toCache = {
             details: searchReqDto,
-            hotels
+            hotels,
         };
 
         if (searchReqDto.filter) {
-            
-            let filterObjects = await FilterHelper.generateFilterObjects(toCache);
+            let filterObjects = await FilterHelper.generateFilterObjects(
+                toCache
+            );
 
-            toCache['filter_objects'] = filterObjects;
-
+            toCache["filter_objects"] = filterObjects;
         }
-        
+
         await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
-            message: searchReqDto['total'] ? 'Result found' : 'No result Found'
+            message: searchReqDto["total"] ? "Result found" : "No result Found",
         };
-        
+
         return response;
     }
 
     async detail(detailReqDto: DetailReqDto) {
-        
         let cached = await this.cacheManager.get(detailReqDto.token);
 
         if (!cached) {
@@ -108,67 +127,71 @@ export class HotelService{
         }
 
         let detail = await this.hotel.detail(detailReqDto);
-        
+
         let details = cached.details;
 
         return {
             data: {
                 hotel: detail,
-                details
+                details,
             },
-            message: "Detail found for " + detailReqDto.hotel_id
+            message: "Detail found for " + detailReqDto.hotel_id,
         };
-
     }
 
     async rooms(roomsReqDto: RoomsReqDto) {
-
         let cached = await this.cacheManager.get(roomsReqDto.token);
-        
+
         if (!cached) {
             throw new BadRequestException(invalidToken);
         }
 
         if (!cached.hotels) {
-            throw new NotFoundException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
+            throw new NotFoundException(
+                "No record found for Hotel ID: " + roomsReqDto.hotel_id
+            );
         }
-        
-        let hotel = collect(cached.hotels).where('id', roomsReqDto.hotel_id).first();
-        
+
+        let hotel = collect(cached.hotels)
+            .where("id", roomsReqDto.hotel_id)
+            .first();
+
         if (!hotel) {
-            throw new NotFoundException("No record found for Hotel ID: "+roomsReqDto.hotel_id);
+            throw new NotFoundException(
+                "No record found for Hotel ID: " + roomsReqDto.hotel_id
+            );
         }
 
         let details = cached.details;
 
-        roomsReqDto.bundle = hotel['bundle'];
+        roomsReqDto.bundle = hotel["bundle"];
         roomsReqDto.rooms = details.occupancies.length;
 
         let rooms = await this.hotel.rooms(roomsReqDto);
         // return rooms;
-        
+
         /* Add any type of Business logic for hotel object's */
         rooms = this.rate.generateInstalments(rooms, details.check_in);
 
-        if (this.generic.isset(cached['rooms'])) {
-            rooms = collect(cached['rooms']).union(rooms.values().toArray());
+        if (this.generic.isset(cached["rooms"])) {
+            rooms = collect(cached["rooms"]).union(rooms.values().toArray());
         }
 
-        cached['rooms'] = rooms;
+        cached["rooms"] = rooms;
 
-        await this.cacheManager.set(roomsReqDto.token, cached, { ttl: this.ttl });
+        await this.cacheManager.set(roomsReqDto.token, cached, {
+            ttl: this.ttl,
+        });
 
         let response = {
             data: rooms,
-            message: rooms.count() ? 'Rooms found' : 'No Room Found'
+            message: rooms.count() ? "Rooms found" : "No Room Found",
         };
 
         return response;
-
     }
 
     async filterObjects(filterReqDto: FilterReqDto) {
-        
         let cached = await this.cacheManager.get(filterReqDto.token);
 
         if (!cached) {
@@ -177,18 +200,19 @@ export class HotelService{
 
         let filterObjects = await FilterHelper.generateFilterObjects(cached);
 
-        cached['filter_objects'] = filterObjects;
+        cached["filter_objects"] = filterObjects;
 
-        await this.cacheManager.set(filterReqDto.token, cached, { ttl: this.ttl });
+        await this.cacheManager.set(filterReqDto.token, cached, {
+            ttl: this.ttl,
+        });
 
         return {
             data: filterObjects,
-            message: "Filter object found"
-        }
+            message: "Filter object found",
+        };
     }
 
     async availability(availabilityDto: AvailabilityDto) {
-
         let availability = await this.hotel.availability(availabilityDto);
         // return availability;
 
@@ -212,47 +236,57 @@ export class HotelService{
 
         let response = {
             data: availability,
-            message: availability.count() ? 'Room\'s are available' : 'Room\'s are not available'
+            message: availability.count()
+                ? "Room's are available"
+                : "Room's are not available",
         };
 
         return response;
-
     }
 
     async book(bookDto: BookDto) {
-
         let cached = await this.cacheManager.get(bookDto.token);
-        
+
         if (!cached) {
             throw new BadRequestException(invalidToken);
         }
 
         if (!cached.availability) {
-            throw new NotFoundException("No record found for Room ID: "+bookDto.room_id);
+            throw new NotFoundException(
+                "No record found for Room ID: " + bookDto.room_id
+            );
         }
-        
-        let availability: any = collect(cached.availability).where('room_id', bookDto.room_id).first();
-        
+
+        let availability: any = collect(cached.availability)
+            .where("room_id", bookDto.room_id)
+            .first();
+
         if (!availability) {
-            throw new NotFoundException("No record found for Room ID: "+bookDto.room_id);
+            throw new NotFoundException(
+                "No record found for Room ID: " + bookDto.room_id
+            );
         }
-        
-        let hotel: any = collect(cached.hotels).where('id', bookDto.hotel_id).first();
-        
+
+        let hotel: any = collect(cached.hotels)
+            .where("id", bookDto.hotel_id)
+            .first();
+
         if (!hotel) {
-            throw new NotFoundException("No record found for Hotel ID: "+bookDto.hotel_id);
+            throw new NotFoundException(
+                "No record found for Hotel ID: " + bookDto.hotel_id
+            );
         }
 
         let details = cached.details;
-        
+
         let sellingPrice = availability.selling.total;
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-        
+
         let callBookAPI = true;
-        
+
         let capturePayment = true;
-        
+
         let instalmentDetails: any = null;
         let markupAmount = "0";
         // let markupAmount = (sellingPrice - sellingPrice).toString();
@@ -267,54 +301,63 @@ export class HotelService{
             cardToken: bookDto.card_token,
             userId: bookDto.user_id,
             layCredit: bookDto.laycredit_points || 0,
-            bookingThrough: bookDto.booking_through || '',
+            bookingThrough: bookDto.booking_through || "",
             bookingDate,
             totalInstallments: 0,
             nextInstalmentDate: null,
             isPredictive: false,
-            supplierBookingId: '',
+            supplierBookingId: "",
             supplierStatus: 0,
             paymentStatus: PaymentStatus.PENDING,
             bookingStatus: BookingStatus.PENDING,
         };
         // return bookingData;
         if (bookDto.payment_type == PaymentType.INSTALMENT) {
-            
             /* This are the func name's which need to be same as Instalment utility file func name's */
             let fnEnm = {
-                weekly:'weekly',
-                biweekly:'biWeekly',
-                monthly:'monthly',
-            }
+                weekly: "weekly",
+                biweekly: "biWeekly",
+                monthly: "monthly",
+            };
 
-            let newAvailability = this.rate.generateInstalments([availability], details.check_in, fnEnm[bookDto.instalment_type]);
-            
-            instalmentDetails = collect(newAvailability).pluck('instalment_details').first();
+            let newAvailability = this.rate.generateInstalments(
+                [availability],
+                details.check_in,
+                fnEnm[bookDto.instalment_type]
+            );
+
+            instalmentDetails = collect(newAvailability)
+                .pluck("instalment_details")
+                .first();
 
             if (instalmentDetails.instalment_available) {
-                
-                let dayDiff = moment(details.check_in).diff(bookingDate, 'days');
+                let dayDiff = moment(details.check_in).diff(
+                    bookingDate,
+                    "days"
+                );
 
-                bookingData.totalInstallments = instalmentDetails.instalment_date.length;
-                bookingData.nextInstalmentDate = (instalmentDetails.instalment_date.length > 1) ? instalmentDetails.instalment_date[1].instalment_date : null;
-			    bookingData.isPredictive = callBookAPI ? false : true;
+                bookingData.totalInstallments =
+                    instalmentDetails.instalment_date.length;
+                bookingData.nextInstalmentDate =
+                    instalmentDetails.instalment_date.length > 1
+                        ? instalmentDetails.instalment_date[1].instalment_date
+                        : null;
+                bookingData.isPredictive = callBookAPI ? false : true;
 
-                sellingPrice = instalmentDetails.instalment_date[0].instalment_amount;
-                
+                sellingPrice =
+                    instalmentDetails.instalment_date[0].instalment_amount;
+
                 /* Call Hotel booking API if checkin date is less 3 months */
-                callBookAPI = (dayDiff <= 90);
-                
+                callBookAPI = dayDiff <= 90;
             } else {
                 throw new BadRequestException(
-					'Instalment option is not available for your search criteria'
-				);
+                    "Instalment option is not available for your search criteria"
+                );
             }
-
         } else {
             bookingData.bookingType = BookingType.NOINSTALMENT;
         }
 
-        
         let authCardResult = await this.paymentService.authorizeCard(
             bookDto.card_token,
             Math.ceil(sellingPrice * 100),
@@ -324,57 +367,64 @@ export class HotelService{
         // return authCardResult;
 
         if (authCardResult.status == true) {
-            
             let authCardToken = authCardResult.token;
 
             if (callBookAPI) {
-                
                 bookDto.bundle = availability.bundle;
-                
-                bookDto.primary_guest_detail = await this.user.getUser(bookDto.primary_guest);
-                
+
+                bookDto.primary_guest_detail = await this.user.getUser(
+                    bookDto.primary_guest
+                );
+
                 let bookData = new PPNBookDto(bookDto);
-                
+
                 let book = await this.hotel.book(bookData);
 
-                if (book.status == 'success') {
+                if (book.status == "success") {
                     bookingData.supplierStatus = 1;
                     bookingData.supplierBookingId = book.details.booking_id;
                     bookingData.bookingStatus = BookingStatus.CONFIRM;
                     bookingData.paymentStatus = PaymentStatus.CONFIRM;
                 } else {
-                    
-                    await this.paymentService.voidCard(authCardToken,'');
+                    await this.paymentService.voidCard(authCardToken, "");
 
-                    return  {
-                        success_message: 'Booking is Failed',
-                        laytrip_booking_id: '',
-                        booking_status: 'failed',
+                    return {
+                        success_message: "Booking is Failed",
+                        laytrip_booking_id: "",
+                        booking_status: "failed",
                         booking_details: {},
-                        error_message: ""
+                        error_message: "",
                     };
                 }
-
             }
-            
+
             if (capturePayment) {
-                
                 let captureCardresult = await this.paymentService.captureCard(
-                    authCardToken , ''
+                    authCardToken,
+                    ""
                 );
 
                 if (captureCardresult.status == true) {
-                    
-                    let saveBookingResult = await this.booking.saveBooking(bookDto, bookingData);
+                    let saveBookingResult = await this.booking.saveBooking(
+                        bookDto,
+                        bookingData
+                    );
 
                     if (instalmentDetails) {
-                        await this.booking.saveInstalment(instalmentDetails, saveBookingResult, bookDto.instalment_type, captureCardresult.token);
+                        await this.booking.saveInstalment(
+                            instalmentDetails,
+                            saveBookingResult,
+                            bookDto.instalment_type,
+                            captureCardresult.token
+                        );
                     }
-                    
-                    if (bookDto.laycredit_points) { 
-                        await this.booking.saveLaytripCredits(saveBookingResult);
+
+                    if (bookDto.laycredit_points) {
+                        await this.booking.saveLaytripCredits(
+                            saveBookingResult
+                        );
                     }
-                    
+
                     if (!callBookAPI) {
                         /* Store data to predective booking */
                         bookingData.netRate = sellingPrice;
@@ -382,59 +432,61 @@ export class HotelService{
                         await this.booking.savePredictive(bookingData);
                     }
 
-                    let booking_details: any = await this.bookingRepository.getBookDetail(saveBookingResult.laytripBookingId);
-                    
+                    let booking_details: any = await this.bookingRepository.getBookDetail(
+                        saveBookingResult.laytripBookingId
+                    );
+
                     if (!booking_details) {
-                        throw new HttpException({
+                        throw new HttpException(
+                            {
                                 status: 424,
-                                message: 'bookingResult.error_message',
-                        }, 424);
+                                message: "bookingResult.error_message",
+                            },
+                            424
+                        );
                     }
-                    
+
                     this.booking.sendEmail(booking_details);
-                    
+
                     delete booking_details.card;
-                    let state = (callBookAPI ? 'confirmed' : 'pending');
+                    let state = callBookAPI ? "confirmed" : "pending";
                     let response = {
-                        success_message: 'Booking is in ' + state + 'state',
+                        success_message: "Booking is in " + state + "state",
                         laytrip_booking_id: saveBookingResult.laytripBookingId,
-                        supplier_booking_id: saveBookingResult.supplierBookingId,
+                        supplier_booking_id:
+                            saveBookingResult.supplierBookingId,
                         booking_status: state,
                         booking_details,
-                        error_message: ""
+                        error_message: "",
                     };
 
                     return response;
-                    
                 } else {
                     throw new BadRequestException(
-                        'Card capture is failed&&&card_token&&&'+errorMessage
+                        "Card capture is failed&&&card_token&&&" + errorMessage
                     );
                 }
             } else {
-                await this.paymentService.voidCard(authCardToken,'');
+                await this.paymentService.voidCard(authCardToken, "");
                 throw new HttpException(
                     {
                         status: 424,
-                        message: 'bookingResult.error_message',
+                        message: "bookingResult.error_message",
                     },
                     424
                 );
             }
         } else {
             throw new BadRequestException(
-                'Card authorization is failed&&&card_token&&&'+errorMessage
+                "Card authorization is failed&&&card_token&&&" + errorMessage
             );
         }
- 
     }
 
     async fetchPrice(bookingData: Booking) {
-
-        
         try {
             let info: any = bookingData.moduleInfo;
-            
+
             let searchReqDto: SearchReqDto = info.details;
             searchReqDto.hotel_id = info.hotel.id;
 
@@ -444,7 +496,7 @@ export class HotelService{
 
             /* Set Room DTO for finding latest rooms rates */
             let roomsReqDto: RoomsReqDto;
-            
+
             roomsReqDto = {
                 hotel_id: hotel.id,
                 bundle: hotel.bundle,
@@ -452,9 +504,11 @@ export class HotelService{
             };
 
             let rooms = await this.hotel.rooms(roomsReqDto);
-            
-            let room: any = collect(rooms).where('room_id', info.room.id).first();
-            
+
+            let room: any = collect(rooms)
+                .where("room_id", info.room.id)
+                .first();
+
             /* If room data found then store new rate to predictive table */
             if (room) {
                 bookingData.netRate = room.selling.total;
@@ -462,89 +516,834 @@ export class HotelService{
                 await this.booking.savePredictive(bookingData);
                 return {
                     data: {
-                        room
+                        room,
                     },
-                    message: 'Predictive data Stored'
-                }
+                    message: "Predictive data Stored",
+                };
             } else {
-                throw new NotFoundException("No rate found for this booking &&&booking&&&" + errorMessage);
+                throw new NotFoundException(
+                    "No rate found for this booking &&&booking&&&" +
+                        errorMessage
+                );
             }
-
         } catch (err) {
             throw new NotFoundException(err + " &&&search&&&" + errorMessage);
         }
-
-    }    
+    }
 
     async partialBook(booking_id, headers) {
         let booking = await this.bookingRepository.getBookDetail(booking_id);
 
         if (booking) {
             try {
-                
                 let priceRes = await this.fetchPrice(booking);
-                
+
                 if (priceRes) {
                     let room: any = priceRes.data.room;
-                    
+
                     let availabilityDto: AvailabilityDto = {
                         bundle: room.bundle,
-                        room_ppn : room.ppn
+                        room_ppn: room.ppn,
                     };
-                    
-                    let availabilityRes = await this.hotel.availability(availabilityDto);
+
+                    let availabilityRes = await this.hotel.availability(
+                        availabilityDto
+                    );
 
                     if (availabilityRes) {
-                        let availability :any = collect(availabilityRes).first();
+                        let availability: any = collect(
+                            availabilityRes
+                        ).first();
 
                         let bookDto: any = {
                             bundle: availability.bundle,
-                            primary_guest_detail : await this.user.getUser(booking.userId)
+                            primary_guest_detail: await this.user.getUser(
+                                booking.userId
+                            ),
                         };
 
                         let bookData = new PPNBookDto(bookDto);
 
                         let book = await this.hotel.book(bookData);
-                        
+
                         let response: any = {
-                            success_message: 'Booking is Failed',
+                            success_message: "Booking is Failed",
                             laytrip_booking_id: booking.laytripBookingId,
                             supplier_booking_id: booking.supplierBookingId,
                             booking_status: booking.bookingStatus,
-                            error_message: ""
+                            error_message: "",
                         };
 
-                        if (book.status == 'success') {
-                            
+                        if (book.status == "success") {
                             booking.supplierBookingId = book.details.booking_id;
                             booking.supplierStatus = 1;
                             booking.bookingStatus = BookingStatus.CONFIRM;
                             booking.netRate = availability.selling.total;
-                            booking.usdFactor = '' + booking.currency2.liveRate;
+                            booking.usdFactor = "" + booking.currency2.liveRate;
 
                             await booking.save();
 
-                            let booking_details: any = await this.bookingRepository.getBookDetail(booking_id);
+                            let booking_details: any = await this.bookingRepository.getBookDetail(
+                                booking_id
+                            );
 
                             this.booking.sendEmail(booking_details);
 
                             delete booking_details.card;
 
                             response = {
-                                success_message: 'Booking is confirmed',
-                                supplier_booking_id: booking_details.supplierBookingId,
+                                success_message: "Booking is confirmed",
+                                supplier_booking_id:
+                                    booking_details.supplierBookingId,
                                 booking_status: booking_details.bookingStatus,
                                 booking_details,
                             };
                         }
-                        
-                        return response;
 
+                        return response;
                     }
                 }
             } catch (err) {
-                throw new NotFoundException(err+", No rate found for this booking &&&booking&&&" + errorMessage);
+                throw new NotFoundException(
+                    err +
+                        ", No rate found for this booking &&&booking&&&" +
+                        errorMessage
+                );
             }
+        }
+    }
+    
+    async validateHeaders(headers) {
+        let currency = headers.currency;
+        let language = headers.language;
+        if (typeof currency == "undefined" || currency == "") {
+            throw new BadRequestException(
+                `Please enter currency code&&&currency`
+            );
+        } else if (typeof language == "undefined" || language == "") {
+            throw new BadRequestException(
+                `Please enter language code&&&language`
+            );
+        }
+
+        let currencyDetails = await getManager()
+            .createQueryBuilder(Currency, "currency")
+            .where(`"currency"."code"=:currency and "currency"."status"=true`, {
+                currency,
+            })
+            .getOne();
+        if (!currencyDetails) {
+            throw new BadRequestException(`Currency not available.`);
+        }
+
+        let languageDetails = await getManager()
+            .createQueryBuilder(Language, "language")
+            .where(
+                `"language"."iso_1_code"=:language and "language"."active"=true`,
+                {
+                    language,
+                }
+            )
+            .getOne();
+        if (!languageDetails) {
+            throw new BadRequestException(`Language not available.`);
+        }
+        return {
+            currency: currencyDetails,
+            language: languageDetails,
+        };
+    }
+
+
+    async cartBook(
+        bookHotelCartDto: BookHotelCartDto,
+        headers,
+        user: User,
+        smallestDipatureDate,
+        cartId,
+        selected_down_payment: number,
+        transaction_token
+    ) {
+        try {
+            let headerDetails = await this.validateHeaders(headers);
+            console.log("header validate");
+            let {
+                travelers,
+                payment_type,
+                instalment_type,
+                ppn,
+                bundle,
+                additional_amount,
+                custom_instalment_amount,
+                custom_instalment_no,
+                laycredit_points,
+                card_token,
+                booking_through,
+            } = bookHotelCartDto;
+            const availabilityDto: AvailabilityDto = {
+                room_ppn: ppn,
+            };
+            let availability = await this.hotel.availability(availabilityDto);
+            let isPassportRequired = false;
+            let bookingRequestInfo: any = {};
+            if (availability) {
+                bookingRequestInfo.adult_count =
+                    availability[0].input_data.num_adults;
+                bookingRequestInfo.child_count =
+                    typeof availability[0].input_data.num_children !=
+                    "undefined"
+                        ? availability[0].input_data.num_children
+                        : 0;
+                bookingRequestInfo.infant_count = 0;
+                bookingRequestInfo.net_rate = availability[0].net_rate;
+                if (payment_type == PaymentType.INSTALMENT) {
+                    bookingRequestInfo.selling_price =
+                        availability[0].selling.sub_total;
+                } else {
+                    bookingRequestInfo.selling_price =
+                        availability[0].selling.total;
+                }
+
+                bookingRequestInfo.departure_date =
+                    availability[0].input_data.check_in;
+                bookingRequestInfo.arrival_date =
+                    availability[0].input_data.check_out;
+
+                bookingRequestInfo.instalment_type = instalment_type;
+                bookingRequestInfo.additional_amount = additional_amount;
+                bookingRequestInfo.booking_through = booking_through;
+                isPassportRequired = false;
+
+                bookingRequestInfo.laycredit_points = laycredit_points;
+                bookingRequestInfo.card_token = card_token;
+            }
+            console.log("bookingRequestInfo", bookingRequestInfo);
+            let {
+                selling_price,
+                departure_date,
+                adult_count,
+                child_count,
+                infant_count,
+            } = bookingRequestInfo;
+            let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+            let travelersDetails = await this.getTravelersInfo(
+                travelers,
+                isPassportRequired
+            );
+            console.log("travelersDetails", travelersDetails);
+            let currencyId = headerDetails.currency.id;
+            const userId = user.userId;
+            console.log("userId", userId);
+            if (adult_count != travelersDetails.adults.length) {
+                return {
+                    statusCode: 422,
+                    message: `Adults count is not match with search request!`,
+                };
+            }
+
+            if (child_count != travelersDetails.children.length) {
+                return {
+                    statusCode: 422,
+                    message: `Children count is not match with search request`,
+                };
+            }
+
+            if (infant_count != travelersDetails.infants.length) {
+                return {
+                    statusCode: 422,
+                    message: `Infants count is not match with search request`,
+                };
+            }
+            if (payment_type == PaymentType.INSTALMENT) {
+                let instalmentDetails;
+
+                let totalAdditionalAmount = additional_amount || 0;
+                if (laycredit_points > 0) {
+                    totalAdditionalAmount =
+                        totalAdditionalAmount + laycredit_points;
+                }
+                //save entry for future booking
+                if (instalment_type == InstalmentType.WEEKLY) {
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        selling_price,
+                        smallestDipatureDate,
+                        bookingDate,
+                        totalAdditionalAmount,
+                        custom_instalment_amount,
+                        custom_instalment_no,
+                        selected_down_payment
+                    );
+                }
+                if (instalment_type == InstalmentType.BIWEEKLY) {
+                    instalmentDetails = Instalment.biWeeklyInstalment(
+                        selling_price,
+                        smallestDipatureDate,
+                        bookingDate,
+                        totalAdditionalAmount,
+                        custom_instalment_amount,
+                        custom_instalment_no,
+                        selected_down_payment
+                    );
+                }
+                if (instalment_type == InstalmentType.MONTHLY) {
+                    instalmentDetails = Instalment.monthlyInstalment(
+                        selling_price,
+                        smallestDipatureDate,
+                        bookingDate,
+                        totalAdditionalAmount,
+                        custom_instalment_amount,
+                        custom_instalment_no,
+                        selected_down_payment
+                    );
+                }
+
+                if (instalmentDetails.instalment_available) {
+                    let firstInstalemntAmount =
+                        instalmentDetails.instalment_date[0].instalment_amount;
+                    if (laycredit_points > 0) {
+                        firstInstalemntAmount =
+                            firstInstalemntAmount - laycredit_points;
+                    }
+                    /* Call mystifly booking API if checkin date is less 3 months */
+                    let dayDiff = moment(departure_date).diff(
+                        bookingDate,
+                        "days"
+                    );
+                    let bookingResult;
+                    console.log("dayDiff", dayDiff);
+                    // if (dayDiff <= 90) {
+                    //     const mystifly = new Strategy(
+                    //         new Mystifly(headers, this.cacheManager)
+                    //     );
+                    //     bookingResult = await mystifly.bookFlight(
+                    //         bookFlightDto,
+                    //         travelersDetails,
+                    //         isPassportRequired
+                    //     );
+                    // }
+
+                    let authCardToken = transaction_token;
+
+                    console.log("req for save booking");
+                    let laytripBookingResult = await this.saveBooking(
+                        bookingRequestInfo,
+                        currencyId,
+                        bookingDate,
+                        BookingType.INSTALMENT,
+                        userId,
+                        availability,
+                        instalmentDetails,
+                        null,
+                        bookingResult || null,
+                        travelers,
+                        cartId
+                    );
+                    // if (dayDiff <= 90) {
+                    //     this.bookingUpdateFromSupplierside(
+                    //         laytripBookingResult.laytripBookingId,
+                    //         {
+                    //             supplier_booking_id:
+                    //                 laytripBookingResult.supplierBookingId,
+                    //         },
+                    //         1
+                    //     );
+                    // }
+                    return {
+                        laytrip_booking_id: laytripBookingResult.id,
+                        booking_status: "pending",
+                        supplier_booking_id: "",
+                        success_message: `Booking is in pending state!`,
+                        error_message: "",
+                        booking_details: await this.bookingRepository.getBookingDetails(
+                            laytripBookingResult.laytripBookingId
+                        ),
+                    };
+                } else {
+                    return {
+                        statusCode: 422,
+                        message: `Instalment option is not available for your search criteria`,
+                    };
+                }
+            } else if (payment_type == PaymentType.NOINSTALMENT) {
+                let sellingPrice = selling_price;
+                if (laycredit_points > 0) {
+                    sellingPrice = selling_price - laycredit_points;
+                }
+
+                if (sellingPrice > 0) {
+                    // const mystifly = new Strategy(
+                    //     new Mystifly(headers, this.cacheManager)
+                    // );
+                    // const bookingResult = await mystifly.bookFlight(
+                    //     bookFlightDto,
+                    //     travelersDetails,
+                    //     isPassportRequired
+                    // );
+                    let bookingResult: any = {
+                    	booking_status: "success"
+                    }
+                    let authCardToken = transaction_token;
+                    if (bookingResult.booking_status == "success") {
+                        let laytripBookingResult = await this.saveBooking(
+                            bookingRequestInfo,
+                            currencyId,
+                            bookingDate,
+                            BookingType.NOINSTALMENT,
+                            userId,
+                            availability,
+                            null,
+                            null,
+                            bookingResult,
+                            travelers,
+                            cartId
+                        );
+                        //send email here
+                        bookingResult.laytrip_booking_id =
+                            laytripBookingResult.id;
+                        bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+                            laytripBookingResult.laytripBookingId
+                        );
+                        return bookingResult;
+                    } else {
+                        await this.paymentService.voidCard(
+                            authCardToken,
+                            userId
+                        );
+
+                        return {
+                            statusCode: 424,
+                            message: bookingResult.error_message,
+                        };
+                    }
+                }
+                // else {
+                // 	//for full laycredit rdeem
+                // 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+                // 	const bookingResult = await mystifly.bookFlight(
+                // 		bookFlightDto,
+                // 		travelersDetails,
+                // 		isPassportRequired
+                // 	);
+                // 	if (bookingResult.booking_status == "success") {
+
+                // 		let laytripBookingResult = await this.saveBooking(
+                // 			bookingRequestInfo,
+                // 			currencyId,
+                // 			bookingDate,
+                // 			BookingType.NOINSTALMENT,
+                // 			userId,
+                // 			airRevalidateResult,
+                // 			null,
+                // 			null,
+                // 			bookingResult,
+                // 			travelers,
+                //			cartId
+                // 		);
+                // 		//send email here
+                // 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
+                // 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
+
+                // 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+                // 			laytripBookingResult.laytripBookingId
+                // 		);
+                // 		return bookingResult;
+                // 	} else {
+
+                // 			return {
+                // 				status: 424,
+                // 				message: bookingResult.error_message,
+                // 			}
+                // 	}
+                // }
+            }
+        } catch (error) {
+            return {
+                message: errorMessage,
+                error,
+            };
+        }
+    }
+
+    async getTravelersInfo(travelers, isPassportRequired = null) {
+        let travelerIds = travelers.map((traveler) => {
+            return traveler.traveler_id;
+        });
+
+        let travelersResult = await getManager()
+            .createQueryBuilder(User, "user")
+            .leftJoinAndSelect("user.country", "countries")
+            .select([
+                "user.userId",
+                "user.title",
+                "user.firstName",
+                "user.lastName",
+                "user.email",
+                "user.countryCode",
+                "user.phoneNo",
+                "user.zipCode",
+                "user.gender",
+                "user.dob",
+                "user.passportNumber",
+                "user.passportExpiry",
+                "countries.name",
+                "countries.iso2",
+                "countries.iso3",
+                "countries.id",
+            ])
+            .where('"user"."user_id" IN (:...travelerIds)', { travelerIds })
+            .getMany();
+
+        let traveleDetails = {
+            adults: [],
+            children: [],
+            infants: [],
+        };
+
+        if (travelersResult.length > 0) {
+            for (let traveler of travelersResult) {
+                let ageDiff = moment(new Date()).diff(
+                    moment(traveler.dob),
+                    "years"
+                );
+
+                /* if (traveler.title == null || traveler.title == "")
+					throw new BadRequestException(
+						`Title is missing for traveler ${traveler.firstName}`
+					); */
+                // if (
+                //     (traveler.email == null || traveler.email == "") &&
+                //     ageDiff >= 12
+                // )
+                //     throw new BadRequestException(
+                //         `Email is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (
+                //     (traveler.countryCode == null ||
+                //         traveler.countryCode == "") &&
+                //     ageDiff >= 12
+                // )
+                //     throw new BadRequestException(
+                //         `Country code is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (
+                //     (traveler.phoneNo == null || traveler.phoneNo == "") &&
+                //     ageDiff >= 12
+                // )
+                //     throw new BadRequestException(
+                //         `Phone number is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (traveler.gender == null || traveler.gender == "")
+                //     throw new BadRequestException(
+                //         `Gender is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (traveler.dob == null || traveler.dob == "")
+                //     throw new BadRequestException(
+                //         `Dob is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (
+                //     ageDiff > 2 &&
+                //     isPassportRequired &&
+                //     (traveler.passportNumber == null ||
+                //         traveler.passportNumber == "")
+                // )
+                //     throw new BadRequestException(
+                //         `Passport Number is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (
+                //     ageDiff > 2 &&
+                //     isPassportRequired &&
+                //     (traveler.passportExpiry == null ||
+                //         traveler.passportExpiry == "")
+                // )
+                //     throw new BadRequestException(
+                //         `Passport Expiry is missing for traveler ${traveler.firstName}`
+                //     );
+                // if (
+                //     ageDiff > 2 &&
+                //     isPassportRequired &&
+                //     traveler.passportExpiry &&
+                //     moment(moment()).isAfter(traveler.passportExpiry)
+                // )
+                //     throw new BadRequestException(
+                //         `Passport Expiry date is expired for traveler ${traveler.firstName}`
+                //     );
+                // if (
+                //     traveler.country == null ||
+                //     (typeof traveler.country.iso2 !== "undefined" &&
+                //         traveler.country.iso2 == "")
+                // )
+                //     throw new BadRequestException(
+                //         `Country code is missing for traveler ${traveler.firstName}`
+                //     );
+                if (traveler.dob) {
+                    if (ageDiff >= 12) {
+                        traveleDetails.adults.push(traveler);
+                    } else {
+                        traveleDetails.children.push(traveler);
+                    }
+                } else {
+                    traveleDetails.adults.push(traveler);
+                }
+            }
+            return traveleDetails;
+        } else {
+            throw new BadRequestException(`Please enter valid traveler(s) id`);
+        }
+    }
+
+    async saveTravelers(bookingId, userId, travelers: any) {
+        // const userData = await getManager()
+        // 	.createQueryBuilder(User, "user")
+        // 	.select(["user.roleId", "user.userId"])
+        // 	.where(`"user_id" =:user_id AND "is_deleted" = false `, { user_id: userId })
+        // 	.getOne();
+
+        // var primaryTraveler = new TravelerInfo();
+
+        // primaryTraveler.bookingId = bookingId;
+        // primaryTraveler.userId = userId;
+        // primaryTraveler.roleId = userData.roleId;
+
+        // primaryTraveler.save();
+
+        for await (var traveler of travelers) {
+            if (typeof traveler.traveler_id) {
+                var travelerId = traveler.traveler_id;
+                const userData = await getConnection()
+                    .createQueryBuilder(User, "user")
+                    .where(`"user_id" =:user_id`, { user_id: travelerId })
+                    .getOne();
+                var birthDate = new Date(userData.dob);
+                var age = moment(new Date()).diff(moment(birthDate), "years");
+
+                var user_type = "";
+                if (age < 2) {
+                    user_type = "infant";
+                } else if (age < 12) {
+                    user_type = "child";
+                } else {
+                    user_type = "adult";
+                }
+                const travelerInfo: TravelerInfoModel = {
+                    firstName: userData.firstName,
+                    passportExpiry: userData.passportExpiry || '',
+                    passportNumber: userData.passportNumber || '',
+                    lastName: userData.lastName || '',
+                    email: userData.email || '',
+                    phoneNo: userData.phoneNo || '',
+                    countryCode: userData.countryCode || '',
+                    dob: userData.dob,
+                    countryId: userData.countryId,
+                    gender: userData.gender,
+                    age : age,
+                    user_type: user_type
+                };
+                var travelerUser = new TravelerInfo();
+                travelerUser.bookingId = bookingId;
+                travelerUser.userId = travelerId;
+                travelerUser.isPrimary = traveler?.is_primary_traveler ? true :false
+                travelerUser.roleId = Role.TRAVELER_USER;
+                travelerUser.travelerInfo = travelerInfo;
+                await travelerUser.save();
+            }
+        }
+    }
+
+    async saveBooking(
+        bookFlightDto,
+        currencyId,
+        bookingDate,
+        bookingType,
+        userId,
+        revalidateResult,
+        instalmentDetails = null,
+        captureCardresult = null,
+        supplierBookingData,
+        travelers,
+        cartId = null
+    ) {
+        const {
+            selling_price,
+            net_rate,
+            journey_type,
+            source_location,
+            destination_location,
+            instalment_type,
+            laycredit_points,
+            fare_type,
+            card_token,
+            booking_through,
+        } = bookFlightDto;
+
+        let moduleDetails = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where(`"module"."name"=:name`, { name: "hotel" })
+            .getOne();
+        if (!moduleDetails) {
+            throw new BadRequestException(
+                `Please configure hotel module in database&&&module_id&&&${errorMessage}`
+            );
+        }
+
+        let currencyDetails = await getManager()
+            .createQueryBuilder(Currency, "currency")
+            .where(`"currency"."id"=:currencyId and "currency"."status"=true`, {
+                currencyId,
+            })
+            .getOne();
+
+        let booking = new Booking();
+        booking.id = uuidv4();
+        booking.moduleId = moduleDetails.id;
+        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+        booking.bookingType = bookingType;
+        booking.currency = currencyId;
+        booking.totalAmount = selling_price.toString();
+        booking.netRate = net_rate.toString();
+        booking.markupAmount = (selling_price - net_rate).toString();
+        booking.bookingDate = bookingDate;
+        booking.usdFactor = currencyDetails.liveRate.toString();
+        booking.layCredit = laycredit_points || 0;
+        booking.bookingThrough = booking_through || "";
+        booking.cartId = cartId;
+        booking.locationInfo = {
+            hotel_id: revalidateResult[0].hotel_id,
+            hotel_name: revalidateResult[0].hotel_name,
+            address: revalidateResult[0].address
+        };
+        // const [caegory] = await getConnection().query(`select 
+        // (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        // from flight_route 
+        // where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        // booking.categoryName = caegory?.categoryname || null;
+        
+        booking.fareType = null;
+        booking.isTicketd = false;
+
+        booking.userId = userId;
+
+        if (laycredit_points > 0) {
+            const layCreditReedem = new LayCreditRedeem();
+            layCreditReedem.userId = userId;
+            layCreditReedem.points = laycredit_points;
+            layCreditReedem.redeemDate = moment().format("YYYY-MM-DD");
+            layCreditReedem.status = 1;
+            layCreditReedem.redeemMode = "auto";
+            layCreditReedem.description = "";
+            layCreditReedem.redeemBy = userId;
+            await layCreditReedem.save();
+        }
+        let nextInstallmentDate = "";
+        if (instalmentDetails) {
+            booking.totalInstallments =
+                instalmentDetails.instalment_date.length;
+            if (instalmentDetails.instalment_date.length > 1) {
+                booking.nextInstalmentDate =
+                    instalmentDetails.instalment_date[1].instalment_date;
+            }
+
+            booking.bookingStatus =
+                supplierBookingData != null &&
+                supplierBookingData.supplier_booking_id
+                    ? BookingStatus.CONFIRM
+                    : BookingStatus.PENDING;
+            booking.paymentStatus = PaymentStatus.PENDING;
+            booking.supplierBookingId =
+                supplierBookingData != null &&
+                supplierBookingData.supplier_booking_id
+                    ? supplierBookingData.supplier_booking_id
+                    : "";
+            booking.isPredictive =
+                supplierBookingData != null &&
+                supplierBookingData.supplier_booking_id
+                    ? false
+                    : true;
+            booking.supplierStatus =
+                supplierBookingData != null &&
+                supplierBookingData.supplier_status == "BOOKINGINPROCESS"
+                    ? 0
+                    : 1;
+        } else {
+            //pass here mystifly booking id
+            booking.supplierBookingId = supplierBookingData.supplier_booking_id;
+            booking.supplierStatus =
+                supplierBookingData != null &&
+                supplierBookingData.supplier_status == "BOOKINGINPROCESS"
+                    ? 0
+                    : 1;
+            //booking.supplierBookingId = "";
+            booking.bookingStatus = BookingStatus.CONFIRM;
+            booking.paymentStatus = PaymentStatus.CONFIRM;
+            booking.isPredictive = false;
+            booking.totalInstallments = 0;
+        }
+        booking.cardToken = card_token;
+
+        booking.moduleInfo = revalidateResult;
+        booking.checkInDate = revalidateResult[0].input_data.check_in
+        booking.checkOutDate = revalidateResult[0].input_data.check_out;
+
+        try {
+            let bookingDetails = await booking.save();
+            console.log(" save booking");
+            await this.saveTravelers(booking.id, userId, travelers);
+            if (instalmentDetails) {
+                let bookingInstalments: BookingInstalments[] = [];
+                let bookingInstalment = new BookingInstalments();
+                let i = 0;
+                for (let instalment of instalmentDetails.instalment_date) {
+                    bookingInstalment = new BookingInstalments();
+                    bookingInstalment.bookingId = bookingDetails.id;
+                    bookingInstalment.userId = userId;
+                    bookingInstalment.moduleId = moduleDetails.id;
+                    bookingInstalment.instalmentType = instalment_type;
+                    bookingInstalment.instalmentDate =
+                        instalment.instalment_date;
+                    bookingInstalment.currencyId = currencyId;
+                    bookingInstalment.amount = instalment.instalment_amount;
+                    bookingInstalment.instalmentStatus =
+                        i == 0
+                            ? InstalmentStatus.PAID
+                            : InstalmentStatus.PENDING;
+                    bookingInstalment.transactionToken =
+                        i == 0 ? captureCardresult?.token : null;
+                    bookingInstalment.paymentStatus =
+                        i == 0 && captureCardresult
+                            ? PaymentStatus.CONFIRM
+                            : PaymentStatus.PENDING;
+                    bookingInstalment.attempt =
+                        i == 0 && captureCardresult ? 1 : 0;
+                    bookingInstalment.supplierId = 1;
+                    bookingInstalment.isPaymentProcessedToSupplier = 0;
+                    bookingInstalment.isInvoiceGenerated = 0;
+                    bookingInstalment.instalmentNo = i + 1;
+                    i++;
+                    bookingInstalments.push(bookingInstalment);
+                }
+
+                await getConnection()
+                    .createQueryBuilder()
+                    .insert()
+                    .into(BookingInstalments)
+                    .values(bookingInstalments)
+                    .execute();
+            }
+            const predictiveBooking = new PredictiveBookingData();
+            predictiveBooking.bookingId = booking.id;
+            predictiveBooking.date = new Date();
+            predictiveBooking.netPrice = parseFloat(booking.netRate);
+            predictiveBooking.isBelowMinimum =
+                booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat;
+            predictiveBooking.price = parseFloat(booking.totalAmount);
+            predictiveBooking.remainSeat =
+                booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
+            await predictiveBooking.save();
+            console.log("get booking");
+            return await this.bookingRepository.getBookingDetails(
+                booking.laytripBookingId
+            );
+        } catch (error) {
+            console.log(error);
         }
     }
 }
