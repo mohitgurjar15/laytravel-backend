@@ -180,11 +180,11 @@ export class TravelerService {
 			}
 			
 			user.dob = dob || null;
-			user.countryCode = country_code;
+			user.countryCode = country_code||null;
 			user.timezone = "";
 			user.status = 1;
-			user.gender = gender;
-			user.countryId = country_id;
+			user.gender = gender||null;
+			user.countryId = country_id || null;
 			user.passportExpiry = passport_expiry == "" ? null : passport_expiry;
 			user.passportNumber = passport_number == "" ? null : passport_number;
 			user.roleId = Role.TRAVELER_USER;
