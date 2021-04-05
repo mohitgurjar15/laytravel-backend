@@ -55,11 +55,10 @@ export class RateHelper{
         
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         
-        let markup = 0;
 
         return {
             retail,
-            selling,
+            selling:retail,
             saving_percent
         }
     }

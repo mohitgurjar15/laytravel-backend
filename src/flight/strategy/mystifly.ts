@@ -203,9 +203,6 @@ export class Mystifly implements StrategyAirline {
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
         let categoryName = caegory?.categoryname;
-        console.log(caegory);
-        console.log(categoryName);
-        console.log(caegory?.categoryname);
         
         
         
@@ -489,13 +486,11 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
-                    console.log(stops[0].departure_date,"--",departure_date,route.selling_price)
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
                         bookingDate,0,null,null,0
                     );
-                    //console.log("instalmentDetails",instalmentDetails)
                     let instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
                         departure_date,
