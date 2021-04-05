@@ -21,14 +21,12 @@ export async function LaytripFlightBookingConfirmtionMail(
             ? traveler.name 
             : "";
         travelerEmail += traveler.email
-            ? '<span style="color: #707070;">' +
-              traveler.email +
-              "</span>"
+            ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
             : "";
     }
 
   let content = `<tr>
-    <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
+    <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table  width="550px" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 550px; font-family: 'Poppins', sans-serif; ">
             <tbody>
@@ -96,14 +94,14 @@ export async function LaytripFlightBookingConfirmtionMail(
                             } ${DateTime.convertDateFormat(
                 droup.depature.date,
                 "MM/DD/YYYY",
-                "MMM D, YYYY"
+                "MMMM DD, YYYY"
             )} ${droup.depature.time.replace(/\s/g, "")},
                             Arrive ${
                                 droup.arrival.code
                             } ${DateTime.convertDateFormat(
                 droup.arrival.date,
                 "MM/DD/YYYY",
-                "MMM D, YYYY"
+                "MMMM DD, YYYY"
             )} ${droup.arrival.time.replace(/\s/g, "")} </span>
                         </td>
                     </tr>`;
@@ -373,7 +371,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Contact us anytime at  <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #707070;">customerservice@laytrip.com</a>. We hope you have a great trip!
+                        style="color: #0C7BFF;">customerservice@laytrip.com</a>. We hope you have a great trip!
                     </td>
                 </tr>
             </tbody>
@@ -387,7 +385,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070;padding-top:27px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

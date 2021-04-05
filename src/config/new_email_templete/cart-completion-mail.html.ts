@@ -10,7 +10,7 @@ export async function LaytripCartBookingComplationMail(
     param: CartBookingEmailParameterModel
 ) {
       let content = `<tr>
-    <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
+    <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
@@ -26,15 +26,14 @@ export async function LaytripCartBookingComplationMail(
                             param.orderId
                         }.
                     </td>
-                </tr>`;
-      if (param.bookingType == BookingType.INSTALMENT) {
-          content += `<tr>
+                </tr>
+                <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 25px; color: #707070;padding: 15px 0; text-align: left;">
-                        Your Travel Provider Confirmation Number is <span  style="color: #707070">${param.bookings[0].flighData[0].droups[0].depature.pnr_no}</span> . As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your booking details:
+                        Below you will find your applicable airline, hotel, home and car rental reservation number(s) so you can contact your travel providers directly for any of your final travel preparations.
                         </td>
                 </tr>`;
-      }
+      
       for await (const booking of param.bookings) {
           let traveleName = "";
           let travelerEmail = "";
@@ -49,7 +48,7 @@ export async function LaytripCartBookingComplationMail(
                   ? traveler.name 
                   : "";
               travelerEmail += traveler.email
-                  ? '<span style="color: #707070;">' +
+                  ? '<span style="color: #0C7BFF;">' +
                     traveler.email +
                     "</span>"
                   : "";
@@ -127,14 +126,14 @@ export async function LaytripCartBookingComplationMail(
                             } ${DateTime.convertDateFormat(
                           droup.depature.date,
                           "MM/DD/YYYY",
-                          "MMM D, YYYY"
+                          "MMMM DD, YYYY"
                       )} ${droup.depature.time.replace(/\s/g, "")},
                             Arrive ${
                                 droup.arrival.code
                             } ${DateTime.convertDateFormat(
                           droup.arrival.date,
                           "MM/DD/YYYY",
-                          "MMM D, YYYY"
+                          "MMMM DD, YYYY"
                       )} ${droup.arrival.time.replace(/\s/g, "")}
                         </td>
                     </tr>`;
@@ -295,7 +294,7 @@ export async function LaytripCartBookingComplationMail(
                 <td
                     align="left"
                     valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px;  text-align: left;"
+                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;  padding-top:5px; text-align: left;"
                 >
                     <span  style="color: #707070">Total Price:</span>  <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
@@ -401,7 +400,7 @@ export async function LaytripCartBookingComplationMail(
       }
       content += `
                 <tr>
-                    <td style="padding: 0 0 15px 0;">
+                    <td style="padding: 5px 0 15px 0;">
                         <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>
@@ -417,7 +416,7 @@ export async function LaytripCartBookingComplationMail(
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Contact us anytime us at <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #707070;">customerservice@laytrip.com</a>. We hope to work with you on your next booking and that you have a great trip!
+                        style="color: #0C7BFF;">customerservice@laytrip.com</a>. We hope to work with you on your next booking and that you have a great trip!
                     </td>
                 </tr>
             </tbody>
@@ -431,7 +430,7 @@ export async function LaytripCartBookingComplationMail(
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070;padding-top:27px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

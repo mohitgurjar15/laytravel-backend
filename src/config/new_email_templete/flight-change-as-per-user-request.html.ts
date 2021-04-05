@@ -26,9 +26,8 @@ export async function FlightChangeAsperUserRequestMail(
             : "";
     }
 
-
     let content = `<tr>
-    <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
+    <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
@@ -55,7 +54,7 @@ export async function FlightChangeAsperUserRequestMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px;  text-align: left;"
                     >
-                        <span style="color: #707070">
+                        <span  style="color: #000000">
                         Traveler:
                         </span>
                         <span style="font-size: 18px" >
@@ -69,7 +68,7 @@ export async function FlightChangeAsperUserRequestMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                     >
-                        <span style="color: #707070">
+                        <span  style="color: #000000">
                         Email:
                         </span>
                         <span style="font-size: 18px" >
@@ -85,20 +84,20 @@ export async function FlightChangeAsperUserRequestMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                         >
-                            <span style="color: #707070">${droup.flight}:</span>
+                            <span  style="color: #000000">${droup.flight}:</span>
                             <span style="font-size: 18px" >Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
                 droup.depature.date,
                 "MM/DD/YYYY",
-                "MMM D, YYYY"
+                "MMMM DD, YYYY"
             )} ${droup.depature.time.replace(/\s/g, "")},
                             Arrive ${
                                 droup.arrival.code
                             } ${DateTime.convertDateFormat(
                 droup.arrival.date,
                 "MM/DD/YYYY",
-                "MMM D, YYYY"
+                "MMMM DD, YYYY"
             )} ${droup.arrival.time.replace(/\s/g, "")} </span>
                         </td>
                     </tr>`;
@@ -111,7 +110,7 @@ export async function FlightChangeAsperUserRequestMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span style="color: #707070">Total Price:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span  style="color: #000000">Total Price:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
@@ -120,7 +119,7 @@ export async function FlightChangeAsperUserRequestMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span style="color: #707070">Total Paid:</span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                    <span  style="color: #000000">Total Paid:</span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -129,7 +128,7 @@ export async function FlightChangeAsperUserRequestMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span style="color: #707070">Balance Due:</span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                    <span  style="color: #000000">Balance Due:</span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
             if(param.flight[0].droups[0].depature?.pnr_no){
@@ -139,7 +138,7 @@ export async function FlightChangeAsperUserRequestMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
                 >
-                    <span style="color: #707070">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</span>
+                    <span  style="color: #000000">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;
@@ -351,11 +350,9 @@ export async function FlightChangeAsperUserRequestMail(
     //             </tr>
             content += `    <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        </br>
-                        </br>
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 10px 0 20px 0; text-align: left;">
                          If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #707070;">customerservice@laytrip.com</a>.
+                        style="color: #0C7BFF;">customerservice@laytrip.com</a>.
                     </td>
                 </tr>
             </tbody>
@@ -369,7 +366,7 @@ export async function FlightChangeAsperUserRequestMail(
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070;padding-top:27px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

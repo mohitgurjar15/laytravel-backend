@@ -794,94 +794,93 @@ export class CronJobsService {
                 "BookingInstalments"
             )
             .leftJoinAndSelect("BookingInstalments.currency", "currency")
-            .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("cartBooking.user", "User")
             .where(
                 `(DATE("BookingInstalments".instalment_date) = DATE('${toDate}') ) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
             )
             .getMany();
+
         for await (const cartBooking of cartBookings) {
             let amount: number = 0;
             let totalAmount = 0;
+            const instalment = cartBooking.bookings[0].bookingInstalments[0];
             for await (const booking of cartBooking.bookings) {
                 for await (const instalment of booking.bookingInstalments) {
                     totalAmount += parseFloat(instalment.amount);
                 }
-                const instalment = booking.bookingInstalments[0];
-                console.log(instalment);
-
-                const param = {
-                    userName: booking.user.firstName,
-                    amount:
-                        instalment.currency.symbol +
-                        `${Generic.formatPriceDecimal(totalAmount)}`,
-                    date: DateTime.convertDateFormat(
-                        new Date(instalment.instalmentDate),
-                        "YYYY-MM-DD",
-                        "MMM DD,YYYY"
-                    ),
-                    bookingId: cartBooking.laytripCartId,
-                    phoneNo:
-                        `+${booking.user.countryCode}` + booking.user.phoneNo,
-                };
-
-                if (booking.user.isSMS) {
-                    let dateWithMonthName = DateTime.getDateWithMonthName(
-                        param.date
-                    );
-                    TwilioSMS.sendSMS({
-                        toSMS: param.phoneNo,
-                        message: `Just a friendly reminder that your installment amount of ${param.amount} will be collected on ${dateWithMonthName} for booking number ${param.bookingId}. Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`,
-                    });
-                }
-
-                if (booking.user.isEmail) {
-                    this.mailerService
-                        .sendMail({
-                            to: booking.user.email,
-                            from: mailConfig.from,
-                            bcc: mailConfig.BCC,
-                            subject: `Booking ID ${param.bookingId} Upcoming Payment Reminder`,
-                            html: LaytripPaymentReminderTemplete(param),
-                        })
-                        .then((res) => {
-                            console.log("res", res);
-                        })
-                        .catch((err) => {
-                            console.log("err", err);
-                        });
-                }
-
-                PushNotification.sendNotificationTouser(
-                    booking.user.userId,
-                    {
-                        //you can send only notification or only data(or include both)
-                        module_name: "payment",
-                        task: "payment_reminder",
-                        bookingId: cartBooking.laytripCartId,
-                        instalmentId: instalment.id,
-                    },
-                    {
-                        title: "Payment Reminder",
-                        body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`,
-                    },
-                    cronUserId
-                );
-                WebNotification.sendNotificationTouser(
-                    booking.user.userId,
-                    {
-                        //you can send only notification or only data(or include both)
-                        module_name: "payment",
-                        task: "payment_reminder",
-                        bookingId: cartBooking.laytripCartId,
-                        instalmentId: instalment.id,
-                    },
-                    {
-                        title: "Payment Reminder",
-                        body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`,
-                    },
-                    cronUserId
-                );
             }
+            const param = {
+                userName: cartBooking.user.firstName,
+                amount:
+                    instalment.currency.symbol +
+                    `${Generic.formatPriceDecimal(totalAmount)}`,
+                date: DateTime.convertDateFormat(
+                    new Date(instalment.instalmentDate),
+                    "YYYY-MM-DD",
+                    "MMMM DD,YYYY"
+                ),
+                bookingId: cartBooking.laytripCartId,
+                phoneNo:
+                    `+${cartBooking.user.countryCode}` +
+                    cartBooking.user.phoneNo,
+            };
+
+            if (cartBooking.user.isSMS) {
+                let dateWithMonthName = DateTime.getDateWithMonthName(
+                    param.date
+                );
+                TwilioSMS.sendSMS({
+                    toSMS: param.phoneNo,
+                    message: `Just a friendly reminder that your installment amount of ${param.amount} will be collected on ${dateWithMonthName} for booking number ${param.bookingId}. Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`,
+                });
+            }
+            if (cartBooking.user.isEmail) {
+                this.mailerService
+                    .sendMail({
+                        to: cartBooking.user.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Booking ID ${param.bookingId} Upcoming Payment Reminder`,
+                        html: LaytripPaymentReminderTemplete(param),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
+            }
+
+            PushNotification.sendNotificationTouser(
+                cartBooking.user.userId,
+                {
+                    //you can send only notification or only data(or include both)
+                    module_name: "payment",
+                    task: "payment_reminder",
+                    bookingId: cartBooking.laytripCartId,
+                    instalmentId: instalment.id,
+                },
+                {
+                    title: "Payment Reminder",
+                    body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`,
+                },
+                cronUserId
+            );
+            WebNotification.sendNotificationTouser(
+                cartBooking.user.userId,
+                {
+                    //you can send only notification or only data(or include both)
+                    module_name: "payment",
+                    task: "payment_reminder",
+                    bookingId: cartBooking.laytripCartId,
+                    instalmentId: instalment.id,
+                },
+                {
+                    title: "Payment Reminder",
+                    body: `Just a friendly reminder that your instalment amount of ${param.amount} will be collected on ${param.date} Please ensure you have sufficient funds on your account and all the banking information is up-to-date.`,
+                },
+                cronUserId
+            );
         }
 
         return { message: `Payment reminder send successfully` };
@@ -1426,7 +1425,7 @@ export class CronJobsService {
             )
             .getMany();
         console.log(bookings);
-        
+
         if (!bookings.length) {
             return {
                 message: `Upcommig booking not found`,
@@ -1456,8 +1455,7 @@ export class CronJobsService {
         };
     }
 
-    async getPaymentsOfBooking(cartBooking:CartBooking) {
-        
+    async getPaymentsOfBooking(cartBooking: CartBooking) {
         let amount: number = 0;
 
         for await (const booking of cartBooking.bookings) {
@@ -1502,7 +1500,8 @@ export class CronJobsService {
                         transaction.status == true
                             ? PaymentStatus.CONFIRM
                             : PaymentStatus.PENDING;
-                    instalment.paymentCaptureDate = transaction.status == true ? new Date() : null
+                    instalment.paymentCaptureDate =
+                        transaction.status == true ? new Date() : null;
                     instalment.comment = `try to get Payment by cron on ${new Date()}`;
                     await instalment.save();
                 }
@@ -1571,7 +1570,7 @@ export class CronJobsService {
                         cartBooking.bookings[0].bookingInstalments[0]
                             .instalmentDate,
                         "YYYY-MM-DD",
-                        "MMMM DD, yyyy"
+                        "MMMM DD, YYYY"
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
@@ -1772,7 +1771,7 @@ export class CronJobsService {
                     date: DateTime.convertDateFormat(
                         new Date(),
                         "YYYY-MM-DD",
-                        "MMMM DD, yyyy"
+                        "MMMM DD, YYYY"
                     ),
                     userName: cartBooking.user.firstName,
                     cardHolderName:
@@ -1800,7 +1799,7 @@ export class CronJobsService {
                     nextDate: DateTime.convertDateFormat(
                         new Date(nextDate),
                         "YYYY-MM-DD",
-                        "MMMM DD, yyyy"
+                        "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
                 };
@@ -1905,7 +1904,6 @@ export class CronJobsService {
             .replace(/\..+/, "")
             .split(" ")[0];
 
-        
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -1960,7 +1958,7 @@ export class CronJobsService {
         };
     }
 
-    async deleteLog(folderName){
+    async deleteLog(folderName) {
         const path = require("path");
         const fs = require("fs");
         const directoryPath = path.join("/var/www/html/logs/" + folderName);
@@ -1976,7 +1974,7 @@ export class CronJobsService {
                 const fileName =
                     "/var/www/html/logs/" + folderName + "/" + file;
 
-                fs.unlinkSync(fileName)
+                fs.unlinkSync(fileName);
             });
         });
 
