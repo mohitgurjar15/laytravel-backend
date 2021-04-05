@@ -118,7 +118,7 @@ export class flightDataUtility {
                 date: DateTime.convertDateFormat(
                     d,
                     "MM/DD/YYYY",
-                    "MMM DD, YYYY"
+                    "MMMM DD, YYYY"
                 ),
                 status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
             };
@@ -271,7 +271,7 @@ export class flightDataUtility {
                 date: DateTime.convertDateFormat(
                     d,
                     "MM/DD/YYYY",
-                    "MMM DD, YYYY"
+                    "MMMM DD, YYYY"
                 ),
                 status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
             };

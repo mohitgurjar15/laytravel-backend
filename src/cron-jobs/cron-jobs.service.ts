@@ -817,7 +817,7 @@ export class CronJobsService {
                 date: DateTime.convertDateFormat(
                     new Date(instalment.instalmentDate),
                     "YYYY-MM-DD",
-                    "MMM DD,YYYY"
+                    "MMMM DD,YYYY"
                 ),
                 bookingId: cartBooking.laytripCartId,
                 phoneNo:
@@ -1440,7 +1440,7 @@ export class CronJobsService {
                     to: mail.userMail,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For Your Upcoming Trip`,
+                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For your Upcoming Trip`,
                     html: await LaytripFlightReminderMail(mail.param),
                 })
                 .then((res) => {
@@ -1570,7 +1570,7 @@ export class CronJobsService {
                         cartBooking.bookings[0].bookingInstalments[0]
                             .instalmentDate,
                         "YYYY-MM-DD",
-                        "MMM DD, YYYY"
+                        "MMMM DD, YYYY"
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
@@ -1579,7 +1579,7 @@ export class CronJobsService {
                     param.nextDate = DateTime.convertDateFormat(
                         nextInstalmentDate,
                         "YYYY-MM-DD",
-                        "MMM DD, YYYY"
+                        "MMMM DD, YYYY"
                     );
                 }
 
@@ -1646,7 +1646,7 @@ export class CronJobsService {
                                 to: cartBooking.user.email,
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
-                                subject: `Booking ID ${param.bookingId} Notice Of Default And Cancellation`,
+                                subject: `Booking ID ${param.bookingId} Notice Of Default and Cancellation`,
                                 html: await LaytripPaymentFailedTemplete(param),
                             })
                             .then((res) => {
@@ -1771,7 +1771,7 @@ export class CronJobsService {
                     date: DateTime.convertDateFormat(
                         new Date(),
                         "YYYY-MM-DD",
-                        "MMM Do, YYYY"
+                        "MMMM DD, YYYY"
                     ),
                     userName: cartBooking.user.firstName,
                     cardHolderName:
@@ -1799,7 +1799,7 @@ export class CronJobsService {
                     nextDate: DateTime.convertDateFormat(
                         new Date(nextDate),
                         "YYYY-MM-DD",
-                        "MMM Do, YYYY"
+                        "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
                 };

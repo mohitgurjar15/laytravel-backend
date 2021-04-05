@@ -245,7 +245,7 @@ export class BookingService {
                 date: DateTime.convertDateFormat(
                     d,
                     "MM/DD/YYYY",
-                    "MMM DD, YYYY"
+                    "MMMM DD, YYYY"
                 ),
                 status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
             };
@@ -2263,7 +2263,7 @@ export class BookingService {
                     to: query.user.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `Booking ID ${booking_id} Custom Cancellation`,
+                    subject: `Booking ID ${booking_id} Customer Cancellation`,
                     html: await LaytripBookingCancellationCustomerMail({
                         username: query.user.firstName || "",
                         bookingId: booking_id,

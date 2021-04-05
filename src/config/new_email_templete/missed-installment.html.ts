@@ -12,7 +12,7 @@ export function LaytripMissedPaymentTemplete(param: {
   nextDate: string;
 }) {
   let content = `<tr>
-    <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
+    <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
@@ -41,10 +41,12 @@ export function LaytripMissedPaymentTemplete(param: {
   if (param.try < 4) {
     content += `<tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">${
-                      param.try == 2 ? "We understand things happen so." : ""
-                    } We will automatically attempt to process it again on ${
-      param.nextDate
-    }.</td>
+                        param.try == 2
+                            ? "we understand things happen so We will automatically attempt to process it again on " +
+                              param.nextDate
+                            : "We will automatically make a final attempt to process it again on " +
+                              param.nextDate
+                    }.</td>
                 </tr>`;
   }
 
@@ -52,8 +54,8 @@ export function LaytripMissedPaymentTemplete(param: {
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">
                         If you believe this happened in error please contact us at <a href = 'mailto:customerservice@laytrip.com'
-                    style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>. We will make every effort to avoid booking cancellation without refund per our 
-                    <a href="${TermsConditonLink}" style="color: #0c7bff;"><u>Terms</u></a> which occurs after multiple missed payments and the delivery of 
+                    style="color: #0C7BFF;">customerservice@laytrip.com</a>. We will make every effort to avoid booking cancellation without refund per our 
+                    <a href="${TermsConditonLink}" style="color: #0C7BFF;">Terms</a> which occurs after multiple missed payments and the delivery of 
                     a default and cancellation notice.
                     </td>               
                 </tr>
@@ -69,7 +71,7 @@ export function LaytripMissedPaymentTemplete(param: {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

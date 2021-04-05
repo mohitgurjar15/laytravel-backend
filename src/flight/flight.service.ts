@@ -2446,7 +2446,7 @@ export class FlightService {
                 date: DateTime.convertDateFormat(
                     d,
                     "MM/DD/YYYY",
-                    "MMM DD, YYYY"
+                    "MMMM DD, YYYY"
                 ),
                 status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
             };
@@ -3434,7 +3434,7 @@ export class FlightService {
                         subject:
                             isNewBooking == 1
                                 ? mailData.sub
-                                : `Booking ID ${mailData.param.cart.cartId} Change By Travel Provider`,
+                                : `Booking ID ${mailData.param.cart.cartId} Change by Travel Provider`,
                         html:
                             isNewBooking == 1
                                 ? await FlightBookingConfirmtionMail(

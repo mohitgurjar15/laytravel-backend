@@ -5,7 +5,7 @@ import { BaseUrl, FrontEndUrl } from "../base-url";
 export function BookingNotCompletedMail(param: { userName: string }) {
   const content = `
                                 <tr>
-                                    <td align="left" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
+                                    <td align="left" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="left" style="width: 100%">
                                             <tbody>
                                                 <tr>
@@ -14,8 +14,8 @@ export function BookingNotCompletedMail(param: { userName: string }) {
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                                                         Unfortunately we were unable to process your booking. You will not be charged for this attempt. Please return to <a href = '${FrontEndUrl}'
-                                                        style="color: #0c7bff;"><u>Laytrip.com</u></a> and try again or if you have questions, contact us at <a href = 'mailto:customerservice@laytrip.com'
-                                                        style="color: #0c7bff;"><u>customerservice@laytrip.com</u></a>.
+                                                        style="color: #0C7BFF;">Laytrip.com</a> and try again or if you have questions, contact us at <a href = 'mailto:customerservice@laytrip.com'
+                                                        style="color: #0C7BFF;">customerservice@laytrip.com</a>.
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -30,7 +30,7 @@ export function BookingNotCompletedMail(param: { userName: string }) {
                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

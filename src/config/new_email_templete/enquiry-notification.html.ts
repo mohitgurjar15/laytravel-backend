@@ -13,7 +13,7 @@ const content = `
         <td align="center" valign="top">
             <table align="center" style="width:600px; max-width:600px; table-layout:fixed;" class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                    <td align="center" valine="top" style="background-color: #ffffff;">
+                    <td align="center" valine="top" style="background-color: #707070;">
                         <table width="600" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 600px;" class="oc_wrapper">
                             <tbody>
                                 <tr>
@@ -25,15 +25,15 @@ const content = `
                                                 </tr>
 
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;">
-                                                        <span style="text-decoration: none; color: #000;">${param.name}</span> is add new enquiry
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: center;">
+                                                        <span style="text-decoration: none; color: #707070;">${param.name}</span> is add new enquiry
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;"><b>Enquiry ID: </b>${param.id}</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: center;"><b>Enquiry ID: </b>${param.id}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #000;padding-top: 15px; text-align: center;"><b>Message: </b>${param.message}</td>
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: center;"><b>Message: </b>${param.message}</td>
                                                 </tr>
 
                                                 
