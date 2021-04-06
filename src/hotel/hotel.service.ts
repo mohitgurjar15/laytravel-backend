@@ -708,7 +708,7 @@ export class HotelService {
                         ? availability[0].input_data.num_children
                         : 0;
                 bookingRequestInfo.infant_count = 0;
-                bookingRequestInfo.net_rate = availability[0].net_rate;
+                bookingRequestInfo.net_rate = availability[0].retail.sub_total || 0;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         availability[0].selling.sub_total;
@@ -1233,17 +1233,28 @@ export class HotelService {
         
         let booking = new Booking();
         booking.id = uuidv4();
-        console.log('moduleDetails',moduleDetails);
-        
+       
         booking.moduleId = moduleDetails?.id;
-        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.bookingType = bookingType;
-        booking.currency = currencyId;
+         console.log("moduleDetails", moduleDetails);
         
+        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+        console.log(1);
+        
+        booking.bookingType = bookingType;
+        console.log(2);
+        booking.currency = currencyId;
+        console.log(3);
         booking.totalAmount = selling_price?.toString();
+        console.log(4);
+        console.log(net_rate);
+        console.log(typeof net_rate);
         booking.netRate = net_rate.toString();
+        console.log(5);
         booking.markupAmount = (selling_price - net_rate).toString();
+        console.log(6);
         booking.bookingDate = bookingDate;
+        console.log("currencyDetails");
+        
         console.log("currencyDetails", currencyDetails);
         booking.usdFactor = currencyDetails?.liveRate.toString();
         booking.layCredit = laycredit_points || 0;
@@ -1375,18 +1386,18 @@ export class HotelService {
                     .execute();
 
             }
-            const predictiveBooking = new PredictiveBookingData();
-            predictiveBooking.bookingId = booking.id;
-            predictiveBooking.date = new Date();
-            predictiveBooking.netPrice = parseFloat(booking.netRate);
-            predictiveBooking.isBelowMinimum =
-                booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat;
-            predictiveBooking.price = parseFloat(booking.totalAmount);
-            predictiveBooking.remainSeat =
-                booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
-            console.log('save prictive data',4);
-            await predictiveBooking.save();
-            console.log("get booking");
+            // const predictiveBooking = new PredictiveBookingData();
+            // predictiveBooking.bookingId = booking.id;
+            // predictiveBooking.date = new Date();
+            // predictiveBooking.netPrice = parseFloat(booking.netRate);
+            // predictiveBooking.isBelowMinimum =
+            //     booking.moduleInfo[0].routes[0].stops[0].below_minimum_seat;
+            // predictiveBooking.price = parseFloat(booking.totalAmount);
+            // predictiveBooking.remainSeat =
+            //     booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
+            // console.log('save prictive data',4);
+            // await predictiveBooking.save();
+            // console.log("get booking");
             return await this.bookingRepository.getBookingDetails(
                 booking.laytripBookingId
             );
