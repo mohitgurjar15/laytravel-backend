@@ -274,7 +274,7 @@ more than 5.`
                         .where("cart_id =:id", {
                             id: cart.id,
                         })
-                        .orderBy(`id`, "DESC")
+                        .orderBy(`id`, 'ASC')
                         .getOne();
 
                     if (cartTraveler && cartTraveler.userId != user.userId) {
