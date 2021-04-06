@@ -1632,7 +1632,7 @@ more than 5.`
                     custom_instalment_no: 0,
                     card_token,
                     booking_through,
-                    bundle: "",
+                    bundle: value[0].bundle,
                 };
 
                 console.log("cartBook request");
@@ -1669,6 +1669,8 @@ more than 5.`
         }
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
+            
+            
             await getConnection()
                 .createQueryBuilder()
                 .delete()
@@ -1682,6 +1684,7 @@ more than 5.`
                 .where(`"id" = '${cart.id}'`)
                 .execute();
         } else {
+            console.log('failed booking');
             await this.saveFailedBooking(
                 cartData.id,
                 cart.moduleInfo,
