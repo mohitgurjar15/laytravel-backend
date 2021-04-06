@@ -74,7 +74,7 @@ export class HotelService{
         let token = uuidv4();
 
         searchReqDto['token'] = token;
-        searchReqDto['total'] = hotels.count();
+        searchReqDto['total'] = hotels.length;
 
         let toCache = {
             details: searchReqDto,
@@ -89,7 +89,7 @@ export class HotelService{
 
         }
         
-        await this.cacheManager.set(token, toCache, { ttl: this.ttl });
+        //await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
