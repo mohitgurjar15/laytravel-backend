@@ -74,7 +74,7 @@ export class FlightRouteController {
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
-    @ApiOperation({ summary: "Add new flight route" })
+    @ApiOperation({ summary: "update flight route" })
     @ApiResponse({ status: 200, description: "Api success" })
     @ApiResponse({
         status: 422,
@@ -98,7 +98,7 @@ export class FlightRouteController {
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
-    @ApiOperation({ summary: "Add new flight route" })
+    @ApiOperation({ summary: "Flight route active-inactive" })
     @ApiResponse({ status: 200, description: "Api success" })
     @ApiResponse({
         status: 422,
@@ -122,7 +122,7 @@ export class FlightRouteController {
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
-    @ApiOperation({ summary: "Add new flight route" })
+    @ApiOperation({ summary: "Delrtr flight route" })
     @ApiResponse({ status: 200, description: "Api success" })
     @ApiResponse({
         status: 422,
@@ -130,64 +130,76 @@ export class FlightRouteController {
     })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    async deleteRoute(
-       @GetUser() user: User,
-        @Param("id") id: number
+    async deleteRoute(@GetUser() user: User, @Param("id") id: number) {
+        return await this.flightRouteService.deleteFlightRoute(id, user);
+    }
+
+    @Post("report/import")
+    @ApiConsumes("multipart/form-data")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiOperation({ summary: "import flight route" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "User not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @UseInterceptors(
+        FileFieldsInterceptor([{ name: "file", maxCount: 1 }], {
+            storage: diskStorage({
+                destination: "./assets/otherfiles",
+                filename: editFileName,
+            }),
+            fileFilter: csvFileFilter,
+        })
+    )
+    @HttpCode(200)
+    async importRoute(
+        @Body() importUserDto: ImportRouteDto,
+        @UploadedFiles() files: csvFileDto,
+        @Req() req,
+        @GetUser() user: User,
+        @SiteUrl() siteUrl: string
     ) {
-        return await this.flightRouteService.deleteFlightRoute(
-            id,
-            user
+        if (req.fileValidationError) {
+            throw new BadRequestException(`${req.fileValidationError}`);
+        }
+        if (typeof files.file[0] == "undefined") {
+            throw new NotFoundException(`file is not available&&&file`);
+        }
+        const userId = user.userId;
+        const file = files.file;
+
+        return await this.flightRouteService.importFlightRoute(
+            importUserDto,
+            file,
+            userId,
+            siteUrl
         );
     }
 
-
-    @Post("report/import")
-	@ApiConsumes("multipart/form-data")
-	@ApiBearerAuth()
-	@UseGuards(AuthGuard(), RolesGuard)
-	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
-	@ApiOperation({ summary: "import flight route" })
-	@ApiResponse({ status: 200, description: "Api success" })
-	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
-	@ApiResponse({
-		status: 403,
-		description: "You are not allowed to access this resource.",
-	})
-	@ApiResponse({ status: 404, description: "User not found!" })
-	@ApiResponse({ status: 500, description: "Internal server error!" })
-	@UseInterceptors(
-		FileFieldsInterceptor(
-			[
-				{ name: "file", maxCount: 1 }
-			],
-			{
-				storage: diskStorage({
-					destination: "./assets/otherfiles",
-					filename: editFileName,
-				}),
-				fileFilter: csvFileFilter
-			},
-		),
-	)
-	@HttpCode(200)
-	async importRoute(
-		@Body() importUserDto: ImportRouteDto,
-		@UploadedFiles() files: csvFileDto,
-		@Req() req,
-		@GetUser() user: User,
-		@SiteUrl() siteUrl: string,
-	) {
-		if (req.fileValidationError) {
-			throw new BadRequestException(`${req.fileValidationError}`);
-		}
-		if (typeof files.file[0] == "undefined") {
-			throw new NotFoundException(`file is not available&&&file`);
-		}
-		const userId = user.userId;
-		const file = files.file;
-
-		return await this.flightRouteService.importFlightRoute(importUserDto, file, userId, siteUrl)
-	}
+    @Get("detail/:id")
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "Flight route detail" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async flightRoute(@Param('id') id : number ) {
+        return await this.flightRouteService.getFlightRoute(id);
+    }
 }
 
 
