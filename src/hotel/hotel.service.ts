@@ -1233,15 +1233,19 @@ export class HotelService {
         
         let booking = new Booking();
         booking.id = uuidv4();
-        booking.moduleId = moduleDetails.id;
+        console.log('moduleDetails',moduleDetails);
+        
+        booking.moduleId = moduleDetails?.id;
         booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
         booking.bookingType = bookingType;
         booking.currency = currencyId;
-        booking.totalAmount = selling_price.toString();
+        
+        booking.totalAmount = selling_price?.toString();
         booking.netRate = net_rate.toString();
         booking.markupAmount = (selling_price - net_rate).toString();
         booking.bookingDate = bookingDate;
-        booking.usdFactor = currencyDetails.liveRate.toString();
+        console.log("currencyDetails", currencyDetails);
+        booking.usdFactor = currencyDetails?.liveRate.toString();
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
