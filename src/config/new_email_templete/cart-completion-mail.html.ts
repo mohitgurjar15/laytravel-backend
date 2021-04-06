@@ -120,7 +120,9 @@ export async function LaytripCartBookingComplationMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                         >
-                            <span  style="color: #707070">${droup.flight}:</span> 
+                            <span  style="color: #707070">${
+                                droup.flight
+                            }:</span> 
                             Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
@@ -288,6 +290,48 @@ export async function LaytripCartBookingComplationMail(
               //   content += `</table>
               //                 </td>
               //             </tr><tr><td>   <br/></td></tr>`;
+          } else if (booking.moduleId == ModulesName.HOTEL) {
+              content += `<tr>
+                    <td
+                        align="left"
+                        valign="top"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
+                    >
+                        <span style="color: #000000">
+                        Traveler:</span><span style="font-size: 18px">${traveleName}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td
+                        align="left"
+                        valign="top"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
+                    >
+                        <span style="color: #000000">Email:</span><span style="font-size: 18px">${travelerEmail}</span>
+                    </td>
+                </tr><tr>
+                        <td
+                            align="left"
+                            valign="top"
+                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
+                        >
+                            <span style="color: #000000">Hotel:</span> ${
+                                booking.hotelData.hotelName
+                            }, Check-in ${booking.hotelData.checkIn}, ${
+                  booking.hotelData.room
+              } Room 
+                            ${
+                                booking.hotelData.adult
+                                    ? ", " + booking.hotelData.adult + " Adult"
+                                    : ""
+                            }
+                            ${
+                                booking.hotelData.child
+                                    ? ", " + booking.hotelData.child + " Child"
+                                    : ""
+                            }
+                            </td>
+                    </tr>`;
           }
       }
       content += `<tr>

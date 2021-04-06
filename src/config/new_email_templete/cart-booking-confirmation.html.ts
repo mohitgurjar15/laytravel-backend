@@ -128,31 +128,7 @@ export async function LaytripCartBookingConfirmtionMail(
                             ${booking.hotelData.adult ? ", "+ booking.hotelData.adult + " Adult" : ""}
                             ${booking.hotelData.child ? ", "+ booking.hotelData.child + " Child" : ""}
                             </td>
-                    </tr>`;
-            for await (const flight of booking.flighData) {
-                for await (const droup of flight.droups) {
-                    content += `<tr>
-                        <td
-                            align="left"
-                            valign="top"
-                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                        >
-                            <span style="color: #000000">${
-                                droup.flight
-                            }:</span>Depart ${
-                        droup.depature.code
-                    } ${DateTime.convertDateFormat(
-                        droup.depature.date,
-                        "MM/DD/YYYY",
-                        "MMMM DD, YYYY"
-                    )} ${droup.depature.time.replace(/\s/g, "")},
-                            Arrive ${
-                                droup.arrival.code
-                            } ${droup.arrival.time.replace(/\s/g, "")}
-                        </td>
-                    </tr>`;
-                }
-            }
+                    </tr>`
         }
     }
     content += `<tr>
