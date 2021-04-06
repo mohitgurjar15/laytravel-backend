@@ -19,7 +19,13 @@ import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
 @Injectable()
 export class FlightRouteService {
     async listFlightRoutes(listFlightRouteDto: ListFlightRouteDto) {
-        const { limit, page_no, search, status } = listFlightRouteDto;
+        const {
+            limit,
+            page_no,
+            search,
+            status,
+            category_id,
+        } = listFlightRouteDto;
         let where = `("route"."is_deleted" = false)`;
 
         const take = limit || 10;
@@ -39,12 +45,17 @@ export class FlightRouteService {
         if (status) {
             where += `AND ("route"."status" = ${status} )`;
         }
+        if (category_id) {
+            where += `AND ("route"."category_id" = ${category_id} )`;
+        }
+
         let [result, count] = await getConnection()
             .createQueryBuilder(FlightRoute, "route")
             .leftJoinAndSelect("route.category", "category")
             .where(where)
             .skip(skip)
             .take(take)
+            .orderBy(`route.id`, "DESC")
             .getManyAndCount();
 
         if (!result) {
@@ -112,7 +123,7 @@ export class FlightRouteService {
         let dublicateRoutes = [];
 
         let parentRoute: FlightRoute;
-        if (parentFromCode && parentToCode && parentToCode != parentToCode) {
+        if (parentFromCode && parentToCode && parentToCode != parentFromCode) {
             let where = ` "route"."is_deleted" = false AND
             "route"."to_airport_code" = '${parentToCode}' AND
             "route"."from_airport_code" = '${parentFromCode}'`;
@@ -199,9 +210,9 @@ export class FlightRouteService {
         Activity.logActivity(
             user.userId,
             "flight-route",
-            `Your routes added in ${category.name} category`
+            `Flight routes added in ${category.name} category`
         );
-        
+
         return {
             message: `Your routes added in ${category.name} category`,
             dublicateRoutes,
@@ -318,7 +329,7 @@ export class FlightRouteService {
         const array = await csv().fromFile("./" + file[0].path);
 
         let errors = [];
-        let dublicateRoutes = []
+        let dublicateRoutes = [];
 
         for (let index = 0; index < array.length; index++) {
             var row = array[index];
@@ -329,73 +340,90 @@ export class FlightRouteService {
                     typeof airports[row.to_airport_code] != "undefined" &&
                     typeof categoryId == "number"
                 ) {
+                    var error_message = {};
                     const category = await getConnection()
                         .createQueryBuilder(LaytripCategory, "category")
                         .where(`"id" =:id `, { id: row.category_id })
                         .getOne();
 
                     if (!category) {
-                        errors.push(
-                            `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}`
-                        );
-                    }
+                        error_message[
+                            "category_id"
+                        ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
 
-                    let where = ` "route"."is_deleted" = false AND
+                        errors.push(error_message);
+                    } else {
+                        let where = ` "route"."is_deleted" = false AND
                         "route"."to_airport_code" = '${row.to_airport_code}' AND
                         "route"."from_airport_code" = '${row.from_airport_code}'`;
 
-                    const dublicate = await getConnection()
-                        .createQueryBuilder(FlightRoute, "route")
-                        .where(where)
-                        .getOne();
-                    if (dublicate) {
-                        let r = {
-                            fromCode: row.from_airport_code,
-                            ToCode: row.to_airport_code,
-                        };
-                        dublicateRoutes.push(r);
-                        //throw new ConflictException("Given route already added.");
-                    } else {
-                        const fromAirport = airports[row.from_airport_code];
-                        const toAirport = airports[row.to_airport_code];
-                        const route = new FlightRoute();
-                        route.categoryId = category.id;
-                        route.createBy = userId;
-                        route.parentRoute = null;
-                        route.fromAirportCity = fromAirport.city;
-                        route.fromAirportCode = fromAirport.code;
-                        route.fromAirportCountry = fromAirport.country;
-                        route.fromAirportName = fromAirport.name;
-                        route.toAirportCity = toAirport.city;
-                        route.toAirportCode = toAirport.code;
-                        route.toAirportCountry = toAirport.country;
-                        route.toAirportName = toAirport.name;
-                        route.status = true;
-                        route.createDate = new Date();
-                        route.isDeleted = false;
-                        await route.save();
-                        count++;
+                        const dublicate = await getConnection()
+                            .createQueryBuilder(FlightRoute, "route")
+                            .where(where)
+                            .getOne();
+                        if (dublicate) {
+                            let r = {
+                                fromCode: row.from_airport_code,
+                                ToCode: row.to_airport_code,
+                            };
+                            dublicateRoutes.push(r);
+                            //throw new ConflictException("Given route already added.");
+                        } else {
+                            const fromAirport = airports[row.from_airport_code];
+                            const toAirport = airports[row.to_airport_code];
+                            const route = new FlightRoute();
+                            route.categoryId = category.id;
+                            route.createBy = userId;
+                            route.parentRoute = null;
+                            route.fromAirportCity = fromAirport.city;
+                            route.fromAirportCode = fromAirport.code;
+                            route.fromAirportCountry = fromAirport.country;
+                            route.fromAirportName = fromAirport.name;
+                            route.toAirportCity = toAirport.city;
+                            route.toAirportCode = toAirport.code;
+                            route.toAirportCountry = toAirport.country;
+                            route.toAirportName = toAirport.name;
+                            route.status = true;
+                            route.createDate = new Date();
+                            route.isDeleted = false;
+                            await route.save();
+                            count++;
+                        }
                     }
                 } else {
-                    var error_message = "";
+                    var error_message = {};
                     if (typeof airports[row.from_airport_code] == "undefined") {
-                        error_message += `From Airport code ${row.from_airport_code} not found.||`;
+                        error_message[
+                            "from_airport_code"
+                        ] = `From Airport code ${row.from_airport_code} not found.`;
                     }
                     if (typeof airports[row.to_airport_code] == "undefined") {
-                        error_message += `To Airport code ${row.from_airport_code} not found.||`;
+                        error_message[
+                            "to_airport_code"
+                        ] = `To Airport code ${row.from_airport_code} not found.`;
                     }
-                    if (typeof row.category_id != "number") {
-                        error_message += `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.||`;
+                    if (!parseInt(row.category_id)) {
+                        error_message[
+                            "category_id"
+                        ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                     }
                     errors.push(error_message);
                 }
             }
         }
-        Activity.logActivity(
-            userId,
-            "flight-route",
-            `Import flight route`
-        );
+        Activity.logActivity(userId, "flight-route", `Import flight route`);
         return { importCount: count, unsuccessRecord: errors, dublicateRoutes };
+    }
+
+    async getFlightRoute(id) {
+        const route = await getConnection()
+            .createQueryBuilder(FlightRoute, "route")
+            .leftJoinAndSelect("route.category", "category")
+            .where(`"route"."id" = ${id} AND "route"."is_deleted" = false`)
+            .getOne();
+        if (!route) {
+            throw new ConflictException("Given route not found.");
+        }
+        return route;
     }
 }
