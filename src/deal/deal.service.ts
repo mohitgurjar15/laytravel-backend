@@ -79,15 +79,6 @@ export class DealService {
                 }else{
                     title = loc?.title
                 }
-                if(!loc?.city){
-                    throw new BadRequestException(`Enter city`)
-                }
-                if(!loc?.state){
-                    throw new BadRequestException(`Enter state`)
-                }
-                if(!loc?.type){
-                    throw new BadRequestException(`Enter type`)
-                }
                 if(!loc?.lat){
                     throw new BadRequestException(`Enter lat`)
                 }
@@ -118,7 +109,7 @@ export class DealService {
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
-                    case 422:
+                    case 402:
                         throw new BadRequestException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(
@@ -195,17 +186,7 @@ export class DealService {
                     } else {
                         title = loc?.title;
                     }
-                
-                    if (!loc?.city) {
-                        throw new BadRequestException(`Enter city`);
-                    }
-                    if (!loc?.state) {
-                        throw new BadRequestException(`Enter state`);
-                    }
-                    if (!loc?.type) {
-                        throw new BadRequestException(`Enter type`);
-                    }
-                    if (!loc?.lat) {
+                   if (!loc?.lat) {
                         throw new BadRequestException(`Enter lat`);
                     }
                     if (!loc?.long) {
@@ -232,7 +213,7 @@ export class DealService {
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
-                    case 422:
+                    case 402:
                         throw new BadRequestException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(
