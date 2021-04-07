@@ -13,7 +13,7 @@ export function LaytripBookingCancellationCustomerMail(param: {
             <tbody>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color:#000000; text-align: left;">Hi ${param.username},</td>
-                </tr><br>
+                </tr>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                     Booking ID ${param.bookingId} Cancellation Confirmation!  
