@@ -511,11 +511,11 @@ export class DealService {
                 if (row.module.id == ModulesName.FLIGHT) {
                     deal = airports[row.location];
                 }
-                deal.image = siteUrl + "/static/" + row.image;
                 if (row.module.id == ModulesName.HOTEL) {
                     deal = row.hotelLocation;
                     deal = JSON.parse(deal);
                 }
+                deal.image = siteUrl + "/static/" + row.image;
                 deals.push(deal);
             }
 
