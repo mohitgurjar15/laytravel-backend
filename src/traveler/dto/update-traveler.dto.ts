@@ -35,7 +35,6 @@ export class UpdateTravelerDto {
            })
            module_id?: number;
 
-<<<<<<< HEAD
            @ApiPropertyOptional({
                description: `is primary traveler`,
                example: true,
@@ -44,9 +43,9 @@ export class UpdateTravelerDto {
            @IsNotEmpty({
                message: `Please enter travelers first name.&&&first_name`,
            })
-           @NotContains(" ", {
-               message: `First name does not contain whitespace `,
-           })
+        //    @NotContains(" ", {
+        //        message: `First name does not contain whitespace `,
+        //    })
            @ApiProperty({
                description: `Enter First Name`,
                example: `Jon`,
@@ -56,9 +55,9 @@ export class UpdateTravelerDto {
            @IsNotEmpty({
                message: `Please enter travelers last name.&&&last_name`,
            })
-           @NotContains(" ", {
-               message: `Last name does not contain whitespace `,
-           })
+        //    @NotContains(" ", {
+        //        message: `Last name does not contain whitespace `,
+        //    })
            @ApiProperty({
                description: `Enter Last Name`,
                example: `Doe`,
@@ -98,27 +97,6 @@ export class UpdateTravelerDto {
                example: `M`,
            })
            gender: Gender;
-=======
-  @IsNotEmpty({
-    message: `Please enter travelers first name.&&&first_name`,
-  })
-  //@NotContains(" ", { message: `First name does not contain whitespace ` })
-  @ApiProperty({
-    description: `Enter First Name`,
-    example: `Jon`,
-  })
-  first_name: string;
-
-  @IsNotEmpty({
-    message: `Please enter travelers last name.&&&last_name`,
-  })
-  //@NotContains(" ", { message: `Last name does not contain whitespace ` })
-  @ApiProperty({
-    description: `Enter Last Name`,
-    example: `Doe`,
-  })
-  last_name: string;
->>>>>>> d151f16ad6acf5aee93934965dcb5fe78526bb61
 
            @ValidateIf(
                (o) =>
