@@ -20,7 +20,7 @@ const content = `
     </td>
 </tr>
 <tr>
-<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
+<td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>

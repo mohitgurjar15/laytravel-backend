@@ -83,7 +83,7 @@ export async function LaytripCartBookingComplationMail(
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px;  text-align: left;"
                     >
                         <span  style="color: #000000">
-                        Traveler:
+                        Traveler: 
                         </span> 
                         <span style="font-size: 18px" >
                         ${traveleName}
@@ -97,7 +97,7 @@ export async function LaytripCartBookingComplationMail(
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                     >
                         <span  style="color: #000000">
-                        Email:
+                        Email: 
                         </span> 
                         <span style="font-size: 18px" >
                         ${travelerEmail}
@@ -120,7 +120,7 @@ export async function LaytripCartBookingComplationMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                         >
-                            <span  style="color: #000000">${droup.flight}:</span> 
+                            <span  style="color: #000000">${droup.flight}: </span> 
                             Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
@@ -296,7 +296,7 @@ export async function LaytripCartBookingComplationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;  padding-top:5px; text-align: left;"
                 >
-                    <span  style="color: #000000">Total Price:</span>  <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span  style="color: #000000">Total Price: </span>  <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
@@ -305,7 +305,7 @@ export async function LaytripCartBookingComplationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Total Paid:</span>  <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                    <span  style="color: #000000">Total Paid: </span>  <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -314,7 +314,7 @@ export async function LaytripCartBookingComplationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Balance Due:</span>  <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                    <span  style="color: #000000">Balance Due: </span>  <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>
              `;
@@ -416,7 +416,7 @@ export async function LaytripCartBookingComplationMail(
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Contact us anytime us at <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #0C7BFF;">customerservice@laytrip.com</a>. We hope to work with you on your next booking and that you have a great trip!
+                        style="color: #0C7BFF;">customerservice@laytrip.com</a>. We hope you have a great trip!
                     </td>
                 </tr>
             </tbody>

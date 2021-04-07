@@ -36,7 +36,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 25px; color: #707070;padding:0 0 15px 0; text-align: left;">
                         We will send you your airline, hotel, car and home rental reservation number(s) once we have received your final installment payment. Until your final installment is received, our  
                         <a href="${TermsConditonLink}" style="color: #0C7BFF;">Terms</a> for changes and cancellations apply. 
-                        Here are your Booking details:
+                        Here are your Booking Details:
                 </tr>`;
     }
     
@@ -87,7 +87,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
                     >
                         <span style="color: #000000">
-                        Traveler:</span><span style="font-size: 18px">${traveleName}</span>
+                        Traveler: </span><span style="font-size: 18px">${traveleName}</span>
                     </td>
                 </tr>
                 <tr>
@@ -96,7 +96,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         valign="top"
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
                     >
-                        <span style="color: #000000">Email:</span><span style="font-size: 18px">${travelerEmail}</span>
+                        <span style="color: #000000">Email: </span><span style="font-size: 18px">${travelerEmail}</span>
                     </td>
                 </tr>`;
             for await (const flight of booking.flighData) {
@@ -120,7 +120,7 @@ export async function LaytripCartBookingConfirmtionMail(
                         >
                             <span style="color: #000000">${
                                 droup.flight
-                            }:</span>Depart ${
+                            }: </span>Depart ${
                          droup.depature.code
                      } ${DateTime.convertDateFormat(
                          droup.depature.date,
@@ -317,7 +317,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;  padding-top:5px; font-size: 18px text-align: left;"
                 >
-                    <span style="color: #000000">Total Price:</span><span style="font-size: 18px">${param.cart.totalAmount}</span>
+                    <span style="color: #000000">Total Price: </span><span style="font-size: 18px">${param.cart.totalAmount}</span>
                 </td>
             </tr>`;
 if (param.bookingType == BookingType.INSTALMENT){
@@ -328,7 +328,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
                 >
-                    <span style="color: #000000">Total Paid:</span><span style="font-size: 18px">${param.cart.totalPaid}</span>
+                    <span style="color: #000000">Total Paid: </span><span style="font-size: 18px">${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -337,7 +337,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
                 >
-                    <span style="color: #000000">Balance Due:</span>  <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                    <span style="color: #000000">Balance Due: </span>  <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
 }
@@ -423,7 +423,7 @@ if (param.bookingType == BookingType.INSTALMENT){
     }
     content += `
                 <tr>
-                    <td style="padding: 20px 0 0 0;">
+                    <td style="padding: 20px 0 10px 0;">
                         <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>

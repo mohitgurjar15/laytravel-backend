@@ -250,9 +250,7 @@ export class CartDataUtility {
           // }
           travelers.push({
             name:
-              traveler.travelerInfo.firstName +
-              " " +
-              traveler.travelerInfo.lastName,
+              traveler.travelerInfo.firstName,
             email: traveler.travelerInfo.email,
             type: traveler.travelerInfo.user_type,
           });
