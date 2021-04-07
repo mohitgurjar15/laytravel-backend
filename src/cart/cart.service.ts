@@ -1465,7 +1465,8 @@ more than 5.`
                         bookingType: paidIn,
                         currencyId: 1,
                         booking_through: "web",
-                    }
+                    },
+                    cart.moduleId
                 );
             } else {
                 for await (const traveler of cart.travelers) {
@@ -1517,7 +1518,8 @@ more than 5.`
                     bookingType: paidIn,
                     currencyId: 1,
                     booking_through: "web",
-                }
+                },
+                cart.moduleId
             );
             return newCart;
         }
@@ -1545,7 +1547,8 @@ more than 5.`
                     bookingType: paidIn,
                     currencyId: 1,
                     booking_through: "web",
-                }
+                },
+                cart.moduleId
             );
         }
         return newCart;
@@ -1610,7 +1613,8 @@ more than 5.`
                         bookingType: paidIn,
                         currencyId: 1,
                         booking_through: "web",
-                    }
+                    },
+                    cart.moduleId
                 );
             } else {
                 for await (const traveler of cart.travelers) {
@@ -1663,7 +1667,8 @@ more than 5.`
                     bookingType: paidIn,
                     currencyId: 1,
                     booking_through: "web",
-                }
+                },
+                cart.moduleId
             );
             return newCart;
         }
@@ -1694,7 +1699,8 @@ more than 5.`
                     bookingType: paidIn,
                     currencyId: 1,
                     booking_through: "web",
-                }
+                },
+                cart.moduleId
             );
         }
         return newCart;
@@ -1709,8 +1715,9 @@ more than 5.`
             bookingType: number;
             currencyId: number;
             booking_through: string;
-        }
+        },moduleId
     ) {
+        
         if (typeof errorLog == "object") {
             errorLog = JSON.stringify(errorLog);
         }
@@ -1721,54 +1728,57 @@ more than 5.`
             .replace(/\..+/, "")
             .split(" ")[0];
         const { bookingType, currencyId, booking_through } = other;
-        let booking = new Booking();
-        booking.id = uuidv4();
-        booking.moduleId = ModulesName.FLIGHT;
-        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.bookingType = bookingType;
-        booking.currency = currencyId;
-        booking.totalAmount = moduleInfo[0].selling_price;
-        booking.netRate = moduleInfo[0].net_rate;
-        booking.markupAmount = (
-            parseFloat(moduleInfo[0].selling_price) -
-            parseFloat(moduleInfo[0].net_rate)
-        ).toString();
-        booking.bookingDate = date1;
-        booking.usdFactor = "1";
-        booking.layCredit = "0";
-        booking.message = errorLog;
-        booking.bookingThrough = booking_through || "";
-        booking.cartId = cartId;
-        booking.locationInfo = {
-            journey_type:
-                moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
-            source_location: moduleInfo[0].departure_code,
-            destination_location: moduleInfo[0].arrival_code,
-        };
-        const [caegory] = await getConnection().query(`select 
+        if(moduleId == ModulesName.FLIGHT){
+            let booking = new Booking();
+            booking.id = uuidv4();
+            booking.moduleId = ModulesName.FLIGHT;
+            booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+            booking.bookingType = bookingType;
+            booking.currency = currencyId;
+            booking.totalAmount = moduleInfo[0].selling_price;
+            booking.netRate = moduleInfo[0].net_rate;
+            booking.markupAmount = (
+                parseFloat(moduleInfo[0].selling_price) -
+                parseFloat(moduleInfo[0].net_rate)
+            ).toString();
+            booking.bookingDate = date1;
+            booking.usdFactor = "1";
+            booking.layCredit = "0";
+            booking.message = errorLog;
+            booking.bookingThrough = booking_through || "";
+            booking.cartId = cartId;
+            booking.locationInfo = {
+                journey_type:
+                    moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
+                source_location: moduleInfo[0].departure_code,
+                destination_location: moduleInfo[0].arrival_code,
+            };
+            const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${moduleInfo[0].departure_code}' and to_airport_code = '${moduleInfo[0].arrival_code}'`);
-        booking.categoryName = caegory?.categoryname || null;
-        booking.fareType = "";
-        booking.isTicketd = false;
+            booking.categoryName = caegory?.categoryname || null;
+            booking.fareType = "";
+            booking.isTicketd = false;
 
-        booking.userId = userId;
+            booking.userId = userId;
 
-        booking.bookingStatus = BookingStatus.FAILED;
-        booking.paymentStatus = PaymentStatus.REFUNDED;
-        booking.supplierBookingId = "";
-        booking.isPredictive = true;
-        booking.supplierStatus = 1;
-        booking.moduleInfo = moduleInfo;
-        booking.checkInDate = await this.changeDateFormat(
-            moduleInfo[0].departure_date
-        );
-        booking.checkOutDate = await this.changeDateFormat(
-            moduleInfo[0].arrival_date
-        );
+            booking.bookingStatus = BookingStatus.FAILED;
+            booking.paymentStatus = PaymentStatus.REFUNDED;
+            booking.supplierBookingId = "";
+            booking.isPredictive = true;
+            booking.supplierStatus = 1;
+            booking.moduleInfo = moduleInfo;
+            booking.checkInDate = await this.changeDateFormat(
+                moduleInfo[0].departure_date
+            );
+            booking.checkOutDate = await this.changeDateFormat(
+                moduleInfo[0].arrival_date
+            );
 
-        await booking.save();
+            await booking.save();
+        }
+        
     }
 
     async cartBookingEmailSend(bookingId, userId) {
