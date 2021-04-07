@@ -2959,13 +2959,15 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                     arrival_date: await this.changeDateFormat(
-                        bookingData.moduleInfo[0].arrival_code
+                        bookingData.moduleInfo[0].arrival_date
                     ),
                 };
-                flights = await this.searchRoundTripZipFlight(
+                
+                flights = await this.searchRoundTripFlight(
                     dto,
                     Headers,
-                    bookingData.user
+                    bookingData.user,
+                    ""
                 );
             }
 
