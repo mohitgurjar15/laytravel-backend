@@ -190,14 +190,21 @@ export class CartDataUtility {
                 totalAmount += parseFloat(booking.totalAmount);
                 let flightData = [];
                 const bookingData = booking;
+                
                 const moduleInfo = booking.moduleInfo[0];
                 let hotelData: {
-                    hotelName: string;
-                    checkIn: string;
-                    room: number;
-                    adult: number;
-                    child: number;
-                };
+                    hotelName: string,
+                    checkIn: string,
+                    room: number,
+                    adult: number,
+                    child: number,
+                }={
+                    hotelName: "",
+                    checkIn: "",
+                    room: 0,
+                    adult: 0,
+                    child: 0,
+                } 
                 if (booking.moduleId == ModulesName.FLIGHT) {
                     const routes = moduleInfo.routes;
                     //console.log('23');
@@ -257,6 +264,8 @@ export class CartDataUtility {
                         });
                     }
                 } else if (booking.moduleId == ModulesName.HOTEL) {
+                    console.log(moduleInfo.hotel_name);
+                    
                     hotelData.hotelName = moduleInfo?.hotel_name || "";
                     hotelData.checkIn = moduleInfo?.input_data?.check_in;
                     hotelData.room = parseInt(moduleInfo?.input_data?.num_rooms || 0) ;
