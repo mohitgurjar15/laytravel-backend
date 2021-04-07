@@ -41,7 +41,7 @@ export class SaveTravelerDto {
 	@IsNotEmpty({
 		message: `Please enter travelers first name.&&&first_name`,
 	})
-	@NotContains(' ',{message : `First name does not contain whitespace `})
+	//@NotContains(' ',{message : `First name does not contain whitespace `})
 	@ApiProperty({
 		description: `Enter First Name`,
 		example: `Jon`,
@@ -51,7 +51,7 @@ export class SaveTravelerDto {
 	@IsNotEmpty({
 		message: `Please enter travelers last name.&&&last_name`,
 	})
-	@NotContains(' ',{message : `Last name does not contain whitespace `})
+	//@NotContains(' ',{message : `Last name does not contain whitespace `})
 	@ApiProperty({
 		description: `Enter Last Name`,
 		example: `Doe`,
