@@ -1932,6 +1932,8 @@ export class FlightService {
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
         if (airRevalidateResult) {
+            bookFlightDto.route_code = airRevalidateResult[0].route_code;
+    
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
             bookingRequestInfo.child_count =
                 typeof airRevalidateResult[0].child_count != "undefined"
@@ -3005,6 +3007,9 @@ export class FlightService {
                         user.email,
                         user.cityName
                     );
+                    return {
+                        message :`Flight is booked successfully `
+                    }
                 }
             }
 
