@@ -1777,6 +1777,50 @@ more than 5.`
             );
 
             await booking.save();
+        }else if(moduleId == ModulesName.HOTEL){
+            let booking = new Booking();
+            booking.id = uuidv4();
+            booking.moduleId = ModulesName.HOTEL;
+            booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+            booking.bookingType = bookingType;
+            booking.currency = currencyId;
+            booking.totalAmount = moduleInfo[0].selling.sub_total;
+            booking.netRate = moduleInfo[0].retail.sub_total || 0;
+            booking.markupAmount = (
+                parseFloat(moduleInfo[0].selling.sub_total) -
+                parseFloat(moduleInfo[0].retail.sub_total)
+            ).toString();
+            booking.bookingDate = date1;
+            booking.usdFactor = "1";
+            booking.layCredit = "0";
+            booking.message = errorLog;
+            booking.bookingThrough = booking_through || "";
+            booking.cartId = cartId;
+            booking.locationInfo = {
+                hotel_id: moduleInfo[0].hotel_id,
+                hotel_name: moduleInfo[0].hotel_name,
+                address: moduleInfo[0].address,
+            };
+            booking.categoryName = null;
+            booking.fareType = "";
+            booking.isTicketd = false;
+
+            booking.userId = userId;
+
+            booking.bookingStatus = BookingStatus.FAILED;
+            booking.paymentStatus = PaymentStatus.REFUNDED;
+            booking.supplierBookingId = "";
+            booking.isPredictive = true;
+            booking.supplierStatus = 1;
+            booking.moduleInfo = moduleInfo;
+            booking.checkInDate = await this.changeDateFormat(
+                moduleInfo[0].input_data.check_in
+            );
+            booking.checkOutDate = await this.changeDateFormat(
+                moduleInfo[0].input_data.check_out
+            );
+
+            await booking.save();
         }
         
     }
