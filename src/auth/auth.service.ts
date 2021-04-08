@@ -869,7 +869,7 @@ export class AuthService {
                         to: email,
                         from: mailConfig.from,
                         cc: mailConfig.BCC,
-                        subject: "Welcome To Laytrip!",
+                        subject: "Welcome to Laytrip!",
                         html: LaytripWelcomeBoardMail(),
                     })
                     .then((res) => {

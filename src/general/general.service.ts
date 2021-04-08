@@ -12,7 +12,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
 import * as moment from "moment";
-import { massCommunicationMail } from "src/config/email_template/mass-communication.html";
+import { massCommunicationMail } from "src/config/new_email_templete/mass-communication.html";
 import { TestTemplete } from "src/config/new_email_templete/test.html";
 import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
 import { MassCommunication } from "src/entity/mass-communication.entity";
@@ -41,7 +41,6 @@ import { LaytripInstallmentRecevied } from "src/config/new_email_templete/laytri
 import { NewsLetterMail } from "src/config/new_email_templete/news-letters.html";
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
-import { BookingReminderMail } from "src/config/email_template/booking-reminder-mail.html";
 import { LaytripInquiryAutoReplayMail } from "src/config/new_email_templete/laytrip_inquiry-auto-replay-mail.html";
 import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
 import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
@@ -441,7 +440,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 1,
+                    try: 2,
                     nextDate: "June 23, 2021",
                 }),
             })
@@ -463,7 +462,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 2,
+                    try: 3,
                     nextDate: "June 27, 2021",
                 }),
             })
@@ -485,7 +484,7 @@ export class GeneralService {
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 3,
+                    try: 4,
                     nextDate: "June 30, 2021",
                 }),
             })
@@ -501,13 +500,13 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Notice Of Default And Cancellation`,
+                subject: `Booking ID ${partialBooking} Notice of Default and Cancellation`,
                 html: await LaytripPaymentFailedTemplete({
                     userName: "Parth",
                     amount: "$55.40",
                     date: "June 20, 2021",
                     bookingId: partialBooking,
-                    try: 4,
+                    try: 5,
                 }),
             })
             .then((res) => {
@@ -525,7 +524,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Complition Notice`,
+                subject: `Booking ID ${partialBooking} Completion Notice`,
                 html: await LaytripCartBookingComplationMail(mail8.param),
             })
             .then((res) => {
@@ -585,7 +584,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Custom Cancellation`,
+                subject: `Booking ID ${partialBooking} Customer Cancellation`,
                 html: await LaytripBookingCancellationCustomerMail({
                     username: "Parth",
                     bookingId: partialBooking,
@@ -682,7 +681,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Welcome To Laytrip!`,
+                subject: `Welcome to Laytrip!`,
                 html: await LaytripWelcomeBoardMail(),
             })
             .then((res) => {
@@ -697,7 +696,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail18.param.cart.cartId} Change By Travel Provider`,
+                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
                 html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
@@ -747,7 +746,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Reminder For Your Upcoming Trip`,
+                subject: `Booking ID ${partialBooking} Reminder for your Upcoming Trip`,
                 html: await LaytripFlightReminderMail(mail18.param),
             })
             .then((res) => {

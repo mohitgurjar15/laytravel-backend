@@ -37,12 +37,10 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { LayCreditRedeem } from 'src/entity/lay-credit-redeem.entity';
 import { FlightBookingEmailParameterModel } from 'src/config/email_template/model/flight-booking-email-parameter.model';
 import * as config from "config";
-import { FlightBookingConfirmtionMail } from 'src/config/email_template/flight-booking-confirmation-mail.html';
-import { BookingFailerMail } from 'src/config/email_template/booking-failure-mail.html';
 import { Language } from 'src/entity/language.entity';
 import { HomeRentalBookingParameterModel, hotelData } from 'src/config/email_template/model/home-rental-booking-email-parameter.model';
-import { HotelBookingConfirmationMail } from 'src/config/email_template/hotel-booking-confirmation-mail.html';
-import { HomeRentalBookingConfirmationMail } from 'src/config/email_template/home-rental-confirmation-mail.html';
+// import { HotelBookingConfirmationMail } from 'src/config/email_template/hotel-booking-confirmation-mail.html';
+// import { HomeRentalBookingConfirmationMail } from 'src/config/email_template/home-rental-confirmation-mail.html';
 import { CancellationPolicy } from './model/room_details.model';
 import { HomeRentalFullCalendarDto } from './dto/home-rental-full-calendar.dto';
 import { LayCreditEarn } from 'src/entity/lay-credit-earn.entity';
@@ -50,7 +48,6 @@ import { RewordStatus } from 'src/enum/reword-status.enum';
 import { RewordMode } from 'src/enum/reword-mode.enum';
 import { PushNotification } from 'src/utility/push-notification.utility';
 import { vacationCategoty } from './vacation-rental.const';
-import { BookingDetailsUpdateMail } from 'src/config/email_template/booking-details-updates.html';
 import { SearchFullTextDto } from './dto/search-full-text.dto';
 import { Activity } from 'src/utility/activity.utility';
 import { ModulesName } from 'src/enum/module.enum';
@@ -773,40 +770,40 @@ export class VacationRentalService {
 			param.paymentDetail = installmentDetail;
 			param.travelers = travelerInfo
 
-			this.mailerService
-				.sendMail({
-					to: user.email,
-					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: EmailSubject,
-					html: await HomeRentalBookingConfirmationMail(param)
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
+			// this.mailerService
+			// 	.sendMail({
+			// 		to: user.email,
+			// 		from: mailConfig.from,
+			// 		bcc: mailConfig.BCC,
+			// 		subject: EmailSubject,
+			// 		html: await HomeRentalBookingConfirmationMail(param)
+			// 	})
+			// 	.then((res) => {
+			// 		console.log("res", res);
+			// 	})
+			// 	.catch((err) => {
+			// 		console.log("err", err);
+			// 	});
 		}
 		else if (bookingData.bookingStatus == 2) {
 			var status = "Failed"
-			this.mailerService
-				.sendMail({
-					to: bookingData.user.email,
-					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Flight Booking Failed",
-					html: BookingFailerMail({
-						error: null
-					}),
+			// this.mailerService
+			// 	.sendMail({
+			// 		to: bookingData.user.email,
+			// 		from: mailConfig.from,
+			// 		bcc: mailConfig.BCC,
+			// 		subject: "Flight Booking Failed",
+			// 		html: BookingFailerMail({
+			// 			error: null
+			// 		}),
 
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
+			// 	})
+			// 	.then((res) => {
+			// 		console.log("res", res);
+			// 	})
+			// 	.catch((err) => {
+			// 		console.log("err", err);
+			// 	});
 		}
 		else {
 			var status = "Canceled"
@@ -1419,7 +1416,7 @@ export class VacationRentalService {
 
 			const result = await this.partiallyVacationRentalBook(bookingDto, header, user, bookingId);
 
-			this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
+			//this.sendFlightUpdateMail(bookingData.laytripBookingId, user.email, user.cityName)
 
 			return result;
 
@@ -1602,22 +1599,22 @@ export class VacationRentalService {
 		}
 	}
 
-	async sendFlightUpdateMail(bookingId, email, userName) {
-		this.mailerService
-			.sendMail({
-				to: email,
-				from: mailConfig.from,
-				bcc: mailConfig.BCC,
-				subject: "Booking detail updated",
-				html: BookingDetailsUpdateMail({ username: userName }),
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
-	}
+	// async sendFlightUpdateMail(bookingId, email, userName) {
+	// 	this.mailerService
+	// 		.sendMail({
+	// 			to: email,
+	// 			from: mailConfig.from,
+	// 			bcc: mailConfig.BCC,
+	// 			subject: "Booking detail updated",
+	// 			html: BookingDetailsUpdateMail({ username: userName }),
+	// 		})
+	// 		.then((res) => {
+	// 			console.log("res", res);
+	// 		})
+	// 		.catch((err) => {
+	// 			console.log("err", err);
+	// 		});
+	// }
 
 }
 

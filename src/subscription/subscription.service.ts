@@ -21,7 +21,7 @@ import { UserRepository } from "src/auth/user.repository";
 import { Role } from "src/enum/role.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import * as config from "config";
-import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
+//import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";
 import { Activity } from "src/utility/activity.utility";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
@@ -291,23 +291,23 @@ export class SubscriptionService {
 			SET "role_id"=6 , updated_date='${todayDate}',updated_by = '${userId}'  WHERE "role_id" = ${Role.PAID_USER} AND "user_id"= '${userId}'`
 		);
 
-		this.mailerService
-			.sendMail({
-				to: userdata.email,
-				from: mailConfig.from,
-				subject: `Subscription Expired`,
-				bcc: mailConfig.BCC,
-				html: ConvertCustomerMail({
-					username: userdata.firstName + " " + userdata.lastName,
-					date: userdata.nextSubscriptionDate,
-				}),
-			})
-			.then((res) => {
-				console.log("res", res);
-			})
-			.catch((err) => {
-				console.log("err", err);
-			});
+		// this.mailerService
+		// 	.sendMail({
+		// 		to: userdata.email,
+		// 		from: mailConfig.from,
+		// 		subject: `Subscription Expired`,
+		// 		bcc: mailConfig.BCC,
+		// 		html: ConvertCustomerMail({
+		// 			username: userdata.firstName + " " + userdata.lastName,
+		// 			date: userdata.nextSubscriptionDate,
+		// 		}),
+		// 	})
+		// 	.then((res) => {
+		// 		console.log("res", res);
+		// 	})
+		// 	.catch((err) => {
+		// 		console.log("err", err);
+		// 	});
 		// Activity.logActivity(
 		// 	userdata.userId,
 		// 	"subscription",

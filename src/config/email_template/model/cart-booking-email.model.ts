@@ -1,18 +1,18 @@
 export class CartBookingEmailParameterModel {
-    user_name: string;
-    bookings: bookings[];
-    orderId: string;
-    paymentDetail: paymentDetail[]
-    bookingType: number;
-    cart: cart;
-    // pnr_no: string;
-}
+           user_name: string;
+           bookings: bookings[];
+           orderId: string;
+           paymentDetail: paymentDetail[];
+           bookingType: number;
+           cart: cart;
+           travelers: traveler[];
+           // pnr_no: string;
+       }
 
 class bookings {
     moduleId:number
     productId: string;
     flighData?:flightData[]
-    travelers: traveler[];
 }
 
 class flightData {

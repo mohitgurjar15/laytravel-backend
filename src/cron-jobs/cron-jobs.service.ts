@@ -6,7 +6,6 @@ import { Role } from "src/enum/role.enum";
 import { Activity } from "src/utility/activity.utility";
 import * as config from "config";
 const mailConfig = config.get("email");
-import { ConvertCustomerMail } from "src/config/email_template/convert-user-mail.html";
 import { FlightService } from "src/flight/flight.service";
 import { AdvancedConsoleLogger, getConnection, getManager } from "typeorm";
 import { Booking } from "src/entity/booking.entity";
@@ -16,12 +15,9 @@ import { BookingType } from "src/enum/booking-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { PaymentService } from "src/payment/payment.service";
 import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
-import { missedPaymentInstallmentMail } from "src/config/email_template/missed-payment-installment-mail.html";
-import { PaymentInstallmentMail } from "src/config/email_template/payment-installment-mail.html";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { BookFlightDto } from "src/flight/dto/book-flight.dto";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
-import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { RewordStatus } from "src/enum/reword-status.enum";
 import { LaytripPointsType } from "src/enum/laytrip-point-type.enum";
 import { PaidFor } from "src/enum/paid-for.enum";
@@ -38,7 +34,6 @@ import { Translation } from "src/utility/translation.utility";
 import { WebNotification } from "src/utility/web-notification.utility";
 import { MonakerStrategy } from "src/vacation-rental/strategy/strategy";
 import { Monaker } from "src/vacation-rental/strategy/monaker";
-import { IncompleteBookingMail } from "src/config/email_template/incomplete-booking-mail.html";
 import { HotelService } from "src/hotel/hotel.service";
 import { TwilioSMS } from "src/utility/sms.utility";
 const AWS = require("aws-sdk");
@@ -81,82 +76,82 @@ export class CronJobsService {
     ) {}
 
     async convertCustomer() {
-        try {
-            var toDate = new Date();
+        // try {
+        //     var toDate = new Date();
 
-            var todayDate = toDate.toISOString();
-            todayDate = todayDate
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
+        //     var todayDate = toDate.toISOString();
+        //     todayDate = todayDate
+        //         .replace(/T/, " ") // replace T with a space
+        //         .replace(/\..+/, "");
 
-            const result = await this.userRepository.query(
-                `SELECT "User"."user_id","User"."next_subscription_date","User"."email","User"."first_name","User"."last_name"  FROM "user" "User" WHERE "User"."role_id" = ${Role.PAID_USER} AND DATE("User"."next_subscription_date") < '${todayDate}'`
-            );
-            console.log(result);
-            const updateQuery = await this.userRepository.query(
-                `UPDATE "user" 
-                SET "role_id"=6 , updated_date='${todayDate}',updated_by = ${cronUserId}  WHERE "role_id" = ${Role.PAID_USER} AND DATE("next_subscription_date") < '${todayDate}'`
-            );
-            for (let index = 0; index < result.length; index++) {
-                const data = result[index];
+        //     const result = await this.userRepository.query(
+        //         `SELECT "User"."user_id","User"."next_subscription_date","User"."email","User"."first_name","User"."last_name"  FROM "user" "User" WHERE "User"."role_id" = ${Role.PAID_USER} AND DATE("User"."next_subscription_date") < '${todayDate}'`
+        //     );
+        //     console.log(result);
+        //     const updateQuery = await this.userRepository.query(
+        //         `UPDATE "user" 
+        //         SET "role_id"=6 , updated_date='${todayDate}',updated_by = ${cronUserId}  WHERE "role_id" = ${Role.PAID_USER} AND DATE("next_subscription_date") < '${todayDate}'`
+        //     );
+        //     for (let index = 0; index < result.length; index++) {
+        //         const data = result[index];
 
-                PushNotification.sendNotificationTouser(
-                    data.userId,
-                    {
-                        //you can send only notification or only data(or include both)
-                        module_name: "user",
-                        task: "user_convert",
-                        userId: data.userId,
-                    },
-                    {
-                        title: "We not capture subscription",
-                        body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`,
-                    },
-                    cronUserId
-                );
-                WebNotification.sendNotificationTouser(
-                    data.userId,
-                    {
-                        //you can send only notification or only data(or include both)
-                        module_name: "user",
-                        task: "user_convert",
-                        userId: data.userId,
-                    },
-                    {
-                        title: "We not capture subscription",
-                        body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`,
-                    },
-                    cronUserId
-                );
+        //         PushNotification.sendNotificationTouser(
+        //             data.userId,
+        //             {
+        //                 //you can send only notification or only data(or include both)
+        //                 module_name: "user",
+        //                 task: "user_convert",
+        //                 userId: data.userId,
+        //             },
+        //             {
+        //                 title: "We not capture subscription",
+        //                 body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`,
+        //             },
+        //             cronUserId
+        //         );
+        //         WebNotification.sendNotificationTouser(
+        //             data.userId,
+        //             {
+        //                 //you can send only notification or only data(or include both)
+        //                 module_name: "user",
+        //                 task: "user_convert",
+        //                 userId: data.userId,
+        //             },
+        //             {
+        //                 title: "We not capture subscription",
+        //                 body: `Just a friendly reminder that we not able to capture your subscription so we have convert your account to free user please subscribe manully`,
+        //             },
+        //             cronUserId
+        //         );
 
-                this.mailerService
-                    .sendMail({
-                        to: data.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `Subscription Expired`,
-                        html: ConvertCustomerMail({
-                            username: data.first_name + " " + data.last_name,
-                            date: data.next_subscription_date,
-                        }),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
-                // Activity.logActivity(
-                // 	"1c17cd17-9432-40c8-a256-10db77b95bca",
-                // 	"cron",
-                // 	`${data.email} is Convert customer to free user because subscription plan is not done by customer`
-                // );
-            }
+        //         this.mailerService
+        //             .sendMail({
+        //                 to: data.email,
+        //                 from: mailConfig.from,
+        //                 bcc: mailConfig.BCC,
+        //                 subject: `Subscription Expired`,
+        //                 html: ConvertCustomerMail({
+        //                     username: data.first_name + " " + data.last_name,
+        //                     date: data.next_subscription_date,
+        //                 }),
+        //             })
+        //             .then((res) => {
+        //                 console.log("res", res);
+        //             })
+        //             .catch((err) => {
+        //                 console.log("err", err);
+        //             });
+        //         // Activity.logActivity(
+        //         // 	"1c17cd17-9432-40c8-a256-10db77b95bca",
+        //         // 	"cron",
+        //         // 	`${data.email} is Convert customer to free user because subscription plan is not done by customer`
+        //         // );
+        //     }
 
-            console.log(updateQuery);
-        } catch (error) {
-            console.log(error);
-        }
+        //     console.log(updateQuery);
+        // } catch (error) {
+        //     console.log(error);
+        // }
     }
 
     async checkPandingFlights() {
@@ -605,28 +600,28 @@ export class CronJobsService {
             });
     }
 
-    async sendFlightIncompleteMail(email, bookingId, error = null, amount) {
-        this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: "Booking Failed Mail",
-                html: IncompleteBookingMail(
-                    {
-                        error: error,
-                        amount: amount,
-                    },
-                    bookingId
-                ),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-    }
+    // async sendFlightIncompleteMail(email, bookingId, error = null, amount) {
+    //     this.mailerService
+    //         .sendMail({
+    //             to: email,
+    //             from: mailConfig.from,
+    //             bcc: mailConfig.BCC,
+    //             subject: "Booking Failed Mail",
+    //             html: IncompleteBookingMail(
+    //                 {
+    //                     error: error,
+    //                     amount: amount,
+    //                 },
+    //                 bookingId
+    //             ),
+    //         })
+    //         .then((res) => {
+    //             console.log("res", res);
+    //         })
+    //         .catch((err) => {
+    //             console.log("err", err);
+    //         });
+    // }
 
     async addRecurringLaytripPoint() {
         Activity.cronActivity("Add recurring laytrip poin cron");
@@ -817,7 +812,7 @@ export class CronJobsService {
                 date: DateTime.convertDateFormat(
                     new Date(instalment.instalmentDate),
                     "YYYY-MM-DD",
-                    "MMM DD,YYYY"
+                    "MMMM DD,YYYY"
                 ),
                 bookingId: cartBooking.laytripCartId,
                 phoneNo:
@@ -1440,7 +1435,7 @@ export class CronJobsService {
                     to: mail.userMail,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For Your Upcoming Trip`,
+                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For your Upcoming Trip`,
                     html: await LaytripFlightReminderMail(mail.param),
                 })
                 .then((res) => {
@@ -1570,7 +1565,7 @@ export class CronJobsService {
                         cartBooking.bookings[0].bookingInstalments[0]
                             .instalmentDate,
                         "YYYY-MM-DD",
-                        "MMM DD, YYYY"
+                        "MMMM DD, YYYY"
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
@@ -1579,7 +1574,7 @@ export class CronJobsService {
                     param.nextDate = DateTime.convertDateFormat(
                         nextInstalmentDate,
                         "YYYY-MM-DD",
-                        "MMM DD, YYYY"
+                        "MMMM DD, YYYY"
                     );
                 }
 
@@ -1646,7 +1641,7 @@ export class CronJobsService {
                                 to: cartBooking.user.email,
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
-                                subject: `Booking ID ${param.bookingId} Notice Of Default And Cancellation`,
+                                subject: `Booking ID ${param.bookingId} Notice Of Default and Cancellation`,
                                 html: await LaytripPaymentFailedTemplete(param),
                             })
                             .then((res) => {
@@ -1771,7 +1766,7 @@ export class CronJobsService {
                     date: DateTime.convertDateFormat(
                         new Date(),
                         "YYYY-MM-DD",
-                        "MMM Do, YYYY"
+                        "MMMM DD, YYYY"
                     ),
                     userName: cartBooking.user.firstName,
                     cardHolderName:
@@ -1799,7 +1794,7 @@ export class CronJobsService {
                     nextDate: DateTime.convertDateFormat(
                         new Date(nextDate),
                         "YYYY-MM-DD",
-                        "MMM Do, YYYY"
+                        "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
                 };

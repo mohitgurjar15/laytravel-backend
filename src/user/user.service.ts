@@ -43,7 +43,6 @@ import { BookingFeedback } from "src/entity/booking-feedback.entity";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import * as uuidValidator from "uuid-validate";
-import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ExportUserDto } from "./dto/export-user.dto";
 import { FailedPaymentAttempt } from "src/entity/failed-payment-attempt.entity";
 import { DeleteAccountReqDto } from "src/auth/dto/delete-account-request.dto";
@@ -55,6 +54,7 @@ import { Notification } from "src/entity/notification.entity";
 import { SearchLog } from "src/entity/search-log.entity";
 import { LaytripFeedback } from "src/entity/laytrip_feedback.entity";
 import { ExportDeleteRequestDto } from "./dto/export-deleted-user.dto";
+import { LaytripWelcomeBoardMail } from "src/config/new_email_templete/laytrip_welcome-board-mail.html";
 
 const mailConfig = config.get("email");
 const csv = require("csv-parser");
@@ -139,7 +139,7 @@ export class UserService {
         user.countryId = country_id ? country_id : null;
         user.preferredLanguage = prefer_language;
         user.address = address;
-        user.stateId = state_id ? state_id : null ;
+        user.stateId = state_id ? state_id : null;
         user.cityName = city_name;
         user.gender = gender;
         user.isVerified = true;
@@ -157,7 +157,7 @@ export class UserService {
                 adminId,
                 "user",
                 `New user ${user.email} created by admin `,
-                '',
+                "",
                 JSON.stringify(user)
             );
         }
@@ -551,15 +551,7 @@ export class UserService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Welcome on board`,
-                                html: RagisterMail(
-                                    {
-                                        username:
-                                            data.firstName +
-                                            " " +
-                                            data.lastName,
-                                    },
-                                    data.password
-                                ),
+                                html: LaytripWelcomeBoardMail(),
                             })
                             .then((res) => {
                                 console.log("res", res);

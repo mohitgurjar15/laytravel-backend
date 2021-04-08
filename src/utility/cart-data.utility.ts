@@ -164,7 +164,8 @@ export class CartDataUtility {
         }
       }
       //console.log('2');
-
+      let travelers = [];
+      let travelersName = [];
       for await (const booking of cart.bookings) {
         if (booking.bookingInstalments.length > 0) {
           booking.bookingInstalments.sort((a, b) => a.id - b.id);
@@ -185,6 +186,7 @@ export class CartDataUtility {
         const moduleInfo = booking.moduleInfo[0];
         const routes = moduleInfo.routes;
         //console.log('23');
+        
         for (let index = 0; index < routes.length; index++) {
           const element = routes[index];
           var rout =
@@ -234,7 +236,7 @@ export class CartDataUtility {
           });
         }
 
-        let travelers = [];
+        
         //console.log('8');
         for await (const traveler of booking.travelers) {
           // var birthDate = new Date(traveler.travelerInfo.dob);
@@ -248,20 +250,20 @@ export class CartDataUtility {
           // } else {
           //   user_type = "Adult";
           // }
-          travelers.push({
-            name:
-              traveler.travelerInfo.firstName +
-              " " +
-              traveler.travelerInfo.lastName,
-            email: traveler.travelerInfo.email,
-            type: traveler.travelerInfo.user_type,
-          });
+          if ( !travelersName.includes(traveler.travelerInfo.firstName)){
+            travelers.push({
+                  name: traveler.travelerInfo.firstName,
+                  email: user.email,
+                  type: traveler.travelerInfo.user_type,
+              });
+              travelersName.push(traveler.travelerInfo.firstName)
+          }
+              
         }
         let b = {
           moduleId: booking.moduleId,
           productId: booking.laytripBookingId,
           flighData: flightData,
-          travelers: travelers,
         };
         bookingsData.push(b);
       }
@@ -276,7 +278,7 @@ export class CartDataUtility {
       }
       param.orderId = cart.laytripCartId;
       param.bookingType = cart.bookingType;
-
+      param.travelers = travelers
       param.cart = {
         totalAmount:
           currency.symbol + `${Generic.formatPriceDecimal(totalAmount)}`,
