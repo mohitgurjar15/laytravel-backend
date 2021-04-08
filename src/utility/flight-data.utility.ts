@@ -137,9 +137,8 @@ export class flightDataUtility {
                 //     user_type = "Adult";
                 // }
                 travelerInfo.push({
-                    name:
-                        traveler.travelerInfo.firstName,
-                    email: traveler.travelerInfo.email,
+                    name: traveler.travelerInfo.firstName,
+                    email: user.email,
                     type: traveler.travelerInfo.user_type,
                 });
             }

@@ -15,15 +15,15 @@ export async function FlightChangeAsperUserRequestMail(
         if(traveleName != ''){
             traveleName += ', '
         }
-        if (travelerEmail != "") {
-            travelerEmail += ", ";
+        if (travelerEmail == "") {
+            travelerEmail += traveler.email
+                ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
+                : "";
         }
         traveleName += traveler.name
             ? traveler.name 
             : "";
-        travelerEmail += traveler.email
-            ? '<span style="color: #707070;">' + traveler.email + "</span>"
-            : "";
+       
     }
 
     let content = `<tr>

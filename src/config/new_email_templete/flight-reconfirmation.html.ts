@@ -14,13 +14,12 @@ export async function TravelProviderReconfirmationMail(
         if (traveleName != "") {
             traveleName += ", ";
         }
-        if (travelerEmail != "") {
-            travelerEmail += ", ";
+        if (travelerEmail == "") {
+            travelerEmail += traveler.email
+                ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
+                : "";
         }
         traveleName += traveler.name ? traveler.name : "";
-        travelerEmail += traveler.email
-            ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
-            : "";
     }
 
     let content = `<tr>
@@ -86,7 +85,9 @@ export async function TravelProviderReconfirmationMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                         >
-                            <span  style="color: #000000">${droup.flight}: </span>
+                            <span  style="color: #000000">${
+                                droup.flight
+                            }: </span>
                             <span style="font-size: 18px" >Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(

@@ -39,24 +39,39 @@ export async function LaytripCartBookingConfirmtionMail(
                         Here are your Booking Details:
                 </tr>`;
     }
-    
-    for await (const booking of param.bookings) {
-        let traveleName = "";
-        let travelerEmail = "";
-        for await (const traveler of booking.travelers) {
-            if (traveleName != "") {
-                traveleName += ", ";
-            }
-            if (travelerEmail != "") {
-                travelerEmail += ", ";
-            }
-            traveleName += traveler.name
-                ? traveler.name 
-                : "";
+    let traveleName = "";
+    let travelerEmail = "";
+    for await (const traveler of param.travelers) {
+        if (traveleName != "") {
+            traveleName += ", ";
+        }
+        if (travelerEmail == "") {
             travelerEmail += traveler.email
                 ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
                 : "";
         }
+        traveleName += traveler.name ? traveler.name : "";
+    }
+    content += `<tr>
+                    <td
+                        align="left"
+                        valign="top"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
+                    >
+                        <span style="color: #000000">
+                        Traveler: </span><span style="font-size: 18px">${traveleName}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td
+                        align="left"
+                        valign="top"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
+                    >
+                        <span style="color: #000000">Email: </span><span style="font-size: 18px">${travelerEmail}</span>
+                    </td>
+                </tr>`;
+    for await (const booking of param.bookings) {
         if (booking.moduleId == ModulesName.FLIGHT) {
             //   content += `<tr>
             //                 <td>
@@ -80,28 +95,7 @@ export async function LaytripCartBookingConfirmtionMail(
             //                             </th>
             //                         </tr>`;
 
-            content += `<tr>
-                    <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
-                    >
-                        <span style="color: #000000">
-                        Traveler: </span><span style="font-size: 18px">${traveleName}</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                    >
-                        <span style="color: #000000">Email: </span><span style="font-size: 18px">${travelerEmail}</span>
-                    </td>
-                </tr>`;
             for await (const flight of booking.flighData) {
-
-
                 // content += `<tr>
                 //                         <td colspan="3"
                 //                             style="padding:15px 0; background-color: #ecf1ff; color: #707070; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
@@ -110,9 +104,8 @@ export async function LaytripCartBookingConfirmtionMail(
                 //                             </div>
                 //                         </td>
                 //                     </tr>`;
-                 for await (const droup of flight.droups) {
-
-                     content += `<tr>
+                for await (const droup of flight.droups) {
+                    content += `<tr>
                         <td
                             align="left"
                             valign="top"
@@ -121,96 +114,96 @@ export async function LaytripCartBookingConfirmtionMail(
                             <span style="color: #000000">${
                                 droup.flight
                             }: </span>Depart ${
-                         droup.depature.code
-                     } ${DateTime.convertDateFormat(
-                         droup.depature.date,
-                         "MM/DD/YYYY",
-                         "MMMM DD, YYYY"
-                     )} ${droup.depature.time.replace(/\s/g, "")},
+                        droup.depature.code
+                    } ${DateTime.convertDateFormat(
+                        droup.depature.date,
+                        "MM/DD/YYYY",
+                        "MMMM DD, YYYY"
+                    )} ${droup.depature.time.replace(/\s/g, "")},
                             Arrive ${
                                 droup.arrival.code
                             } ${droup.arrival.time.replace(/\s/g, "")}
                         </td>
                     </tr>`;
-                //   content += `<tr>
-                //                         <td class="templateColumnContainer">
-                //                             <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
-                //                                 <tr>
-                //                                     <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                //                                         <span style="display: block;"> ${
-                //                                           droup.flight
-                //                                         }</span>
-                //                                         <span style="display: block;">${
-                //                                           droup.airline || ''
-                //                                         }</span>
-                //                                     </td>
-                //                                 </tr>
-                //                             </table>
-                //                         </td>
-                //                         <td class="templateColumnContainer">
-                //                             <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
-                //                                 <tr>
-                //                                     <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                //                                         <span style="display: block;">Airport : ${
-                //                                           droup.depature.code
-                //                                         } (La Guardia)</span>
-                //                                         <span style="display: block;">City : ${
-                //                                           droup.depature.city
-                //                                         }</span>
-                //                                         <span style="display: block;">Country : ${
-                //                                           droup.depature.country
-                //                                         }</span>
-                //                                         <span style="display: block;"> Date : ${DateTime.convertDateFormat(
-                //                                           droup.depature.date,
-                //                                           "MM/DD/YYYY",
-                //                                           "MMM DD, YYYY"
-                //                                         )}</span>
-                //                                         <span style="display: block;">Time : ${
-                //                                           droup.depature.time
-                //                                         }</span>
-                //                                     </td>
-                //                                 </tr>
-                //                             </table>
-                //                         </td>
-                //                         <td class="templateColumnContainer">
-                //                             <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
-                //                                 <tr>
-                //                                     <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
-                //                                         <span style="display: block;">Airport : ${
-                //                                           droup.arrival.code
-                //                                         }</span>
-                //                                         <span style="display: block;">City : ${
-                //                                           droup.arrival.city
-                //                                         }</span>
-                //                                         <span style="display: block;">Country : ${
-                //                                           droup.arrival.country
-                //                                         }</span>
-                //                                         <span style="display: block;"> Date : ${DateTime.convertDateFormat(
-                //                                           droup.arrival.date,
-                //                                           "MM/DD/YYYY",
-                //                                           "MMM DD, YYYY"
-                //                                         )}</span>
-                //                                         <span style="display: block;">Time : ${
-                //                                           droup.arrival.time
-                //                                         }</span>
-                //                                     </td>
-                //                                 </tr>
-                //                             </table>
-                //                         </td>
-                //                     </tr>`;
-                 }
-            //      if (flight.droups[0].depature?.pnr_no) {
-            //          content += `<tr>
-            //     <td
-            //         align="left"
-            //         valign="top"
-            //         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
-            //     >
-            //         <span style="color: #707070">Provider Reservation Number: ${flight.droups[0].depature.pnr_no}</span> 
-            //         </span>
-            //     </td>
-            // </tr>`;
-            //      }
+                    //   content += `<tr>
+                    //                         <td class="templateColumnContainer">
+                    //                             <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
+                    //                                 <tr>
+                    //                                     <td valign="top" class="leftColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                    //                                         <span style="display: block;"> ${
+                    //                                           droup.flight
+                    //                                         }</span>
+                    //                                         <span style="display: block;">${
+                    //                                           droup.airline || ''
+                    //                                         }</span>
+                    //                                     </td>
+                    //                                 </tr>
+                    //                             </table>
+                    //                         </td>
+                    //                         <td class="templateColumnContainer">
+                    //                             <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
+                    //                                 <tr>
+                    //                                     <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                    //                                         <span style="display: block;">Airport : ${
+                    //                                           droup.depature.code
+                    //                                         } (La Guardia)</span>
+                    //                                         <span style="display: block;">City : ${
+                    //                                           droup.depature.city
+                    //                                         }</span>
+                    //                                         <span style="display: block;">Country : ${
+                    //                                           droup.depature.country
+                    //                                         }</span>
+                    //                                         <span style="display: block;"> Date : ${DateTime.convertDateFormat(
+                    //                                           droup.depature.date,
+                    //                                           "MM/DD/YYYY",
+                    //                                           "MMM DD, YYYY"
+                    //                                         )}</span>
+                    //                                         <span style="display: block;">Time : ${
+                    //                                           droup.depature.time
+                    //                                         }</span>
+                    //                                     </td>
+                    //                                 </tr>
+                    //                             </table>
+                    //                         </td>
+                    //                         <td class="templateColumnContainer">
+                    //                             <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
+                    //                                 <tr>
+                    //                                     <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+                    //                                         <span style="display: block;">Airport : ${
+                    //                                           droup.arrival.code
+                    //                                         }</span>
+                    //                                         <span style="display: block;">City : ${
+                    //                                           droup.arrival.city
+                    //                                         }</span>
+                    //                                         <span style="display: block;">Country : ${
+                    //                                           droup.arrival.country
+                    //                                         }</span>
+                    //                                         <span style="display: block;"> Date : ${DateTime.convertDateFormat(
+                    //                                           droup.arrival.date,
+                    //                                           "MM/DD/YYYY",
+                    //                                           "MMM DD, YYYY"
+                    //                                         )}</span>
+                    //                                         <span style="display: block;">Time : ${
+                    //                                           droup.arrival.time
+                    //                                         }</span>
+                    //                                     </td>
+                    //                                 </tr>
+                    //                             </table>
+                    //                         </td>
+                    //                     </tr>`;
+                }
+                //      if (flight.droups[0].depature?.pnr_no) {
+                //          content += `<tr>
+                //     <td
+                //         align="left"
+                //         valign="top"
+                //         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
+                //     >
+                //         <span style="color: #707070">Provider Reservation Number: ${flight.droups[0].depature.pnr_no}</span>
+                //         </span>
+                //     </td>
+                // </tr>`;
+                //      }
             }
 
             //   content += `</table>
@@ -320,8 +313,8 @@ export async function LaytripCartBookingConfirmtionMail(
                     <span style="color: #000000">Total Price: </span><span style="font-size: 18px">${param.cart.totalAmount}</span>
                 </td>
             </tr>`;
-if (param.bookingType == BookingType.INSTALMENT){
-    content += `
+    if (param.bookingType == BookingType.INSTALMENT) {
+        content += `
     <tr>
                 <td
                     align="left"
@@ -340,7 +333,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     <span style="color: #000000">Balance Due: </span>  <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
-}
+    }
     if (param.paymentDetail.length) {
         content += `<tr>
                 <td
@@ -351,7 +344,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     <span style="color: #000000">Installments</span> 
                 </td>
             </tr> `;
-    for (let index = 0; index < param.paymentDetail.length; index++) {
+        for (let index = 0; index < param.paymentDetail.length; index++) {
             const payment = param.paymentDetail[index];
             //   console.log(payment.amount);
             if (index > 0) {
@@ -370,7 +363,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                     "MMMM DD, YYYY"
                 )}
                 </td>
-            </tr>` 
+            </tr>`;
                 // <tr>
                 //                 <td class="templateColumnContainer" width="15%">
                 //                     <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
@@ -416,7 +409,7 @@ if (param.bookingType == BookingType.INSTALMENT){
                 //                         </tr>
                 //                     </table>
                 //                 </td>
-                                
+
                 //             </tr>`;
             }
         }
@@ -436,7 +429,6 @@ if (param.bookingType == BookingType.INSTALMENT){
                     </td>
                 </tr>`;
     if (param.bookingType != BookingType.INSTALMENT) {
-        
         content += `<tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">

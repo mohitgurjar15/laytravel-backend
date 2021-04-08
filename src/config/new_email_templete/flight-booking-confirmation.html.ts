@@ -14,16 +14,15 @@ export async function LaytripFlightBookingConfirmtionMail(
         if (traveleName != "") {
             traveleName += ", ";
         }
-        if (travelerEmail != "") {
-            travelerEmail += ", ";
+        if (travelerEmail == "") {
+            travelerEmail += traveler.email
+                ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
+                : "";
         }
         traveleName += traveler.name
             ? traveler.name 
             : "";
-        travelerEmail += traveler.email
-            ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
-            : "";
-    }
+           }
 
   let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
