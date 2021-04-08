@@ -3026,13 +3026,15 @@ export class FlightService {
     }
 
     async sendFlightUpdateMail(bookingId, email, userName) {
-        this.mailerService
+        let mail18 = await flightDataUtility.flightData(bookingId);
+        
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: "Booking detail updated",
-                html: BookingDetailsUpdateMail({ username: userName }),
+                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
+                html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
                 console.log("res", res);
@@ -3040,6 +3042,20 @@ export class FlightService {
             .catch((err) => {
                 console.log("err", err);
             });
+        // this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: "Booking detail updated",
+        //         html: Flight({ username: userName }),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
     }
 
     async cartBook(
