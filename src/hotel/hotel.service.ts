@@ -27,9 +27,6 @@ import { PaymentStatus } from 'src/enum/payment-status.enum';
 import { BookingStatus } from 'src/enum/booking-status.enum';
 import { BookingRepository } from 'src/booking/booking.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
-import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
-import { HotelBookingParam } from 'src/config/email_template/model/hotel-booking-param.model';
 import { Booking } from 'src/entity/booking.entity';
 
 @Injectable()

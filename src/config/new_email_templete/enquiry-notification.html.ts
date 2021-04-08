@@ -1,6 +1,3 @@
-import { EmailHeader } from "../email_template/header.html";
-import {  EmailFooter} from "../email_template/footer.html";
-import { BaseUrl } from "../base-url";
 import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 

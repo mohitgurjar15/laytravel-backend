@@ -38,7 +38,7 @@ import { FlightJourney } from "src/enum/flight-journey.enum";
 import { DateTime } from "src/utility/datetime.utility";
 import { BookingRepository } from "src/booking/booking.repository";
 import { FlightBookingEmailParameterModel } from "src/config/email_template/model/flight-booking-email-parameter.model";
-import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
+//import { FlightBookingConfirmtionMail } from "src/config/email_template/flight-booking-confirmation-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { Role } from "src/enum/role.enum";
@@ -48,7 +48,7 @@ import { FullCalenderRateDto } from "./dto/full-calender-date-rate.dto";
 //import { Airport } from 'src/entity/airport.entity';
 //import { allAirpots } from './all-airports';
 import * as config from "config";
-import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
+//import { BookingFailerMail } from "src/config/email_template/booking-failure-mail.html";
 import { PriceMarkup } from "src/utility/markup.utility";
 import { NetRateDto } from "./dto/net-rate.dto";
 import { Generic } from "src/utility/generic.utility";
@@ -59,7 +59,7 @@ import { InstalmentService } from "src/instalment/instalment.service";
 import { exit } from "process";
 import { ManullyBookingDto } from "./dto/manully-update-flight.dto";
 import { airports } from "./airports";
-import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
+//import { BookingDetailsUpdateMail } from "src/config/email_template/booking-details-updates.html";
 import { match } from "assert";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { LayCreditEarn } from "src/entity/lay-credit-earn.entity";
@@ -82,6 +82,7 @@ import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
 import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
 import { Countries } from "src/entity/countries.entity";
+import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 
 @Injectable()
 export class FlightService {
@@ -2546,11 +2547,11 @@ export class FlightService {
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: "Flight Booking Failed",
-                    html: BookingFailerMail(
+                    html: LaytripCancellationTravelProviderMail(
                         {
-                            error: null,
-                        },
-                        bookingData.laytripBookingId
+                            userName : bookingData.user.firstName,
+                            bookingId :  bookingData.laytripBookingId
+                        }
                     ),
                 })
                 .then((res) => {
@@ -2999,7 +3000,7 @@ export class FlightService {
                     );
 
                     this.sendFlightUpdateMail(
-                        bookingData.laytripBookingId,
+                        bookingId,
                         user.email,
                         user.cityName
                     );
@@ -3019,13 +3020,15 @@ export class FlightService {
     }
 
     async sendFlightUpdateMail(bookingId, email, userName) {
-        this.mailerService
+        let mail18 = await flightDataUtility.flightData(bookingId);
+        
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: "Booking detail updated",
-                html: BookingDetailsUpdateMail({ username: userName }),
+                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
+                html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
                 console.log("res", res);
@@ -3033,6 +3036,20 @@ export class FlightService {
             .catch((err) => {
                 console.log("err", err);
             });
+        // this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: "Booking detail updated",
+        //         html: Flight({ username: userName }),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
     }
 
     async cartBook(
@@ -3437,7 +3454,7 @@ export class FlightService {
                                 : `Booking ID ${mailData.param.cart.cartId} Change by Travel Provider`,
                         html:
                             isNewBooking == 1
-                                ? await FlightBookingConfirmtionMail(
+                                ? await LaytripFlightBookingConfirmtionMail(
                                       mailData.param
                                   )
                                 : await TravelProviderConfiramationMail(

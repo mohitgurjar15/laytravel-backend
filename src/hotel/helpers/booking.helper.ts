@@ -15,7 +15,6 @@ import { collect } from "collect.js";
 import { Role } from "src/enum/role.enum";
 import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { HotelBookingParam } from "src/config/email_template/model/hotel-booking-param.model";
-import { HotelBookingConfirmationMail } from "src/config/email_template/hotel-booking-confirmation-mail.html";
 import { MailerService } from "@nestjs-modules/mailer";
 import * as config from "config";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
@@ -147,20 +146,20 @@ export class BookingHelper{
     }
 
     async sendEmail(booking_details) {
-        this.mailerService
-            .sendMail({
-                to: booking_details.user.email,
-                from: mailConfig.from,
-				bcc: mailConfig.BCC,
-				subject: 'Hotel Booking Confirmation',
-                html: await HotelBookingConfirmationMail(new HotelBookingParam(booking_details)),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
+        // this.mailerService
+        //     .sendMail({
+        //         to: booking_details.user.email,
+        //         from: mailConfig.from,
+		// 		bcc: mailConfig.BCC,
+		// 		subject: 'Hotel Booking Confirmation',
+        //         html: await HotelBookingConfirmationMail(new HotelBookingParam(booking_details)),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
     }
 
     async savePredictive(booking) {

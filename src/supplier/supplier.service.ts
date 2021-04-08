@@ -22,7 +22,6 @@ import { In } from "typeorm";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
-import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ExportUserDto } from "src/user/dto/export-user.dto";
 
 @Injectable()
@@ -288,22 +287,22 @@ export class SupplierService {
 
 					if (userData) {
 						count++;
-						this.mailerService
-							.sendMail({
-								to: data.email,
-								from: mailConfig.from,
-								cc:mailConfig.BCC,
-								subject: `Welcome on board`,
-								html: RagisterMail({
-									username: data.firstName + " " + data.lastName
-								},data.password)
-							})
-							.then((res) => {
-								console.log("res", res);
-							})
-							.catch((err) => {
-								console.log("err", err);
-							});
+						// this.mailerService
+						// 	.sendMail({
+						// 		to: data.email,
+						// 		from: mailConfig.from,
+						// 		cc:mailConfig.BCC,
+						// 		subject: `Welcome on board`,
+						// 		html: RagisterMail({
+						// 			username: data.firstName + " " + data.lastName
+						// 		},data.password)
+						// 	})
+						// 	.then((res) => {
+						// 		console.log("res", res);
+						// 	})
+						// 	.catch((err) => {
+						// 		console.log("err", err);
+						// 	});
 						} else {
 							row.error_message = "Email id alredy available. ||";
 							unsuccessRecord.push(row);

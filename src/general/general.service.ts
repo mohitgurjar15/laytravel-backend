@@ -12,7 +12,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import * as config from "config";
 import { Role } from "src/enum/role.enum";
 import * as moment from "moment";
-import { massCommunicationMail } from "src/config/email_template/mass-communication.html";
+import { massCommunicationMail } from "src/config/new_email_templete/mass-communication.html";
 import { TestTemplete } from "src/config/new_email_templete/test.html";
 import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
 import { MassCommunication } from "src/entity/mass-communication.entity";
@@ -41,7 +41,6 @@ import { LaytripInstallmentRecevied } from "src/config/new_email_templete/laytri
 import { NewsLetterMail } from "src/config/new_email_templete/news-letters.html";
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
-import { BookingReminderMail } from "src/config/email_template/booking-reminder-mail.html";
 import { LaytripInquiryAutoReplayMail } from "src/config/new_email_templete/laytrip_inquiry-auto-replay-mail.html";
 import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
 import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
