@@ -42,9 +42,9 @@ export function LaytripMissedPaymentTemplete(param: {
     content += `<tr>
                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">${
                         param.try == 2
-                            ? "we understand things happen so We will automatically attempt to process it again on " +
+                            ? "we understand things happen so we will automatically attempt to process it again on " +
                               param.nextDate
-                            : "We will automatically make a final attempt to process it again on " +
+                            : "we will automatically make a final attempt to process it again on " +
                               param.nextDate
                     }.</td>
                 </tr>`;

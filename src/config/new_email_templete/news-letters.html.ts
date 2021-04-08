@@ -11,7 +11,7 @@ const content = `<tr>
                  <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">Welcome to the Laytrip Community! </td>
              </tr>
              <tr>
-                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">We provide <span  style="color: #000000">real-time access to industry-Best Pricing</span> so you would no longer have to shop countless sites and we offer Flexible Layaway Payment Plans to make all your travel now affordable. Choose from <span  style="color: #000000">customizable installment pay options</span> with <span  style="color: #000000">no-interest and no credit check</span> at Checkout!</td>
+                 <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">We provide <span  style="color: #000000">real-time access to industry-best pricing</span> so you no longer have to shop countless sites. We offer layaway plans that you can choose from <span  style="color: #000000">customizable installment options</span> with <span  style="color: #000000">no interest and no credit check</span> at Checkout!</td>
              </tr>
              <tr>
                  <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">We will be providing you email information about our launch soon, stay tuned. </td>

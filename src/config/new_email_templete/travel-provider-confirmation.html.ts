@@ -14,15 +14,12 @@ export async function TravelProviderConfiramationMail(
         if (traveleName != "") {
             traveleName += ", ";
         }
-        if (travelerEmail != "") {
-            travelerEmail += ", ";
-        }
+         if (travelerEmail == "") {
+             travelerEmail += traveler.email
+                 ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
+                 : "";
+         }
         traveleName += traveler.name ? traveler.name : "";
-        travelerEmail += traveler.email
-            ? '<span style="color: #707070;">' +
-              traveler.email +
-              "</span>"
-            : "";
     }
     let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
@@ -52,7 +49,7 @@ export async function TravelProviderConfiramationMail(
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px;  text-align: left;"
                     >
                         <span  style="color: #000000">
-                        Traveler:
+                        Traveler: 
                         </span>
                         <span style="font-size: 18px" >
                         ${traveleName}
@@ -66,7 +63,7 @@ export async function TravelProviderConfiramationMail(
                         style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                     >
                         <span  style="color: #000000">
-                        Email:
+                        Email: 
                         </span>
                         <span style="font-size: 18px" >
                         ${travelerEmail}
@@ -81,7 +78,7 @@ export async function TravelProviderConfiramationMail(
                             valign="top"
                             style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                         >
-                            <span  style="color: #000000">${droup.flight}:</span>
+                            <span  style="color: #000000">${droup.flight}: </span>
                             <span style="font-size: 18px" >Depart ${
                                 droup.depature.code
                             } ${DateTime.convertDateFormat(
@@ -107,7 +104,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Total Price:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span  style="color: #000000">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>`;
     if (param.cart.rememberAmount && param.cart.rememberAmount != "$0") {
@@ -117,7 +114,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Total Paid:</span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                    <span  style="color: #000000">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
@@ -126,7 +123,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Balance Due:</span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                    <span  style="color: #000000">Balance Due: </span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
     }else{
@@ -136,7 +133,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Total Paid:</span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span  style="color: #000000">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
@@ -145,7 +142,7 @@ export async function TravelProviderConfiramationMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
                 >
-                    <span  style="color: #000000">Balance Due:</span> <span style="font-size: 18px" >$0</span>
+                    <span  style="color: #000000">Balance Due: </span> <span style="font-size: 18px" >$0</span>
                 </td>
             </tr>`;
     }

@@ -12,8 +12,8 @@ export function LaytripBookingCancellationCustomerMail(param: {
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color:#000000;padding-top: 15px; text-align: left;">Hi ${param.username},</td>
-                </tr><br>
+                    <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color:#000000; text-align: left;">Hi ${param.username},</td>
+                </tr>
                 <tr>
                     <td align="center" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
                     Booking ID ${param.bookingId} Cancellation Confirmation!  

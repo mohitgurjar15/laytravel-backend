@@ -12,7 +12,6 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { SubscribeForNewslatterDto } from "./dto/subscribe-for-newslatter.dto";
 import { getConnection, getManager } from "typeorm";
 import { NewsLetters } from "src/entity/news-letter.entity";
-import { subscribeForNewsUpdates } from "src/config/email_template/subscribe-newsletter.html";
 import { errorMessage } from "src/config/common.config";
 import { ListSubscribeUsersDto } from "./dto/list-subscribe-users.dto";
 import { NewsLettersRepository } from "./news-letters.repository";
