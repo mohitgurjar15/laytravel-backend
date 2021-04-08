@@ -1933,6 +1933,8 @@ export class FlightService {
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
         if (airRevalidateResult) {
+            bookFlightDto.route_code = airRevalidateResult[0].route_code;
+    
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
             bookingRequestInfo.child_count =
                 typeof airRevalidateResult[0].child_count != "undefined"
@@ -2960,13 +2962,15 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                     arrival_date: await this.changeDateFormat(
-                        bookingData.moduleInfo[0].arrival_code
+                        bookingData.moduleInfo[0].arrival_date
                     ),
                 };
-                flights = await this.searchRoundTripZipFlight(
+                
+                flights = await this.searchRoundTripFlight(
                     dto,
                     Headers,
-                    bookingData.user
+                    bookingData.user,
+                    ""
                 );
             }
 
@@ -3004,6 +3008,9 @@ export class FlightService {
                         user.email,
                         user.cityName
                     );
+                    return {
+                        message :`Flight is booked successfully `
+                    }
                 }
             }
 
