@@ -3594,15 +3594,18 @@ export class FlightService {
                 where += `AND ("from_airport_code" = '${alternet_location}') `;
             }
         }
+
         let orderBy = "from_airport_city";
-        if (is_from_location == "yes"){
+        if (is_from_location != "yes"){
             orderBy = "to_airport_city"
         }
-            let result = await getManager()
-                .createQueryBuilder(FlightRoute, "route")
-                .where(where)
-                .orderBy(orderBy)
-                .getMany();
+
+
+        let result = await getManager()
+            .createQueryBuilder(FlightRoute, "route")
+            .where(where)
+            .orderBy(orderBy,'ASC')
+            .getMany();
 
         if (!result) {
             throw new NotFoundException(
