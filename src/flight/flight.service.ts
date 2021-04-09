@@ -3506,7 +3506,7 @@ export class FlightService {
 					"route"."from_airport_name",
 					"route"."from_airport_city",
 					"route"."from_airport_country"
-					`
+				Order by "route"."from_airport_city"	`
             );
         } else {
             result = await getConnection().query(
@@ -3522,7 +3522,7 @@ export class FlightService {
 					"route"."to_airport_name",
 					"route"."to_airport_city",
 					"route"."to_airport_country"
-					`
+				Order by "route"."to_airport_city"`
             );
         }
 
