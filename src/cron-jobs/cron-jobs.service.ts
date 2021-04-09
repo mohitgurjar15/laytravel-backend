@@ -51,7 +51,7 @@ import { LaytripMissedPaymentTemplete } from "src/config/new_email_templete/miss
 import { LaytripPaymentReminderTemplete } from "src/config/new_email_templete/payment-reminder.html";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 import { flightDataUtility } from "src/utility/flight-data.utility";
-import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
+import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -1405,38 +1405,31 @@ export class CronJobsService {
             .replace(/\..+/, "")
             .split(" ")[0];
 
-        var after5Day = new Date();
-        after5Day.setDate(after5Day.getDate() + 5);
-        var date2 = after5Day.toISOString();
-        date2 = date2
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "")
-            .split(" ")[0];
-
-        let bookings = await getConnection()
-            .createQueryBuilder(Booking, "Booking")
+        let cartBookings = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.user", "User")
             .where(
-                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM} AND "Booking"."module_id" IN (${ModulesName.FLIGHT})`
+                `(DATE("cartBooking"."check_in_date") = DATE('${date1}') ) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
             )
             .getMany();
-        console.log(bookings);
 
-        if (!bookings.length) {
+        if (!cartBookings.length) {
             return {
                 message: `Upcommig booking not found`,
             };
         }
-        for await (const booking of bookings) {
-            let mail = await flightDataUtility.flightData(
-                booking.laytripBookingId
+        for await (const booking of cartBookings) {
+            let mail = await CartDataUtility.CartMailModelDataGenerate(
+                booking.laytripCartId
             );
             await this.mailerService
                 .sendMail({
-                    to: mail.userMail,
+                    to: mail.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `Booking ID ${mail.param.cart.cartId} Reminder For your Upcoming Trip`,
-                    html: await LaytripFlightReminderMail(mail.param),
+                    subject: `Reminder - Booking Number ${mail.param.orderId}`,
+                    html: await TravelProviderReminderMail(mail.param),
                 })
                 .then((res) => {
                     console.log("res", res);

@@ -823,7 +823,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Travel Provider Reservation Confirmation #${mail18.param.flight[0].droups[0].depature.pnr_no} Reminder`,
+                subject: `Reminder - Booking Number ${mail18.param.orderId}`,
                 html: await TravelProviderReconfirmationMail(mail18.param),
             })
             .then((res) => {

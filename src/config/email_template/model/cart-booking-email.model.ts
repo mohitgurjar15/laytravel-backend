@@ -10,11 +10,18 @@ export class CartBookingEmailParameterModel {
        }
 
 class bookings {
-    moduleId:number
+    moduleId: number;
     productId: string;
-    flighData?:flightData[]
+    flighData?: flightData[]
+    hotelData?: hotelData;
 }
-
+class hotelData {
+    hotelName: string;
+    checkIn: string;
+    room: number;
+    adult: number;
+    child:number
+}
 class flightData {
     rout: string;
     status: string;
