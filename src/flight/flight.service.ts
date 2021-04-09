@@ -3582,9 +3582,16 @@ export class FlightService {
             }
         }
 
+        let orderBy = "from_airport_city";
+        if (is_from_location != "yes"){
+            orderBy = "to_airport_city"
+        }
+
+
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
+            .orderBy(orderBy,'ASC')
             .getMany();
 
         if (!result) {
