@@ -3488,6 +3488,7 @@ export class FlightService {
 				"route"."from_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."from_airport_code",
 					"route"."from_airport_name",
@@ -3504,6 +3505,7 @@ export class FlightService {
 				"route"."to_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."to_airport_code",
 					"route"."to_airport_name",
