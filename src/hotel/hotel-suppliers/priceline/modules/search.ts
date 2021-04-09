@@ -1,10 +1,12 @@
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpService, NotFoundException } from "@nestjs/common";
 import { collect } from "collect.js";
 import { DetailHelper } from "../helpers/detail.helper";
 import { RateHelper } from "../helpers/rate.helper";
 import { errorMessage } from "src/config/common.config";
 import { Instalment } from "src/utility/instalment.utility";
 import moment = require("moment");
+import { CommonHelper } from "../helpers/common.helper";
+import { catchError, map } from "rxjs/operators";
 
 
 export class Search{
@@ -19,12 +21,15 @@ export class Search{
     
     private rateHelper: RateHelper;
 
+    private httpsService: HttpService;
+
     constructor() {
         this.detailHelper = new DetailHelper();
         this.rateHelper = new RateHelper();
+        this.httpsService = new HttpService();
     }
 
-    processSearchResult(res, parameters) {
+    async processSearchResult(res, parameters) {
         
         let results = res.data['getHotelExpress.Results'];
         //console.log(results,"---")
@@ -34,22 +39,21 @@ export class Search{
         }
         
         let hotels=[]
+        let hotelIds='';
         if (results.results.status && results.results.status === "Success") { 
             // return results.results.hotel_data;
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
             
             for(let hotel of results.results.hotel_data){
                 
-                console.log(hotel['room_data'][0]['rate_data'][0].payment_type,hotel['room_data'][0]['rate_data'][0].is_cancellable,":::hotel['room_data'][0]['rate_data'][0].is_cancellable")
                 if(hotel['room_data'][0]['rate_data'][0].payment_type=='PREPAID' && hotel['room_data'][0]['rate_data'][0].is_cancellable=="true"){
-                    console.log("Insdie::")
                     this.item = hotel;   
-                    
                     this.rate = hotel['room_data'][0]['rate_data'][0];
-
+                    
                     let { retail, selling, saving_percent } = this.rateHelper.getRates(this.rate, parameters);
                     
                     let details = this.detailHelper.getHotelDetails(hotel, 'list');
+                    hotelIds+=details.id+',';
                     let start_price=0; let secondary_start_price=0;let no_of_weekly_installment=0;
                     let second_down_payment=0; let secondary_start_price_2=0; let no_of_weekly_installment_2=0;
                     let third_down_payment=0; let secondary_start_price_3=0;
@@ -116,8 +120,37 @@ export class Search{
                     hotels.push(newItem)
                 }
             }
+
+
+            //console.log(hotelIds,"hotelIds")
+            let urlparameters = {
+                hotel_ids : hotelIds,
+                image_size: 'medium'
+            };
+    
+            let url = await CommonHelper.generateUrl(
+                "getPhotos",
+                urlparameters
+            );
+
+            let photos = await this.httpsService.get(url)
+            .pipe(
+                catchError((err) => {
+                    throw new BadRequestException(
+                        err + " &&&term&&&" + errorMessage
+                    );
+                })
+            )
+            .toPromise();
             
-            console.log("Hotels",hotels.length)
+            if(hotels.length>0 && typeof photos.data.getHotelPhotos.results!='undefined'){
+                for(let i=0; i < hotels.length; i++){
+                    hotels[i].images = photos.data.getHotelPhotos.results.hotel_photo_data.find(x=>x.hotel_id==hotels[i].id).photo_data;
+                }
+            }
+
+            console.log(photos.data,"----------")
+            
             return hotels;
             
         } else {
