@@ -69,12 +69,12 @@ export class HotelService{
         let hotels = await this.hotel.search(searchReqDto);
         // return hotels;
         /* Add any type of Business logic for hotel object's */
-        hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
+        //hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
 
         let token = uuidv4();
 
         searchReqDto['token'] = token;
-        searchReqDto['total'] = hotels.count();
+        searchReqDto['total'] = hotels.length;
 
         let toCache = {
             details: searchReqDto,
@@ -89,7 +89,7 @@ export class HotelService{
 
         }
         
-        await this.cacheManager.set(token, toCache, { ttl: this.ttl });
+        //await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
