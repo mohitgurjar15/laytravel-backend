@@ -128,7 +128,8 @@ export class Priceline implements HotelInterface {
                 })
             )
             .toPromise();
-
+        
+            
         return res;
     }
 
