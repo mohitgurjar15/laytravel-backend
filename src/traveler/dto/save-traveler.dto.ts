@@ -39,6 +39,7 @@ export class SaveTravelerDto {
            // })
            // title: string;
 
+<<<<<<< HEAD
            @ApiPropertyOptional({
                description: `Enter module id`,
                example: 1,
@@ -50,6 +51,27 @@ export class SaveTravelerDto {
                example: true,
            })
            is_primary_traveler?: boolean;
+=======
+	@IsNotEmpty({
+		message: `Please enter travelers first name.&&&first_name`,
+	})
+	//@NotContains(' ',{message : `First name does not contain whitespace `})
+	@ApiProperty({
+		description: `Enter First Name`,
+		example: `Jon`,
+	})
+	first_name: string;
+
+	@IsNotEmpty({
+		message: `Please enter travelers last name.&&&last_name`,
+	})
+	//@NotContains(' ',{message : `Last name does not contain whitespace `})
+	@ApiProperty({
+		description: `Enter Last Name`,
+		example: `Doe`,
+	})
+	last_name: string;
+>>>>>>> 06b099f994bfb6ab3617141745bef4597d5d9f44
 
            @IsNotEmpty({
                message: `Please enter travelers first name.&&&first_name`,

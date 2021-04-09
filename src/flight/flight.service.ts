@@ -1944,6 +1944,8 @@ export class FlightService {
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
         if (airRevalidateResult) {
+            bookFlightDto.route_code = airRevalidateResult[0].route_code;
+    
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
             bookingRequestInfo.child_count =
                 typeof airRevalidateResult[0].child_count != "undefined"
@@ -2971,13 +2973,15 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                     arrival_date: await this.changeDateFormat(
-                        bookingData.moduleInfo[0].arrival_code
+                        bookingData.moduleInfo[0].arrival_date
                     ),
                 };
-                flights = await this.searchRoundTripZipFlight(
+                
+                flights = await this.searchRoundTripFlight(
                     dto,
                     Headers,
-                    bookingData.user
+                    bookingData.user,
+                    ""
                 );
             }
 
@@ -3015,6 +3019,9 @@ export class FlightService {
                         user.email,
                         user.cityName
                     );
+                    return {
+                        message :`Flight is booked successfully `
+                    }
                 }
             }
 
@@ -3031,13 +3038,15 @@ export class FlightService {
     }
 
     async sendFlightUpdateMail(bookingId, email, userName) {
-        this.mailerService
+        let mail18 = await flightDataUtility.flightData(bookingId);
+        
+        await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: "Booking detail updated",
-                html: BookingDetailsUpdateMail({ username: userName }),
+                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
+                html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
                 console.log("res", res);
@@ -3045,6 +3054,20 @@ export class FlightService {
             .catch((err) => {
                 console.log("err", err);
             });
+        // this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: "Booking detail updated",
+        //         html: Flight({ username: userName }),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
     }
 
     async cartBook(
