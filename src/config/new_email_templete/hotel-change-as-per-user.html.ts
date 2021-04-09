@@ -9,20 +9,19 @@ import { LaytripHeader } from "./laytrip_header.html";
 export async function HotelChangeAsperUserRequestMail(
     param: HotelBookingEmailParameterModel
 ) {
-    let traveleName = "";
-    let travelerEmail = "";
-    for await (const traveler of param.traveler) {
-        if (traveleName != "") {
-            traveleName += ", ";
-        }
-        if (travelerEmail != "") {
-            travelerEmail += ", ";
-        }
-        traveleName += traveler.name ? traveler.name : "";
-        travelerEmail += traveler.email
-            ? '<span style="color: #707070;">' + traveler.email + "</span>"
-            : "";
-    }
+     let traveleName = "";
+     let travelerEmail = "";
+     for await (const traveler of param.traveler) {
+         if (traveleName != "") {
+             traveleName += ", ";
+         }
+         if (travelerEmail == "") {
+             travelerEmail += traveler.email
+                 ? '<span style="color: #0C7BFF;">' + traveler.email + "</span>"
+                 : "";
+         }
+         traveleName += traveler.name ? traveler.name : "";
+     }
 
     let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">

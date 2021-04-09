@@ -4,6 +4,7 @@ import {
   IsEnum,
   ValidateIf,
   NotContains,
+  IsEmail,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Gender } from "src/enum/gender.enum";
@@ -62,10 +63,7 @@ export class UpdateTravelerDto {
                example: `Doe`,
            })
            last_name: string;
-           @ValidateIf(
-               (o) =>
-                   o.module_id != ModulesName.HOTEL 
-           )
+           @ValidateIf((o) => o.module_id != ModulesName.HOTEL)
            @IsValidDate("", {
                message: (args: ValidationArguments) => {
                    if (typeof args.value == "undefined" || args.value == "") {
@@ -171,4 +169,27 @@ export class UpdateTravelerDto {
                example: `1`,
            })
            country_id: number;
+
+           @ApiPropertyOptional({
+               type: "string",
+               description: "Traveler email id",
+           })
+           @IsEmail(
+               {},
+               {
+                   message: (args: ValidationArguments) => {
+                       if (
+                           typeof args.value != "undefined" ||
+                           args.value != ""
+                       ) {
+                           return `Please enter valid email address.&&&email`;
+                       }
+                   },
+               }
+           )
+           @ApiProperty({
+               description: `Enter travelers Email Id`,
+               example: `jon.doe@gmail.com`,
+           })
+           email: string;
        }

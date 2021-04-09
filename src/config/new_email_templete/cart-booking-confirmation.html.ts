@@ -288,7 +288,7 @@ export async function LaytripCartBookingConfirmtionMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
                 >
-                    <span style="color: #707070">Installments</span> 
+                    <span style="color: #000000">Installments</span> 
                 </td>
             </tr> `;
         for (let index = 0; index < param.paymentDetail.length; index++) {

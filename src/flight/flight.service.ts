@@ -118,11 +118,11 @@ export class FlightService {
 
             if (!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`);
-            let airports = []
+            let airports = [];
             for await (const flight of result) {
-               let  airport : any = flight
+                let airport: any = flight;
                 airport.key = flight.city.charAt(0);
-                airports.push(airport)
+                airports.push(airport);
             }
             return airports;
         } catch (error) {
@@ -1268,14 +1268,14 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.roundTripSearch(searchFlightDto, user))
         );
-        
+
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
             user.user_id,
             userIp
         );
-        
+
         return result;
     }
 
@@ -1740,7 +1740,7 @@ export class FlightService {
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
         booking.categoryName = caegory?.categoryname || null;
-        
+
         booking.fareType = fare_type;
         booking.isTicketd = fare_type == "LCC" ? true : false;
 
@@ -3594,11 +3594,15 @@ export class FlightService {
                 where += `AND ("from_airport_code" = '${alternet_location}') `;
             }
         }
-
-        let result = await getManager()
-            .createQueryBuilder(FlightRoute, "route")
-            .where(where)
-            .getMany();
+        let orderBy = "from_airport_city";
+        if (is_from_location == "yes"){
+            orderBy = "to_airport_city"
+        }
+            let result = await getManager()
+                .createQueryBuilder(FlightRoute, "route")
+                .where(where)
+                .orderBy(orderBy)
+                .getMany();
 
         if (!result) {
             throw new NotFoundException(
