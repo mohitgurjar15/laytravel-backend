@@ -24,7 +24,7 @@ export class AddFlightRouteDto {
                },
            })
            @ApiPropertyOptional({
-               description: `Select flight route type.(${FlightRouteType.DOMESTIC},${FlightRouteType.INTERNATIONAL})`,
+               description: `Select flight route type (${FlightRouteType.DOMESTIC},${FlightRouteType.INTERNATIONAL})`,
                example: FlightRouteType.DOMESTIC,
            })
            type: string;
