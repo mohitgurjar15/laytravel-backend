@@ -6,7 +6,7 @@ import { CartBookingEmailParameterModel } from "../email_template/model/cart-boo
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function LaytripFlightBookingConfirmtionMail(
+export async function LaytripCartBookingTravelProviderConfirmtionMail(
     param: CartBookingEmailParameterModel
 ) {
       let traveleName = "";
@@ -51,11 +51,11 @@ export async function LaytripFlightBookingConfirmtionMail(
           const booking = param.bookings[index - 1];
           if (booking.moduleId == ModulesName.FLIGHT) {
               if (booking.flighData[0].droups[0].depature?.pnr_no) {
-                  content += `<span style = "color: #707070">Your ${booking.flighData[0].droups[0].flight} Travel Provider Confirmation Number is ${booking.flighData[0].droups[0].depature?.pnr_no}.</span> `;
+                  content += `<span style = "color: #000000">Your ${booking.flighData[0].droups[0].flight} Travel Provider Confirmation Number is ${booking.flighData[0].droups[0].depature?.pnr_no}.</span> `;
               }
           }
           if (booking.moduleId == ModulesName.HOTEL) {
-              content += `<span style = "color: #707070">Your Hotel Travel Provider Confirmation Number is.</span> `;
+              content += `<span style = "color: #000000">Your Hotel Travel Provider Confirmation Number is.</span> `;
           }
           if (index != param.bookings.length) {
               content += `<br/>`;

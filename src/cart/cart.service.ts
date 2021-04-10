@@ -56,7 +56,7 @@ import { Booking } from "src/entity/booking.entity";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
 import { InstalmentType } from "src/enum/instalment-type.enum";
-
+import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
 @Injectable()
 export class CartService {
     constructor(
@@ -1561,6 +1561,25 @@ more than 5.`
                 .catch((err) => {
                     //console.log("err", err);
                 });
+
+                if(responce?.confirmed == true && responce?.param?.bookingType == BookingType.NOINSTALMENT){
+                    await this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: `Travel Provider Reservation Confirmation`,
+                            html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                                responce.param
+                            ),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
+                }
         } else {
             const user = await CartDataUtility.userData(userId);
             const userName = user.firstName

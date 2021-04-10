@@ -2781,7 +2781,7 @@ export class FlightService {
 
         await booking.save();
 
-        this.sendFlightBookingMail(bookingId, isNewBooking);
+        //this.sendFlightBookingMail(bookingId, isNewBooking);
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
@@ -3412,71 +3412,71 @@ export class FlightService {
         }
     }
 
-    async sendFlightBookingMail(bookingId, isNewBooking) {
-        const mailData = await flightDataUtility.flightData(bookingId);
-        if (mailData.userMail) {
-            if (isNewBooking == 2) {
-                this.mailerService
-                    .sendMail({
-                        to: mailData.userMail,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
-                        html: await LaytripFlightBookingConfirmtionMail(
-                            mailData.param
-                        ),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
-            } else if (isNewBooking == 3) {
-                this.mailerService
-                    .sendMail({
-                        to: mailData.userMail,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no} REMINDER`,
-                        html: await TravelProviderReconfirmationMail(
-                            mailData.param
-                        ),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
-            } else {
-                this.mailerService
-                    .sendMail({
-                        to: mailData.userMail,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject:
-                            isNewBooking == 1
-                                ? mailData.sub
-                                : `Booking ID ${mailData.param.cart.cartId} Change by Travel Provider`,
-                        html:
-                            isNewBooking == 1
-                                ? await LaytripFlightBookingConfirmtionMail(
-                                      mailData.param
-                                  )
-                                : await TravelProviderConfiramationMail(
-                                      mailData.param
-                                  ),
-                    })
-                    .then((res) => {
-                        //console.log("res", res);
-                    })
-                    .catch((err) => {
-                        //console.log("err", err);
-                    });
-            }
-        }
-    }
+    // async sendFlightBookingMail(bookingId, isNewBooking) {
+    //     const mailData = await flightDataUtility.flightData(bookingId);
+    //     if (mailData.userMail) {
+    //         if (isNewBooking == 2) {
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: mailData.userMail,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
+    //                     html: await LaytripFlightBookingConfirmtionMail(
+    //                         mailData.param
+    //                     ),
+    //                 })
+    //                 .then((res) => {
+    //                     console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     console.log("err", err);
+    //                 });
+    //         } else if (isNewBooking == 3) {
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: mailData.userMail,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no} REMINDER`,
+    //                     html: await TravelProviderReconfirmationMail(
+    //                         mailData.param
+    //                     ),
+    //                 })
+    //                 .then((res) => {
+    //                     console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     console.log("err", err);
+    //                 });
+    //         } else {
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: mailData.userMail,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject:
+    //                         isNewBooking == 1
+    //                             ? mailData.sub
+    //                             : `Booking ID ${mailData.param.cart.cartId} Change by Travel Provider`,
+    //                     html:
+    //                         isNewBooking == 1
+    //                             ? await LaytripFlightBookingConfirmtionMail(
+    //                                   mailData.param
+    //                               )
+    //                             : await TravelProviderConfiramationMail(
+    //                                   mailData.param
+    //                               ),
+    //                 })
+    //                 .then((res) => {
+    //                     //console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     //console.log("err", err);
+    //                 });
+    //         }
+    //     }
+    // }
 
     async flightRoute(type) {
         let result;
