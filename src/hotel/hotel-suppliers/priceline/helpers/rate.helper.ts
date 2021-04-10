@@ -47,7 +47,7 @@ export class RateHelper{
         };
     }
 
-    getRates(rate: any, searchParameters: any,inputData) {
+    getRates(rate: any, searchParameters: any,inputData=null) {
         
         searchParameters.rooms = searchParameters.rooms || inputData.num_rooms;
         let retail = this.getPublicPriceBreakUp(rate, searchParameters);
