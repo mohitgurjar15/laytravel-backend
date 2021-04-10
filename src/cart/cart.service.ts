@@ -275,7 +275,7 @@ more than 5.`
                         .where("cart_id =:id", {
                             id: cart.id,
                         })
-                        .orderBy(`id`, 'ASC')
+                        .orderBy(`id`, "ASC")
                         .getOne();
 
                     if (cartTraveler && cartTraveler.userId != user.userId) {
@@ -1609,10 +1609,10 @@ more than 5.`
                 : BookingType.NOINSTALMENT;
 
         let flightRequest;
-        
-        const value = cart.moduleInfo
-        console.log('hhhhh',cart.travelers.length);
-        
+
+        const value = cart.moduleInfo;
+        console.log("hhhhh", cart.travelers.length);
+
         let newCart = {};
         newCart["id"] = cart.id;
         newCart["userId"] = cart.userId;
@@ -1685,7 +1685,7 @@ more than 5.`
             }
         } else {
             newCart["detail"] = {
-                message: value['message'],
+                message: value["message"],
             };
             newCart["status"] = BookingStatus.FAILED;
             await this.saveFailedBooking(
@@ -1704,8 +1704,7 @@ more than 5.`
         }
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
-            
-            
+
             await getConnection()
                 .createQueryBuilder()
                 .delete()
@@ -1719,7 +1718,7 @@ more than 5.`
                 .where(`"id" = '${cart.id}'`)
                 .execute();
         } else {
-            console.log('failed booking');
+            console.log("failed booking");
             await this.saveFailedBooking(
                 cartData.id,
                 cart.moduleInfo,
@@ -1745,9 +1744,9 @@ more than 5.`
             bookingType: number;
             currencyId: number;
             booking_through: string;
-        },moduleId
+        },
+        moduleId
     ) {
-        
         if (typeof errorLog == "object") {
             errorLog = JSON.stringify(errorLog);
         }
@@ -1758,7 +1757,7 @@ more than 5.`
             .replace(/\..+/, "")
             .split(" ")[0];
         const { bookingType, currencyId, booking_through } = other;
-        if(moduleId == ModulesName.FLIGHT){
+        if (moduleId == ModulesName.FLIGHT) {
             let booking = new Booking();
             booking.id = uuidv4();
             booking.moduleId = ModulesName.FLIGHT;
@@ -1807,7 +1806,7 @@ more than 5.`
             );
 
             await booking.save();
-        }else if(moduleId == ModulesName.HOTEL){
+        } else if (moduleId == ModulesName.HOTEL) {
             let booking = new Booking();
             booking.id = uuidv4();
             booking.moduleId = ModulesName.HOTEL;
@@ -1843,16 +1842,12 @@ more than 5.`
             booking.isPredictive = true;
             booking.supplierStatus = 1;
             booking.moduleInfo = moduleInfo;
-            booking.checkInDate = await this.changeDateFormat(
-                moduleInfo[0].input_data.check_in
-            );
-            booking.checkOutDate = await this.changeDateFormat(
-                moduleInfo[0].input_data.check_out
-            );
+            booking.checkInDate = moduleInfo[0].input_data.check_in;
+
+            booking.checkOutDate = moduleInfo[0].input_data.check_out;
 
             await booking.save();
         }
-        
     }
 
     async cartBookingEmailSend(bookingId, userId) {
