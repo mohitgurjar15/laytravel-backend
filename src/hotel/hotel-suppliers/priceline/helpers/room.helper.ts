@@ -26,8 +26,8 @@ export class RoomHelper{
 
                 let cancellation_policies = this.processCancellationPolicies(rate.cancellation_details);
 
-                let { retail, selling, saving_percent } = this.rateHelper.getRates(rate, roomsReqDto);
-
+                let { retail, selling, saving_percent } = this.rateHelper.getRates(rate, roomsReqDto,inputData);
+                console.log(retail,selling,rate)
                 let board_type = rate.board_type != 'NONE' ? rate.board_type : '';
                 newItem = {
                     hotel_id : hotel.id,
