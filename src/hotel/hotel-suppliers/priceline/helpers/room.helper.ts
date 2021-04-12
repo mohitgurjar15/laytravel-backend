@@ -78,6 +78,7 @@ export class RoomHelper{
                     address : hotel.address,
                     room_id: rate.room_id,
                     title: rate.title,
+                    occupancy:rate.occupancy_limit,
                     description: rate.description,
                     beddings,
                     available_rooms: rate.available_rooms,
