@@ -102,6 +102,7 @@ export class Search{
                         retail,
                         selling,
                         saving_percent,
+                        night_rate:(selling.total)/this.rate.price_details.night_price_data.length,
                         refundable: this.rate.is_cancellable,
                         card_required: this.rate.cvc_required,
                         available_rooms: this.rate.available_rooms,
@@ -148,9 +149,6 @@ export class Search{
                     hotels[i].images = photos.data.getHotelPhotos.results.hotel_photo_data.find(x=>x.hotel_id==hotels[i].id).photo_data;
                 }
             }
-
-            console.log(photos.data,"----------")
-            
             return hotels;
             
         } else {

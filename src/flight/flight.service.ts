@@ -3365,10 +3365,10 @@ export class FlightService {
                         }
                         return bookingResult;
                     } else {
-                        await this.paymentService.voidCard(
-                            authCardToken,
-                            userId
-                        );
+                        // await this.paymentService.voidCard(
+                        //     authCardToken,
+                        //     userId
+                        // );
 
                         return {
                             statusCode: 424,
