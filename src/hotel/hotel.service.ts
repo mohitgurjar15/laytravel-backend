@@ -149,7 +149,7 @@ export class HotelService{
         
         /* Add any type of Business logic for hotel object's */
         //console.log("Rooms",rooms.items)
-        rooms = this.rate.generateInstalments(rooms, rooms.items[0].input_data.check_in);
+        //rooms = this.rate.generateInstalments(rooms, rooms.items[0].input_data.check_in);
 
         /* if (this.generic.isset(cached['rooms'])) {
             rooms = collect(cached['rooms']).union(rooms.values().toArray());
