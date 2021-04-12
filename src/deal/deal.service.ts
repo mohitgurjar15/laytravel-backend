@@ -58,20 +58,26 @@ export class DealService {
                 );
             }
 
+            let title = ''
+
             if(module.id == ModulesName.HOTEL){
                 let loc:any = hotel_location
-
+                if (typeof loc == 'string') {
+                    try{
+                        loc = JSON.parse(loc)
+                        console.log(loc);
+                        
+                    }catch(e){
+                        throw new BadRequestException(`Please enter valid hotel location.`)    
+                    }
+                
+                }
+                console.log(typeof loc);
+                
                 if(!loc?.title){
                     throw new BadRequestException(`Enter title`)
-                }
-                if(!loc?.city){
-                    throw new BadRequestException(`Enter city`)
-                }
-                if(!loc?.state){
-                    throw new BadRequestException(`Enter state`)
-                }
-                if(!loc?.type){
-                    throw new BadRequestException(`Enter type`)
+                }else{
+                    title = loc?.title
                 }
                 if(!loc?.lat){
                     throw new BadRequestException(`Enter lat`)
@@ -84,7 +90,7 @@ export class DealService {
             const deal = new Deal();
 
             deal.image = files.image[0].filename;
-            deal.location = location || null;
+            deal.location = module.id == ModulesName.HOTEL ? title : location;
             deal.module = module;
             deal.isDeleted = false;
             deal.status = false;
@@ -103,7 +109,7 @@ export class DealService {
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
-                    case 422:
+                    case 402:
                         throw new BadRequestException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(
@@ -159,30 +165,37 @@ export class DealService {
                 }
                 deal.location = location;
             }
-
+            let title = ''
             if (hotel_location) {
                 if (deal.module.id == ModulesName.HOTEL) {
                     let loc: any = hotel_location;
+                    if (typeof loc == "string") {
+                        try {
+                            loc = JSON.parse(loc);
+                            console.log(loc);
+                        } catch (e) {
+                            throw new BadRequestException(
+                                `Please enter valid hotel location.`
+                            );
+                        }
+                    }
+                    console.log(typeof loc);
 
                     if (!loc?.title) {
                         throw new BadRequestException(`Enter title`);
+                    } else {
+                        title = loc?.title;
                     }
-                    if (!loc?.city) {
-                        throw new BadRequestException(`Enter city`);
-                    }
-                    if (!loc?.state) {
-                        throw new BadRequestException(`Enter state`);
-                    }
-                    if (!loc?.type) {
-                        throw new BadRequestException(`Enter type`);
-                    }
-                    if (!loc?.lat) {
+                   if (!loc?.lat) {
                         throw new BadRequestException(`Enter lat`);
                     }
                     if (!loc?.long) {
                         throw new BadRequestException(`Enter long`);
                     }
                 }
+                deal.location =
+                    deal.module.id == ModulesName.HOTEL ? title : location;
+            
                 deal.hotelLocation = hotel_location;
             }
 
@@ -200,7 +213,7 @@ export class DealService {
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
-                    case 422:
+                    case 402:
                         throw new BadRequestException(error.response.message);
                     case 500:
                         throw new InternalServerErrorException(
@@ -413,6 +426,7 @@ export class DealService {
 
                 if (row.module.id == ModulesName.HOTEL) {
                     deal.location_info = row.hotelLocation;
+                    deal.location_info = JSON.parse(deal.location_info);
                 }
                 deals.push(deal);
             }
@@ -497,10 +511,11 @@ export class DealService {
                 if (row.module.id == ModulesName.FLIGHT) {
                     deal = airports[row.location];
                 }
-                deal.image = siteUrl + "/static/" + row.image;
                 if (row.module.id == ModulesName.HOTEL) {
                     deal = row.hotelLocation;
+                    deal = JSON.parse(deal);
                 }
+                deal.image = siteUrl + "/static/" + row.image;
                 deals.push(deal);
             }
 
@@ -582,6 +597,7 @@ export class DealService {
 
             if (data.module.id == ModulesName.HOTEL) {
                 deal.location_info = data.hotelLocation;
+                deal.location_info = JSON.parse(deal.location_info);
             }
 
             return deal;

@@ -118,11 +118,11 @@ export class FlightService {
 
             if (!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`);
-            let airports = []
+            let airports = [];
             for await (const flight of result) {
-               let  airport : any = flight
+                let airport: any = flight;
                 airport.key = flight.city.charAt(0);
-                airports.push(airport)
+                airports.push(airport);
             }
             return airports;
         } catch (error) {
@@ -1268,14 +1268,14 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.roundTripSearch(searchFlightDto, user))
         );
-        
+
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
             user.user_id,
             userIp
         );
-        
+
         return result;
     }
 
@@ -1740,7 +1740,7 @@ export class FlightService {
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
         booking.categoryName = caegory?.categoryname || null;
-        
+
         booking.fareType = fare_type;
         booking.isTicketd = fare_type == "LCC" ? true : false;
 
@@ -3501,12 +3501,13 @@ export class FlightService {
 				"route"."from_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."from_airport_code",
 					"route"."from_airport_name",
 					"route"."from_airport_city",
 					"route"."from_airport_country"
-					`
+				Order by "route"."from_airport_city"	`
             );
         } else {
             result = await getConnection().query(
@@ -3517,12 +3518,13 @@ export class FlightService {
 				"route"."to_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."to_airport_code",
 					"route"."to_airport_name",
 					"route"."to_airport_city",
 					"route"."to_airport_country"
-					`
+				Order by "route"."to_airport_city"`
             );
         }
 
@@ -3595,9 +3597,16 @@ export class FlightService {
             }
         }
 
+        let orderBy = "from_airport_city";
+        if (is_from_location != "yes"){
+            orderBy = "to_airport_city"
+        }
+
+
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
+            .orderBy(orderBy,'ASC')
             .getMany();
 
         if (!result) {

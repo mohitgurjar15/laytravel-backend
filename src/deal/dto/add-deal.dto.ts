@@ -24,7 +24,7 @@ export class AddDealDto {
            @IsNotEmpty({
                message: `Please enter location &&&subject&&&Please enter location.`,
            })
-           @ApiProperty({
+           @ApiPropertyOptional({
                description: "Enter location",
                example: "",
            })
