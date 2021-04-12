@@ -5,7 +5,7 @@ import { BaseUrl, reviewLink } from "../base-url";
 export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
     const content = `
                                 <tr>
-                                    <td align="center" valine="top" style="padding: 20px 25px 10px; background: #ffffff;">
+                                    <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
                                             <tbody>
                                                 <tr>
@@ -20,15 +20,15 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #F826C1;padding-top: 25px; text-align: left;">
-                                                    <u><a href = '${reviewLink +
-                                                        param.bookingId}'style="color: #F826C1;">Review</a></u>
+                                                    <a href = '${reviewLink +
+                                                        param.bookingId}'style="color: #F826C1;">Review</a>
                                                     </td>
                                                 </tr>
                                                 
 
                                                         
                                                 <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
+                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 25px; text-align: left;">
                                                         Want to share your travel experience with other Laytrippers? Click the social icons below, and tag #laytrip.
                                                     </td>
                                                 </tr>													
@@ -36,7 +36,7 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
                                         </table>
                                     </td>
                                 </tr><tr>
-<td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
+<td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
@@ -44,7 +44,7 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
             </tr>
             
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043ff;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
+                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

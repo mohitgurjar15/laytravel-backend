@@ -38,7 +38,6 @@ import { Role } from "src/enum/role.enum";
 import { ActiveDeactiveDto } from "src/user/dto/active-deactive-user.dto";
 import { isEmail } from "class-validator";
 import { Activity } from "src/utility/activity.utility";
-import { RagisterMail } from "src/config/email_template/register-mail.html";
 import { ExportUserDto } from "src/user/dto/export-user.dto";
 import { LaytripWelcomeBoardMail } from "src/config/new_email_templete/laytrip_welcome-board-mail.html";
 
@@ -97,7 +96,7 @@ export class AdminService {
                     to: email,
                     from: mailConfig.from,
                     cc: mailConfig.BCC,
-                    subject: "Welcome To Laytrip!",
+                    subject: "Welcome to Laytrip!",
                     html: LaytripWelcomeBoardMail(),
                 })
                 .then((res) => {
@@ -401,22 +400,22 @@ export class AdminService {
 
 						if (userData) {
 							count++;
-							this.mailerService
-								.sendMail({
-									to: data.email,
-									from: mailConfig.from,
-									bcc: mailConfig.BCC,
-									subject: `Welcome on board`,
-									html: RagisterMail({
-										username: data.firstName + " " + data.lastName
-									}, data.password)
-								})
-								.then((res) => {
-									console.log("res", res);
-								})
-								.catch((err) => {
-									console.log("err", err);
-								});
+							// this.mailerService
+							// 	.sendMail({
+							// 		to: data.email,
+							// 		from: mailConfig.from,
+							// 		bcc: mailConfig.BCC,
+							// 		subject: `Welcome on board`,
+							// 		html: RagisterMail({
+							// 			username: data.firstName + " " + data.lastName
+							// 		}, data.password)
+							// 	})
+							// 	.then((res) => {
+							// 		console.log("res", res);
+							// 	})
+							// 	.catch((err) => {
+							// 		console.log("err", err);
+							// 	});
 						} else {
 							row.error_message = "Email id alredy available.||";
 							unsuccessRecord.push(row);

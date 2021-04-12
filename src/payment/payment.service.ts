@@ -1181,7 +1181,7 @@ export class PaymentService {
                                 cart.bookings[0].bookingInstalments[0].instalmentDate
                             ),
                             "YYYY-MM-DD",
-                            "MMM Do, YYYY"
+                            "MMMM DD, YYYY"
                         ),
                         userName:
                             cart.user.firstName + " " + cart.user.lastName,
@@ -1206,7 +1206,7 @@ export class PaymentService {
                         nextDate: DateTime.convertDateFormat(
                             new Date(nextDate),
                             "YYYY-MM-DD",
-                            "MMM Do, YYYY"
+                            "MMMM DD, YYYY"
                         ),
                         nextAmount: nextAmount,
                     };
@@ -1361,7 +1361,7 @@ export class PaymentService {
                 bookingId
             );
             if (responce?.param) {
-                let subject = `Booking ID ${responce.param.orderId} Complition Notice`;
+                let subject = `Booking ID ${responce.param.orderId} Completion Notice`;
                 this.mailerService
                     .sendMail({
                         to: responce.email,

@@ -118,7 +118,7 @@ export class flightDataUtility {
                 date: DateTime.convertDateFormat(
                     d,
                     "MM/DD/YYYY",
-                    "MMM DD, YYYY"
+                    "MMMM DD, YYYY"
                 ),
                 status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
             };
@@ -137,11 +137,8 @@ export class flightDataUtility {
                 //     user_type = "Adult";
                 // }
                 travelerInfo.push({
-                    name:
-                        traveler.travelerInfo.firstName +
-                            " " +
-                            traveler.travelerInfo.lastName || "",
-                    email: traveler.travelerInfo.email,
+                    name: traveler.travelerInfo.firstName,
+                    email: user.email,
                     type: traveler.travelerInfo.user_type,
                 });
             }
@@ -271,7 +268,7 @@ export class flightDataUtility {
                 date: DateTime.convertDateFormat(
                     d,
                     "MM/DD/YYYY",
-                    "MMM DD, YYYY"
+                    "MMMM DD, YYYY"
                 ),
                 status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
             };

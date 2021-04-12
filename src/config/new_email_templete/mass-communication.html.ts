@@ -1,6 +1,6 @@
-import { EmailHeader } from "./header.html";
-import { EmailFooter } from "./footer.html";
 import { BaseUrl } from "../base-url";
+import { LaytripFooter2 } from "./laytrip-second-footer.html";
+import { LaytripHeader } from "./laytrip_header.html";
 
 export function massCommunicationMail(param: { header: string, body: string }) {
     const content = `<!-- header Text section start -->
@@ -35,5 +35,5 @@ export function massCommunicationMail(param: { header: string, body: string }) {
     </tr>
 </table>
 <!-- header text section End -->`;
-    return EmailHeader + content + EmailFooter;
+    return LaytripHeader + content + LaytripFooter2;
 }
