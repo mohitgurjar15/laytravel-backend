@@ -34,11 +34,11 @@ export class Priceline implements HotelInterface {
     async autoComplete(term: string) {
         let parameters = {
             string: term,
-            get_airports: true,
+            get_airports: false,
             get_cities: true,
-            get_regions: true,
-            get_hotels: true,
-            get_pois: true,
+            get_regions: false,
+            get_hotels: false,
+            get_pois: false,
         };
 
         let url = await CommonHelper.generateUrl(
