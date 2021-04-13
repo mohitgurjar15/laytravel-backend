@@ -1,11 +1,16 @@
-import { EntityRepository, Repository, getManager, getConnection } from "typeorm";
+import {
+    EntityRepository,
+    Repository,
+    getManager,
+    getConnection,
+} from "typeorm";
 import { Booking } from "src/entity/booking.entity";
 import { ListBookingDto } from "./dto/list-booking.dto";
 import { NotFoundException } from "@nestjs/common";
 import { ListPaymentDto } from "./dto/list-payment.dto";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { User } from "src/entity/user.entity";
-import * as moment from 'moment';
+import * as moment from "moment";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { ExportBookingDto } from "./dto/export-booking.dto";
 import { BookingType } from "src/enum/booking-type.enum";
@@ -28,7 +33,7 @@ export class BookingRepository extends Repository<Booking> {
 			booking_id,
 			search,
 			module_id, supplier_id,
-			email, booking_through, transaction_token, product_id
+			email, booking_through, transaction_token, product_id ,depature_date , booking_date
 
 		} = listBookingDto;
 		const take = limit || 10;
@@ -51,6 +56,14 @@ export class BookingRepository extends Repository<Booking> {
 		if (supplier_id) {
 			where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
 		}
+
+         if (booking_date) {
+            where += `AND (DATE("booking".booking_date) = '${booking_date}') `;
+        }
+
+		if (depature_date) {
+            where += `AND (DATE("booking".check_in_date) = '${depature_date}') `;
+        }
 
 		if (start_date) {
 			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;
@@ -693,7 +706,7 @@ export class BookingRepository extends Repository<Booking> {
 			payment_type,
 			booking_id,
 			search,
-			module_id, supplier_id, userId, product_id
+			module_id, supplier_id, userId, product_id ,depature_date ,booking_date
 		} = filterOption;
 
 		let where;
@@ -708,6 +721,14 @@ export class BookingRepository extends Repository<Booking> {
 		if (supplier_id) {
 			where += `AND ("booking"."supplier_id" = '${supplier_id}')`;
 		}
+
+         if (booking_date) {
+             where += `AND (DATE("booking".booking_date) = '${booking_date}') `;
+         }
+
+         if (depature_date) {
+             where += `AND (DATE("booking".check_in_date) = '${depature_date}') `;
+         }
 
 		if (start_date) {
 			where += `AND (DATE("booking".booking_date) >= '${start_date}') `;

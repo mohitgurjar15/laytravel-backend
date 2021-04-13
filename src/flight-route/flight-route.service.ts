@@ -69,6 +69,38 @@ export class FlightRouteService {
         return { route: result, count };
     }
 
+    async routesCounts() {
+        const typeCount = await getConnection().query(
+            `SELECT "type",COUNT(id) as "count" FROM "flight_route" WHERE "is_deleted" = false GROUP BY type`
+        );
+
+        const categoryCount = await getConnection().query(
+            `SELECT (SELECT "name" FROM laytrip_category where laytrip_category.id = flight_route.category_id),COUNT(id) as "count" FROM "flight_route" WHERE "is_deleted" = false GROUP BY category_id`
+        );
+
+        const totalFlightRoutes = await getConnection().query(
+            `SELECT COUNT(id) as "count" FROM "flight_route" WHERE "is_deleted" = false`
+        );
+
+        let responce = {};
+
+        for await (const category of categoryCount) {
+            responce[category.name] = category.count;
+        }
+
+        for await (const type of typeCount) {
+            responce[type.type] = type.count;
+        }
+
+        responce["flight_route_count"] = totalFlightRoutes[0].count;
+        // return {
+        //     flight_route_count: totalFlightRoutes[0].count,
+        //     category_count: categoryCount,
+        //     type_count: typeCount,
+        // };
+        return responce;
+    }
+
     async addFlightRoute(addFlightRouteDto: AddFlightRouteDto, user: User) {
         const {
             category_id,
