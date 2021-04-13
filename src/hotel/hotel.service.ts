@@ -139,7 +139,7 @@ export class HotelService {
         };
     }
 
-    async rooms(roomsReqDto: RoomsReqDto) {
+    async rooms(roomsReqDto: RoomsReqDto,user_id) {
         let cached = await this.cacheManager.get(roomsReqDto.token);
 
         if (!cached) {
@@ -167,7 +167,7 @@ export class HotelService {
         roomsReqDto.bundle = hotel["bundle"];
         roomsReqDto.rooms = details.occupancies.length;
 
-        let rooms = await this.hotel.rooms(roomsReqDto);
+        let rooms = await this.hotel.rooms(roomsReqDto,user_id);
         // return rooms;
 
         /* Add any type of Business logic for hotel object's */
@@ -247,7 +247,7 @@ export class HotelService {
         return response;
     }
 
-    async book(bookDto: BookDto) {
+    async book(bookDto: BookDto, user_id) {
         let cached = await this.cacheManager.get(bookDto.token);
 
         if (!cached) {
@@ -381,7 +381,7 @@ export class HotelService {
 
                 let bookData = new PPNBookDto(bookDto);
 
-                let book = await this.hotel.book(bookData);
+                let book = await this.hotel.book(bookData, user_id);
 
                 if (book.status == "success") {
                     bookingData.supplierStatus = 1;
@@ -486,7 +486,7 @@ export class HotelService {
         }
     }
 
-    async fetchPrice(bookingData: Booking) {
+    async fetchPrice(bookingData: Booking,) {
         try {
             let info: any = bookingData.moduleInfo;
 
@@ -506,7 +506,7 @@ export class HotelService {
                 rooms: info.details.occupancies.length,
             };
 
-            let rooms = await this.hotel.rooms(roomsReqDto);
+            let rooms = await this.hotel.rooms(roomsReqDto,bookingData.userId || '');
 
             let room: any = collect(rooms)
                 .where("room_id", info.room.id)
@@ -567,7 +567,7 @@ export class HotelService {
 
                         let bookData = new PPNBookDto(bookDto);
 
-                        let book = await this.hotel.book(bookData);
+                        let book = await this.hotel.book(bookData, booking.userId);
 
                         let response: any = {
                             success_message: "Booking is Failed",
@@ -861,7 +861,10 @@ export class HotelService {
 
                     let bookData = new PPNBookDto(bookDto);
 
-                    let bookingResult = await this.hotel.book(bookData);
+                    let bookingResult = await this.hotel.book(
+                        bookData,
+                        user.userId
+                    );
 
                     let authCardToken = transaction_token;
 
@@ -885,10 +888,11 @@ export class HotelService {
                     if (bookingResult?.status != "success") {
                         return {
                             statusCode: 424,
-                            message: "Booking failed from supplier side at " + new Date(),
-                            bookingResult
+                            message:
+                                "Booking failed from supplier side at " +
+                                new Date(),
+                            bookingResult,
                         };
-
                     }
 
                     // if (dayDiff <= 90) {
@@ -948,8 +952,11 @@ export class HotelService {
 
                     let bookData = new PPNBookDto(bookDto);
 
-                    let bookingResult = await this.hotel.book(bookData);
-            
+                    let bookingResult = await this.hotel.book(
+                        bookData,
+                        user.userId
+                    );
+
                     let authCardToken = transaction_token;
                     if (bookingResult?.status == "success") {
                         let laytripBookingResult = await this.saveBooking(
@@ -1283,7 +1290,7 @@ export class HotelService {
         //console.log(net_rate);
         //console.log(typeof net_rate);
         console.log(net_rate);
-        
+
         booking.netRate = net_rate.toString();
         //console.log(5);
         booking.markupAmount = (selling_price - net_rate).toString();
@@ -1341,18 +1348,16 @@ export class HotelService {
                     ? BookingStatus.CONFIRM
                     : BookingStatus.FAILED;
             booking.paymentStatus = PaymentStatus.PENDING;
-            console.log('Booking id',supplierBookingData?.details?.booking_id);
-            
+            console.log("Booking id", supplierBookingData?.details?.booking_id);
+
             booking.supplierBookingId =
                 supplierBookingData != null &&
                 supplierBookingData.details.booking_id
                     ? supplierBookingData?.details?.booking_id
                     : "";
-            booking.isPredictive = false
-    
-            booking.supplierStatus =
-                supplierBookingData != null ? 0
-                    : 1;
+            booking.isPredictive = false;
+
+            booking.supplierStatus = supplierBookingData != null ? 0 : 1;
         } else {
             //pass here mystifly booking id
             booking.supplierBookingId = supplierBookingData.details.booking_id;
