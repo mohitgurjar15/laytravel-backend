@@ -41,7 +41,7 @@ export class AutoComplete{
                             state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
                             break;
                         
-                        case 'airport':
+                        /* case 'airport':
                             country = sub['country_code'];
                             state = this.genericHelper.isset(sub['state_code']) ? sub['state_code'] : "";
                             city = sub['city'];
@@ -65,7 +65,7 @@ export class AutoComplete{
                             state = (sub['address']['state_name'] == "") ? sub['address']['state_code'] : sub['address']['state_name'];
                             country = (sub['address']['country_name'] == "") ? sub['address']['country_code'] : sub['address']['country_name'];
                             hotel_id = sub['hotelid_ppn'];
-                            break;
+                            break; */
                     }
                     
                     let title = [line, city, state, country].filter(x=>x).join(', ');
