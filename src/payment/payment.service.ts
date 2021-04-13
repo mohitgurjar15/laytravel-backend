@@ -660,6 +660,7 @@ export class PaymentService {
         method = method || "POST";
         //console.log("method", method)
         try {
+            let requestTime = `${new Date()}`
             let result = await Axios({
                 method: method,
                 url: url,
@@ -667,10 +668,15 @@ export class PaymentService {
                 headers: headers,
             });
 
+            
+
             let logData = {};
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
+            logData["requestTime"] = requestTime;
+            let responceTime = `${new Date()}`
+            logData["responceTime"] = responceTime;
             logData["responce"] = result.data;
             let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
             if (userId) {

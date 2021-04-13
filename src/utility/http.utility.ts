@@ -7,6 +7,7 @@ export class HttpRequest {
 
     static async mystiflyRequest(url, requestBody, headerAction , user = '') {
         try {
+            let requestTime = `${new Date()}`;
             let result = await Axios({
                 method: 'POST',
                 url: url,
@@ -26,6 +27,9 @@ export class HttpRequest {
                 let logData = {};
                 logData['url'] = url
                 logData['requestBody'] = requestBody
+                logData["requestTime"] = requestTime;
+                let responceTime = `${new Date()}`;
+                logData["responceTime"] = responceTime;
                 logData['headers'] = {
                     'content-type': 'text/xml',
                     'Accept-Encoding': 'gzip',
