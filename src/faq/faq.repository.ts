@@ -43,9 +43,15 @@ export class FaqRepository extends Repository<Faq> {
         const query = getConnection()
             .createQueryBuilder(FaqCategory, "category")
             .leftJoinAndSelect("category.faqs", "faq")
-            .select(["category.id", "category.name", "faq.id", "faq.question", "faq.answer"])
-            .orderBy(`category.id`, 'ASC')
-            .where(where)
+            .select([
+                "category.id",
+                "category.name",
+                "faq.id",
+                "faq.question",
+                "faq.answer",
+            ])
+            .orderBy(`faq.id`, "ASC")
+            .where(where);
         const [result, total] = await query.getManyAndCount();
         if (!result.length) {
             throw new NotFoundException(`No faq found.`)
