@@ -126,7 +126,7 @@ export class Search{
             //console.log(hotelIds,"hotelIds")
             let urlparameters = {
                 hotel_ids : hotelIds,
-                image_size: 'medium'
+                image_size: 'small'
             };
     
             let url = await CommonHelper.generateUrl(
