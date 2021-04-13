@@ -3365,10 +3365,10 @@ export class FlightService {
                         }
                         return bookingResult;
                     } else {
-                        await this.paymentService.voidCard(
-                            authCardToken,
-                            userId
-                        );
+                        // await this.paymentService.voidCard(
+                        //     authCardToken,
+                        //     userId
+                        // );
 
                         return {
                             statusCode: 424,
@@ -3501,12 +3501,13 @@ export class FlightService {
 				"route"."from_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."from_airport_code",
 					"route"."from_airport_name",
 					"route"."from_airport_city",
 					"route"."from_airport_country"
-					`
+				Order by "route"."from_airport_city"	`
             );
         } else {
             result = await getConnection().query(
@@ -3517,12 +3518,13 @@ export class FlightService {
 				"route"."to_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."to_airport_code",
 					"route"."to_airport_name",
 					"route"."to_airport_city",
 					"route"."to_airport_country"
-					`
+				Order by "route"."to_airport_city"`
             );
         }
 
@@ -3594,15 +3596,18 @@ export class FlightService {
                 where += `AND ("from_airport_code" = '${alternet_location}') `;
             }
         }
+
         let orderBy = "from_airport_city";
-        if (is_from_location == "yes"){
+        if (is_from_location != "yes"){
             orderBy = "to_airport_city"
         }
-            let result = await getManager()
-                .createQueryBuilder(FlightRoute, "route")
-                .where(where)
-                .orderBy(orderBy)
-                .getMany();
+
+
+        let result = await getManager()
+            .createQueryBuilder(FlightRoute, "route")
+            .where(where)
+            .orderBy(orderBy,'ASC')
+            .getMany();
 
         if (!result) {
             throw new NotFoundException(

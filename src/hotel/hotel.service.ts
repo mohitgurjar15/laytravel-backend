@@ -89,12 +89,12 @@ export class HotelService {
         let hotels = await this.hotel.search(searchReqDto);
         // return hotels;
         /* Add any type of Business logic for hotel object's */
-        hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
+        //hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
 
         let token = uuidv4();
 
-        searchReqDto["token"] = token;
-        searchReqDto["total"] = hotels.count();
+        searchReqDto['token'] = token;
+        searchReqDto['total'] = hotels.length;
 
         let toCache = {
             details: searchReqDto,
@@ -108,8 +108,8 @@ export class HotelService {
 
             toCache["filter_objects"] = filterObjects;
         }
-
-        await this.cacheManager.set(token, toCache, { ttl: this.ttl });
+        
+        //await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
             data: toCache,
@@ -120,27 +120,28 @@ export class HotelService {
     }
 
     async detail(detailReqDto: DetailReqDto) {
-        let cached = await this.cacheManager.get(detailReqDto.token);
+        
+        //let cached = await this.cacheManager.get(detailReqDto.token);
 
-        if (!cached) {
+        /* if (!cached) {
             throw new BadRequestException(invalidToken);
-        }
+        } */
 
         let detail = await this.hotel.detail(detailReqDto);
-
-        let details = cached.details;
+        
+        //let details = cached.details;
 
         return {
             data: {
                 hotel: detail,
-                details,
+                details:{}
             },
             message: "Detail found for " + detailReqDto.hotel_id,
         };
     }
 
     async rooms(roomsReqDto: RoomsReqDto,user_id) {
-        let cached = await this.cacheManager.get(roomsReqDto.token);
+        /*let cached = await this.cacheManager.get(roomsReqDto.token);
 
         if (!cached) {
             throw new BadRequestException(invalidToken);
@@ -162,26 +163,25 @@ export class HotelService {
             );
         }
 
-        let details = cached.details;
+        let details = cached.details; */
 
-        roomsReqDto.bundle = hotel["bundle"];
-        roomsReqDto.rooms = details.occupancies.length;
+        //roomsReqDto.bundle = hotel['bundle'];
+        //roomsReqDto.rooms = details.occupancies.length;
 
         let rooms = await this.hotel.rooms(roomsReqDto,user_id);
         // return rooms;
 
         /* Add any type of Business logic for hotel object's */
-        rooms = this.rate.generateInstalments(rooms, details.check_in);
+        //console.log("Rooms",rooms.items)
+        //rooms = this.rate.generateInstalments(rooms, rooms.items[0].input_data.check_in);
 
-        if (this.generic.isset(cached["rooms"])) {
-            rooms = collect(cached["rooms"]).union(rooms.values().toArray());
-        }
+        /* if (this.generic.isset(cached['rooms'])) {
+            rooms = collect(cached['rooms']).union(rooms.values().toArray());
+        } */
 
-        cached["rooms"] = rooms;
+        //cached['rooms'] = rooms;
 
-        await this.cacheManager.set(roomsReqDto.token, cached, {
-            ttl: this.ttl,
-        });
+        //await this.cacheManager.set(roomsReqDto.token, cached, { ttl: this.ttl });
 
         let response = {
             data: rooms,

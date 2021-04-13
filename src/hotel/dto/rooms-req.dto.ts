@@ -9,5 +9,11 @@ export class RoomsReqDto extends InternalDto{
     })
     @IsString()
     hotel_id: string;
+
+    @ApiProperty({
+        description: 'Bundle ID'
+    })
+    @IsString()
+    bundle: string;
     
 }

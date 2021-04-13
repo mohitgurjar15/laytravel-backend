@@ -21,8 +21,9 @@ export class Rooms{
         if (results.results.status && results.results.status === "Success") {
             
             let hotel = results.results.hotel_data[0];
+            let inputData= results.results.input_data;
             // return hotel;
-            let rooms = this.roomHelper.processRoom(hotel, roomsReqDto);
+            let rooms = this.roomHelper.processRoom(hotel, roomsReqDto,inputData);
 
             return rooms;
 

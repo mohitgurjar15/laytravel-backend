@@ -387,14 +387,21 @@ export class BookingService {
                 result.data[i]["paidAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
-                        ? result.data[i].totalAmount
-                        : paidAmount;
+                        ? Generic.formatPriceDecimal(
+                              parseFloat(result.data[i].totalAmount)
+                          )
+                        : Generic.formatPriceDecimal(paidAmount);
                 result.data[i]["remainAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
                         ? 0
-                        : remainAmount;
-
+                        : Generic.formatPriceDecimal(remainAmount);
+                result.data[i]["paid_amount_in_percentage"] =
+                    Generic.formatPriceDecimal(
+                        (parseFloat(result.data[i]["paidAmount"]) * 100) / parseFloat(result.data[i].totalAmount));
+                result.data[i]["remain_days"] = moment(
+                    moment(result.data[i].checkInDate)
+                ).diff(new Date(), "days");
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;

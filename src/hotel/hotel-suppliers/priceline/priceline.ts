@@ -26,292 +26,275 @@ import { HttpRequest } from "src/utility/http.utility";
 import { Activity } from "src/utility/activity.utility";
 
 export class Priceline implements HotelInterface {
-           private httpsService: HttpService;
-           private data: any;
-           constructor() {
-               this.httpsService = new HttpService();
-           }
+    private httpsService: HttpService;
+    private data: any;
+    constructor() {
+        this.httpsService = new HttpService();
+    }
 
-           async autoComplete(term: string) {
-               let parameters = {
-                   string: term,
-                   get_airports: true,
-                   get_cities: true,
-                   get_regions: true,
-                   get_hotels: true,
-                   get_pois: true,
-               };
+    async autoComplete(term: string) {
+        let parameters = {
+            string: term,
+            get_airports: false,
+            get_cities: true,
+            get_regions: false,
+            get_hotels: false,
+            get_pois: false,
+        };
 
-               let url = await CommonHelper.generateUrl(
-                   "getAutoSuggestV2",
-                   parameters
-               );
+        let url = await CommonHelper.generateUrl(
+            "getAutoSuggestV2",
+            parameters
+        );
 
-               let locations = await this.httpsService
-                   .get(url)
-                   .pipe(
-                       map((res) =>
-                           new AutoComplete().processSearchLocationResult(res)
-                       ),
-                       catchError((err) => {
-                           throw new BadRequestException(
-                               err + " &&&term&&&" + errorMessage
-                           );
-                       })
-                   )
-                   .toPromise();
+        let locations = await this.httpsService
+            .get(url)
+            .pipe(
+                map((res) =>
+                    new AutoComplete().processSearchLocationResult(res)
+                ),
+                catchError((err) => {
+                    throw new BadRequestException(
+                        err + " &&&term&&&" + errorMessage
+                    );
+                })
+            )
+            .toPromise();
 
-               return locations;
-           }
+        return locations;
+    }
 
-           async search(searchReqDto: SearchReqDto) {
-               let {
-                   latitude,
-                   longitude,
-                   check_in,
-                   check_out,
-                   hotel_id,
-               } = searchReqDto;
+    async search(searchReqDto: SearchReqDto) {
+        let {
+            latitude,
+            longitude,
+            check_in,
+            check_out,
+            hotel_id,
+        } = searchReqDto;
 
-               let occupancies = collect(searchReqDto.occupancies);
+        let occupancies = collect(searchReqDto.occupancies);
 
-               let rooms = occupancies.count();
+        let rooms = occupancies.count();
 
-               let adults = occupancies.sum("adults");
+        let adults = occupancies.sum("adults");
 
-               let children = occupancies
-                   .flatMap((value) => value["children"])
-                   .count();
+        let children = occupancies
+            .flatMap((value) => value["children"])
+            .count();
 
-               let parameters = {
-                   check_in,
-                   check_out,
-                   rooms,
-                   adults,
-                   children,
-                   field_blacklist:
-                       "hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage",
-                   rate_limit: 1,
-               };
-               let extra: any = {};
+        let parameters = {
+            check_in,
+            check_out,
+            rooms,
+            adults,
+            children,
+            field_blacklist:
+                "hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage",
+            rate_limit: 1,
+        };
+        let extra: any = {};
 
-               if (hotel_id) {
-                   extra = {
-                       hotel_ids: hotel_id,
-                   };
-               } else {
-                   extra = {
-                       latitude,
-                       longitude,
-                   };
-               }
+        if (hotel_id) {
+            extra = {
+                hotel_ids: hotel_id,
+            };
+        } else {
+            extra = {
+                latitude,
+                longitude,
+            };
+        }
 
-               parameters = {
-                   ...parameters,
-                   ...extra,
-               };
+        parameters = {
+            ...parameters,
+            ...extra,
+        };
 
-               let url = await CommonHelper.generateUrl(
-                   "getExpress.Results",
-                   parameters
-               );
+        let url = await CommonHelper.generateUrl(
+            "getExpress.Results",
+            parameters
+        );
 
-               let res = await this.httpsService
-                   .get(url)
-                   .pipe(
-                       map((res) =>
-                           new Search().processSearchResult(res, parameters)
-                       ),
-                       catchError((err) => {
-                           //console.log("Error", err);
-                           throw new BadRequestException(
-                               err + " &&&search&&&" + errorMessage
-                           );
-                       })
-                   )
-                   .toPromise();
+        let res = await this.httpsService
+            .get(url)
+            .pipe(
+                map((res) => new Search().processSearchResult(res, parameters)),
+                catchError((err) => {
+                    //console.log("Error", err);
+                    throw new BadRequestException(
+                        err + " &&&search&&&" + errorMessage
+                    );
+                })
+            )
+            .toPromise();
 
-               return res;
-           }
+        return res;
+    }
 
-           async detail(detailReqDto: DetailReqDto) {
-               let parameters = {
-                   hotel_id: detailReqDto.hotel_id,
-                   photos: true,
-                   image_size: "large",
-                   reviews: true,
-               };
+    async detail(detailReqDto: DetailReqDto) {
+        let parameters = {
+            hotel_id: detailReqDto.hotel_id,
+            photos: true,
+            image_size: "large",
+            reviews: true,
+        };
 
-               let url = await CommonHelper.generateUrl(
-                   "getHotelDetails",
-                   parameters
-               );
+        let url = await CommonHelper.generateUrl("getHotelDetails", parameters);
 
-               let res = await this.httpsService
-                   .get(url)
-                   .pipe(
-                       map((res) =>
-                           new Detail().processDetailResult(res, parameters)
-                       ),
-                       catchError((err) => {
-                           throw new BadRequestException(
-                               err + " &&&detail&&&" + errorMessage
-                           );
-                       })
-                   )
-                   .toPromise();
+        let res = await this.httpsService
+            .get(url)
+            .pipe(
+                map((res) => new Detail().processDetailResult(res, parameters)),
+                catchError((err) => {
+                    throw new BadRequestException(
+                        err + " &&&detail&&&" + errorMessage
+                    );
+                })
+            )
+            .toPromise();
 
-               return res;
-           }
+        return res;
+    }
 
-           async rooms(roomsReqDto: RoomsReqDto, user_id) {
-               let parameters = {
-                   ppn_bundle: roomsReqDto.bundle,
-               };
+    async rooms(roomsReqDto: RoomsReqDto, user_id) {
+        let parameters = {
+            ppn_bundle: roomsReqDto.bundle,
+        };
 
-               let url = await CommonHelper.generateUrl(
-                   "getExpress.MultiContract",
-                   parameters
-               );
+        let url = await CommonHelper.generateUrl(
+            "getExpress.MultiContract",
+            parameters
+        );
 
-               let res = await this.httpsService
-                   .get(url)
-                   .pipe(
-                       map(
-                           (res) =>
-                               new Rooms().processRoomsResult(res, roomsReqDto),
-                           (res) => {
-                               let fileName = "";
-                               let logData = {};
-                               logData["url"] = url;
-                               logData["method"] = "post";
-                               logData["requestBody"] = parameters;
-                               logData["responce"] = res;
+        let res = await this.httpsService
+            .get(url)
+            .pipe(
+                map((res) => new Rooms().processRoomsResult(res, roomsReqDto)),
+                catchError((err) => {
+                    let fileName = "";
+                    let logData = {};
+                    logData["url"] = url;
+                    logData["method"] = "post";
+                    logData["requestBody"] = parameters;
+                    logData["responce"] = err;
 
-                               fileName = `hotel-priceline-room-${new Date().getTime()}`;
-                               if (user_id) {
-                                   fileName += user_id;
-                               }
-                               Activity.createlogFile(
-                                   fileName,
-                                   logData,
-                                   "hotel"
-                               );
-                           }
-                       ),
-                       catchError((err) => {
-                           let fileName = "";
-                           let logData = {};
-                           logData["url"] = url;
-                           logData["method"] = "post";
-                           logData["requestBody"] = parameters;
-                           logData["responce"] = err;
+                    fileName = `Failed-hotel-priceline-rooms-${new Date().getTime()}`;
+                    if (user_id) {
+                        fileName += "_" + user_id;
+                    }
+                    Activity.createlogFile(fileName, logData, "hotel");
 
-                           fileName = `Failed-hotel-priceline-book-${new Date().getTime()}`;
-                           // if (user_id) {
-                           //     fileName += user_id;
-                           // }
-                           Activity.createlogFile(fileName, logData, "hotel");
+                    throw new BadRequestException(
+                        err + " &&&rooms&&&" + errorMessage
+                    );
+                })
+            )
+            .toPromise();
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = res;
 
-                           throw new BadRequestException(
-                               err + " &&&rooms&&&" + errorMessage
-                           );
-                       })
-                   )
-                   .toPromise();
+        fileName = `hotel-priceline-room-${new Date().getTime()}`;
+        if (user_id) {
+            fileName += "_" + user_id;
+        }
+        Activity.createlogFile(fileName, logData, "hotel");
+        return res;
+    }
 
-               return res;
-           }
+    async availability(availabilityDto: AvailabilityDto) {
+        let parameters = {
+            ppn_bundle: availabilityDto.room_ppn,
+        };
 
-           async availability(availabilityDto: AvailabilityDto) {
-               let parameters = {
-                   ppn_bundle: availabilityDto.room_ppn,
-               };
+        let url = await CommonHelper.generateUrl(
+            "getExpress.Contract",
+            parameters
+        );
+        console.log(url);
 
-               let url = await CommonHelper.generateUrl(
-                   "getExpress.Contract",
-                   parameters
-               );
-               console.log(url);
+        // let res = await this.httpsService.get(url).pipe(
+        //     map(res => new Availability().processAvailabilityResult(res, availabilityDto)),
+        //     catchError(err => {
+        //         throw new BadRequestException(err +" &&&availability&&&" + errorMessage);
+        //     })
+        // ).toPromise();
+        try {
+            let res = await HttpRequest.PricelineRequest(
+                url,
+                "get",
+                "",
+                "availiblity"
+            );
+            console.log("call 1");
 
-               // let res = await this.httpsService.get(url).pipe(
-               //     map(res => new Availability().processAvailabilityResult(res, availabilityDto)),
-               //     catchError(err => {
-               //         throw new BadRequestException(err +" &&&availability&&&" + errorMessage);
-               //     })
-               // ).toPromise();
-               try {
-                   let res = await HttpRequest.PricelineRequest(
-                       url,
-                       "get",
-                       "",
-                       "availiblity"
-                   );
-                   console.log("call 1");
+            if (res) {
+                const response = await Availability.processAvailabilityResult(
+                    res,
+                    availabilityDto
+                );
+                return response;
+            }
+        } catch (error) {
+            throw new BadRequestException(
+                error?.message + " &&&availability&&&" + error?.message
+            );
+        }
+    }
 
-                   if (res) {
-                       const response = await Availability.processAvailabilityResult(
-                           res,
-                           availabilityDto
-                       );
-                       return response;
-                   }
-               } catch (error) {
-                   throw new BadRequestException(
-                       error?.message + " &&&availability&&&" + error?.message
-                   );
-               }
-           }
+    async book(bookDto: BookDto, user_id) {
+        let url = await CommonHelper.generateUrl("getExpress.Book");
 
-           async book(bookDto: BookDto, user_id) {
-               let url = await CommonHelper.generateUrl("getExpress.Book");
+        let parameters = GenericHotel.httpBuildQuery(bookDto);
 
-               let parameters = GenericHotel.httpBuildQuery(bookDto);
+        let res = await this.httpsService
+            .post(url, parameters)
+            .pipe(
+                map((res) => new Book().processBookResult(res)),
+                catchError((err) => {
+                    let fileName = "";
+                    let logData = {};
+                    logData["url"] = url;
+                    logData["method"] = "post";
+                    logData["requestBody"] = parameters;
+                    logData["responce"] = err;
 
-               let res = await this.httpsService
-                   .post(url, parameters)
-                   .pipe(
-                       map((res) => new Book().processBookResult(res)),
-                       catchError((err) => {
-                           let fileName = "";
-                           let logData = {};
-                           logData["url"] = url;
-                           logData["method"] = "post";
-                           logData["requestBody"] = parameters;
-                           logData["responce"] = err;
+                    fileName = `Failed-hotel-priceline-book-${new Date().getTime()}`;
+                    if (user_id) {
+                        fileName += user_id;
+                    }
+                    Activity.createlogFile(fileName, logData, "hotel");
+                    throw new BadRequestException(
+                        err + " &&&book&&&" + errorMessage
+                    );
+                })
+            )
+            .toPromise();
 
-                           fileName = `Failed-hotel-priceline-book-${new Date().getTime()}`;
-                           if (user_id) {
-                               fileName += user_id;
-                           }
-                           Activity.createlogFile(fileName, logData, "hotel");
-                           throw new BadRequestException(
-                               err + " &&&book&&&" + errorMessage
-                           );
-                       })
-                   )
-                   .toPromise();
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = res;
 
-               let fileName = "";
-               let logData = {};
-               logData["url"] = url;
-               logData["method"] = "post";
-               logData["requestBody"] = parameters;
-               logData["responce"] = res;
+        fileName = `hotel-priceline-book-${new Date().getTime()}`;
+        if (user_id) {
+            fileName += user_id;
+        }
+        Activity.createlogFile(fileName, logData, "hotel");
 
-               fileName = `hotel-priceline-book-${new Date().getTime()}`;
-               if (user_id) {
-                   fileName += user_id;
-               }
-               Activity.createlogFile(fileName, logData, "hotel");
+        // let op = await HttpRequest.PricelineRequest(
+        //     url,
+        //     "get",
+        //     parameters,
+        //     "availiblity"
+        // );
 
-               // let op = await HttpRequest.PricelineRequest(
-               //     url,
-               //     "get",
-               //     parameters,
-               //     "availiblity"
-               // );
-
-               return res;
-           }
-       }
+        return res;
+    }
+}
