@@ -291,7 +291,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking);
+                await this.getPaymentsOfBooking(cartBooking,true);
             } catch (error) {
                 console.log("error", error);
                 const filename =
@@ -1465,7 +1465,7 @@ export class CronJobsService {
         };
     }
 
-    async getPaymentsOfBooking(cartBooking: CartBooking) {
+    async getPaymentsOfBooking(cartBooking: CartBooking,isPastDue : boolean) {
         let amount: number = 0;
 
         for await (const booking of cartBooking.bookings) {
@@ -1584,6 +1584,7 @@ export class CronJobsService {
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
+                    
                 };
                 if (nextInstalmentDate) {
                     param.nextDate = DateTime.convertDateFormat(
@@ -1812,6 +1813,7 @@ export class CronJobsService {
                         "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
+                    pastDue:isPastDue,
                 };
                 if (cartBooking.user.isEmail) {
                     if (nextAmount > 0) {
@@ -1934,7 +1936,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking);
+                await this.getPaymentsOfBooking(cartBooking,false);
             } catch (error) {
                 console.log("error", error);
                 const filename =

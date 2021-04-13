@@ -568,6 +568,33 @@ export class GeneralService {
                     totalAmount: mail10.totalAmounNumerict,
                     currencySymbol: "$",
                     nextDate: "March 18, 2021",
+                    pastDue:false
+                }),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Booking ID ${partialBooking} Installment Recevied`,
+                html: await LaytripInstallmentRecevied({
+                    userName: "Parth",
+                    orderId: partialBooking,
+                    date: "March 11, 2021",
+                    amount: 5.66,
+                    installmentId: 3,
+                    complitedAmount: mail10.paidAmountNumeric,
+                    totalAmount: mail10.totalAmounNumerict,
+                    currencySymbol: "$",
+                    nextDate: "March 18, 2021",
+                    pastDue:true
                 }),
             })
             .then((res) => {
