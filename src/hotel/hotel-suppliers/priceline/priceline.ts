@@ -39,6 +39,9 @@ export class Priceline implements HotelInterface {
             get_regions: false,
             get_hotels: false,
             get_pois: false,
+            max_results:100,
+            order:'asc',
+            sort: 'name'
         };
 
         let url = await CommonHelper.generateUrl(
