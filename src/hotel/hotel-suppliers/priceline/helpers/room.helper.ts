@@ -111,7 +111,10 @@ export class RoomHelper{
             return newItem;
         });
 
-        return rooms;
+        let data =  rooms.sort(function (a, b) {
+            return a.night_rate - b.night_rate;
+        });
+        return data;
     }    
 
     processCancellationPolicies(policies) {
