@@ -1,4 +1,21 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Put,
+    Query,
+    Req,
+    UploadedFiles,
+    UseGuards,
+    UseInterceptors,
+} from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import {
     ApiBearerAuth,
@@ -17,7 +34,7 @@ import { diskStorage } from "multer";
 import { User } from "src/entity/user.entity";
 import { GetUser } from "src/auth/get-user.dacorator";
 import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
-import {EnableDisableFlightRouteDto} from "./dto/enable-disable-route.dto"
+import { EnableDisableFlightRouteDto } from "./dto/enable-disable-route.dto";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ImportRouteDto } from "./dto/import-route.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
@@ -46,6 +63,22 @@ export class FlightRouteController {
         return await this.flightRouteService.listFlightRoutes(
             listFlightRouteDto
         );
+    }
+
+    @Get("counts")
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "get flight counts " })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async flightCounts() {
+        return await this.flightRouteService.routesCounts();
     }
 
     @Post()
@@ -197,9 +230,7 @@ export class FlightRouteController {
     })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    async flightRoute(@Param('id') id : number ) {
+    async flightRoute(@Param("id") id: number) {
         return await this.flightRouteService.getFlightRoute(id);
     }
 }
-
-

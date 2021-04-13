@@ -11,6 +11,7 @@ import { Activity } from "./activity.utility";
 export class HttpRequest {
     static async mystiflyRequest(url, requestBody, headerAction, user = "") {
         try {
+            let requestTime = `${new Date()}`;
             let result = await Axios({
                 method: "POST",
                 url: url,
@@ -28,6 +29,7 @@ export class HttpRequest {
             let fileName = "";
             if (headerAction != "CreateSession") {
                 let logData = {};
+<<<<<<< HEAD
                 logData["url"] = url;
                 logData["requestBody"] = requestBody;
                 logData["headers"] = {
@@ -38,6 +40,21 @@ export class HttpRequest {
                     "cache-control": "no-cache",
                 };
                 logData["responce"] = result.data;
+=======
+                logData['url'] = url
+                logData['requestBody'] = requestBody
+                logData["requestTime"] = requestTime;
+                let responceTime = `${new Date()}`;
+                logData["responceTime"] = responceTime;
+                logData['headers'] = {
+                    'content-type': 'text/xml',
+                    'Accept-Encoding': 'gzip',
+                    'soapaction': `Mystifly.OnePoint/OnePoint/${headerAction}`,
+                    'charset': 'UTF-8',
+                    'cache-control': 'no-cache'
+                }
+                logData['responce'] = result.data;
+>>>>>>> 54dc61957a41416baea84b22a28d51eb5a65519f
 
                 fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
                 if (user) {
