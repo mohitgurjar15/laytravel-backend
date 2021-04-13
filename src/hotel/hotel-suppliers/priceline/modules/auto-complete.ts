@@ -86,7 +86,8 @@ export class AutoComplete{
                 });
             });
 
-            return filterData;
+            let serachResult =  filterData.sort((a, b) => a.title.localeCompare(b.title))
+            return serachResult;
 
         } else{
             throw new NotFoundException(results.error.status);

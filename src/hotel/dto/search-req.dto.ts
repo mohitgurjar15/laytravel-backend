@@ -1,24 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
 
-export class Occupancy{
-    @ApiProperty({
-        description: 'Number of adults for a room',
-        example: 2,
-        required: true
-    })
-    @IsNumber()
-    adults: number;
-    
-    @ApiProperty({
-        description: 'Array of Age\'s of Children as per the room',
-        example: [2,3],
-        required: true
-    })
-    @IsArray()
-    children: Array<number>;
-}
-
 export class SearchReqDto{
 
     @ApiProperty({
@@ -62,12 +44,28 @@ export class SearchReqDto{
     hotel_id?: string;
     
     @ApiProperty({
-        description: 'Number of occupancies for this search',
-        required: true,
-        type: () => [Occupancy],
+        description: 'Number of of room',
+        example: 2,
+        required: true
     })
-    @IsArray()
-    occupancies: Array<Occupancy[]>;
+    @IsNumber()
+    rooms: number;
+
+    @ApiProperty({
+        description: 'Number of adults',
+        example: 2,
+        required: true
+    })
+    @IsNumber()
+    adults: number;
+    
+    @ApiProperty({
+        description: 'Number of children',
+        example: 2,
+        required: true
+    })
+    @IsNumber()
+    children: number;
 
     @ApiProperty({
         description: 'If this object is set as "true" than "filter_object" will be provided with the search result which can be used to show under the Filter section',

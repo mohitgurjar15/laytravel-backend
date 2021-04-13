@@ -73,17 +73,10 @@ export class Priceline implements HotelInterface {
             check_in,
             check_out,
             hotel_id,
+            rooms,
+            adults,
+            children
         } = searchReqDto;
-
-        let occupancies = collect(searchReqDto.occupancies);
-
-        let rooms = occupancies.count();
-
-        let adults = occupancies.sum("adults");
-
-        let children = occupancies
-            .flatMap((value) => value["children"])
-            .count();
 
         let parameters = {
             check_in,
