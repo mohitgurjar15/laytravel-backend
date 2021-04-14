@@ -5,35 +5,34 @@ import { SearchReqDto } from "../dto/search-req.dto";
 import { HotelInterface } from "./hotel.interface";
 import { BookDto } from "./priceline/dto/book.dto";
 
-export class Hotel{
-    
-    private hotel: HotelInterface;
+export class Hotel {
+           private hotel: HotelInterface;
 
-    constructor(hotel: HotelInterface) {
-        this.hotel = hotel;
-    }
+           constructor(hotel: HotelInterface) {
+               this.hotel = hotel;
+           }
 
-    autoComplete(term: string) {
-        return this.hotel.autoComplete(term);
-    }
-    
-    search(searchReqDto: SearchReqDto) {
-        return this.hotel.search(searchReqDto);
-    }
+           autoComplete(term: string) {
+               return this.hotel.autoComplete(term);
+           }
 
-    detail(detailReqDto: DetailReqDto) {
-        return this.hotel.detail(detailReqDto);
-    }
+           search(searchReqDto: SearchReqDto) {
+               return this.hotel.search(searchReqDto);
+           }
 
-    rooms(roomsReqDto: RoomsReqDto) {
-        return this.hotel.rooms(roomsReqDto);
-    }
-    
-    availability(availabilityDto: AvailabilityDto) {
-        return this.hotel.availability(availabilityDto);
-    }
-    
-    book(bookDto: BookDto) {
-        return this.hotel.book(bookDto);
-    }
-}
+           detail(detailReqDto: DetailReqDto) {
+               return this.hotel.detail(detailReqDto);
+           }
+
+           rooms(roomsReqDto: RoomsReqDto, user_id:string) {
+               return this.hotel.rooms(roomsReqDto,user_id);
+           }
+
+           availability(availabilityDto: AvailabilityDto) {
+               return this.hotel.availability(availabilityDto);
+           }
+
+           book(bookDto: BookDto, user_id: string) {
+               return this.hotel.book(bookDto, user_id);
+           }
+       }

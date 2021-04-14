@@ -247,20 +247,20 @@ export class GeneralController {
         return await this.generalService.updateTravelerInfo();
     }
 
-    @Post(["test/booking/categoryName"])
-    @ApiOperation({ summary: "Update traveler info of user" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({
-        status: 422,
-        description: "Bad Request or API error message",
-    })
-    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async updatebooking() {
-        return await this.generalService.bookingCategoryName();
-    }
+    // @Post(["test/booking/categoryName"])
+    // @ApiOperation({ summary: "Update traveler info of user" })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({
+    //     status: 422,
+    //     description: "Bad Request or API error message",
+    // })
+    // @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    // @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @HttpCode(200)
+    // async updatebooking() {
+    //     return await this.generalService.bookingCategoryName();
+    // }
 
     @Post(["test/ip_adress/log"])
     @ApiOperation({ summary: "Update traveler info of user" })
@@ -277,18 +277,18 @@ export class GeneralController {
         console.log(ip);
     }
 
-    @Post(["test/predictive_dance/update"])
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({
-        status: 422,
-        description: "Bad Request or API error message",
-    })
-    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
-    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async test2(@UserIpAddress() ip) {
-       return await this.generalService.predictiveData()
-    }
+    // @Post(["test/predictive_dance/update"])
+    // @ApiOperation({ summary: "" })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({
+    //     status: 422,
+    //     description: "Bad Request or API error message",
+    // })
+    // @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    // @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @HttpCode(200)
+    // async test2(@UserIpAddress() ip) {
+    //    return await this.generalService.predictiveData()
+    // }
 }

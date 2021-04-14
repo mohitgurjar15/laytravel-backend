@@ -15,7 +15,7 @@ const content = `
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #000000;padding-top: 15px; text-align: center;">
+                                                    <td align="center" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: center;">
                                                         <b>ONE TIME PIN : ${param.otp}</b>
                                                     </td>
                                                 </tr>

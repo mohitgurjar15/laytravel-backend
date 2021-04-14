@@ -1,48 +1,18 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEnum, IsObject, IsOptional, IsString, ValidationArguments } from "class-validator";
+import {
+    IsNotEmpty,
+    ValidationArguments,
+    IsEnum,
+    IsArray,
+    ValidateNested,
+    IsOptional,
+} from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
-import { User } from "src/entity/user.entity";
-import { InstalmentType } from "src/enum/instalment-type.enum";
+import { Type } from "class-transformer";
 import { PaymentType } from "src/enum/payment-type.enum";
-import { InternalDto } from "./internal.dto";
+import { InstalmentType } from "src/enum/instalment-type.enum";
 
-export class BookDto extends InternalDto {
-           @ApiProperty({
-               description: "User ID of Primary guest",
-               required: true,
-           })
-           @IsString()
-           primary_guest: string;
-
-           @ApiProperty({
-               description:
-                   "Array of User ID's for whom is booking is to be made",
-               required: true,
-           })
-           @IsArray()
-           guests: string[];
-
-           @ApiProperty({
-               description: "Card Token",
-               required: true,
-           })
-           @IsString()
-           card_token: string;
-
-           @ApiProperty({
-               description: "Room ID which is selected for booking",
-               required: true,
-           })
-           @IsString()
-           room_id: string;
-
-           @ApiProperty({
-               description: "Hotel ID for which details are required",
-               required: true,
-           })
-           @IsString()
-           hotel_id: string;
-
+export class BookHotelCartDto {
            @IsEnum(
                [
                    PaymentType.INSTALMENT,
@@ -76,6 +46,13 @@ export class BookDto extends InternalDto {
                example: 10,
            })
            laycredit_points: number;
+
+           @IsOptional()
+           @ApiProperty({
+               description: `Card token`,
+               example: `XXXXXX-XXXXX-XXXXXX`,
+           })
+           card_token: string;
 
            @IsOptional({
                message: (args: ValidationArguments) => {
@@ -118,6 +95,24 @@ export class BookDto extends InternalDto {
            })
            custom_instalment_no: number | null;
 
+           @IsNotEmpty({
+               message: `Please enter room_ppn.&&&room_ppn&&&${errorMessage}`,
+           })
+           @ApiProperty({
+               description: `room_ppn`,
+               example: `lkjekje82r2rfwjef99304933sfff44`,
+           })
+           ppn: string;
+
+           @IsNotEmpty({
+               message: `Please enter bundle code.&&&bundle&&&${errorMessage}`,
+           })
+           @ApiProperty({
+               description: `bundle`,
+               example: `lkjekje82r2rfwjef99304933sfff44`,
+           })
+           bundle: string;
+
            @IsOptional()
            @ApiProperty({
                description: `Booking Through (web,android,ios)`,
@@ -125,12 +120,38 @@ export class BookDto extends InternalDto {
            })
            booking_through: string;
 
-           /* Internally used properties */
-           @IsOptional()
-           @IsObject()
-           primary_guest_detail?: User;
-
-           @IsOptional()
-           @IsObject()
-           guest_detail?: User;
+           @IsArray()
+           @ValidateNested({ each: true })
+           @Type(() => Traveler)
+           @ApiProperty({
+               description: `Traveler ids`,
+               example: [
+                   {
+                       traveler_id: `c5944389-53f3-4120-84a4-488fb4e94d87`,
+                       is_primary_traveler: false,
+                   },
+                   {
+                       traveler_id: `3e37b423-f67e-4c92-bd7c-1f62ed134540`,
+                       is_primary_traveler: false,
+                   },
+               ],
+           })
+           travelers: Traveler[];
        }
+
+class Traveler {
+    @IsNotEmpty({
+        message: `Please select traveler.&&&traveler_id&&&${errorMessage}`,
+    })
+    @ApiProperty({
+        description: `Traveler id`,
+        example: `1a600f6e-6775-4266-8dbd-a8a3ad390aed`,
+    })
+    traveler_id: string;
+
+    @ApiPropertyOptional({
+        description: "is primary traveler",
+        example: false,
+    })
+    is_primary_traveler?: boolean;
+}

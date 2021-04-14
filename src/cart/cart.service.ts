@@ -57,7 +57,9 @@ import { PaymentType } from "src/enum/payment-type.enum";
 import { Instalment } from "src/utility/instalment.utility";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { HotelService } from "src/hotel/hotel.service";
+import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 
+import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
 @Injectable()
 export class CartService {
     constructor(
@@ -274,7 +276,7 @@ more than 5.`
                         .where("cart_id =:id", {
                             id: cart.id,
                         })
-                        .orderBy(`id`, 'ASC')
+                        .orderBy(`id`, "ASC")
                         .getOne();
 
                     if (cartTraveler && cartTraveler.userId != user.userId) {
@@ -1046,7 +1048,7 @@ more than 5.`
                 ])
 
                 .where(
-                    `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`
+                    `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("cart"."id" IN (${cartIds}))`
                 )
                 .orderBy(`cart.id`, "DESC")
                 .limit(5);
@@ -1077,6 +1079,24 @@ more than 5.`
                     const arrivalDate = await this.flightService.changeDateFormat(
                         item.moduleInfo[0].arrival_date
                     );
+                    if (largestDate == "") {
+                        largestDate = arrivalDate;
+                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                        largestDate = arrivalDate;
+                    }
+                } else if (item.moduleId == ModulesName.HOTEL) {
+                    const dipatureDate = item.moduleInfo[0].input_data.check_in;
+
+                    if (smallestDate == "") {
+                        smallestDate = dipatureDate;
+                    } else if (
+                        new Date(smallestDate) > new Date(dipatureDate)
+                    ) {
+                        smallestDate = dipatureDate;
+                    }
+                    //console.log(item.moduleInfo[0]);
+
+                    const arrivalDate = item.moduleInfo[0].input_data.check_out;
                     if (largestDate == "") {
                         largestDate = arrivalDate;
                     } else if (new Date(largestDate) > new Date(arrivalDate)) {
@@ -1121,6 +1141,28 @@ more than 5.`
 
                             BookingIds.push(
                                 flightResponce["detail"]["laytrip_booking_id"]
+                            );
+                        } else {
+                            failedResult++;
+                        }
+                        break;
+
+                    case ModulesName.HOTEL:
+                        let hotelResponce = await this.bookHotel(
+                            item,
+                            user,
+                            Headers,
+                            bookCart,
+                            smallestDate,
+                            cartData
+                        );
+                        responce.push(hotelResponce);
+
+                        if (hotelResponce["status"] == 1) {
+                            successedResult++;
+
+                            BookingIds.push(
+                                hotelResponce["detail"]["laytrip_booking_id"]
                             );
                         } else {
                             failedResult++;
@@ -1456,7 +1498,8 @@ more than 5.`
                         bookingType: paidIn,
                         currencyId: 1,
                         booking_through: "web",
-                    }
+                    },
+                    cart.moduleId
                 );
             } else {
                 for await (const traveler of cart.travelers) {
@@ -1508,7 +1551,8 @@ more than 5.`
                     bookingType: paidIn,
                     currencyId: 1,
                     booking_through: "web",
-                }
+                },
+                cart.moduleId
             );
             return newCart;
         }
@@ -1536,7 +1580,159 @@ more than 5.`
                     bookingType: paidIn,
                     currencyId: 1,
                     booking_through: "web",
+                },
+                cart.moduleId
+            );
+        }
+        return newCart;
+    }
+
+    async bookHotel(
+        cart: Cart,
+        user: User,
+        Headers,
+        bookCart: CartBookDto,
+        smallestDate: string,
+        cartData: CartBooking
+    ) {
+        const {
+            payment_type,
+            laycredit_points,
+            card_token,
+            instalment_type,
+            additional_amount,
+            booking_through,
+            selected_down_payment,
+            transaction_token,
+        } = bookCart;
+        const downPayment = selected_down_payment ? selected_down_payment : 0;
+        const paidIn =
+            payment_type == PaymentType.INSTALMENT
+                ? BookingType.INSTALMENT
+                : BookingType.NOINSTALMENT;
+
+        let flightRequest;
+
+        const value = cart.moduleInfo;
+        console.log("hhhhh", cart.travelers.length);
+
+        let newCart = {};
+        newCart["id"] = cart.id;
+        newCart["userId"] = cart.userId;
+        newCart["moduleId"] = cart.moduleId;
+        newCart["isDeleted"] = cart.isDeleted;
+        newCart["createdDate"] = cart.createdDate;
+        newCart["status"] = BookingStatus.FAILED;
+        newCart["type"] = cart.module.name;
+        if (value) {
+            let travelers = [];
+            if (!cart.travelers?.length) {
+                newCart["status"] = BookingStatus.FAILED;
+                newCart["detail"] = {
+                    statusCode: 422,
+                    status: BookingStatus.FAILED,
+                    message: `Please update traveler details.`,
+                };
+                await this.saveFailedBooking(
+                    cartData.id,
+                    cart.moduleInfo,
+                    cart.userId,
+                    {
+                        statusCode: 422,
+                        status: BookingStatus.FAILED,
+                        message: `Please update traveler details.`,
+                    },
+                    {
+                        bookingType: paidIn,
+                        currencyId: 1,
+                        booking_through: "web",
+                    },
+                    cart.moduleId
+                );
+            } else {
+                for await (const traveler of cart.travelers) {
+                    //console.log(traveler);
+                    let travelerUser = {
+                        traveler_id: traveler.userId,
+                        is_primary_traveler: traveler.isPrimary,
+                    };
+                    travelers.push(travelerUser);
                 }
+                const bookingdto: BookHotelCartDto = {
+                    travelers,
+                    payment_type,
+                    instalment_type,
+                    ppn: value[0].bundle,
+                    additional_amount,
+                    laycredit_points,
+                    custom_instalment_amount: 0,
+                    custom_instalment_no: 0,
+                    card_token,
+                    booking_through,
+                    bundle: value[0].bundle,
+                };
+
+                console.log("cartBook request");
+
+                //console.log(bookingdto);
+                newCart["detail"] = await this.hotelService.cartBook(
+                    bookingdto,
+                    Headers,
+                    user,
+                    smallestDate,
+                    cartData.id,
+                    selected_down_payment,
+                    transaction_token
+                );
+                //console.log(JSON.stringify(newCart['detail']));
+            }
+        } else {
+            newCart["detail"] = {
+                message: value["message"],
+            };
+            newCart["status"] = BookingStatus.FAILED;
+            await this.saveFailedBooking(
+                cartData.id,
+                cart.moduleInfo,
+                cart.userId,
+                value,
+                {
+                    bookingType: paidIn,
+                    currencyId: 1,
+                    booking_through: "web",
+                },
+                cart.moduleId
+            );
+            return newCart;
+        }
+        if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
+            newCart["status"] = BookingStatus.CONFIRM;
+
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(`"cart_id" = '${cart.id}'`)
+                .execute();
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(`"id" = '${cart.id}'`)
+                .execute();
+        } else {
+            console.log("failed booking");
+            await this.saveFailedBooking(
+                cartData.id,
+                cart.moduleInfo,
+                cart.userId,
+                newCart["detail"],
+                {
+                    bookingType: paidIn,
+                    currencyId: 1,
+                    booking_through: "web",
+                },
+                cart.moduleId
             );
         }
         return newCart;
@@ -1551,7 +1747,8 @@ more than 5.`
             bookingType: number;
             currencyId: number;
             booking_through: string;
-        }
+        },
+        moduleId
     ) {
         if (typeof errorLog == "object") {
             errorLog = JSON.stringify(errorLog);
@@ -1563,54 +1760,97 @@ more than 5.`
             .replace(/\..+/, "")
             .split(" ")[0];
         const { bookingType, currencyId, booking_through } = other;
-        let booking = new Booking();
-        booking.id = uuidv4();
-        booking.moduleId = ModulesName.FLIGHT;
-        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.bookingType = bookingType;
-        booking.currency = currencyId;
-        booking.totalAmount = moduleInfo[0].selling_price;
-        booking.netRate = moduleInfo[0].net_rate;
-        booking.markupAmount = (
-            parseFloat(moduleInfo[0].selling_price) -
-            parseFloat(moduleInfo[0].net_rate)
-        ).toString();
-        booking.bookingDate = date1;
-        booking.usdFactor = "1";
-        booking.layCredit = "0";
-        booking.message = errorLog;
-        booking.bookingThrough = booking_through || "";
-        booking.cartId = cartId;
-        booking.locationInfo = {
-            journey_type:
-                moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
-            source_location: moduleInfo[0].departure_code,
-            destination_location: moduleInfo[0].arrival_code,
-        };
-        const [caegory] = await getConnection().query(`select 
+        if (moduleId == ModulesName.FLIGHT) {
+            let booking = new Booking();
+            booking.id = uuidv4();
+            booking.moduleId = ModulesName.FLIGHT;
+            booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+            booking.bookingType = bookingType;
+            booking.currency = currencyId;
+            booking.totalAmount = moduleInfo[0].selling_price;
+            booking.netRate = moduleInfo[0].net_rate;
+            booking.markupAmount = (
+                parseFloat(moduleInfo[0].selling_price) -
+                parseFloat(moduleInfo[0].net_rate)
+            ).toString();
+            booking.bookingDate = date1;
+            booking.usdFactor = "1";
+            booking.layCredit = "0";
+            booking.message = errorLog;
+            booking.bookingThrough = booking_through || "";
+            booking.cartId = cartId;
+            booking.locationInfo = {
+                journey_type:
+                    moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
+                source_location: moduleInfo[0].departure_code,
+                destination_location: moduleInfo[0].arrival_code,
+            };
+            const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${moduleInfo[0].departure_code}' and to_airport_code = '${moduleInfo[0].arrival_code}'`);
-        booking.categoryName = caegory?.categoryname || null;
-        booking.fareType = "";
-        booking.isTicketd = false;
+            booking.categoryName = caegory?.categoryname || null;
+            booking.fareType = "";
+            booking.isTicketd = false;
 
-        booking.userId = userId;
+            booking.userId = userId;
 
-        booking.bookingStatus = BookingStatus.FAILED;
-        booking.paymentStatus = PaymentStatus.REFUNDED;
-        booking.supplierBookingId = "";
-        booking.isPredictive = true;
-        booking.supplierStatus = 1;
-        booking.moduleInfo = moduleInfo;
-        booking.checkInDate = await this.changeDateFormat(
-            moduleInfo[0].departure_date
-        );
-        booking.checkOutDate = await this.changeDateFormat(
-            moduleInfo[0].arrival_date
-        );
+            booking.bookingStatus = BookingStatus.FAILED;
+            booking.paymentStatus = PaymentStatus.REFUNDED;
+            booking.supplierBookingId = "";
+            booking.isPredictive = true;
+            booking.supplierStatus = 1;
+            booking.moduleInfo = moduleInfo;
+            booking.checkInDate = await this.changeDateFormat(
+                moduleInfo[0].departure_date
+            );
+            booking.checkOutDate = await this.changeDateFormat(
+                moduleInfo[0].arrival_date
+            );
 
-        await booking.save();
+            await booking.save();
+        } else if (moduleId == ModulesName.HOTEL) {
+            let booking = new Booking();
+            booking.id = uuidv4();
+            booking.moduleId = ModulesName.HOTEL;
+            booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+            booking.bookingType = bookingType;
+            booking.currency = currencyId;
+            booking.totalAmount = moduleInfo[0].selling.sub_total;
+            booking.netRate = moduleInfo[0].retail.sub_total || 0;
+            booking.markupAmount = (
+                parseFloat(moduleInfo[0].selling.sub_total) -
+                parseFloat(moduleInfo[0].retail.sub_total)
+            ).toString();
+            booking.bookingDate = date1;
+            booking.usdFactor = "1";
+            booking.layCredit = "0";
+            booking.message = errorLog;
+            booking.bookingThrough = booking_through || "";
+            booking.cartId = cartId;
+            booking.locationInfo = {
+                hotel_id: moduleInfo[0].hotel_id,
+                hotel_name: moduleInfo[0].hotel_name,
+                address: moduleInfo[0].address,
+            };
+            booking.categoryName = null;
+            booking.fareType = "";
+            booking.isTicketd = false;
+
+            booking.userId = userId;
+
+            booking.bookingStatus = BookingStatus.FAILED;
+            booking.paymentStatus = PaymentStatus.REFUNDED;
+            booking.supplierBookingId = "";
+            booking.isPredictive = true;
+            booking.supplierStatus = 1;
+            booking.moduleInfo = moduleInfo;
+            booking.checkInDate = moduleInfo[0].input_data.check_in;
+
+            booking.checkOutDate = moduleInfo[0].input_data.check_out;
+
+            await booking.save();
+        }
     }
 
     async cartBookingEmailSend(bookingId, userId) {
@@ -1638,6 +1878,25 @@ more than 5.`
                 .catch((err) => {
                     //console.log("err", err);
                 });
+
+                if(responce?.confirmed == true && responce?.param?.bookingType == BookingType.NOINSTALMENT){
+                    await this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: `Travel Provider Reservation Confirmation`,
+                            html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                                responce.param
+                            ),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
+                }
         } else {
             const user = await CartDataUtility.userData(userId);
             const userName = user.firstName

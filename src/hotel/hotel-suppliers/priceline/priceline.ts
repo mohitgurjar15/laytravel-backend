@@ -23,6 +23,7 @@ import { Detail } from "./modules/detail";
 import { Rooms } from "./modules/rooms";
 import { Search } from "./modules/search";
 import { HttpRequest } from "src/utility/http.utility";
+import { Activity } from "src/utility/activity.utility";
 
 export class Priceline implements HotelInterface {
     private httpsService: HttpService;
@@ -84,12 +85,11 @@ export class Priceline implements HotelInterface {
             rooms,
             adults,
             children,
-            field_blacklist : 'hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage',
-            rate_limit : 1
+            field_blacklist:
+                "hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage",
+            rate_limit: 1,
         };
-        let extra:any = {
-            
-        };
+        let extra: any = {};
 
         if (hotel_id) {
             extra = {
@@ -124,8 +124,7 @@ export class Priceline implements HotelInterface {
                 })
             )
             .toPromise();
-        
-            
+
         return res;
     }
 
@@ -154,7 +153,7 @@ export class Priceline implements HotelInterface {
         return res;
     }
 
-    async rooms(roomsReqDto: RoomsReqDto) {
+    async rooms(roomsReqDto: RoomsReqDto, user_id) {
         let parameters = {
             ppn_bundle: roomsReqDto.bundle,
         };
@@ -169,13 +168,37 @@ export class Priceline implements HotelInterface {
             .pipe(
                 map((res) => new Rooms().processRoomsResult(res, roomsReqDto)),
                 catchError((err) => {
+                    let fileName = "";
+                    let logData = {};
+                    logData["url"] = url;
+                    logData["method"] = "post";
+                    logData["requestBody"] = parameters;
+                    logData["responce"] = err;
+
+                    fileName = `Failed-hotel-priceline-rooms-${new Date().getTime()}`;
+                    if (user_id) {
+                        fileName += "_" + user_id;
+                    }
+                    Activity.createlogFile(fileName, logData, "hotel");
+
                     throw new BadRequestException(
                         err + " &&&rooms&&&" + errorMessage
                     );
                 })
             )
             .toPromise();
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = res;
 
+        fileName = `hotel-priceline-room-${new Date().getTime()}`;
+        if (user_id) {
+            fileName += "_" + user_id;
+        }
+        Activity.createlogFile(fileName, logData, "hotel");
         return res;
     }
 
@@ -189,7 +212,7 @@ export class Priceline implements HotelInterface {
             parameters
         );
         console.log(url);
-        
+
         // let res = await this.httpsService.get(url).pipe(
         //     map(res => new Availability().processAvailabilityResult(res, availabilityDto)),
         //     catchError(err => {
@@ -204,13 +227,13 @@ export class Priceline implements HotelInterface {
                 "availiblity"
             );
             console.log("call 1");
-            
+
             if (res) {
                 const response = await Availability.processAvailabilityResult(
                     res,
                     availabilityDto
                 );
-               return  response
+                return response;
             }
         } catch (error) {
             throw new BadRequestException(
@@ -219,7 +242,7 @@ export class Priceline implements HotelInterface {
         }
     }
 
-    async book(bookDto: BookDto) {
+    async book(bookDto: BookDto, user_id) {
         let url = await CommonHelper.generateUrl("getExpress.Book");
 
         let parameters = GenericHotel.httpBuildQuery(bookDto);
@@ -229,12 +252,44 @@ export class Priceline implements HotelInterface {
             .pipe(
                 map((res) => new Book().processBookResult(res)),
                 catchError((err) => {
+                    let fileName = "";
+                    let logData = {};
+                    logData["url"] = url;
+                    logData["method"] = "post";
+                    logData["requestBody"] = parameters;
+                    logData["responce"] = err;
+
+                    fileName = `Failed-hotel-priceline-book-${new Date().getTime()}`;
+                    if (user_id) {
+                        fileName += user_id;
+                    }
+                    Activity.createlogFile(fileName, logData, "hotel");
                     throw new BadRequestException(
                         err + " &&&book&&&" + errorMessage
                     );
                 })
             )
             .toPromise();
+
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = res;
+
+        fileName = `hotel-priceline-book-${new Date().getTime()}`;
+        if (user_id) {
+            fileName += user_id;
+        }
+        Activity.createlogFile(fileName, logData, "hotel");
+
+        // let op = await HttpRequest.PricelineRequest(
+        //     url,
+        //     "get",
+        //     parameters,
+        //     "availiblity"
+        // );
 
         return res;
     }
