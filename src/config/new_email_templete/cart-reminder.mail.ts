@@ -120,24 +120,6 @@ export async function TravelProviderReminderMail(
             }
         } else if (booking.moduleId == ModulesName.HOTEL) {
             content += `<tr>
-                    <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
-                    >
-                        <span style="color: #000000">
-                        Traveler:</span><span style="font-size: 18px">${traveleName}</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                    >
-                        <span style="color: #000000">Email:</span><span style="font-size: 18px">${travelerEmail}</span>
-                    </td>
-                </tr><tr>
                         <td
                             align="left"
                             valign="top"

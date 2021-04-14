@@ -3010,7 +3010,7 @@ export class FlightService {
                     );
 
                     this.sendFlightUpdateMail(
-                        bookingId,
+                        bookingData.cart.laytripCartId,
                         user.email,
                         user.cityName
                     );
@@ -3033,14 +3033,14 @@ export class FlightService {
     }
 
     async sendFlightUpdateMail(bookingId, email, userName) {
-        let mail18 = await flightDataUtility.flightData(bookingId);
+        let mail18 = await CartDataUtility.CartMailModelDataGenerate(bookingId);
         
         await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
+                subject: `Booking ID ${mail18.param.orderId} Change by Travel Provider`,
                 html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
