@@ -116,6 +116,7 @@ export class CartDataUtility {
         const cart = await query.getOne();
 
         if (cart?.bookings?.length) {
+            let confirmed = true
             const user = await this.userData(cart.userId);
             let param = new CartBookingEmailParameterModel();
             param.user_name = user.firstName ? user.firstName : "";
@@ -207,7 +208,12 @@ export class CartDataUtility {
                     adult: 0,
                     child: 0,
                 } 
+                 if (!booking.supplierId) {
+                     confirmed = false
+                 }
                 if (booking.moduleId == ModulesName.FLIGHT) {
+                    
+                   
                     const routes = moduleInfo.routes;
                     //console.log('23');
                     for (let index = 0; index < routes.length; index++) {
@@ -335,7 +341,7 @@ export class CartDataUtility {
             param.paymentDetail = cartInstallments;
             param.bookings = bookingsData;
 
-            return { param, email: user.email };
+            return { param, email: user.email, confirmed };
         } else {
             return;
         }

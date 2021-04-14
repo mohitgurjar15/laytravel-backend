@@ -59,6 +59,7 @@ import { InstalmentType } from "src/enum/instalment-type.enum";
 import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 
+import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
 @Injectable()
 export class CartService {
     constructor(
@@ -1875,6 +1876,25 @@ more than 5.`
                 .catch((err) => {
                     //console.log("err", err);
                 });
+
+                if(responce?.confirmed == true && responce?.param?.bookingType == BookingType.NOINSTALMENT){
+                    await this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: `Travel Provider Reservation Confirmation`,
+                            html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                                responce.param
+                            ),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
+                }
         } else {
             const user = await CartDataUtility.userData(userId);
             const userName = user.firstName

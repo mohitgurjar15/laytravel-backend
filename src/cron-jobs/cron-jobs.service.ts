@@ -51,7 +51,8 @@ import { LaytripMissedPaymentTemplete } from "src/config/new_email_templete/miss
 import { LaytripPaymentReminderTemplete } from "src/config/new_email_templete/payment-reminder.html";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 import { flightDataUtility } from "src/utility/flight-data.utility";
-import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
+import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
+import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -78,23 +79,20 @@ export class CronJobsService {
     async convertCustomer() {
         // try {
         //     var toDate = new Date();
-
         //     var todayDate = toDate.toISOString();
         //     todayDate = todayDate
         //         .replace(/T/, " ") // replace T with a space
         //         .replace(/\..+/, "");
-
         //     const result = await this.userRepository.query(
         //         `SELECT "User"."user_id","User"."next_subscription_date","User"."email","User"."first_name","User"."last_name"  FROM "user" "User" WHERE "User"."role_id" = ${Role.PAID_USER} AND DATE("User"."next_subscription_date") < '${todayDate}'`
         //     );
         //     console.log(result);
         //     const updateQuery = await this.userRepository.query(
-        //         `UPDATE "user" 
+        //         `UPDATE "user"
         //         SET "role_id"=6 , updated_date='${todayDate}',updated_by = ${cronUserId}  WHERE "role_id" = ${Role.PAID_USER} AND DATE("next_subscription_date") < '${todayDate}'`
         //     );
         //     for (let index = 0; index < result.length; index++) {
         //         const data = result[index];
-
         //         PushNotification.sendNotificationTouser(
         //             data.userId,
         //             {
@@ -123,7 +121,6 @@ export class CronJobsService {
         //             },
         //             cronUserId
         //         );
-
         //         this.mailerService
         //             .sendMail({
         //                 to: data.email,
@@ -147,7 +144,6 @@ export class CronJobsService {
         //         // 	`${data.email} is Convert customer to free user because subscription plan is not done by customer`
         //         // );
         //     }
-
         //     console.log(updateQuery);
         // } catch (error) {
         //     console.log(error);
@@ -157,12 +153,13 @@ export class CronJobsService {
     async checkPandingFlights() {
         Activity.cronActivity("check pending flights cron");
         let query = getManager()
-            .createQueryBuilder(Booking, "booking")
-            .select([
-                "booking.supplierBookingId",
-                "booking.id",
-                "booking.laytripBookingId",
-            ])
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            // .select([
+            //     "booking.supplierBookingId",
+            //     "booking.id",
+            //     "booking.laytripBookingId",
+            // ])
             .where(
                 `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
             );
@@ -171,32 +168,54 @@ export class CronJobsService {
 
         var total = 0;
         var failedlogArray = "";
-        for (let index = 0; index < result.length; index++) {
-            try {
-                const element = result[index];
+        for await (const cart of result) {
+            for await (const element of cart.bookings) {
+                try {
+                    var op: any = await this.flightService.ticketFlight(
+                        element.supplierBookingId
+                    );
+                } catch (error) {
+                    console.log(error);
+                    const filename =
+                        `update-pending-flight-cron-failed-` +
+                        element.laytripBookingId +
+                        "-" +
+                        new Date().getTime() +
+                        ".json";
 
-                // console.log(element.supplierBookingId);
-
-                var responce: any = await this.flightService.ticketFlight(
-                    element.supplierBookingId
-                );
-            } catch (error) {
-                console.log(error);
-                const filename =
-                    `update-pending-flight-cron-failed-` +
-                    result[index].laytripBookingId +
-                    "-" +
-                    new Date().getTime() +
-                    ".json";
-
-                Activity.createlogFile(
-                    filename,
-                    JSON.stringify(result[index]) +
-                        "-----------------------error-----------------------" +
-                        JSON.stringify(error),
-                    "flight"
-                );
-                failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/flight/${filename}</p> <br/>`;
+                    Activity.createlogFile(
+                        filename,
+                        JSON.stringify(element.laytripBookingId) +
+                            "-----------------------error-----------------------" +
+                            JSON.stringify(error),
+                        "flight"
+                    );
+                    failedlogArray += `<p>BookingId:- ${element.laytripBookingId}-----Log file----->/var/www/src/flight/${filename}</p> <br/>`;
+                }
+            }
+            const responce = await CartDataUtility.CartMailModelDataGenerate(
+                cart.laytripCartId
+            );
+            if (
+                responce?.confirmed == true &&
+                responce?.param?.bookingType == BookingType.NOINSTALMENT
+            ) {
+                await this.mailerService
+                    .sendMail({
+                        to: responce.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Travel Provider Reservation Confirmation`,
+                        html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                            responce.param
+                        ),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
             }
         }
         if (failedlogArray != "") {
@@ -272,7 +291,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking);
+                await this.getPaymentsOfBooking(cartBooking,true);
             } catch (error) {
                 console.log("error", error);
                 const filename =
@@ -1355,46 +1374,46 @@ export class CronJobsService {
         return { message: `today booking price added for pending booking` };
     }
 
-    async ChangesFromTravelProvider() {
-        var after7Day = new Date();
-        after7Day.setDate(after7Day.getDate() + 7);
-        var date1 = after7Day.toISOString();
-        date1 = date1
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "")
-            .split(" ")[0];
+    // async ChangesFromTravelProvider() {
+    //     var after7Day = new Date();
+    //     after7Day.setDate(after7Day.getDate() + 7);
+    //     var date1 = after7Day.toISOString();
+    //     date1 = date1
+    //         .replace(/T/, " ") // replace T with a space
+    //         .replace(/\..+/, "")
+    //         .split(" ")[0];
 
-        var after14Day = new Date();
-        after14Day.setDate(after14Day.getDate() + 14);
-        var date2 = after14Day.toISOString();
-        date2 = date2
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "")
-            .split(" ")[0];
+    //     var after14Day = new Date();
+    //     after14Day.setDate(after14Day.getDate() + 14);
+    //     var date2 = after14Day.toISOString();
+    //     date2 = date2
+    //         .replace(/T/, " ") // replace T with a space
+    //         .replace(/\..+/, "")
+    //         .split(" ")[0];
 
-        let bookings = await getConnection()
-            .createQueryBuilder(Booking, "Booking")
-            .where(
-                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
-            )
-            .getMany();
+    //     let bookings = await getConnection()
+    //         .createQueryBuilder(Booking, "Booking")
+    //         .where(
+    //             `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
+    //         )
+    //         .getMany();
 
-        if (!bookings.length) {
-            return {
-                message: `Upcommig booking not found`,
-            };
-        }
-        for await (const booking of bookings) {
-            await this.flightService.bookingUpdateFromSupplierside(
-                booking.laytripBookingId,
-                { supplier_booking_id: booking.supplierBookingId },
-                booking.checkInDate == date1 ? 2 : 3
-            );
-        }
-        return {
-            message: `Emails send succeesfully`,
-        };
-    }
+    //     if (!bookings.length) {
+    //         return {
+    //             message: `Upcommig booking not found`,
+    //         };
+    //     }
+    //     for await (const booking of bookings) {
+    //         await this.flightService.bookingUpdateFromSupplierside(
+    //             booking.laytripBookingId,
+    //             { supplier_booking_id: booking.supplierBookingId },
+    //             booking.checkInDate == date1 ? 2 : 3
+    //         );
+    //     }
+    //     return {
+    //         message: `Emails send succeesfully`,
+    //     };
+    // }
 
     async upcommingBookingDetail() {
         var after7Day = new Date();
@@ -1405,38 +1424,34 @@ export class CronJobsService {
             .replace(/\..+/, "")
             .split(" ")[0];
 
-        var after5Day = new Date();
-        after5Day.setDate(after5Day.getDate() + 5);
-        var date2 = after5Day.toISOString();
-        date2 = date2
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "")
-            .split(" ")[0];
-
-        let bookings = await getConnection()
-            .createQueryBuilder(Booking, "Booking")
+        let cartBookings = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.user", "User")
             .where(
-                `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM} AND "Booking"."module_id" IN (${ModulesName.FLIGHT})`
+                `(DATE("cartBooking"."check_in_date") = DATE('${date1}') ) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
             )
             .getMany();
-        console.log(bookings);
 
-        if (!bookings.length) {
+        if (!cartBookings.length) {
             return {
                 message: `Upcommig booking not found`,
             };
         }
-        for await (const booking of bookings) {
-            let mail = await flightDataUtility.flightData(
-                booking.laytripBookingId
+        for await (const booking of cartBookings) {
+            let mail = await CartDataUtility.CartMailModelDataGenerate(
+                booking.laytripCartId
             );
+            //console.log(mail.confirmed);
+
             await this.mailerService
                 .sendMail({
-                    to: mail.userMail,
+                    to: mail.email,
+                    //to: 'viraniparth@yopmail.com',
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `Booking ID ${mail.param.cart.cartId} Reminder for your Upcoming Trip`,
-                    html: await LaytripFlightReminderMail(mail.param),
+                    subject: `Reminder - Booking Number ${mail.param.orderId}`,
+                    html: await TravelProviderReminderMail(mail.param),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -1450,7 +1465,7 @@ export class CronJobsService {
         };
     }
 
-    async getPaymentsOfBooking(cartBooking: CartBooking) {
+    async getPaymentsOfBooking(cartBooking: CartBooking,isPastDue : boolean) {
         let amount: number = 0;
 
         for await (const booking of cartBooking.bookings) {
@@ -1569,6 +1584,7 @@ export class CronJobsService {
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
+                    
                 };
                 if (nextInstalmentDate) {
                     param.nextDate = DateTime.convertDateFormat(
@@ -1797,6 +1813,7 @@ export class CronJobsService {
                         "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
+                    pastDue:isPastDue,
                 };
                 if (cartBooking.user.isEmail) {
                     if (nextAmount > 0) {
@@ -1919,7 +1936,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking);
+                await this.getPaymentsOfBooking(cartBooking,false);
             } catch (error) {
                 console.log("error", error);
                 const filename =
