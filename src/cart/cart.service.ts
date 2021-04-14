@@ -260,16 +260,46 @@ more than 5.`
                 );
             }
 
-            let userDefaultCard = await  getConnection()
+            let guestCart = await getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where("guest_user_id =:id", { id: guestUserId })
+                .getMany();
+            if (guestCart.length) {
+                for await (const cart of guestCart) {
+                    let cartTraveler = await getConnection()
+                        .createQueryBuilder(CartTravelers, "traveler")
+                        .where("cart_id =:id", {
+                            id: cart.id,
+                        })
+                        .orderBy(`id`, 'ASC')
+                        .getOne();
+
+                    if (cartTraveler && cartTraveler.userId != user.userId) {
+                        await getConnection()
+                            .createQueryBuilder()
+                            .update(User)
+                            //.set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
+                            .set({
+                                email: user.email || null,
+                            })
+                            .where("user_id =:id", {
+                                id: cartTraveler.userId,
+                            })
+                            .execute();
+                    }
+                }
+            }
+
+            let userDefaultCard = await getConnection()
                 .createQueryBuilder(UserCard, "card")
                 .where(`is_default = true AND user_id = '${user.userId}'`)
-                .getCount
+                .getCount;
             let whr = {
                 userId: user.userId,
                 guestUserId: null,
             };
-            if(userDefaultCard){
-                whr["isDefault"] = false
+            if (userDefaultCard) {
+                whr["isDefault"] = false;
             }
 
             await getConnection()
@@ -386,6 +416,8 @@ more than 5.`
             );
         }
     }
+
+
 
     async updateCart(updateCartDto: UpdateCartDto, user) {
         try {
