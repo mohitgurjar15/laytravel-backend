@@ -53,7 +53,7 @@ export class Priceline implements HotelInterface {
             .get(url)
             .pipe(
                 map((res) =>
-                    new AutoComplete().processSearchLocationResult(res)
+                    new AutoComplete().processSearchLocationResult(res,term)
                 ),
                 catchError((err) => {
                     throw new BadRequestException(

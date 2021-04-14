@@ -12,7 +12,7 @@ export class AutoComplete{
         this.genericHelper = new GenericHotel;
     }
     
-    processSearchLocationResult(res: any) {
+    processSearchLocationResult(res: any,term:string) {
         let results = res.data.getHotelAutoSuggestV2;
         if (results.error) {
             throw new NotFoundException("No search result found &&&term&&&"+errorMessage);
@@ -86,7 +86,18 @@ export class AutoComplete{
             });
 
             let serachResult =  filterData.sort((a, b) => a.title.localeCompare(b.title))
-            return serachResult;
+            let excactPattern =[];
+            let notExcactPattern=[]
+            for(let item of  serachResult){
+                if(item.title.toLowerCase().indexOf(term.toLowerCase())==0){
+                    excactPattern.push(item)
+                }
+                else{
+                    notExcactPattern.push(item)
+                }
+                
+            }
+            return [...excactPattern,...notExcactPattern];
 
         } else{
             throw new NotFoundException(results.error.status);
