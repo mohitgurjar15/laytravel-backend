@@ -63,7 +63,11 @@ export class UpdateTravelerDto {
                example: `Doe`,
            })
            last_name: string;
-           @ValidateIf((o) => o.module_id != ModulesName.HOTEL)
+            @ValidateIf(
+               (o) =>
+                   o.module_id != ModulesName.HOTEL ||
+                   o.is_primary_traveler == true
+           )
            @IsValidDate("", {
                message: (args: ValidationArguments) => {
                    if (typeof args.value == "undefined" || args.value == "") {

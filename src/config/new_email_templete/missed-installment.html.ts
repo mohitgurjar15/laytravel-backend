@@ -16,7 +16,7 @@ export function LaytripMissedPaymentTemplete(param: {
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #000000;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
+                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;"> Hi ${param.userName},</td>
                 </tr>
                 `;
   if (param.try == 3) {

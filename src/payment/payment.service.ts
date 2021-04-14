@@ -1215,6 +1215,7 @@ export class PaymentService {
                             "MMMM DD, YYYY"
                         ),
                         nextAmount: nextAmount,
+                        pastDue:false
                     };
                     console.log("cart.user.isEmail", cart.user.isEmail);
 
@@ -1432,7 +1433,7 @@ export class PaymentService {
             .createQueryBuilder(Cart, "cart")
             .select(["cart.moduleInfo", "cart.moduleId"])
             .where(
-                `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`
+                `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("cart"."id" IN (${cartIds}))`
             )
             .orderBy(`cart.id`, "DESC")
             .limit(5);
@@ -1466,6 +1467,23 @@ export class PaymentService {
                 console.log(item.moduleInfo[0].selling_price);
 
                 totalAmount += parseFloat(item.moduleInfo[0].selling_price);
+
+                console.log("totalAmount", totalAmount);
+            }
+            else if (item.moduleId == ModulesName.HOTEL) {
+                console.log("3");
+                console.log(item.moduleInfo[0].input_data.check_in);
+                const dipatureDate = 
+                    item.moduleInfo[0].input_data.check_in
+                if (smallestDate == "") {
+                    smallestDate = dipatureDate;
+                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                    smallestDate = dipatureDate;
+                }
+                console.log("smallestDate", smallestDate);
+                console.log(item.moduleInfo[0].selling.total);
+
+                totalAmount += parseFloat(item.moduleInfo[0].selling.total);
 
                 console.log("totalAmount", totalAmount);
             }

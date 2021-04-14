@@ -7,7 +7,7 @@ import { FlightBookingEmailParameterModel } from "../email_template/model/flight
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function TravelProviderConfiramationMail(
+export async function CartChangeAsperUserRequestMail(
            param: CartBookingEmailParameterModel
        ) {
              let traveleName = "";
@@ -25,14 +25,15 @@ export async function TravelProviderConfiramationMail(
                  }
                  traveleName += traveler.name ? traveler.name : "";
              }
+
              let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
-        <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #000000;padding: 0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
@@ -43,14 +44,15 @@ export async function TravelProviderConfiramationMail(
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 25px; color: #707070;padding: 15px 0; text-align: left;">
-                        Your reservation has been changed by the Travel Provider. Please review these changes below:</td>
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                        Your booking has been successfully changed per your request.
+                    </td>
                 </tr>
                 <tr>
                     <td
                         align="left"
                         valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:10px;  text-align: left;"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;  text-align: left;"
                     >
                         <span  style="color: #000000">
                         Traveler: 
@@ -198,18 +200,17 @@ export async function TravelProviderConfiramationMail(
                  }
              }
 
-             content += `            <tr>
+             content += `    <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        <br/><br/>If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 20px 0 20px 0; text-align: left;">
+                         If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0C7BFF;">customerservice@laytrip.com</a>.
                     </td>
                 </tr>
             </tbody>
         </table>
     </td>
-</tr>
-<tr>
+</tr><tr>
 <td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
