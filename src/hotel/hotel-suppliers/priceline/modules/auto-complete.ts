@@ -14,7 +14,6 @@ export class AutoComplete{
     
     processSearchLocationResult(res: any) {
         let results = res.data.getHotelAutoSuggestV2;
-        // return results;
         if (results.error) {
             throw new NotFoundException("No search result found &&&term&&&"+errorMessage);
         }
