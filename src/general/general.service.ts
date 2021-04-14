@@ -45,6 +45,10 @@ import { LaytripInquiryAutoReplayMail } from "src/config/new_email_templete/layt
 import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
 import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
 import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
+import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/cart-changes-as-per-user-req.dto";
+import {TravelProviderReminderMail} from "src/config/new_email_templete/cart-reminder.mail"
+import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
+import {LaytripTripReminderMail} from "src/config/new_email_templete/trip-reminder.dto"
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -568,7 +572,7 @@ export class GeneralService {
                     totalAmount: mail10.totalAmounNumerict,
                     currencySymbol: "$",
                     nextDate: "March 18, 2021",
-                    pastDue:false
+                    pastDue: false,
                 }),
             })
             .then((res) => {
@@ -577,7 +581,7 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        
+
         await this.mailerService
             .sendMail({
                 to: email,
@@ -594,7 +598,7 @@ export class GeneralService {
                     totalAmount: mail10.totalAmounNumerict,
                     currencySymbol: "$",
                     nextDate: "March 18, 2021",
-                    pastDue:true
+                    pastDue: true,
                 }),
             })
             .then((res) => {
@@ -722,7 +726,7 @@ export class GeneralService {
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
-                html: await TravelProviderConfiramationMail(mail18.param),
+                html: await TravelProviderConfiramationMail(mail2.param),
             })
             .then((res) => {
                 console.log("res", res);
@@ -852,6 +856,133 @@ export class GeneralService {
                 bcc: mailConfig.BCC,
                 subject: `Reminder - Booking Number ${mail18.param.orderId}`,
                 html: await TravelProviderReconfirmationMail(mail18.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        let pendingHotelId = "LTCKN5SO8HZ";
+
+        let hotelmail = await CartDataUtility.CartMailModelDataGenerate(
+            pendingHotelId
+        );
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                // bcc: mailConfig.BCC,
+                subject: `Booking ID ${pendingHotelId} Confirmation`,
+                html: await LaytripCartBookingConfirmtionMail(hotelmail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Booking ID ${pendingHotelId} Confirmation`,
+                html: await LaytripCartBookingConfirmtionMail(hotelmail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Booking ID ${pendingHotelId} Completion Notice`,
+                html: await LaytripCartBookingComplationMail(hotelmail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Booking ID ${pendingHotelId} Customer Change`,
+                html: await CartChangeAsperUserRequestMail(hotelmail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Booking ID ${pendingHotelId} Change by Travel Provider`,
+                html: await TravelProviderConfiramationMail(hotelmail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Travel Provider Reservation Confirmation`,
+                html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                    hotelmail.param
+                ),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Reminder - Booking Number ${pendingHotelId}`,
+                html: await TravelProviderReminderMail(hotelmail.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Booking ID ${pendingHotelId} Reminder for your Upcoming Trip`,
+                html: await LaytripTripReminderMail(hotelmail.param),
             })
             .then((res) => {
                 console.log("res", res);
