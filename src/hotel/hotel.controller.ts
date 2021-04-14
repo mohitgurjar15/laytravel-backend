@@ -91,11 +91,12 @@ export class HotelController {
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     rooms(
         @Body() roomsReqDto: RoomsReqDto,
-        @Headers() hotelHeaderDto: HotelHeaderDto
+        @Headers() hotelHeaderDto: HotelHeaderDto,
+        @LogInUser() user
     ) {
         roomsReqDto.token = hotelHeaderDto.token;
         
-        return this.hotelService.rooms(roomsReqDto);
+        return this.hotelService.rooms(roomsReqDto,user.user_id);
     }
     
     @Post('availability')
@@ -133,7 +134,7 @@ export class HotelController {
             user_id: user.user_id
         };
 
-        return this.hotelService.book(bookDto);
+        return this.hotelService.book(bookDto,user.user_id);
     }
 
     @Put('book-partially-booking/:booking_id')

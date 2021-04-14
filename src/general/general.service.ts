@@ -574,33 +574,7 @@ export class GeneralService {
                     totalAmount: mail10.totalAmounNumerict,
                     currencySymbol: "$",
                     nextDate: "March 18, 2021",
-                    pastDue: false,
-                }),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Installment Recevied`,
-                html: await LaytripInstallmentRecevied({
-                    userName: "Parth",
-                    orderId: partialBooking,
-                    date: "March 11, 2021",
-                    amount: 5.66,
-                    installmentId: 3,
-                    complitedAmount: mail10.paidAmountNumeric,
-                    totalAmount: mail10.totalAmounNumerict,
-                    currencySymbol: "$",
-                    nextDate: "March 18, 2021",
-                    pastDue: true,
+                    pastDue : true
                 }),
             })
             .then((res) => {
@@ -856,7 +830,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Reminder - Booking Number ${mail18.param.orderId}`,
+                subject: `Travel Provider Reservation Confirmation #${mail18.param.flight[0].droups[0].depature.pnr_no} Reminder`,
                 html: await TravelProviderReconfirmationMail(mail18.param),
             })
             .then((res) => {
@@ -994,54 +968,4 @@ export class GeneralService {
             });
     }
 
-    // async testEmail(email) {
-    //     let partialBooking = "LTCKM3BOFDB";
-    //     await this.mailerService.sendMail({
-    //         to: email,
-    //         from: mailConfig.from,
-    //         bcc: mailConfig.BCC,
-    //         subject: `Booking ID ${partialBooking} Upcoming Payment Reminder`,
-    //         html: await LaytripPaymentReminderTemplete({
-    //             userName: "Parth",
-    //             amount: "$55.40",
-    //             date: "June 20, 2021",
-    //             bookingId: partialBooking,
-    //         }),
-    //     });
-    // }
-
-    async bookingCategoryName() {
-        const res = await getManager()
-            .createQueryBuilder(Booking, "log")
-            .getMany();
-        for await (const booking of res) {
-            if (
-                booking.moduleInfo[0]?.departure_code &&
-                booking.moduleInfo[0]?.arrival_code
-            ) {
-                const [caegory] = await getConnection().query(`select 
-        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
-        from flight_route 
-        where from_airport_code  = '${booking.moduleInfo[0].departure_code}' and to_airport_code = '${booking.moduleInfo[0].arrival_code}'`);
-                booking.categoryName = caegory?.categoryname || null;
-                await booking.save();
-            }
-        }
-    }
-
-    async predictiveData() {
-        const oldData = await getConnection()
-            .query(`SELECT id, booking_id, created_date, is_below_minimum, price, remain_seat, net_price, is_resedule
-                    FROM old_predictive_booking_data;`);
-            console.log(oldData[0]);
-            for await (const row of oldData) {
-                
-                await getConnection()
-                    .createQueryBuilder()
-                    .update(PredictiveBookingData)
-                    .set({ date: new Date(row.created_date) })
-                    .where("id = :id", { id: row.id })
-                    .execute();
-            }  
-    }
 }

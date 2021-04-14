@@ -31,13 +31,13 @@ export async function LaytripFlightBookingConfirmtionMail(
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #000000;padding: 0 0 20px 0; text-align: left;">
+                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        Congratulations on booking your travel with Laytrip. <span style = "color: #000000">Your Laytrip Booking ID is ${
+                        Congratulations on booking your travel with Laytrip. <span style = "color: #707070">Your Laytrip Booking ID is ${
                             param.cart.cartId
                         }.</span> Please use this number when referencing your booking with Laytrip.
                     </td>
@@ -46,7 +46,7 @@ export async function LaytripFlightBookingConfirmtionMail(
       content += `<tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        <span style = "color: #000000">Your Travel Provider Confirmation Number is ${param.flight[0].droups[0].depature?.pnr_no}.</span> As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your Reservation Details:
+                        <span style = "color: #707070">Your Travel Provider Confirmation Number is ${param.flight[0].droups[0].depature?.pnr_no}.</span> As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your Reservation Details:
                     </td>
                 </tr>`;
   }
@@ -141,7 +141,7 @@ export async function LaytripFlightBookingConfirmtionMail(
                     valign="top"
                     style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
                 >
-                    <span  style="color: #000000">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</span>
+                    <span  style="color: #707070">Provider Reservation Number: ${param.flight[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;

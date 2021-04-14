@@ -9,7 +9,7 @@ export function BookingNotCompletedMail(param: { userName: string }) {
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="left" style="width: 100%">
                                             <tbody>
                                                 <tr>
-                                                    <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 24px; color: #000000; padding-top: 15px; text-align: left;">Hi ${param.userName},</td>
+                                                    <td align="left" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 24px; color: #707070; padding-top: 15px; text-align: left;">Hi ${param.userName},</td>
                                                 </tr>
                                                 <tr>
                                                     <td align="left" valign="top" style="font-family: 'Open Sans', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top: 15px; text-align: left;">
