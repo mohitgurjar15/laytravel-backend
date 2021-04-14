@@ -1215,6 +1215,7 @@ export class PaymentService {
                             "MMMM DD, YYYY"
                         ),
                         nextAmount: nextAmount,
+                        pastDue:false
                     };
                     console.log("cart.user.isEmail", cart.user.isEmail);
 

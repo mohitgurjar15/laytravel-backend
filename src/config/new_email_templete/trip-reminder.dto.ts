@@ -7,7 +7,7 @@ import { FlightBookingEmailParameterModel } from "../email_template/model/flight
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function TravelProviderConfiramationMail(
+export async function LaytripTripReminderMail(
            param: CartBookingEmailParameterModel
        ) {
              let traveleName = "";
@@ -38,13 +38,20 @@ export async function TravelProviderConfiramationMail(
                 <tr>
                     <td align="left" valign="top"
                         style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        Booking ID ${param.orderId} Change Confirmation!
+                        Trip Reminder!
                     </td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px;  line-height: 25px; color: #707070;padding: 15px 0; text-align: left;">
-                        Your reservation has been changed by the Travel Provider. Please review these changes below:</td>
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #000000;padding: 0 0 20px 0; text-align: left;">
+                        Booking ID ${param.orderId}
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" valign="top"
+                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding: 0 0 20px 0; text-align: left;">
+                        Itinerary Details:
+                    </td>
                 </tr>
                 <tr>
                     <td
@@ -198,11 +205,25 @@ export async function TravelProviderConfiramationMail(
                  }
              }
 
-             content += `            <tr>
+
+             content += ` <tr>
+                    <td style="padding: 20px 0 0 0;">
+                        <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: 200; " height="48">
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>My Bookings</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
-                        <br/><br/>If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #0C7BFF;">customerservice@laytrip.com</a>.
+                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 10px 0 20px 0; text-align: left;">
+                        Contact us anytime at <a href = 'mailto:customerservice@laytrip.com'
+                        style="color: #0C7BFF;">customerservice@laytrip.com</a> with questions. We hope you have a great trip!
                     </td>
                 </tr>
             </tbody>
