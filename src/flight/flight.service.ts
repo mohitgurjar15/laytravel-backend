@@ -1191,6 +1191,7 @@ export class FlightService {
                 var date;
                 var startPrice = 0;
                 var arrivalDate;
+                var secondaryStartPrice = 0;
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -1199,6 +1200,8 @@ export class FlightService {
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
                         startPrice = flightData.start_price || 0;
+                        secondaryStartPrice =
+                            flightData.secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1214,6 +1217,8 @@ export class FlightService {
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         arrivalDate = flightData.arrival_date;
+                        secondaryStartPrice =
+                            flightData.secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -1224,6 +1229,7 @@ export class FlightService {
                     unique_code: unique_code,
                     start_price: startPrice,
                     arrival_date: arrivalDate,
+                    secondary_start_price: secondaryStartPrice,
                 };
 
                 returnResponce.push(output);

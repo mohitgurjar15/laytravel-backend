@@ -420,6 +420,8 @@ more than 5.`
         }
     }
 
+
+
     async updateCart(updateCartDto: UpdateCartDto, user) {
         try {
             const { cart_id, travelers } = updateCartDto;
