@@ -39,6 +39,9 @@ export class Priceline implements HotelInterface {
             get_regions: false,
             get_hotels: false,
             get_pois: false,
+            max_results:100,
+            order:'asc',
+            sort: 'name'
         };
 
         let url = await CommonHelper.generateUrl(
@@ -70,17 +73,10 @@ export class Priceline implements HotelInterface {
             check_in,
             check_out,
             hotel_id,
+            rooms,
+            adults,
+            children
         } = searchReqDto;
-
-        let occupancies = collect(searchReqDto.occupancies);
-
-        let rooms = occupancies.count();
-
-        let adults = occupancies.sum("adults");
-
-        let children = occupancies
-            .flatMap((value) => value["children"])
-            .count();
 
         let parameters = {
             check_in,
