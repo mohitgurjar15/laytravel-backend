@@ -276,6 +276,32 @@ export async function LaytripCartBookingConfirmtionMail(
             //   content += `</table>
             //                 </td>
             //             </tr><tr><td>   <br/></td></tr>`;
+        } else if (booking.moduleId == ModulesName.HOTEL) {
+            content += `<tr>
+                        <td
+                            align="left"
+                            valign="top"
+                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
+                        >
+                            <span style="color: #000000">Hotel:</span> ${
+                                booking.hotelData.hotelName
+                            }, Check-in ${DateTime.convertDateFormat(
+                booking.hotelData.checkIn,
+                "YYYY-MM-DD",
+                "MMMM DD, YYYY"
+            )}, ${booking.hotelData.room} Room 
+                            ${
+                                booking.hotelData.adult
+                                    ? ", " + booking.hotelData.adult + " Adult"
+                                    : ""
+                            }
+                            ${
+                                booking.hotelData.child
+                                    ? ", " + booking.hotelData.child + " Child"
+                                    : ""
+                            }
+                            </td>
+                    </tr>`;
         }
     }
     //   content += `<tr>

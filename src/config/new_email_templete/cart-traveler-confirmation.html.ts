@@ -55,7 +55,7 @@ export async function LaytripCartBookingTravelProviderConfirmtionMail(
               }
           }
           if (booking.moduleId == ModulesName.HOTEL) {
-              content += `<span style = "color: #000000">Your Hotel Travel Provider Confirmation Number is.</span> `;
+              content += `<span style = "color: #000000">Your Hotel Travel Provider Confirmation Number is Your Lastname.</span> `;
           }
           if (index != param.bookings.length) {
               content += `<br/>`;
