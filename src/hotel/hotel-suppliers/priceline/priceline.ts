@@ -96,7 +96,6 @@ export class Priceline implements HotelInterface {
         let parameters = {
             check_in,
             check_out,
-            city_id,
             rooms,
             adults,
             children,
@@ -104,6 +103,9 @@ export class Priceline implements HotelInterface {
                 "hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage",
             rate_limit: 1,
         };
+        if (city_id) {
+            parameters['city_id'] = city_id
+        }
         let extra: any = {};
 
         if (hotel_id) {
@@ -132,6 +134,8 @@ export class Priceline implements HotelInterface {
             .pipe(
                 map((res) => {
                     responce = res?.data;
+                   // console.log(responce);
+                    
                     return new Search().processSearchResult(res, parameters);
                 }),
                 catchError((err) => {
