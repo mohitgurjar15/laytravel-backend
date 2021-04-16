@@ -69,7 +69,7 @@ export class AutoComplete{
                             break; */
                     }
                     
-                    let title = [line, city, state, country, city_id]
+                    let title = [line, city, state, country]
                         .filter((x) => x)
                         .join(", ");
                     
