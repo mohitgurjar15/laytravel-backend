@@ -205,26 +205,79 @@ export async function LaytripCartBookingConfirmtionMail(
                 // </tr>`;
                 //      }
             }
+
+            //   content += `</table>
+            //                 </td>
+            //             </tr>
+
+            //             <tr>
+            //                 <td>
+            //                     <table class="oc_wrapper" border="1" cellpadding="0" cellspacing="0" width="550" style="border: 1px solid #dddddd; font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;"
+            //                         id="templateColumns">
+            //                         <tr>
+            //                             <td colspan="4"
+            //                                 style="padding: 10px 0; background-color: #ecf1ff; color: #707070; font-weight: 800; font-size: 11px; font-family: 'Poppins', sans-serif;">
+            //                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px;">
+            //                                     <span>Traveler Details</span>
+            //                                 </div>
+            //                             </td>
+            //                         </tr>
+            //                         <tr>
+
+            //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
+            //                                 width="30%" class="header_txt"
+            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #707070; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
+            //                                 Name
+            //                             </th>
+            //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
+            //                                 width="35%" class="header_txt"
+            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #707070; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
+            //                                 Email
+            //                             </th>
+            //                             <th align="center" valign="center" cellpadding="10" cellspacing="0"
+            //                                 width="20%" class="header_txt"
+            //                                 style="padding: 10px 0; font-weight: 300; text-transform: uppercase; background-color: #707070; border: 1px solid #ffffff; color: #fff; font-family: 'Poppins', sans-serif; font-size: 12px; line-height: 25px;">
+            //                                 Type
+            //                             </th>
+            //                         </tr>`;
+            //   for (let index = 0; index < booking.travelers.length; index++) {
+            //     const traveler = booking.travelers[index];
+            //     content += `<tr>
+
+            //                             <td class="templateColumnContainer" width="25%">
+            //                                 <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
+            //                                     <tr>
+            //                                         <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+            //                                             <span style="display: block;">${traveler.name}</span>
+            //                                         </td>
+            //                                     </tr>
+            //                                 </table>
+            //                             </td>
+            //                             <td class="templateColumnContainer" width="25%">
+            //                                 <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
+            //                                     <tr>
+            //                                         <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+            //                                             <span style="display: block;">${traveler.email}</span>
+            //                                         </td>
+            //                                     </tr>
+            //                                 </table>
+            //                             </td>
+            //                             <td class="templateColumnContainer" width="35%">
+            //                                 <table class="oc_wrapper" border="0" cellpadding="5" cellspacing="0" width="100%">
+            //                                     <tr>
+            //                                         <td valign="top" class="rightColumnContent" style="font-weight: 300; font-size: 11px; font-family: 'Poppins', sans-serif;">
+            //                                             <span style="display: block;">${traveler.type}</span>
+            //                                         </td>
+            //                                     </tr>
+            //                                 </table>
+            //                             </td>
+            //                         </tr>`;
+            //   }
+            //   content += `</table>
+            //                 </td>
+            //             </tr><tr><td>   <br/></td></tr>`;
         } else if (booking.moduleId == ModulesName.HOTEL) {
             content += `<tr>
-                    <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px; text-align: left;"
-                    >
-                        <span style="color: #000000">
-                        Traveler:</span><span style="font-size: 18px">${traveleName}</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                    >
-                        <span style="color: #000000">Email:</span><span style="font-size: 18px">${travelerEmail}</span>
-                    </td>
-                </tr><tr>
                         <td
                             align="left"
                             valign="top"

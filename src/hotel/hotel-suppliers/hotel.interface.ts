@@ -7,7 +7,7 @@ export interface HotelInterface {
 
     rooms(request, user_id);
 
-    availability(request);
+    availability(request, user_id);
 
     book(request, user_id);
 }

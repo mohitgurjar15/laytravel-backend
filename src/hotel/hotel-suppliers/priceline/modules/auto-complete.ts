@@ -33,12 +33,14 @@ export class AutoComplete{
                     let state = "";
                     let line = "";
                     let hotel_id = "";
+                    let city_id
 
                     switch (type) {
                         case 'city':
                             country = sub['country'];
                             city = sub['city'];
                             state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
+                            city_id = sub['cityid_ppn'] || "";
                             break;
                         
                         /* case 'airport':
@@ -68,7 +70,9 @@ export class AutoComplete{
                             break; */
                     }
                     
-                    let title = [line, city, state, country].filter(x=>x).join(', ');
+                    let title = [line, city, state, country, city_id]
+                        .filter((x) => x)
+                        .join(", ");
                     
                     filterData.push({
                         title,
@@ -77,6 +81,7 @@ export class AutoComplete{
                         country,
                         type,
                         hotel_id,
+                        city_id,
                         geo_codes: {
                             lat: geoCodes[0],
                             long: geoCodes[1]
