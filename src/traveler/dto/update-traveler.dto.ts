@@ -65,8 +65,7 @@ export class UpdateTravelerDto {
            last_name: string;
             @ValidateIf(
                (o) =>
-                   o.module_id != ModulesName.HOTEL ||
-                   o.is_primary_traveler == true
+                   o.module_id != ModulesName.HOTEL
            )
            @IsValidDate("", {
                message: (args: ValidationArguments) => {
@@ -104,9 +103,9 @@ export class UpdateTravelerDto {
 
            @ValidateIf(
                (o) =>
-                   moment(new Date()).diff(moment(o.dob), "years") >= 12 &&
-                   o.module_id == ModulesName.HOTEL &&
-                   o.is_primary_traveler == true
+                   moment(new Date()).diff(moment(o.dob), "years") >= 12 ||
+                   (o.module_id == ModulesName.HOTEL &&
+                   o.is_primary_traveler == true)
            )
            @IsNotEmpty({
                message: `Please select phone country code.&&&country_code`,
@@ -151,9 +150,9 @@ export class UpdateTravelerDto {
            })
            @ValidateIf(
                (o) =>
-                   moment(new Date()).diff(moment(o.dob), "years") >= 12 &&
-                   o.module_id == ModulesName.HOTEL &&
-                   o.is_primary_traveler == true
+                   moment(new Date()).diff(moment(o.dob), "years") >= 12 ||
+                   (o.module_id == ModulesName.HOTEL &&
+                   o.is_primary_traveler == true)
            )
            @IsNotEmpty({
                message: (args: ValidationArguments) => {
