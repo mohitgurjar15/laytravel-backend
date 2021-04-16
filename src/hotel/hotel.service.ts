@@ -841,7 +841,7 @@ export class HotelService {
                         "days"
                     );
                     let bookDto = new BookDto();
-                    bookDto.bundle = availability[0].bundle.bundle;
+                    bookDto.bundle = availability[0].bundle;
 
                     for await (const traveler of travelers) {
                         if (traveler.is_primary_traveler == true) {
@@ -933,7 +933,7 @@ export class HotelService {
 
                 if (sellingPrice > 0) {
                     let bookDto = new BookDto();
-                    bookDto.bundle = availability[0].bundle.bundle;
+                    bookDto.bundle = availability[0].bundle;
 
                     for await (const traveler of travelers) {
                         if (traveler.is_primary_traveler == true) {
