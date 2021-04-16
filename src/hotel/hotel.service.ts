@@ -93,8 +93,8 @@ export class HotelService {
 
         let token = uuidv4();
 
-        searchReqDto['token'] = token;
-        searchReqDto['total'] = hotels.length;
+        searchReqDto["token"] = token;
+        searchReqDto["total"] = hotels.length;
 
         let toCache = {
             details: searchReqDto,
@@ -108,7 +108,7 @@ export class HotelService {
 
             toCache["filter_objects"] = filterObjects;
         }
-        
+
         //await this.cacheManager.set(token, toCache, { ttl: this.ttl });
 
         let response = {
@@ -120,7 +120,6 @@ export class HotelService {
     }
 
     async detail(detailReqDto: DetailReqDto) {
-        
         //let cached = await this.cacheManager.get(detailReqDto.token);
 
         /* if (!cached) {
@@ -128,19 +127,19 @@ export class HotelService {
         } */
 
         let detail = await this.hotel.detail(detailReqDto);
-        
+
         //let details = cached.details;
 
         return {
             data: {
                 hotel: detail,
-                details:{}
+                details: {},
             },
             message: "Detail found for " + detailReqDto.hotel_id,
         };
     }
 
-    async rooms(roomsReqDto: RoomsReqDto,user_id) {
+    async rooms(roomsReqDto: RoomsReqDto, user_id) {
         /*let cached = await this.cacheManager.get(roomsReqDto.token);
 
         if (!cached) {
@@ -168,11 +167,11 @@ export class HotelService {
         //roomsReqDto.bundle = hotel['bundle'];
         //roomsReqDto.rooms = details.occupancies.length;
 
-        let rooms = await this.hotel.rooms(roomsReqDto,user_id);
+        let rooms = await this.hotel.rooms(roomsReqDto, user_id);
         // return rooms;
 
         /* Add any type of Business logic for hotel object's */
-        console.log("Rooms",rooms.items)
+        //console.log("Rooms", rooms.items);
         //rooms = this.rate.generateInstalments(rooms, rooms.items[0].input_data.check_in);
 
         /* if (this.generic.isset(cached['rooms'])) {
@@ -212,13 +211,13 @@ export class HotelService {
         };
     }
 
-    async availability(availabilityDto: AvailabilityDto,user_id) {
+    async availability(availabilityDto: AvailabilityDto, user_id) {
         let availability = await this.hotel.availability(
             availabilityDto,
             user_id
         );
 
-        console.log("availiblity");
+        //console.log("availiblity");
 
         // return availability;
 
@@ -489,7 +488,7 @@ export class HotelService {
         }
     }
 
-    async fetchPrice(bookingData: Booking,) {
+    async fetchPrice(bookingData: Booking) {
         try {
             let info: any = bookingData.moduleInfo;
 
@@ -509,7 +508,10 @@ export class HotelService {
                 rooms: info.details.occupancies.length,
             };
 
-            let rooms = await this.hotel.rooms(roomsReqDto,bookingData.userId || '');
+            let rooms = await this.hotel.rooms(
+                roomsReqDto,
+                bookingData.userId || ""
+            );
 
             let room: any = collect(rooms)
                 .where("room_id", info.room.id)
@@ -553,7 +555,8 @@ export class HotelService {
                     };
 
                     let availabilityRes = await this.hotel.availability(
-                        availabilityDto,booking.userId
+                        availabilityDto,
+                        booking.userId
                     );
 
                     if (availabilityRes) {
@@ -570,7 +573,10 @@ export class HotelService {
 
                         let bookData = new PPNBookDto(bookDto);
 
-                        let book = await this.hotel.book(bookData, booking.userId);
+                        let book = await this.hotel.book(
+                            bookData,
+                            booking.userId
+                        );
 
                         let response: any = {
                             success_message: "Booking is Failed",
@@ -671,7 +677,7 @@ export class HotelService {
     ) {
         try {
             let headerDetails = await this.validateHeaders(headers);
-            console.log("header validate");
+            //console.log("header validate");
             let {
                 travelers,
                 payment_type,
@@ -691,16 +697,19 @@ export class HotelService {
             // await this.hotelService.availability({
             //     room_ppn: moduleInfo[0].bundle,
             // });
-            let hotelAvailability = await this.availability(availabilityDto,user.userId);
+            let hotelAvailability = await this.availability(
+                availabilityDto,
+                user.userId
+            );
             let availability = hotelAvailability.data.items;
-            console.log("Availability", availability);
+            //console.log("Availability", availability);
 
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
-            console.log(availability[0].input_data.num_adults);
+            //console.log(availability[0].input_data.num_adults);
 
             if (availability) {
-                console.log("1");
+                //console.log("1");
 
                 bookingRequestInfo.adult_count =
                     availability[0].input_data.num_adults;
@@ -724,16 +733,16 @@ export class HotelService {
                     availability[0].input_data.check_in;
                 bookingRequestInfo.arrival_date =
                     availability[0].input_data.check_out;
-                console.log("2");
+                //console.log("2");
                 bookingRequestInfo.instalment_type = instalment_type;
                 bookingRequestInfo.additional_amount = additional_amount;
                 bookingRequestInfo.booking_through = booking_through;
                 isPassportRequired = false;
-                console.log("3");
+                //console.log("3");
                 bookingRequestInfo.laycredit_points = laycredit_points;
                 bookingRequestInfo.card_token = card_token;
             }
-            console.log("bookingRequestInfo", bookingRequestInfo);
+            //console.log("bookingRequestInfo", bookingRequestInfo);
             let {
                 selling_price,
                 departure_date,
@@ -742,23 +751,23 @@ export class HotelService {
                 infant_count,
             } = bookingRequestInfo;
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-            console.log("validate Traveler");
+            //console.log("validate Traveler");
 
             let travelersDetails = await this.getTravelersInfo(
                 travelers,
                 isPassportRequired
             );
-            console.log("travelersDetails", travelersDetails);
-            console.log("length");
-            console.log(travelersDetails?.adults?.length);
-            console.log(travelersDetails?.adults?.length);
+            //console.log("travelersDetails", travelersDetails);
+            //console.log("length");
+            //console.log(travelersDetails?.adults?.length);
+            //console.log(travelersDetails?.adults?.length);
             let currencyId = headerDetails.currency.id;
             const userId = user.userId;
-            console.log("userId", userId);
+            //console.log("userId", userId);
             // if (adult_count != travelersDetails?.adults?.length) {
-            //     console.log("adult_count", adult_count);
+            //     //console.log("adult_count", adult_count);
 
-            //     console.log("adult return");
+            //     //console.log("adult return");
             //     return {
             //         statusCode: 422,
             //         message: `Adults count is not match with search request!`,
@@ -766,14 +775,14 @@ export class HotelService {
             // }
 
             // if (child_count != travelersDetails?.children?.length) {
-            //     console.log("children return ");
+            //     //console.log("children return ");
 
             //     return {
             //         statusCode: 422,
             //         message: `Children count is not match with search request`,
             //     };
             // }
-            console.log("userId", userId);
+            //console.log("userId", userId);
             // if (infant_count != travelersDetails.infants.length) {
             //     return {
             //         statusCode: 422,
@@ -784,12 +793,12 @@ export class HotelService {
                 let instalmentDetails;
 
                 let totalAdditionalAmount = additional_amount || 0;
-                console.log("test1");
+                //console.log("test1");
                 if (laycredit_points > 0) {
                     totalAdditionalAmount =
                         totalAdditionalAmount + laycredit_points;
                 }
-                console.log("test2");
+                //console.log("test2");
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
                     instalmentDetails = Instalment.weeklyInstalment(
@@ -802,7 +811,7 @@ export class HotelService {
                         selected_down_payment
                     );
                 }
-                console.log("test3");
+                //console.log("test3");
                 if (instalment_type == InstalmentType.BIWEEKLY) {
                     instalmentDetails = Instalment.biWeeklyInstalment(
                         selling_price,
@@ -814,7 +823,7 @@ export class HotelService {
                         selected_down_payment
                     );
                 }
-                console.log("test4");
+                //console.log("test4");
                 if (instalment_type == InstalmentType.MONTHLY) {
                     instalmentDetails = Instalment.monthlyInstalment(
                         selling_price,
@@ -826,7 +835,7 @@ export class HotelService {
                         selected_down_payment
                     );
                 }
-                console.log(instalmentDetails);
+                //console.log(instalmentDetails);
 
                 if (instalmentDetails.instalment_available) {
                     let firstInstalemntAmount =
@@ -838,19 +847,21 @@ export class HotelService {
                     /* Call mystifly booking API if checkin date is less 3 months */
                     let bookDto = new BookDto();
 
-
                     bookDto.bundle = availability[0].bundle;
 
                     for await (const traveler of travelers) {
-                        console.log(traveler.is_primary_traveler);
-                        
+                        //console.log(traveler.is_primary_traveler);
+
                         if (traveler.is_primary_traveler == true) {
-                            console.log(traveler.is_primary_traveler ,"primary");
+                            //console.log(
+                            //     traveler.is_primary_traveler,
+                            //     "primary"
+                            // );
                             bookDto.primary_guest_detail = await this.user.getUser(
                                 traveler.traveler_id
                             );
                         } else {
-                            console.log(traveler.is_primary_traveler ,"guest");
+                            //console.log(traveler.is_primary_traveler, "guest");
                             bookDto.guest_detail = await this.user.getUser(
                                 traveler.traveler_id
                             );
@@ -863,23 +874,73 @@ export class HotelService {
                     //         booking.userId
                     //     // ),
                     // };
-                    console.log(bookDto);
-                    
-                    let bookData = new PPNBookDto(bookDto);
-                
-                    console.log("bookData DTO", bookData);
-                    
+                    //console.log(bookDto);
+                    let address = {
+                        line_one: "abc",
+                        city: "surat",
+                        state_code: "1232331",
+                        country_code: "IN",
+                        postal_code: "365630",
+                    };
+                    let card = {
+                        type: "MC",
+                        number: "5555555555554444",
+                        exp_month: "11",
+                        exp_year: "2025",
+                        cvv: "251",
+                        name: "Victor",
+                        address,
+                    };
+                    // let bookData = new PPNBookDto(bookDto);
+                    let bookData = {
+                        name_first: bookDto.primary_guest_detail.firstName,
+                        name_last: bookDto.primary_guest_detail.lastName,
+                        initials: bookDto.primary_guest_detail?.title || "",
+                        email: bookDto.primary_guest_detail.email,
+                        phone_number: bookDto.primary_guest_detail.phoneNo,
+
+                        // guest_name_first: bookDto.guest_detail.firstName,
+                        // guest_name_last: bookDto.guest_detail.lastName,
+                        card_type: card.type,
+                        card_number: card.number,
+                        expires: card.exp_month + "" + card.exp_year,
+                        cvc_code: card.cvv,
+                        card_holder: card.name,
+                        address_line_one: card.address.line_one,
+                        address_city: card.address.city,
+                        address_state_code: card.address.state_code,
+                        country_code: card.address.country_code,
+                        address_postal_code: card.address.postal_code,
+
+                        ppn_bundle: bookDto.bundle,
+                    };
+
+                    //console.log("bookData DTO", bookData);
+
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
                     );
 
+
+                    console.log('bookingResult?.status',bookingResult?.status);
+                    
+                    // if (bookingResult?.status != "success") {
+                    //     return {
+                    //         statusCode: 424,
+                    //         message:
+                    //             "Booking failed from supplier side at " +
+                    //             new Date(),
+                    //         bookingResult,
+                    //     };
+                    // }
+
                     let authCardToken = transaction_token;
 
-                    console.log(
-                        "req for save booking",
-                        JSON.stringify(bookingResult)
-                    );
+                    // //console.log(
+                    //     "req for save booking",
+                    //     JSON.stringify(bookingResult)
+                    // );
                     let laytripBookingResult = await this.saveBooking(
                         bookingRequestInfo,
                         currencyId,
@@ -893,16 +954,7 @@ export class HotelService {
                         travelers,
                         cartId
                     );
-                    if (bookingResult?.status != "success") {
-                        return {
-                            statusCode: 424,
-                            message:
-                                "Booking failed from supplier side at " +
-                                new Date(),
-                            bookingResult,
-                        };
-                    }
-
+                    
                     // if (dayDiff <= 90) {
                     //     this.bookingUpdateFromSupplierside(
                     //         laytripBookingResult.laytripBookingId,
@@ -959,7 +1011,7 @@ export class HotelService {
                     // };
 
                     let bookData = new PPNBookDto(bookDto);
-                     console.log("bookData DTO", bookData);
+                    //console.log("bookData DTO", bookData);
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
@@ -1204,7 +1256,7 @@ export class HotelService {
                 var user_type = "";
                 // if (age < 2) {
                 //     user_type = "infant";
-                // } else 
+                // } else
                 if (age < 12) {
                     user_type = "child";
                 } else {
@@ -1279,40 +1331,40 @@ export class HotelService {
                 currencyId,
             })
             .getOne();
-        console.log("saveBooking", 1);
+        //console.log("saveBooking", 1);
 
         let booking = new Booking();
         booking.id = uuidv4();
 
         booking.moduleId = moduleDetails?.id;
-        console.log("moduleDetails", moduleDetails);
+        //console.log("moduleDetails", moduleDetails);
 
-        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        console.log(1);
+        booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+        //console.log(1);
 
         booking.bookingType = bookingType;
-        console.log(2);
+        //console.log(2);
         booking.currency = currencyId;
-        console.log(3);
+        //console.log(3);
         booking.totalAmount = selling_price?.toString();
-        console.log(4);
-        console.log(net_rate);
-        console.log(typeof net_rate);
-        console.log(net_rate);
+        //console.log(4);
+        //console.log(net_rate);
+        //console.log(typeof net_rate);
+        //console.log(net_rate);
 
         booking.netRate = net_rate.toString();
-        console.log(5);
+        //console.log(5);
         booking.markupAmount = (selling_price - net_rate).toString();
-        console.log(6);
+        //console.log(6);
         booking.bookingDate = bookingDate;
-        console.log("currencyDetails");
+        //console.log("currencyDetails");
 
-        console.log("currencyDetails", currencyDetails);
+        //console.log("currencyDetails", currencyDetails);
         booking.usdFactor = currencyDetails?.liveRate.toString();
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
-        console.log("saveBooking", 2);
+        //console.log("saveBooking", 2);
         booking.locationInfo = {
             hotel_id: revalidateResult[0].hotel_id,
             hotel_name: revalidateResult[0].hotel_name,
@@ -1328,7 +1380,7 @@ export class HotelService {
         booking.isTicketd = false;
 
         booking.userId = userId;
-        console.log("saveBooking", 3);
+        //console.log("saveBooking", 3);
         if (laycredit_points > 0) {
             const layCreditReedem = new LayCreditRedeem();
             layCreditReedem.userId = userId;
@@ -1341,23 +1393,23 @@ export class HotelService {
             await layCreditReedem.save();
         }
         let nextInstallmentDate = "";
-        console.log("saveBooking", 4);
+        //console.log("saveBooking", 4);
         if (instalmentDetails) {
-            console.log("instalmentDetails", instalmentDetails);
+            //console.log("instalmentDetails", instalmentDetails);
             booking.totalInstallments =
                 instalmentDetails.instalment_date.length;
             if (instalmentDetails.instalment_date.length > 1) {
                 booking.nextInstalmentDate =
                     instalmentDetails.instalment_date[1].instalment_date;
             }
-            console.log("status", supplierBookingData?.status);
+            //console.log("status", supplierBookingData?.status);
             booking.bookingStatus =
                 supplierBookingData != null &&
                 supplierBookingData?.status == "success"
                     ? BookingStatus.CONFIRM
                     : BookingStatus.FAILED;
             booking.paymentStatus = PaymentStatus.PENDING;
-            console.log("Booking id", supplierBookingData?.details?.booking_id);
+            //console.log("Booking id", supplierBookingData?.details?.booking_id);
 
             booking.supplierBookingId =
                 supplierBookingData != null &&
@@ -1382,14 +1434,14 @@ export class HotelService {
             booking.totalInstallments = 0;
         }
         booking.cardToken = card_token;
-        console.log("saveBooking", 5);
+        //console.log("saveBooking", 5);
         booking.moduleInfo = revalidateResult;
         booking.checkInDate = revalidateResult[0].input_data.check_in;
         booking.checkOutDate = revalidateResult[0].input_data.check_out;
 
         try {
             let bookingDetails = await booking.save();
-            console.log(" save booking");
+            //console.log(" save booking");
             await this.saveTravelers(booking.id, userId, travelers);
             if (instalmentDetails) {
                 let bookingInstalments: BookingInstalments[] = [];
@@ -1424,7 +1476,7 @@ export class HotelService {
                     i++;
                     bookingInstalments.push(bookingInstalment);
                 }
-                console.log("saveInstallment", 6);
+                //console.log("saveInstallment", 6);
                 await getConnection()
                     .createQueryBuilder()
                     .insert()
@@ -1441,14 +1493,14 @@ export class HotelService {
             // predictiveBooking.price = parseFloat(booking.totalAmount);
             // predictiveBooking.remainSeat =
             //     booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
-            // console.log('save prictive data',4);
+            // //console.log('save prictive data',4);
             // await predictiveBooking.save();
-            // console.log("get booking");
+            // //console.log("get booking");
             return await this.bookingRepository.getBookingDetails(
                 booking.laytripBookingId
             );
         } catch (error) {
-            console.log(error);
+            //console.log(error);
         }
     }
 }
