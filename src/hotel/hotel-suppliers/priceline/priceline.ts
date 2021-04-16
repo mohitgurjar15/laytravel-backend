@@ -55,16 +55,9 @@ export class Priceline implements HotelInterface {
         let locations = await this.httpsService
             .get(url)
             .pipe(
-<<<<<<< HEAD
-                map((res) => {
-                    responce = res?.data;
-                    return new AutoComplete().processSearchLocationResult(res);
-                }),
-=======
                 map((res) =>
                     new AutoComplete().processSearchLocationResult(res,term)
                 ),
->>>>>>> f0a642b8f17e38416a7fa213a7e624360c8a56d9
                 catchError((err) => {
                     throw new BadRequestException(
                         err + " &&&term&&&" + errorMessage
