@@ -1160,7 +1160,8 @@ more than 5.`
                             cartData
                         );
                         responce.push(hotelResponce);
-
+                        console.log(hotelResponce);
+                        
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
 
@@ -1718,6 +1719,11 @@ more than 5.`
             );
             return newCart;
         }
+        console.log(newCart["detail"]);
+        console.log(newCart["detail"]["statusCode"]);
+        console.log(newCart["detail"]["error"]);
+        
+        
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
 
