@@ -278,14 +278,14 @@ export class Priceline implements HotelInterface {
             "getExpress.Contract",
             parameters
         );
-        console.log(url);
+       // console.log(url);
         let responce = {};
         let res = await this.httpsService
             .get(url)
             .pipe(
                 map((res) => {
                     responce = res?.data;
-                    console.log(res?.data);
+                  //  console.log(res?.data);
                     
                     return new Availability().processAvailabilityResult(
                         res,
