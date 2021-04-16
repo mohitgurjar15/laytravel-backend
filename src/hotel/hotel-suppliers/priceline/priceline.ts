@@ -40,9 +40,9 @@ export class Priceline implements HotelInterface {
             get_regions: false,
             get_hotels: false,
             get_pois: false,
-            max_results:100,
-            order:'asc',
-            sort: 'name'
+            max_results: 100,
+            order: "asc",
+            sort: "name",
         };
 
         let url = await CommonHelper.generateUrl(
@@ -50,12 +50,15 @@ export class Priceline implements HotelInterface {
             parameters
         );
 
+        let responce: any = {};
+
         let locations = await this.httpsService
             .get(url)
             .pipe(
-                map((res) =>
-                    new AutoComplete().processSearchLocationResult(res)
-                ),
+                map((res) => {
+                    responce = res?.data;
+                    return new AutoComplete().processSearchLocationResult(res);
+                }),
                 catchError((err) => {
                     throw new BadRequestException(
                         err + " &&&term&&&" + errorMessage
@@ -63,7 +66,18 @@ export class Priceline implements HotelInterface {
                 })
             )
             .toPromise();
-
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = responce;
+        //logData["generated_responce"] = res;
+        fileName = `hotel-priceline-auto_complete-${new Date().getTime()}`;
+        // if (user_id) {
+        //     fileName += "_" + user_id;
+        // }
+        //Activity.createlogFile(fileName, logData, "hotel");
         return locations;
     }
 
@@ -76,12 +90,14 @@ export class Priceline implements HotelInterface {
             hotel_id,
             rooms,
             adults,
-            children
+            children,
+            city_id,
         } = searchReqDto;
 
         let parameters = {
             check_in,
             check_out,
+            city_id,
             rooms,
             adults,
             children,
@@ -111,11 +127,14 @@ export class Priceline implements HotelInterface {
             "getExpress.Results",
             parameters
         );
-
+        let responce: any = {};
         let res = await this.httpsService
             .get(url)
             .pipe(
-                map((res) => new Search().processSearchResult(res, parameters)),
+                map((res) => {
+                    responce = res?.data;
+                    return new Search().processSearchResult(res, parameters);
+                }),
                 catchError((err) => {
                     //console.log("Error", err);
                     throw new BadRequestException(
@@ -124,6 +143,19 @@ export class Priceline implements HotelInterface {
                 })
             )
             .toPromise();
+
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = responce;
+        logData["generated_responce"] = res;
+        fileName = `hotel-priceline-search-${new Date().getTime()}`;
+        // if (user_id) {
+        //     fileName += "_" + user_id;
+        // }
+        //Activity.createlogFile(fileName, logData, "hotel");
 
         return res;
     }
@@ -137,18 +169,47 @@ export class Priceline implements HotelInterface {
         };
 
         let url = await CommonHelper.generateUrl("getHotelDetails", parameters);
-
+        let responce: any = {};
         let res = await this.httpsService
             .get(url)
             .pipe(
-                map((res) => new Detail().processDetailResult(res, parameters)),
+                map((res) => {
+                    responce = res?.data;
+                    return new Detail().processDetailResult(res, parameters);
+                }),
                 catchError((err) => {
+                    let fileName = "";
+                    let logData = {};
+                    logData["url"] = url;
+                    logData["method"] = "post";
+                    logData["requestBody"] = parameters;
+                    logData["responce"] = err;
+                    //logData["generated_responce"] = JSON.stringify(res);
+                    fileName = `Failed-hotel-priceline-detail-${new Date().getTime()}`;
+                    // if (user_id) {
+                    //     fileName += "_" + user_id;
+                    // }
+                    Activity.createlogFile(fileName, logData, "hotel");
                     throw new BadRequestException(
                         err + " &&&detail&&&" + errorMessage
                     );
                 })
             )
             .toPromise();
+        console.log(responce);
+
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = JSON.stringify(responce);
+        logData["generated_responce"] = JSON.stringify(res);
+        fileName = `hotel-priceline-detail-${new Date().getTime()}`;
+        // if (user_id) {
+        //     fileName += "_" + user_id;
+        // }
+        //Activity.createlogFile(fileName, logData, "hotel");
 
         return res;
     }
@@ -162,19 +223,22 @@ export class Priceline implements HotelInterface {
             "getExpress.MultiContract",
             parameters
         );
-
+        let responce = {};
         let res = await this.httpsService
             .get(url)
             .pipe(
-                map((res) => new Rooms().processRoomsResult(res, roomsReqDto)),
+                map((res) => {
+                    responce = res?.data;
+                    return new Rooms().processRoomsResult(res, roomsReqDto);
+                }),
                 catchError((err) => {
                     let fileName = "";
                     let logData = {};
                     logData["url"] = url;
                     logData["method"] = "post";
                     logData["requestBody"] = parameters;
-                    logData["responce"] = err;
-
+                    logData["responce"] = responce;
+                     logData["err"] = err;
                     fileName = `Failed-hotel-priceline-rooms-${new Date().getTime()}`;
                     if (user_id) {
                         fileName += "_" + user_id;
@@ -192,8 +256,8 @@ export class Priceline implements HotelInterface {
         logData["url"] = url;
         logData["method"] = "post";
         logData["requestBody"] = parameters;
-        logData["responce"] = res;
-
+        logData["responce"] = responce;
+        logData["generated_responce"] = res;
         fileName = `hotel-priceline-room-${new Date().getTime()}`;
         if (user_id) {
             fileName += "_" + user_id;
@@ -202,7 +266,7 @@ export class Priceline implements HotelInterface {
         return res;
     }
 
-    async availability(availabilityDto: AvailabilityDto) {
+    async availability(availabilityDto: AvailabilityDto, user_id) {
         let parameters = {
             ppn_bundle: availabilityDto.room_ppn,
         };
@@ -212,53 +276,76 @@ export class Priceline implements HotelInterface {
             parameters
         );
         console.log(url);
+        let responce = {};
+        let res = await this.httpsService
+            .get(url)
+            .pipe(
+                map((res) => {
+                    responce = res?.data;
+                    console.log(res?.data);
+                    
+                    return new Availability().processAvailabilityResult(
+                        res,
+                        availabilityDto
+                    );
+                }),
+                catchError((err) => {
+                    console.log(err);
+                    
+                    let fileName = "";
+                    let logData = {};
+                    logData["url"] = url;
+                    logData["method"] = "post";
+                    logData["requestBody"] = parameters;
+                    logData["responce"] = responce;
+                     logData["err"] = err;
+                    fileName = `Failed-hotel-priceline-availiblity-${new Date().getTime()}`;
+                    if (user_id) {
+                        fileName += "_" + user_id;
+                    }
+                    Activity.createlogFile(fileName, logData, "hotel");
+                    throw new BadRequestException(
+                        err + " &&&availability&&&" + errorMessage
+                    );
+                })
+            )
 
-        // let res = await this.httpsService.get(url).pipe(
-        //     map(res => new Availability().processAvailabilityResult(res, availabilityDto)),
-        //     catchError(err => {
-        //         throw new BadRequestException(err +" &&&availability&&&" + errorMessage);
-        //     })
-        // ).toPromise();
-        try {
-            let res = await HttpRequest.PricelineRequest(
-                url,
-                "get",
-                "",
-                "availiblity"
-            );
-            console.log("call 1");
-
-            if (res) {
-                const response = await Availability.processAvailabilityResult(
-                    res,
-                    availabilityDto
-                );
-                return response;
-            }
-        } catch (error) {
-            throw new BadRequestException(
-                error?.message + " &&&availability&&&" + error?.message
-            );
+            .toPromise();
+        let fileName = "";
+        let logData = {};
+        logData["url"] = url;
+        logData["method"] = "post";
+        logData["requestBody"] = parameters;
+        logData["responce"] = responce;
+        logData["generated_responce"] = res;
+        fileName = `hotel-priceline-availiblity-${new Date().getTime()}`;
+        if (user_id) {
+            fileName += "_" + user_id;
         }
+        Activity.createlogFile(fileName, logData, "hotel");
+        return res;
     }
 
     async book(bookDto: BookDto, user_id) {
         let url = await CommonHelper.generateUrl("getExpress.Book");
 
         let parameters = GenericHotel.httpBuildQuery(bookDto);
-
+        let responce = {};
         let res = await this.httpsService
             .post(url, parameters)
             .pipe(
-                map((res) => new Book().processBookResult(res)),
+                map((res) => {
+                    responce = res?.data;
+                    new Book().processBookResult(res);
+                }),
                 catchError((err) => {
                     let fileName = "";
                     let logData = {};
                     logData["url"] = url;
                     logData["method"] = "post";
                     logData["requestBody"] = parameters;
-                    logData["responce"] = err;
-
+                    logData["err"] = err;
+                     logData["responce"] = responce;
                     fileName = `Failed-hotel-priceline-book-${new Date().getTime()}`;
                     if (user_id) {
                         fileName += user_id;
@@ -276,8 +363,8 @@ export class Priceline implements HotelInterface {
         logData["url"] = url;
         logData["method"] = "post";
         logData["requestBody"] = parameters;
-        logData["responce"] = res;
-
+        logData["responce"] = responce;
+        logData["generated_responce"] = res;
         fileName = `hotel-priceline-book-${new Date().getTime()}`;
         if (user_id) {
             fileName += user_id;

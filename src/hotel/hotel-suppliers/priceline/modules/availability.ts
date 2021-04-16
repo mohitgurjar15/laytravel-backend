@@ -8,8 +8,11 @@ export class Availability {
         this.roomHelper = new RoomHelper();
     }
 
-    static processAvailabilityResult(res, availabilityDto) {
-        let results = res["getHotelExpress.Contract"];
+    processAvailabilityResult(res, availabilityDto) {
+        let results = res.data["getHotelExpress.Contract"];
+
+        // console.log(results.error);
+        
 
         if (results.error) {
             throw new NotFoundException(
@@ -17,14 +20,14 @@ export class Availability {
             );
         }
 
-        console.log(res);
+        // console.log(res);
         
 
         if (results.results.status && results.results.status === "Success") {
             let res = results.results;
             let hotel = res.hotel_data[0];
-
-            let room = new RoomHelper().processRoom(
+            // console.log('room')
+            let room = this.roomHelper.processRoom(
                 hotel,
                 availabilityDto,
                 res.input_data

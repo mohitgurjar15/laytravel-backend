@@ -212,8 +212,11 @@ export class HotelService {
         };
     }
 
-    async availability(availabilityDto: AvailabilityDto) {
-        let availability = await this.hotel.availability(availabilityDto);
+    async availability(availabilityDto: AvailabilityDto,user_id) {
+        let availability = await this.hotel.availability(
+            availabilityDto,
+            user_id
+        );
 
         //console.log("availiblity");
 
@@ -550,7 +553,7 @@ export class HotelService {
                     };
 
                     let availabilityRes = await this.hotel.availability(
-                        availabilityDto
+                        availabilityDto,booking.userId
                     );
 
                     if (availabilityRes) {
@@ -688,7 +691,7 @@ export class HotelService {
             // await this.hotelService.availability({
             //     room_ppn: moduleInfo[0].bundle,
             // });
-            let hotelAvailability = await this.availability(availabilityDto);
+            let hotelAvailability = await this.availability(availabilityDto,user.userId);
             let availability = hotelAvailability.data.items;
             //console.log("Availability", availability);
 
@@ -860,7 +863,8 @@ export class HotelService {
                     // };
 
                     let bookData = new PPNBookDto(bookDto);
-
+                    console.log("bookData DTO", bookData);
+                    
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
@@ -951,7 +955,7 @@ export class HotelService {
                     // };
 
                     let bookData = new PPNBookDto(bookDto);
-
+                     console.log("bookData DTO", bookData);
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
@@ -1194,9 +1198,10 @@ export class HotelService {
                 var age = moment(new Date()).diff(moment(birthDate), "years");
 
                 var user_type = "";
-                if (age < 2) {
-                    user_type = "infant";
-                } else if (age < 12) {
+                // if (age < 2) {
+                //     user_type = "infant";
+                // } else 
+                if (age < 12) {
                     user_type = "child";
                 } else {
                     user_type = "adult";

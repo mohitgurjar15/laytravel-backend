@@ -805,8 +805,8 @@ more than 5.`
                             try {
                                 roomDetails = await this.hotelService.availability(
                                     {
-                                        room_ppn: moduleInfo[0].bundle,
-                                    }
+                                        room_ppn: moduleInfo[0].bundle
+                                    },user?.userId || null
                                 );
                             } catch (error) {
                                 newCart["is_available"] = false;
@@ -2088,8 +2088,8 @@ more than 5.`
 
     async addHotelIntoCart(ppnBundle: string, user) {
         let roomDetails = await this.hotelService.availability({
-            room_ppn: ppnBundle,
-        });
+            room_ppn: ppnBundle
+        },user.userId || null);
 
         const cart = new Cart();
 

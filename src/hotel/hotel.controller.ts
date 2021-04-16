@@ -16,77 +16,82 @@ import { AvailabilityDto } from './dto/availability-req.dto';
 import { BookDto } from './dto/book-req.dto';
 
 
-@ApiTags('Hotel')
+@ApiTags("Hotel")
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-@Controller('hotel')
-@ApiResponse({ status: 422, description: 'Bad Request or API error message' })
-@ApiResponse({ status: 404, description: 'Not Found' })
+@Controller("hotel")
+@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+@ApiResponse({ status: 404, description: "Not Found" })
 @ApiResponse({ status: 500, description: "Internal server error!" })
 @ApiBearerAuth()
 export class HotelController {
-    constructor(private readonly hotelService: HotelService) {
-    }
+    constructor(private readonly hotelService: HotelService) {}
 
-    @Post('/search-location')
+    @Post("/search-location")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Search locations", description:"Search locations for Cities, Airports, Hotels, Point of Interest and Region to find a Hotels" })
-    suggestion(
-        @Body() searchLocationDto: HotelSearchLocationDto
-    ) {
-        
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiOperation({
+        summary: "Search locations",
+        description:
+            "Search locations for Cities, Airports, Hotels, Point of Interest and Region to find a Hotels",
+    })
+    suggestion(@Body() searchLocationDto: HotelSearchLocationDto) {
         return this.hotelService.autoComplete(searchLocationDto);
-        
     }
 
-    @Post('search')
+    @Post("search")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Search Hotels", description: "Search Hotels based on search criteria" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiOperation({
+        summary: "Search Hotels",
+        description: "Search Hotels based on search criteria",
+    })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
-    search(
-        @Body() searchReqDto: SearchReqDto,
-        @LogInUser() user
-    ) {
+    search(@Body() searchReqDto: SearchReqDto, @LogInUser() user) {
         return this.hotelService.search(searchReqDto);
     }
 
-    @Post('filter-objects')
+    @Post("filter-objects")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Filter Objects", description: "Filter objects for Searched Hotels" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiOperation({
+        summary: "Filter Objects",
+        description: "Filter objects for Searched Hotels",
+    })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
-    filterObjects(
-        @Headers() hotelHeaderDto: HotelHeaderDto
-    ) {
+    filterObjects(@Headers() hotelHeaderDto: HotelHeaderDto) {
         let filterReqDto: FilterReqDto = {
-            token: hotelHeaderDto.token
+            token: hotelHeaderDto.token,
         };
         return this.hotelService.filterObjects(filterReqDto);
     }
 
-    @Post('detail')
+    @Post("detail")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Details", description: "Get details of Hotel based on Hotel ID" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiOperation({
+        summary: "Details",
+        description: "Get details of Hotel based on Hotel ID",
+    })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     detail(
         @Body() detailReqDto: DetailReqDto,
         @Headers() hotelHeaderDto: HotelHeaderDto
     ) {
-        
         detailReqDto.token = hotelHeaderDto.token;
-        
+
         return this.hotelService.detail(detailReqDto);
     }
-    
-    @Post('rooms')
+
+    @Post("rooms")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Rooms", description: "Get all available Rooms for Particular Hotel ID" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiOperation({
+        summary: "Rooms",
+        description: "Get all available Rooms for Particular Hotel ID",
+    })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     rooms(
@@ -95,30 +100,33 @@ export class HotelController {
         @LogInUser() user
     ) {
         roomsReqDto.token = hotelHeaderDto.token;
-        
-        return this.hotelService.rooms(roomsReqDto,user.user_id);
+
+        return this.hotelService.rooms(roomsReqDto, user.user_id);
     }
-    
-    @Post('availability')
+
+    @Post("availability")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
-    @ApiOperation({ summary: "Room availability", description: "Check for the Room availability based on the selected Room ID" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiOperation({
+        summary: "Room availability",
+        description:
+            "Check for the Room availability based on the selected Room ID",
+    })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     availability(
         @Body() availabilityDto: AvailabilityDto,
-        @Headers() hotelHeaderDto: HotelHeaderDto
+        @Headers() hotelHeaderDto: HotelHeaderDto,
+        @LogInUser() user
     ) {
-
         availabilityDto.token = hotelHeaderDto.token;
 
-        return this.hotelService.availability(availabilityDto);
+        return this.hotelService.availability(availabilityDto, user.user_id || "");
     }
-    
-    
-    @Post('book')
+
+    @Post("book")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })    
+    @ApiResponse({ status: 200, description: "Api success" })
     @ApiOperation({ summary: "Booking", description: "Hotel booking" })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
@@ -127,27 +135,25 @@ export class HotelController {
         @Headers() hotelHeaderDto: HotelHeaderDto,
         @LogInUser() user
     ) {
-        
         bookDto = {
             ...bookDto,
             ...hotelHeaderDto,
-            user_id: user.user_id
+            user_id: user.user_id,
         };
 
-        return this.hotelService.book(bookDto,user.user_id);
+        return this.hotelService.book(bookDto, user.user_id);
     }
 
-    @Put('book-partially-booking/:booking_id')
+    @Put("book-partially-booking/:booking_id")
     @HttpCode(200)
-    @ApiResponse({ status: 200, description: 'Api success' })
+    @ApiResponse({ status: 200, description: "Api success" })
     @ApiOperation({ summary: "Booking", description: "Partial Hotel booking" })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
     partialBook(
-        @Param('booking_id') booking_id: string,
-        @Headers() hotelHeaderDto: HotelHeaderDto,
+        @Param("booking_id") booking_id: string,
+        @Headers() hotelHeaderDto: HotelHeaderDto
     ) {
         return this.hotelService.partialBook(booking_id, hotelHeaderDto);
     }
-    
 }

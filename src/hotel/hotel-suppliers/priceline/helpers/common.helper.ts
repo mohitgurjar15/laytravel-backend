@@ -6,10 +6,14 @@ export class CommonHelper {
 
         //let ppnConfig = config.get('ppn');
         let config = await Generic.getCredential("hotel");
+        let mode = 'test'
         let ppnConfig = JSON.parse(config.testCredential);
         if (config.mode) {
+            mode = "live";
             ppnConfig = JSON.parse(config.liveCredential);
         }
+        console.log("Hotel credantial", ppnConfig, "mode", mode);
+        
         let defaults = {
             format: ppnConfig.format,
             refid: ppnConfig.refid,
