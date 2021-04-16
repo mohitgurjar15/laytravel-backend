@@ -1046,6 +1046,7 @@ more than 5.`
                     "userData.email",
                     "userData.firstName",
                     "userData.middleName",
+                    "cart.oldModuleInfo",
                 ])
 
                 .where(
@@ -1064,6 +1065,7 @@ more than 5.`
             let largestDate = "";
             //let ToatalAmount = ''
             for await (const item of result) {
+                
                 if (item.moduleId == ModulesName.FLIGHT) {
                     const dipatureDate = await this.flightService.changeDateFormat(
                         item.moduleInfo[0].departure_date
@@ -1616,18 +1618,23 @@ more than 5.`
 
         const value = cart.oldModuleInfo;
         console.log("hhhhh", cart.travelers.length);
-
+        
         let newCart = {};
         newCart["id"] = cart.id;
+        console.log("hhhhh","a")
         newCart["userId"] = cart.userId;
+        console.log("hhhhh","b")
         newCart["moduleId"] = cart.moduleId;
         newCart["isDeleted"] = cart.isDeleted;
+        console.log("hhhhh","3")
         newCart["createdDate"] = cart.createdDate;
         newCart["status"] = BookingStatus.FAILED;
         newCart["type"] = cart.module.name;
+        console.log("hhhhh","c")
         if (value) {
             let travelers = [];
             if (!cart.travelers?.length) {
+                console.log("undefinde traveler")
                 newCart["status"] = BookingStatus.FAILED;
                 newCart["detail"] = {
                     statusCode: 422,
@@ -1651,6 +1658,7 @@ more than 5.`
                     cart.moduleId
                 );
             } else {
+                console.log("hhhhh","1")
                 for await (const traveler of cart.travelers) {
                     //console.log(traveler);
                     let travelerUser = {
@@ -1659,6 +1667,8 @@ more than 5.`
                     };
                     travelers.push(travelerUser);
                 }
+                console.log("hhhhh","2")
+
                 const bookingdto: BookHotelCartDto = {
                     travelers,
                     payment_type,
@@ -1675,7 +1685,7 @@ more than 5.`
 
                 console.log("cartBook request");
 
-                //console.log(bookingdto);
+                console.log(bookingdto);
                 newCart["detail"] = await this.hotelService.cartBook(
                     bookingdto,
                     Headers,
@@ -1688,8 +1698,10 @@ more than 5.`
                 //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
+            console.log(value);
+            
             newCart["detail"] = {
-                message: value["message"],
+                message: 'Module info not found .',
             };
             newCart["status"] = BookingStatus.FAILED;
             await this.saveFailedBooking(
