@@ -800,13 +800,15 @@ more than 5.`
                         }
                     } else if (cart.moduleId == ModulesName.HOTEL) {
                         const moduleInfo: any = cart.moduleInfo;
-                        if (moduleInfo[0]?.bundle) {
+                        const oldModuleInfo: any = cart.oldModuleInfo;
+                        if (oldModuleInfo[0].bundle) {
                             let roomDetails;
                             try {
                                 roomDetails = await this.hotelService.availability(
                                     {
-                                        room_ppn: moduleInfo[0].bundle
-                                    },user?.userId || null
+                                        room_ppn: oldModuleInfo[0].bundle,
+                                    },
+                                    user?.userId || null
                                 );
                             } catch (error) {
                                 newCart["is_available"] = false;
@@ -1612,7 +1614,7 @@ more than 5.`
 
         let flightRequest;
 
-        const value = cart.moduleInfo;
+        const value = cart.oldModuleInfo;
         console.log("hhhhh", cart.travelers.length);
 
         let newCart = {};
@@ -2098,7 +2100,7 @@ more than 5.`
         } else {
             cart.guestUserId = user.userId;
         }
-
+        
         cart.moduleId = ModulesName.HOTEL;
         cart.moduleInfo = roomDetails.data;
         cart.oldModuleInfo = roomDetails.data;
