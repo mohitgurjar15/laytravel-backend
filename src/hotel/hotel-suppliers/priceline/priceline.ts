@@ -339,7 +339,7 @@ export class Priceline implements HotelInterface {
             .pipe(
                 map((res) => {
                     responce = res?.data;
-                    new Book().processBookResult(res);
+                    return new Book().processBookResult(res);
                 }),
                 catchError((err) => {
                     let fileName = "";

@@ -76,6 +76,7 @@ export class RoomHelper{
                     input_data  : inputData?inputData:{},
                     amenity_data:hotel.amenity_data,
                     address : hotel.address,
+                    full_address:this.setFullAddress(hotel.address),
                     room_id: rate.room_id,
                     title: rate.title,
                     occupancy:rate.occupancy_limit,
@@ -134,6 +135,24 @@ export class RoomHelper{
     }
 
     processAvailability(hotel, roomsReqDto) {
+        
+    }
+
+    setFullAddress(addressObj) {
+        let address='';
+        if(addressObj.address_line_one!=null)
+            address=`${addressObj.address_line_one}, `
+        if(addressObj.city_name!=null)
+            address=`${address} ${addressObj.city_name}, `
+        if(addressObj.state_code!=null)
+            address=`${address} ${addressObj.state_code}, `
+        if(addressObj.zip!=null)
+            address=`${address} ${addressObj.zip}, `
+        if(addressObj.country_code!=null)
+            address=`${address} ${addressObj.country_code}`
+        
+        address = address.replace(/,\s*$/, "");
+        return address
         
     }
     
