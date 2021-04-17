@@ -51,6 +51,8 @@ import { TravelerInfo } from "src/entity/traveler-info.entity";
 import { Role } from "src/enum/role.enum";
 import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
+import * as config from "config";
+const card = config.get("card");
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 @Injectable()
@@ -848,7 +850,7 @@ export class HotelService {
                     let bookDto = new BookDto();
 
                     bookDto.bundle = availability[0].bundle;
-
+                    let guest_detail = [];
                     for await (const traveler of travelers) {
                         //console.log(traveler.is_primary_traveler);
 
@@ -862,35 +864,13 @@ export class HotelService {
                             );
                         } else {
                             //console.log(traveler.is_primary_traveler, "guest");
-                            bookDto.guest_detail = await this.user.getUser(
+                            let detail = await this.user.getUser(
                                 traveler.traveler_id
                             );
+
+                            guest_detail.push(detail);
                         }
                     }
-
-                    // let bookDto: any = {
-                    //     bundle: availability.bundle,
-                    //     primary_guest_detail: await this.user.getUser(
-                    //         booking.userId
-                    //     // ),
-                    // };
-                    //console.log(bookDto);
-                    let address = {
-                        line_one: "abc",
-                        city: "surat",
-                        state_code: "1232331",
-                        country_code: "IN",
-                        postal_code: "365630",
-                    };
-                    let card = {
-                        type: "MC",
-                        number: "5555555555554444",
-                        exp_month: "11",
-                        exp_year: "2025",
-                        cvv: "251",
-                        name: "Victor",
-                        address,
-                    };
                     // let bookData = new PPNBookDto(bookDto);
                     let bookData = {
                         name_first: bookDto.primary_guest_detail.firstName,
@@ -914,7 +894,19 @@ export class HotelService {
 
                         ppn_bundle: bookDto.bundle,
                     };
-
+                    if (guest_detail?.length) {
+                        for (
+                            let index = 0;
+                            index < guest_detail.length;
+                            index++
+                        ) {
+                            const element = guest_detail[index];
+                            bookData[`guest_name_first[${index}]`] =
+                                element.firstName || "";
+                            bookData[`guest_name_last[${index}]`] =
+                                element.lastName || "";
+                        }
+                    }
                     //console.log("bookData DTO", bookData);
 
                     let bookingResult = await this.hotel.book(
@@ -922,18 +914,17 @@ export class HotelService {
                         user.userId
                     );
 
+                    console.log("bookingResult?.status", bookingResult?.status);
 
-                    console.log('bookingResult?.status',bookingResult?.status);
-                    
-                    // if (bookingResult?.status != "success") {
-                    //     return {
-                    //         statusCode: 424,
-                    //         message:
-                    //             "Booking failed from supplier side at " +
-                    //             new Date(),
-                    //         bookingResult,
-                    //     };
-                    // }
+                    if (bookingResult?.status != "success") {
+                        return {
+                            statusCode: 424,
+                            message:
+                                "Booking failed from supplier side at " +
+                                new Date(),
+                            bookingResult,
+                        };
+                    }
 
                     let authCardToken = transaction_token;
 
@@ -954,7 +945,7 @@ export class HotelService {
                         travelers,
                         cartId
                     );
-                    
+
                     // if (dayDiff <= 90) {
                     //     this.bookingUpdateFromSupplierside(
                     //         laytripBookingResult.laytripBookingId,
@@ -989,67 +980,104 @@ export class HotelService {
 
                 if (sellingPrice > 0) {
                     let bookDto = new BookDto();
-                    bookDto.bundle = availability[0].bundle;
 
+                    bookDto.bundle = availability[0].bundle;
+                    let guest_detail = [];
                     for await (const traveler of travelers) {
+                        //console.log(traveler.is_primary_traveler);
+
                         if (traveler.is_primary_traveler == true) {
+                            //console.log(
+                            //     traveler.is_primary_traveler,
+                            //     "primary"
+                            // );
                             bookDto.primary_guest_detail = await this.user.getUser(
                                 traveler.traveler_id
                             );
                         } else {
-                            bookDto.guest_detail = await this.user.getUser(
+                            //console.log(traveler.is_primary_traveler, "guest");
+                            let detail = await this.user.getUser(
                                 traveler.traveler_id
                             );
+
+                            guest_detail.push(detail);
                         }
                     }
+                    // let bookData = new PPNBookDto(bookDto);
+                    let bookData = {
+                        name_first: bookDto.primary_guest_detail.firstName,
+                        name_last: bookDto.primary_guest_detail.lastName,
+                        initials: bookDto.primary_guest_detail?.title || "",
+                        email: bookDto.primary_guest_detail.email,
+                        phone_number: bookDto.primary_guest_detail.phoneNo,
 
-                    // let bookDto: any = {
-                    //     bundle: availability.bundle,
-                    //     primary_guest_detail: await this.user.getUser(
-                    //         booking.userId
-                    //     // ),
-                    // };
+                        // guest_name_first: bookDto.guest_detail.firstName,
+                        // guest_name_last: bookDto.guest_detail.lastName,
+                        card_type: card.type,
+                        card_number: card.number,
+                        expires: card.exp_month + "" + card.exp_year,
+                        cvc_code: card.cvv,
+                        card_holder: card.name,
+                        address_line_one: card.address.line_one,
+                        address_city: card.address.city,
+                        address_state_code: card.address.state_code,
+                        country_code: card.address.country_code,
+                        address_postal_code: card.address.postal_code,
 
-                    let bookData = new PPNBookDto(bookDto);
+                        ppn_bundle: bookDto.bundle,
+                    };
+                    if (guest_detail?.length) {
+                        for (
+                            let index = 0;
+                            index < guest_detail.length;
+                            index++
+                        ) {
+                            const element = guest_detail[index];
+                            bookData[`guest_name_first[${index}]`] =
+                                element.firstName || "";
+                            bookData[`guest_name_last[${index}]`] =
+                                element.lastName || "";
+                        }
+                    }
                     //console.log("bookData DTO", bookData);
+
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
                     );
 
-                    let authCardToken = transaction_token;
-                    if (bookingResult?.status == "success") {
-                        let laytripBookingResult = await this.saveBooking(
-                            bookingRequestInfo,
-                            currencyId,
-                            bookingDate,
-                            BookingType.NOINSTALMENT,
-                            userId,
-                            availability,
-                            null,
-                            null,
-                            bookingResult,
-                            travelers,
-                            cartId
-                        );
-                        //send email here
-                        bookingResult.laytrip_booking_id =
-                            laytripBookingResult.id;
-                        bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-                            laytripBookingResult.laytripBookingId
-                        );
-                        return bookingResult;
-                    } else {
-                        // await this.paymentService.voidCard(
-                        //     authCardToken,
-                        //     userId
-                        // );
+                    console.log("bookingResult?.status", bookingResult?.status);
 
+                    if (bookingResult?.status != "success") {
                         return {
                             statusCode: 424,
-                            message: bookingResult.error_message,
+                            message:
+                                "Booking failed from supplier side at " +
+                                new Date(),
+                            bookingResult,
                         };
                     }
+
+                    let authCardToken = transaction_token;
+                    let laytripBookingResult = await this.saveBooking(
+                        bookingRequestInfo,
+                        currencyId,
+                        bookingDate,
+                        BookingType.NOINSTALMENT,
+                        userId,
+                        availability,
+                        null,
+                        null,
+                        bookingResult,
+                        travelers,
+                        cartId
+                    );
+                    //send email here
+                    bookingResult.laytrip_booking_id = laytripBookingResult.id;
+                    bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
+                        laytripBookingResult.laytripBookingId
+                    );
+                    return bookingResult;
                 }
                 // else {
                 // 	//for full laycredit rdeem
