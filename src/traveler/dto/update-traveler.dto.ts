@@ -70,7 +70,7 @@ export class UpdateTravelerDto {
            @IsValidDate("", {
                message: (args: ValidationArguments) => {
                    if (typeof args.value == "undefined" || args.value == "") {
-                       return `Please enter date of birth.&&&dob`;
+
                    } else {
                        return `Please enter valid date of birth format(YYYY-MM-DD)&&&dob`;
                    }

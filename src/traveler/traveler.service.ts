@@ -542,7 +542,7 @@ export class TravelerService {
                 traveler.title = gender == Gender.M ? "mr" : "ms";
             }
 
-            traveler.dob = dob;
+            traveler.dob = dob || null;
             traveler.gender = gender || null;
             traveler.updatedBy = updateBy ? updateBy : guest_id;
             traveler.phoneNo =
