@@ -6,7 +6,6 @@ export class Book{
     processBookResult(res) {
         
         let results = res.data['getHotelExpress.Book'];
-
         if (results.error) {
             return {
                 status: 'fail'
