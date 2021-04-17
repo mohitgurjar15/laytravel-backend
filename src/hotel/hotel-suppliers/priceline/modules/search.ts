@@ -194,7 +194,14 @@ export class Search {
                         (x) => x.hotel_id == hotels[i].id
                     ).photo_data;
                 }
+
+                
             }
+            /* let hotelsList =  hotels.sort(function (a, b) {
+                return a.secondary_start_price - b.secondary_start_price;
+            });
+            console.log("hotelsList",hotelsList)
+            return hotelsList; */
             return hotels;
         } else {
             throw new NotFoundException(results.error.status);

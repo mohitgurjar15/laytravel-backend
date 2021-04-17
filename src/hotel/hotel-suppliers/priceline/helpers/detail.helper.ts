@@ -126,7 +126,7 @@ export class DetailHelper {
     
         if(this.genericHelper.isset(this.hotel['thumbnail_hq'])) {
             thumbnail = this.hotel['thumbnail_hq'];
-            thumbnail = this.genericHelper.isset(thumbnail['three_hundred_square']) ? thumbnail['three_hundred_square'] : thumbnail['hundred_fifty_square'];
+            //thumbnail = this.genericHelper.isset(thumbnail['three_hundred_square']) ? thumbnail['three_hundred_square'] : thumbnail['hundred_fifty_square'];
         }else{
             thumbnail = this.hotel['thumbnail'];
         }
