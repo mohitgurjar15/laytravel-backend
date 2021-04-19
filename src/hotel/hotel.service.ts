@@ -725,7 +725,7 @@ export class HotelService {
                     availability[0].retail.sub_total || 0;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
-                        availability[0].selling.sub_total;
+                        availability[0].selling.total ;
                 } else {
                     bookingRequestInfo.selling_price =
                         availability[0].selling.total;
