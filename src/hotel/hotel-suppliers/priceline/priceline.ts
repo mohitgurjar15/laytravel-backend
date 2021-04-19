@@ -220,6 +220,7 @@ export class Priceline implements HotelInterface {
     async rooms(roomsReqDto: RoomsReqDto, user_id) {
         let parameters = {
             ppn_bundle: roomsReqDto.bundle,
+            room_grouping: 1,
         };
 
         let url = await CommonHelper.generateUrl(
