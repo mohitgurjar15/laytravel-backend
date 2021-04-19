@@ -58,7 +58,7 @@ import { Instalment } from "src/utility/instalment.utility";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
-import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
+import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 @Injectable()
 export class CartService {
     constructor(
@@ -109,7 +109,7 @@ export class CartService {
                     `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`
                 );
             const result = await query.getCount();
-            if (result >= 5) {
+            if (result >= 10) {
                 throw new BadRequestException(
                     `5 item cart maximum, please Checkout and start another Cart if you require
 more than 5.`
@@ -229,10 +229,10 @@ more than 5.`
             cart.moduleId = ModulesName.FLIGHT;
             cart.moduleInfo = flightInfo;
             cart.oldModuleInfo = flightInfo;
-            cart.expiryDate =
-                diffrence > 2
-                    ? new Date(dayAfterDay)
-                    : new Date(formatedDepatureDate);
+            cart.expiryDate = new Date(formatedDepatureDate);
+            // diffrence > 2
+            //     ? new Date(dayAfterDay)
+            //     : new Date(formatedDepatureDate);
             cart.isDeleted = false;
             cart.createdDate = new Date();
             // cart.instalmentType = instalment_type;
@@ -262,6 +262,45 @@ more than 5.`
                 throw new NotFoundException(
                     `Please enter guest user id &&&user_id&&&${errorMessage}`
                 );
+            }
+            var tDate = new Date();
+
+            var todayDate = tDate.toISOString().split(" ")[0];
+            todayDate = todayDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+
+            let postCart = await getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .select(["cart.id"])
+                .where(
+                    `(DATE("cart"."expiry_date") < DATE('${todayDate}') )  AND (("cart"."guest_user_id" = '${guestUserId}') OR ("cart"."user_id" = '${user.userId}')) `
+                )
+                .orderBy(`id`, "ASC")
+                .getMany();
+            let ids = [];
+            if (postCart.length) {
+                for await (const cart of postCart) {
+                    ids.push(cart.id);
+                }
+
+                await getConnection()
+                    .createQueryBuilder()
+                    .delete()
+                    .from(CartTravelers)
+                    .where(`"cart_id" in (:...cartIds)`, {
+                        cartIds: ids,
+                    })
+                    .execute();
+
+                await getConnection()
+                    .createQueryBuilder()
+                    .delete()
+                    .from(Cart)
+                    .where(
+                        `(DATE("cart"."expiry_date") < DATE('${todayDate}') )  AND (("cart"."guest_user_id" = '${guestUserId}') OR ("cart"."user_id" = '${user.userId}')) `
+                    )
+                    .execute();
             }
 
             let guestCart = await getConnection()
@@ -420,8 +459,6 @@ more than 5.`
             );
         }
     }
-
-
 
     async updateCart(updateCartDto: UpdateCartDto, user) {
         try {
@@ -617,7 +654,7 @@ more than 5.`
 
                 .where(where)
                 .orderBy(`cart.id`, "ASC")
-                .limit(5);
+                .limit(10);
             const [result, count] = await query.getManyAndCount();
 
             if (!result.length) {
@@ -1065,7 +1102,6 @@ more than 5.`
             let largestDate = "";
             //let ToatalAmount = ''
             for await (const item of result) {
-                
                 if (item.moduleId == ModulesName.FLIGHT) {
                     const dipatureDate = await this.flightService.changeDateFormat(
                         item.moduleInfo[0].departure_date
@@ -1161,7 +1197,7 @@ more than 5.`
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
-                        
+
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
 
@@ -1619,23 +1655,23 @@ more than 5.`
 
         const value = cart.oldModuleInfo;
         console.log("hhhhh", cart.travelers.length);
-        
+
         let newCart = {};
         newCart["id"] = cart.id;
-        console.log("hhhhh","a")
+        console.log("hhhhh", "a");
         newCart["userId"] = cart.userId;
-        console.log("hhhhh","b")
+        console.log("hhhhh", "b");
         newCart["moduleId"] = cart.moduleId;
         newCart["isDeleted"] = cart.isDeleted;
-        console.log("hhhhh","3")
+        console.log("hhhhh", "3");
         newCart["createdDate"] = cart.createdDate;
         newCart["status"] = BookingStatus.FAILED;
         newCart["type"] = cart.module.name;
-        console.log("hhhhh","c")
+        console.log("hhhhh", "c");
         if (value) {
             let travelers = [];
             if (!cart.travelers?.length) {
-                console.log("undefinde traveler")
+                console.log("undefinde traveler");
                 newCart["status"] = BookingStatus.FAILED;
                 newCart["detail"] = {
                     statusCode: 422,
@@ -1659,7 +1695,7 @@ more than 5.`
                     cart.moduleId
                 );
             } else {
-                console.log("hhhhh","1")
+                console.log("hhhhh", "1");
                 for await (const traveler of cart.travelers) {
                     //console.log(traveler);
                     let travelerUser = {
@@ -1668,7 +1704,7 @@ more than 5.`
                     };
                     travelers.push(travelerUser);
                 }
-                console.log("hhhhh","2")
+                console.log("hhhhh", "2");
 
                 const bookingdto: BookHotelCartDto = {
                     travelers,
@@ -1700,9 +1736,9 @@ more than 5.`
             }
         } else {
             console.log(value);
-            
+
             newCart["detail"] = {
-                message: 'Module info not found .',
+                message: "Module info not found .",
             };
             newCart["status"] = BookingStatus.FAILED;
             await this.saveFailedBooking(
@@ -1722,8 +1758,7 @@ more than 5.`
         console.log(newCart["detail"]);
         console.log(newCart["detail"]["statusCode"]);
         console.log(newCart["detail"]["error"]);
-        
-        
+
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
 
@@ -1898,24 +1933,24 @@ more than 5.`
                     //console.log("err", err);
                 });
 
-                if(responce?.confirmed == true){
-                    await this.mailerService
-                        .sendMail({
-                            to: responce.email,
-                            from: mailConfig.from,
-                            bcc: mailConfig.BCC,
-                            subject: `Travel Provider Reservation Confirmation`,
-                            html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                                responce.param
-                            ),
-                        })
-                        .then((res) => {
-                            console.log("res", res);
-                        })
-                        .catch((err) => {
-                            console.log("err", err);
-                        });
-                }
+            if (responce?.confirmed == true) {
+                await this.mailerService
+                    .sendMail({
+                        to: responce.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Travel Provider Reservation Confirmation`,
+                        html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                            responce.param
+                        ),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
+            }
         } else {
             const user = await CartDataUtility.userData(userId);
             const userName = user.firstName
@@ -2107,9 +2142,12 @@ more than 5.`
     // }
 
     async addHotelIntoCart(ppnBundle: string, user) {
-        let roomDetails = await this.hotelService.availability({
-            room_ppn: ppnBundle
-        },user.userId || null);
+        let roomDetails = await this.hotelService.availability(
+            {
+                room_ppn: ppnBundle,
+            },
+            user.userId || null
+        );
 
         const cart = new Cart();
 
@@ -2118,11 +2156,17 @@ more than 5.`
         } else {
             cart.guestUserId = user.userId;
         }
-        
+
         cart.moduleId = ModulesName.HOTEL;
         cart.moduleInfo = roomDetails.data;
         cart.oldModuleInfo = roomDetails.data;
-        cart.expiryDate = new Date();
+        console.log("cart.moduleInfo", cart.moduleInfo);
+        console.log("cart.moduleInfo", cart.moduleInfo["items"][0]);
+
+        let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
+        console.log("depatureDate", depatureDate);
+
+        cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
         cart.createdDate = new Date();
 
