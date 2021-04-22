@@ -33,7 +33,7 @@ export class Search {
 
     async processSearchResult(res, parameters) {
         let results = res.data["getHotelExpress.Results"];
-        //console.log(results,"---")
+        //console.log(parameters,"---")
         if (results.error) {
             throw new NotFoundException(
                 "No result found &&&search&&&" + errorMessage
@@ -140,7 +140,7 @@ export class Search {
                             saving_percent,
                             night_rate:
                                 selling.total /
-                                this.rate.price_details.night_price_data.length,
+                                (this.rate.price_details.night_price_data.length * parameters.rooms),
                             refundable: this.rate.is_cancellable,
                             card_required: this.rate.cvc_required,
                             available_rooms: this.rate.available_rooms,
