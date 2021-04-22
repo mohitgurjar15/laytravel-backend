@@ -13,6 +13,7 @@ export class RoomHelper {
 
     processRoom(hotel: any, roomsReqDto: any, inputData = null) {
         let roomData = hotel.room_data;
+        //console.log("Inputdata",parseInt(inputData.num_rooms))
         //let rooms = collect(roomData).pluck('rate_data').map((rates: any) => {
         let rooms = collect(roomData).map((rates: any) => {
             let newItem: any = {};
@@ -108,7 +109,7 @@ export class RoomHelper {
                 title: rate.title,
                 occupancy: rate.occupancy_limit,
                 night_rate:
-                    selling.total / rate.price_details.night_price_data.length,
+                    selling.total / (rate.price_details.night_price_data.length * parseInt(inputData.num_rooms)),
                 description: rate.description,
                 beddings,
                 available_rooms: rate.available_rooms,
