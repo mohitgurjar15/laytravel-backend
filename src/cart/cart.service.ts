@@ -1090,7 +1090,7 @@ more than 10.`
                     `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("cart"."id" IN (${cartIds}))`
                 )
                 .orderBy(`cart.id`, "DESC")
-                .limit(5);
+                .limit(10);
             const [result, count] = await query.getManyAndCount();
 
             if (!result.length) {
