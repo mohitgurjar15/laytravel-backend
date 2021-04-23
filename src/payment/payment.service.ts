@@ -1419,9 +1419,9 @@ export class PaymentService {
 
         let authoriseAmount: number = 0;
 
-        if (cart.length > 5) {
+        if (cart.length > 10) {
             throw new BadRequestException(
-                "Please check cart, In cart you can not purches more then 5 item"
+                "Please check cart, In cart you can not purches more then 10 item"
             );
         }
         let cartIds: number[] = [];

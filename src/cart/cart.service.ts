@@ -111,8 +111,8 @@ export class CartService {
             const result = await query.getCount();
             if (result >= 10) {
                 throw new BadRequestException(
-                    `5 item cart maximum, please Checkout and start another Cart if you require
-more than 5.`
+                    `10 item cart maximum, please Checkout and start another Cart if you require
+more than 10.`
                 );
             }
             console.log("user", user);
@@ -395,7 +395,7 @@ more than 5.`
                 .skip(5)
                 .getManyAndCount();
             let cartOverLimit = false;
-            if (count > 5) {
+            if (count > 10) {
                 cartOverLimit = true;
                 let cartIds = [];
                 if (query.length) {
@@ -1049,10 +1049,10 @@ more than 5.`
                 transaction_token,
             } = bookCart;
 
-            if (cart.length > 5) {
+            if (cart.length > 10) {
                 throw new BadRequestException(
-                    `5 item cart maximum, please Checkout and start another Cart if you require
-more than 5.`
+                    `10 item cart maximum, please Checkout and start another Cart if you require
+more than 10.`
                 );
             }
             let cartIds: number[] = [];
