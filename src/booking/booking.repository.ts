@@ -592,6 +592,7 @@ export class BookingRepository extends Repository<Booking> {
 				"booking.bookingDate",
 				"booking.totalInstallments",
 				"booking.moduleInfo",
+				"booking.categoryName",
 				"booking.locationInfo",
 				"booking.paymentGatewayId",
 				"booking.paymentStatus",
@@ -618,7 +619,14 @@ export class BookingRepository extends Repository<Booking> {
 				"cart.laytripCartId"
 			])
 
-			.where(`predictiveBookingData.date = '${todayDate.split(' ')[0]}' AND moduleData.id IN(:...id)  AND booking.booking_status In (${BookingStatus.PENDING}) AND predictiveBookingData.is_resedule = false `, { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] })
+			.where(
+                `predictiveBookingData.date = '${
+                    todayDate.split(" ")[0]
+                }' AND moduleData.id IN(:...id)  AND booking.booking_status In (${
+                    BookingStatus.PENDING
+                }) AND predictiveBookingData.is_resedule = false `,
+                { id: [ModulesName.FLIGHT] }
+            );
 
 
 		const [data, count] = await query.getManyAndCount();
@@ -638,17 +646,18 @@ export class BookingRepository extends Repository<Booking> {
 			.replace(/T/, " ") // replace T with a space
 			.replace(/\..+/, "");
 		let query = getManager()
-			.createQueryBuilder(Booking, "booking")
-			.leftJoinAndSelect("booking.cart", "cart")
-			.leftJoinAndSelect("booking.module", "moduleData")
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect("booking.module", "moduleData")
 
-			// .select([
-			// 	"booking.supplierBookingId",
-			// 	"booking.id"
-			// ])
-			.where(
-				`"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
-			)
+            // .select([
+            // 	"booking.supplierBookingId",
+            // 	"booking.id"
+            // ])
+            .where(
+                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING} AND "booking"."module_id" IN(:...id)`,
+                { id: [ModulesName.FLIGHT] }
+            );
 
 		return await query.getMany();
 	}
