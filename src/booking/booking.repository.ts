@@ -610,6 +610,7 @@ export class BookingRepository extends Repository<Booking> {
                 "booking.totalInstallments",
                 "booking.moduleInfo",
                 "booking.locationInfo",
+                "booking.categoryName",
                 "booking.paymentGatewayId",
                 "booking.paymentStatus",
                 "booking.paymentInfo",
@@ -640,7 +641,7 @@ export class BookingRepository extends Repository<Booking> {
                 }' AND moduleData.id IN(:...id)  AND booking.booking_status In (${
                     BookingStatus.PENDING
                 }) AND predictiveBookingData.is_resedule = false `,
-                { id: [ModulesName.FLIGHT, ModulesName.VACATION_RENTEL] }
+                { id: [ModulesName.FLIGHT] }
             );
 
         const [data, count] = await query.getManyAndCount();
@@ -669,7 +670,8 @@ export class BookingRepository extends Repository<Booking> {
             // 	"booking.id"
             // ])
             .where(
-                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
+                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING} AND "booking"."module_id" IN(:...id)`,
+                { id: [ModulesName.FLIGHT] }
             );
 
         return await query.getMany();

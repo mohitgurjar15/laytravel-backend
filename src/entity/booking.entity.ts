@@ -136,6 +136,13 @@ export class Booking extends BaseEntity {
     })
     laytripBookingId: string | null;
 
+    @Column("character varying", {
+        name: "category_name",
+        length: 200,
+        nullable: true,
+    })
+    categoryName: string | null;
+
     @Column("boolean", { name: "is_ticketd", default: () => false })
     isTicketd: boolean;
 

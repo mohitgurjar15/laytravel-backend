@@ -324,8 +324,8 @@ export class CronJobsService {
             // 	"booking.id"
             // ])
             .where(
-                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}`
-            );
+                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}AND "booking"."module_id" IN(:...id)`,
+                { id: [ModulesName.FLIGHT] });
         if (booking_id) {
             query.andWhere(`"booking"."laytrip_booking_id" = '${booking_id}'`);
         }
