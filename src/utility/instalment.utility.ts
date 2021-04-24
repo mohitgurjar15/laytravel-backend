@@ -64,7 +64,7 @@ export class Instalment {
 
     }
 
-    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean) {
+    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -124,7 +124,7 @@ export class Instalment {
         return instalmentData;
     }
 
-    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean) {
+    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)

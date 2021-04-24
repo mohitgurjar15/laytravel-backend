@@ -692,10 +692,12 @@ export class HotelService {
                 laycredit_points,
                 card_token,
                 booking_through,
+                cartCount
             } = bookHotelCartDto;
             const availabilityDto: AvailabilityDto = {
                 room_ppn: bundle,
             };
+            cartCount = cartCount ? cartCount : 0
             // await this.hotelService.availability({
             //     room_ppn: moduleInfo[0].bundle,
             // });
@@ -810,7 +812,8 @@ export class HotelService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test3");
@@ -822,7 +825,8 @@ export class HotelService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test4");
@@ -834,7 +838,8 @@ export class HotelService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log(instalmentDetails);
