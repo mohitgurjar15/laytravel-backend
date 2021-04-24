@@ -1,9 +1,16 @@
-import { IsNotEmpty,  ValidationArguments, IsEnum, IsArray, ValidateNested, IsOptional } from "class-validator";
+import {
+    IsNotEmpty,
+    ValidationArguments,
+    IsEnum,
+    IsArray,
+    ValidateNested,
+    IsOptional,
+} from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
-import { Type } from 'class-transformer';
+import { Type } from "class-transformer";
 import { PaymentType } from "src/enum/payment-type.enum";
-import { InstalmentType} from "src/enum/instalment-type.enum";
+import { InstalmentType } from "src/enum/instalment-type.enum";
 
 export class BookFlightDto {
            @IsEnum(
@@ -121,6 +128,12 @@ export class BookFlightDto {
                ],
            })
            travelers: Traveler[];
+
+           @ApiPropertyOptional({
+               description: "total cart count",
+               example: false,
+           })
+           cartCount?: number;
        }
 
 class Traveler {
@@ -138,4 +151,6 @@ class Traveler {
         example: false,
     })
     is_primary_traveler?: boolean;
+
+    
 }

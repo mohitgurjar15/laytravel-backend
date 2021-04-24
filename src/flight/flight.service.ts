@@ -3100,8 +3100,10 @@ export class FlightService {
                 laycredit_points,
                 card_token,
                 booking_through,
+                cartCount
             } = bookFlightDto;
 
+            cartCount = cartCount ? cartCount : 0
             const mystifly = new Strategy(
                 new Mystifly(headers, this.cacheManager)
             );
@@ -3224,7 +3226,8 @@ export class FlightService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -3235,7 +3238,8 @@ export class FlightService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3246,7 +3250,8 @@ export class FlightService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
 

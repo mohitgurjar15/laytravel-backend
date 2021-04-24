@@ -1,4 +1,5 @@
 import * as moment from 'moment';
+import TrustedComms = require('twilio/lib/rest/preview/TrustedComms');
 import { Generic } from './generic.utility';
 
 const checkInDayDiffernce = 90;
@@ -7,7 +8,7 @@ const firstInstalmentPercentage2 = 20;
 export class Instalment {
 
 
-    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null) {
+    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
 
@@ -53,7 +54,7 @@ export class Instalment {
         instalmentData.instalment_available = (instalmentsDates.length) ? true : false;
         instalmentData.instalment_date = instalmentDatewithAmount;
 
-        if (instalmentData.instalment_date[1].instalment_amount < 5 && additionalAmount == 0) {
+        if (instalmentData.instalment_date[1].instalment_amount < 5 && additionalAmount == 0 && ignore5DollerCase != true) {
             instalmentData.instalment_date = this.adjustInstalment(amount, instalmentDatewithAmount);
         }
 
@@ -63,7 +64,7 @@ export class Instalment {
 
     }
 
-    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null) {
+    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -107,8 +108,15 @@ export class Instalment {
         instalmentData.instalment_available = (instalmentsDates.length) ? true : false;
         instalmentData.instalment_date = instalmentDatewithAmount;
 
-        if (instalmentData.instalment_date[1].instalment_amount < 5 && additionalAmount == 0) {
-            instalmentData.instalment_date = this.adjustInstalment(amount, instalmentDatewithAmount);
+        if (
+            instalmentData.instalment_date[1].instalment_amount < 5 &&
+            additionalAmount == 0 &&
+            ignore5DollerCase != true
+        ) {
+            instalmentData.instalment_date = this.adjustInstalment(
+                amount,
+                instalmentDatewithAmount
+            );
         }
 
         instalmentData.instalment_date = this.adjustFractionAmount(amount, instalmentData.instalment_date);
@@ -116,7 +124,7 @@ export class Instalment {
         return instalmentData;
     }
 
-    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null) {
+    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -160,8 +168,15 @@ export class Instalment {
         instalmentData.instalment_available = (instalmentsDates.length) ? true : false;
         instalmentData.instalment_date = instalmentDatewithAmount;
         
-        if (instalmentData.instalment_date[1].instalment_amount < 5 && additionalAmount == 0) {
-            instalmentData.instalment_date = this.adjustInstalment(amount, instalmentDatewithAmount);
+        if (
+            instalmentData.instalment_date[1].instalment_amount < 5 &&
+            additionalAmount == 0 &&
+            ignore5DollerCase != true
+        ) {
+            instalmentData.instalment_date = this.adjustInstalment(
+                amount,
+                instalmentDatewithAmount
+            );
         }
 
         instalmentData.instalment_date = this.adjustFractionAmount(amount, instalmentData.instalment_date);

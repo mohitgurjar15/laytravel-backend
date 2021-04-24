@@ -2361,6 +2361,8 @@ export class BookingService {
                 .set({
                     bookingStatus: BookingStatus.CANCELLED,
                     paymentStatus: PaymentStatus.CANCELLED,
+                    updatedDate : new Date(),
+                    updateBy : user.userId
                 })
                 .where(
                     `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,
@@ -2381,6 +2383,13 @@ export class BookingService {
                 .execute();
         }
         if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
+
+             Activity.logActivity(
+                 user.userId,
+                 "Booking",
+                 "Booking(" + booking_id + "" + product_id ||
+                     "" + ") deleted by admin "
+             );
             this.mailerService
                 .sendMail({
                     to: query.user.email,
