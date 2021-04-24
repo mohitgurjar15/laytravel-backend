@@ -7,6 +7,7 @@ import {
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { User } from "src/entity/user.entity";
+import { FlightRouteType } from "src/enum/flight-route-type.enum";
 import { airports } from "src/flight/airports";
 import { Activity } from "src/utility/activity.utility";
 import { getConnection } from "typeorm";
@@ -39,7 +40,8 @@ export class FlightRouteService {
             or ("route"."from_airport_city" ILIKE '%${search}%')
             or("route"."from_airport_code" ILIKE '%${search}%')
             or("route"."from_airport_country" ILIKE '%${search}%') 
-            or ("route"."from_airport_name" ILIKE '%${search}%'))`;
+            or ("route"."from_airport_name" ILIKE '%${search}%')
+            or ("route"."type" ILIKE '%${search}%'))`;
         }
 
         if (status) {
@@ -104,6 +106,7 @@ export class FlightRouteService {
             category_id,
             from_airport_codes,
             to_airport_codes,
+            type
         } = addFlightRouteDto;
 
         const category = await getConnection()
@@ -188,6 +191,7 @@ export class FlightRouteService {
                 route.status = true;
                 route.isDeleted = false;
                 route.createDate = new Date();
+                route.type = type
                 parentRoute = await route.save();
             }
         }
@@ -233,6 +237,7 @@ export class FlightRouteService {
                         route.status = true;
                         route.createDate = new Date();
                         route.isDeleted = false;
+                        route.type = type;
                         await route.save();
                     }
                 }
@@ -313,7 +318,7 @@ export class FlightRouteService {
         updateFlightRouteDto: UpdateFlightRouteDto,
         user: User
     ) {
-        const { category_id } = updateFlightRouteDto;
+        const { category_id , type} = updateFlightRouteDto;
         const route = await getConnection()
             .createQueryBuilder(FlightRoute, "route")
             .where(`"id" = ${id} AND "is_deleted" = false`)
@@ -333,6 +338,7 @@ export class FlightRouteService {
         const previous = JSON.stringify(route);
         route.updateDate = new Date();
         route.updateBy = user.userId;
+        route.type = type;
         route.categoryId = category_id;
 
         const current = await route.save();
@@ -370,7 +376,9 @@ export class FlightRouteService {
                 if (
                     typeof airports[row.from_airport_code] != "undefined" &&
                     typeof airports[row.to_airport_code] != "undefined" &&
-                    typeof categoryId == "number"
+                    typeof categoryId == "number" &&
+                    (row.type == FlightRouteType.DOMESTIC ||
+                        row.type == FlightRouteType.INTERNATIONAL)
                 ) {
                     var error_message = {};
                     const category = await getConnection()
@@ -438,6 +446,11 @@ export class FlightRouteService {
                         error_message[
                             "category_id"
                         ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                    }
+                    if (row.type != FlightRouteType.DOMESTIC && row.type != FlightRouteType.INTERNATIONAL) {
+                        error_message[
+                            "type"
+                        ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                     }
                     errors.push(error_message);
                 }

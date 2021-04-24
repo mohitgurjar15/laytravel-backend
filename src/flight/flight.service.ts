@@ -1186,6 +1186,7 @@ export class FlightService {
                 var date;
                 var startPrice = 0;
                 var arrivalDate;
+                var secondaryStartPrice = 0;
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -1194,6 +1195,8 @@ export class FlightService {
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
                         startPrice = flightData.start_price || 0;
+                        secondaryStartPrice =
+                            flightData.secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1209,6 +1212,8 @@ export class FlightService {
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         arrivalDate = flightData.arrival_date;
+                        secondaryStartPrice =
+                            flightData.secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -1219,6 +1224,7 @@ export class FlightService {
                     unique_code: unique_code,
                     start_price: startPrice,
                     arrival_date: arrivalDate,
+                    secondary_start_price: secondaryStartPrice,
                 };
 
                 returnResponce.push(output);
@@ -3489,12 +3495,13 @@ export class FlightService {
 				"route"."from_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."from_airport_code",
 					"route"."from_airport_name",
 					"route"."from_airport_city",
 					"route"."from_airport_country"
-					`
+				Order by "route"."from_airport_city"	`
             );
         } else {
             result = await getConnection().query(
@@ -3505,12 +3512,13 @@ export class FlightService {
 				"route"."to_airport_country" as country
 				from
 					"flight_route" "route"
+                Where "route"."is_deleted" = false
 				group by
 					"route"."to_airport_code",
 					"route"."to_airport_name",
 					"route"."to_airport_city",
 					"route"."to_airport_country"
-					`
+				Order by "route"."to_airport_city"`
             );
         }
 
@@ -3583,9 +3591,16 @@ export class FlightService {
             }
         }
 
+        let orderBy = "from_airport_city";
+        if (is_from_location != "yes"){
+            orderBy = "to_airport_city"
+        }
+
+
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
+            .orderBy(orderBy,'ASC')
             .getMany();
 
         if (!result) {
