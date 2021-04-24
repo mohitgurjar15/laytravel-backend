@@ -168,8 +168,8 @@ export class RoomHelper {
             address = `${addressObj.address_line_one}, `;
         if (addressObj.city_name != null)
             address = `${address} ${addressObj.city_name}, `;
-        if (addressObj.state_code != null)
-            address = `${address} ${addressObj.state_code}, `;
+        if (addressObj.state_name != null)
+            address = `${address} ${addressObj.state_name}, `;
         if (addressObj.zip != null) address = `${address} ${addressObj.zip}, `;
         if (addressObj.country_code != null)
             address = `${address} ${addressObj.country_code}`;
