@@ -22,7 +22,7 @@ export const LaytripHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Trans
     <!--[if mso]>
     <style>
       body,table,td {
-      font-family: 'Open Sans', sans-serif !important;
+      font-family: 'Poppins', sans-serif !important;
       }
     </style>
     <![endif]-->
@@ -91,6 +91,7 @@ export const LaytripHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Trans
 
     /*assets css start end*/
     body {
+        font-family: 'Poppins', sans-serif;
         margin: 0 !important;
         padding: 0 !important;
         -webkit-text-size-adjust: 100% !important;
@@ -177,4 +178,4 @@ export const LaytripHeader = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Trans
                                 </tr>
                             </table>
                         </td>
-                    </tr>`
+                    </tr>`;
