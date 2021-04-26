@@ -169,7 +169,7 @@ export class HotelService {
         //roomsReqDto.bundle = hotel['bundle'];
         //roomsReqDto.rooms = details.occupancies.length;
 
-        let rooms = await this.hotel.rooms(roomsReqDto, user_id);
+        let result = await this.hotel.rooms(roomsReqDto, user_id);
         // return rooms;
 
         /* Add any type of Business logic for hotel object's */
@@ -185,8 +185,9 @@ export class HotelService {
         //await this.cacheManager.set(roomsReqDto.token, cached, { ttl: this.ttl });
 
         let response = {
-            data: rooms,
-            message: rooms.count() ? "Rooms found" : "No Room Found",
+            data: result.rooms,
+            hotel: result.details,
+            message: result.rooms.count() ? "Rooms found" : "No Room Found",
         };
 
         return response;
@@ -692,10 +693,12 @@ export class HotelService {
                 laycredit_points,
                 card_token,
                 booking_through,
+                cartCount,
             } = bookHotelCartDto;
             const availabilityDto: AvailabilityDto = {
                 room_ppn: bundle,
             };
+            cartCount = cartCount ? cartCount : 0;
             // await this.hotelService.availability({
             //     room_ppn: moduleInfo[0].bundle,
             // });
@@ -725,7 +728,7 @@ export class HotelService {
                     availability[0].retail.sub_total || 0;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
-                        availability[0].selling.total ;
+                        availability[0].selling.total;
                 } else {
                     bookingRequestInfo.selling_price =
                         availability[0].selling.total;
@@ -810,7 +813,8 @@ export class HotelService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test3");
@@ -822,7 +826,8 @@ export class HotelService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test4");
@@ -834,7 +839,8 @@ export class HotelService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log(instalmentDetails);

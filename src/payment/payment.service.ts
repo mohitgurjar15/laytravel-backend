@@ -1506,7 +1506,8 @@ export class PaymentService {
                     totalAdditionalAmount,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    false
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1517,7 +1518,8 @@ export class PaymentService {
                     totalAdditionalAmount,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    false
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1528,7 +1530,8 @@ export class PaymentService {
                     totalAdditionalAmount,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    false
                 );
             }
 

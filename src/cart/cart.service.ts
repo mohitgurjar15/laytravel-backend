@@ -1162,6 +1162,8 @@ more than 10.`
             let failedResult = 0;
             let BookingIds = [];
             //let mailResponce = []
+
+            const cartCount = result.length;
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
@@ -1171,7 +1173,8 @@ more than 10.`
                             Headers,
                             bookCart,
                             smallestDate,
-                            cartData
+                            cartData,
+                            cartCount
                         );
                         responce.push(flightResponce);
 
@@ -1193,7 +1196,8 @@ more than 10.`
                             Headers,
                             bookCart,
                             smallestDate,
-                            cartData
+                            cartData,
+                            cartCount
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
@@ -1434,7 +1438,8 @@ more than 10.`
         Headers,
         bookCart: CartBookDto,
         smallestDate: string,
-        cartData: CartBooking
+        cartData: CartBooking,
+        cartCount:number
     ) {
         const {
             payment_type,
@@ -1561,6 +1566,7 @@ more than 10.`
                     custom_instalment_no: 0,
                     card_token,
                     booking_through,
+                    cartCount
                 };
 
                 console.log("cartBook request");
@@ -1633,7 +1639,8 @@ more than 10.`
         Headers,
         bookCart: CartBookDto,
         smallestDate: string,
-        cartData: CartBooking
+        cartData: CartBooking,
+        cartCount:number
     ) {
         const {
             payment_type,
@@ -1718,6 +1725,7 @@ more than 10.`
                     card_token,
                     booking_through,
                     bundle: value[0].bundle,
+                    cartCount
                 };
 
                 console.log("cartBook request");
