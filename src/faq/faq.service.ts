@@ -105,7 +105,7 @@ export class FaqService {
 			question: question,
 		});
 		if (checkfaq) {
-			throw new BadRequestException(`given quetion is alredy available`);
+			throw new BadRequestException(`given quetion is alredy available.`);
 		}
 
 		const faq = new Faq();
@@ -118,7 +118,7 @@ export class FaqService {
 		try {
 			await faq.save();
 			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
-			return { message: "Faq created successfully" };
+			return { message: "Faq created successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -160,7 +160,7 @@ export class FaqService {
 
 		const faq = await this.FaqRepository.findOne({ id });
 		if (!faq) {
-			throw new NotFoundException(`Faq Id Not Found`);
+			throw new NotFoundException(`Faq Id Not Found.`);
 		}
 		const previousData = JSON.stringify(faq)
 		faq.categoryId = categoryId;
@@ -171,7 +171,7 @@ export class FaqService {
 			await faq.save();
 			const currentData = JSON.stringify(faq)
 			Activity.logActivity(adminId, "faq", `Faq updated by the admin`,previousData,currentData);
-			return { message: "Faq Updated Successfully" };
+			return { message: "Faq updated successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -215,7 +215,7 @@ export class FaqService {
 			faq.save();
 			const currentData = JSON.stringify(faq)
 			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`,previousData,currentData);
-			return { message: "Faq Deleted Successfully" };
+			return { message: "Faq deleted successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
@@ -264,7 +264,7 @@ export class FaqService {
 			faq.save();
 			const currentData = JSON.stringify(faq)
 			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`,previousData,currentData);
-			return { message: "Faq Status Changed" };
+			return { message: "Faq status changed." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
