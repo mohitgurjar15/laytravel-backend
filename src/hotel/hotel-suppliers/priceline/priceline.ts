@@ -43,6 +43,7 @@ export class Priceline implements HotelInterface {
             max_results: 100,
             order: "asc",
             sort: "name",
+            spellcheck:false
         };
 
         let url = await CommonHelper.generateUrl(
