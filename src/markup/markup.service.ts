@@ -60,7 +60,7 @@ export class MarkupService {
 			await getConnection().queryResultCache!.remove(["markup"]);
 			Activity.logActivity(user.userId, "markup", `Markup Updated by admin`,previousData,currentData);
 
-			return { message: "Markup Updated Successfully" };
+			return { message: "Markup updated successfully." };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&

@@ -64,8 +64,9 @@ export class ModulesService {
 
 			await getConnection().queryResultCache!.remove(["modules"]);
 			return {
-				message: `Module ${moduleData.name} Status Changed  ${status} Successfully`,
+				message: `Module ${moduleData.name} status changed successfully.`,
 			};
+
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
