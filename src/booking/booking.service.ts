@@ -38,7 +38,6 @@ import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 import { CartBooking } from "src/entity/cart-booking.entity";
 import { CryptoUtility } from "src/utility/crypto.utility";
 import { UserCard } from "src/entity/user-card.entity";
-import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
 import { DateTime } from "src/utility/datetime.utility";
 import { CartDataUtility } from "src/utility/cart-data.utility";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
@@ -55,8 +54,8 @@ import { updateBookingDto } from "./dto/update-booking.dto";
 import { FlightService } from "src/flight/flight.service";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { flightDataUtility } from "src/utility/flight-data.utility";
-import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
+import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/cart-changes-as-per-user-req.dto";
 
 @Injectable()
 export class BookingService {
@@ -2518,7 +2517,8 @@ export class BookingService {
         let booking = await getManager()
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.user", "User")
-            .where(`laytrip_booking_id = '${product_id}'`)
+            .leftJoinAndSelect("booking.cart", "cart")
+            .where(`"booking"."laytrip_booking_id" = '${product_id}'`)
             .getOne();
         if (!booking) {
             throw new NotFoundException(`Booking ID not found.`);
@@ -2568,19 +2568,17 @@ export class BookingService {
         dailyPrice.date = new Date();
         dailyPrice.isBelowMinimum = false;
         dailyPrice.netPrice = parseFloat(newBooking.netRate);
-        dailyPrice.price = flightInfo[0].selling_price;
-        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0;
-        await dailyPrice.save();
-        let mail = await flightDataUtility.flightData(
-            newBooking.laytripBookingId
-        );
+        dailyPrice.price = flightInfo[0].selling_price
+        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0
+        await dailyPrice.save()
+        let mail = await CartDataUtility.CartMailModelDataGenerate(booking.cart.laytripCartId);
         this.mailerService
             .sendMail({
-                to: mail.userMail,
+                to: mail.email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail.param.cart.cartId} Customer Change`,
-                html: await FlightChangeAsperUserRequestMail(mail.param),
+                subject: `Booking ID ${mail.param.orderId} Customer Change`,
+                html: await CartChangeAsperUserRequestMail(mail.param),
             })
             .then((res) => {
                 console.log("res", res);
