@@ -229,8 +229,8 @@ export class Priceline implements HotelInterface {
 
         let url = await CommonHelper.generateUrl(
             "getExpress.MultiContract",
-            parameters,
-            roomsReqDto?.hotel_id
+            parameters
+
         );
         let responce = {};
         let res = await this.httpsService
