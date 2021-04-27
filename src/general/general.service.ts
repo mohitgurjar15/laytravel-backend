@@ -14,7 +14,6 @@ import { Role } from "src/enum/role.enum";
 import * as moment from "moment";
 import { massCommunicationMail } from "src/config/new_email_templete/mass-communication.html";
 import { TestTemplete } from "src/config/new_email_templete/test.html";
-import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
 import { MassCommunication } from "src/entity/mass-communication.entity";
 import { contentType } from "src/config/content-type";
 import { extname } from "path";
@@ -42,9 +41,6 @@ import { NewsLetterMail } from "src/config/new_email_templete/news-letters.html"
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
 import { LaytripInquiryAutoReplayMail } from "src/config/new_email_templete/laytrip_inquiry-auto-replay-mail.html";
-import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
-import { FlightChangeAsperUserRequestMail } from "src/config/new_email_templete/flight-change-as-per-user-request.html";
-import { LaytripFlightReminderMail } from "src/config/new_email_templete/flight-reminder.html";
 import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/cart-changes-as-per-user-req.dto";
 import {TravelProviderReminderMail} from "src/config/new_email_templete/cart-reminder.mail"
 import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
@@ -626,20 +622,20 @@ export class GeneralService {
                 console.log("err", err);
             });
         let mail18 = await flightDataUtility.flightData(ConfirmFlight);
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail18.param.cart.cartId} Customer Change`,
-                html: await FlightChangeAsperUserRequestMail(mail18.param),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
+        // await this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: `Booking ID ${mail18.param.cart.cartId} Customer Change`,
+        //         html: await FlightChangeAsperUserRequestMail(mail18.param),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
 
         await this.mailerService
             .sendMail({
@@ -770,20 +766,20 @@ export class GeneralService {
                 console.log("err", err);
             });
 
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Reminder for your Upcoming Trip`,
-                html: await LaytripFlightReminderMail(mail18.param),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
+        // await this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: `Booking ID ${partialBooking} Reminder for your Upcoming Trip`,
+        //         html: await LaytripFlightReminderMail(mail18.param),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
 
         await this.mailerService
             .sendMail({
@@ -835,34 +831,34 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Travel Provider Reservation Confirmation #${mail18.param.flight[0].droups[0].depature.pnr_no}`,
-                html: await LaytripFlightBookingConfirmtionMail(mail18.param),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Reminder - Booking Number ${mail18.param.orderId}`,
-                html: await TravelProviderReconfirmationMail(mail18.param),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
+        // await this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: `Travel Provider Reservation Confirmation #${mail18.param.flight[0].droups[0].depature.pnr_no}`,
+        //         html: await LaytripFlightBookingConfirmtionMail(mail18.param),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
+        // await this.mailerService
+        //     .sendMail({
+        //         to: email,
+        //         from: mailConfig.from,
+        //         bcc: mailConfig.BCC,
+        //         subject: `Reminder - Booking Number ${mail18.param.orderId}`,
+        //         html: await TravelProviderReconfirmationMail(mail18.param),
+        //     })
+        //     .then((res) => {
+        //         console.log("res", res);
+        //     })
+        //     .catch((err) => {
+        //         console.log("err", err);
+        //     });
 
         let pendingHotelId = "LTCKN5SO8HZ";
 
@@ -994,17 +990,82 @@ export class GeneralService {
 
     // async testEmail(email) {
     //     let partialBooking = "LTCKM3BOFDB";
-    //     await this.mailerService.sendMail({
-    //         to: email,
-    //         from: mailConfig.from,
-    //         bcc: mailConfig.BCC,
-    //         subject: `Booking ID ${partialBooking} Upcoming Payment Reminder`,
-    //         html: await LaytripPaymentReminderTemplete({
-    //             userName: "Parth",
-    //             amount: "$55.40",
-    //             date: "June 20, 2021",
-    //             bookingId: partialBooking,
-    //         }),
-    //     });
+    //     let fullBookingConfirm = "LTCKLUSXYJL";
+        
+    //     let ConfirmFlight = "LTFKM3BQ5QW";
+
+    //     let mail1 = await CartDataUtility.CartMailModelDataGenerate(
+    //         fullBookingConfirm
+    //     );
+
+    //     await this.mailerService
+    //         .sendMail({
+    //             to: email,
+    //             from: mailConfig.from,
+    //             // bcc: mailConfig.BCC,
+    //             subject: "Booking ID LTCKLUSXYJL Confirmation",
+    //             html: await LaytripCartBookingConfirmtionMail(mail1.param),
+    //         })
+    //         .then((res) => {
+    //             console.log("res", res);
+    //         })
+    //         .catch((err) => {
+    //             console.log("err", err);
+    //         });
+
+    //     let mail2 = await CartDataUtility.CartMailModelDataGenerate(
+    //         partialBooking
+    //     );
+
+    //     await this.mailerService
+    //         .sendMail({
+    //             to: email,
+    //             from: mailConfig.from,
+    //             bcc: mailConfig.BCC,
+    //             subject: "Booking ID LTCKM3BOFDB Confirmation",
+    //             html: await LaytripCartBookingConfirmtionMail(mail2.param),
+    //         })
+    //         .then((res) => {
+    //             console.log("res", res);
+    //         })
+    //         .catch((err) => {
+    //             console.log("err", err);
+    //         });
+
+    //         let pendingHotelId = "LTCKN5SO8HZ";
+
+    //     let hotelmail = await CartDataUtility.CartMailModelDataGenerate(
+    //         pendingHotelId
+    //     );
+
+    //     await this.mailerService
+    //         .sendMail({
+    //             to: email,
+    //             from: mailConfig.from,
+    //             // bcc: mailConfig.BCC,
+    //             subject: `Booking ID ${pendingHotelId} Confirmation`,
+    //             html: await LaytripCartBookingConfirmtionMail(hotelmail.param),
+    //         })
+    //         .then((res) => {
+    //             console.log("res", res);
+    //         })
+    //         .catch((err) => {
+    //             console.log("err", err);
+    //         });
+
+    //     await this.mailerService
+    //         .sendMail({
+    //             to: email,
+    //             from: mailConfig.from,
+    //             bcc: mailConfig.BCC,
+    //             subject: `Booking ID ${pendingHotelId} Confirmation`,
+    //             html: await LaytripCartBookingConfirmtionMail(hotelmail.param),
+    //         })
+    //         .then((res) => {
+    //             console.log("res", res);
+    //         })
+    //         .catch((err) => {
+    //             console.log("err", err);
+    //         });
     // }
 }
