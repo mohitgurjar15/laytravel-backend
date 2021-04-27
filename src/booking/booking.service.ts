@@ -1700,6 +1700,8 @@ export class BookingService {
             const result = await this.bookingRepository.getPredictiveBookingDdata();
             let todayPrice = [];
             let availableBookingId = [];
+            console.log(result.data.length);
+            
             for await (const data of result.data) {
                 const bookingData = data.booking;
                 // booking data
@@ -1935,6 +1937,11 @@ export class BookingService {
                 todayPrice.push(predictiveBookingData);
                 availableBookingId.push(id);
             }
+
+            // return {
+            //     availableBookingId,
+            //     todayPrice,
+            // };
             const allBooking = await this.bookingRepository.getPendingBooking();
             let responce = [];
             ////console.log(todayPrice);
