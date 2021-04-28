@@ -53,6 +53,7 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import * as config from "config";
 const card = config.get("card");
+const supporterEmail = config.get("supporterEmail");
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 
 @Injectable()
@@ -882,7 +883,7 @@ export class HotelService {
                         name_first: bookDto.primary_guest_detail.firstName,
                         name_last: bookDto.primary_guest_detail.lastName,
                         initials: bookDto.primary_guest_detail?.title || "",
-                        email: bookDto.primary_guest_detail.email,
+                        email: supporterEmail,
                         phone_number: bookDto.primary_guest_detail.phoneNo,
 
                         // guest_name_first: bookDto.guest_detail.firstName,
