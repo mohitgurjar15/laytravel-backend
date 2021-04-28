@@ -32,6 +32,30 @@ export class RoomHelper {
                 rate.cancellation_details
             );
 
+            console.log("rate.mandatory_fee_details",rate.price_details.mandatory_fee_details)
+            let mandatoryFeeDetails={ is_prepaid : false, prepaid_break_dwon:[],is_postpaid : false, postpaid_break_dwon:[] };
+            if(rate.price_details.mandatory_fee_details!=null){
+                if(rate.price_details.mandatory_fee_details.breakdown.prepaid.breakdown.length){
+                    mandatoryFeeDetails.is_prepaid=true;
+                    for(let price of rate.price_details.mandatory_fee_details.breakdown.prepaid.breakdown){
+                        mandatoryFeeDetails.prepaid_break_dwon.push({
+                            price: price.display_total,
+                            name : price.name
+                        })
+                    }
+                }
+
+                if(rate.price_details.mandatory_fee_details.breakdown.postpaid.breakdown.length){
+                    mandatoryFeeDetails.is_postpaid=true;
+                    for(let price of rate.price_details.mandatory_fee_details.breakdown.postpaid.breakdown){
+                        mandatoryFeeDetails.postpaid_break_dwon.push({
+                            price: price.display_total,
+                            name : price.name
+                        })
+                    }
+                }
+            }
+
             let { retail, selling, saving_percent } = this.rateHelper.getRates(
                 rate,
                 roomsReqDto,
@@ -107,6 +131,7 @@ export class RoomHelper {
                 full_address: this.setFullAddress(hotel.address),
                 room_id: rates.id,
                 title: rate.title,
+                mandatory_fee_details:mandatoryFeeDetails,
                 occupancy: rate.occupancy_limit,
                 night_rate:
                     selling.total / (rate.price_details.night_price_data.length * parseInt(inputData.num_rooms)),
