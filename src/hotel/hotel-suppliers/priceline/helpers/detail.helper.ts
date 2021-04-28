@@ -94,8 +94,8 @@ export class DetailHelper {
             address=`${this.hotel['address'].address_line_one}, `
         if(this.hotel['address'].city_name!=null)
             address=`${address} ${this.hotel['address'].city_name}, `
-        if(this.hotel['address'].state_code!=null)
-            address=`${address} ${this.hotel['address'].state_code}, `
+        if(this.hotel['address'].state_name!=null)
+            address=`${address} ${this.hotel['address'].state_name}, `
         if(this.hotel['address'].zip!=null)
             address=`${address} ${this.hotel['address'].zip}, `
         if(this.hotel['address'].country_code!=null)
