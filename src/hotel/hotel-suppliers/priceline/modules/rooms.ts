@@ -69,7 +69,8 @@ export class Rooms {
 
         let url = await CommonHelper.generateUrl(
             "shared/getBOF2.Downloads.Hotel.Rooms",
-            urlparameters
+            urlparameters,
+            hotel_ids
         );
 
         url = url.replace("/api/hotel/", "/api/");
