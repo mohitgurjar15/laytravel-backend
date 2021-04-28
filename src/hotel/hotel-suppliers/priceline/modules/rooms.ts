@@ -32,9 +32,7 @@ export class Rooms {
 
         if (results.results.status && results.results.status === "Success") {
             let hotel = results.results.hotel_data[0];
-            //console.log("hotel",hotel)
             let inputData = results.results.input_data;
-            // return hotel;
             let rooms: any = this.roomHelper.processRoom(
                 hotel,
                 roomsReqDto,
@@ -42,18 +40,20 @@ export class Rooms {
             );
 
             let details = this.detailHelper.getHotelDetails(hotel);
-            /* let roomPhotos = await this.getRoomPhotos(hotel.id);
-            console.log(rooms.items.length,"rooms.length")
+            let roomPhotos = await this.getRoomPhotos(hotel.id);
             for(let i=0; i <rooms.items.length; i++){
                 let roomPhoto = roomPhotos.find(room=>room.roomid_ppn==rooms.items[i].room_id)
-                if(roomPhoto){
-                    rooms.items[i].photos= roomPhoto;
+                if(roomPhoto.photos.length){
+                    rooms.items[i].photos=[];
+                    for(let j=0; j<roomPhoto.photos.length; j++){
+
+                        rooms.items[i].photos.push(roomPhoto.photos[j].medium.replace("//", "https://"));
+                    }
                 }
                 else{
                     rooms.items[i].photos=[];
                 }
             }
-            console.log("rooms",rooms) */
             return { rooms, details };
         }
     }
@@ -72,7 +72,6 @@ export class Rooms {
             urlparameters
         );
 
-        console.log("url", url);
         url = url.replace("/api/hotel/", "/api/");
 
         let photos = await this.httpsService
