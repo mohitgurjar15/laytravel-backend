@@ -76,10 +76,8 @@ export async function TravelProviderConfiramationMail(
                          for await (const droup of flight.droups) {
                              content += `<tr>
                         <td
-                            align="left"
-                            valign="top"
-                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                        >
+                           align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                             <span style="color: #000000; font-weight: 600;">${
                                 droup.flight
                             }: </span>Depart ${
@@ -171,8 +169,8 @@ export async function TravelProviderConfiramationMail(
                          content += `<tr>
                 <td
                       align="left" valign="top"bold;
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                    <span  style="color: #707070">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #000000; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;
@@ -183,7 +181,7 @@ export async function TravelProviderConfiramationMail(
              content += `            <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        <br/><br/>If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
+                        If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0C7BFF;">customerservice@laytrip.com</a>.
                     </td>
                 </tr>

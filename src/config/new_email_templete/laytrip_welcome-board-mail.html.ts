@@ -27,7 +27,7 @@ export function LaytripWelcomeBoardMail() {
                                                     </tr>
                                                     <tr>
                                                          <td align="left" valign="top"
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: center;">
                                                             <a href = '${FrontEndUrl}'
                                                             style="color: #f725c5;">Search Travel</a>            
                                                          </td>
