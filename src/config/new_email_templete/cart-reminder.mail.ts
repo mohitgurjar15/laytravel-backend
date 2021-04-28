@@ -31,29 +31,29 @@ export async function TravelProviderReminderMail(
             <tbody>
                 <tr>
                     <td align="left" valign="top"
-                    style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #000000; font-weight: 600;; text-align: left; font-weight: 600;">
                         Hi ${param.user_name ? param.user_name : ""},</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         We are re-sending this Travel Provider Confirmation Email as a reminder of your upcoming travel. <span style = "color: #707070">Your Laytrip Booking ID is ${
                             param.orderId
                         }.</span> Please use this number when referencing your booking with Laytrip.
                     </td>
                 </tr><tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">`;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">`;
 
     for (let index = 1; index <= param.bookings.length; index++) {
         const booking = param.bookings[index - 1];
         if (booking.moduleId == ModulesName.FLIGHT) {
             if (booking.flighData[0].droups[0].depature?.pnr_no) {
-                content += `<span style = "color: #000000">Your ${booking.flighData[0].droups[0].flight} Travel Provider Confirmation Number is ${booking.flighData[0].droups[0].depature?.pnr_no}.</span> `;
+                content += `<span style = "color: #000000; font-weight: 600;">Your ${booking.flighData[0].droups[0].flight} Travel Provider Confirmation Number is ${booking.flighData[0].droups[0].depature?.pnr_no}.</span> `;
             }
         }
         if (booking.moduleId == ModulesName.HOTEL) {
-            content += `<span style = "color: #000000">Your Hotel Travel Provider Confirmation Number is Your Lastname.</span> `;
+            content += `<span style = "color: #000000; font-weight: 600;">Your Hotel Travel Provider Confirmation Number is Your Lastname.</span> `;
         }
         if (index != param.bookings.length) {
             content += `<br/>`;
@@ -66,11 +66,9 @@ export async function TravelProviderReminderMail(
     content += `
                 <tr>
                     <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:20px;  text-align: left;"
-                    >
-                        <span  style="color: #000000">
+                        align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                        <span  style="color: #000000; font-weight: 600;">
                         Traveler: 
                         </span>
                         <span style="font-size: 18px" >
@@ -80,11 +78,9 @@ export async function TravelProviderReminderMail(
                 </tr>
                 <tr>
                     <td
-                        align="left"
-                        valign="top"
-                        style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
-                    >
-                        <span  style="color: #000000">
+                          align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                        <span  style="color: #000000; font-weight: 600;">
                         Email: 
                         </span>
                         <span style="font-size: 18px" >
@@ -98,11 +94,9 @@ export async function TravelProviderReminderMail(
                 for await (const droup of flight.droups) {
                     content += `<tr>
                         <td
-                            align="left"
-                            valign="top"
-                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                        >
-                            <span style="color: #000000">${
+                              align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                            <span style="color: #000000; font-weight: 600;">${
                                 droup.flight
                             }: </span>Depart ${
                         droup.depature.code
@@ -121,11 +115,9 @@ export async function TravelProviderReminderMail(
         } else if (booking.moduleId == ModulesName.HOTEL) {
             content += `<tr>
                         <td
-                            align="left"
-                            valign="top"
-                            style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; font-size: 18px text-align: left;"
-                        >
-                            <span style="color: #000000">Hotel:</span> ${
+                              align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                            <span style="color: #000000; font-weight: 600;">Hotel:</span> ${
                                 booking.hotelData.hotelName
                             }, Check-in ${DateTime.convertDateFormat(
                 booking.hotelData.checkIn,
@@ -148,50 +140,40 @@ export async function TravelProviderReminderMail(
     }
     content += `<tr>
                 <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
-                >
-                    <span  style="color: #000000">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>`;
     if (param.cart.rememberAmount && param.cart.rememberAmount != "$0") {
         content += `<tr>
                 <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
-                >
-                    <span  style="color: #000000">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
                 <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
-                >
-                    <span  style="color: #000000">Balance Due: </span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
             </tr>`;
     } else {
         content += `<tr>
                 <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
-                >
-                    <span  style="color: #000000">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
                 <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px;  text-align: left;"
-                >
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
 
-                    <span  style="color: #000000">Balance Due: </span> <span style="font-size: 18px" >$0</span>
+                    <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >$0</span>
                 </td>
             </tr>`;
     }
@@ -201,10 +183,8 @@ export async function TravelProviderReminderMail(
             if (booking.flighData[0].droups[0].depature?.pnr_no) {
                 content += `<tr>
                 <td
-                    align="left"
-                    valign="top"
-                    style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070; padding-top:5px; padding-bottom:px; text-align: left;"
-                >
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #707070">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
@@ -218,7 +198,8 @@ export async function TravelProviderReminderMail(
                         <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
                             <tbody>
                                 <tr>
-                                    <td align="center" valign="middle" style="font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: 200; " height="48">
+                                    <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                                         <a class="" style="color: #f725c5;" href = '${BookingLink}'>My Bookings</a>
                                     </td>
                                 </tr>
@@ -228,7 +209,7 @@ export async function TravelProviderReminderMail(
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         Contact us anytime at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0C7BFF;">customerservice@laytrip.com</a>. We hope you have a great trip!
                     </td>
@@ -236,15 +217,18 @@ export async function TravelProviderReminderMail(
             </tbody>
         </table>
     </td>
-</tr><tr>
+</tr>
+<tr>
 <td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 20px; color: #707070;padding-top:27px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 0px; display: block; line-height: 27px; color: #707070; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
+                <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 10px; display: block; line-height: 27px; color: #0043FF; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

@@ -19,13 +19,18 @@ export function LaytripInstallmentRecevied(param: {
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #000000; padding:0 0 20px 0; text-align: left;"> Hi ${
-                        param.userName
-                    },</td>
+                    <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #000000; text-align: left; font-weight: 600;"> Hi ${
+                                            param.userName
+                                        },</td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding:0 0 20px 0; text-align: left;">We have successfully processed your ${param.pastDue ==
-                        true ? "past due" : ""} payment for ${param.currencySymbol}${
+                    <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">We have successfully processed your ${
+                                            param.pastDue == true
+                                                ? "past due"
+                                                : ""
+                                        } payment for ${param.currencySymbol}${
         param.amount
     } on ${param.date}, thank you!`;
     if (param.pastDue == false) {
@@ -33,26 +38,10 @@ export function LaytripInstallmentRecevied(param: {
                     Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}.`;
     }
     content += `</td>
-                </tr>`;
-
-    // <tr>
-    //     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 25px; color: #707070;padding-top:10px; text-align: left;"><span style="font-weight: 700; padding-right:10px; color: #707070;">Billed to:</span>${param.cardHolderName}</td>
-    // </tr>
-    // <tr>
-    //     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 25px; color: #707070;padding-top:10px; text-align: left;"><span style="font-weight: 700; padding-right:10px; color: #707070;">Payment:</span>${param.currencySymbol}${Generic.formatPriceDecimal(param.amount)} Installment #${param.installmentId} for Booking ID ${param.orderId}}</td>
-    // </tr>
-    // <tr>
-    //     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 25px; color: #707070;padding-top:10px; text-align: left;"><span style="font-weight: 700; padding-right:10px; color: #707070;">Total Price:</span>${param.currencySymbol}${Generic.formatPriceDecimal(param.totalAmount)}</td>
-    // </tr>
-    // <tr>
-    //     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 25px; color: #707070;padding-top:10px; text-align: left;"><span style="font-weight: 700; padding-right:10px; color: #707070;">Total Paid:</span>${param.currencySymbol}${Generic.formatPriceDecimal(param.complitedAmount)}</td>
-    // </tr>
-    // <tr>
-    //     <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 16px; line-height: 25px; color: #707070;padding-top:10px; text-align: left;"><span style="font-weight: 700; padding-right:10px; color: #707070;">Blance Due:</span>${param.currencySymbol}${Generic.formatPriceDecimal(param.totalAmount - param.complitedAmount)}</td>
-    // </tr>
-    content += `<tr>
+                </tr>
+                <tr>
                     <td align="left" valign="top"
-                        style="font-family: 'Poppins', sans-serif; font-weight: 100; font-size: 18px; line-height: 25px; color: #707070;padding: 0 0 20px 0; text-align: left;">
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         Please contact <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0C7BFF;">customerservice@laytrip.com</a> if you have any questions.
                     </td>
@@ -61,15 +50,18 @@ export function LaytripInstallmentRecevied(param: {
         </table>
     </td>
 </tr>
+
 <tr>
 <td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
         <tbody> 
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #707070;padding-top:15px; text-align: left;">Sincerely,</td>
+                <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 0px; display: block; line-height: 27px; color: #707070; text-align: left;">Sincerely,</td>
             </tr>
             <tr>
-                <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 25px; color: #0043FF;padding-top:5px; text-align: left;"><a href = 'mailto:customerservice@laytrip.com' style:"color:#0043FF">Laytrip Customer Service</a></td>
+                <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 10px; display: block; line-height: 27px; color: #0043FF; text-align: left;"><a href = 'mailto:customerservice@laytrip.com'>Laytrip Customer Service</a></td>
             </tr>
         </tbody>
     </table>

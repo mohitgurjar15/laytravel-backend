@@ -43,6 +43,7 @@ export class Priceline implements HotelInterface {
             max_results: 100,
             order: "asc",
             sort: "name",
+            spellcheck: false,
         };
 
         let url = await CommonHelper.generateUrl(
@@ -56,7 +57,7 @@ export class Priceline implements HotelInterface {
             .get(url)
             .pipe(
                 map((res) =>
-                    new AutoComplete().processSearchLocationResult(res,term)
+                    new AutoComplete().processSearchLocationResult(res, term)
                 ),
                 catchError((err) => {
                     throw new BadRequestException(
@@ -104,7 +105,7 @@ export class Priceline implements HotelInterface {
             rate_limit: 1,
         };
         if (city_id) {
-            parameters['city_id'] = city_id
+            parameters["city_id"] = city_id;
         }
         let extra: any = {};
 
@@ -134,8 +135,8 @@ export class Priceline implements HotelInterface {
             .pipe(
                 map((res) => {
                     responce = res?.data;
-                   // console.log(responce);
-                    
+                    // console.log(responce);
+
                     return new Search().processSearchResult(res, parameters);
                 }),
                 catchError((err) => {
@@ -230,7 +231,6 @@ export class Priceline implements HotelInterface {
         let url = await CommonHelper.generateUrl(
             "getExpress.MultiContract",
             parameters
-
         );
         let responce = {};
         let res = await this.httpsService
@@ -247,7 +247,7 @@ export class Priceline implements HotelInterface {
                     logData["method"] = "post";
                     logData["requestBody"] = parameters;
                     logData["responce"] = responce;
-                     logData["err"] = err;
+                    logData["err"] = err;
                     fileName = `Failed-hotel-priceline-rooms-${new Date().getTime()}`;
                     if (user_id) {
                         fileName += "_" + user_id;
@@ -284,15 +284,15 @@ export class Priceline implements HotelInterface {
             "getExpress.Contract",
             parameters
         );
-       // console.log(url);
+        // console.log(url);
         let responce = {};
         let res = await this.httpsService
             .get(url)
             .pipe(
                 map((res) => {
                     responce = res?.data;
-                  //  console.log(res?.data);
-                    
+                    //  console.log(res?.data);
+
                     return new Availability().processAvailabilityResult(
                         res,
                         availabilityDto
@@ -300,14 +300,14 @@ export class Priceline implements HotelInterface {
                 }),
                 catchError((err) => {
                     console.log(err);
-                    
+
                     let fileName = "";
                     let logData = {};
                     logData["url"] = url;
                     logData["method"] = "post";
                     logData["requestBody"] = parameters;
                     logData["responce"] = responce;
-                     logData["err"] = err;
+                    logData["err"] = err;
                     fileName = `Failed-hotel-priceline-availiblity-${new Date().getTime()}`;
                     if (user_id) {
                         fileName += "_" + user_id;
@@ -354,7 +354,7 @@ export class Priceline implements HotelInterface {
                     logData["method"] = "post";
                     logData["requestBody"] = parameters;
                     logData["err"] = err;
-                     logData["responce"] = responce;
+                    logData["responce"] = responce;
                     fileName = `Failed-hotel-priceline-book-${new Date().getTime()}`;
                     if (user_id) {
                         fileName += user_id;
