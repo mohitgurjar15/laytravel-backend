@@ -59,7 +59,7 @@ export class RateHelper{
 
         return {
             retail,
-            selling:retail,
+            selling,
             saving_percent
         }
     }
