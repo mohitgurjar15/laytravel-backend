@@ -37,7 +37,7 @@ export async function TravelProviderReminderMail(
                 <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        We are re-sending this Travel Provider Confirmation Email as a reminder of your upcoming travel. <span style = "color: #707070">Your Laytrip Booking ID is ${
+                        We are re-sending this Travel Provider Confirmation Email as a reminder of your upcoming travel. <span style = "color: #000000; font-weight: 600;font-size: 18px;">Your Laytrip Booking ID is ${
                             param.orderId
                         }.</span> Please use this number when referencing your booking with Laytrip.
                     </td>
@@ -53,7 +53,7 @@ export async function TravelProviderReminderMail(
             }
         }
         if (booking.moduleId == ModulesName.HOTEL) {
-            content += `<span style = "color: #000000; font-weight: 600;">Your Hotel Travel Provider Confirmation Number is Your Lastname.</span> `;
+            content += `<span style = "color: #000000; font-weight: 600;">Your Hotel Travel Provider Confirmation Number is ${param.orderId}.</span> `;
         }
         if (index != param.bookings.length) {
             content += `<br/>`;
