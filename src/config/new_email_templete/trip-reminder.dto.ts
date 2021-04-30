@@ -112,8 +112,7 @@ export async function LaytripTripReminderMail(
                          booking.hotelData.checkIn,
                          "YYYY-MM-DD",
                          "MMMM DD, YYYY"
-                     )}, ${booking.hotelData.room} Room
-                            ${
+                     )}, ${booking.hotelData.room} Room${
                                 booking.hotelData.adult
                                     ? ", " + booking.hotelData.adult + " Adult"
                                     : ""
