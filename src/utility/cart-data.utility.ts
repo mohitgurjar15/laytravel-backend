@@ -238,7 +238,7 @@ export class CartDataUtility {
                                 date: await this.formatDate(
                                     stop.departure_date_time
                                 ),
-                                time: stop.departure_time,
+                                time: await this.formatTime(stop.departure_time),
                             };
                             if (stop?.pnr_no) {
                                 depature["pnr_no"] = stop?.pnr_no || "";
@@ -252,7 +252,7 @@ export class CartDataUtility {
                                 date: await this.formatDate(
                                     stop.arrival_date_time
                                 ),
-                                time: stop.arrival_time,
+                                time: await this.formatTime(stop.arrival_time),
                             };
 
                             //console.log('26');
@@ -366,4 +366,13 @@ export class CartDataUtility {
             .getOne();
         return user;
     }
+    static async formatTime(time:string) {
+   const splitTime = time.split(":");
+   const ma = splitTime[1].split(" ");
+    const h = parseInt(splitTime[0])
+    let mB:any = parseInt(ma[0])
+    const m = mB > 0 ? mB : ''
+    const j = ma[1]
+    return `${h}${m}${j}`;
+  }
 }

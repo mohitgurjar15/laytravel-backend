@@ -22,7 +22,7 @@ export function LaytripPaymentReminderTemplete(param: {
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">Please contact <a href = 'mailto:customerservice@laytrip.com'
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 10px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">Please contact <a href = 'mailto:customerservice@laytrip.com'
                     style="color: #0C7BFF;">customerservice@laytrip.com</a> if you have any questions.</td>
                 </tr>
                 
