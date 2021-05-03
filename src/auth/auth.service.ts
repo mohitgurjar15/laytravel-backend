@@ -624,7 +624,7 @@ export class AuthService {
                 sender: "laytrip",
                 subject: "Password Reset One Time Pin",
                 html: LaytripForgotPasswordMail({
-                    username: user.firstName + " " + user.lastName,
+                    username: user.firstName ,
                     otp: otp,
                 }),
             })
