@@ -42520,7 +42520,7 @@ export const airports ={
     "code": "STI",
     "name": "Cibao Intl. Arpt.",
     "city": "Santiago",
-    "country": "Dominican Republic"
+    "country": "DR"
   },
   "STJ": {
     "code": "STJ",
