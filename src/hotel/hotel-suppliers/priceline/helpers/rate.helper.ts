@@ -47,15 +47,15 @@ export class RateHelper{
         };
     }
 
-    getRates(rate: any, searchParameters: any) {
+    getRates(rate: any, searchParameters: any,inputData=null) {
         
+        searchParameters.rooms = searchParameters.rooms || inputData.num_rooms;
         let retail = this.getPublicPriceBreakUp(rate, searchParameters);
 
         let selling = this.getSellingPriceBreakUp(rate);
         
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         
-        let markup = 0;
 
         return {
             retail,

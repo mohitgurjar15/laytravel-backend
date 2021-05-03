@@ -29,7 +29,7 @@ export class LangunageService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No language found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -52,7 +52,7 @@ export class LangunageService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No language found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -83,13 +83,13 @@ export class LangunageService {
 			await getConnection().queryResultCache!.remove(["languages"]);
 			Activity.logActivity(adminId, "language", `${languageData.name} Languge is updated by admin`,previousData,currentData);
         
-			return { message: "Language Updated Successfully" };
+			return { message: "Language updated successfully." };
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No language found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -123,7 +123,7 @@ export class LangunageService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No language found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(
@@ -159,7 +159,7 @@ export class LangunageService {
 				typeof error.response !== "undefined" &&
 				error.response.statusCode == 404
 			) {
-				throw new NotFoundException(`No language Found.&&&id`);
+				throw new NotFoundException(`No language found.&&&id`);
 			}
 
 			throw new InternalServerErrorException(

@@ -7,7 +7,7 @@ import { FlightBookingEmailParameterModel } from "../email_template/model/flight
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function TravelProviderConfiramationMail(
+export async function CartChangeAsperUserRequestMail(
            param: CartBookingEmailParameterModel
        ) {
              let traveleName = "";
@@ -25,9 +25,10 @@ export async function TravelProviderConfiramationMail(
                  }
                  traveleName += traveler.name ? traveler.name : "";
              }
+
              let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
-        <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center"
             style="width: 100%; font-family: 'Poppins', sans-serif; ">
             <tbody>
                 <tr>
@@ -44,11 +45,12 @@ export async function TravelProviderConfiramationMail(
                 <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        Your reservation has been changed by the Travel Provider. Please review these changes below:</td>
+                        Your booking has been successfully changed per your request.
+                    </td>
                 </tr>
                 <tr>
                     <td
-                          align="left" valign="top"bold;
+                        align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         <span  style="color: #000000; font-weight: 600;">
                         Traveler: 
@@ -60,7 +62,7 @@ export async function TravelProviderConfiramationMail(
                 </tr>
                 <tr>
                     <td
-                          align="left" valign="top"bold;
+                        align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         <span  style="color: #000000; font-weight: 600;">
                         Email: 
@@ -76,7 +78,7 @@ export async function TravelProviderConfiramationMail(
                          for await (const droup of flight.droups) {
                              content += `<tr>
                         <td
-                           align="left" valign="top"bold;
+                              align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                             <span style="color: #000000; font-weight: 600;">${
                                 droup.flight
@@ -122,7 +124,7 @@ export async function TravelProviderConfiramationMail(
              }
              content += `<tr>
                 <td
-                      align="left" valign="top"bold;
+                    align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
@@ -133,14 +135,14 @@ export async function TravelProviderConfiramationMail(
              ) {
                  content += `<tr>
                 <td
-                     align="left" valign="top"bold;
+                   align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
             </tr>
             <tr>
                 <td
-                      align="left" valign="top"bold;
+                    align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
                 </td>
@@ -148,14 +150,14 @@ export async function TravelProviderConfiramationMail(
              } else {
                  content += `<tr>
                 <td
-                      align="left" valign="top"bold;
+                    align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
                 <td
-                      align="left" valign="top"bold;
+                    align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
 
                     <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >$0</span>
@@ -168,9 +170,9 @@ export async function TravelProviderConfiramationMail(
                      if (booking.flighData[0].droups[0].depature?.pnr_no) {
                          content += `<tr>
                 <td
-                      align="left" valign="top"bold;
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #000000; text-align: left;">
-                    <span  style="color: #000000; font-weight: 600;">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
+                    align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;" >
+                    <span  style="color: #707070">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;
@@ -178,10 +180,10 @@ export async function TravelProviderConfiramationMail(
                  }
              }
 
-             content += `            <tr>
-                    <td align="left" valign="top"
+             content += `    <tr>
+                    <td aalign="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
+                         If you have any questions, please contact us at <a href = 'mailto:customerservice@laytrip.com'
                         style="color: #0C7BFF;">customerservice@laytrip.com</a>.
                     </td>
                 </tr>
@@ -189,7 +191,6 @@ export async function TravelProviderConfiramationMail(
         </table>
     </td>
 </tr>
-
 <tr>
 <td align="center" valine="top" style="padding: 5px 25px 10px; background: #ffffff;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">

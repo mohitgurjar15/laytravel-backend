@@ -178,24 +178,24 @@ export class CronJobsController {
         return await this.cronJobsService.updateModuleInfo(req.headers);
     }
 
-    @Get("booking-confirmation-mail")
-    @ApiOperation({
-        summary: "Upcoming booking traveler provider change mail",
-    })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({
-        status: 422,
-        description: "Bad Request or API error message",
-    })
-    @ApiResponse({
-        status: 403,
-        description: "You are not allowed to access this resource.",
-    })
-    @ApiResponse({ status: 404, description: "Admin not found!" })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    async travelProviderMail() {
-        return await this.cronJobsService.ChangesFromTravelProvider();
-    }
+    // @Get("booking-confirmation-mail")
+    // @ApiOperation({
+    //     summary: "Upcoming booking traveler provider change mail",
+    // })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({
+    //     status: 422,
+    //     description: "Bad Request or API error message",
+    // })
+    // @ApiResponse({
+    //     status: 403,
+    //     description: "You are not allowed to access this resource.",
+    // })
+    // @ApiResponse({ status: 404, description: "Admin not found!" })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // async travelProviderMail() {
+    //     return await this.cronJobsService.ChangesFromTravelProvider();
+    // }
 
     @Get("reminder/upcoming-booking")
     @ApiOperation({

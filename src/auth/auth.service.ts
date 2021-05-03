@@ -522,6 +522,11 @@ export class AuthService {
                     `Your email has been verified.&&&email&&&Your email has been verified.`
                 );
             }
+            if (user.socialAccountId) {
+                throw new UnauthorizedException(
+                    `Invalid login credentials. Please enter correct email and password.`
+                );
+            }
 
             const payload: JwtPayload = {
                 user_id: user.userId,
@@ -575,6 +580,12 @@ export class AuthService {
                 `Your account has been disabled. Please contact customerservice@laytrip.com.`
             );
         }
+        if (user.socialAccountId) {
+            throw new UnauthorizedException(
+                `Invalid login credentials. Please enter correct email and password.`
+            );
+        }
+
         var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
         // const tokenhash = crypto
@@ -1466,20 +1477,18 @@ export class AuthService {
     ): Promise<any> {
         try {
             const userId = loginUser.userId;
-            const { profile_pic , remove_dp } = updateProfilePicDto;
+            const { profile_pic, remove_dp } = updateProfilePicDto;
             const user = new User();
             var oldProfile = user.profilePic;
-            const removeDp :any = remove_dp
+            const removeDp: any = remove_dp;
             // console.log(remove_dp);
             // console.log(remove_dp == true);
             // console.log(typeof remove_dp);
             //console.log(new ParseBoolPipe(remove_dp));
-            if(removeDp == "true"){
-                user.profilePic = null
-                console.log('abcc');
-                
-            }
-            else if (typeof files.profile_pic != "undefined") {
+            if (removeDp == "true") {
+                user.profilePic = null;
+                console.log("abcc");
+            } else if (typeof files.profile_pic != "undefined") {
                 user.profilePic = files.profile_pic[0].filename;
                 if (oldProfile) {
                     await fs.unlink(

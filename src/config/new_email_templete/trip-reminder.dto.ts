@@ -7,7 +7,7 @@ import { FlightBookingEmailParameterModel } from "../email_template/model/flight
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export async function TravelProviderConfiramationMail(
+export async function LaytripTripReminderMail(
            param: CartBookingEmailParameterModel
        ) {
              let traveleName = "";
@@ -38,13 +38,20 @@ export async function TravelProviderConfiramationMail(
                 <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        Booking ID ${param.orderId} Change Confirmation!
+                        Trip Reminder!
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #000000; text-align: left;">
+                        Booking ID ${param.orderId}
                     </td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        Your reservation has been changed by the Travel Provider. Please review these changes below:</td>
+                        Itinerary Details:
+                    </td>
                 </tr>
                 <tr>
                     <td
@@ -76,7 +83,7 @@ export async function TravelProviderConfiramationMail(
                          for await (const droup of flight.droups) {
                              content += `<tr>
                         <td
-                           align="left" valign="top"bold;
+                              align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                             <span style="color: #000000; font-weight: 600;">${
                                 droup.flight
@@ -105,8 +112,7 @@ export async function TravelProviderConfiramationMail(
                          booking.hotelData.checkIn,
                          "YYYY-MM-DD",
                          "MMMM DD, YYYY"
-                     )}, ${booking.hotelData.room} Room 
-                            ${
+                     )}, ${booking.hotelData.room} Room${
                                 booking.hotelData.adult
                                     ? ", " + booking.hotelData.adult + " Adult"
                                     : ""
@@ -122,7 +128,7 @@ export async function TravelProviderConfiramationMail(
              }
              content += `<tr>
                 <td
-                      align="left" valign="top"bold;
+                     align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
@@ -133,7 +139,7 @@ export async function TravelProviderConfiramationMail(
              ) {
                  content += `<tr>
                 <td
-                     align="left" valign="top"bold;
+                      align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
                 </td>
@@ -148,14 +154,14 @@ export async function TravelProviderConfiramationMail(
              } else {
                  content += `<tr>
                 <td
-                      align="left" valign="top"bold;
+                     align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
                 </td>
             </tr>
             <tr>
                 <td
-                      align="left" valign="top"bold;
+                     align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
 
                     <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >$0</span>
@@ -169,8 +175,8 @@ export async function TravelProviderConfiramationMail(
                          content += `<tr>
                 <td
                       align="left" valign="top"bold;
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #000000; text-align: left;">
-                    <span  style="color: #000000; font-weight: 600;">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #707070">Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
                     </span>
                 </td>
             </tr>`;
@@ -178,11 +184,26 @@ export async function TravelProviderConfiramationMail(
                  }
              }
 
-             content += `            <tr>
+
+             content += ` <tr>
+                    <td style="padding: 20px 0 0 0;">
+                        <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>My Bookings</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        If you have any questions please contact <a href = 'mailto:customerservice@laytrip.com'
-                        style="color: #0C7BFF;">customerservice@laytrip.com</a>.
+                        Contact us anytime at <a href = 'mailto:customerservice@laytrip.com'
+                        style="color: #0C7BFF;">customerservice@laytrip.com</a> with questions. We hope you have a great trip!
                     </td>
                 </tr>
             </tbody>

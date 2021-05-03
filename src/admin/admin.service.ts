@@ -126,7 +126,7 @@ export class AdminService {
 
 			const userId = UserId;
 			const userData = await this.userRepository.findOne({
-				where: { userId, isDeleted: 0, roleId: In([2]) },
+				where: { userId, isDeleted: 0, roleId: In([Role.ADMIN,Role.SUPER_ADMIN]) },
 			});
 			if (!userData) {
 				throw new NotFoundException(`Given id not found.`)
@@ -175,7 +175,7 @@ export class AdminService {
 		siteUrl: string
 	): Promise<{ data: User[]; TotalReseult: number }> {
 		try {
-			return await this.userRepository.listUser(paginationOption, [Role.ADMIN, Role.SUPPORT], siteUrl);
+			return await this.userRepository.listUser(paginationOption, [Role.ADMIN, Role.SUPPORT,Role.SUPER_ADMIN], siteUrl);
 		} catch (error) {
 			if (
 				typeof error.response !== "undefined" &&
@@ -193,7 +193,7 @@ export class AdminService {
 	//Export user
 	async exportAdmin(adminId: string, paginationOption: ExportUserDto): Promise<{ data: User[] }> {
 		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
-		return await this.userRepository.exportUser(paginationOption, [Role.ADMIN, Role.SUPPORT]);
+		return await this.userRepository.exportUser(paginationOption, [Role.ADMIN, Role.SUPPORT, Role.SUPER_ADMIN]);
 	}
 
 	/**
@@ -239,7 +239,11 @@ export class AdminService {
 
 	async getAdminData(userId: string, siteUrl: string): Promise<User> {
 		try {
-			return await this.userRepository.getUserDetails(userId, siteUrl, [Role.ADMIN, Role.SUPPORT])
+			return await this.userRepository.getUserDetails(userId, siteUrl, [
+                Role.ADMIN,
+                Role.SUPPORT,
+                Role.SUPER_ADMIN,
+            ]);
 			// const user = await this.userRepository.findOne({
 			// 	where: { userId, isDeleted: false, roleId: In[Role.ADMIN] },
 			// });
@@ -274,7 +278,7 @@ export class AdminService {
 			const { status } = activeDeactiveDto;
 			const user = await this.userRepository.findOne({
 				userId,
-				roleId: In([Role.ADMIN]),
+				roleId: In([Role.ADMIN,Role.SUPER_ADMIN]),
 			});
 
 			if (!user) throw new NotFoundException(`No user found`);
@@ -304,7 +308,7 @@ export class AdminService {
 	async getCounts(): Promise<{ result: any }> {
 		try {
 			const activeUser = await this.userRepository.query(
-				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND "role_id" In (${Role.ADMIN}) GROUP BY status`
+				`SELECT status as StatusCode,CASE WHEN status = 0 THEN 'Deactive' ELSE 'Active' END AS status, count(*) AS count FROM "user" where "is_deleted" = false AND "role_id" In (${Role.ADMIN,Role.SUPER_ADMIN}) GROUP BY status`
 			);
 			return { result: activeUser };
 		} catch (error) {

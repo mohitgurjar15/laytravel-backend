@@ -18,7 +18,7 @@ import {
     PriceRange,
 } from "../model/route.model";
 import { Generic } from "src/utility/generic.utility";
-import { getManager } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { Instalment } from "src/utility/instalment.utility";
 import { PriceMarkup } from "src/utility/markup.utility";
 import { Module } from "src/entity/module.entity";
@@ -188,7 +188,6 @@ export class Mystifly implements StrategyAirline {
     ) /* :Promise<FlightSearchResult> */ {
         const mystiflyConfig = await this.getMystiflyCredential();
         console.log(mystiflyConfig);
-
         const sessionToken = await this.startSession();
         const {
             source_location,
@@ -199,6 +198,14 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        let categoryName = caegory?.categoryname;
+        
+        
+        
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: "flight" })
@@ -479,13 +486,11 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
-                    console.log(stops[0].departure_date,"--",departure_date,route.selling_price)
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
                         bookingDate,0,null,null,0
                     );
-                    //console.log("instalmentDetails",instalmentDetails)
                     let instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
                         departure_date,
@@ -501,18 +506,17 @@ export class Mystifly implements StrategyAirline {
                             instalmentDetails.instalment_date[0].instalment_amount;
 
                         route.secondary_start_price =
-                            instalmentDetails.instalment_date[1].instalment_amount;    
+                            instalmentDetails.instalment_date[1].instalment_amount;
                         route.no_of_weekly_installment =
                             instalmentDetails.instalment_date.length - 1;
 
-                        
                         route.second_down_payment =
                             instalmentDetails2.instalment_date[0].instalment_amount;
                         route.secondary_start_price_2 =
                             instalmentDetails2.instalment_date[1].instalment_amount;
                         route.no_of_weekly_installment_2 =
                             instalmentDetails2.instalment_date.length - 1;
-                            
+
                         route.third_down_payment =
                             instalmentDetails3.instalment_date[0].instalment_amount;
                         route.secondary_start_price_3 =
@@ -586,7 +590,7 @@ export class Mystifly implements StrategyAirline {
                         ? true
                         : false;
                 route.unique_code = md5(uniqueCode);
-
+                route.category_name = categoryName;
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
                 ][0]["a:ptc_farebreakdowns"][0]["a:ptc_farebreakdown"]) {
@@ -662,6 +666,7 @@ export class Mystifly implements StrategyAirline {
                 "arrival_time",
                 0
             );
+            flightSearchResult.category_name = categoryName;
             return flightSearchResult;
         } else {
             throw new NotFoundException(`No flight founds`);
@@ -686,6 +691,11 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
+        from flight_route 
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        let categoryName = caegory?.categoryname;
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 
         let isInstalmentAvaible = Instalment.instalmentAvailbility(
@@ -1002,6 +1012,7 @@ export class Mystifly implements StrategyAirline {
                         ? true
                         : false;
                 route.unique_code = md5(uniqueCode);
+                route.category_name = categoryName;
                 for (let intnery of flightRoutes[i][
                     "airitinerarypricinginfo"
                 ][0]["ptc_farebreakdowns"][0]["ptc_farebreakdown"]) {
@@ -1065,6 +1076,7 @@ export class Mystifly implements StrategyAirline {
                 "arrival_time",
                 0
             );
+            flightSearchResult.category_name = categoryName;
             return flightSearchResult;
         } else {
             return { message: "flight not found" };
@@ -1091,7 +1103,11 @@ export class Mystifly implements StrategyAirline {
         } = searchFlightDto;
 
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
+        from flight_route 
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        let categoryName = caegory?.categoryname;
         //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
         let markup = await this.getMarkupDetails(
             departure_date,
@@ -1538,6 +1554,7 @@ export class Mystifly implements StrategyAirline {
                         ? true
                         : false;
                 route.unique_code = md5(uniqueCode);
+                route.category_name = categoryName;
                 for (let intnery of flightRoutes[i][
                     "airitinerarypricinginfo"
                 ][0]["ptc_farebreakdowns"][0]["ptc_farebreakdown"]) {
@@ -1622,6 +1639,7 @@ export class Mystifly implements StrategyAirline {
                 "arrival_time",
                 1
             );
+            flightSearchResult.category_name = categoryName;
             return flightSearchResult;
         } else {
             return { message: "flight not found" };
@@ -1646,7 +1664,7 @@ export class Mystifly implements StrategyAirline {
             requestBody,
             "TripDetails"
         );
-        
+
         return tripDetailsResult;
     }
 
@@ -1863,7 +1881,11 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
-
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
+        from flight_route 
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        let categoryName = caegory?.categoryname;
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: "flight" })
@@ -2267,9 +2289,9 @@ export class Mystifly implements StrategyAirline {
                 route.no_of_weekly_installment = 0;
                 route.instalment_avail_after =
                     routeDetails.category.installmentAvailableAfter;
-                let instalmentDetails:any={};
-                let instalmentDetails2:any={};
-                let instalmentDetails3:any={};
+                let instalmentDetails: any = {};
+                let instalmentDetails2: any = {};
+                let instalmentDetails3: any = {};
                 let instalmentEligibility = RouteCategory.checkInstalmentEligibility(
                     departure_date,
                     bookingDate,
@@ -2281,7 +2303,7 @@ export class Mystifly implements StrategyAirline {
                         departure_date,
                         bookingDate,0,null,null,0
                     );
-                    
+
                     instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
                         departure_date,
@@ -2378,7 +2400,7 @@ export class Mystifly implements StrategyAirline {
                         ? true
                         : false;
                 route.unique_code = md5(uniqueCode);
-
+                route.category_name = categoryName;
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
                 ][0]["a:ptc_farebreakdowns"][0]["a:ptc_farebreakdown"]) {
@@ -2474,6 +2496,7 @@ export class Mystifly implements StrategyAirline {
                 "arrival_time",
                 1
             );
+            flightSearchResult.category_name = categoryName;
             return flightSearchResult;
         } else {
             throw new NotFoundException(`No flight founds`);
@@ -2619,7 +2642,7 @@ export class Mystifly implements StrategyAirline {
             let totalDuration;
             let uniqueCode;
             let otherSegments;
-            let departureDate='';
+            let departureDate = "";
             for (let i = 0; i < flightRoutes.length; i++) {
                 route = new Route();
                 stops = [];
@@ -2652,7 +2675,7 @@ export class Mystifly implements StrategyAirline {
                     stop.departure_date = moment(
                         flightSegment["a:departuredatetime"][0]
                     ).format("DD/MM/YYYY");
-                    if(departureDate==''){
+                    if (departureDate == "") {
                         departureDate = stop.departure_date = moment(
                             flightSegment["a:departuredatetime"][0]
                         ).format("DD/MM/YYYY");
@@ -2880,7 +2903,6 @@ export class Mystifly implements StrategyAirline {
                     route.routes[1] = routeType;
                 }
 
-                
                 let markup = await this.getMarkupDetails(
                     moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
@@ -2937,7 +2959,6 @@ export class Mystifly implements StrategyAirline {
                 );
                 let instalmentDetails;
                 if (instalmentEligibility) {
-                    
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         moment(departureDate, "DD/MM/YYYY").format(
@@ -3003,7 +3024,13 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
                 route.unique_code = md5(uniqueCode);
-                
+                const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
+        from flight_route 
+        where from_airport_code  = '${route.departure_code}' and to_airport_code = '${route.arrival_code}'`);
+
+                let categoryName = caegory?.categoryname;
+                route.category_name = categoryName;
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
                 ][0]["a:ptc_farebreakdowns"][0]["a:ptc_farebreakdown"]) {

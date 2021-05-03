@@ -1,20 +1,19 @@
 import { NotFoundException, UsePipes, ValidationPipe } from "@nestjs/common";
 import { collect } from "collect.js";
-import { Generic } from "src/hotel/helpers/generic.helper";
+import { GenericHotel } from "src/hotel/helpers/generic.helper";
 import { errorMessage } from "src/config/common.config";
 
 @UsePipes(new ValidationPipe({whitelist:true, forbidNonWhitelisted: true}))
 export class AutoComplete{
     
-    private genericHelper: Generic;
+    private genericHelper: GenericHotel;
     
     constructor() {
-        this.genericHelper = new Generic;
+        this.genericHelper = new GenericHotel;
     }
     
-    processSearchLocationResult(res: any) {
+    processSearchLocationResult(res: any,term:string) {
         let results = res.data.getHotelAutoSuggestV2;
-        // return results;
         if (results.error) {
             throw new NotFoundException("No search result found &&&term&&&"+errorMessage);
         }
@@ -33,15 +32,17 @@ export class AutoComplete{
                     let state = "";
                     let line = "";
                     let hotel_id = "";
+                    let city_id
 
                     switch (type) {
                         case 'city':
                             country = sub['country'];
                             city = sub['city'];
                             state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
+                            city_id = sub['cityid_ppn'] || "";
                             break;
                         
-                        case 'airport':
+                        /* case 'airport':
                             country = sub['country_code'];
                             state = this.genericHelper.isset(sub['state_code']) ? sub['state_code'] : "";
                             city = sub['city'];
@@ -65,10 +66,12 @@ export class AutoComplete{
                             state = (sub['address']['state_name'] == "") ? sub['address']['state_code'] : sub['address']['state_name'];
                             country = (sub['address']['country_name'] == "") ? sub['address']['country_code'] : sub['address']['country_name'];
                             hotel_id = sub['hotelid_ppn'];
-                            break;
+                            break; */
                     }
                     
-                    let title = [line, city, state, country].filter(x=>x).join(', ');
+                    let title = [line, city, state, country]
+                        .filter((x) => x)
+                        .join(", ");
                     
                     filterData.push({
                         title,
@@ -77,6 +80,7 @@ export class AutoComplete{
                         country,
                         type,
                         hotel_id,
+                        city_id,
                         geo_codes: {
                             lat: geoCodes[0],
                             long: geoCodes[1]
@@ -86,7 +90,19 @@ export class AutoComplete{
                 });
             });
 
-            return filterData;
+            let serachResult =  filterData.sort((a, b) => a.title.localeCompare(b.title))
+            let excactPattern =[];
+            let notExcactPattern=[]
+            for(let item of  serachResult){
+                if(item.title.toLowerCase().indexOf(term.toLowerCase())==0){
+                    excactPattern.push(item)
+                }
+                else{
+                    notExcactPattern.push(item)
+                }
+                
+            }
+            return [...excactPattern,...notExcactPattern];
 
         } else{
             throw new NotFoundException(results.error.status);

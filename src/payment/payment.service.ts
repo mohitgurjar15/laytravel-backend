@@ -54,6 +54,7 @@ import { isNull } from "util";
 import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
 import { Role } from "src/enum/role.enum";
+import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
 
 @Injectable()
 export class PaymentService {
@@ -108,12 +109,12 @@ export class PaymentService {
                 .set({ isDefault: true })
                 .where(whr)
                 .execute();
-            if(userId){
+            if (userId) {
                 const user = await getManager()
-                .createQueryBuilder(User, "user")
-                .where(`user_id = '${userId}'`)
-                .getOne()
-                if(user){
+                    .createQueryBuilder(User, "user")
+                    .where(`user_id = '${userId}'`)
+                    .getOne();
+                if (user) {
                     this.mailerService
                         .sendMail({
                             to: user.email,
@@ -131,9 +132,8 @@ export class PaymentService {
                             console.log("err", err);
                         });
                 }
-                
             }
-            
+
             return {
                 message: `Card successfully updated as a default card`,
             };
@@ -477,13 +477,13 @@ export class PaymentService {
         let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
-        
-        
-        if(is_2ds == true){
-            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+
+        if (is_2ds == true) {
+            gatewayToken =
+                GatewayCredantial.credentials.token_without_3ds ||
+                GatewayCredantial.credentials.token;
         }
 
-        
         const headers = {
             Accept: "application/json",
             Authorization: authorization,
@@ -579,7 +579,7 @@ export class PaymentService {
         }
     }
 
-    async voidCard(captureToken, userId ) {
+    async voidCard(captureToken, userId) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         const authorization = GatewayCredantial.credentials.authorization;
@@ -660,6 +660,7 @@ export class PaymentService {
         method = method || "POST";
         //console.log("method", method)
         try {
+            let requestTime = `${new Date()}`
             let result = await Axios({
                 method: method,
                 url: url,
@@ -667,10 +668,15 @@ export class PaymentService {
                 headers: headers,
             });
 
+            
+
             let logData = {};
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
+            logData["requestTime"] = requestTime;
+            let responceTime = `${new Date()}`
+            logData["responceTime"] = responceTime;
             logData["responce"] = result.data;
             let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
             if (userId) {
@@ -684,8 +690,8 @@ export class PaymentService {
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
             logData["responce"] = error?.data;
-            logData['error'] = error;
-            logData['message'] = error?.message;
+            logData["error"] = error;
+            logData["message"] = error?.message;
             let fileName = `Failed-Payment-${headerAction}-${new Date().getTime()}`;
             if (userId) {
                 fileName += "_" + userId;
@@ -730,15 +736,17 @@ export class PaymentService {
         }
     }
 
-    async getPayment(card_token, amount, currency_code, userId,is_2ds = true) {
+    async getPayment(card_token, amount, currency_code, userId, is_2ds = true) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         let gatewayToken = GatewayCredantial.credentials.token;
         const authorization = GatewayCredantial.credentials.authorization;
         const transactionMode = GatewayCredantial.gateway_payment_mode;
 
-        if(is_2ds == true){
-            gatewayToken = GatewayCredantial.credentials.token_without_3ds || GatewayCredantial.credentials.token;
+        if (is_2ds == true) {
+            gatewayToken =
+                GatewayCredantial.credentials.token_without_3ds ||
+                GatewayCredantial.credentials.token;
         }
 
         const headers = {
@@ -897,15 +905,13 @@ export class PaymentService {
     }
 
     async deleteCard(cardId: string, user: User) {
-        let where = `is_deleted = false and id = '${cardId}'`
-        if(user.roleId >= Role.PAID_USER)
-        {
-            if(user.roleId == Role.GUEST_USER){
+        let where = `is_deleted = false and id = '${cardId}'`;
+        if (user.roleId >= Role.PAID_USER) {
+            if (user.roleId == Role.GUEST_USER) {
                 where += `and guest_user_id = '${user.userId}'`;
-            }else{
-                where += `and user_id = '${user.userId}'`
+            } else {
+                where += `and user_id = '${user.userId}'`;
             }
-            
         }
         let card = await getManager()
             .createQueryBuilder(UserCard, "user_card")
@@ -1209,6 +1215,7 @@ export class PaymentService {
                             "MMMM DD, YYYY"
                         ),
                         nextAmount: nextAmount,
+                        pastDue:false
                     };
                     console.log("cart.user.isEmail", cart.user.isEmail);
 
@@ -1412,9 +1419,9 @@ export class PaymentService {
 
         let authoriseAmount: number = 0;
 
-        if (cart.length > 5) {
+        if (cart.length > 10) {
             throw new BadRequestException(
-                "Please check cart, In cart you can not purches more then 5 item"
+                "Please check cart, In cart you can not purches more then 10 item"
             );
         }
         let cartIds: number[] = [];
@@ -1426,7 +1433,7 @@ export class PaymentService {
             .createQueryBuilder(Cart, "cart")
             .select(["cart.moduleInfo", "cart.moduleId"])
             .where(
-                `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" = '${ModulesName.FLIGHT}') AND ("cart"."id" IN (${cartIds}))`
+                `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("cart"."id" IN (${cartIds}))`
             )
             .orderBy(`cart.id`, "DESC")
             .limit(5);
@@ -1463,6 +1470,23 @@ export class PaymentService {
 
                 console.log("totalAmount", totalAmount);
             }
+            else if (item.moduleId == ModulesName.HOTEL) {
+                console.log("3");
+                console.log(item.moduleInfo[0].input_data.check_in);
+                const dipatureDate = 
+                    item.moduleInfo[0].input_data.check_in
+                if (smallestDate == "") {
+                    smallestDate = dipatureDate;
+                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
+                    smallestDate = dipatureDate;
+                }
+                console.log("smallestDate", smallestDate);
+                console.log(item.moduleInfo[0].selling.total);
+
+                totalAmount += parseFloat(item.moduleInfo[0].selling.total);
+
+                console.log("totalAmount", totalAmount);
+            }
         }
 
         if (payment_type == PaymentType.INSTALMENT) {
@@ -1482,7 +1506,8 @@ export class PaymentService {
                     totalAdditionalAmount,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    false
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1493,7 +1518,8 @@ export class PaymentService {
                     totalAdditionalAmount,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    false
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1504,7 +1530,8 @@ export class PaymentService {
                     totalAdditionalAmount,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    false
                 );
             }
 
@@ -1689,5 +1716,163 @@ export class PaymentService {
                 meta_data: cardResult,
             };
         }
+    }
+
+    async listExstraPayment(listPaymentUserDto: ListPaymentUserDto) {
+        const {
+            page_no,
+            limit,
+            booking_id,
+            end_date,
+            start_date,
+            module_id,
+            status,
+            product_id,
+        } = listPaymentUserDto;
+
+        const take = limit || 10;
+        const skip = (page_no - 1) * limit || 0;
+        let payment = new OtherPayments();
+
+        let query = getManager()
+            .createQueryBuilder(OtherPayments, "payment")
+            .leftJoinAndSelect("payment.cart", "cart")
+            .leftJoinAndSelect("payment.booking", "booking")
+            .leftJoinAndSelect("payment.createdBy2", "User")
+            .leftJoinAndSelect("booking.user", "user2")
+            //.leftJoinAndSelect("booking.module", "moduleData")
+            // .leftJoinAndSelect("User.state", "state")
+            // .leftJoinAndSelect("User.country", "countries")
+            // .leftJoinAndSelect("BookingInstalments.supplier", "supplier")
+            // .leftJoinAndSelect(
+            //     "BookingInstalments.failedPaymentAttempts",
+            //     "failedPaymentAttempts"
+            // )
+            .select([
+                // "BookingInstalments.id",
+                // "BookingInstalments.bookingId",
+                // "BookingInstalments.userId",
+                // "BookingInstalments.moduleId",
+                // "BookingInstalments.supplierId",
+                // "BookingInstalments.instalmentType",
+                // "BookingInstalments.instalmentNo",
+                // "BookingInstalments.instalmentDate",
+                // "BookingInstalments.currencyId",
+                // "BookingInstalments.amount",
+                // "BookingInstalments.instalmentStatus",
+                // "BookingInstalments.paymentGatewayId",
+                // "BookingInstalments.paymentInfo",
+                // "BookingInstalments.paymentStatus",
+                // "BookingInstalments.isPaymentProcessedToSupplier",
+                // "BookingInstalments.isInvoiceGenerated",
+                // "BookingInstalments.comment",
+                // "BookingInstalments.transactionToken",
+                "booking.laytripBookingId",
+                "booking.id",
+                "booking.categoryName",
+                "booking.moduleId",
+                "booking.bookingType",
+                "booking.bookingStatus",
+                "booking.currency",
+                "booking.totalAmount",
+                "booking.netRate",
+                "booking.markupAmount",
+                "booking.usdFactor",
+                "booking.bookingDate",
+                "booking.totalInstallments",
+                "booking.locationInfo",
+                "booking.paymentGatewayId",
+                "booking.paymentStatus",
+                "booking.paymentInfo",
+                "booking.isPredictive",
+                "booking.layCredit",
+                "booking.fareType",
+                "booking.isTicketd",
+                "booking.paymentGatewayProcessingFee",
+                "booking.supplierId",
+                "booking.nextInstalmentDate",
+                "booking.supplierBookingId",
+                // "currency.id",
+                // "currency.code",
+                // "currency.symbol",
+                // "currency.liveRate",
+                "User.userId",
+                "User.firstName",
+                "User.lastName",
+                "User.socialAccountId",
+                "User.email",
+                "User.phoneNo",
+                "User.roleId",
+                "user2.userId",
+                "user2.firstName",
+                "user2.lastName",
+                "user2.socialAccountId",
+                "user2.email",
+                "user2.phoneNo",
+                "user2.roleId",
+                "payment.comment",
+                "payment.amount",
+                "payment.createdDate",
+                "payment.currencyId",
+                "payment.transactionId",
+                "payment.paymentInfo",
+                "payment.paidFor",
+                "payment.paymentStatus",
+                "payment.id",
+                // "failedPaymentAttempts.id",
+                // "failedPaymentAttempts.instalmentId",
+                // "failedPaymentAttempts.date",
+                "cart.laytripCartId",
+            ])
+            .take(take)
+            .skip(skip)
+            .where(`1=1`)
+            .orderBy("payment.id", "DESC");
+
+        if (product_id) {
+            query = query.andWhere(
+                `("booking"."laytrip_booking_id" =  '${product_id}')`
+            );
+        }
+
+        if (booking_id) {
+            query = query.andWhere(
+                `("cart"."laytrip_cart_id" =  '${booking_id}')`
+            );
+        }
+
+        if (module_id)
+            query = query.andWhere(`"booking"."module_id"=:module_id`, {
+                module_id,
+            });
+        if (status) {
+            query = query.andWhere(
+                `"payment"."payment_status"=:payment_status`,
+                {
+                    payment_status:status
+                }
+            );
+        }
+        if (start_date && end_date) {
+            query = query.andWhere(
+                `"payment"."created_date" >=:payment_start_date and "payment"."created_date" <=:payment_end_date`,
+                { payment_start_date: start_date, payment_end_date: end_date }
+            );
+        } else if (start_date) {
+            query = query.andWhere(
+                `"payment"."created_date"=:payment_start_date`,
+                { payment_start_date: end_date }
+            );
+        }
+
+        const [result, count] = await query.getManyAndCount();
+
+         if (!result.length)
+            throw new NotFoundException(`No data found.`);
+
+        return {
+            result,
+            count,
+        };
     }
 }

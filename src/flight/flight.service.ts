@@ -73,16 +73,16 @@ import { Activity } from "src/utility/activity.utility";
 import { ModuleTokenFactory } from "@nestjs/core/injector/module-token-factory";
 import { ModulesName } from "src/enum/module.enum";
 import { CartDataUtility } from "src/utility/cart-data.utility";
-import { LaytripFlightBookingConfirmtionMail } from "src/config/new_email_templete/flight-booking-confirmation.html";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
 import { TravelerInfoModel } from "src/config/email_template/model/traveler-info.model";
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
-import { TravelProviderReconfirmationMail } from "src/config/new_email_templete/flight-reconfirmation.html";
 import { Countries } from "src/entity/countries.entity";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
+import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
+import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
 
 @Injectable()
 export class FlightService {
@@ -118,7 +118,13 @@ export class FlightService {
 
             if (!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`);
-            return result;
+            let airports = [];
+            for await (const flight of result) {
+                let airport: any = flight;
+                airport.key = flight.city.charAt(0);
+                airports.push(airport);
+            }
+            return airports;
         } catch (error) {
             if (
                 typeof error.response !== "undefined" &&
@@ -292,7 +298,6 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.oneWaySearch(searchFlightDto, user))
         );
-
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
@@ -1269,6 +1274,7 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.roundTripSearch(searchFlightDto, user))
         );
+
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
@@ -1526,9 +1532,9 @@ export class FlightService {
                             bookingResult || null,
                             travelers
                         );
-                        this.sendBookingEmail(
-                            laytripBookingResult.laytripBookingId
-                        );
+                        // this.sendBookingEmail(
+                        //     laytripBookingResult.laytripBookingId
+                        // );
                         return {
                             laytrip_booking_id: laytripBookingResult.id,
                             booking_status: "pending",
@@ -1594,9 +1600,9 @@ export class FlightService {
                             travelers
                         );
                         //send email here
-                        this.sendBookingEmail(
-                            laytripBookingResult.laytripBookingId
-                        );
+                        // this.sendBookingEmail(
+                        //     laytripBookingResult.laytripBookingId
+                        // );
                         bookingResult.laytrip_booking_id =
                             laytripBookingResult.id;
                         bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
@@ -1651,9 +1657,9 @@ export class FlightService {
                         travelers
                     );
                     //send email here
-                    this.sendBookingEmail(
-                        laytripBookingResult.laytripBookingId
-                    );
+                    // this.sendBookingEmail(
+                    //     laytripBookingResult.laytripBookingId
+                    // );
                     bookingResult.laytrip_booking_id = laytripBookingResult.id;
 
                     bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
@@ -1735,6 +1741,12 @@ export class FlightService {
             source_location,
             destination_location,
         };
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        booking.categoryName = caegory?.categoryname || null;
+
         booking.fareType = fare_type;
         booking.isTicketd = fare_type == "LCC" ? true : false;
 
@@ -1940,7 +1952,7 @@ export class FlightService {
         let bookingRequestInfo: any = {};
         if (airRevalidateResult) {
             bookFlightDto.route_code = airRevalidateResult[0].route_code;
-    
+
             bookingRequestInfo.adult_count = airRevalidateResult[0].adult_count;
             bookingRequestInfo.child_count =
                 typeof airRevalidateResult[0].child_count != "undefined"
@@ -2388,190 +2400,190 @@ export class FlightService {
         }
     }
 
-    async sendBookingEmail(bookingId) {
-        const bookingData = await this.bookingRepository.bookingDetail(
-            bookingId
-        );
-        const email = bookingData.user.email;
-        if (
-            bookingData.bookingStatus == BookingStatus.CONFIRM ||
-            bookingData.bookingStatus == BookingStatus.PENDING
-        ) {
-            var param = new FlightBookingEmailParameterModel();
-            const user = bookingData.user;
-            const moduleInfo = bookingData.moduleInfo[0];
-            const routes = moduleInfo.routes;
-            const travelers = bookingData.travelers;
-            let flightData = [];
-            for (let index = 0; index < routes.length; index++) {
-                const element = routes[index];
-                var rout =
-                    index == 0
-                        ? `${moduleInfo.departure_info.city} To ${moduleInfo.arrival_info.city} (${moduleInfo.routes[0].type})`
-                        : `${moduleInfo.arrival_info.city} To ${moduleInfo.departure_info.city} (${moduleInfo.routes[1].type})`;
-                var status =
-                    bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
-                var droups = [];
-                for await (const stop of element.stops) {
-                    var flight = `${stop.airline}-${stop.flight_number}`;
-                    var depature = {
-                        code: stop.departure_info.code,
-                        name: stop.departure_info.name,
-                        city: stop.departure_info.city,
-                        country: stop.departure_info.country,
-                        date: await this.formatDate(stop.departure_date_time),
-                        time: stop.departure_time,
-                    };
-                    var arrival = {
-                        code: stop.arrival_info.code,
-                        name: stop.arrival_info.name,
-                        city: stop.arrival_info.city,
-                        country: stop.arrival_info.country,
-                        date: await this.formatDate(stop.arrival_date_time),
-                        time: stop.arrival_time,
-                    };
-                    droups.push({
-                        flight: flight,
-                        depature: depature,
-                        arrival: arrival,
-                        airline: stop.airline_name,
-                    });
-                }
-                //console.log();
-                flightData.push({
-                    rout: rout,
-                    status: status,
-                    droups: droups,
-                });
-            }
+    // async sendBookingEmail(bookingId) {
+    //     const bookingData = await this.bookingRepository.bookingDetail(
+    //         bookingId
+    //     );
+    //     const email = bookingData.user.email;
+    //     if (
+    //         bookingData.bookingStatus == BookingStatus.CONFIRM ||
+    //         bookingData.bookingStatus == BookingStatus.PENDING
+    //     ) {
+    //         var param = new FlightBookingEmailParameterModel();
+    //         const user = bookingData.user;
+    //         const moduleInfo = bookingData.moduleInfo[0];
+    //         const routes = moduleInfo.routes;
+    //         const travelers = bookingData.travelers;
+    //         let flightData = [];
+    //         for (let index = 0; index < routes.length; index++) {
+    //             const element = routes[index];
+    //             var rout =
+    //                 index == 0
+    //                     ? `${moduleInfo.departure_info.city} To ${moduleInfo.arrival_info.city} (${moduleInfo.routes[0].type})`
+    //                     : `${moduleInfo.arrival_info.city} To ${moduleInfo.departure_info.city} (${moduleInfo.routes[1].type})`;
+    //             var status =
+    //                 bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
+    //             var droups = [];
+    //             for await (const stop of element.stops) {
+    //                 var flight = `${stop.airline}-${stop.flight_number}`;
+    //                 var depature = {
+    //                     code: stop.departure_info.code,
+    //                     name: stop.departure_info.name,
+    //                     city: stop.departure_info.city,
+    //                     country: stop.departure_info.country,
+    //                     date: await this.formatDate(stop.departure_date_time),
+    //                     time: stop.departure_time,
+    //                 };
+    //                 var arrival = {
+    //                     code: stop.arrival_info.code,
+    //                     name: stop.arrival_info.name,
+    //                     city: stop.arrival_info.city,
+    //                     country: stop.arrival_info.country,
+    //                     date: await this.formatDate(stop.arrival_date_time),
+    //                     time: stop.arrival_time,
+    //                 };
+    //                 droups.push({
+    //                     flight: flight,
+    //                     depature: depature,
+    //                     arrival: arrival,
+    //                     airline: stop.airline_name,
+    //                 });
+    //             }
+    //             //console.log();
+    //             flightData.push({
+    //                 rout: rout,
+    //                 status: status,
+    //                 droups: droups,
+    //             });
+    //         }
 
-            const d = await this.formatDate(bookingData.bookingDate);
-            const installmentDetail = {
-                amount:
-                    bookingData.currency2.symbol +
-                    Generic.formatPriceDecimal(
-                        parseFloat(bookingData.totalAmount)
-                    ),
-                date: DateTime.convertDateFormat(
-                    d,
-                    "MM/DD/YYYY",
-                    "MMMM DD, YYYY"
-                ),
-                status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
-            };
-            var travelerInfo = [];
-            for await (const traveler of travelers) {
-                var today = new Date();
-                var birthDate = new Date(traveler.travelerInfo.dob);
-                var age = moment(new Date()).diff(moment(birthDate), "years");
+    //         const d = await this.formatDate(bookingData.bookingDate);
+    //         const installmentDetail = {
+    //             amount:
+    //                 bookingData.currency2.symbol +
+    //                 Generic.formatPriceDecimal(
+    //                     parseFloat(bookingData.totalAmount)
+    //                 ),
+    //             date: DateTime.convertDateFormat(
+    //                 d,
+    //                 "MM/DD/YYYY",
+    //                 "MMMM DD, YYYY"
+    //             ),
+    //             status: bookingData.paymentStatus == 1 ? "Confirm" : "Pending",
+    //         };
+    //         var travelerInfo = [];
+    //         for await (const traveler of travelers) {
+    //             var today = new Date();
+    //             var birthDate = new Date(traveler.travelerInfo.dob);
+    //             var age = moment(new Date()).diff(moment(birthDate), "years");
 
-                var user_type = "";
-                if (age < 2) {
-                    user_type = "infant";
-                } else if (age < 12) {
-                    user_type = "child";
-                } else {
-                    user_type = "adult";
-                }
-                travelerInfo.push({
-                    name:
-                        traveler.travelerInfo.firstName +
-                        " " +
-                        traveler.travelerInfo.lastName,
-                    email: traveler.travelerInfo.email,
-                    type: user_type,
-                });
-            }
-            const cartData = await CartDataUtility.cartData(bookingData.cartId);
-            param.user_name = `${user.firstName}  ${user.lastName}`;
-            param.flight = flightData;
-            param.orderId = bookingData.laytripBookingId;
-            param.traveler = travelerInfo;
-            if (bookingData.bookingType == BookingType.INSTALMENT) {
-                param.cart = {
-                    cartId: bookingData.cart.laytripCartId,
-                    totalAmount: cartData.totalAmount,
-                    totalPaid: cartData.paidAmount,
-                    rememberAmount: cartData.remainAmount,
-                };
-            } else {
-                param.cart = {
-                    cartId: bookingData.cart.laytripCartId,
-                    totalAmount: cartData.totalAmount,
-                };
-            }
+    //             var user_type = "";
+    //             if (age < 2) {
+    //                 user_type = "infant";
+    //             } else if (age < 12) {
+    //                 user_type = "child";
+    //             } else {
+    //                 user_type = "adult";
+    //             }
+    //             travelerInfo.push({
+    //                 name:
+    //                     traveler.travelerInfo.firstName +
+    //                     " " +
+    //                     traveler.travelerInfo.lastName,
+    //                 email: traveler.travelerInfo.email,
+    //                 type: user_type,
+    //             });
+    //         }
+    //         const cartData = await CartDataUtility.cartData(bookingData.cartId);
+    //         param.user_name = `${user.firstName}  ${user.lastName}`;
+    //         param.flight = flightData;
+    //         param.orderId = bookingData.laytripBookingId;
+    //         param.traveler = travelerInfo;
+    //         if (bookingData.bookingType == BookingType.INSTALMENT) {
+    //             param.cart = {
+    //                 cartId: bookingData.cart.laytripCartId,
+    //                 totalAmount: cartData.totalAmount,
+    //                 totalPaid: cartData.paidAmount,
+    //                 rememberAmount: cartData.remainAmount,
+    //             };
+    //         } else {
+    //             param.cart = {
+    //                 cartId: bookingData.cart.laytripCartId,
+    //                 totalAmount: cartData.totalAmount,
+    //             };
+    //         }
 
-            var EmailSubject = "";
-            if (bookingData.bookingType == BookingType.INSTALMENT) {
-                EmailSubject = "Flight Booking Details";
-            } else {
-                EmailSubject = "Flight Booking Confirmation";
-            }
+    //         var EmailSubject = "";
+    //         if (bookingData.bookingType == BookingType.INSTALMENT) {
+    //             EmailSubject = "Flight Booking Details";
+    //         } else {
+    //             EmailSubject = "Flight Booking Confirmation";
+    //         }
 
-            param.bookingType = bookingData.bookingType;
+    //         param.bookingType = bookingData.bookingType;
 
-            //console.log(param);
-            // //console.log(param.flightData);
-            if (email != "") {
-                this.mailerService
-                    .sendMail({
-                        to: email,
-                        cc: user.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: EmailSubject,
-                        html: await LaytripFlightBookingConfirmtionMail(param),
-                    })
-                    .then((res) => {
-                        //console.log("res", res);
-                    })
-                    .catch((err) => {
-                        //console.log("err", err);
-                    });
-            } else {
-                this.mailerService
-                    .sendMail({
-                        to: user.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: EmailSubject,
-                        html: await LaytripFlightBookingConfirmtionMail(param),
-                    })
-                    .then((res) => {
-                        //console.log("res", res);
-                    })
-                    .catch((err) => {
-                        //console.log("err", err);
-                    });
-            }
-        } else if (bookingData.bookingStatus == BookingStatus.FAILED) {
-            if (email != "") {
-                return "";
-            }
-            var status = "Failed";
-            this.mailerService
-                .sendMail({
-                    to: bookingData.user.email,
-                    from: mailConfig.from,
-                    bcc: mailConfig.BCC,
-                    subject: "Flight Booking Failed",
-                    html: LaytripCancellationTravelProviderMail(
-                        {
-                            userName : bookingData.user.firstName,
-                            bookingId :  bookingData.laytripBookingId
-                        }
-                    ),
-                })
-                .then((res) => {
-                    //console.log("res", res);
-                })
-                .catch((err) => {
-                    //console.log("err", err);
-                });
-        } else {
-            var status = "Canceled";
-        }
-    }
+    //         //console.log(param);
+    //         // //console.log(param.flightData);
+    //         if (email != "") {
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: email,
+    //                     cc: user.email,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: EmailSubject,
+    //                     html: await LaytripFlightBookingConfirmtionMail(param),
+    //                 })
+    //                 .then((res) => {
+    //                     //console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     //console.log("err", err);
+    //                 });
+    //         } else {
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: user.email,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: EmailSubject,
+    //                     html: await LaytripFlightBookingConfirmtionMail(param),
+    //                 })
+    //                 .then((res) => {
+    //                     //console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     //console.log("err", err);
+    //                 });
+    //         }
+    //     } else if (bookingData.bookingStatus == BookingStatus.FAILED) {
+    //         if (email != "") {
+    //             return "";
+    //         }
+    //         var status = "Failed";
+    //         this.mailerService
+    //             .sendMail({
+    //                 to: bookingData.user.email,
+    //                 from: mailConfig.from,
+    //                 bcc: mailConfig.BCC,
+    //                 subject: "Flight Booking Failed",
+    //                 html: LaytripCancellationTravelProviderMail(
+    //                     {
+    //                         userName : bookingData.user.firstName,
+    //                         bookingId :  bookingData.laytripBookingId
+    //                     }
+    //                 ),
+    //             })
+    //             .then((res) => {
+    //                 //console.log("res", res);
+    //             })
+    //             .catch((err) => {
+    //                 //console.log("err", err);
+    //             });
+    //     } else {
+    //         var status = "Canceled";
+    //     }
+    // }
     async formatDate(date) {
         var d = new Date(date),
             month = "" + (d.getMonth() + 1),
@@ -2657,6 +2669,7 @@ export class FlightService {
         let query = getManager()
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("booking.cart", "cart")
             .where(`laytrip_booking_id = '${bookingId}'`);
         const booking = await query.getOne();
         if (!booking) {
@@ -2787,7 +2800,7 @@ export class FlightService {
 
         await booking.save();
 
-        this.sendFlightBookingMail(bookingId, isNewBooking);
+        await this.sendFlightUpdateMail(booking.cart.laytripCartId, booking.user.email , '');
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
@@ -2971,7 +2984,7 @@ export class FlightService {
                         bookingData.moduleInfo[0].arrival_date
                     ),
                 };
-                
+
                 flights = await this.searchRoundTripFlight(
                     dto,
                     Headers,
@@ -3009,14 +3022,14 @@ export class FlightService {
                         travelersDetail
                     );
 
-                    this.sendFlightUpdateMail(
-                        bookingId,
-                        user.email,
-                        user.cityName
-                    );
+                    // this.sendFlightUpdateMail(
+                    //     bookingData.cart.laytripCartId,
+                    //     user.email,
+                    //     user.cityName
+                    // );
                     return {
-                        message :`Flight is booked successfully `
-                    }
+                        message: `Flight is booked successfully `,
+                    };
                 }
             }
 
@@ -3033,14 +3046,14 @@ export class FlightService {
     }
 
     async sendFlightUpdateMail(bookingId, email, userName) {
-        let mail18 = await flightDataUtility.flightData(bookingId);
-        
+        let mail18 = await CartDataUtility.CartMailModelDataGenerate(bookingId);
+
         await this.mailerService
             .sendMail({
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail18.param.cart.cartId} Change by Travel Provider`,
+                subject: `Booking ID ${mail18.param.orderId} Change by Travel Provider`,
                 html: await TravelProviderConfiramationMail(mail18.param),
             })
             .then((res) => {
@@ -3088,8 +3101,10 @@ export class FlightService {
                 laycredit_points,
                 card_token,
                 booking_through,
+                cartCount,
             } = bookFlightDto;
 
+            cartCount = cartCount ? cartCount : 0;
             const mystifly = new Strategy(
                 new Mystifly(headers, this.cacheManager)
             );
@@ -3212,7 +3227,8 @@ export class FlightService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -3223,7 +3239,8 @@ export class FlightService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3234,7 +3251,8 @@ export class FlightService {
                         totalAdditionalAmount,
                         custom_instalment_amount,
                         custom_instalment_no,
-                        selected_down_payment
+                        selected_down_payment,
+                        cartCount > 1 ? true : false
                     );
                 }
 
@@ -3418,71 +3436,80 @@ export class FlightService {
         }
     }
 
-    async sendFlightBookingMail(bookingId, isNewBooking) {
-        const mailData = await flightDataUtility.flightData(bookingId);
-        if (mailData.userMail) {
-            if (isNewBooking == 2) {
-                this.mailerService
-                    .sendMail({
-                        to: mailData.userMail,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no}`,
-                        html: await LaytripFlightBookingConfirmtionMail(
-                            mailData.param
-                        ),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
-            } else if (isNewBooking == 3) {
-                this.mailerService
-                    .sendMail({
-                        to: mailData.userMail,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: `Travel Provider Reservation Confirmation #${mailData.param.flight[0].droups[0].depature.pnr_no} REMINDER`,
-                        html: await TravelProviderReconfirmationMail(
-                            mailData.param
-                        ),
-                    })
-                    .then((res) => {
-                        console.log("res", res);
-                    })
-                    .catch((err) => {
-                        console.log("err", err);
-                    });
-            } else {
-                this.mailerService
-                    .sendMail({
-                        to: mailData.userMail,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject:
-                            isNewBooking == 1
-                                ? mailData.sub
-                                : `Booking ID ${mailData.param.cart.cartId} Change by Travel Provider`,
-                        html:
-                            isNewBooking == 1
-                                ? await LaytripFlightBookingConfirmtionMail(
-                                      mailData.param
-                                  )
-                                : await TravelProviderConfiramationMail(
-                                      mailData.param
-                                  ),
-                    })
-                    .then((res) => {
-                        //console.log("res", res);
-                    })
-                    .catch((err) => {
-                        //console.log("err", err);
-                    });
-            }
-        }
-    }
+    // async sendFlightUpdateMail(bookingId, isNewBooking) {
+    //     const mailData = await CartDataUtility.CartMailModelDataGenerate(
+    //         bookingId
+    //     );
+    //     if (mailData.email) {
+    //         if (isNewBooking == 2) {
+    //             let header = "Travel Provider Reservation Confirmation";
+    //             if (
+    //                 mailData.param.bookings.length == 1 &&
+    //                 mailData.param.bookings[0].moduleId == ModulesName.FLIGHT
+    //             ) {
+    //                 header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+    //             }
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: mailData.email,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: header,
+    //                     html: await LaytripCartBookingConfirmtionMail(
+    //                         mailData.param
+    //                     ),
+    //                 })
+    //                 .then((res) => {
+    //                     console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     console.log("err", err);
+    //                 });
+    //         } else if (isNewBooking == 3) {
+    //             let header =
+    //                 "Reminder - Travel Provider Reservation Confirmation";
+    //             if (
+    //                 mailData.param.bookings.length == 1 &&
+    //                 mailData.param.bookings[0].moduleId == ModulesName.FLIGHT
+    //             ) {
+    //                 header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+    //             }
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: mailData.email,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: header,
+    //                     html: await TravelProviderReminderMail(
+    //                         mailData.param
+    //                     ),
+    //                 })
+    //                 .then((res) => {
+    //                     console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     console.log("err", err);
+    //                 });
+    //         } else {
+    //             this.mailerService
+    //                 .sendMail({
+    //                     to: mailData.email,
+    //                     from: mailConfig.from,
+    //                     bcc: mailConfig.BCC,
+    //                     subject: `Booking ID ${mailData.param.orderId} Change by Travel Provider`,
+    //                     html: await TravelProviderConfiramationMail(
+    //                         mailData.param
+    //                     ),
+    //                 })
+    //                 .then((res) => {
+    //                     //console.log("res", res);
+    //                 })
+    //                 .catch((err) => {
+    //                     //console.log("err", err);
+    //                 });
+    //         }
+    //     }
+    // }
 
     async flightRoute(type) {
         let result;
@@ -3564,7 +3591,7 @@ export class FlightService {
     }
 
     async serchRoute(searchRouteDto: SearchRouteDto) {
-        let where = `1=1`;
+        let where = `status = true AND is_deleted = false `;
         const { search, is_from_location, alternet_location } = searchRouteDto;
         if (alternet_location) {
             const alternetAirport = airports[alternet_location];
@@ -3592,15 +3619,14 @@ export class FlightService {
         }
 
         let orderBy = "from_airport_city";
-        if (is_from_location != "yes"){
-            orderBy = "to_airport_city"
+        if (is_from_location != "yes") {
+            orderBy = "to_airport_city";
         }
-
 
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
-            .orderBy(orderBy,'ASC')
+            .orderBy(orderBy, "ASC")
             .getMany();
 
         if (!result) {

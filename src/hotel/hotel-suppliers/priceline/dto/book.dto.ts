@@ -1,8 +1,7 @@
-import { IsString } from "class-validator";
+import { IsArray, IsString } from "class-validator";
 import { card } from "src/config/common.config";
 
-export class BookDto{
-    
+export class BookDto {
     @IsString()
     initials: string;
 
@@ -25,7 +24,7 @@ export class BookDto{
     card_number?: string = card.number;
 
     @IsString()
-    expires?: string = card.exp_month+''+card.exp_year;
+    expires?: string = card.exp_month + "" + card.exp_year;
 
     @IsString()
     cvc_code?: string = card.cvv;
@@ -36,9 +35,8 @@ export class BookDto{
     @IsString()
     address_line_one?: string = card.address.line_one;
 
-    @IsString()
     address_city?: string = card.address.city;
-
+    @IsString()
     @IsString()
     address_state_code?: string = card.address.state_code;
 
@@ -51,15 +49,20 @@ export class BookDto{
     @IsString()
     ppn_bundle?: string;
 
-    
-    constructor(book) {
+    @IsArray()
+    guest_name_first?: string[];
 
+    @IsArray()
+    guest_name_last?: string[];
+
+    constructor(book) {
         this.name_first = book.primary_guest_detail.firstName;
         this.name_last = book.primary_guest_detail.lastName;
-        this.initials = book.primary_guest_detail.title;
+        //this.initials = book.primary_guest_detail.title;
         this.email = book.primary_guest_detail.email;
         this.phone_number = book.primary_guest_detail.phoneNo;
+        this.guest_name_first = book.guest_detail.firstName;
+        this.guest_name_last = book.guest_detail.lastName;
         this.ppn_bundle = book.bundle;
-
     }
 }

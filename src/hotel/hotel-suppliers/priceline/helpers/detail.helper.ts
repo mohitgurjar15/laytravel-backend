@@ -1,4 +1,4 @@
-import { Generic } from "src/hotel/helpers/generic.helper";
+import { GenericHotel } from "src/hotel/helpers/generic.helper";
 import * as config from 'config';
 import { collect } from "collect.js";
 
@@ -6,9 +6,9 @@ export class DetailHelper {
 
     private hotel: any;
 
-    private genericHelper: Generic;
+    private genericHelper: GenericHotel;
     constructor() {
-        this.genericHelper = new Generic();
+        this.genericHelper = new GenericHotel();
     }
     private default_amenities = {
         "Free Breakfast" : "breakfast",
@@ -31,7 +31,7 @@ export class DetailHelper {
         
         parameters = { ...defaults, ...parameters };
         
-        let query = Generic.httpBuildQuery(parameters);
+        let query = GenericHotel.httpBuildQuery(parameters);
         
         return ppnConfig.url+api+'?'+query;
     }
@@ -89,13 +89,21 @@ export class DetailHelper {
     }
 
     setFullAddress() {
-        return collect(this.hotel['address'])
-            .values()
-            .filter((x) => {
-                return x != null;
-            }).map((x: any) => {
-                return x.replace(/\s{2,}/g, '').trim();
-            }).all().join(', ');
+        let address='';
+        if(this.hotel['address'].address_line_one!=null)
+            address=`${this.hotel['address'].address_line_one}, `
+        if(this.hotel['address'].city_name!=null)
+            address=`${address} ${this.hotel['address'].city_name}, `
+        if(this.hotel['address'].state_name!=null)
+            address=`${address} ${this.hotel['address'].state_name}, `
+        if(this.hotel['address'].zip!=null)
+            address=`${address} ${this.hotel['address'].zip}, `
+        if(this.hotel['address'].country_code!=null)
+            address=`${address} ${this.hotel['address'].country_code}`
+        
+        address = address.replace(/,\s*$/, "");
+        return address
+        
     }
 
     setAmenities() {
@@ -120,7 +128,7 @@ export class DetailHelper {
     
         if(this.genericHelper.isset(this.hotel['thumbnail_hq'])) {
             thumbnail = this.hotel['thumbnail_hq'];
-            thumbnail = this.genericHelper.isset(thumbnail['three_hundred_square']) ? thumbnail['three_hundred_square'] : thumbnail['hundred_fifty_square'];
+            //thumbnail = this.genericHelper.isset(thumbnail['three_hundred_square']) ? thumbnail['three_hundred_square'] : thumbnail['hundred_fifty_square'];
         }else{
             thumbnail = this.hotel['thumbnail'];
         }
