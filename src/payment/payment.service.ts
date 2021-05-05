@@ -1225,7 +1225,7 @@ export class PaymentService {
                             .sendMail({
                                 to: cart.user.email,
                                 from: mailConfig.from,
-                                cc: mailConfig.BCC,
+                                bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Installment Recevied`,
                                 html: LaytripInstallmentRecevied(param),
                             })

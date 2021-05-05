@@ -95,7 +95,7 @@ export class AdminService {
                 .sendMail({
                     to: email,
                     from: mailConfig.from,
-                    cc: mailConfig.BCC,
+                    bcc: mailConfig.BCC,
                     subject: "Welcome to Laytrip!",
                     html: LaytripWelcomeBoardMail(),
                 })
