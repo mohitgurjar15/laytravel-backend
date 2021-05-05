@@ -81,7 +81,7 @@ export class SupplierService {
 					to: userdata.email,
 					from: mailConfig.from,
 					subject: `Welcome on board`,
-					cc:mailConfig.BCC,
+					bcc:mailConfig.BCC,
 					template: "welcome.html",
 					context: {
 						// Data to be sent to template files.

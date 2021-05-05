@@ -211,7 +211,7 @@ export class AuthService {
                 .sendMail({
                     to: email,
                     from: mailConfig.from,
-                    cc: mailConfig.BCC,
+                    bcc: mailConfig.BCC,
                     subject: "Verify your Account",
                     html: LaytripVerifyEmailIdTemplete({
                         username: first_name || "",
@@ -369,7 +369,7 @@ export class AuthService {
                 .sendMail({
                     to: email,
                     from: mailConfig.from,
-                    cc: mailConfig.BCC,
+                    bcc: mailConfig.BCC,
                     subject: "Verify your Account",
                     html: LaytripVerifyEmailIdTemplete({
                         username: user.firstName + " " + user.lastName,
@@ -422,7 +422,7 @@ export class AuthService {
                 .sendMail({
                     to: newEmail,
                     from: mailConfig.from,
-                    cc: mailConfig.BCC,
+                    bcc: mailConfig.BCC,
                     subject: "Verify your Account",
                     html: LaytripVerifyEmailIdTemplete({
                         username: user.firstName + " " + user.lastName,
@@ -879,7 +879,7 @@ export class AuthService {
                     .sendMail({
                         to: email,
                         from: mailConfig.from,
-                        cc: mailConfig.BCC,
+                        bcc: mailConfig.BCC,
                         subject: "Welcome to Laytrip!",
                         html: LaytripWelcomeBoardMail(),
                     })
