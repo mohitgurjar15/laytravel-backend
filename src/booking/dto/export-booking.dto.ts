@@ -1,85 +1,115 @@
-import {  ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { ValidateIf } from "class-validator";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { BookingType } from "src/enum/booking-type.enum";
+import { ModulesName } from "src/enum/module.enum";
+import { PaymentType } from "src/enum/payment-type.enum";
+
 export class ExportBookingDto {
-           @ApiPropertyOptional({
-               description: "search for date",
-               example: "",
-           })
-           start_date: Date;
+    @ApiPropertyOptional({
+        description: "search for date",
+        example: "",
+    })
+    start_date: Date;
 
-           @ApiPropertyOptional({
-               description: "userId",
-               example: "",
-           })
-           userId: string;
-           @ApiPropertyOptional({
-               description: "booking date",
-               example: "",
-           })
-           booking_date: Date;
+    @ApiPropertyOptional({
+        description: "booking date",
+        example: "",
+    })
+    booking_date: Date;
 
-           @ApiPropertyOptional({
-               description: "depature date",
-               example: "",
-           })
-           depature_date: Date;
+    @ApiPropertyOptional({
+        description: "depature date",
+        example: "",
+    })
+    depature_date: Date;
 
-           @ApiPropertyOptional({
-               description: "search for date",
-               example: "",
-           })
-           end_date: Date;
+    @ApiPropertyOptional({
+        description: "search for date",
+        example: "",
+    })
+    end_date: Date;
 
-           @ApiPropertyOptional({
-               description: "Booking type search",
-               example: 1,
-           })
-           booking_type: number;
+    @ApiPropertyOptional({
+        description: "Booking type search",
+    })
+    booking_type: BookingType[];
 
-           @ApiPropertyOptional({
-               description: "Customer name",
-               example: "steave",
-           })
-           customer_name: string;
+    @ApiPropertyOptional({
+        description: "Customer name",
+        example: "steave",
+    })
+    customer_name: string;
 
-           @ApiPropertyOptional({
-               description: "Booking status",
-               example: 0,
-           })
-           booking_status: number;
+    @ApiPropertyOptional({
+        description: "Booking status",
+    })
+    booking_status: BookingStatus[];
 
-           @ApiPropertyOptional({
-               description: "module id",
-               example: "",
-           })
-           module_id: number;
+    @ApiPropertyOptional({
+        description: "module id",
+    })
+    module_id: ModulesName[];
 
-           @ApiPropertyOptional({
-               description: "Payment type",
-               example: 1,
-           })
-           payment_type: number;
+    @ApiPropertyOptional({
+        description: "Payment type",
+    })
+    payment_type: PaymentType[];
 
-           @ApiPropertyOptional({
-               description: "booking id",
-               example: "",
-           })
-           booking_id: string;
+    @ApiPropertyOptional({
+        description: "Product id",
+        example: "",
+    })
+    product_id: string;
 
-           @ApiPropertyOptional({
-               description: "supplier id",
-               example: "",
-           })
-           supplier_id: number;
+    @ApiPropertyOptional({
+        description: "booking id",
+        example: "",
+    })
+    booking_id: string;
 
-           @ApiPropertyOptional({
-               description: "search with keyword",
-               example: "",
-           })
-           search: string;
+    @ApiPropertyOptional({
+        description: "supplier id",
+        example: "",
+    })
+    supplier_id: number;
 
-           @ApiPropertyOptional({
-               description: "Product id",
-               example: "",
-           })
-           product_id: string;
-       }
+    @ApiPropertyOptional({
+        description: "search with keyword",
+        example: "",
+    })
+    search: string;
+
+    @ApiPropertyOptional({
+        description: "search with transaction token",
+        example: "",
+    })
+    transaction_token: string;
+
+    @ApiPropertyOptional({
+        type: "string",
+        description: "user email id",
+    })
+    email: string;
+
+    // @ValidateIf((o) => o.booking_through != "undefined")
+    // @IsEnum(['ios','web','android'],{
+    //     message : (args: ValidationArguments) => {
+    //         if (typeof args.value != "undefined" || args.value != "") {
+    //             return `Please enter valid booking through up type('ios','web','android').&&&signup_via&&&Please enter valid booking through ('ios','web','android')`
+    //         }
+    //     }
+    // })
+    @ApiPropertyOptional({
+        description: `enter valid booking through`,
+        example: ``,
+    })
+    booking_through: string[];
+
+    @ApiPropertyOptional({
+        description: "reservation id",
+    })
+    reservationId: string;
+
+    userId?: string;
+}

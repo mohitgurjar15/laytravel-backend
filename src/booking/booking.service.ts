@@ -1408,7 +1408,7 @@ export class BookingService {
             user_id,
             booking_id,
             search,
-            product_id,
+            product_id,reservationId
         } = listPaymentAdminDto;
 
         let where;
@@ -1416,6 +1416,11 @@ export class BookingService {
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
+
+        if (reservationId) {
+			where += `AND ("booking"."reservation_id" = '${reservationId}')`;
+		}
+
 
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
@@ -1489,7 +1494,7 @@ export class BookingService {
             user_id,
             booking_id,
             search,
-            product_id,
+            product_id,reservationId
         } = listPaymentAdminDto;
 
         let where;
@@ -1497,6 +1502,10 @@ export class BookingService {
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
+        if (reservationId) {
+			where += `AND ("booking"."reservation_id" = '${reservationId}')`;
+		}
+
 
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
@@ -1569,7 +1578,7 @@ export class BookingService {
             user_id,
             booking_id,
             search,
-            product_id,
+            product_id,reservationId
         } = listPaymentAdminDto;
 
         let where;
@@ -1577,6 +1586,10 @@ export class BookingService {
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
+        }
+
 
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
@@ -1633,6 +1646,7 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId
         } = listPaymentAdminDto;
 
         let where;
@@ -1640,6 +1654,9 @@ export class BookingService {
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
+        if (reservationId) {
+			where += `AND ("booking"."reservation_id" = '${reservationId}')`;
+		}
 
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
@@ -2340,7 +2357,7 @@ export class BookingService {
     }
 
     async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
-        const { booking_id, product_id } = deleteBookingDto;
+        const { booking_id, product_id , message } = deleteBookingDto;
 
         let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
         if (product_id) {
@@ -2368,7 +2385,8 @@ export class BookingService {
                     bookingStatus: BookingStatus.CANCELLED,
                     paymentStatus: PaymentStatus.CANCELLED,
                     updatedDate : new Date(),
-                    updateBy : user.userId
+                    updateBy : user.userId,
+                    message : message || null
                 })
                 .where(
                     `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,

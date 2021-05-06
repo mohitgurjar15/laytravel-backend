@@ -1,66 +1,70 @@
 import { IsNotEmpty } from "class-validator";
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
 export class ExportPaymentAdminDto {
-
     @ApiPropertyOptional({
-        description:'search from start date',
-        example:""
+        description: "search from start date",
+        example: "",
     })
     start_date: Date;
 
     @ApiPropertyOptional({
-        description:'search to end date',
-        example:""
+        description: "search to end date",
+        example: "",
     })
     end_date: Date;
 
     @ApiPropertyOptional({
-        description:'Payment module type',
-        example:1
+        description: "Payment module type",
+        example: 1,
     })
     module_id: number;
 
     @ApiPropertyOptional({
-        description:'Supplier code',
-        example:1
+        description: "Supplier code",
+        example: 1,
     })
     supplier: number;
 
     @ApiPropertyOptional({
-        description:'instalment status',
-        example:0
+        description: "instalment status",
+        example: 0,
     })
     status: number;
 
     @ApiPropertyOptional({
-        description:'instalment type',
-        example:"weekly"
+        description: "instalment type",
+        example: "weekly",
     })
-    instalment_type:string;
+    instalment_type: string;
 
     @ApiPropertyOptional({
-        description:'User Id',
-        example:""
+        description: "User Id",
+        example: "",
     })
-    user_id:string;
+    user_id: string;
 
     @ApiPropertyOptional({
-        description:'Booking id',
-        example:""
+        description: "Booking id",
+        example: "",
     })
-    booking_id:string;
+    booking_id: string;
 
     @ApiPropertyOptional({
-        description:'search keyword',
-        example:""
+        description: "search keyword",
+        example: "",
     })
-    search:string;
+    search: string;
 
     @ApiPropertyOptional({
-        description: 'Product id',
-        example: ""
+        description: "Product id",
+        example: "",
     })
     product_id: string;
 
+    @ApiPropertyOptional({
+        description: "reservation id",
+        example: "",
+    })
+    reservationId: string;
 }

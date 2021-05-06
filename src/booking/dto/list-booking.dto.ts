@@ -1,6 +1,10 @@
 import { IsEmail, IsEnum, IsNotEmpty, ValidateIf, ValidationArguments } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { errorMessage } from "src/config/common.config";
+import { BookingType } from "src/enum/booking-type.enum";
+import { BookingStatus } from "src/enum/booking-status.enum";
+import { ModulesName } from "src/enum/module.enum";
+import { PaymentType } from "src/enum/payment-type.enum";
 export class ListBookingDto {
            @IsNotEmpty({
                message: `Please enter limit&&&limit&&&${errorMessage}`,
@@ -46,9 +50,8 @@ export class ListBookingDto {
 
            @ApiPropertyOptional({
                description: "Booking type search",
-               example: 1,
            })
-           booking_type: number;
+           booking_type: BookingType[];
 
            @ApiPropertyOptional({
                description: "Customer name",
@@ -57,22 +60,19 @@ export class ListBookingDto {
            customer_name: string;
 
            @ApiPropertyOptional({
-               description: "Booking status",
-               example: 0,
+               description: "Booking status"
            })
-           booking_status: number;
+           booking_status: BookingStatus[];
 
            @ApiPropertyOptional({
-               description: "module id",
-               example: "",
+               description: "module id"
            })
-           module_id: number;
+           module_id: ModulesName[];
 
            @ApiPropertyOptional({
-               description: "Payment type",
-               example: 1,
+               description: "Payment type"
            })
-           payment_type: number;
+           payment_type: PaymentType[];
 
            @ApiPropertyOptional({
                description: "Product id",
@@ -134,5 +134,10 @@ export class ListBookingDto {
                description: `enter valid booking through`,
                example: ``,
            })
-           booking_through: string;
+           booking_through: string[];
+
+           @ApiPropertyOptional({
+               description: "reservation id",
+           })
+           reservationId: string;
        }
