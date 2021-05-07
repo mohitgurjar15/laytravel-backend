@@ -2,3 +2,4 @@ environments:
     static:
         - dev : ${config/dev.yml}
         - prod : ${config/prod.yml}
+        - temp : ${config/temp.yml}
