@@ -112,4 +112,9 @@ export class ExportBookingDto {
     reservationId: string;
 
     userId?: string;
+
+    @ApiPropertyOptional({
+        description: "category name",
+    })
+    category_name: string[];
 }

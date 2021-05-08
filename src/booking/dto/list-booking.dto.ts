@@ -54,6 +54,11 @@ export class ListBookingDto {
            booking_type: BookingType[];
 
            @ApiPropertyOptional({
+               description: "category name",
+           })
+           category_name: string[];
+
+           @ApiPropertyOptional({
                description: "Customer name",
                example: "steave",
            })

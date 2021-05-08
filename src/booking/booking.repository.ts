@@ -40,7 +40,7 @@ export class BookingRepository extends Repository<Booking> {
             product_id,
             depature_date,
             booking_date,
-            reservationId,
+            reservationId,category_name
         } = listBookingDto;
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
@@ -59,6 +59,14 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."booking_through" =:booking_through)`;
             } else {
                 where += `AND ("booking"."booking_through" in (:...booking_through))`;
+            }
+        }
+
+        if (category_name?.length) {
+            if (typeof category_name != "object") {
+                where += `AND ("booking"."category_name" =:category_name)`;
+            } else {
+                where += `AND ("booking"."category_name" in (:...category_name))`;
             }
         }
 
@@ -162,7 +170,7 @@ export class BookingRepository extends Repository<Booking> {
                 product_id,
                 booking_id,
                 booking_through,
-                reservationId,
+                reservationId,category_name
             })
             .take(take)
             .skip(skip)
@@ -778,6 +786,7 @@ export class BookingRepository extends Repository<Booking> {
             booking_date,
             reservationId,
             booking_through,
+            category_name
         } = filterOption;
 
         let where;
@@ -793,6 +802,14 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."module_id" =:module_id)`;
             } else {
                 where += `AND ("booking"."module_id" in (:...module_id))`;
+            }
+        }
+
+        if (category_name?.length) {
+            if (typeof category_name != "object") {
+                where += `AND ("booking"."category_name" =:category_name)`;
+            } else {
+                where += `AND ("booking"."category_name" in (:...category_name))`;
             }
         }
 
@@ -879,6 +896,7 @@ export class BookingRepository extends Repository<Booking> {
                 module_id,
                 payment_type,
                 booking_through,
+                category_name,
             })
             .orderBy(`booking.bookingDate`, "DESC");
         const [data, count] = await query.getManyAndCount();
