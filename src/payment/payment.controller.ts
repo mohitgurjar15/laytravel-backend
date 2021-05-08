@@ -300,7 +300,8 @@ export class PaymentController {
         Role.ADMIN,
         Role.FREE_USER,
         Role.PAID_USER,
-        Role.SUPPORT
+        Role.SUPPORT,
+        Role.GUEST_USER
     )
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
