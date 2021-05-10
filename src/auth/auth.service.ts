@@ -85,6 +85,7 @@ import { LaytripResetPasswordMail } from "src/config/new_email_templete/laytrip_
 import { GuestUserDto } from "./dto/guest-user.dto";
 import { UserService } from "src/user/user.service";
 import { UpdateAppleUserDto } from "./dto/update-apple-user.dto";
+import { LandingPages } from "src/entity/landing-page.entity";
 
 @Injectable()
 export class AuthService {
@@ -108,7 +109,8 @@ export class AuthService {
             device_token,
             os_version,
             app_version,
-            device_model,referralId
+            device_model,
+            referralId,
         } = createUser;
 
         let loginvia = "";
@@ -153,7 +155,11 @@ export class AuthService {
         user.status = 1;
         user.middleName = "";
         user.zipCode = "";
-        user.referralId = referralId || null
+        if (referralId) {
+            let ref = await this.getReferralId(referralId);
+            user.referralId = ref?.id || null;
+        }
+
         user.password = await this.hashPassword(password, salt);
         user.isVerified = false;
         user.otp = Math.round(new Date().getTime() % 1000000);
@@ -625,7 +631,7 @@ export class AuthService {
                 sender: "laytrip",
                 subject: "Password Reset One Time Pin",
                 html: LaytripForgotPasswordMail({
-                    username: user.firstName ,
+                    username: user.firstName,
                     otp: otp,
                 }),
             })
@@ -1140,7 +1146,10 @@ export class AuthService {
             user.gender = "";
             user.status = 1;
             user.middleName = "";
-            user.referralId = referralId || null;
+            if (referralId) {
+                let ref = await this.getReferralId(referralId);
+                user.referralId = ref?.id || null;
+            }
             user.zipCode = "";
             user.password = "";
             user.isVerified = true;
@@ -1894,5 +1903,16 @@ export class AuthService {
         } catch (e) {
             throw new BadRequestException(`something went wrong ${e.message}`);
         }
+    }
+
+    async getReferralId(name: string) {
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" = '${name}'`;
+
+        const query = getConnection()
+            .createQueryBuilder(LandingPages, "landingPages")
+            .where(where);
+
+        const result = await query.getOne();
+        return result;
     }
 }

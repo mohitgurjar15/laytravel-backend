@@ -59,6 +59,7 @@ import { InstalmentType } from "src/enum/instalment-type.enum";
 import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
+import { LandingPages } from "src/entity/landing-page.entity";
 @Injectable()
 export class CartService {
     constructor(
@@ -1151,7 +1152,14 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
-            cartBook.referralId = referralId || null
+            if (referralId) {
+                let ref = await this.getReferralId(referralId);
+                if(ref?.id && user?.referralId){
+                    user.referralId =
+                        ref?.id == user.referralId ? ref?.id : null;
+                }
+                
+            }
             cartBook.bookingType =
                 payment_type == "instalment"
                     ? BookingType.INSTALMENT
@@ -2186,5 +2194,16 @@ more than 10.`
             message: `Hotel added to cart`,
             data: savedCart,
         };
+    }
+
+    async getReferralId(name: string) {
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" = '${name}'`;
+
+        const query = getConnection()
+            .createQueryBuilder(LandingPages, "landingPages")
+            .where(where);
+
+        const result = await query.getOne();
+        return result;
     }
 }
