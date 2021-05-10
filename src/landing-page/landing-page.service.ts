@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+    Injectable,
+    NotFoundException,
+    ConflictException,
+} from "@nestjs/common";
 import { User } from "src/entity/user.entity";
 import { CreateLandingPageDto } from "./dto/new-landing-page.dto";
 import { v4 as uuidv4 } from "uuid";
@@ -15,6 +19,17 @@ export class LandingPageService {
         user: User
     ) {
         const { name, templet } = createLandingPageDto;
+
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" = '${name}'`;
+
+        const query = getConnection()
+            .createQueryBuilder(LandingPages, "landingPages")
+            .where(where);
+
+        const result = await query.getOne();
+        if (result) {
+            throw new ConflictException(`Given Page name already in use.`);
+        }
 
         let landingPage = new LandingPages();
         landingPage.id = uuidv4();
