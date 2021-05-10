@@ -108,7 +108,7 @@ export class AuthService {
             device_token,
             os_version,
             app_version,
-            device_model,
+            device_model,referralId
         } = createUser;
 
         let loginvia = "";
@@ -153,6 +153,7 @@ export class AuthService {
         user.status = 1;
         user.middleName = "";
         user.zipCode = "";
+        user.referralId = referralId || null
         user.password = await this.hashPassword(password, salt);
         user.isVerified = false;
         user.otp = Math.round(new Date().getTime() % 1000000);
@@ -1085,6 +1086,7 @@ export class AuthService {
             app_version,
             os_version,
             device_model,
+            referralId,
         } = socialLoginDto;
 
         let conditions = [];
@@ -1138,6 +1140,7 @@ export class AuthService {
             user.gender = "";
             user.status = 1;
             user.middleName = "";
+            user.referralId = referralId || null;
             user.zipCode = "";
             user.password = "";
             user.isVerified = true;

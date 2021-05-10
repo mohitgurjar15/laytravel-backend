@@ -1047,6 +1047,7 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
+                referralId
             } = bookCart;
 
             if (cart.length > 10) {
@@ -1150,6 +1151,7 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
+            cartBook.referralId = referralId || null
             cartBook.bookingType =
                 payment_type == "instalment"
                     ? BookingType.INSTALMENT

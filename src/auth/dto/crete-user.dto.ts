@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsEmail, MinLength, MaxLength, Matches, ValidationArguments, IsEnum, ValidateIf } from 'class-validator'
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEqualTo } from "../password.decorator";
 import { errorMessage } from 'src/config/common.config';
 
@@ -122,5 +122,9 @@ export class CreateUserDto {
 	})
     os_version: string;
     
-
+    @ApiPropertyOptional({
+        description: `Enter referral id`,
+        example: ``
+    })
+    referralId: string;
 }
