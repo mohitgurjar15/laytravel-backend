@@ -126,5 +126,5 @@ export class CreateUserDto {
         description: `Enter referral id`,
         example: ``
     })
-    referralId: string;
+    referral_id: string;
 }

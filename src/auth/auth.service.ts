@@ -110,7 +110,7 @@ export class AuthService {
             os_version,
             app_version,
             device_model,
-            referralId,
+            referral_id,
         } = createUser;
 
         let loginvia = "";
@@ -155,8 +155,8 @@ export class AuthService {
         user.status = 1;
         user.middleName = "";
         user.zipCode = "";
-        if (referralId) {
-            let ref = await this.getReferralId(referralId);
+        if (referral_id) {
+            let ref = await this.getReferralId(referral_id);
             user.referralId = ref?.id || null;
         }
 
@@ -1092,7 +1092,7 @@ export class AuthService {
             app_version,
             os_version,
             device_model,
-            referralId,
+            referral_id,
         } = socialLoginDto;
 
         let conditions = [];
@@ -1146,8 +1146,8 @@ export class AuthService {
             user.gender = "";
             user.status = 1;
             user.middleName = "";
-            if (referralId) {
-                let ref = await this.getReferralId(referralId);
+            if (referral_id) {
+                let ref = await this.getReferralId(referral_id);
                 user.referralId = ref?.id || null;
             }
             user.zipCode = "";

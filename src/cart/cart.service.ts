@@ -1048,7 +1048,7 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
-                referralId
+                referral_id,
             } = bookCart;
 
             if (cart.length > 10) {
@@ -1152,8 +1152,8 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
-            if (referralId) {
-                let ref = await this.getReferralId(referralId);
+            if (referral_id) {
+                let ref = await this.getReferralId(referral_id);
                 if(ref?.id && user?.referralId){
                     user.referralId =
                         ref?.id == user.referralId ? ref?.id : null;
