@@ -1,6 +1,6 @@
 import { LaytripFeedbackModule } from './laytrip-feedback/laytrip-feedback.module';
 import { VacationRentalModule } from './vacation-rental/vacation-rental.module';
-import { Module } from "@nestjs/common";
+import { HttpModule, Module } from "@nestjs/common";
 import { typeOrmConfig } from "./config/typeorm.config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
@@ -52,93 +52,93 @@ import { AppController } from './app/app.controller';
 console.log(typeOrmConfig);
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot(typeOrmConfig),
-    AuthModule,
-    UserModule,
-    MailerModule.forRoot({
-      transport: {
-        maxConnections:3,
-        pull:true,
-        host: mailConfig.host,
-        port: mailConfig.port,
-        secure: mailConfig.secure,
-        service: "Outlook365",
-        auth: {
-          user: mailConfig.user,
-          pass: mailConfig.pass,
-        },
-      },
-      defaults: {
-        from: config.user,
-      },
-      preview: false,
-      template: {
-        dir: 'src/config/email_template',
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
-        },
-      },
-    }),
-    FlightModule,
-    VacationRentalModule,
-    AdminModule,
-    I18nModule.forRoot({
-      fallbackLanguage: 'en',
-      parser: I18nJsonParser,
-      parserOptions: {
-        path: path.join(__dirname, '/i18n/'),
-        watch: true,
-      },
-      resolvers: [
-        { use: QueryResolver, options: ['lang', 'locale', 'l'] }
-      ]
-    }),
-    GeneralModule,
-    SupplierModule,
-    SupportUserModule,
-    LangunageModule,
-    CurrencyModule,
-    HotelModule,
-    InstalmentModule,
-    ModulesModule,
-    MarkupModule,
-    ActivitiesModule,
-    FaqModule,
-    EnqiryModule,
-    CmsModule,
-    SubscriptionModule,
-    RewordPointModule,
-    CronJobsModule,
-    TravelerModule,
-    PaymentModule,
-    BookingModule,
-    AdminDashboardModule,
-    NewsLettersModule,
-    BookingFeedbackModule,
-    LaytripFeedbackModule,
-    PredictionFactorMarkupModule,
-    FaqCategoryModule,
-    AppVersionModule,
-    MarketingModule,
-    CartModule,
-    DealModule,
-    LaytripCategoryModule,
-    FlightRouteModule,
-    LandingPageModule,
-    /* CacheModule.register({
+    imports: [
+        TypeOrmModule.forRoot(typeOrmConfig),
+        AuthModule,
+        UserModule,
+        MailerModule.forRoot({
+            transport: {
+                maxConnections: 3,
+                pull: true,
+                host: mailConfig.host,
+                port: mailConfig.port,
+                secure: mailConfig.secure,
+                service: "Outlook365",
+                auth: {
+                    user: mailConfig.user,
+                    pass: mailConfig.pass,
+                },
+            },
+            defaults: {
+                from: config.user,
+            },
+            preview: false,
+            template: {
+                dir: "src/config/email_template",
+                adapter: new HandlebarsAdapter(),
+                options: {
+                    strict: true,
+                },
+            },
+        }),
+        FlightModule,
+        VacationRentalModule,
+        AdminModule,
+        I18nModule.forRoot({
+            fallbackLanguage: "en",
+            parser: I18nJsonParser,
+            parserOptions: {
+                path: path.join(__dirname, "/i18n/"),
+                watch: true,
+            },
+            resolvers: [
+                { use: QueryResolver, options: ["lang", "locale", "l"] },
+            ],
+        }),
+        GeneralModule,
+        SupplierModule,
+        SupportUserModule,
+        LangunageModule,
+        CurrencyModule,
+        HotelModule,
+        InstalmentModule,
+        ModulesModule,
+        MarkupModule,
+        ActivitiesModule,
+        FaqModule,
+        EnqiryModule,
+        CmsModule,
+        SubscriptionModule,
+        RewordPointModule,
+        CronJobsModule,
+        TravelerModule,
+        PaymentModule,
+        BookingModule,
+        AdminDashboardModule,
+        NewsLettersModule,
+        BookingFeedbackModule,
+        LaytripFeedbackModule,
+        PredictionFactorMarkupModule,
+        FaqCategoryModule,
+        AppVersionModule,
+        MarketingModule,
+        CartModule,
+        DealModule,
+        LaytripCategoryModule,
+        FlightRouteModule,
+        LandingPageModule,
+        /* CacheModule.register({
       store: redisStore,
       host: 'localhost',
       port: 6379,
     }), */
-  ],
-  controllers: [AppController],
-  /* providers: [
+    ],
+    controllers: [AppController],
+    /* providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     }
   ],*/
 })
-export class AppModule { }
+export class AppModule {}
