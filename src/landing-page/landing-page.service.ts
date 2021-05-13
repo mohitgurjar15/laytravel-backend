@@ -100,7 +100,7 @@ export class LandingPageService {
         const refferalUsers = await getConnection()
             .createQueryBuilder(User, "user")
             .where(`referral_id = '${result.id}' AND is_verified = true`)
-            .getCount();
+            .getManyAndCount();
         // const refferalbooking = await getConnection().query(
         //     `SELECT count(*) as "cnt" FROM "cart_booking" WHERE referral_id = '${result.id}' `
         // );
@@ -110,11 +110,11 @@ export class LandingPageService {
             .where(
                 `("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "cartBooking"."referral_id" = '${result.id}')`
             )
-            .getCount();
+            .getManyAndCount();
         return {
             data: result,
-            refferalUser: refferalUsers || 0,
-            refferalBookings: cartBookings || 0,
+            refferalUser: refferalUsers || {},
+            refferalBookings: cartBookings || {},
         };
     }
 
