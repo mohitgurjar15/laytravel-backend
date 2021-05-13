@@ -84,10 +84,9 @@ export class LandingPageService {
     }
 
     async getLandingPage(id: string) {
-
         if (!uuidValidator(id)) {
-                throw new NotFoundException("Given id not avilable");
-            }
+            throw new NotFoundException("Given id not avilable");
+        }
         let where = `"landingPages"."is_deleted" = false AND "landingPages"."id" = '${id}'`;
 
         const query = getConnection()
@@ -130,8 +129,8 @@ export class LandingPageService {
         const { limit, page_no, referral_id, search } = paginationOption;
 
         if (!uuidValidator(referral_id)) {
-                throw new NotFoundException("Given id not avilable");
-            }
+            throw new NotFoundException("Given id not avilable");
+        }
 
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
@@ -143,10 +142,56 @@ export class LandingPageService {
             where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
 
-        let cartBookings = await getConnection()
+        let [cartBookings, count] = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
             .leftJoinAndSelect("booking.user", "User")
+            .select([
+                "User.userId",
+                "User.title",
+                "User.dob",
+                "User.firstName",
+                "User.lastName",
+                "User.email",
+                "User.profilePic",
+                "User.dob",
+                "User.gender",
+                "User.roleId",
+                "User.countryCode",
+                "User.phoneNo",
+                "cartBooking",
+                "booking",
+            ])
+            .where(where)
+            .take(take)
+            .skip(skip)
+            .getManyAndCount();
+        if (!cartBookings.length) {
+            throw new NotFoundException(`No data found.`);
+        }
+        return { data: cartBookings, count };
+    }
+
+    async listReferralUser(paginationOption: ListReferralDto) {
+        const { limit, page_no, referral_id, search } = paginationOption;
+        console.log(paginationOption);
+
+        if (!uuidValidator(referral_id)) {
+            throw new NotFoundException("Given id not avilable");
+        }
+
+        const take = limit || 10;
+        const skip = (page_no - 1) * limit || 0;
+        const keyword = search || "";
+
+        let where = `referral_id = '${referral_id}' AND is_verified = true AND role_id In (${Role.FREE_USER},${Role.PAID_USER})`;
+        if (keyword) {
+            const cipher = await CryptoUtility.encode(search);
+            where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
+        }
+
+        let [users, count] = await getConnection()
+            .createQueryBuilder(User, "user")
             .select([
                 "user.userId",
                 "user.title",
@@ -160,61 +205,15 @@ export class LandingPageService {
                 "user.roleId",
                 "user.countryCode",
                 "user.phoneNo",
-                "cartBooking",
-                "booking"
             ])
             .where(where)
             .take(take)
             .skip(skip)
-            .getMany();
-         if (!cartBookings.length) {
-             throw new NotFoundException(`No data found.`);
-         }
-        return cartBookings;
-    }
-
-    async listReferralUser(paginationOption: ListReferralDto) {
-        const { limit, page_no, referral_id, search } = paginationOption;
-        console.log(paginationOption);
-        
-        if (!uuidValidator(referral_id)) {
-            throw new NotFoundException("Given id not avilable");
+            .getManyAndCount();
+        if (!users.length) {
+            throw new NotFoundException(`No data found.`);
         }
-
-
-        const take = limit || 10;
-        const skip = (page_no - 1) * limit || 0;
-        const keyword = search || "";
-
-        let where = `referral_id = '${referral_id}' AND is_verified = true AND role_id In (${Role.FREE_USER},${Role.PAID_USER})`;
-        if (keyword) {
-            const cipher = await CryptoUtility.encode(search);
-            where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
-        }
-
-        let users = await getConnection()
-            .createQueryBuilder(User, "user")
-            .select([
-				"user.userId",
-				"user.title",
-				"user.dob",
-				"user.firstName",
-				"user.lastName",
-				"user.email",
-				"user.profilePic",
-				"user.dob",
-				"user.gender",
-				"user.roleId",
-				"user.countryCode",
-				"user.phoneNo"])
-            .where(where)
-            .take(take)
-            .skip(skip)
-            .getMany();
-         if (!users.length) {
-             throw new NotFoundException(`No data found.`);
-         }
-        return users;
+        return { data: users, count };
     }
 
     async getLandingPageName(name: string) {
