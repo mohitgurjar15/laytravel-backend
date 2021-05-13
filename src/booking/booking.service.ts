@@ -1273,12 +1273,14 @@ export class BookingService {
                     `card_token = '${result.cardToken}' AND user_id = '${result.userId}'`
                 )
                 .getOne();
-
+            let downpaymentPer = 0
+            let downPayment : number = 0
             if (result.bookingInstalments.length > 0) {
                 result.bookingInstalments.sort((a, b) => a.id - b.id);
 
                 //result.bookingInstalments.reverse()
             }
+            downPayment = parseFloat(result.bookingInstalments[0].amount); 
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
                     paidAmount += parseFloat(instalment.amount);
@@ -1320,6 +1322,10 @@ export class BookingService {
             // }
             let responce: any = result;
             responce["userData"] = cardData;
+            if(downPayment)
+            {
+                responce["downPayment_percentage"] = (downPayment * 100) / parseFloat(result["paidAmount"]);    
+            }
             return responce;
         } catch (error) {
             if (typeof error.response !== "undefined") {
