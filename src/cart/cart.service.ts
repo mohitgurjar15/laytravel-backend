@@ -1067,6 +1067,7 @@ more than 10.`
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 .leftJoinAndSelect("travelers.userData", "userData")
+                .leftJoinAndSelect("cart.user", "User")
                 .select([
                     "cart.id",
                     "cart.userId",
@@ -1086,6 +1087,8 @@ more than 10.`
                     "userData.firstName",
                     "userData.middleName",
                     "cart.oldModuleInfo",
+                    "User.userId"
+                    "User.referralId"
                 ])
 
                 .where(
@@ -1100,6 +1103,7 @@ more than 10.`
                     `Cart is empty.&&&cart&&&${errorMessage}`
                 );
             }
+            
             let smallestDate = "";
             let largestDate = "";
             //let ToatalAmount = ''
@@ -1156,7 +1160,7 @@ more than 10.`
                 let ref = await this.getReferralId(referral_id);
                 if (ref?.id && user?.referralId) {
                     user.referralId =
-                        ref?.id == user.referralId ? ref?.id : null;
+                        ref?.id == result[0]?.user?.referralId ? ref?.id : null;
                 }
             }
             cartBook.bookingType =
