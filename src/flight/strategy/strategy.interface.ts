@@ -1,20 +1,30 @@
-export interface StrategyAirline{
+export interface StrategyAirline {
+    oneWaySearch(params1, params2);
 
-    oneWaySearch(params1,params2);
+    oneWaySearchZip(params1, params2, param3, param4, param5, param6);
 
-    oneWaySearchZip(params1,params2,param3,param4,param5,param6);
+    oneWaySearchZipWithFilter(params1, params2, param3, param4, param5, param6);
 
     baggageDetails(params);
 
-    cancelBooking(param1)
+    cancelBooking(param1);
 
-    roundTripSearch(params1,params2);
+    roundTripSearch(params1, params2);
 
-    roundTripSearchZip(params1,params2,param3,param4,param5,param6);
-    
-    airRevalidate(params1,params2);
+    roundTripSearchZip(params1, params2, param3, param4, param5, param6);
 
-    bookFlight(params1,params2,param3);
+    roundTripSearchZipWithFilter(
+        params1,
+        params2,
+        param3,
+        param4,
+        param5,
+        param6
+    );
+
+    airRevalidate(params1, params2);
+
+    bookFlight(params1, params2, param3);
 
     cancellationPolicy(param1);
 
