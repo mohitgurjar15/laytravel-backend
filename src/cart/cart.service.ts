@@ -1158,6 +1158,10 @@ more than 10.`
             cartBook.userId = user.userId;
             if (referral_id) {
                 let ref = await this.getReferralId(referral_id);
+                console.log(ref);
+                console.log(result[0]?.user?.referralId);
+                
+                
                 if (ref?.id && result[0]?.user?.referralId) {
                     user.referralId =
                         ref?.id == result[0]?.user?.referralId ? ref?.id : null;
