@@ -1162,9 +1162,9 @@ more than 10.`
                 console.log(result[0]?.user?.referralId);
                 
                 
-                if (ref?.id && result[0]?.user?.referralId) {
-                    user.referralId =
-                        ref?.id == result[0]?.user?.referralId ? ref?.id : null;
+                if (ref?.id == result[0]?.user?.referralId) {
+                    console.log('added');
+                    cartBook.referralId =ref?.id || null;
                 }
             }
             cartBook.bookingType =
