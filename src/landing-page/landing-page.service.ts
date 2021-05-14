@@ -24,7 +24,7 @@ export class LandingPageService {
     ) {
         const { name, templet } = createLandingPageDto;
 
-        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" = '${name}'`;
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" like '${name}'`;
 
         const query = getConnection()
             .createQueryBuilder(LandingPages, "landingPages")
@@ -37,7 +37,7 @@ export class LandingPageService {
 
         let landingPage = new LandingPages();
         landingPage.id = uuidv4();
-        landingPage.name = name;
+        landingPage.name = name.toLowerCase();
         landingPage.templete = templet;
         landingPage.createdDate = new Date();
         landingPage.userId = user.userId;
@@ -187,7 +187,7 @@ export class LandingPageService {
         let where = `referral_id = '${referral_id}' AND is_verified = true AND role_id In (${Role.FREE_USER},${Role.PAID_USER})`;
         if (keyword) {
             const cipher = await CryptoUtility.encode(search);
-            where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
+            where += `AND (("first_name" = '${cipher}')or("email" = '${cipher}')or("last_name" = '${cipher}'))`;
         }
 
         let [users, count] = await getConnection()

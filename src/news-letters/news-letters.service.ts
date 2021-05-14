@@ -32,7 +32,7 @@ export class NewsLettersService {
 	) { }
 
 	async subscribeForNewsLetters(
-		subscribeForNewslatterDto: SubscribeForNewslatterDto
+		subscribeForNewslatterDto: SubscribeForNewslatterDto,referralId
 	) {
 		try {
 			const { email } = subscribeForNewslatterDto;
@@ -59,19 +59,19 @@ export class NewsLettersService {
 				await subscribeData.save();
 			}
 			this.mailerService
-				.sendMail({
-					to: email,
-					from: mailConfig.from,
-					bcc: mailConfig.BCC,
-					subject: "Welcome to Laytrip",
-					html: await NewsLetterMail(),
-				})
-				.then((res) => {
-					console.log("res", res);
-				})
-				.catch((err) => {
-					console.log("err", err);
-				});
+                .sendMail({
+                    to: email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: "Welcome to Laytrip",
+                    html: await NewsLetterMail(referralId),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
 			return { message: `Thank you for joining our Laytrip community!` };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {

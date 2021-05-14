@@ -2,10 +2,13 @@ import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { BaseUrl } from "../base-url";
 
-export function LaytripPaymentMethodChangeMail(param: {
-  username: string;
-}) {
-  const content = `
+export function LaytripPaymentMethodChangeMail(
+           param: {
+               username: string;
+           },
+           referral_id: string = ""
+       ) {
+           const content = `
                                 <tr>
                                     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
@@ -49,5 +52,5 @@ export function LaytripPaymentMethodChangeMail(param: {
 </td>
 </tr>
 `;
-  return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter(referral_id);
+       }

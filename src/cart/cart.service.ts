@@ -1036,7 +1036,7 @@ more than 10.`
         }
     }
 
-    async bookCart(bookCart: CartBookDto, user: User, Headers) {
+    async bookCart(bookCart: CartBookDto, user: User, Headers,referralId) {
         try {
             const {
                 payment_type,
@@ -1154,11 +1154,10 @@ more than 10.`
             cartBook.userId = user.userId;
             if (referral_id) {
                 let ref = await this.getReferralId(referral_id);
-                if(ref?.id && user?.referralId){
+                if (ref?.id && user?.referralId) {
                     user.referralId =
                         ref?.id == user.referralId ? ref?.id : null;
                 }
-                
             }
             cartBook.bookingType =
                 payment_type == "instalment"
@@ -1242,7 +1241,8 @@ more than 10.`
                 );
                 await this.cartBookingEmailSend(
                     cartData.laytripCartId,
-                    cartData.userId
+                    cartData.userId,
+                    referralId
                 );
                 if (failedResult > 0 && payment.status == true) {
                     await this.refundCart(
@@ -1449,7 +1449,7 @@ more than 10.`
         bookCart: CartBookDto,
         smallestDate: string,
         cartData: CartBooking,
-        cartCount:number
+        cartCount: number
     ) {
         const {
             payment_type,
@@ -1576,7 +1576,7 @@ more than 10.`
                     custom_instalment_no: 0,
                     card_token,
                     booking_through,
-                    cartCount
+                    cartCount,
                 };
 
                 console.log("cartBook request");
@@ -1650,7 +1650,7 @@ more than 10.`
         bookCart: CartBookDto,
         smallestDate: string,
         cartData: CartBooking,
-        cartCount:number
+        cartCount: number
     ) {
         const {
             payment_type,
@@ -1735,7 +1735,7 @@ more than 10.`
                     card_token,
                     booking_through,
                     bundle: value[0].bundle,
-                    cartCount
+                    cartCount,
                 };
 
                 console.log("cartBook request");
@@ -1925,7 +1925,7 @@ more than 10.`
         }
     }
 
-    async cartBookingEmailSend(bookingId, userId) {
+    async cartBookingEmailSend(bookingId, userId, referralId) {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
@@ -1941,7 +1941,8 @@ more than 10.`
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param
+                        responce.param,
+                        responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -1959,7 +1960,8 @@ more than 10.`
                         bcc: mailConfig.BCC,
                         subject: `Travel Provider Reservation Confirmation`,
                         html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                            responce.param
+                            responce.param,
+                            responce.referralId
                         ),
                     })
                     .then((res) => {
@@ -1984,7 +1986,10 @@ more than 10.`
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: subject,
-                    html: await BookingNotCompletedMail({ userName }),
+                    html: await BookingNotCompletedMail(
+                        { userName },
+                        referralId
+                    ),
                 })
                 .then((res) => {
                     //console.log("res", res);
@@ -2197,7 +2202,7 @@ more than 10.`
     }
 
     async getReferralId(name: string) {
-        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" = '${name}'`;
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" like '${name}'`;
 
         const query = getConnection()
             .createQueryBuilder(LandingPages, "landingPages")

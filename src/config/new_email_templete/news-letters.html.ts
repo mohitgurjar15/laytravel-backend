@@ -2,8 +2,8 @@ import { FrontEndUrl } from "../base-url";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export function NewsLetterMail() {
-const content = `<tr>
+export function NewsLetterMail(referral_id: string = "") {
+           const content = `<tr>
  <td align="center" valine="top" style="padding: 38px 25px 0px; background: #ffffff;">
      <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
          <tbody>
@@ -23,5 +23,5 @@ const content = `<tr>
      </table>
  </td>
 </tr>`;
-    return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter(referral_id);
+       }
