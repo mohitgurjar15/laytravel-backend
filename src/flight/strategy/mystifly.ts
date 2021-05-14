@@ -201,6 +201,9 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
+
+        //  let filteredListes = await this.getRoutes(source_location,destination_location,true)
+        //  return filteredListes
         console.log(searchFlightDto)
         
         const [caegory] = await getConnection().query(`select 
@@ -3487,6 +3490,10 @@ export class Mystifly implements StrategyAirline {
                 ) {
                     routes.push(route);
                 }else if(filteredListes.length){
+                    
+                    console.log(route.departure_code +'-'+arrivalCodeOfOutbound,filteredListes.indexOf(`${route.departure_code +'-'+arrivalCodeOfOutbound}`));
+                    console.log(route.arrival_code +'-'+depatureCodeOfInbound,filteredListes.indexOf(`${route.arrival_code +'-'+depatureCodeOfInbound}`))
+                    
                     if(filteredListes.indexOf(`${route.departure_code +'-'+arrivalCodeOfOutbound}`) != -1 &&
                     filteredListes.indexOf(`${route.arrival_code +'-'+depatureCodeOfInbound}`) != -1){
                         routes.push(route);
@@ -4651,6 +4658,7 @@ export class Mystifly implements StrategyAirline {
                    for await (const iterator of flightRoutes) {
                        res.push(`${iterator.fromAirportCode + '-' + iterator.toAirportCode}`)
                    }
+                   console.log(res);
                    return res
                }else{
                     return; 
