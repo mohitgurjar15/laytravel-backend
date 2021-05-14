@@ -720,7 +720,7 @@ export class FlightService {
                 };
                 result[resultIndex] = new Promise((resolve) =>
                     resolve(
-                        mystifly.oneWaySearchZip(
+                        mystifly.oneWaySearchZipWithFilter(
                             dto,
                             user,
                             mystiflyConfig,
@@ -755,7 +755,7 @@ export class FlightService {
                 };
                 result[resultIndex] = new Promise((resolve) =>
                     resolve(
-                        mystifly.oneWaySearchZip(
+                        mystifly.oneWaySearchZipWithFilter(
                             dto,
                             user,
                             mystiflyConfig,
@@ -907,7 +907,7 @@ export class FlightService {
                 };
                 result[resultIndex] = new Promise((resolve) =>
                     resolve(
-                        mystifly.roundTripSearchZip(
+                        mystifly.roundTripSearchZipWithFilter(
                             dto,
                             user,
                             mystiflyConfig,
@@ -933,7 +933,7 @@ export class FlightService {
                     };
                     result[resultIndex] = new Promise((resolve) =>
                         resolve(
-                            mystifly.oneWaySearchZip(
+                            mystifly.oneWaySearchZipWithFilter(
                                 dto,
                                 user,
                                 mystiflyConfig,
@@ -1164,7 +1164,7 @@ export class FlightService {
 
                 result[resultIndex] = new Promise((resolve) =>
                     resolve(
-                        mystifly.roundTripSearchZip(
+                        mystifly.roundTripSearchZipWithFilter(
                             dto,
                             user,
                             mystiflyConfig,
