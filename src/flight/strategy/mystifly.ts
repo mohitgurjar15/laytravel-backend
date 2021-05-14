@@ -3178,6 +3178,7 @@ export class Mystifly implements StrategyAirline {
                     flightRoutes[i]["a:ispassportmandatory"][0] == "true"
                         ? true
                         : false;
+                route.departure_code = stops[0].departure_code;        
                 route.departure_date = stops[0].departure_date;
                 route.departure_time = stops[0].departure_time;
                 let arrivalCodeOfOutbound =
