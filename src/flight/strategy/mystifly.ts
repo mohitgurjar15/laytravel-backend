@@ -32,6 +32,7 @@ import * as zlib from "zlib";
 import * as md5 from "md5";
 import { Cache } from "cache-manager";
 import { RouteCategory } from "src/utility/route-category.utility";
+import { allAirpots } from "../all-airports";
 
 export const flightClass = {
     Economy: "Y",
@@ -4897,5 +4898,33 @@ export class Mystifly implements StrategyAirline {
                } else if (code == "0PC") {
                    return "";
                } else return code;
+           }
+
+
+
+           async getRoutes(fromLocation,toLocation,isRoundTrip){
+               let fromLocations = []
+               let toLocations = []
+
+               let to;
+               let from;
+
+               for await (const airport of allAirpots) {
+                   if(airport.code == fromLocation){
+                       
+                   }
+               }
+
+                var to = Object.keys(allAirpots).find((key) => {
+                return allAirpots[key].find((item) => item.code === toLocation)
+                });
+
+                if(from && to){
+                    fromLocations.push(from.code)
+                    toLocations.push(to.code) 
+
+                }
+
+
            }
        }
