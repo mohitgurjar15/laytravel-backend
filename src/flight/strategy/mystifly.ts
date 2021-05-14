@@ -564,10 +564,8 @@ export class Mystifly implements StrategyAirline {
                     flightRoutes[i]["a:ispassportmandatory"][0] == "true"
                         ? true
                         : false;
-                // route.departure_code = source_location;
-                // route.arrival_code = destination_location;
-                route.departure_code = stops[0].departure_code;
-                route.arrival_code = stops[stops.length - 1].arrival_code;
+                route.departure_code = source_location;
+                route.arrival_code = destination_location;
                 route.departure_date = stops[0].departure_date;
                 route.departure_time = stops[0].departure_time;
                 route.arrival_date = stops[stops.length - 1].arrival_date;
@@ -621,11 +619,7 @@ export class Mystifly implements StrategyAirline {
                             ][0];
                     }
                 }
-                if(route.departure_code == source_location &&
-                route.arrival_code == destination_location){
-                    routes.push(route);
-                }
-                
+                routes.push(route);
             }
             let flightSearchResult = new FlightSearchResult();
             flightSearchResult.items = routes;
@@ -2146,10 +2140,8 @@ export class Mystifly implements StrategyAirline {
                     flightRoutes[i]["a:ispassportmandatory"][0] == "true"
                         ? true
                         : false;
-                route.departure_code = stops[0].departure_code;
                 route.departure_date = stops[0].departure_date;
                 route.departure_time = stops[0].departure_time;
-                let arrivalCodeOfOutbound = stops[stops.length - 1].arrival_code
                 route.stop_count = stops.length - 1;
                 stops = [];
                 totalDuration = 0;
@@ -2381,8 +2373,8 @@ export class Mystifly implements StrategyAirline {
 				} */
 
                 route.inbound_stop_count = stops.length - 1;
-                let depatureCodeOfInbound = stops[0].departure_code
-                route.arrival_code = stops[stops.length - 1].arrival_code;
+                route.departure_code = source_location;
+                route.arrival_code = destination_location;
                 route.departure_info =
                     typeof airports[source_location] !== "undefined"
                         ? airports[source_location]
@@ -2437,15 +2429,7 @@ export class Mystifly implements StrategyAirline {
                             ][0];
                     }
                 }
-                if (
-                    route.departure_code == source_location &&
-                    depatureCodeOfInbound == destination_location &&
-                    arrivalCodeOfOutbound == destination_location &&
-                    route.arrival_code == source_location
-                ) {
-                    routes.push(route);
-                }
-                
+                routes.push(route);
             }
             //return routes;
             let flightSearchResult = new FlightSearchResult();
