@@ -1087,7 +1087,7 @@ more than 10.`
                     "userData.firstName",
                     "userData.middleName",
                     "cart.oldModuleInfo",
-                    "User.userId"
+                    "User.userId",
                     "User.referralId"
                 ])
 
