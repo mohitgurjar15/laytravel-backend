@@ -2144,6 +2144,11 @@ export class Mystifly implements StrategyAirline {
             );
         }
 
+        let routeDetails: any = await RouteCategory.flightRouteAvailability(
+            source_location,
+            destination_location
+        );
+
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
 	xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`;
         requestBody += `<soapenv:Header/>`;
@@ -2518,24 +2523,66 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
 
-                let instalmentDetails = Instalment.weeklyInstalment(
-                    route.selling_price,
-                    moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                        "YYYY-MM-DD"
-                    ),
+                let instalmentDetails: any = {};
+                let instalmentDetails2: any = {};
+                let instalmentDetails3: any = {};
+                let instalmentEligibility = RouteCategory.checkInstalmentEligibility(
+                    departure_date,
                     bookingDate,
-                    0
+                    routeDetails.category.installmentAvailableAfter
                 );
-                if (instalmentDetails.instalment_available) {
-                    route.start_price =
-                        instalmentDetails.instalment_date[0].instalment_amount;
-                    route.secondary_start_price =
-                        instalmentDetails.instalment_date[1].instalment_amount;
-                } else {
-                    route.start_price = 0;
-                    route.secondary_start_price = 0;
-                }
+                if (instalmentEligibility) {
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        route.selling_price,
+                        departure_date,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0
+                    );
 
+                    instalmentDetails2 = Instalment.biWeeklyInstalment(
+                        route.selling_price,
+                        departure_date,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0
+                    );
+                    instalmentDetails3 = Instalment.monthlyInstalment(
+                        route.selling_price,
+                        departure_date,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0
+                    );
+                    if (instalmentDetails.instalment_available) {
+                        route.start_price =
+                            instalmentDetails.instalment_date[0].instalment_amount;
+                        route.secondary_start_price =
+                            instalmentDetails.instalment_date[1].instalment_amount;
+                        route.no_of_weekly_installment =
+                            instalmentDetails.instalment_date.length - 1;
+
+                        route.secondary_start_price_2 =
+                            instalmentDetails2.instalment_date[1].instalment_amount;
+                        route.second_down_payment =
+                            instalmentDetails2.instalment_date[0].instalment_amount;
+                        route.no_of_weekly_installment_2 =
+                            instalmentDetails2.instalment_date.length - 1;
+
+                        route.secondary_start_price_3 =
+                            instalmentDetails3.instalment_date[1].instalment_amount;
+                        route.third_down_payment =
+                            instalmentDetails3.instalment_date[0].instalment_amount;
+                        route.no_of_weekly_installment_3 =
+                            instalmentDetails3.instalment_date.length - 1;
+                    }
+                }
                 if (
                     typeof secondaryMarkUpDetails != "undefined" &&
                     Object.keys(secondaryMarkUpDetails).length
