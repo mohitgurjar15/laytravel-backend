@@ -15,6 +15,7 @@ import { ListReferralDto } from "./dto/list-refferals.dto";
 import { CryptoUtility } from "src/utility/crypto.utility";
 import { Role } from "src/enum/role.enum";
 import * as uuidValidator from "uuid-validate";
+import { ExportReferralDto } from "./dto/export-referrals.dto";
 
 @Injectable()
 export class LandingPageService {
@@ -235,5 +236,90 @@ export class LandingPageService {
             throw new NotFoundException(`Id not found.`);
         }
         return { data: result };
+    }
+
+    async exportReferralBooking(paginationOption: ExportReferralDto) {
+        const { referral_id, search } = paginationOption;
+
+        if (!uuidValidator(referral_id)) {
+            throw new NotFoundException("Given id not avilable");
+        }
+
+        
+        const keyword = search || "";
+
+        let where = `("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "cartBooking"."referral_id" = '${referral_id}')`;
+        if (keyword) {
+            const cipher = await CryptoUtility.encode(search);
+            where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
+        }
+
+        let [cartBookings, count] = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("booking.user", "User")
+            .select([
+                "User.userId",
+                "User.title",
+                "User.dob",
+                "User.firstName",
+                "User.lastName",
+                "User.email",
+                "User.profilePic",
+                "User.dob",
+                "User.gender",
+                "User.roleId",
+                "User.countryCode",
+                "User.phoneNo",
+                "cartBooking",
+                "booking",
+            ])
+            .where(where)
+            .getManyAndCount();
+        if (!cartBookings.length) {
+            throw new NotFoundException(`No data found.`);
+        }
+        return { data: cartBookings, count };
+    }
+
+    async exportReferralUser(paginationOption: ExportReferralDto) {
+        const { referral_id, search } = paginationOption;
+        console.log(paginationOption);
+
+        if (!uuidValidator(referral_id)) {
+            throw new NotFoundException("Given id not avilable");
+        }
+
+        
+        const keyword = search || "";
+
+        let where = `referral_id = '${referral_id}' AND is_verified = true AND role_id In (${Role.FREE_USER},${Role.PAID_USER})`;
+        if (keyword) {
+            const cipher = await CryptoUtility.encode(search);
+            where += `AND (("first_name" = '${cipher}')or("email" = '${cipher}')or("last_name" = '${cipher}'))`;
+        }
+
+        let [users, count] = await getConnection()
+            .createQueryBuilder(User, "user")
+            .select([
+                "user.userId",
+                "user.title",
+                "user.dob",
+                "user.firstName",
+                "user.lastName",
+                "user.email",
+                "user.profilePic",
+                "user.dob",
+                "user.gender",
+                "user.roleId",
+                "user.countryCode",
+                "user.phoneNo",
+            ])
+            .where(where)
+            .getManyAndCount();
+        if (!users.length) {
+            throw new NotFoundException(`No data found.`);
+        }
+        return { data: users, count };
     }
 }
