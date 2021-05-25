@@ -40,7 +40,12 @@ export class BookingRepository extends Repository<Booking> {
             product_id,
             depature_date,
             booking_date,
-            reservationId,category_name
+            reservationId,
+            category_name,
+            order_by_booking_date,
+            order_by_cancelation_date,
+            order_by_depature_date,
+            update_by,
         } = listBookingDto;
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
@@ -59,6 +64,14 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."booking_through" =:booking_through)`;
             } else {
                 where += `AND ("booking"."booking_through" in (:...booking_through))`;
+            }
+        }
+
+        if (update_by?.length) {
+            if (typeof update_by != "object") {
+                where += `AND ("updateBy"."role_id" =:update_by)`;
+            } else {
+                where += `AND ("updateBy"."role_id" in (:...update_by))`;
             }
         }
 
@@ -158,10 +171,11 @@ export class BookingRepository extends Repository<Booking> {
             .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("booking.updateByUser", "updateBy")
             .leftJoinAndSelect("booking.travelers", "traveler")
             .leftJoinAndSelect("User.state", "state")
             .leftJoinAndSelect("User.country", "countries")
-            .leftJoinAndSelect("booking.supplier", "supplier")
+            // .leftJoinAndSelect("booking.supplier", "supplier")
             .where(where, {
                 booking_type,
                 booking_status,
@@ -170,12 +184,37 @@ export class BookingRepository extends Repository<Booking> {
                 product_id,
                 booking_id,
                 booking_through,
-                reservationId,category_name
+                reservationId,
+                category_name,
+                update_by,
             })
             .take(take)
             .skip(skip)
-            .orderBy(`booking.bookingDate`, "DESC");
-        const [data, count] = await query.getManyAndCount();
+            // .orderBy(`booking.bookingDate`, "DESC");
+         if (order_by_depature_date){
+            query.addOrderBy(
+                `booking.checkInDate`,
+                order_by_depature_date == "ASC" ? "ASC" : "DESC"
+            );
+         }
+         if (order_by_booking_date) {
+             query.addOrderBy(
+                 `booking.bookingDate`,
+                 order_by_booking_date == "ASC" ? "ASC" : "DESC"
+             );
+         }
+         if (order_by_cancelation_date) {
+             query.addOrderBy(
+                 `booking.updatedDate`,
+                 order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
+             );
+         } 
+
+         console.log(query);
+         
+         const [data, count] = await query.getManyAndCount();
+
+
         if (!data.length) {
             throw new NotFoundException(
                 `No booking found&&&id&&&No booking found`

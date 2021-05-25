@@ -228,6 +228,13 @@ export class Booking extends BaseEntity {
     user: User;
 
     @ManyToOne(
+        () => User,
+        (user) => user.updatedBookings
+    )
+    @JoinColumn([{ name: "update_by", referencedColumnName: "userId" }])
+    updateByUser: User;
+
+    @ManyToOne(
         () => CartBooking,
         (cartBooking) => cartBooking.bookings
     )
