@@ -115,7 +115,7 @@ export class CartBookDto {
                description: `Enter referral id`,
                example: ``,
            })
-           referralId: string;
+           referral_id: string;
        }
 
 class Cart {

@@ -13,10 +13,16 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
 import { AuthoriseCartDto } from './dto/authorise-card-for-booking.dto';
 import { ListPaymentUserDto } from './dto/list-payment-user.dto';
+import { GetReferralId } from 'src/decorator/referral.decorator';
 
 
 @ApiTags("Payment")
 @Controller("payment")
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 export class PaymentController {
     constructor(private paymentService: PaymentService) {}
 
@@ -179,14 +185,19 @@ export class PaymentController {
     })
     @HttpCode(200)
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    async defaultCard(@Param("card_id") cardId: string, @LogInUser() user) {
+    async defaultCard(
+        @Param("card_id") cardId: string,
+        @LogInUser() user,
+        @GetReferralId() referralId: string
+    ) {
         const parent_user_id =
             user.roleId != Role.GUEST_USER ? user.user_id : "";
         const guest_id = user.roleId == Role.GUEST_USER ? user.user_id : "";
         return await this.paymentService.defaultCard(
             cardId,
             parent_user_id,
-            guest_id
+            guest_id,
+            referralId
         );
     }
 

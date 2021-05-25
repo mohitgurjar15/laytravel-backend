@@ -59,6 +59,7 @@ import { InstalmentType } from "src/enum/instalment-type.enum";
 import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
+import { LandingPages } from "src/entity/landing-page.entity";
 @Injectable()
 export class CartService {
     constructor(
@@ -1035,7 +1036,7 @@ more than 10.`
         }
     }
 
-    async bookCart(bookCart: CartBookDto, user: User, Headers) {
+    async bookCart(bookCart: CartBookDto, user: User, Headers,referralId) {
         try {
             const {
                 payment_type,
@@ -1047,7 +1048,7 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
-                referralId
+                referral_id,
             } = bookCart;
 
             if (cart.length > 10) {
@@ -1066,6 +1067,7 @@ more than 10.`
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 .leftJoinAndSelect("travelers.userData", "userData")
+                .leftJoinAndSelect("cart.user", "User")
                 .select([
                     "cart.id",
                     "cart.userId",
@@ -1085,6 +1087,8 @@ more than 10.`
                     "userData.firstName",
                     "userData.middleName",
                     "cart.oldModuleInfo",
+                    "User.userId",
+                    "User.referralId"
                 ])
 
                 .where(
@@ -1099,6 +1103,7 @@ more than 10.`
                     `Cart is empty.&&&cart&&&${errorMessage}`
                 );
             }
+            
             let smallestDate = "";
             let largestDate = "";
             //let ToatalAmount = ''
@@ -1151,7 +1156,17 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
-            cartBook.referralId = referralId || null
+            if (referral_id) {
+                let ref = await this.getReferralId(referral_id);
+                console.log(ref);
+                console.log(result[0]?.user?.referralId);
+                
+                
+                if (ref?.id == result[0]?.user?.referralId) {
+                    console.log('added');
+                    cartBook.referralId =ref?.id || null;
+                }
+            }
             cartBook.bookingType =
                 payment_type == "instalment"
                     ? BookingType.INSTALMENT
@@ -1240,7 +1255,8 @@ more than 10.`
                 );
                 await this.cartBookingEmailSend(
                     cartData.laytripCartId,
-                    cartData.userId
+                    cartData.userId,
+                    referralId
                 );
                 if (failedResult > 0 && payment.status == true) {
                     await this.refundCart(
@@ -1929,7 +1945,7 @@ more than 10.`
         }
     }
 
-    async cartBookingEmailSend(bookingId, userId) {
+    async cartBookingEmailSend(bookingId, userId, referralId) {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
@@ -1945,7 +1961,8 @@ more than 10.`
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param
+                        responce.param,
+                        responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -1963,7 +1980,8 @@ more than 10.`
                         bcc: mailConfig.BCC,
                         subject: `Travel Provider Reservation Confirmation`,
                         html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                            responce.param
+                            responce.param,
+                            responce.referralId
                         ),
                     })
                     .then((res) => {
@@ -1988,7 +2006,10 @@ more than 10.`
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: subject,
-                    html: await BookingNotCompletedMail({ userName }),
+                    html: await BookingNotCompletedMail(
+                        { userName },
+                        referralId
+                    ),
                 })
                 .then((res) => {
                     //console.log("res", res);
@@ -2198,5 +2219,16 @@ more than 10.`
             message: `Hotel added to cart`,
             data: savedCart,
         };
+    }
+
+    async getReferralId(name: string) {
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" like '${name}'`;
+
+        const query = getConnection()
+            .createQueryBuilder(LandingPages, "landingPages")
+            .where(where);
+
+        const result = await query.getOne();
+        return result;
     }
 }
