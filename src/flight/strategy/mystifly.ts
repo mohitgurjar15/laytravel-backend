@@ -2583,7 +2583,6 @@ export class Mystifly implements StrategyAirline {
                             instalmentDetails3.instalment_date.length - 1;
                     }
                 }
-
                 if (
                     typeof secondaryMarkUpDetails != "undefined" &&
                     Object.keys(secondaryMarkUpDetails).length

@@ -38,7 +38,7 @@ export class Priceline implements HotelInterface {
             get_airports: false,
             get_cities: true,
             get_regions: false,
-            get_hotels: false,
+            get_hotels: true,
             get_pois: false,
             max_results: 100,
             order: "asc",
@@ -104,9 +104,7 @@ export class Priceline implements HotelInterface {
                 "hotel_description,neighborhood,hotel_zone,id_t,zone_rank,rate_tracking_id,rate_tracking_id,city,review_score_data,cancellation_details,cancel_policy_description,program_types,promo_data,rate_amenity_data,room_sq_footage",
             rate_limit: 1,
         };
-        if (city_id) {
-            parameters["city_id"] = city_id;
-        }
+        
         let extra: any = {};
 
         if (hotel_id) {
@@ -114,6 +112,9 @@ export class Priceline implements HotelInterface {
                 hotel_ids: hotel_id,
             };
         } else {
+            if (city_id) {
+                parameters["city_id"] = city_id;
+            }
             extra = {
                 latitude,
                 longitude,
