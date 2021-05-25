@@ -1,6 +1,12 @@
 import { LaytripFeedbackModule } from "./laytrip-feedback/laytrip-feedback.module";
 import { VacationRentalModule } from "./vacation-rental/vacation-rental.module";
-import { HttpModule, MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
+import {
+    HttpModule,
+    MiddlewareConsumer,
+    Module,
+    NestModule,
+    RequestMethod,
+} from "@nestjs/common";
 import { typeOrmConfig } from "./config/typeorm.config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
@@ -140,9 +146,6 @@ console.log(typeOrmConfig);
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
-        consumer
-            .apply(AppLoggerMiddleware)
-            .exclude('auth/(.*)')
-            .forRoutes("*");
+        consumer.apply(AppLoggerMiddleware).forRoutes("*");
     }
 }
