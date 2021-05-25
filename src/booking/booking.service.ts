@@ -2257,13 +2257,13 @@ export class BookingService {
                 result.data[i]["paidAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
-                        ? result.data[i].totalAmount
-                        : paidAmount;
+                        ? Generic.formatPriceDecimal(parseFloat(result.data[i].totalAmount)) 
+                        : Generic.formatPriceDecimal(paidAmount);
                 result.data[i]["remainAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
                         ? 0
-                        : remainAmount;
+                        : Generic.formatPriceDecimal(remainAmount);
 
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;

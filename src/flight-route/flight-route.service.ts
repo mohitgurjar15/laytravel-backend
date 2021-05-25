@@ -135,10 +135,20 @@ export class FlightRouteService {
         for await (const category of categoryCount) {
             responce[category.name] = category.count;
         }
-
+        let domestic = 0;
+        let international = 0;
         for await (const type of typeCount) {
-            responce[type.type] = type.count;
+            if (type.type == FlightRouteType.DOMESTIC) {
+                domestic = parseFloat(type.count);
+            }
+
+            if (type.type == FlightRouteType.INTERNATIONAL) {
+                international = parseFloat(type.count);
+            }
         }
+
+        responce[FlightRouteType.DOMESTIC] = domestic
+        responce[FlightRouteType.INTERNATIONAL] = international;
 
         responce["flight_route_count"] = totalFlightRoutes[0].count;
         // return {
