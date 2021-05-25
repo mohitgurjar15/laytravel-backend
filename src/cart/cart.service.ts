@@ -1402,6 +1402,7 @@ more than 10.`
                         paymentStatus: PaymentStatus.CONFIRM,
                         paymentInfo: captureCardresult.meta_data,
                         transactionToken: captureCardresult.token,
+                        paymentCaptureDate : new Date(),
                         attempt: 1,
                     })
                     .where(
