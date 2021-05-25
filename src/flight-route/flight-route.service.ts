@@ -13,6 +13,7 @@ import { Activity } from "src/utility/activity.utility";
 import { getConnection } from "typeorm";
 import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
 import { EnableDisableFlightRouteDto } from "./dto/enable-disable-route.dto";
+import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { ImportRouteDto } from "./dto/import-route.dto";
 import { ListFlightRouteDto } from "./dto/list-flight-route.dto";
 import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
@@ -68,6 +69,53 @@ export class FlightRouteService {
 
         return { route: result, count };
     }
+    async exportFlightRoutes(
+        listFlightRouteDto: ExportFlightRouteDto,
+        user: User
+    ) {
+        const { search, status, category_id } = listFlightRouteDto;
+        let where = `("route"."is_deleted" = false)`;
+
+        if (search) {
+            where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
+            or("route"."to_airport_code" ILIKE '%${search}%')
+            or("route"."to_airport_country" ILIKE '%${search}%') 
+            or ("route"."to_airport_name" ILIKE '%${search}%') 
+            or ("route"."from_airport_city" ILIKE '%${search}%')
+            or("route"."from_airport_code" ILIKE '%${search}%')
+            or("route"."from_airport_country" ILIKE '%${search}%') 
+            or ("route"."from_airport_name" ILIKE '%${search}%')
+            or ("route"."type" ILIKE '%${search}%'))`;
+        }
+
+        if (status) {
+            where += `AND ("route"."status" = ${status} )`;
+        }
+        if (category_id) {
+            where += `AND ("route"."category_id" = ${category_id} )`;
+        }
+
+        let [result, count] = await getConnection()
+            .createQueryBuilder(FlightRoute, "route")
+            .leftJoinAndSelect("route.category", "category")
+            .where(where)
+            .orderBy(`route.id`, "DESC")
+            .getManyAndCount();
+
+        if (!result) {
+            throw new NotFoundException(
+                `No any route available for given location`
+            );
+        }
+
+        Activity.logActivity(
+            user.userId,
+            "flight-route",
+            `Flight route export by admin`
+        );
+
+        return { route: result, count };
+    }
 
     async routesCounts() {
         const typeCount = await getConnection().query(
@@ -87,10 +135,20 @@ export class FlightRouteService {
         for await (const category of categoryCount) {
             responce[category.name] = category.count;
         }
-
+        let domestic = 0;
+        let international = 0;
         for await (const type of typeCount) {
-            responce[type.type] = type.count;
+            if (type.type == FlightRouteType.DOMESTIC) {
+                domestic = parseFloat(type.count);
+            }
+
+            if (type.type == FlightRouteType.INTERNATIONAL) {
+                international = parseFloat(type.count);
+            }
         }
+
+        responce[FlightRouteType.DOMESTIC] = domestic
+        responce[FlightRouteType.INTERNATIONAL] = international;
 
         responce["flight_route_count"] = totalFlightRoutes[0].count;
         // return {
@@ -106,7 +164,7 @@ export class FlightRouteService {
             category_id,
             from_airport_codes,
             to_airport_codes,
-            type
+            type,
         } = addFlightRouteDto;
 
         const category = await getConnection()
@@ -191,7 +249,7 @@ export class FlightRouteService {
                 route.status = true;
                 route.isDeleted = false;
                 route.createDate = new Date();
-                route.type = type
+                route.type = type;
                 parentRoute = await route.save();
             }
         }
@@ -318,7 +376,7 @@ export class FlightRouteService {
         updateFlightRouteDto: UpdateFlightRouteDto,
         user: User
     ) {
-        const { category_id , type} = updateFlightRouteDto;
+        const { category_id, type } = updateFlightRouteDto;
         const route = await getConnection()
             .createQueryBuilder(FlightRoute, "route")
             .where(`"id" = ${id} AND "is_deleted" = false`)
@@ -447,7 +505,10 @@ export class FlightRouteService {
                             "category_id"
                         ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                     }
-                    if (row.type != FlightRouteType.DOMESTIC && row.type != FlightRouteType.INTERNATIONAL) {
+                    if (
+                        row.type != FlightRouteType.DOMESTIC &&
+                        row.type != FlightRouteType.INTERNATIONAL
+                    ) {
                         error_message[
                             "type"
                         ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;

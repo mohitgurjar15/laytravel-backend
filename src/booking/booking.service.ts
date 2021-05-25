@@ -1273,12 +1273,14 @@ export class BookingService {
                     `card_token = '${result.cardToken}' AND user_id = '${result.userId}'`
                 )
                 .getOne();
-
+            let downpaymentPer = 0
+            let downPayment : number = 0
             if (result.bookingInstalments.length > 0) {
                 result.bookingInstalments.sort((a, b) => a.id - b.id);
 
                 //result.bookingInstalments.reverse()
             }
+            downPayment = parseFloat(result.bookingInstalments[0].amount); 
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
                     paidAmount += parseFloat(instalment.amount);
@@ -1320,6 +1322,10 @@ export class BookingService {
             // }
             let responce: any = result;
             responce["userData"] = cardData;
+            if(downPayment)
+            {
+                responce["downPayment_percentage"] = (downPayment * 100) / parseFloat(result["paidAmount"]);    
+            }
             return responce;
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -1409,12 +1415,17 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
         } = listPaymentAdminDto;
 
         let where;
         where = `"BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1490,12 +1501,16 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
         } = listPaymentAdminDto;
 
         let where;
         where = `"BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1570,12 +1585,16 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
         } = listPaymentAdminDto;
 
         let where;
         where = `"BookingInstalments"."attempt" > 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1633,12 +1652,16 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
         } = listPaymentAdminDto;
 
         let where;
         where = `"BookingInstalments"."attempt" > 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1700,7 +1723,7 @@ export class BookingService {
             let todayPrice = [];
             let availableBookingId = [];
             console.log(result.data.length);
-            
+
             for await (const data of result.data) {
                 const bookingData = data.booking;
                 // booking data
@@ -1748,7 +1771,7 @@ export class BookingService {
                     bookingData.locationInfo;
                 predictiveBookingData["checkInDate"] = bookingData.checkInDate;
                 predictiveBookingData["categoryName"] =
-                    bookingData.categoryName|| '';
+                    bookingData.categoryName || "";
                 predictiveBookingData["remain_days"] = dayDiff;
                 predictiveBookingData["booking_time_total_amount"] =
                     bookingData.totalAmount;
@@ -1925,6 +1948,12 @@ export class BookingService {
                 }
 
                 if (category) {
+                    let checkInDate = new Date(bookingData.checkInDate);
+                    checkInDate.setDate(
+                        checkInDate.getDate() -
+                            category.installmentAvailableAfter
+                    );
+                    predictiveBookingData["deadline_date"] = checkInDate;
                     if (category.installmentAvailableAfter < dayDiff) {
                         predictiveBookingData["reservation_status"] = "yellow";
                         predictiveBookingData["reservation_status_note"] =
@@ -1986,7 +2015,7 @@ export class BookingService {
                         booking.locationInfo;
                     predictiveBookingData["checkInDate"] = booking.checkInDate;
                     predictiveBookingData["categoryName"] =
-                        booking.categoryName|| '';
+                        booking.categoryName || "";
                     predictiveBookingData["remain_days"] = dayDiff;
                     predictiveBookingData["booking_time_total_amount"] =
                         booking.totalAmount;
@@ -2034,6 +2063,12 @@ export class BookingService {
                     ] = false;
 
                     if (category) {
+                        let checkInDate = new Date(booking.checkInDate);
+                        checkInDate.setDate(
+                            checkInDate.getDate() -
+                                category.installmentAvailableAfter
+                        );
+                        predictiveBookingData["deadline_date"] = checkInDate;
                         if (category.installmentAvailableAfter < dayDiff) {
                             predictiveBookingData["reservation_status"] =
                                 "yellow";
@@ -2222,13 +2257,13 @@ export class BookingService {
                 result.data[i]["paidAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
-                        ? result.data[i].totalAmount
-                        : paidAmount;
+                        ? Generic.formatPriceDecimal(parseFloat(result.data[i].totalAmount)) 
+                        : Generic.formatPriceDecimal(paidAmount);
                 result.data[i]["remainAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
                         ? 0
-                        : remainAmount;
+                        : Generic.formatPriceDecimal(remainAmount);
 
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
@@ -2340,7 +2375,7 @@ export class BookingService {
     }
 
     async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
-        const { booking_id, product_id } = deleteBookingDto;
+        const { booking_id, product_id, message } = deleteBookingDto;
 
         let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
         if (product_id) {
@@ -2367,8 +2402,9 @@ export class BookingService {
                 .set({
                     bookingStatus: BookingStatus.CANCELLED,
                     paymentStatus: PaymentStatus.CANCELLED,
-                    updatedDate : new Date(),
-                    updateBy : user.userId
+                    updatedDate: new Date(),
+                    updateBy: user.userId,
+                    message: message || null,
                 })
                 .where(
                     `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,
@@ -2389,13 +2425,12 @@ export class BookingService {
                 .execute();
         }
         if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
-
-             Activity.logActivity(
-                 user.userId,
-                 "Booking",
-                 "Booking(" + booking_id + "" + product_id ||
-                     "" + ") deleted by admin "
-             );
+            Activity.logActivity(
+                user.userId,
+                "Booking",
+                "Booking(" + booking_id + "" + product_id ||
+                    "" + ") deleted by admin "
+            );
             this.mailerService
                 .sendMail({
                     to: query.user.email,
@@ -2568,10 +2603,12 @@ export class BookingService {
         dailyPrice.date = new Date();
         dailyPrice.isBelowMinimum = false;
         dailyPrice.netPrice = parseFloat(newBooking.netRate);
-        dailyPrice.price = flightInfo[0].selling_price
-        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0
-        await dailyPrice.save()
-        let mail = await CartDataUtility.CartMailModelDataGenerate(booking.cart.laytripCartId);
+        dailyPrice.price = flightInfo[0].selling_price;
+        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0;
+        await dailyPrice.save();
+        let mail = await CartDataUtility.CartMailModelDataGenerate(
+            booking.cart.laytripCartId
+        );
         this.mailerService
             .sendMail({
                 to: mail.email,

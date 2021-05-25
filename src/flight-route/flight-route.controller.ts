@@ -40,6 +40,7 @@ import { ImportRouteDto } from "./dto/import-route.dto";
 import { csvFileDto } from "src/user/dto/csv-file.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { csvFileFilter, editFileName } from "src/auth/file-validator";
+import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 @ApiTags("Flight Route")
 @Controller("flight-route")
 @ApiBearerAuth()
@@ -62,6 +63,28 @@ export class FlightRouteController {
     async listFlightRoute(@Query() listFlightRouteDto: ListFlightRouteDto) {
         return await this.flightRouteService.listFlightRoutes(
             listFlightRouteDto
+        );
+    }
+
+    @Get("export-route")
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "List all flight route for admin" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async exportFlightRoute(
+        @Query() listFlightRouteDto: ExportFlightRouteDto,
+        @GetUser() user: User
+    ) {
+        return await this.flightRouteService.exportFlightRoutes(
+            listFlightRouteDto,
+            user
         );
     }
 

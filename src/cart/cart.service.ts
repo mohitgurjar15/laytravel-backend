@@ -1047,6 +1047,7 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
+                referralId
             } = bookCart;
 
             if (cart.length > 10) {
@@ -1150,6 +1151,7 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
+            cartBook.referralId = referralId || null
             cartBook.bookingType =
                 payment_type == "instalment"
                     ? BookingType.INSTALMENT
@@ -1161,12 +1163,15 @@ more than 10.`
             let successedResult = 0;
             let failedResult = 0;
             let BookingIds = [];
+            let flightCount = 0;
+            let hotelCount = 0;
             //let mailResponce = []
 
             const cartCount = result.length;
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
+                        flightCount++;
                         let flightResponce = await this.bookFlight(
                             item,
                             user,
@@ -1174,7 +1179,8 @@ more than 10.`
                             bookCart,
                             smallestDate,
                             cartData,
-                            cartCount
+                            cartCount,
+                            flightCount
                         );
                         responce.push(flightResponce);
 
@@ -1190,6 +1196,7 @@ more than 10.`
                         break;
 
                     case ModulesName.HOTEL:
+                        hotelCount++;
                         let hotelResponce = await this.bookHotel(
                             item,
                             user,
@@ -1197,7 +1204,8 @@ more than 10.`
                             bookCart,
                             smallestDate,
                             cartData,
-                            cartCount
+                            cartCount,
+                            hotelCount
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
@@ -1439,8 +1447,10 @@ more than 10.`
         bookCart: CartBookDto,
         smallestDate: string,
         cartData: CartBooking,
-        cartCount:number
+        cartCount: number,
+        flightCount : number
     ) {
+        let reservationId = `${cartData.laytripCartId}-F${flightCount}`
         const {
             payment_type,
             laycredit_points,
@@ -1566,7 +1576,8 @@ more than 10.`
                     custom_instalment_no: 0,
                     card_token,
                     booking_through,
-                    cartCount
+                    cartCount,
+                    reservationId,
                 };
 
                 console.log("cartBook request");
@@ -1640,8 +1651,10 @@ more than 10.`
         bookCart: CartBookDto,
         smallestDate: string,
         cartData: CartBooking,
-        cartCount:number
+        cartCount: number,
+        hotelCount
     ) {
+        let reservationId = `${cartData.laytripCartId}-H${hotelCount}`
         const {
             payment_type,
             laycredit_points,
@@ -1725,7 +1738,8 @@ more than 10.`
                     card_token,
                     booking_through,
                     bundle: value[0].bundle,
-                    cartCount
+                    cartCount,
+                    reservationId
                 };
 
                 console.log("cartBook request");

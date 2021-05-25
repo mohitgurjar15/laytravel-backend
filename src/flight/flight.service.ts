@@ -1690,7 +1690,8 @@ export class FlightService {
         captureCardresult = null,
         supplierBookingData,
         travelers,
-        cartId = null
+        cartId = null,
+       reservationId = null
     ) {
         const {
             selling_price,
@@ -1736,6 +1737,7 @@ export class FlightService {
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
+        booking.reservationId = reservationId
         booking.locationInfo = {
             journey_type,
             source_location,
@@ -3101,7 +3103,7 @@ export class FlightService {
                 laycredit_points,
                 card_token,
                 booking_through,
-                cartCount,
+                cartCount,reservationId
             } = bookFlightDto;
 
             cartCount = cartCount ? cartCount : 0;
@@ -3295,7 +3297,8 @@ export class FlightService {
                         null,
                         bookingResult || null,
                         travelers,
-                        cartId
+                        cartId,
+                        reservationId
                     );
                     // if (dayDiff <= 90) {
                     //     this.bookingUpdateFromSupplierside(
@@ -3354,7 +3357,8 @@ export class FlightService {
                             null,
                             bookingResult,
                             travelers,
-                            cartId
+                            cartId,
+                            reservationId
                         );
                         //send email here
                         bookingResult.laytrip_booking_id =

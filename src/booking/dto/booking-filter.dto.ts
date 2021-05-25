@@ -31,6 +31,13 @@ export class BookingFilterDto {
     })
     booking_id: string;
 
+
+    @ApiPropertyOptional({
+        description: 'reservation id',
+        example: ""
+    })
+    reservationId: string;
+
     @ApiPropertyOptional({
         description: 'supplier id',
         example: ""
