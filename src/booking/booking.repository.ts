@@ -210,7 +210,7 @@ export class BookingRepository extends Repository<Booking> {
              );
          } 
 
-         console.log(query);
+        //  console.log(query);
          
          const [data, count] = await query.getManyAndCount();
 
@@ -825,7 +825,7 @@ export class BookingRepository extends Repository<Booking> {
             booking_date,
             reservationId,
             booking_through,
-            category_name
+            category_name,update_by,order_by_booking_date,order_by_cancelation_date,order_by_depature_date
         } = filterOption;
 
         let where;
@@ -916,6 +916,15 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."booking_through" in (:...booking_through))`;
             }
         }
+
+        if (update_by?.length) {
+            if (typeof update_by != "object") {
+                where += `AND ("updateBy"."role_id" =:update_by)`;
+            } else {
+                where += `AND ("updateBy"."role_id" in (:...update_by))`;
+            }
+        }
+
         const query = getManager()
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.cart", "cart")
@@ -936,8 +945,28 @@ export class BookingRepository extends Repository<Booking> {
                 payment_type,
                 booking_through,
                 category_name,
-            })
-            .orderBy(`booking.bookingDate`, "DESC");
+                update_by,
+            });
+            //.orderBy(`booking.bookingDate`, "DESC");
+
+             if (order_by_depature_date) {
+                 query.addOrderBy(
+                     `booking.checkInDate`,
+                     order_by_depature_date == "ASC" ? "ASC" : "DESC"
+                 );
+             }
+             if (order_by_booking_date) {
+                 query.addOrderBy(
+                     `booking.bookingDate`,
+                     order_by_booking_date == "ASC" ? "ASC" : "DESC"
+                 );
+             }
+             if (order_by_cancelation_date) {
+                 query.addOrderBy(
+                     `booking.updatedDate`,
+                     order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
+                 );
+             } 
         const [data, count] = await query.getManyAndCount();
         //const count = await query.getCount();
         if (!data.length) {
