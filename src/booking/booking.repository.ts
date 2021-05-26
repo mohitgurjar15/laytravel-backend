@@ -196,6 +196,7 @@ export class BookingRepository extends Repository<Booking> {
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
             .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect("booking.cancellationRequest", "cancellationRequest")
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.user", "User")
             .leftJoinAndSelect("booking.updateByUser", "updateBy")
@@ -711,7 +712,10 @@ export class BookingRepository extends Repository<Booking> {
             .leftJoinAndSelect("predictiveBookingData.booking", "booking")
             .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.module", "moduleData")
-
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             .select([
                 "booking.bookingType",
                 "booking.updateBy",
@@ -750,6 +754,7 @@ export class BookingRepository extends Repository<Booking> {
                 "moduleData.name",
                 "moduleData.id",
                 "cart.laytripCartId",
+                "cancellationRequest",
             ])
 
             .where(
@@ -781,7 +786,10 @@ export class BookingRepository extends Repository<Booking> {
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.module", "moduleData")
-
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             // .select([
             // 	"booking.supplierBookingId",
             // 	"booking.id"

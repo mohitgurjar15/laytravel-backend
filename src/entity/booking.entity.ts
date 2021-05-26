@@ -20,6 +20,7 @@ import { UserCard } from "./user-card.entity";
 import { type } from "os";
 import { CartBooking } from "./cart-booking.entity";
 import { OtherPayments } from "./other-payment.entity";
+import { IntialCancelBooking } from "./intial-booking.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -268,9 +269,14 @@ export class Booking extends BaseEntity {
     )
     predictiveBookingData: PredictiveBookingData[];
 
+    @OneToMany(
+        () => IntialCancelBooking,
+        (intialCancelBooking) => intialCancelBooking.booking
+    )
+    cancellationRequest: IntialCancelBooking[];
     // @ManyToOne(
     //   () => UserCard,
-    //   card => card.bookings
+    //   card => card.bookings  
     // )
     // @JoinColumn([{ name: "card_token", referencedColumnName: "cardToken" }])
     // card: UserCard;
