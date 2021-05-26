@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { ValidateIf } from "class-validator";
+import { combineStatus } from "src/enum/booking-new-status.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { BookingType } from "src/enum/booking-type.enum";
 import { ModulesName } from "src/enum/module.enum";
@@ -137,4 +138,9 @@ export class ExportBookingDto {
                description: "cancelationDate",
            })
            order_by_depature_date: string;
+
+           @ApiPropertyOptional({
+               description: "status",
+           })
+           status: combineStatus[];
        }

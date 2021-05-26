@@ -56,6 +56,7 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/cart-changes-as-per-user-req.dto";
+import { BookingStatusUtility } from "src/utility/booking-status.utility";
 
 @Injectable()
 export class BookingService {
@@ -402,6 +403,15 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
+
+                result.data[i][
+                    "status"
+                ] = await BookingStatusUtility.bookingStatus(
+                    result.data[i].bookingStatus,
+                    result.data[i].paymentStatus,
+                    new Date(result.data[i].checkOutDate),
+                    result.data[i].isResedule
+                );
                 // for (let j in result.data[i].travelers) {
                 //     if (result.data[i].travelers[j].travelerInfo?.dob) {
                 //         var birthDate = new Date(
@@ -1273,14 +1283,14 @@ export class BookingService {
                     `card_token = '${result.cardToken}' AND user_id = '${result.userId}'`
                 )
                 .getOne();
-            let downpaymentPer = 0
-            let downPayment : number = 0
+            let downpaymentPer = 0;
+            let downPayment: number = 0;
             if (result.bookingInstalments.length > 0) {
                 result.bookingInstalments.sort((a, b) => a.id - b.id);
 
                 //result.bookingInstalments.reverse()
             }
-            downPayment = parseFloat(result.bookingInstalments[0].amount); 
+            downPayment = parseFloat(result.bookingInstalments[0].amount);
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
                     paidAmount += parseFloat(instalment.amount);
@@ -1301,6 +1311,13 @@ export class BookingService {
             delete result.user.updatedDate;
             delete result.user.salt;
             delete result.user.password;
+
+            result["status"] = await BookingStatusUtility.bookingStatus(
+                result.bookingStatus,
+                result.paymentStatus,
+                new Date(result.checkOutDate),
+                result.isResedule
+            );
             // for (let j in result.travelers) {
             //     if (result.travelers[j].travelerInfo?.dob) {
             //         var birthDate = new Date(
@@ -1322,9 +1339,9 @@ export class BookingService {
             // }
             let responce: any = result;
             responce["userData"] = cardData;
-            if(downPayment)
-            {
-                responce["downPayment_percentage"] = (downPayment * 100) / parseFloat(result["paidAmount"]);    
+            if (downPayment) {
+                responce["downPayment_percentage"] =
+                    (downPayment * 100) / parseFloat(result["paidAmount"]);
             }
             return responce;
         } catch (error) {
@@ -1415,13 +1432,42 @@ export class BookingService {
             booking_id,
             search,
             product_id,
-            reservationId,
+            reservationId,booking_status
         } = listPaymentAdminDto;
 
         let where;
         where = `"BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                       let or = "";
+                       for await (const s of booking_status) {
+                           let w = await BookingStatusUtility.filterCondition(
+                               s,
+                               "booking"
+                           );
+                           if (w) {
+                               or += `${or == "" ? "" : "or"}(${w})`;
+                           }
+                       }
+                       if (or != "") {
+                           where += `AND (${or})`;
+                       }
+                   }
         }
 
         if (reservationId) {
@@ -1463,6 +1509,16 @@ export class BookingService {
             limit,
             page_no
         );
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
+
         //const result: any = data;
 
         // for await (const instalment of result) {
@@ -1501,7 +1557,7 @@ export class BookingService {
             booking_id,
             search,
             product_id,
-            reservationId,
+            reservationId,booking_status
         } = listPaymentAdminDto;
 
         let where;
@@ -1523,7 +1579,35 @@ export class BookingService {
         if (start_date) {
             where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
         }
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
 
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
         if (end_date) {
             where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
         }
@@ -1547,6 +1631,15 @@ export class BookingService {
             data,
             total_count,
         } = await this.bookingRepository.exportPayment(where);
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
         //const result: any = data;
 
         // for await (const instalment of result) {
@@ -1585,7 +1678,7 @@ export class BookingService {
             booking_id,
             search,
             product_id,
-            reservationId,
+            reservationId,booking_status
         } = listPaymentAdminDto;
 
         let where;
@@ -1627,11 +1720,50 @@ export class BookingService {
             const cipher = await CryptoUtility.encode(search);
             where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
+
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
         const { data, total_count } = await this.bookingRepository.listPayment(
             where,
             limit,
             page_no
         );
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
 
         return {
             data: data,
@@ -1652,7 +1784,7 @@ export class BookingService {
             booking_id,
             search,
             product_id,
-            reservationId,
+            reservationId,booking_status
         } = listPaymentAdminDto;
 
         let where;
@@ -1666,6 +1798,36 @@ export class BookingService {
 
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
+        }
+
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
         }
 
         if (booking_id) {
@@ -1698,6 +1860,15 @@ export class BookingService {
             data,
             total_count,
         } = await this.bookingRepository.exportPayment(where);
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
 
         return {
             data: data,
@@ -1794,6 +1965,16 @@ export class BookingService {
                     parseFloat(bookingData.totalAmount);
                 predictiveBookingData["booking_status"] =
                     bookingData.bookingStatus;
+
+                predictiveBookingData[
+                    "status"
+                ] = await BookingStatusUtility.bookingStatus(
+                    bookingData.bookingStatus,
+                    bookingData.paymentStatus,
+                    new Date(bookingData.checkOutDate),
+                    bookingData.isResedule
+                );
+
                 // //console.log(bookingData.laytripBookingId);
 
                 predictiveBookingData["departure_date"] =
@@ -1989,6 +2170,7 @@ export class BookingService {
                     const totalPaidAmount = await this.totalpaidAmount(
                         booking.id
                     );
+
                     //console.log(booking.laytripBookingId);
                     //console.log('booking.laytripBookingId');
 
@@ -2030,6 +2212,14 @@ export class BookingService {
                     predictiveBookingData["is_reseduled"] = booking?.updateBy
                         ? true
                         : false;
+                    predictiveBookingData[
+                        "status"
+                    ] = await BookingStatusUtility.bookingStatus(
+                        booking.bookingStatus,
+                        booking.paymentStatus,
+                        new Date(booking.checkOutDate),
+                        booking.isResedule
+                    );
                     predictiveBookingData["selling_price"] =
                         booking.totalAmount;
                     predictiveBookingData["paid_amount"] = totalPaidAmount;
@@ -2257,7 +2447,9 @@ export class BookingService {
                 result.data[i]["paidAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
-                        ? Generic.formatPriceDecimal(parseFloat(result.data[i].totalAmount)) 
+                        ? Generic.formatPriceDecimal(
+                              parseFloat(result.data[i].totalAmount)
+                          )
                         : Generic.formatPriceDecimal(paidAmount);
                 result.data[i]["remainAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
@@ -2268,6 +2460,15 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
+
+                result.data[i][
+                    "status"
+                ] = await BookingStatusUtility.bookingStatus(
+                    result.data[i].bookingStatus,
+                    result.data[i].paymentStatus,
+                    new Date(result.data[i].checkOutDate),
+                    result.data[i].isResedule
+                );
                 // for (let j in result.data[i].travelers) {
                 //     var birthDate = new Date(
                 //         result.data[i].travelers[j].travelerInfo.dob
@@ -2583,6 +2784,7 @@ export class BookingService {
         booking.oldBookingInfo = JSON.parse(JSON.stringify(booking));
         booking.updatedDate = new Date();
         booking.moduleInfo = flightInfo;
+        booking.isResedule = true;
         booking.locationInfo = {
             journey_type:
                 flightInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",

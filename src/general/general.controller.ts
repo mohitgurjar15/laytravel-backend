@@ -5,6 +5,7 @@ import {
     HttpCode,
     Param,
     Post,
+    Query,
     Req,
     UploadedFiles,
     UseGuards,
@@ -37,6 +38,7 @@ import { GeneralService } from "./general.service";
 import { uploadFileDto } from "./dto/upload-file.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { UserIpAddress } from "src/decorator/ip-address.decorator";
+import { ListMassCommunicationDto } from "./dto/list-mass-communication.dto";
 
 @ApiTags("Generic")
 @Controller("generic")
@@ -213,8 +215,10 @@ export class GeneralController {
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    async listmassCommunication() {
-        return await this.generalService.ListMassCommunication();
+    async listmassCommunication(@Query() paginationOption:ListMassCommunicationDto) {
+        return await this.generalService.ListMassCommunication(
+            paginationOption
+        );
     }
 
     @Post(["test/email/:emailId"])

@@ -17,6 +17,7 @@ import { BookingType } from "src/enum/booking-type.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { CryptoUtility } from "src/utility/crypto.utility";
+import { BookingStatusUtility } from "src/utility/booking-status.utility";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -46,17 +47,43 @@ export class BookingRepository extends Repository<Booking> {
             order_by_cancelation_date,
             order_by_depature_date,
             update_by,
+            status,
         } = listBookingDto;
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
-        console.table(module_id);
-        console.table(booking_status);
-        console.log(typeof module_id);
-        console.log(typeof booking_status);
+
         let where;
         where = `1=1 `;
         if (userId) {
             where += `AND ("booking"."user_id" = '${userId}')`;
+        }
+
+        if (status?.length) {
+            if (typeof status != "object") {
+                console.log(status);
+                
+                let w = await BookingStatusUtility.filterCondition(parseInt(status), "booking");
+                console.log(w);
+                
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                console.log(status);
+                let or = ''
+                for await (const s of status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == '' ? '':'or'}(${w})`;
+                    }
+                }
+                if(or != ''){
+                     where += `AND (${or})`;
+                }
+            }
         }
 
         if (booking_through?.length) {
@@ -189,31 +216,30 @@ export class BookingRepository extends Repository<Booking> {
                 update_by,
             })
             .take(take)
-            .skip(skip)
-            // .orderBy(`booking.bookingDate`, "DESC");
-         if (order_by_depature_date){
+            .skip(skip);
+        // .orderBy(`booking.bookingDate`, "DESC");
+        if (order_by_depature_date) {
             query.addOrderBy(
                 `booking.checkInDate`,
                 order_by_depature_date == "ASC" ? "ASC" : "DESC"
             );
-         }
-         if (order_by_booking_date) {
-             query.addOrderBy(
-                 `booking.bookingDate`,
-                 order_by_booking_date == "ASC" ? "ASC" : "DESC"
-             );
-         }
-         if (order_by_cancelation_date) {
-             query.addOrderBy(
-                 `booking.updatedDate`,
-                 order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
-             );
-         } 
+        }
+        if (order_by_booking_date) {
+            query.addOrderBy(
+                `booking.bookingDate`,
+                order_by_booking_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_cancelation_date) {
+            query.addOrderBy(
+                `booking.updatedDate`,
+                order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
 
         //  console.log(query);
-         
-         const [data, count] = await query.getManyAndCount();
 
+        const [data, count] = await query.getManyAndCount();
 
         if (!data.length) {
             throw new NotFoundException(
@@ -825,7 +851,11 @@ export class BookingRepository extends Repository<Booking> {
             booking_date,
             reservationId,
             booking_through,
-            category_name,update_by,order_by_booking_date,order_by_cancelation_date,order_by_depature_date
+            category_name,
+            update_by,
+            order_by_booking_date,
+            order_by_cancelation_date,
+            order_by_depature_date,status
         } = filterOption;
 
         let where;
@@ -843,6 +873,38 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."module_id" in (:...module_id))`;
             }
         }
+
+        if (status?.length) {
+            if (typeof status != "object") {
+                console.log(status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                console.log(status);
+                let or = "";
+                for await (const s of status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
+
 
         if (category_name?.length) {
             if (typeof category_name != "object") {
@@ -947,26 +1009,26 @@ export class BookingRepository extends Repository<Booking> {
                 category_name,
                 update_by,
             });
-            //.orderBy(`booking.bookingDate`, "DESC");
+        //.orderBy(`booking.bookingDate`, "DESC");
 
-             if (order_by_depature_date) {
-                 query.addOrderBy(
-                     `booking.checkInDate`,
-                     order_by_depature_date == "ASC" ? "ASC" : "DESC"
-                 );
-             }
-             if (order_by_booking_date) {
-                 query.addOrderBy(
-                     `booking.bookingDate`,
-                     order_by_booking_date == "ASC" ? "ASC" : "DESC"
-                 );
-             }
-             if (order_by_cancelation_date) {
-                 query.addOrderBy(
-                     `booking.updatedDate`,
-                     order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
-                 );
-             } 
+        if (order_by_depature_date) {
+            query.addOrderBy(
+                `booking.checkInDate`,
+                order_by_depature_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_booking_date) {
+            query.addOrderBy(
+                `booking.bookingDate`,
+                order_by_booking_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_cancelation_date) {
+            query.addOrderBy(
+                `booking.updatedDate`,
+                order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
         const [data, count] = await query.getManyAndCount();
         //const count = await query.getCount();
         if (!data.length) {

@@ -180,6 +180,9 @@ export class Booking extends BaseEntity {
     })
     supplierBookingId: string | null;
 
+    @Column("boolean", { name: "is_resedule", default: false })
+    isResedule: boolean;
+
     @ManyToOne(
         () => Currency,
         (currency) => currency.bookings

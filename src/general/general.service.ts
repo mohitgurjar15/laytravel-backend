@@ -45,6 +45,7 @@ import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/ca
 import {TravelProviderReminderMail} from "src/config/new_email_templete/cart-reminder.mail"
 import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
 import {LaytripTripReminderMail} from "src/config/new_email_templete/trip-reminder.dto"
+import { ListMassCommunicationDto } from "./dto/list-mass-communication.dto";
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -278,7 +279,20 @@ export class GeneralService {
         };
     }
 
-    async ListMassCommunication() {
+    async ListMassCommunication(paginationOption:ListMassCommunicationDto) {
+        const { page_no, search, limit } = paginationOption;
+
+        const take = limit || 10;
+        const skip = (page_no - 1) * limit || 0;
+        const keyword = search || "";
+
+        let where;
+        if (keyword) {
+            where = `("log"."subject" ILIKE '%${keyword}%') or ("user"."email" ILIKE '%${keyword}%')`;
+        } else {
+            where = `1=1`;
+        }
+
         const [result, count] = await getManager()
             .createQueryBuilder(MassCommunication, "log")
             .leftJoinAndSelect("log.user", "user")
@@ -296,6 +310,9 @@ export class GeneralService {
                 "log.users",
                 "user.roleId",
             ])
+            .where(where)
+            .take(take)
+            .skip(skip)
             .orderBy("log.id", "DESC")
             .getManyAndCount();
         if (!result.length) {
