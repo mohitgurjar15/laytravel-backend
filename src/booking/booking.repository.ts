@@ -762,7 +762,9 @@ export class BookingRepository extends Repository<Booking> {
                     todayDate.split(" ")[0]
                 }' AND moduleData.id IN(:...id)  AND booking.booking_status In (${
                     BookingStatus.PENDING
-                }) AND predictiveBookingData.is_resedule = false `,
+                }) AND predictiveBookingData.is_resedule = false AND booking.check_in_date >= date('${
+                    todayDate.split(" ")[0]
+                }')`,
                 { id: [ModulesName.FLIGHT] }
             );
 
@@ -795,7 +797,9 @@ export class BookingRepository extends Repository<Booking> {
             // 	"booking.id"
             // ])
             .where(
-                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING} AND "booking"."module_id" IN(:...id)`,
+                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING} AND "booking"."module_id" IN(:...id) AND booking.check_in_date >= date('${
+                    todayDate.split(" ")[0]
+                }')`,
                 { id: [ModulesName.FLIGHT] }
             );
 

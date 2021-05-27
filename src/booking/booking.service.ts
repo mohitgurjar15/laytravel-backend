@@ -1294,7 +1294,15 @@ export class BookingService {
 
                 //result.bookingInstalments.reverse()
             }
-            downPayment = parseFloat(result.bookingInstalments[0].amount);
+            for await (const install of result.bookingInstalments) {
+                if(install.instalmentNo == 1){
+                    downPayment = parseFloat(install.amount);
+                }   
+            }
+
+            console.log(downPayment)
+            
+            
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
                     paidAmount += parseFloat(instalment.amount);
@@ -1345,7 +1353,7 @@ export class BookingService {
             responce["userData"] = cardData;
             if (downPayment) {
                 responce["downPayment_percentage"] =
-                    (downPayment * 100) / parseFloat(result["paidAmount"]);
+                    Math.ceil((downPayment * 100) / parseFloat(result.totalAmount));
             }
             return responce;
         } catch (error) {
@@ -2143,10 +2151,10 @@ export class BookingService {
                             category.installmentAvailableAfter
                     );
                     predictiveBookingData["deadline_date"] = checkInDate;
-                    if (category.installmentAvailableAfter < dayDiff) {
+                    if (category.installmentAvailableAfter > dayDiff) {
                         predictiveBookingData["reservation_status"] = "yellow";
                         predictiveBookingData["reservation_status_note"] =
-                            "category.installmentAvailableAfter < dayDiff";
+                            "category.installmentAvailableAfter > dayDiff";
                     }
                 }
 
@@ -2270,11 +2278,11 @@ export class BookingService {
                                 category.installmentAvailableAfter
                         );
                         predictiveBookingData["deadline_date"] = checkInDate;
-                        if (category.installmentAvailableAfter < dayDiff) {
+                        if (category.installmentAvailableAfter > dayDiff) {
                             predictiveBookingData["reservation_status"] =
                                 "yellow";
                             predictiveBookingData["reservation_status_note"] =
-                                "category.installmentAvailableAfter < dayDiff";
+                                "category.installmentAvailableAfter > dayDiff";
                         }
                     }
                     predictiveBookingData["cancellationRequest"] = booking?.cancellationRequest
@@ -2468,6 +2476,20 @@ export class BookingService {
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
                         ? 0
                         : Generic.formatPriceDecimal(remainAmount);
+                result.data[i][
+                    "paid_amount_in_percentage"
+                ] = Generic.formatPriceDecimal(
+                    (parseFloat(result.data[i]["paidAmount"]) * 100) /
+                        parseFloat(result.data[i].totalAmount)
+                );
+result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
+    (parseFloat(result.data[i]["paidAmount"]) * 100) /
+        parseFloat(result.data[i].totalAmount)
+);
+
+                result.data[i]["remain_days"] = moment(
+                    moment(result.data[i].checkInDate)
+                ).diff(new Date(), "days");
 
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
