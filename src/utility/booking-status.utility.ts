@@ -31,11 +31,14 @@ export class BookingStatusUtility {
             status = combineStatus.Cancelled;
         }
 
-        if (flightChanged == true) {
+        if (flightChanged == true && bookingStatus == BookingStatus.PENDING) {
             status = combineStatus.FlightChange;
         }
 
-        if (checkoutDate < new Date()) {
+        if (
+            checkoutDate < new Date() &&
+            bookingStatus == BookingStatus.CONFIRM
+        ) {
             status = combineStatus.Completed;
         }
 
@@ -61,13 +64,13 @@ export class BookingStatusUtility {
                 return `"${bookingAliasName}"."booking_status" = ${BookingStatus.FAILED}`;
                 break;
             case combineStatus.FullyPaid:
-                return `"${bookingAliasName}"."payment_status" = ${PaymentStatus.CONFIRM}`;
+                return `"${bookingAliasName}"."payment_status" = ${PaymentStatus.CONFIRM} AND "${bookingAliasName}"."check_out_date" > date('${date1}')`;
                 break;
             case combineStatus.Cancelled:
                 return `"${bookingAliasName}"."booking_status" IN (${BookingStatus.NOTCOMPLETED},${BookingStatus.CANCELLED})`;
                 break;
             case combineStatus.FlightChange:
-                return `"${bookingAliasName}"."is_resedule" = true`;
+                return `"${bookingAliasName}"."is_resedule" = true AND "${bookingAliasName}"."booking_status" = ${BookingStatus.PENDING}`;
                 break;
 
             case combineStatus.Completed:
@@ -77,7 +80,7 @@ export class BookingStatusUtility {
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "")
                     .split(" ")[0];
-                return `"${bookingAliasName}"."check_out_date" < date('${date1}')`;
+                return `"${bookingAliasName}"."check_out_date" < date('${date1}') AND "${bookingAliasName}"."booking_status" IN (${BookingStatus.CONFIRM})`;
                 break;
 
             default:

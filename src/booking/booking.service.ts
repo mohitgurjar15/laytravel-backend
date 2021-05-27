@@ -2451,12 +2451,13 @@ export class BookingService {
         try {
             let result = await this.bookingRepository.exportCSV(listBookingDto);
 
-            let paidAmount = 0;
-            let remainAmount = 0;
+           
 
             ////console.log(result);
 
             for (let i in result.data) {
+                 let paidAmount = 0;
+            let remainAmount = 0;
                 for (let instalment of result.data[i].bookingInstalments) {
                     if (instalment.instalmentStatus == 1) {
                         paidAmount += parseFloat(instalment.amount);
