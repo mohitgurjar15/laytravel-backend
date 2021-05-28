@@ -733,9 +733,10 @@ export class FlightService {
                         )
                     )
                 );
-                previousWeekDates.setDate(previousWeekDates.getDate() + 1);
                 resultIndex++;
             }
+            previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+                
         }
 
         for (let index = 0; index <= 7; index++) {
@@ -769,9 +770,10 @@ export class FlightService {
                         )
                     )
                 );
-                nextWeekDates.setDate(nextWeekDates.getDate() + 1);
                 resultIndex++;
             }
+            nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+                
         }
 
         const response = await Promise.all(result);
