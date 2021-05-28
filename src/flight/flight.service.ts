@@ -1145,7 +1145,6 @@ export class FlightService {
 
         var count = await this.getDifferenceInDays(startDate, endDate);
 
-        return ;
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
         );
