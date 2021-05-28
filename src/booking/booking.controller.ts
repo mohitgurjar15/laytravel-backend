@@ -565,10 +565,10 @@ export class BookingController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async reverceInitiateCancellation(
-        @Body() intialCancelBookingDto: IntialCancelBookingDto,
+        @Body() reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
         @GetUser() user: User
     ): Promise<{ message: any }> {
-        return await this.bookingService.reverceIntialBookingCancel(intialCancelBookingDto, user);
+        return await this.bookingService.reverceIntialBookingCancel(reverceIntialCancelBookingDto, user);
     }
 
 
@@ -591,10 +591,10 @@ export class BookingController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async initiateCancellation(
-        @Body() reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
+        @Body() intialCancelBookingDto: IntialCancelBookingDto,
         @GetUser() user: User
     ): Promise<{ message: any }> {
-        return await this.bookingService.requestIntialCancelBooking(reverceIntialCancelBookingDto, user);
+        return await this.bookingService.requestIntialCancelBooking(intialCancelBookingDto, user);
     }
 }
 
