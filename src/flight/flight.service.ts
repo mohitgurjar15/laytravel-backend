@@ -1112,10 +1112,10 @@ export class FlightService {
             depatureDate,
             new Date()
         );
-        // dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
-        dayDiffrence = 3
+        dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
+       // dayDiffrence = 3
         var startDate = new Date(departure_date);
-        startDate.setDate(startDate.getDate() - dayDiffrence);
+        startDate.setDate(startDate.getDate() - 3);
 
         var tourDiffrence = await this.getDifferenceInDays(
             depatureDate,
@@ -1123,7 +1123,10 @@ export class FlightService {
         );
 
         //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
-        const afterDateDiffrence = 3
+        let afterDateDiffrence = 3
+
+        afterDateDiffrence = dayDiffrence < 3 ?  dayDiffrence + afterDateDiffrence : afterDateDiffrence
+        dayDiffrence = 3
         var endDate = new Date(departure_date);
         endDate.setDate(endDate.getDate() + afterDateDiffrence);
 
