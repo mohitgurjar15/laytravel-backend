@@ -55,10 +55,10 @@ export class BookingStatusUtility {
         }
         switch (status) {
             case combineStatus.Current:
-                return `"${bookingAliasName}"."booking_status" = ${BookingStatus.PENDING}`;
+                return `"${bookingAliasName}"."booking_status" = ${BookingStatus.PENDING} AND "${bookingAliasName}"."payment_status" = ${PaymentStatus.PENDING} AND "${bookingAliasName}"."check_out_date" > date('${date1}')`;
                 break;
             case combineStatus.Reserved:
-                return `"${bookingAliasName}"."booking_status" = ${BookingStatus.CONFIRM}`;
+                return `"${bookingAliasName}"."booking_status" = ${BookingStatus.CONFIRM} AND "${bookingAliasName}"."payment_status" = ${PaymentStatus.PENDING} AND "${bookingAliasName}"."check_out_date" > date('${date1}')`;
                 break;
             case combineStatus.Suspended:
                 return `"${bookingAliasName}"."booking_status" = ${BookingStatus.FAILED}`;
