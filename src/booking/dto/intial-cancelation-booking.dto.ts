@@ -7,7 +7,7 @@ export class IntialCancelBookingDto {
            })
            @ApiProperty({
                description: "booking id",
-               example: "",
+               example: ['LTFKMAM5Z29'],
            })
            product_id: string[];
 

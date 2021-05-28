@@ -2921,7 +2921,7 @@ result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.cart", "cart")
             .where(
-                `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND cart.laytrip_cart_booking = '${booking_id}'`
+                `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND cart.laytrip_cart_id = '${booking_id}'`
             )
             .getMany();
 
