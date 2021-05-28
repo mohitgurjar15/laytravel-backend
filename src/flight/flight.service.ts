@@ -701,6 +701,8 @@ export class FlightService {
             headers.currency
         );
 
+        let reqDates = []
+
         for (let index = 0; index < count; index++) {
             var predate = previousWeekDates.toISOString().split("T")[0];
             predate = predate
@@ -709,6 +711,7 @@ export class FlightService {
             if (
                 moment(new Date(predate)).diff(moment(new Date()), "days") >= 30
             ) {
+                reqDates.push(predate)
                 let dto = {
                     source_location: source_location,
                     destination_location: destination_location,
@@ -744,6 +747,7 @@ export class FlightService {
                 moment(new Date(nextdate)).diff(moment(new Date()), "days") >=
                 30
             ) {
+                reqDates.push(nextdate)
                 let dto = {
                     source_location: source_location,
                     destination_location: destination_location,
@@ -823,6 +827,29 @@ export class FlightService {
                 // console.log(flightData.unique_code);
                 // console.log(flightData.net_rate);
                 // console.log(flightData.departure_date);
+            }
+        }
+        console.log(reqDates);
+        
+        for await (const date of reqDates) {
+            let obj = returnResponce.find(o => function(o) {
+                var dateTime = o.date
+                 var date = dateTime.split("/");
+                return `${date[2]}-${date[1]}-${date[0]}` == date
+            });
+            console.log(obj);
+            
+            if(!obj){
+                var output = {
+                    date: date,
+                    net_rate: 0,
+                    price: 0,
+                    unique_code:'',
+                    start_price: 0,
+                    secondary_start_price: 0,
+                };
+
+                returnResponce.push(output);
             }
         }
         return returnResponce;
@@ -1128,7 +1155,8 @@ export class FlightService {
                 `Flight module is not configured in database&&&module&&&${errorMessage}`
             );
         }
-
+        let reqDates = []
+        let secondDate = []
         const currencyDetails = await Generic.getAmountTocurrency(
             headers.currency
         );
@@ -1150,6 +1178,8 @@ export class FlightService {
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "");
                 console.log("seatch dates", beforeDateString, afterDateString);
+       reqDates.push(beforeDateString)
+       secondDate.push(afterDateString)
 
                 let dto = {
                     source_location: source_location,
@@ -1230,6 +1260,31 @@ export class FlightService {
                     start_price: startPrice,
                     arrival_date: arrivalDate,
                     secondary_start_price: secondaryStartPrice,
+                };
+
+                returnResponce.push(output);
+            }
+        }
+
+        console.log(reqDates);
+        
+        for await (const date of reqDates) {
+            let obj = returnResponce.find(o => function(o) {
+                var dateTime = o.date
+                 var date = dateTime.split("/");
+                return `${date[2]}-${date[1]}-${date[0]}` == date
+            });
+            console.log(obj);
+            
+            if(!obj){
+                var output = {
+                    date: date,
+                    net_rate: 0,
+                    price: 0,
+                    unique_code: "",
+                    start_price: 0,
+                    secondary_start_price: 0,
+                    arrival_date : secondDate[reqDates.indexOf(date)],
                 };
 
                 returnResponce.push(output);
