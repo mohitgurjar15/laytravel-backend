@@ -61,6 +61,7 @@ import { IntialCancelBookingDto } from "./dto/intial-cancelation-booking.dto";
 import { IntialCancelBooking } from "src/entity/intial-booking.entity";
 import { IntialCancelationStatus } from "src/enum/intial-cancelation.enum";
 import { LaytripIntialCancelBookingRequestEmail } from "src/config/new_email_templete/intial-booking-cancelation.html";
+import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
 
 @Injectable()
 export class BookingService {
@@ -1061,7 +1062,7 @@ export class BookingService {
 
     async getCartBookingDetail(cartId, user: User) {
         try {
-            const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
+            const where = `("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
             const query = getConnection()
                 .createQueryBuilder(CartBooking, "cartBooking")
                 .leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -1075,7 +1076,7 @@ export class BookingService {
                 // .leftJoinAndSelect("User.country", "countries")
 
                 .where(where)
-                .orderBy(`cartBooking.bookingDate`, "DESC");
+                //.orderBy(`cartBooking.bookingDate`, "DESC");
             const cart = await query.getOne();
 
             if (!cart) {
@@ -1449,7 +1450,7 @@ export class BookingService {
         } = listPaymentAdminDto;
 
         let where;
-        where = `"BookingInstalments"."attempt" = 0`;
+        where = `("booking"."module_id" in (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND "BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
@@ -1575,7 +1576,7 @@ export class BookingService {
         } = listPaymentAdminDto;
 
         let where;
-        where = `"BookingInstalments"."attempt" = 0`;
+        where = `("booking"."module_id" in (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND "BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
@@ -2924,6 +2925,8 @@ result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
             )
             .getOne();
 
+            c
+
         if (!booking) {
             throw new NotFoundException(`Booking ID not found.`);
         }
@@ -2994,10 +2997,10 @@ result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
     }
 
     async reverceIntialBookingCancel(
-        intialCancelBookingDto: IntialCancelBookingDto,
+        reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
         admin: User
     ) {
-        const { message, product_id } = intialCancelBookingDto;
+        const { message, product_id } = reverceIntialCancelBookingDto;
 
         let booking = await getManager()
             .createQueryBuilder(Booking, "booking")

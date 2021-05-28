@@ -36,6 +36,7 @@ import { DeleteBookingDto } from "./dto/delete-cart.dto";
 import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
 import { updateBookingDto } from "./dto/update-booking.dto";
 import { IntialCancelBookingDto } from "./dto/intial-cancelation-booking.dto";
+import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
@@ -590,10 +591,10 @@ export class BookingController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async initiateCancellation(
-        @Body() intialCancelBookingDto: IntialCancelBookingDto,
+        @Body() reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
         @GetUser() user: User
     ): Promise<{ message: any }> {
-        return await this.bookingService.requestIntialCancelBooking(intialCancelBookingDto, user);
+        return await this.bookingService.requestIntialCancelBooking(reverceIntialCancelBookingDto, user);
     }
 }
 
