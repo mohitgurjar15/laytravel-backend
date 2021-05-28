@@ -671,8 +671,8 @@ export class FlightService {
 
         var resultIndex = 0;
 
-        var count = dayDiffrence <= 7 ? dayDiffrence : 7;
-
+        //var count = dayDiffrence <= 7 ? dayDiffrence : 7;
+        var count = 7
         previousWeekDates.setDate(previousWeekDates.getDate() - count);
 
         const mystiflyConfig = await new Promise((resolve) =>
