@@ -2915,58 +2915,66 @@ result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
         intialCancelBookingDto: IntialCancelBookingDto,
         admin: User
     ) {
-        const { message, product_id } = intialCancelBookingDto;
+        const { message, product_id , booking_id } = intialCancelBookingDto;
 
-        let booking = await getManager()
+        let bookings = await getManager()
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.cart", "cart")
             .where(
-                `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+                `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND cart.laytrip_cart_booking = '${booking_id}'`
             )
-            .getOne();
+            .getMany();
 
-            c
+            
 
-        if (!booking) {
-            throw new NotFoundException(`Booking ID not found.`);
+        if (!bookings) {
+            throw new NotFoundException(`Inventry ID not found.`);
         }
 
-        let requests = await getManager()
-            .createQueryBuilder(IntialCancelBooking, "intiat")
-
-            .where(`booking_id = '${booking.id}'`)
-            .getOne();
-
-        if (requests) {
-            if (requests.status == IntialCancelationStatus.Approve) {
-                throw new ConflictException(
-                    `Given booking cancellation request already accepted`
-                );
-            }
-
-            requests.updateBy = admin.userId;
-            requests.message = message || null;
-            requests.resendOn = new Date();
-            requests.count = requests.count + 1;
-            requests.status = IntialCancelationStatus.Pending;
-            requests.updatedDate = new Date();
-
-            await requests.save();
-        } else {
-            let intialCancelation = new IntialCancelBooking();
-
-            intialCancelation.bookingId = booking.id;
-            intialCancelation.createBy = admin.userId;
-            intialCancelation.createdDate = new Date();
-            intialCancelation.message = message || null;
-            intialCancelation.status = IntialCancelationStatus.Pending;
-
-            await intialCancelation.save();
+        if(bookings.length != product_id.length){
+            throw new NotFoundException(`Enter valid property ids.`);
         }
+
+       for await (const booking of bookings) {
+           let requests = await getManager()
+               .createQueryBuilder(IntialCancelBooking, "intiat")
+
+               .where(`booking_id = '${booking.id}'`)
+               .getOne();
+
+           if (requests) {
+               if (requests.status == IntialCancelationStatus.Approve) {
+                   throw new ConflictException(
+                       `Given booking cancellation request already accepted`
+                   );
+               }
+
+               requests.updateBy = admin.userId;
+               requests.message = message || null;
+               requests.resendOn = new Date();
+               requests.count = requests.count + 1;
+               requests.status = IntialCancelationStatus.Pending;
+               requests.updatedDate = new Date();
+
+               await requests.save();
+           } else {
+               let intialCancelation = new IntialCancelBooking();
+
+               intialCancelation.bookingId = booking.id;
+               intialCancelation.createBy = admin.userId;
+               intialCancelation.createdDate = new Date();
+               intialCancelation.message = message || null;
+               intialCancelation.status = IntialCancelationStatus.Pending;
+
+               await intialCancelation.save();
+           }
+           
+       }
+
+        
         const responce = await CartDataUtility.CartMailModelDataGenerate(
-            booking.cart.laytripCartId
-        );
-
+               bookings[0].cart.laytripCartId
+           );
         let subject = `Booking ID ${responce.param.orderId} Cancellation Confirmation`;
 
         this.mailerService

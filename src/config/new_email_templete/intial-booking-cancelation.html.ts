@@ -9,7 +9,7 @@ import { LaytripHeader } from "./laytrip_header.html";
 
 export async function LaytripIntialCancelBookingRequestEmail(
     param: CartBookingEmailParameterModel,
-    productId: string
+    productId: string[]
 ) {
     let traveleName = "";
     let travelerEmail = "";
@@ -79,7 +79,7 @@ export async function LaytripIntialCancelBookingRequestEmail(
     //     </td>
     // </tr>`;
     for await (const booking of param.bookings) {
-        if (productId == booking.productId) {
+        if (productId.indexOf(booking.productId) != -1) {
             if (booking.moduleId == ModulesName.FLIGHT) {
                 for await (const flight of booking.flighData) {
                     for await (const droup of flight.droups) {
