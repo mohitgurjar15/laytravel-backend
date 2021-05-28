@@ -1075,8 +1075,8 @@ export class BookingService {
                 // .leftJoinAndSelect("User.state", "state")
                 // .leftJoinAndSelect("User.country", "countries")
 
-                .where(where)
-                //.orderBy(`cartBooking.bookingDate`, "DESC");
+                .where(where);
+            //.orderBy(`cartBooking.bookingDate`, "DESC");
             const cart = await query.getOne();
 
             if (!cart) {
@@ -1296,14 +1296,13 @@ export class BookingService {
                 //result.bookingInstalments.reverse()
             }
             for await (const install of result.bookingInstalments) {
-                if(install.instalmentNo == 1){
+                if (install.instalmentNo == 1) {
                     downPayment = parseFloat(install.amount);
-                }   
+                }
             }
 
-            console.log(downPayment)
-            
-            
+            console.log(downPayment);
+
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
                     paidAmount += parseFloat(instalment.amount);
@@ -1353,8 +1352,9 @@ export class BookingService {
             let responce: any = result;
             responce["userData"] = cardData;
             if (downPayment) {
-                responce["downPayment_percentage"] =
-                    Math.ceil((downPayment * 100) / parseFloat(result.totalAmount));
+                responce["downPayment_percentage"] = Math.ceil(
+                    (downPayment * 100) / parseFloat(result.totalAmount)
+                );
             }
             return responce;
         } catch (error) {
@@ -2159,8 +2159,8 @@ export class BookingService {
                     }
                 }
 
-
-                predictiveBookingData["cancellationRequest"] = bookingData?.cancellationRequest
+                predictiveBookingData["cancellationRequest"] =
+                    bookingData?.cancellationRequest;
 
                 const id = predictiveBookingData.laytrip_booking_id;
                 todayPrice.push(predictiveBookingData);
@@ -2286,7 +2286,8 @@ export class BookingService {
                                 "category.installmentAvailableAfter > dayDiff";
                         }
                     }
-                    predictiveBookingData["cancellationRequest"] = booking?.cancellationRequest
+                    predictiveBookingData["cancellationRequest"] =
+                        booking?.cancellationRequest;
                     responce.push(predictiveBookingData);
                 }
             }
@@ -2452,13 +2453,11 @@ export class BookingService {
         try {
             let result = await this.bookingRepository.exportCSV(listBookingDto);
 
-           
-
             ////console.log(result);
 
             for (let i in result.data) {
-                 let paidAmount = 0;
-            let remainAmount = 0;
+                let paidAmount = 0;
+                let remainAmount = 0;
                 for (let instalment of result.data[i].bookingInstalments) {
                     if (instalment.instalmentStatus == 1) {
                         paidAmount += parseFloat(instalment.amount);
@@ -2484,10 +2483,12 @@ export class BookingService {
                     (parseFloat(result.data[i]["paidAmount"]) * 100) /
                         parseFloat(result.data[i].totalAmount)
                 );
-result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
-    (parseFloat(result.data[i]["paidAmount"]) * 100) /
-        parseFloat(result.data[i].totalAmount)
-);
+                result.data[i][
+                    "paid_amount_in_percentage"
+                ] = Generic.formatPriceDecimal(
+                    (parseFloat(result.data[i]["paidAmount"]) * 100) /
+                        parseFloat(result.data[i].totalAmount)
+                );
 
                 result.data[i]["remain_days"] = moment(
                     moment(result.data[i].checkInDate)
@@ -2915,144 +2916,207 @@ result.data[i]["paid_amount_in_percentage"] = Generic.formatPriceDecimal(
         intialCancelBookingDto: IntialCancelBookingDto,
         admin: User
     ) {
-        const { message, product_id , booking_id } = intialCancelBookingDto;
+        try {
+            const { message, product_id, booking_id } = intialCancelBookingDto;
 
-        let bookings = await getManager()
-            .createQueryBuilder(Booking, "booking")
-            .leftJoinAndSelect("booking.cart", "cart")
-            .where(
-                `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND cart.laytrip_cart_id = '${booking_id}'`
-            )
-            .getMany();
+            let bookings = await getManager()
+                .createQueryBuilder(Booking, "booking")
+                .leftJoinAndSelect("booking.cart", "cart")
+                .where(
+                    `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND cart.laytrip_cart_id = '${booking_id}'`
+                )
+                .getMany();
 
-            
+            if (!bookings) {
+                throw new NotFoundException(`Inventry ID not found.`);
+            }
 
-        if (!bookings) {
-            throw new NotFoundException(`Inventry ID not found.`);
+            if (bookings.length != product_id.length) {
+                throw new NotFoundException(`Enter valid property ids.`);
+            }
+
+            for await (const booking of bookings) {
+                let requests = await getManager()
+                    .createQueryBuilder(IntialCancelBooking, "intiat")
+
+                    .where(`booking_id = '${booking.id}'`)
+                    .getOne();
+
+                if (requests) {
+                    if (requests.status == IntialCancelationStatus.Approve) {
+                        throw new ConflictException(
+                            `Given booking cancellation request already accepted`
+                        );
+                    }
+
+                    requests.updateBy = admin.userId;
+                    requests.message = message || null;
+                    requests.resendOn = new Date();
+                    requests.count = requests.count + 1;
+                    requests.status = IntialCancelationStatus.Pending;
+                    requests.updatedDate = new Date();
+
+                    await requests.save();
+                } else {
+                    let intialCancelation = new IntialCancelBooking();
+
+                    intialCancelation.bookingId = booking.id;
+                    intialCancelation.createBy = admin.userId;
+                    intialCancelation.createdDate = new Date();
+                    intialCancelation.message = message || null;
+                    intialCancelation.status = IntialCancelationStatus.Pending;
+
+                    await intialCancelation.save();
+                }
+            }
+
+            const responce = await CartDataUtility.CartMailModelDataGenerate(
+                bookings[0].cart.laytripCartId
+            );
+            let subject = `Booking ID ${responce.param.orderId} Cancellation Confirmation`;
+
+            this.mailerService
+                .sendMail({
+                    to: responce.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: subject,
+                    html: await LaytripIntialCancelBookingRequestEmail(
+                        responce.param,
+                        product_id
+                    ),
+                })
+                .then((res) => {
+                    //console.log("res", res);
+                })
+                .catch((err) => {
+                    //console.log("err", err);
+                });
+            Activity.logActivity(
+                admin.userId,
+                "Intiate-cancellation",
+                "Intiate cancelation request for booking id : " + product_id
+            );
+            return {
+                message: `Intial cancellation request send successfully.`,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log('m');
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
         }
-
-        if(bookings.length != product_id.length){
-            throw new NotFoundException(`Enter valid property ids.`);
-        }
-
-       for await (const booking of bookings) {
-           let requests = await getManager()
-               .createQueryBuilder(IntialCancelBooking, "intiat")
-
-               .where(`booking_id = '${booking.id}'`)
-               .getOne();
-
-           if (requests) {
-               if (requests.status == IntialCancelationStatus.Approve) {
-                   throw new ConflictException(
-                       `Given booking cancellation request already accepted`
-                   );
-               }
-
-               requests.updateBy = admin.userId;
-               requests.message = message || null;
-               requests.resendOn = new Date();
-               requests.count = requests.count + 1;
-               requests.status = IntialCancelationStatus.Pending;
-               requests.updatedDate = new Date();
-
-               await requests.save();
-           } else {
-               let intialCancelation = new IntialCancelBooking();
-
-               intialCancelation.bookingId = booking.id;
-               intialCancelation.createBy = admin.userId;
-               intialCancelation.createdDate = new Date();
-               intialCancelation.message = message || null;
-               intialCancelation.status = IntialCancelationStatus.Pending;
-
-               await intialCancelation.save();
-           }
-           
-       }
-
-        
-        const responce = await CartDataUtility.CartMailModelDataGenerate(
-               bookings[0].cart.laytripCartId
-           );
-        let subject = `Booking ID ${responce.param.orderId} Cancellation Confirmation`;
-
-        this.mailerService
-            .sendMail({
-                to: responce.email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: subject,
-                html: await LaytripIntialCancelBookingRequestEmail(
-                    responce.param,
-                    product_id
-                ),
-            })
-            .then((res) => {
-                //console.log("res", res);
-            })
-            .catch((err) => {
-                //console.log("err", err);
-            });
-        Activity.logActivity(
-            admin.userId,
-            "Intiate-cancellation",
-            "Intiate cancelation request for booking id : " + product_id
-        );
-        return {
-            message: `Intial cancellation request send successfully.`,
-        };
     }
 
     async reverceIntialBookingCancel(
         reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
         admin: User
     ) {
-        const { message, product_id } = reverceIntialCancelBookingDto;
+        try {
+            const { message, product_id } = reverceIntialCancelBookingDto;
 
-        let booking = await getManager()
-            .createQueryBuilder(Booking, "booking")
-            .leftJoinAndSelect("booking.cart", "cart")
-            .where(
-                `booking.laytrip_booking_id = '${product_id}'`
-            )
-            .getOne();
+            let booking = await getManager()
+                .createQueryBuilder(Booking, "booking")
+                .leftJoinAndSelect("booking.cart", "cart")
+                .where(`booking.laytrip_booking_id = '${product_id}'`)
+                .getOne();
 
-        if (!booking) {
-            throw new NotFoundException(`Booking ID not found.`);
-        }
+            if (!booking) {
+                throw new NotFoundException(`Booking ID not found.`);
+            }
 
+            let requests = await getManager()
+                .createQueryBuilder(IntialCancelBooking, "intiat")
+                .where(`booking_id = '${booking.id}'`)
+                .getOne();
 
-        let requests = await getManager()
-            .createQueryBuilder(IntialCancelBooking, "intiat")
-            .where(`booking_id = '${booking.id}'`)
-            .getOne();
+            if (!requests) {
+                throw new NotFoundException(
+                    `Booking cancelation request not found.`
+                );
+            }
+            if (requests.status == IntialCancelationStatus.Approve) {
+                throw new ConflictException(
+                    `Given booking cancellation request already accepted`
+                );
+            }
 
-        if (!requests) {
+            requests.updateBy = admin.userId;
+            requests.message = message || null;
+            requests.status = IntialCancelationStatus.Reverse;
+            requests.updatedDate = new Date();
+
+            await requests.save();
+            Activity.logActivity(
+                admin.userId,
+                "Intiate-cancellation",
+                "Intiate cancelation request reverced for booking id : " +
+                    product_id
+            );
+            return {
+                message: `Intial cancellation request reverce successfully.`,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log('m');
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
             throw new NotFoundException(
-                `Booking cancelation request not found.`
+                `${error.message}&&&id&&&${error.message}`
             );
         }
-        if (requests.status == IntialCancelationStatus.Approve) {
-            throw new ConflictException(
-                `Given booking cancellation request already accepted`
-            );
-        }
-
-        requests.updateBy = admin.userId;
-        requests.message = message || null;
-        requests.status = IntialCancelationStatus.Reverse;
-        requests.updatedDate = new Date();
-
-        await requests.save();
-        Activity.logActivity(
-            admin.userId,
-            "Intiate-cancellation",
-            "Intiate cancelation request reverced for booking id : " +
-                product_id
-        );
-        return {
-            message: `Intial cancellation request reverce successfully.`,
-        };
     }
 }
