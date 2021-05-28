@@ -53,6 +53,12 @@ export class BookingStatusUtility {
         if (typeof status != "number") {
             status = parseInt(status);
         }
+        const date = new Date();
+        var date1 = date.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
         switch (status) {
             case combineStatus.Current:
                 return `"${bookingAliasName}"."booking_status" = ${BookingStatus.PENDING} AND "${bookingAliasName}"."payment_status" = ${PaymentStatus.PENDING} AND "${bookingAliasName}"."check_out_date" > date('${date1}')`;
@@ -74,12 +80,7 @@ export class BookingStatusUtility {
                 break;
 
             case combineStatus.Completed:
-                const date = new Date();
-                var date1 = date.toISOString();
-                date1 = date1
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "")
-                    .split(" ")[0];
+                
                 return `"${bookingAliasName}"."check_out_date" < date('${date1}') AND "${bookingAliasName}"."booking_status" IN (${BookingStatus.CONFIRM})`;
                 break;
 
