@@ -816,7 +816,9 @@ export class FlightService {
                     }
                     key++;
                 }
-                var output = {
+
+                if(date){
+                    var output = {
                     date: date,
                     net_rate: netRate,
                     price: lowestprice,
@@ -826,6 +828,8 @@ export class FlightService {
                 };
 
                 returnResponce.push(output);
+                }
+                
                 // console.log(flightData.unique_code);
                 // console.log(flightData.net_rate);
                 // console.log(flightData.departure_date);
@@ -834,21 +838,36 @@ export class FlightService {
         console.log(reqDates);
         
         for await (const date of reqDates) {
-            let obj = returnResponce.find(o => function(o) {
+            // let obj = returnResponce.find(o => function(o) {
+                
+            // });
+            // console.log(obj);
+
+            let obj = 0 
+
+            for await (const o of returnResponce) {
                 var dateTime = o.date
-                 var date = dateTime.split("/");
-                return `${date[2]}-${date[1]}-${date[0]}` == date
-            });
-            console.log(obj);
+                 var d = dateTime.split("/");
+                if(`${d[2]}-${d[1]}-${d[0]}` == date){
+                    obj = 1
+                }
+            }
+            
+            let date1 = date.split("-");
+                console.log('date1',date1);
+                
+                 date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
+                console.log('date1',date1);
             
             if(!obj){
+                
                 var output = {
-                    date: date,
+                    date: date1,
                     net_rate: 0,
                     price: 0,
-                    unique_code:'',
+                    unique_code: "",
                     start_price: 0,
-                    secondary_start_price: 0,
+                    secondary_start_price: 0
                 };
 
                 returnResponce.push(output);
@@ -1265,7 +1284,9 @@ export class FlightService {
                     }
                     key++;
                 }
-                var output = {
+
+                if(date){
+                    var output = {
                     date: date,
                     net_rate: netRate,
                     price: lowestprice,
@@ -1274,30 +1295,53 @@ export class FlightService {
                     arrival_date: arrivalDate,
                     secondary_start_price: secondaryStartPrice,
                 };
-
                 returnResponce.push(output);
+                }                
+                
+
+                
             }
         }
 
         console.log(reqDates);
         
         for await (const date of reqDates) {
-            let obj = returnResponce.find(o => function(o) {
+            // let obj = returnResponce.find(o => function(o) {
+                
+            // });
+            // console.log(obj);
+
+            let obj = 0 
+
+            for await (const o of returnResponce) {
                 var dateTime = o.date
-                 var date = dateTime.split("/");
-                return `${date[2]}-${date[1]}-${date[0]}` == date
-            });
-            console.log(obj);
+                 var d = dateTime.split("/");
+                if(`${d[2]}-${d[1]}-${d[0]}` == date){
+                    obj = 1
+                }
+            }
             
+            let date1 = date.split("-");
+                console.log('date1',date1);
+                
+                 date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
+                console.log('date1',date1);
+            let arrivalofDate = secondDate[reqDates.indexOf(date)]
+                    console.log('arrivalofDate',arrivalofDate);
+            let date2 = arrivalofDate.split("-");
+            console.log('date2',date2);
+                 date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
+                 console.log("date2", date2)
             if(!obj){
+                
                 var output = {
-                    date: date,
+                    date: date1,
                     net_rate: 0,
                     price: 0,
                     unique_code: "",
                     start_price: 0,
                     secondary_start_price: 0,
-                    arrival_date : secondDate[reqDates.indexOf(date)],
+                    arrival_date: date2,
                 };
 
                 returnResponce.push(output);
