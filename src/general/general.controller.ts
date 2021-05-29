@@ -295,4 +295,20 @@ export class GeneralController {
     // async test2(@UserIpAddress() ip) {
     //    return await this.generalService.predictiveData()
     // }
+
+
+    @Post(["test/admin-model/:id/:email"])
+    @ApiOperation({ summary: "Update traveler info of user" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async testAdminModel(@Param('id') id:string,@Param('email') email:string ) {
+        return this.generalService.adminEmailModel(id, email);
+    }
 }

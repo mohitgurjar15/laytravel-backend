@@ -83,6 +83,8 @@ import { Countries } from "src/entity/countries.entity";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 
 @Injectable()
 export class FlightService {
@@ -1691,7 +1693,7 @@ export class FlightService {
         supplierBookingData,
         travelers,
         cartId = null,
-       reservationId = null
+        reservationId = null
     ) {
         const {
             selling_price,
@@ -1737,7 +1739,7 @@ export class FlightService {
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
-        booking.reservationId = reservationId
+        booking.reservationId = reservationId;
         booking.locationInfo = {
             journey_type,
             source_location,
@@ -1875,6 +1877,24 @@ export class FlightService {
                 booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
             await predictiveBooking.save();
             console.log("get booking");
+            const data = await NotificationAlertUtility.notificationModelCreater(
+                booking.laytripBookingId
+            );
+
+            await this.mailerService
+                .sendMail({
+                    to: mailConfig.admin,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: `New Customer Booking #${data.param.laytripBookingId} Made`,
+                    html: await AdminNewBookingMail(data.param),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
             return await this.bookingRepository.getBookingDetails(
                 booking.laytripBookingId
             );
@@ -2802,7 +2822,11 @@ export class FlightService {
 
         await booking.save();
 
-        await this.sendFlightUpdateMail(booking.cart.laytripCartId, booking.user.email , '');
+        await this.sendFlightUpdateMail(
+            booking.cart.laytripCartId,
+            booking.user.email,
+            ""
+        );
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
@@ -3103,7 +3127,8 @@ export class FlightService {
                 laycredit_points,
                 card_token,
                 booking_through,
-                cartCount,reservationId
+                cartCount,
+                reservationId,
             } = bookFlightDto;
 
             cartCount = cartCount ? cartCount : 0;

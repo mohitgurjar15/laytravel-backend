@@ -62,6 +62,8 @@ import { IntialCancelBooking } from "src/entity/intial-booking.entity";
 import { IntialCancelationStatus } from "src/enum/intial-cancelation.enum";
 import { LaytripIntialCancelBookingRequestEmail } from "src/config/new_email_templete/intial-booking-cancelation.html";
 import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
 
 @Injectable()
 export class BookingService {
@@ -2661,7 +2663,33 @@ export class BookingService {
                     { id: booking.id }
                 )
                 .execute();
+
+            if (
+                booking.bookingStatus == BookingStatus.PENDING &&
+                booking.moduleId == ModulesName.FLIGHT
+            ) {
+                const data = await NotificationAlertUtility.notificationModelCreater(
+                    booking.laytripBookingId
+                );
+                await this.mailerService
+                    .sendMail({
+                        to: mailConfig.admin,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Alert - BOOKING #${data.param.laytripBookingId} got cancelled `,
+                        html: await BookingCancellationNotificationMail(
+                            data.param
+                        ),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
+            }
         }
+
         if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
             Activity.logActivity(
                 user.userId,
@@ -2669,6 +2697,7 @@ export class BookingService {
                 "Booking(" + booking_id + "" + product_id ||
                     "" + ") deleted by admin "
             );
+
             this.mailerService
                 .sendMail({
                     to: query.user.email,

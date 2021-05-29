@@ -3,7 +3,7 @@ export class EmailNotificationModel {
     routeType: string;
     depatureDate: string;
     remainDays: number;
-    reservationDeadline: number;
+    reservationDeadline: string;
     sellingPrice: string;
     currencySymbol: string;
     netRate: string;
@@ -11,4 +11,5 @@ export class EmailNotificationModel {
     totalRecivedFromCustomer: number;
     totalRecivedFromCustomerPercentage: number;
     laytripBookingId: string;
+    todayNetpriceVarient ?: number
 }

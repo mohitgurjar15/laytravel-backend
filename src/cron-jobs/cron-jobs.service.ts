@@ -53,6 +53,11 @@ import { LaytripCancellationTravelProviderMail } from "src/config/new_email_temp
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { AdminStopLossNotificationMail } from "src/config/admin-email-notification-templetes/stop-loss-notification.html";
+import { EnterInDeadlineMail } from "src/config/admin-email-notification-templetes/enter-in-deadline.html";
+import { Rule80perNotificationMail } from "src/config/admin-email-notification-templetes/rule-80-per-notification.html";
+import { BookingRunoutNotificationMail } from "src/config/admin-email-notification-templetes/booking-run-out-notification.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -291,7 +296,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking,true);
+                await this.getPaymentsOfBooking(cartBooking, true);
             } catch (error) {
                 console.log("error", error);
                 const filename =
@@ -344,7 +349,8 @@ export class CronJobsService {
             // ])
             .where(
                 `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}AND "booking"."module_id" IN(:...id)`,
-                { id: [ModulesName.FLIGHT] });
+                { id: [ModulesName.FLIGHT] }
+            );
         if (booking_id) {
             query.andWhere(`"booking"."laytrip_booking_id" = '${booking_id}'`);
         }
@@ -367,14 +373,111 @@ export class CronJobsService {
                             result[index],
                             Headers
                         );
+                        const data = await NotificationAlertUtility.notificationModelCreater(
+                            result[index].laytripBookingId
+                        );
                         if (flightPrice) {
                             const priceDiff = await this.campareBookingPrice(
                                 flightPrice,
                                 result[index].netRate
                             );
-                            if (priceDiff != 0) {
-                                message += `Product Id ${result[index].laytripBookingId} Net price diffrence is ${priceDiff} <br/>`;
+
+                            if (
+                                (data.param.todayNetpriceVarient <= -60 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        20) ||
+                                (data.param.todayNetpriceVarient <= -50 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        30) ||
+                                (data.param.todayNetpriceVarient <= -40 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        40) ||
+                                (data.param.todayNetpriceVarient <= -30 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        50) ||
+                                (data.param.todayNetpriceVarient <= -20 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        60) ||
+                                (data.param.todayNetpriceVarient <= -10 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        70)
+                            ) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `80% Rule Alert for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await Rule80perNotificationMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
                             }
+                            if (new Date(data.deadLineDate) <= new Date()) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `Alert - ${data.param.routeType} Route Cost is Soon to Increase for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await EnterInDeadlineMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
+                            }
+                            if (priceDiff != 0) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `Stop Loss Alert for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await AdminStopLossNotificationMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
+                            }
+                        } else {
+                            await this.mailerService
+                                .sendMail({
+                                    to: mailConfig.admin,
+                                    from: mailConfig.from,
+                                    bcc: mailConfig.BCC,
+                                    subject: `Alert - BOOKING #${data.param.laytripBookingId} ran out of seats`,
+                                    html: await BookingRunoutNotificationMail(
+                                        data.param
+                                    ),
+                                })
+                                .then((res) => {
+                                    console.log("res", res);
+                                })
+                                .catch((err) => {
+                                    console.log("err", err);
+                                });
                         }
 
                         break;
@@ -421,12 +524,12 @@ export class CronJobsService {
             );
         }
 
-        if (message != "") {
-            this.cronfailedmail(
-                "Partial booking price : <br/><pre>" + message,
-                "Partial booking price"
-            );
-        }
+        // if (message != "") {
+        //     this.cronfailedmail(
+        //         "Partial booking price : <br/><pre>" + message,
+        //         "Partial booking price"
+        //     );
+        // }
 
         return { message: `today booking price added for pending booking` };
     }
@@ -1465,7 +1568,7 @@ export class CronJobsService {
         };
     }
 
-    async getPaymentsOfBooking(cartBooking: CartBooking,isPastDue : boolean) {
+    async getPaymentsOfBooking(cartBooking: CartBooking, isPastDue: boolean) {
         let amount: number = 0;
 
         for await (const booking of cartBooking.bookings) {
@@ -1584,7 +1687,6 @@ export class CronJobsService {
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
-                    
                 };
                 if (nextInstalmentDate) {
                     param.nextDate = DateTime.convertDateFormat(
@@ -1813,7 +1915,7 @@ export class CronJobsService {
                         "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
-                    pastDue:isPastDue,
+                    pastDue: isPastDue,
                 };
                 if (cartBooking.user.isEmail) {
                     if (nextAmount > 0) {
@@ -1936,7 +2038,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking,false);
+                await this.getPaymentsOfBooking(cartBooking, false);
             } catch (error) {
                 console.log("error", error);
                 const filename =
