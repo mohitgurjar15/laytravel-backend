@@ -815,7 +815,7 @@ export class FlightService {
                     key++;
                 }
 
-                if (date) {
+                if (date && lowestprice > 0) {
                     var output = {
                         date: date,
                         net_rate: netRate,
@@ -857,7 +857,7 @@ export class FlightService {
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
             console.log("date1", date1);
 
-            if (!obj) {
+            if (obj==0) {
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1158,7 +1158,7 @@ export class FlightService {
         //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
         let afterDateDiffrence = 3;
 
-        afterDateDiffrence = dayDiffrence < 34 ? 6 : afterDateDiffrence;
+        afterDateDiffrence = dayDiffrence < 30 ? 6 : afterDateDiffrence;
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
         endDate.setDate(endDate.getDate() + afterDateDiffrence);
@@ -1251,6 +1251,7 @@ export class FlightService {
         let returnResponce = [];
         for await (const data of response) {
             if (!data.message) {
+                
                 var unique_code = "";
                 var lowestprice = 0;
                 var netRate = 0;
@@ -1290,7 +1291,11 @@ export class FlightService {
                     key++;
                 }
 
-                if (date) {
+
+                console.log('date',date);
+                
+
+                if (date && lowestprice>0) {
                     var output = {
                         date: date,
                         net_rate: netRate,
@@ -1300,6 +1305,8 @@ export class FlightService {
                         arrival_date: arrivalDate,
                         secondary_start_price: secondaryStartPrice,
                     };
+                    console.log(output);
+                    
                     returnResponce.push(output);
                 }
             }
@@ -1308,33 +1315,34 @@ export class FlightService {
         console.log(reqDates);
 
         for await (const date of reqDates) {
-            // let obj = returnResponce.find(o => function(o) {
-
-            // });
-            // console.log(obj);
+          
 
             let obj = 0;
 
             for await (const o of returnResponce) {
                 var dateTime = o.date;
                 var d = dateTime.split("/");
+               
                 if (`${d[2]}-${d[1]}-${d[0]}` == date) {
                     obj = 1;
                 }
             }
 
             let date1 = date.split("-");
-            console.log("date1", date1);
+            
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
-            console.log("date1", date1);
             let arrivalofDate = secondDate[reqDates.indexOf(date)];
-            console.log("arrivalofDate", arrivalofDate);
             let date2 = arrivalofDate.split("-");
-            console.log("date2", date2);
             date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
-            console.log("date2", date2);
-            if (!obj) {
+
+            console.log(date);
+            console.log(obj);
+            
+            if (obj == 0) {
+
+                console.log(date1);
+                console.log('++++++++++++++')
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1348,6 +1356,9 @@ export class FlightService {
                 returnResponce.push(output);
             }
         }
+
+        console.log(returnResponce)
+
         returnResponce.sort((a, b) => {
             var dateTime = a.date;
             var d = dateTime.split("/");
