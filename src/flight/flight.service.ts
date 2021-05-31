@@ -1142,6 +1142,7 @@ export class FlightService {
             depatureDate,
             new Date()
         );
+        const dayDiff = dayDiffrence
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
         // dayDiffrence = 3
@@ -1158,7 +1159,19 @@ export class FlightService {
         //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
         let afterDateDiffrence = 3;
 
-        afterDateDiffrence = dayDiffrence < 33 ? 6 : afterDateDiffrence;
+        //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
+
+        if(dayDiff == 33){
+            afterDateDiffrence = 4
+        }
+
+        if(dayDiff == 32){
+           afterDateDiffrence = 5
+        }
+
+        if(dayDiff == 31){
+            afterDateDiffrence = 6
+        }
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
         endDate.setDate(endDate.getDate() + afterDateDiffrence);
@@ -1171,19 +1184,19 @@ export class FlightService {
 
         //var count = await this.getDifferenceInDays(startDate, endDate);
 
-        var count = dayDiffrence < 33 ? 9 : 6
+        var count = 6
 
-        if(dayDiffrence == 33){
-            count = 8
-        }
+        // if(dayDiffrence == 33){
+        //     count = 9
+        // }
 
-        if(dayDiffrence == 32){
-            count = 7
-        }
+        // if(dayDiffrence == 32){
+        //     count = 8
+        // }
 
-        if(dayDiffrence == 31){
-            count = 6
-        }
+        // if(dayDiffrence == 31){
+        //     count = 7
+        // }
 
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
