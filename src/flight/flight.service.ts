@@ -1174,15 +1174,15 @@ export class FlightService {
         var count = dayDiffrence < 33 ? 9 : 6
 
         if(dayDiffrence == 33){
-            count = 9
-        }
-
-        if(dayDiffrence == 32){
             count = 8
         }
 
-        if(dayDiffrence == 31){
+        if(dayDiffrence == 32){
             count = 7
+        }
+
+        if(dayDiffrence == 31){
+            count = 6
         }
 
         const mystiflyConfig = await new Promise((resolve) =>
