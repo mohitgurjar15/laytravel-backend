@@ -1184,19 +1184,19 @@ export class FlightService {
 
         var count = await this.getDifferenceInDays(startDate, endDate);
 
-        //var count = 6
+        var count = 6
 
-        // if(dayDiffrence == 33){
-        //     count = 9
-        // }
+        if(dayDiff == 33){
+            count = 7
+        }
 
-        // if(dayDiffrence == 32){
-        //     count = 8
-        // }
+        if(dayDiff == 32){
+            count = 8
+        }
 
-        // if(dayDiffrence == 31){
-        //     count = 7
-        // }
+        if(dayDiff == 31){
+            count = 9
+        }
 
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
