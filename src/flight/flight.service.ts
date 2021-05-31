@@ -1182,9 +1182,9 @@ export class FlightService {
 
         const depature = startDate;
 
-        //var count = await this.getDifferenceInDays(startDate, endDate);
+        var count = await this.getDifferenceInDays(startDate, endDate);
 
-        var count = 6
+        //var count = 6
 
         // if(dayDiffrence == 33){
         //     count = 9
