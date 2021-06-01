@@ -1138,12 +1138,12 @@ export class FlightService {
         const depatureDate = new Date(departure_date);
         const arivalDate = new Date(arrival_date);
 
-        var dayDiffrence = await this.getDifferenceInDays(
+        /* var dayDiffrence = await this.getDifferenceInDays(
             depatureDate,
             new Date()
-        );
+        ); */
+        var dayDiffrence = moment(departure_date).diff(moment().format("YYYY-MM-DD"),'days');
         const dayDiff = dayDiffrence
-        console.log('dayDiff1',dayDiff);
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
         // dayDiffrence = 3
@@ -1156,29 +1156,27 @@ export class FlightService {
             depatureDate,
             arivalDate
         );
+        
 
         //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
         let afterDateDiffrence = 3;
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
-        console.log('dayDiff',dayDiff);
         // if(dayDiff == 33){
         //     afterDateDiffrence = 4
         // }
         if(dayDiff == 32){
-           afterDateDiffrence = 4
-        }
-
-        if(dayDiff == 31){
            afterDateDiffrence = 5
         }
 
-        if(dayDiff == 30){
-            afterDateDiffrence = 6
+        if(dayDiff == 31){
+           afterDateDiffrence = 6
         }
-        if(dayDiff == 29){
+
+        if(dayDiff == 30){
             afterDateDiffrence = 7
         }
+        
         console.log(afterDateDiffrence);
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
@@ -1243,6 +1241,7 @@ export class FlightService {
                 beforeDateString = beforeDateString
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "");
+                console.log("Dept",depature,beforeDateString)
 
                 const arrival = new Date(depature);
                 arrival.setDate(depature.getDate() + tourDiffrence);
