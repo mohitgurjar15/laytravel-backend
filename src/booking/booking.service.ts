@@ -2703,7 +2703,7 @@ export class BookingService {
         if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
             Activity.logActivity(
                 user.userId,
-                "Booking",
+                "Bookings",
                 "Booking(" + booking_id + "" + product_id ||
                     "" + ") deleted by admin "
             );
@@ -2809,7 +2809,7 @@ export class BookingService {
         const currentValue = JSON.stringify(updatedValue);
         Activity.logActivity(
             admin.userId,
-            "Booking",
+            "Bookings",
             "Update traveler info of info id" + id,
             previousValue,
             currentValue
