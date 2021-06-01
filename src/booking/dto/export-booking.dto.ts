@@ -3,6 +3,7 @@ import { ValidateIf } from "class-validator";
 import { combineStatus } from "src/enum/booking-new-status.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { BookingType } from "src/enum/booking-type.enum";
+import { CancellationReason } from "src/enum/cancellation-reason.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { PaymentType } from "src/enum/payment-type.enum";
 import { Role } from "src/enum/role.enum";
@@ -143,4 +144,14 @@ export class ExportBookingDto {
                description: "status",
            })
            status: combineStatus[];
+
+           @ApiPropertyOptional({
+               description: "cantiallation reasons",
+           })
+           cancellation_reasons: CancellationReason[];
+           @ApiPropertyOptional({
+               description: "search with transaction token",
+               example: "",
+           })
+           supplier_booking_id: string;
        }

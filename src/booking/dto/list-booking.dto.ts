@@ -14,6 +14,7 @@ import { PaymentType } from "src/enum/payment-type.enum";
 import { Type } from "class-transformer";
 import { Role } from "src/enum/role.enum";
 import { combineStatus } from "src/enum/booking-new-status.enum";
+import { CancellationReason } from "src/enum/cancellation-reason.enum";
 export class ListBookingDto {
            @IsNotEmpty({
                message: `Please enter limit&&&limit&&&${errorMessage}`,
@@ -158,6 +159,17 @@ export class ListBookingDto {
                description: "status",
            })
            status: combineStatus[];
+
+           @ApiPropertyOptional({
+               description: "cantiallation reasons",
+           })
+           cancellation_reasons: CancellationReason[];
+
+           @ApiPropertyOptional({
+               description: "search with transaction token",
+               example: "",
+           })
+           supplier_booking_id: string;
        }
 
 // class OrderBy {

@@ -48,6 +48,8 @@ export class BookingRepository extends Repository<Booking> {
             order_by_depature_date,
             update_by,
             status,
+            cancellation_reasons,
+            supplier_booking_id,
         } = listBookingDto;
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
@@ -58,31 +60,45 @@ export class BookingRepository extends Repository<Booking> {
             where += `AND ("booking"."user_id" = '${userId}')`;
         }
 
+        if (supplier_booking_id) {
+            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        }
+
         if (status?.length) {
             if (typeof status != "object") {
                 console.log(status);
-                
-                let w = await BookingStatusUtility.filterCondition(parseInt(status), "booking");
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(status),
+                    "booking"
+                );
                 console.log(w);
-                
+
                 if (w) {
                     where += `AND (${w})`;
                 }
             } else {
                 console.log(status);
-                let or = ''
+                let or = "";
                 for await (const s of status) {
                     let w = await BookingStatusUtility.filterCondition(
                         s,
                         "booking"
                     );
                     if (w) {
-                        or += `${or == '' ? '':'or'}(${w})`;
+                        or += `${or == "" ? "" : "or"}(${w})`;
                     }
                 }
-                if(or != ''){
-                     where += `AND (${or})`;
+                if (or != "") {
+                    where += `AND (${or})`;
                 }
+            }
+        }
+        if (cancellation_reasons?.length) {
+            if (typeof cancellation_reasons != "object") {
+                where += `AND ("booking"."cancellation_reason" =:cancellation_reasons)`;
+            } else {
+                where += `AND ("booking"."cancellation_reason" in (:...cancellation_reasons))`;
             }
         }
 
@@ -196,7 +212,10 @@ export class BookingRepository extends Repository<Booking> {
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
             .leftJoinAndSelect("booking.cart", "cart")
-            .leftJoinAndSelect("booking.cancellationRequest", "cancellationRequest")
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.user", "User")
             .leftJoinAndSelect("booking.updateByUser", "updateBy")
@@ -215,6 +234,7 @@ export class BookingRepository extends Repository<Booking> {
                 reservationId,
                 category_name,
                 update_by,
+                cancellation_reasons,
             })
             .take(take)
             .skip(skip);
@@ -797,7 +817,11 @@ export class BookingRepository extends Repository<Booking> {
             // 	"booking.id"
             // ])
             .where(
-                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING} AND "booking"."module_id" IN(:...id) AND booking.check_in_date >= date('${
+                `"booking"."booking_type"= ${
+                    BookingType.INSTALMENT
+                } AND "booking"."booking_status"= ${
+                    BookingStatus.PENDING
+                } AND "booking"."module_id" IN(:...id) AND booking.check_in_date >= date('${
                     todayDate.split(" ")[0]
                 }')`,
                 { id: [ModulesName.FLIGHT] }
@@ -867,11 +891,28 @@ export class BookingRepository extends Repository<Booking> {
             update_by,
             order_by_booking_date,
             order_by_cancelation_date,
-            order_by_depature_date,status
+            order_by_depature_date,
+            status,
+            cancellation_reasons,
+            supplier_booking_id,
         } = filterOption;
 
         let where;
         where = `1=1 `;
+        if (cancellation_reasons?.length) {
+            if (typeof cancellation_reasons != "object") {
+                where += `AND ("booking"."cancellation_reason" =:cancellation_reasons)`;
+            } else {
+                where += `AND ("booking"."cancellation_reason" in (:...cancellation_reasons))`;
+            }
+        }
+        if (supplier_booking_id) {
+            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        }
+
+        if (supplier_booking_id) {
+            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        }
         if (userId) {
             where += `AND ("booking"."user_id" = '${userId}')`;
         }
@@ -916,7 +957,6 @@ export class BookingRepository extends Repository<Booking> {
                 }
             }
         }
-
 
         if (category_name?.length) {
             if (typeof category_name != "object") {
@@ -1020,6 +1060,7 @@ export class BookingRepository extends Repository<Booking> {
                 booking_through,
                 category_name,
                 update_by,
+                cancellation_reasons,
             });
         //.orderBy(`booking.bookingDate`, "DESC");
 

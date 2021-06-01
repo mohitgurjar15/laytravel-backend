@@ -168,6 +168,9 @@ export class Booking extends BaseEntity {
     @Column("integer", { name: "supplier_status", nullable: true })
     supplierStatus: number;
 
+    @Column("integer", { name: "cancellation_reason", nullable: true })
+    cancellationReason: number;
+
     @Column("integer", { name: "supplier_id", nullable: true })
     supplierId: number | null;
 
@@ -276,7 +279,7 @@ export class Booking extends BaseEntity {
     cancellationRequest: IntialCancelBooking[];
     // @ManyToOne(
     //   () => UserCard,
-    //   card => card.bookings  
+    //   card => card.bookings
     // )
     // @JoinColumn([{ name: "card_token", referencedColumnName: "cardToken" }])
     // card: UserCard;

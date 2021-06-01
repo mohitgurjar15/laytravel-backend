@@ -64,6 +64,7 @@ import { LaytripIntialCancelBookingRequestEmail } from "src/config/new_email_tem
 import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
 import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
+import { CancellationReason } from "src/enum/cancellation-reason.enum";
 
 @Injectable()
 export class BookingService {
@@ -1071,6 +1072,10 @@ export class BookingService {
                 .leftJoinAndSelect("booking.bookingInstalments", "instalments")
                 .leftJoinAndSelect("booking.currency2", "currency")
                 .leftJoinAndSelect("booking.module", "module")
+                .leftJoinAndSelect(
+                    "booking.cancellationRequest",
+                    "cancellationRequest"
+                )
                 //.leftJoinAndSelect("cartBooking.user", "User")
                 .leftJoinAndSelect("booking.travelers", "traveler")
                 //.leftJoinAndSelect("traveler.userData", "userData")
@@ -1210,6 +1215,7 @@ export class BookingService {
             cartResponce["remainAmount"] = Generic.formatPriceDecimal(
                 remainAmount
             );
+            //cartResponce["cancellationRequest"] = 
             cartResponce["pandinginstallment"] = pandinginstallment;
             cartResponce["currency"] = currency;
             cartResponce["totalAmount"] = Generic.formatPriceDecimal(
@@ -2615,8 +2621,11 @@ export class BookingService {
     }
 
     async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
-        const { booking_id, product_id, message } = deleteBookingDto;
+        let { booking_id, product_id, message , reason} = deleteBookingDto;
 
+        if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
+            reason = CancellationReason.CustomerChoice
+        }
         let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" = '${product_id}')`;
@@ -2645,6 +2654,7 @@ export class BookingService {
                     updatedDate: new Date(),
                     updateBy: user.userId,
                     message: message || null,
+                    cancellationReason: reason,
                 })
                 .where(
                     `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,
