@@ -671,8 +671,8 @@ export class FlightService {
 
         var resultIndex = 0;
 
-        var count = dayDiffrence <= 7 ? dayDiffrence : 7;
-
+        //var count = dayDiffrence <= 7 ? dayDiffrence : 7;
+        var count = 7;
         previousWeekDates.setDate(previousWeekDates.getDate() - count);
 
         const mystiflyConfig = await new Promise((resolve) =>
@@ -701,6 +701,8 @@ export class FlightService {
             headers.currency
         );
 
+        let reqDates = [];
+
         for (let index = 0; index < count; index++) {
             var predate = previousWeekDates.toISOString().split("T")[0];
             predate = predate
@@ -709,6 +711,7 @@ export class FlightService {
             if (
                 moment(new Date(predate)).diff(moment(new Date()), "days") >= 30
             ) {
+                reqDates.push(predate);
                 let dto = {
                     source_location: source_location,
                     destination_location: destination_location,
@@ -730,9 +733,9 @@ export class FlightService {
                         )
                     )
                 );
-                previousWeekDates.setDate(previousWeekDates.getDate() + 1);
                 resultIndex++;
             }
+            previousWeekDates.setDate(previousWeekDates.getDate() + 1);
         }
 
         for (let index = 0; index <= 7; index++) {
@@ -744,6 +747,7 @@ export class FlightService {
                 moment(new Date(nextdate)).diff(moment(new Date()), "days") >=
                 30
             ) {
+                reqDates.push(nextdate);
                 let dto = {
                     source_location: source_location,
                     destination_location: destination_location,
@@ -765,9 +769,9 @@ export class FlightService {
                         )
                     )
                 );
-                nextWeekDates.setDate(nextWeekDates.getDate() + 1);
                 resultIndex++;
             }
+            nextWeekDates.setDate(nextWeekDates.getDate() + 1);
         }
 
         const response = await Promise.all(result);
@@ -810,21 +814,74 @@ export class FlightService {
                     }
                     key++;
                 }
-                var output = {
-                    date: date,
-                    net_rate: netRate,
-                    price: lowestprice,
-                    unique_code: unique_code,
-                    start_price: startPrice,
-                    secondary_start_price: secondaryStartPrice,
-                };
 
-                returnResponce.push(output);
+                if (date && lowestprice > 0) {
+                    var output = {
+                        date: date,
+                        net_rate: netRate,
+                        price: lowestprice,
+                        unique_code: unique_code,
+                        start_price: startPrice,
+                        secondary_start_price: secondaryStartPrice,
+                    };
+
+                    returnResponce.push(output);
+                }
+
                 // console.log(flightData.unique_code);
                 // console.log(flightData.net_rate);
                 // console.log(flightData.departure_date);
             }
         }
+        console.log(reqDates);
+
+        for await (const date of reqDates) {
+            // let obj = returnResponce.find(o => function(o) {
+
+            // });
+            // console.log(obj);
+
+            let obj = 0;
+
+            for await (const o of returnResponce) {
+                var dateTime = o.date;
+                var d = dateTime.split("/");
+                if (`${d[2]}-${d[1]}-${d[0]}` == date) {
+                    obj = 1;
+                }
+            }
+
+            let date1 = date.split("-");
+            console.log("date1", date1);
+
+            date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
+            console.log("date1", date1);
+
+            if (obj==0) {
+                var output = {
+                    date: date1,
+                    net_rate: 0,
+                    price: 0,
+                    unique_code: "",
+                    start_price: 0,
+                    secondary_start_price: 0,
+                };
+
+                returnResponce.push(output);
+            }
+        }
+
+        returnResponce.sort((a, b) => {
+            var dateTime = a.date;
+            var d = dateTime.split("/");
+
+            var dateTime1 = b.date;
+            var d1 = dateTime1.split("/");
+
+            var x = new Date(`${d[2]}-${d[1]}-${d[0]}`);
+            var y = new Date(`${d1[2]}-${d1[1]}-${d1[0]}`);
+            return x > y ? 1 : -1;
+        });
         return returnResponce;
     }
 
@@ -1081,25 +1138,51 @@ export class FlightService {
         const depatureDate = new Date(departure_date);
         const arivalDate = new Date(arrival_date);
 
-        var dayDiffrence = await this.getDifferenceInDays(
+        /* var dayDiffrence = await this.getDifferenceInDays(
             depatureDate,
             new Date()
-        );
+        ); */
+        var dayDiffrence = moment(departure_date).diff(moment().format("YYYY-MM-DD"),'days');
+        const dayDiff = dayDiffrence
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
+        // dayDiffrence = 3
         var startDate = new Date(departure_date);
         startDate.setDate(startDate.getDate() - dayDiffrence);
+
+        console.log(startDate);
 
         var tourDiffrence = await this.getDifferenceInDays(
             depatureDate,
             arivalDate
         );
+        
 
-        const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
+        //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
+        let afterDateDiffrence = 3;
 
+        //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
+    console.log("dayDiff", dayDiff);
+        if(dayDiff == 33){
+            afterDateDiffrence = 4
+        }
+        if(dayDiff == 32){
+           afterDateDiffrence = 5
+        }
+
+        if(dayDiff == 31){
+           afterDateDiffrence = 6
+        }
+
+        if(dayDiff == 30){
+            afterDateDiffrence = 7
+        }
+        
+        console.log(afterDateDiffrence);
+        dayDiffrence = 3;
         var endDate = new Date(departure_date);
         endDate.setDate(endDate.getDate() + afterDateDiffrence);
-
+        console.log(endDate);
         var result = [];
 
         var resultIndex = 0;
@@ -1107,6 +1190,22 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
+        console.log(count,'count',startDate,endDate)
+
+        //var count = 6
+
+        // if(dayDiff == 33){
+        //     count = 7
+        // }
+
+        // if(dayDiff == 32){
+        //     count = 8
+        // }
+
+        // if(dayDiff == 31){
+        //     count = 9
+        // }
+
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
         );
@@ -1128,7 +1227,8 @@ export class FlightService {
                 `Flight module is not configured in database&&&module&&&${errorMessage}`
             );
         }
-
+        let reqDates = [];
+        let secondDate = [];
         const currencyDetails = await Generic.getAmountTocurrency(
             headers.currency
         );
@@ -1142,6 +1242,7 @@ export class FlightService {
                 beforeDateString = beforeDateString
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "");
+                console.log("Dept",depature,beforeDateString)
 
                 const arrival = new Date(depature);
                 arrival.setDate(depature.getDate() + tourDiffrence);
@@ -1150,6 +1251,8 @@ export class FlightService {
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "");
                 console.log("seatch dates", beforeDateString, afterDateString);
+                reqDates.push(beforeDateString);
+                secondDate.push(afterDateString);
 
                 let dto = {
                     source_location: source_location,
@@ -1184,6 +1287,7 @@ export class FlightService {
         let returnResponce = [];
         for await (const data of response) {
             if (!data.message) {
+                
                 var unique_code = "";
                 var lowestprice = 0;
                 var netRate = 0;
@@ -1222,23 +1326,92 @@ export class FlightService {
                     }
                     key++;
                 }
+
+
+                console.log('date',date);
+                
+
+                if (date && lowestprice>0) {
+                    var output = {
+                        date: date,
+                        net_rate: netRate,
+                        price: lowestprice,
+                        unique_code: unique_code,
+                        start_price: startPrice,
+                        arrival_date: arrivalDate,
+                        secondary_start_price: secondaryStartPrice,
+                    };
+                    console.log(output);
+                    
+                    returnResponce.push(output);
+                }
+            }
+        }
+
+        console.log(reqDates);
+
+        for await (const date of reqDates) {
+          
+
+            let obj = 0;
+
+            for await (const o of returnResponce) {
+                var dateTime = o.date;
+                var d = dateTime.split("/");
+               
+                if (`${d[2]}-${d[1]}-${d[0]}` == date) {
+                    obj = 1;
+                }
+            }
+
+            let date1 = date.split("-");
+            
+
+            date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
+            let arrivalofDate = secondDate[reqDates.indexOf(date)];
+            let date2 = arrivalofDate.split("-");
+            date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
+
+            console.log(date);
+            console.log(obj);
+            
+            if (obj == 0) {
+
+                console.log(date1);
+                console.log('++++++++++++++')
                 var output = {
-                    date: date,
-                    net_rate: netRate,
-                    price: lowestprice,
-                    unique_code: unique_code,
-                    start_price: startPrice,
-                    arrival_date: arrivalDate,
-                    secondary_start_price: secondaryStartPrice,
+                    date: date1,
+                    net_rate: 0,
+                    price: 0,
+                    unique_code: "",
+                    start_price: 0,
+                    secondary_start_price: 0,
+                    arrival_date: date2,
                 };
 
                 returnResponce.push(output);
             }
         }
+
+        console.log(returnResponce)
+
+        returnResponce.sort((a, b) => {
+            var dateTime = a.date;
+            var d = dateTime.split("/");
+
+            var dateTime1 = b.date;
+            var d1 = dateTime1.split("/");
+
+            var x = new Date(`${d[2]}-${d[1]}-${d[0]}`);
+            var y = new Date(`${d1[2]}-${d1[1]}-${d1[0]}`);
+            return x > y ? 1 : -1;
+        });
         return returnResponce;
     }
 
     async getDifferenceInDays(date1, date2) {
+        // date2 = moment(date2).format("YYYY-MM-DD");
+        // return moment(date2).diff(moment(date1).format("YYYY-MM-DD"), "days");
         const diffInMs = Math.abs(date2 - date1);
         return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     }
@@ -2800,7 +2973,11 @@ export class FlightService {
 
         await booking.save();
 
-        await this.sendFlightUpdateMail(booking.cart.laytripCartId, booking.user.email , '');
+        await this.sendFlightUpdateMail(
+            booking.cart.laytripCartId,
+            booking.user.email,
+            ""
+        );
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
