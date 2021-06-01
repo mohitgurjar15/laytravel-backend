@@ -1409,6 +1409,8 @@ export class FlightService {
     }
 
     async getDifferenceInDays(date1, date2) {
+        // date2 = moment(date2).format("YYYY-MM-DD");
+        // return moment(date2).diff(moment(date1).format("YYYY-MM-DD"), "days");
         const diffInMs = Math.abs(date2 - date1);
         return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     }
