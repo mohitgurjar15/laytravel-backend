@@ -1143,11 +1143,12 @@ export class FlightService {
             new Date()
         );
         const dayDiff = dayDiffrence
+        console.log('dayDiff1',dayDiff);
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
         // dayDiffrence = 3
         var startDate = new Date(departure_date);
-        startDate.setDate(startDate.getDate() - 3);
+        startDate.setDate(startDate.getDate() - dayDiffrence);
 
         console.log(startDate);
 
@@ -1160,18 +1161,25 @@ export class FlightService {
         let afterDateDiffrence = 3;
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
-
-        if(dayDiff == 33){
-            afterDateDiffrence = 4
-        }
-
+        console.log('dayDiff',dayDiff);
+        // if(dayDiff == 33){
+        //     afterDateDiffrence = 4
+        // }
         if(dayDiff == 32){
-           afterDateDiffrence = 5
+           afterDateDiffrence = 4
         }
 
         if(dayDiff == 31){
+           afterDateDiffrence = 5
+        }
+
+        if(dayDiff == 30){
             afterDateDiffrence = 6
         }
+        if(dayDiff == 29){
+            afterDateDiffrence = 7
+        }
+        console.log(afterDateDiffrence);
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
         endDate.setDate(endDate.getDate() + afterDateDiffrence);
@@ -1183,20 +1191,21 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
+        console.log(count,'count',startDate,endDate)
 
-        var count = 6
+        //var count = 6
 
-        if(dayDiff == 33){
-            count = 7
-        }
+        // if(dayDiff == 33){
+        //     count = 7
+        // }
 
-        if(dayDiff == 32){
-            count = 8
-        }
+        // if(dayDiff == 32){
+        //     count = 8
+        // }
 
-        if(dayDiff == 31){
-            count = 9
-        }
+        // if(dayDiff == 31){
+        //     count = 9
+        // }
 
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
