@@ -1162,9 +1162,10 @@ export class FlightService {
         let afterDateDiffrence = 3;
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
-        // if(dayDiff == 33){
-        //     afterDateDiffrence = 4
-        // }
+    console.log('dayDiff',dayDiff)
+        if(dayDiff == 33){
+            afterDateDiffrence = 4
+        }
         if(dayDiff == 32){
            afterDateDiffrence = 5
         }
