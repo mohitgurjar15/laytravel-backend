@@ -660,7 +660,7 @@ export class PaymentService {
         method = method || "POST";
         //console.log("method", method)
         try {
-            let requestTime = `${new Date()}`
+            let requestTime = `${new Date()}`;
             let result = await Axios({
                 method: method,
                 url: url,
@@ -668,14 +668,12 @@ export class PaymentService {
                 headers: headers,
             });
 
-            
-
             let logData = {};
             logData["url"] = url;
             logData["requestBody"] = requestBody;
             logData["headers"] = headers;
             logData["requestTime"] = requestTime;
-            let responceTime = `${new Date()}`
+            let responceTime = `${new Date()}`;
             logData["responceTime"] = responceTime;
             logData["responce"] = result.data;
             let fileName = `Payment-${headerAction}-${new Date().getTime()}`;
@@ -1210,32 +1208,60 @@ export class PaymentService {
                         phoneNo:
                             `+${cart.user.countryCode}` + cart.user.phoneNo,
                         bookingId: cart.laytripCartId,
-                        nextDate: DateTime.convertDateFormat(
-                            new Date(nextDate),
-                            "YYYY-MM-DD",
-                            "MMMM DD, YYYY"
-                        ),
+                        nextDate:
+                            DateTime.convertDateFormat(
+                                new Date(nextDate),
+                                "YYYY-MM-DD",
+                                "MMMM DD, YYYY"
+                            ) || "",
                         nextAmount: nextAmount,
-                        pastDue:false
+                        pastDue: false,
                     };
                     console.log("cart.user.isEmail", cart.user.isEmail);
 
                     if (cart.user.isEmail) {
-                        console.log("cart.user.isEmail", cart.user.isEmail);
-                        this.mailerService
-                            .sendMail({
-                                to: cart.user.email,
-                                from: mailConfig.from,
-                                bcc: mailConfig.BCC,
-                                subject: `Booking ID ${param.bookingId} Installment Recevied`,
-                                html: LaytripInstallmentRecevied(param,cart?.referral?.name),
-                            })
-                            .then((res) => {
-                                console.log("res", res);
-                            })
-                            .catch((err) => {
-                                console.log("err", err);
-                            });
+                        if (nextAmount > 0) {
+                            this.mailerService
+                                .sendMail({
+                                    to: cart.user.email,
+                                    from: mailConfig.from,
+                                    bcc: mailConfig.BCC,
+                                    subject: `Booking ID ${param.bookingId} Installment Recevied`,
+                                    html: await LaytripInstallmentRecevied(
+                                        param
+                                    ),
+                                })
+                                .then((res) => {
+                                    console.log("res", res);
+                                })
+                                .catch((err) => {
+                                    console.log("err", err);
+                                });
+                        } else {
+                            const responce = await CartDataUtility.CartMailModelDataGenerate(
+                                cart.laytripCartId
+                            );
+                            if (responce?.param) {
+                                let subject = `Booking ID ${cart.laytripCartId} Completion Notice`;
+                                this.mailerService
+                                    .sendMail({
+                                        to: responce.email,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: subject,
+                                        html: await LaytripCartBookingComplationMail(
+                                            responce.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        //console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        //console.log("err", err);
+                                    });
+                            }
+                        }
+                        console.log("mail successed", param, cart.user.email);
                     }
 
                     if (cart.user.isSMS) {
@@ -1470,12 +1496,10 @@ export class PaymentService {
                 totalAmount += parseFloat(item.moduleInfo[0].selling_price);
 
                 console.log("totalAmount", totalAmount);
-            }
-            else if (item.moduleId == ModulesName.HOTEL) {
+            } else if (item.moduleId == ModulesName.HOTEL) {
                 console.log("3");
                 console.log(item.moduleInfo[0].input_data.check_in);
-                const dipatureDate = 
-                    item.moduleInfo[0].input_data.check_in
+                const dipatureDate = item.moduleInfo[0].input_data.check_in;
                 if (smallestDate == "") {
                     smallestDate = dipatureDate;
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
@@ -1850,7 +1874,7 @@ export class PaymentService {
             query = query.andWhere(
                 `"payment"."payment_status"=:payment_status`,
                 {
-                    payment_status:status
+                    payment_status: status,
                 }
             );
         }
@@ -1868,8 +1892,7 @@ export class PaymentService {
 
         const [result, count] = await query.getManyAndCount();
 
-         if (!result.length)
-            throw new NotFoundException(`No data found.`);
+        if (!result.length) throw new NotFoundException(`No data found.`);
 
         return {
             result,
