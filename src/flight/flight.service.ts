@@ -857,7 +857,7 @@ export class FlightService {
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
             console.log("date1", date1);
 
-            if (obj==0) {
+            if (obj == 0) {
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1142,8 +1142,11 @@ export class FlightService {
             depatureDate,
             new Date()
         ); */
-        var dayDiffrence = moment(departure_date).diff(moment().format("YYYY-MM-DD"),'days');
-        const dayDiff = dayDiffrence
+        var dayDiffrence = moment(departure_date).diff(
+            moment().format("YYYY-MM-DD"),
+            "days"
+        );
+        const dayDiff = dayDiffrence;
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
         // dayDiffrence = 3
@@ -1156,28 +1159,27 @@ export class FlightService {
             depatureDate,
             arivalDate
         );
-        
 
         //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
         let afterDateDiffrence = 3;
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
-    console.log("dayDiff", dayDiff);
-        if(dayDiff == 33){
-            afterDateDiffrence = 4
+        console.log("dayDiff", dayDiff);
+        if (dayDiff == 33) {
+            afterDateDiffrence = 4;
         }
-        if(dayDiff == 32){
-           afterDateDiffrence = 5
-        }
-
-        if(dayDiff == 31){
-           afterDateDiffrence = 6
+        if (dayDiff == 32) {
+            afterDateDiffrence = 5;
         }
 
-        if(dayDiff == 30){
-            afterDateDiffrence = 7
+        if (dayDiff == 31) {
+            afterDateDiffrence = 6;
         }
-        
+
+        if (dayDiff == 30) {
+            afterDateDiffrence = 7;
+        }
+
         console.log(afterDateDiffrence);
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
@@ -1190,7 +1192,7 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
-        console.log(count,'count',startDate,endDate)
+        console.log(count, "count", startDate, endDate);
 
         //var count = 6
 
@@ -1242,7 +1244,7 @@ export class FlightService {
                 beforeDateString = beforeDateString
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "");
-                console.log("Dept",depature,beforeDateString)
+                console.log("Dept", depature, beforeDateString);
 
                 const arrival = new Date(depature);
                 arrival.setDate(depature.getDate() + tourDiffrence);
@@ -1287,7 +1289,6 @@ export class FlightService {
         let returnResponce = [];
         for await (const data of response) {
             if (!data.message) {
-                
                 var unique_code = "";
                 var lowestprice = 0;
                 var netRate = 0;
@@ -1327,11 +1328,9 @@ export class FlightService {
                     key++;
                 }
 
+                console.log("date", date);
 
-                console.log('date',date);
-                
-
-                if (date && lowestprice>0) {
+                if (date && lowestprice > 0) {
                     var output = {
                         date: date,
                         net_rate: netRate,
@@ -1342,7 +1341,7 @@ export class FlightService {
                         secondary_start_price: secondaryStartPrice,
                     };
                     console.log(output);
-                    
+
                     returnResponce.push(output);
                 }
             }
@@ -1351,21 +1350,18 @@ export class FlightService {
         console.log(reqDates);
 
         for await (const date of reqDates) {
-          
-
             let obj = 0;
 
             for await (const o of returnResponce) {
                 var dateTime = o.date;
                 var d = dateTime.split("/");
-               
+
                 if (`${d[2]}-${d[1]}-${d[0]}` == date) {
                     obj = 1;
                 }
             }
 
             let date1 = date.split("-");
-            
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
             let arrivalofDate = secondDate[reqDates.indexOf(date)];
@@ -1374,11 +1370,10 @@ export class FlightService {
 
             console.log(date);
             console.log(obj);
-            
-            if (obj == 0) {
 
+            if (obj == 0) {
                 console.log(date1);
-                console.log('++++++++++++++')
+                console.log("++++++++++++++");
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1393,7 +1388,7 @@ export class FlightService {
             }
         }
 
-        console.log(returnResponce)
+        console.log(returnResponce);
 
         returnResponce.sort((a, b) => {
             var dateTime = a.date;
@@ -2202,6 +2197,7 @@ export class FlightService {
         );
 
         if (bookingResult.booking_status == "success") {
+            
             console.log(`step - 3 save Booking`, bookingResult);
 
             let laytripBookingResult = await this.partialyBookingSave(
@@ -2214,7 +2210,13 @@ export class FlightService {
                 bookingId,
                 bookingResult
             );
-
+            this.bookingUpdateFromSupplierside(
+                laytripBookingResult.laytripBookingId,
+                {
+                    supplier_booking_id: laytripBookingResult.supplierBookingId,
+                },
+                3
+            );
             // PushNotification.sendNotificationTouser(laytripBookingResult.userId,
             // 	{  //you can send only notification or only data(or include both)
             // 		module_name: 'booking',
@@ -2972,12 +2974,12 @@ export class FlightService {
         booking.supplierBookingId = supplier_booking_id;
 
         await booking.save();
-
-        await this.sendFlightUpdateMail(
-            booking.cart.laytripCartId,
-            booking.user.email,
-            ""
-        );
+       
+            await this.sendFlightUpdateMail(
+                booking.cart.laytripCartId,
+                isNewBooking
+            );
+        
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
@@ -3222,38 +3224,38 @@ export class FlightService {
         return `${date[2]}-${date[1]}-${date[0]}`;
     }
 
-    async sendFlightUpdateMail(bookingId, email, userName) {
-        let mail18 = await CartDataUtility.CartMailModelDataGenerate(bookingId);
+    // async sendFlightUpdateMail(bookingId, email, userName) {
+    //     let mail18 = await CartDataUtility.CartMailModelDataGenerate(bookingId);
 
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Booking ID ${mail18.param.orderId} Change by Travel Provider`,
-                html: await TravelProviderConfiramationMail(mail18.param),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-        // this.mailerService
-        //     .sendMail({
-        //         to: email,
-        //         from: mailConfig.from,
-        //         bcc: mailConfig.BCC,
-        //         subject: "Booking detail updated",
-        //         html: Flight({ username: userName }),
-        //     })
-        //     .then((res) => {
-        //         console.log("res", res);
-        //     })
-        //     .catch((err) => {
-        //         console.log("err", err);
-        //     });
-    }
+    //     await this.mailerService
+    //         .sendMail({
+    //             to: email,
+    //             from: mailConfig.from,
+    //             bcc: mailConfig.BCC,
+    //             subject: `Booking ID ${mail18.param.orderId} Change by Travel Provider`,
+    //             html: await TravelProviderConfiramationMail(mail18.param),
+    //         })
+    //         .then((res) => {
+    //             console.log("res", res);
+    //         })
+    //         .catch((err) => {
+    //             console.log("err", err);
+    //         });
+    //     // this.mailerService
+    //     //     .sendMail({
+    //     //         to: email,
+    //     //         from: mailConfig.from,
+    //     //         bcc: mailConfig.BCC,
+    //     //         subject: "Booking detail updated",
+    //     //         html: Flight({ username: userName }),
+    //     //     })
+    //     //     .then((res) => {
+    //     //         console.log("res", res);
+    //     //     })
+    //     //     .catch((err) => {
+    //     //         console.log("err", err);
+    //     //     });
+    // }
 
     async cartBook(
         bookFlightDto: BookFlightDto,
@@ -3613,80 +3615,84 @@ export class FlightService {
         }
     }
 
-    // async sendFlightUpdateMail(bookingId, isNewBooking) {
-    //     const mailData = await CartDataUtility.CartMailModelDataGenerate(
-    //         bookingId
-    //     );
-    //     if (mailData.email) {
-    //         if (isNewBooking == 2) {
-    //             let header = "Travel Provider Reservation Confirmation";
-    //             if (
-    //                 mailData.param.bookings.length == 1 &&
-    //                 mailData.param.bookings[0].moduleId == ModulesName.FLIGHT
-    //             ) {
-    //                 header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
-    //             }
-    //             this.mailerService
-    //                 .sendMail({
-    //                     to: mailData.email,
-    //                     from: mailConfig.from,
-    //                     bcc: mailConfig.BCC,
-    //                     subject: header,
-    //                     html: await LaytripCartBookingConfirmtionMail(
-    //                         mailData.param
-    //                     ),
-    //                 })
-    //                 .then((res) => {
-    //                     console.log("res", res);
-    //                 })
-    //                 .catch((err) => {
-    //                     console.log("err", err);
-    //                 });
-    //         } else if (isNewBooking == 3) {
-    //             let header =
-    //                 "Reminder - Travel Provider Reservation Confirmation";
-    //             if (
-    //                 mailData.param.bookings.length == 1 &&
-    //                 mailData.param.bookings[0].moduleId == ModulesName.FLIGHT
-    //             ) {
-    //                 header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
-    //             }
-    //             this.mailerService
-    //                 .sendMail({
-    //                     to: mailData.email,
-    //                     from: mailConfig.from,
-    //                     bcc: mailConfig.BCC,
-    //                     subject: header,
-    //                     html: await TravelProviderReminderMail(
-    //                         mailData.param
-    //                     ),
-    //                 })
-    //                 .then((res) => {
-    //                     console.log("res", res);
-    //                 })
-    //                 .catch((err) => {
-    //                     console.log("err", err);
-    //                 });
-    //         } else {
-    //             this.mailerService
-    //                 .sendMail({
-    //                     to: mailData.email,
-    //                     from: mailConfig.from,
-    //                     bcc: mailConfig.BCC,
-    //                     subject: `Booking ID ${mailData.param.orderId} Change by Travel Provider`,
-    //                     html: await TravelProviderConfiramationMail(
-    //                         mailData.param
-    //                     ),
-    //                 })
-    //                 .then((res) => {
-    //                     //console.log("res", res);
-    //                 })
-    //                 .catch((err) => {
-    //                     //console.log("err", err);
-    //                 });
-    //         }
-    //     }
-    // }
+    async sendFlightUpdateMail(bookingId, isNewBooking) {
+        const mailData = await CartDataUtility.CartMailModelDataGenerate(
+            bookingId
+        );
+        if (mailData.email) {
+            // if (isNewBooking == 2) {
+            //     let header = "Travel Provider Reservation Confirmation";
+            //     if (
+            //         mailData.param.bookings.length == 1 &&
+            //         mailData.param.bookings[0].moduleId == ModulesName.FLIGHT
+            //     ) {
+            //         header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+            //     }
+            //     this.mailerService
+            //         .sendMail({
+            //             to: mailData.email,
+            //             from: mailConfig.from,
+            //             bcc: mailConfig.BCC,
+            //             subject: header,
+            //             html: await LaytripCartBookingConfirmtionMail(
+            //                 mailData.param
+            //             ),
+            //         })
+            //         .then((res) => {
+            //             console.log("res", res);
+            //         })
+            //         .catch((err) => {
+            //             console.log("err", err);
+            //         });
+
+            //  } 
+            // else if (isNewBooking == 3) {
+            //     let header =
+            //         "Reminder - Travel Provider Reservation Confirmation";
+            //     if (
+            //         mailData.param.bookings.length == 1 &&
+            //         mailData.param.bookings[0].moduleId == ModulesName.FLIGHT
+            //     ) {
+            //         header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+            //     }
+            //     this.mailerService
+            //         .sendMail({
+            //             to: mailData.email,
+            //             from: mailConfig.from,
+            //             bcc: mailConfig.BCC,
+            //             subject: header,
+            //             html: await TravelProviderReminderMail(
+            //                 mailData.param
+            //             ),
+            //         })
+            //         .then((res) => {
+            //             console.log("res", res);
+            //         })
+            //         .catch((err) => {
+            //             console.log("err", err);
+            //         });
+            // } 
+            // else
+            if(isNewBooking != 2 && isNewBooking != 3) {
+                this.mailerService
+                    .sendMail({
+                        to: mailData.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Booking ID ${mailData.param.orderId} Change by Travel Provider`,
+                        html: await TravelProviderConfiramationMail(
+                            mailData.param
+                        ),
+                    })
+                    .then((res) => {
+                        //console.log("res", res);
+                    })
+                    .catch((err) => {
+                        //console.log("err", err);
+                    });
+            }
+        }
+    }
 
     async flightRoute(type) {
         let result;
