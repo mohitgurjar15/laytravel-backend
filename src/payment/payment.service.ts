@@ -1604,8 +1604,8 @@ export class PaymentService {
 
         let authCardResult = await this.authorizeCard(
             card_token,
-            Math.ceil(authoriseAmount * 100), //make it dynamic
-            //3005,
+            //Math.ceil(authoriseAmount * 100), //make it dynamic
+            50,
             "USD",
             browser_info,
             redirection,
