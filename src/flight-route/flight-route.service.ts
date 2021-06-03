@@ -147,7 +147,7 @@ export class FlightRouteService {
             }
         }
 
-        responce[FlightRouteType.DOMESTIC] = domestic
+        responce[FlightRouteType.DOMESTIC] = domestic;
         responce[FlightRouteType.INTERNATIONAL] = international;
 
         responce["flight_route_count"] = totalFlightRoutes[0].count;
@@ -426,6 +426,7 @@ export class FlightRouteService {
 
         let errors = [];
         let dublicateRoutes = [];
+        let updatedRoutes = [];
 
         for (let index = 0; index < array.length; index++) {
             var row = array[index];
@@ -460,11 +461,19 @@ export class FlightRouteService {
                             .where(where)
                             .getOne();
                         if (dublicate) {
+                            const route = new FlightRoute();
+                            route.categoryId = category.id;
+                            route.updateBy = userId;
+                            route.status = true;
+                            route.updateDate = new Date();
+                            await route.save();
+                            count++;
+
                             let r = {
                                 fromCode: row.from_airport_code,
                                 ToCode: row.to_airport_code,
                             };
-                            dublicateRoutes.push(r);
+                            updatedRoutes.push(r);
                             //throw new ConflictException("Given route already added.");
                         } else {
                             const fromAirport = airports[row.from_airport_code];
@@ -490,6 +499,9 @@ export class FlightRouteService {
                     }
                 } else {
                     var error_message = {};
+                    error_message["fromCode"] = row.from_airport_code;
+                    error_message["ToCode"] = row.to_airport_code;
+
                     if (typeof airports[row.from_airport_code] == "undefined") {
                         error_message[
                             "from_airport_code"
@@ -513,12 +525,18 @@ export class FlightRouteService {
                             "type"
                         ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                     }
+
                     errors.push(error_message);
                 }
             }
         }
         Activity.logActivity(userId, "flight-route", `Import flight route`);
-        return { importCount: count, unsuccessRecord: errors, dublicateRoutes };
+        return {
+            importCount: count,
+            unsuccessRecord: errors,
+            dublicateRoutes,
+            updatedRoutes,
+        };
     }
 
     async getFlightRoute(id) {
