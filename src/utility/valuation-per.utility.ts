@@ -20,7 +20,7 @@ export class ValuationPercentageUtility {
         const cart = await query.getOne();
         
         const responce = {};
-        if (!cart.bookings.length) {
+        if (!cart?.bookings?.length) {
             return responce;
         } else {
             let flights: Booking[] = [];
