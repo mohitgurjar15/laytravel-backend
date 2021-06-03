@@ -421,6 +421,15 @@ export class BookingService {
                     new Date(result.data[i].checkOutDate),
                     result.data[i].isResedule
                 );
+
+                const valuations = await ValuationPercentageUtility.calculations(
+                    result.data[i].cart.laytripCartId
+                );
+                result.data[i][
+                    "valuationPercentage"
+                ] = Generic.formatPriceDecimal(
+                    valuations[result.data[i].laytripBookingId] || 0
+                );
                 // for (let j in result.data[i].travelers) {
                 //     if (result.data[i].travelers[j].travelerInfo?.dob) {
                 //         var birthDate = new Date(
@@ -1216,7 +1225,7 @@ export class BookingService {
             cartResponce["remainAmount"] = Generic.formatPriceDecimal(
                 remainAmount
             );
-            //cartResponce["cancellationRequest"] = 
+            //cartResponce["cancellationRequest"] =
             cartResponce["pandinginstallment"] = pandinginstallment;
             cartResponce["currency"] = currency;
             cartResponce["totalAmount"] = Generic.formatPriceDecimal(
@@ -2008,13 +2017,13 @@ export class BookingService {
                 predictiveBookingData["laytrip_booking_id"] =
                     bookingData.laytripBookingId;
                 const valuations = await ValuationPercentageUtility.calculations(
-                   data.booking.cart.laytripCartId
+                    data.booking.cart.laytripCartId
                 );
                 predictiveBookingData[
                     "valuationPercentage"
                 ] = Generic.formatPriceDecimal(
                     valuations[bookingData.laytripBookingId] || 0
-                ); 
+                );
                 predictiveBookingData["bookIt"] = false;
                 predictiveBookingData["module_name"] = bookingData.module.name;
                 predictiveBookingData["is_reseduled"] = bookingData?.updateBy
@@ -2638,10 +2647,10 @@ export class BookingService {
     }
 
     async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
-        let { booking_id, product_id, message , reason} = deleteBookingDto;
+        let { booking_id, product_id, message, reason } = deleteBookingDto;
 
         if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
-            reason = CancellationReason.CustomerChoice
+            reason = CancellationReason.CustomerChoice;
         }
         let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
         if (product_id) {
