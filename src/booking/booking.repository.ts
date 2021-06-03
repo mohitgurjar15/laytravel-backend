@@ -238,7 +238,10 @@ export class BookingRepository extends Repository<Booking> {
             })
             .take(take)
             .skip(skip);
-        // .orderBy(`booking.bookingDate`, "DESC");
+        if(!order_by_depature_date && !order_by_booking_date && !order_by_cancelation_date){
+             query.addOrderBy(`booking.bookingDate`, "DESC");
+        }
+          
         if (order_by_depature_date) {
             query.addOrderBy(
                 `booking.checkInDate`,
@@ -1063,6 +1066,14 @@ export class BookingRepository extends Repository<Booking> {
                 cancellation_reasons,
             });
         //.orderBy(`booking.bookingDate`, "DESC");
+
+        if (
+            !order_by_depature_date &&
+            !order_by_booking_date &&
+            !order_by_cancelation_date
+        ) {
+            query.addOrderBy(`booking.bookingDate`, "DESC");
+        }
 
         if (order_by_depature_date) {
             query.addOrderBy(
