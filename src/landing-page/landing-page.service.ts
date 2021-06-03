@@ -140,7 +140,7 @@ export class LandingPageService {
         let where = `("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "cartBooking"."referral_id" = '${referral_id}')`;
         if (keyword) {
             const cipher = await CryptoUtility.encode(search);
-            where += `AND (("cartBooking"."laytrip_cart_id" = '${cipher}')or("booking"."laytrip_booking_id" = '${cipher}')or("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
+            where += `AND (("cartBooking"."laytrip_cart_id" = '${keyword}')or("booking"."laytrip_booking_id" = '${keyword}')or("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
 
         let [cartBookings, count] = await getConnection()
