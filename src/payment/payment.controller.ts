@@ -249,6 +249,26 @@ export class PaymentController {
         return await this.paymentService.retainCard(card_token, user.user_id);
     }
 
+    @Get("verify-auth/:transaction_token")
+    @ApiOperation({ summary: "Verify Auth card result" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 401, description: "Unauthorized access" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async verifyAuth(
+        @Param("transaction_token") transaction_token: string,
+        @LogInUser() user
+    ) {
+        return await this.paymentService.verifyAuth(transaction_token, user.user_id);
+    }
+
     @Post("get-payment")
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()

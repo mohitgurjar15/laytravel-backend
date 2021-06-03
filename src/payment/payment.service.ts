@@ -615,6 +615,41 @@ export class PaymentService {
         }
     }
 
+    async verifyAuth(transaction_token, userId) {
+        const GatewayCredantial = await Generic.getPaymentCredential();
+
+        const authorization = GatewayCredantial.credentials.authorization;
+
+        const headers = {
+            Accept: "application/json",
+            Authorization: authorization,
+        };
+
+        let url = `https://core.spreedly.com/v1/transactions/${transaction_token}.json`;
+        let requestBody = {};
+        let verifyAuthRes = await this.axiosRequest(
+            url,
+            requestBody,
+            headers,
+            "PUT",
+            "verify-auth",
+            userId
+        );
+        console.log("verifyAuthRes",verifyAuthRes)
+        if (
+            typeof verifyAuthRes != "undefined" &&
+            verifyAuthRes.transaction.succeeded
+        ) {
+            return {
+                success: true,
+            };
+        } else {
+            return {
+                success: false,
+            };
+        }
+    }
+
     async retainCard(cardToken, userId) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
@@ -667,7 +702,6 @@ export class PaymentService {
                 data: requestBody,
                 headers: headers,
             });
-
             let logData = {};
             logData["url"] = url;
             logData["requestBody"] = requestBody;
