@@ -15,6 +15,7 @@ import { errorMessage } from "src/config/common.config";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { BookingType } from "src/enum/booking-type.enum";
+import { ModulesName } from "src/enum/module.enum";
 
 @Injectable()
 export class AdminDashboardService {
@@ -385,6 +386,8 @@ export class AdminDashboardService {
       let moduleIdCondition = "1=1";
       if (moduleId) {
         moduleIdCondition = `"booking"."module_id" = ${moduleId}`;
+      }else{
+        moduleIdCondition = `"booking"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})`; 
       }
 
       let dateConditon = `1=1`;

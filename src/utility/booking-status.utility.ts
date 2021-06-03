@@ -64,13 +64,13 @@ export class BookingStatusUtility {
                 return `"${bookingAliasName}"."booking_status" = ${BookingStatus.PENDING} AND "${bookingAliasName}"."payment_status" = ${PaymentStatus.PENDING}`;
                 break;
             case combineStatus.Reserved:
-                return `"${bookingAliasName}"."booking_status" = ${BookingStatus.CONFIRM} AND "${bookingAliasName}"."payment_status" = ${PaymentStatus.PENDING} AND "${bookingAliasName}"."check_out_date" > date('${date1}')`;
+                return `"${bookingAliasName}"."booking_status" = ${BookingStatus.CONFIRM} AND "${bookingAliasName}"."payment_status" = ${PaymentStatus.PENDING} AND "${bookingAliasName}"."check_out_date" >= date('${date1}')`;
                 break;
             case combineStatus.Suspended:
                 return `"${bookingAliasName}"."booking_status" = ${BookingStatus.FAILED}`;
                 break;
             case combineStatus.FullyPaid:
-                return `"${bookingAliasName}"."payment_status" = ${PaymentStatus.CONFIRM} AND "${bookingAliasName}"."check_out_date" > date('${date1}')`;
+                return `"${bookingAliasName}"."payment_status" = ${PaymentStatus.CONFIRM} AND "${bookingAliasName}"."check_out_date" >= date('${date1}')`;
                 break;
             case combineStatus.Cancelled:
                 return `"${bookingAliasName}"."booking_status" IN (${BookingStatus.NOTCOMPLETED},${BookingStatus.CANCELLED})`;
