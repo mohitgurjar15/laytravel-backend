@@ -631,7 +631,7 @@ export class PaymentService {
             url,
             requestBody,
             headers,
-            "PUT",
+            "GET",
             "verify-auth",
             userId
         );
