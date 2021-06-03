@@ -1894,7 +1894,8 @@ export class FlightService {
         let booking = new Booking();
         booking.id = uuidv4();
         booking.moduleId = moduleDetails.id;
-        booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+        //booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+        booking.laytripBookingId = reservationId 
         booking.bookingType = bookingType;
         booking.currency = currencyId;
         booking.totalAmount = selling_price.toString();
@@ -1905,7 +1906,7 @@ export class FlightService {
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
-        booking.reservationId = reservationId
+        //booking.reservationId = reservationId
         booking.locationInfo = {
             journey_type,
             source_location,
