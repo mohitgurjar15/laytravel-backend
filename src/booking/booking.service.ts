@@ -65,6 +65,7 @@ import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce
 import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
 import { CancellationReason } from "src/enum/cancellation-reason.enum";
+import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
 
 @Injectable()
 export class BookingService {
@@ -2006,6 +2007,14 @@ export class BookingService {
                     bookingData.checkInDate || "";
                 predictiveBookingData["laytrip_booking_id"] =
                     bookingData.laytripBookingId;
+                const valuations = await ValuationPercentageUtility.calculations(
+                   data.booking.cart.laytripCartId
+                );
+                predictiveBookingData[
+                    "valuationPercentage"
+                ] = Generic.formatPriceDecimal(
+                    valuations[bookingData.laytripBookingId] || 0
+                ); 
                 predictiveBookingData["bookIt"] = false;
                 predictiveBookingData["module_name"] = bookingData.module.name;
                 predictiveBookingData["is_reseduled"] = bookingData?.updateBy
@@ -2232,6 +2241,14 @@ export class BookingService {
                     predictiveBookingData["booking_id"] = booking.id;
                     predictiveBookingData["cart_id"] =
                         booking.cart.laytripCartId;
+                    const valuations = await ValuationPercentageUtility.calculations(
+                        booking.cart.laytripCartId
+                    );
+                    predictiveBookingData[
+                        "valuationPercentage"
+                    ] = Generic.formatPriceDecimal(
+                        valuations[booking.laytripBookingId] || 0
+                    );
                     predictiveBookingData["net_price"] = null;
                     predictiveBookingData["date"] = null;
                     predictiveBookingData["is_below_minimum"] = false;
