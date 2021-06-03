@@ -54,6 +54,7 @@ import { EnterInDeadlineMail } from "src/config/admin-email-notification-templet
 import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
 import { BookingChangeBySupplierNotificationMail } from "src/config/admin-email-notification-templetes/booking-change-by-supplier-notification.html";
 import { BookingRunoutNotificationMail } from "src/config/admin-email-notification-templetes/booking-run-out-notification.html";
+import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -1174,5 +1175,9 @@ export class GeneralService {
             .catch((err) => {
                 console.log("err", err);
             });
+    }
+
+    async valuationPercentages(cart_id){
+        return await ValuationPercentageUtility.calculations(cart_id)
     }
 }
