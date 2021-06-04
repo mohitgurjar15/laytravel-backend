@@ -3163,7 +3163,8 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                     arrival_date: await this.changeDateFormat(
-                        bookingData.moduleInfo[0].arrival_date
+                        bookingData.moduleInfo[0].routes[1].stops[0]
+                            .departure_date
                     ),
                 };
 

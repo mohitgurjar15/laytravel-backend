@@ -1161,7 +1161,8 @@ export class CronJobsService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                     arrival_date: await this.getDataTimefromString(
-                        bookingData.moduleInfo[0].arrival_date
+                        bookingData.moduleInfo[0].routes[1].stops[0]
+                            .departure_date
                     ),
                 };
                 //console.log(dto);
