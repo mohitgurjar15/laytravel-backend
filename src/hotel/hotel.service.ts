@@ -86,7 +86,7 @@ export class HotelService {
         }
 
         return {
-            data: locations,
+            data: filteredLocations,
             message: locations.length ? "Result found" : "No result Found",
         };
     }
