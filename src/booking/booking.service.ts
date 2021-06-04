@@ -1941,9 +1941,11 @@ export class BookingService {
                 const valuations = await ValuationPercentageUtility.calculations(
                     data.booking.cart.laytripCartId
                 );
-                const totalPaidAmount = Generic.formatPriceDecimal(
+               
+
+                const totalPaidAmount = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
                    valuations["amount"][bookingData.laytripBookingId] || 0
-               );
+               ) : 0
             //    const paidAmount = Generic.formatPriceDecimal(
             //        valuations["amount"][bookingData.laytripBookingId] || 0
             //    );
@@ -2040,9 +2042,9 @@ export class BookingService {
 
                predictiveBookingData[
                    "paid_amount"
-               ] = Generic.formatPriceDecimal(
+               ] = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
                    valuations["amount"][bookingData.laytripBookingId] || 0
-               );
+               ) : 0
                 predictiveBookingData["bookIt"] = false;
                 predictiveBookingData["module_name"] = bookingData.module.name;
                 predictiveBookingData["is_reseduled"] = bookingData?.updateBy
@@ -2235,9 +2237,9 @@ export class BookingService {
                     const valuations = await ValuationPercentageUtility.calculations(
                         booking.cart.laytripCartId
                     );
-                    const totalPaidAmount = Generic.formatPriceDecimal(
+                    const totalPaidAmount = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
                         valuations["amount"][booking.laytripBookingId] || 0
-                    );
+                    ) : 0
 
                     //console.log(booking.laytripBookingId);
                     //console.log('booking.laytripBookingId');
@@ -2335,9 +2337,9 @@ export class BookingService {
 
                     predictiveBookingData[
                         "paid_amount"
-                    ] = Generic.formatPriceDecimal(
+                    ] = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
                         valuations["amount"][booking.laytripBookingId] || 0
-                    );
+                    ) : 0
 
                     if (category) {
                         let checkInDate = new Date(booking.checkInDate);
@@ -2566,9 +2568,9 @@ export class BookingService {
                     valuations[result.data[i].laytripBookingId] || 0
                 );
 
-                result.data[i]["paidAmount"] = Generic.formatPriceDecimal(
+                result.data[i]["paidAmount"] = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
                     valuations["amount"][result.data[i].laytripBookingId] || 0
-                );
+                ) : 0 
 
                 result.data[i]["remain_days"] = moment(
                     moment(result.data[i].checkInDate)
