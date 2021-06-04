@@ -53,6 +53,8 @@ import { LaytripCancellationTravelProviderMail } from "src/config/new_email_temp
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
+import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
+import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -292,7 +294,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking,true);
+                await this.getPaymentsOfBooking(cartBooking, true);
             } catch (error) {
                 console.log("error", error);
                 const filename =
@@ -345,7 +347,8 @@ export class CronJobsService {
             // ])
             .where(
                 `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING}AND "booking"."module_id" IN(:...id)`,
-                { id: [ModulesName.FLIGHT] });
+                { id: [ModulesName.FLIGHT] }
+            );
         if (booking_id) {
             query.andWhere(`"booking"."laytrip_booking_id" = '${booking_id}'`);
         }
@@ -1158,7 +1161,8 @@ export class CronJobsService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                     arrival_date: await this.getDataTimefromString(
-                        bookingData.moduleInfo[0].arrival_date
+                        bookingData.moduleInfo[0].routes[1].stops[0]
+                            .departure_date
                     ),
                 };
                 //console.log(dto);
@@ -1399,7 +1403,7 @@ export class CronJobsService {
     //     let bookings = await getConnection()
     //         .createQueryBuilder(Booking, "Booking")
     //         .where(
-    //             `"Booking"."check_in_date" IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
+    //             `DATE("cartBooking"."check_in_date") IN ('${date1}','${date2}') AND "booking_status" = ${BookingStatus.CONFIRM}`
     //         )
     //         .getMany();
 
@@ -1429,48 +1433,162 @@ export class CronJobsService {
             .replace(/\..+/, "")
             .split(" ")[0];
 
+        var after14Day = new Date();
+        after14Day.setDate(after14Day.getDate() + 14);
+        var date2 = after14Day.toISOString();
+        date2 = date2
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
+
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
-            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.bookings", "bookings")
             .leftJoinAndSelect("cartBooking.user", "User")
             .where(
-                `(DATE("cartBooking"."check_in_date") = DATE('${date1}') ) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
+                `date("cartBooking"."check_in_date") in (date('${date1}'),date('${date2}')) AND "bookings"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
             )
             .getMany();
-
+        console.log("cart1");
         if (!cartBookings.length) {
             return {
                 message: `Upcommig booking not found`,
             };
         }
-        for await (const booking of cartBookings) {
-            let mail = await CartDataUtility.CartMailModelDataGenerate(
-                booking.laytripCartId
-            );
-            //console.log(mail.confirmed);
+        let failedlogArray = "";
+        for await (const cart of cartBookings) {
+            try {
+                console.log("cart2");
+                for await (const booking of cart.bookings) {
+                    if (
+                        booking.moduleId == ModulesName.FLIGHT &&
+                        booking.bookingStatus == BookingStatus.CONFIRM
+                    ) {
+                        console.log(booking.supplierBookingId);
 
-            await this.mailerService
-                .sendMail({
-                    to: mail.email,
-                    //to: 'viraniparth@yopmail.com',
-                    from: mailConfig.from,
-                    bcc: mailConfig.BCC,
-                    subject: `Reminder - Booking Number ${mail.param.orderId}`,
-                    html: await TravelProviderReminderMail(mail.param,mail.referralId),
-                })
-                .then((res) => {
-                    console.log("res", res);
-                })
-                .catch((err) => {
-                    console.log("err", err);
-                });
+                        await this.flightService.bookingUpdateFromSupplierside(
+                            booking.laytripBookingId,
+                            {
+                                supplier_booking_id: booking.supplierBookingId,
+                            },
+                            booking.checkInDate == date1 ? 2 : 3
+                        );
+                    }
+                }
+                let mailData = await CartDataUtility.CartMailModelDataGenerate(
+                    cart.laytripCartId
+                );
+                const cartCheckingData = new Date(cart.checkInDate)
+                var checkInday = cartCheckingData.toISOString();
+                checkInday = checkInday
+                    .replace(/T/, " ") // replace T with a space
+                    .replace(/\..+/, "")
+                    .split(" ")[0];
+                if (checkInday == date2) {
+                    let header = "Travel Provider Reservation Confirmation";
+                    if (
+                        mailData.param.bookings.length == 1 &&
+                        mailData.param.bookings[0].moduleId ==
+                            ModulesName.FLIGHT
+                    ) {
+                        header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+                    }
+                    //console.log(mailData.param);
+                    
+                    this.mailerService
+                        .sendMail({
+                            to: mailData.email,
+                            //to: mailConfig.BCC,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: header,
+                            html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                                mailData.param
+                            ),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
+                } else {
+                    let header =
+                        "Reminder - Travel Provider Reservation Confirmation";
+                    if (
+                        mailData.param.bookings.length == 1 &&
+                        mailData.param.bookings[0].moduleId ==
+                            ModulesName.FLIGHT
+                    ) {
+                        header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+                    }
+                    this.mailerService
+                        .sendMail({
+                            to: mailData.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: header,
+                            html: await TravelProviderReminderMail(
+                                mailData.param
+                            ),
+                        })
+                        .then((res) => {
+                            console.log("res", res);
+                        })
+                        .catch((err) => {
+                            console.log("err", err);
+                        });
+                }
+                //console.log(mail.confirmed);
+
+                // await this.mailerService
+                //     .sendMail({
+                //         to: mail.email,
+                //         //to: 'viraniparth@yopmail.com',
+                //         from: mailConfig.from,
+                //         bcc: mailConfig.BCC,
+                //         subject: `Reminder - Booking Number ${mail.param.orderId}`,
+                //         html: await TravelProviderReminderMail(mail.param),
+                //     })
+                //     .then((res) => {
+                //         console.log("res", res);
+                //     })
+                //     .catch((err) => {
+                //         console.log("err", err);
+                //     });
+            } catch (error) {
+                console.log("error", error);
+                const filename =
+                    `booking-reminder-cron-error-log-` +
+                    cart.laytripCartId +
+                    "-" +
+                    new Date().getTime() +
+                    ".json";
+
+                Activity.createlogFile(
+                    filename,
+                    JSON.stringify(cart.laytripCartId) +
+                        "-----------------------error-----------------------" +
+                        JSON.stringify(error),
+                    "payment"
+                );
+                failedlogArray += `<p>booking:- ${cart.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
+            }
+        }
+        if (failedlogArray != "") {
+            this.cronfailedmail(
+                "cron fail for given booking id please check log files: <br/><pre>" +
+                    failedlogArray,
+                "Booking reminder cron error log"
+            );
+            Activity.cronUpdateActivity("BookingReminder", failedlogArray);
         }
         return {
             message: `Emails send succeesfully`,
         };
     }
 
-    async getPaymentsOfBooking(cartBooking: CartBooking,isPastDue : boolean) {
+    async getPaymentsOfBooking(cartBooking: CartBooking, isPastDue: boolean) {
         let amount: number = 0;
 
         for await (const booking of cartBooking.bookings) {
@@ -1589,7 +1707,6 @@ export class CronJobsService {
                     ),
                     bookingId: cartBooking.laytripCartId,
                     try: instalment.attempt,
-                    
                 };
                 if (nextInstalmentDate) {
                     param.nextDate = DateTime.convertDateFormat(
@@ -1818,7 +1935,7 @@ export class CronJobsService {
                         "MMMM DD, YYYY"
                     ),
                     nextAmount: nextAmount,
-                    pastDue:isPastDue,
+                    pastDue: isPastDue,
                 };
                 if (cartBooking.user.isEmail) {
                     if (nextAmount > 0) {
@@ -1942,7 +2059,7 @@ export class CronJobsService {
         var failedlogArray = "";
         for await (const cartBooking of cartBookings) {
             try {
-                await this.getPaymentsOfBooking(cartBooking,false);
+                await this.getPaymentsOfBooking(cartBooking, false);
             } catch (error) {
                 console.log("error", error);
                 const filename =

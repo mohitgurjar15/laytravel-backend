@@ -34,10 +34,10 @@ export function LaytripInstallmentRecevied(
                                                 ? "past due"
                                                 : ""
                                         } payment for ${param.currencySymbol}${
-               param.amount
-           } on ${param.date}, thank you!`;
-           if (param.pastDue == false) {
-               content += `
+        param.amount
+    } on ${param.date}, thank you!`;
+    if (param.pastDue == false && param.nextDate) {
+        content += `
                     Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}.`;
            }
            content += `</td>

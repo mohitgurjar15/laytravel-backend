@@ -765,7 +765,7 @@ more than 10.`
                                     ? cart.moduleInfo[0].infant_count
                                     : 0,
                                 arrival_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].arrival_date
+                                    cart.moduleInfo[0].routes[1].stops[0].departure_date
                                 ),
                             };
                             //console.log(dto);
@@ -1521,7 +1521,7 @@ more than 10.`
                     ? cart.moduleInfo[0].infant_count
                     : 0,
                 arrival_date: await this.flightService.changeDateFormat(
-                    cart.moduleInfo[0].arrival_date
+                    cart.moduleInfo[0].routes[1].stops[0].departure_date
                 ),
             };
             flightRequest = await this.flightService.searchRoundTripZipFlight(
