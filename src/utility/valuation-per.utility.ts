@@ -18,15 +18,16 @@ export class ValuationPercentageUtility {
             );
 
         const cart = await query.getOne();
-        
+
         const responce = {};
+        const amount = {};
         if (!cart?.bookings?.length) {
             return responce;
         } else {
             let flights: Booking[] = [];
             let hotels: Booking[] = [];
 
-            console.log('flights',flights);
+            console.log("flights", flights);
             console.log("hotels", hotels);
             let paidAmount = 0;
             let totalAmount = 0;
@@ -50,17 +51,19 @@ export class ValuationPercentageUtility {
 
             const avgValuation = (paidAmount * 100) / totalAmount;
 
-            console.log('avgValuation',avgValuation)
+            console.log("avgValuation", avgValuation);
 
             if (flights.length > 0 && hotels.length == 0) {
-                console.log('all flight case')
+                console.log("all flight case");
                 for await (const flight of flights) {
                     responce[flight.laytripBookingId] = avgValuation;
+                    amount[flight.laytripBookingId] = paidAmount;
                 }
             } else if (flights.length == 0 && hotels.length > 0) {
                 console.log("all hotel case");
                 for await (const hotel of hotels) {
                     responce[hotel.laytripBookingId] = avgValuation;
+                    amount[hotel.laytripBookingId] = paidAmount;
                 }
             } else if (flights.length > 0 && hotels.length > 0) {
                 console.log("all priority case case");
@@ -76,11 +79,13 @@ export class ValuationPercentageUtility {
                     const flight = flights[index];
                     let flightTotal = parseFloat(flight.totalAmount);
                     if (eachFlightAmount > flightTotal) {
-                        
                         remainAmount += eachFlightAmount - flightTotal;
                         eachFlightRemainAmount =
                             remainAmount / (flightTotal - (index + 1));
                         responce[flight.laytripBookingId] = 100;
+                        amount[flight.laytripBookingId] = parseFloat(
+                            flight.totalAmount
+                        );
                         console.log(
                             "case1",
                             "eachFlightAmount > flightTotal",
@@ -90,10 +95,9 @@ export class ValuationPercentageUtility {
                             eachFlightRemainAmount
                         );
                     } else if (
-                        (eachFlightAmount + eachFlightRemainAmount) >
+                        eachFlightAmount + eachFlightRemainAmount >
                         flightTotal
                     ) {
-                        
                         remainAmount +=
                             eachFlightAmount +
                             eachFlightRemainAmount -
@@ -101,7 +105,9 @@ export class ValuationPercentageUtility {
                         eachFlightRemainAmount =
                             remainAmount / (flightTotal - (index + 1));
                         responce[flight.laytripBookingId] = 100;
-
+                        amount[flight.laytripBookingId] = parseFloat(
+                            flight.totalAmount
+                        );
                         console.log(
                             "case2",
                             `(eachFlightAmount + eachFlightRemainAmount) >
@@ -112,7 +118,7 @@ export class ValuationPercentageUtility {
                             eachFlightRemainAmount
                         );
                     } else if (
-                        (eachFlightAmount + eachFlightRemainAmount) <
+                        eachFlightAmount + eachFlightRemainAmount <
                         flightTotal
                     ) {
                         console.log(
@@ -129,12 +135,11 @@ export class ValuationPercentageUtility {
                                 flightTotal) *
                             100;
                         remainAmount = remainAmount - eachFlightRemainAmount;
+                        amount[flight.laytripBookingId] =
+                            eachFlightAmount + eachFlightRemainAmount;
                     }
                 }
-                console.log(
-                    "remainAmount:",
-                    remainAmount,
-                );
+                console.log("remainAmount:", remainAmount);
                 if (remainAmount > 0) {
                     var eachHotelAmount = remainAmount / hotels.length;
                     var remainHotelAmount = 0;
@@ -149,7 +154,6 @@ export class ValuationPercentageUtility {
                         const hotel = hotels[index];
                         let flightTotal = parseFloat(hotel.totalAmount);
                         if (eachHotelAmount > flightTotal) {
-                            
                             remainHotelAmount += eachHotelAmount - flightTotal;
                             eachHotelRemainAmount =
                                 remainHotelAmount / (flightTotal - (index + 1));
@@ -163,8 +167,11 @@ export class ValuationPercentageUtility {
                                 "eachFlightRemainAmount",
                                 eachHotelRemainAmount
                             );
+                            amount[hotel.laytripBookingId] = parseFloat(
+                                hotel.totalAmount
+                            );
                         } else if (
-                            (eachHotelAmount + eachHotelRemainAmount) >
+                            eachHotelAmount + eachHotelRemainAmount >
                             flightTotal
                         ) {
                             remainHotelAmount +=
@@ -183,8 +190,11 @@ export class ValuationPercentageUtility {
                                 "eachFlightRemainAmount",
                                 eachHotelRemainAmount
                             );
+                            amount[hotel.laytripBookingId] = parseFloat(
+                                hotel.totalAmount
+                            );
                         } else if (
-                            (eachHotelAmount + eachHotelRemainAmount) <
+                            eachHotelAmount + eachHotelRemainAmount <
                             flightTotal
                         ) {
                             responce[hotel.laytripBookingId] =
@@ -193,21 +203,23 @@ export class ValuationPercentageUtility {
                                 100;
                             remainHotelAmount =
                                 remainHotelAmount - eachHotelRemainAmount;
-                                console.log(
-                                    "case6",
-                                    `(eachFlightAmount + eachFlightRemainAmount) >
+                            amount[hotel.laytripBookingId] =
+                                eachHotelAmount + eachHotelRemainAmount;
+                            console.log(
+                                "case6",
+                                `(eachFlightAmount + eachFlightRemainAmount) >
                         flightTotal`,
-                                    "remainAmount:",
-                                    remainHotelAmount,
-                                    "eachFlightRemainAmount",
-                                    eachHotelRemainAmount
-                                );
+                                "remainAmount:",
+                                remainHotelAmount,
+                                "eachFlightRemainAmount",
+                                eachHotelRemainAmount
+                            );
                         }
                     }
                 }
             }
         }
-
-        return responce
+        responce['amount'] = amount
+        return responce;
     }
 }

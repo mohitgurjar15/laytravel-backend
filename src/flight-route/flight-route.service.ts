@@ -461,12 +461,12 @@ export class FlightRouteService {
                             .where(where)
                             .getOne();
                         if (dublicate) {
-                            const route = new FlightRoute();
-                            route.categoryId = category.id;
-                            route.updateBy = userId;
-                            route.status = true;
-                            route.updateDate = new Date();
-                            await route.save();
+                           
+                            dublicate.categoryId = category.id;
+                            dublicate.updateBy = userId;
+                            dublicate.status = true;
+                            dublicate.updateDate = new Date();
+                            await dublicate.save();
                             count++;
 
                             let r = {
