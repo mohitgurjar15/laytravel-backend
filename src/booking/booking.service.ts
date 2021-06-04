@@ -425,8 +425,14 @@ export class BookingService {
                     valuations[result.data[i].laytripBookingId] || 0
                 );
 
-
-                result.data[i]["paidAmount"] = Generic.formatPriceDecimal(valuations['amount'][result.data[i].laytripBookingId] || 0 )
+                console.log('booking id',result.data[i].laytripBookingId)
+                console.log("valuation", valuations);
+                if(valuations && typeof valuations['amount'] != "undefined" && typeof valuations['amount'][result.data[i].laytripBookingId] != "undefined"){
+                    result.data[i]["paidAmount"] = Generic.formatPriceDecimal(valuations['amount'][result.data[i].laytripBookingId] || 0 )
+                } else{
+                    result.data[i]["paidAmount"] = 0 
+                }
+                
                     
                 // for (let j in result.data[i].travelers) {
                 //     if (result.data[i].travelers[j].travelerInfo?.dob) {
