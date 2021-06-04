@@ -94,7 +94,7 @@ export class BookingService {
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param
+                        responce.param,responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -2624,7 +2624,7 @@ export class BookingService {
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param
+                        responce.param,responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -2645,9 +2645,8 @@ export class BookingService {
     async getBookingIds() {
         return await this.bookingRepository.getBookingId();
     }
-
-    async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
-        let { booking_id, product_id, message, reason } = deleteBookingDto;
+    async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User,referralId) {
+         let { booking_id, product_id, message, reason } = deleteBookingDto;
 
         if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
             reason = CancellationReason.CustomerChoice;
@@ -2743,7 +2742,7 @@ export class BookingService {
                     html: await LaytripCancellationTravelProviderMail({
                         userName: query.user.firstName || "",
                         bookingId: booking_id,
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -2761,7 +2760,7 @@ export class BookingService {
                     html: await LaytripBookingCancellationCustomerMail({
                         username: query.user.firstName || "",
                         bookingId: booking_id,
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -2919,7 +2918,7 @@ export class BookingService {
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: `Booking ID ${mail.param.orderId} Customer Change`,
-                html: await CartChangeAsperUserRequestMail(mail.param),
+                html: await CartChangeAsperUserRequestMail(mail.param,mail.referralId),
             })
             .then((res) => {
                 console.log("res", res);

@@ -2,7 +2,10 @@ import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { BaseUrl, reviewLink } from "../base-url";
 
-export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
+export function HowDidWeDoMail(
+    param: { username: string; bookingId: string },
+    referral_id: string = ""
+) {
     const content = `
                                 <tr>
                                     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
@@ -24,7 +27,11 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
                                                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                                                     <a href = '${reviewLink +
-                                                        param.bookingId}'style="color: #F826C1;">Review</a>
+                                                        param.bookingId}${
+        referral_id
+            ? "?utm_source=" + referral_id + "&utm_medium=landingpage"
+            : ""
+    }'style="color: #F826C1;">Review</a>
                                                     </td>
                                                 </tr>
                                                 
@@ -57,5 +64,5 @@ export function HowDidWeDoMail(param: { username: string; bookingId: string }) {
 </td>
 </tr>
 `;
-    return LaytripHeader + content + LaytripFooter;
+    return LaytripHeader + content + LaytripFooter(referral_id);
 }

@@ -212,7 +212,7 @@ export class CronJobsService {
                         bcc: mailConfig.BCC,
                         subject: `Travel Provider Reservation Confirmation`,
                         html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                            responce.param
+                            responce.param,responce.referralId
                         ),
                     })
                     .then((res) => {
@@ -279,6 +279,7 @@ export class CronJobsService {
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect(
                 "booking.bookingInstalments",
                 "BookingInstalments"
@@ -906,6 +907,7 @@ export class CronJobsService {
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect(
                 "booking.bookingInstalments",
                 "BookingInstalments"
@@ -958,7 +960,10 @@ export class CronJobsService {
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
                         subject: `Booking ID ${param.bookingId} Upcoming Payment Reminder`,
-                        html: LaytripPaymentReminderTemplete(param),
+                        html: LaytripPaymentReminderTemplete(
+                            param,
+                            cartBooking?.referral?.name
+                        ),
                     })
                     .then((res) => {
                         console.log("res", res);
@@ -1554,7 +1559,7 @@ export class CronJobsService {
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: `Reminder - Booking Number ${mail.param.orderId}`,
-                    html: await TravelProviderReminderMail(mail.param),
+                    html: await TravelProviderReminderMail(mail.param,mail.referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -1760,7 +1765,7 @@ export class CronJobsService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Notice of Default and Cancellation`,
-                                html: await LaytripPaymentFailedTemplete(param),
+                                html: await LaytripPaymentFailedTemplete(param,cartBooking?.referral?.name),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1777,7 +1782,7 @@ export class CronJobsService {
                                 subject: `Booking ID ${param.bookingId} ${
                                     param.try == 4 ? "Final" : ""
                                 }Missed Payment Reminder #${param.try - 1}`,
-                                html: await LaytripMissedPaymentTemplete(param),
+                                html: await LaytripMissedPaymentTemplete(param,cartBooking?.referral?.name),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1925,7 +1930,7 @@ export class CronJobsService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Installment Recevied`,
-                                html: LaytripInstallmentRecevied(param),
+                                html: LaytripInstallmentRecevied(param,cartBooking?.referral?.name),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1946,7 +1951,7 @@ export class CronJobsService {
                                     bcc: mailConfig.BCC,
                                     subject: subject,
                                     html: await LaytripCartBookingComplationMail(
-                                        responce.param
+                                        responce.param,responce.referralId
                                     ),
                                 })
                                 .then((res) => {
@@ -2021,6 +2026,7 @@ export class CronJobsService {
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect(
                 "booking.bookingInstalments",
                 "BookingInstalments"

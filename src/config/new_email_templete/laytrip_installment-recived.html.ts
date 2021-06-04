@@ -2,19 +2,22 @@ import { Generic } from "src/utility/generic.utility";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export function LaytripInstallmentRecevied(param: {
-    date: string;
-    userName: string;
-    orderId: string;
-    amount: number;
-    installmentId: number;
-    complitedAmount: number;
-    totalAmount: number;
-    currencySymbol: string;
-    nextDate: string;
-    pastDue: boolean;
-}) {
-    let content = `<tr>
+export function LaytripInstallmentRecevied(
+           param: {
+               date: string;
+               userName: string;
+               orderId: string;
+               amount: number;
+               installmentId: number;
+               complitedAmount: number;
+               totalAmount: number;
+               currencySymbol: string;
+               nextDate: string;
+               pastDue: boolean;
+           },
+           referral_id: string = ""
+       ) {
+           let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
@@ -31,13 +34,13 @@ export function LaytripInstallmentRecevied(param: {
                                                 ? "past due"
                                                 : ""
                                         } payment for ${param.currencySymbol}${
-        param.amount
-    } on ${param.date}, thank you!`;
-    if (param.pastDue == false) {
-        content += `
+               param.amount
+           } on ${param.date}, thank you!`;
+           if (param.pastDue == false) {
+               content += `
                     Your next ${param.currencySymbol}${param.amount} payment will be processed on ${param.nextDate}.`;
-    }
-    content += `</td>
+           }
+           content += `</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
@@ -68,5 +71,5 @@ export function LaytripInstallmentRecevied(param: {
 </td>
 </tr>
 `;
-    return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter(referral_id);
+       }

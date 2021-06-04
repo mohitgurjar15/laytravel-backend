@@ -37,10 +37,16 @@ import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
 import { updateBookingDto } from "./dto/update-booking.dto";
 import { IntialCancelBookingDto } from "./dto/intial-cancelation-booking.dto";
 import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
+import { GetReferralId } from "src/decorator/referral.decorator";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
 @UseGuards(AuthGuard())
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 @Controller("booking")
 export class BookingController {
     constructor(private bookingService: BookingService) {}
@@ -452,9 +458,9 @@ export class BookingController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteCart(
         @Query() deleteBookingDto: DeleteBookingDto,
-        @GetUser() user: User
+        @GetUser() user: User,@GetReferralId() referralId:string
     ) {
-        return await this.bookingService.deleteBooking(deleteBookingDto, user);
+        return await this.bookingService.deleteBooking(deleteBookingDto, user,referralId);
     }
 
     @Put("travelerInfo/:traveler_info_id")

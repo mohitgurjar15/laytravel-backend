@@ -7,7 +7,7 @@ import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
 export async function LaytripCartBookingConfirmtionMail(
-    param: CartBookingEmailParameterModel
+    param: CartBookingEmailParameterModel,referral_id:string = ''
 ) {
     let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
@@ -35,7 +35,11 @@ export async function LaytripCartBookingConfirmtionMail(
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         We will send you your airline, hotel, car and home rental reservation number(s) once we have received your final installment payment. Until your final installment is received, our  
-                        <a href="${TermsConditonLink}" style="color: #0C7BFF;">Terms</a> for changes and cancellations apply. 
+                        <a href="${TermsConditonLink}${
+            referral_id
+                ? "?utm_source=" + referral_id + "&utm_medium=landingpage"
+                : ""
+        }" style="color: #0C7BFF;">Terms</a> for changes and cancellations apply. 
                         Here are your Booking Details:
                 </tr>`;
     }
@@ -182,7 +186,11 @@ export async function LaytripCartBookingConfirmtionMail(
                                 <tr>
                                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>My  Bookings</a>
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}${
+        referral_id
+            ? "?utm_source=" + referral_id + "&utm_medium=landingpage"
+            : ""
+    }'>My  Bookings</a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -218,5 +226,5 @@ export async function LaytripCartBookingConfirmtionMail(
     </table>
 </td>
 </tr>`;
-    return LaytripHeader + content + LaytripFooter;
+    return LaytripHeader + content + LaytripFooter(referral_id);
 }

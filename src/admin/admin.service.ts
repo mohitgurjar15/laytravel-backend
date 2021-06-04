@@ -59,7 +59,7 @@ export class AdminService {
 	async createAdmin(
 		saveUserDto: SaveAdminDto,
 		files: ProfilePicDto,
-		adminId: string
+		adminId: string,
 	): Promise<User> {
 		const { email, password, first_name, last_name } = saveUserDto;
 		const salt = await bcrypt.genSalt();
@@ -91,20 +91,20 @@ export class AdminService {
 		delete userdata.salt;
 		if (userdata) {
 			Activity.logActivity(adminId, "Admin", ` New admin ${userdata.email} created By super admin ${adminId}`, null, JSON.stringify(userdata));
-			this.mailerService
-                .sendMail({
-                    to: email,
-                    from: mailConfig.from,
-                    bcc: mailConfig.BCC,
-                    subject: "Welcome to Laytrip!",
-                    html: LaytripWelcomeBoardMail(),
-                })
-                .then((res) => {
-                    console.log("res", res);
-                })
-                .catch((err) => {
-                    console.log("err", err);
-                });
+			// this.mailerService
+            //     .sendMail({
+            //         to: email,
+            //         from: mailConfig.from,
+            //         bcc: mailConfig.BCC,
+            //         subject: "Welcome to Laytrip!",
+            //         html: LaytripWelcomeBoardMail(),
+            //     })
+            //     .then((res) => {
+            //         console.log("res", res);
+            //     })
+            //     .catch((err) => {
+            //         console.log("err", err);
+            //     });
 		}
 		return userdata;
 	}

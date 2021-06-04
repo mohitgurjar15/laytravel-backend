@@ -3080,7 +3080,7 @@ export class FlightService {
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: `Booking ID ${mail18.param.orderId} Change by Travel Provider`,
-                html: await TravelProviderConfiramationMail(mail18.param),
+                html: await TravelProviderConfiramationMail(mail18.param,mail18.referralId),
             })
             .then((res) => {
                 console.log("res", res);

@@ -2,8 +2,11 @@ import { BaseUrl } from "../base-url";
 import { LaytripFooter2 } from "./laytrip-second-footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export function massCommunicationMail(param: { header: string, body: string }) {
-    const content = `<!-- header Text section start -->
+export function massCommunicationMail(
+           param: { header: string; body: string },
+           referral_id: string = ""
+       ) {
+           const content = `<!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
     <tr>
         <td align="center" valign="top">
@@ -35,5 +38,5 @@ export function massCommunicationMail(param: { header: string, body: string }) {
     </tr>
 </table>
 <!-- header text section End -->`;
-    return LaytripHeader + content + LaytripFooter2;
-}
+           return LaytripHeader + content + LaytripFooter2;
+       }
