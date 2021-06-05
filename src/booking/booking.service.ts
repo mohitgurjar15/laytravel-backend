@@ -3129,7 +3129,7 @@ export class BookingService {
             Activity.logActivity(
                 admin.userId,
                 "Intiate-cancellation",
-                "Intiate cancelation request for booking id : " + product_id
+                "Intiate cancelation request for booking number : " + product_id
             );
             return {
                 message: `Intial cancellation request send successfully.`,

@@ -378,10 +378,10 @@ export class CronJobsService {
                             result[index].laytripBookingId
                         );
                         if (flightPrice) {
-                            const priceDiff = await this.campareBookingPrice(
-                                flightPrice,
-                                result[index].netRate
-                            );
+                            // const priceDiff = await this.campareBookingPrice(
+                            //     flightPrice,
+                            //     result[index].netRate
+                            // );
 
                             if (
                                 (data.param.todayNetpriceVarient <= -60 &&
@@ -444,7 +444,7 @@ export class CronJobsService {
                                         console.log("err", err);
                                     });
                             }
-                            if (priceDiff != 0) {
+                            if (data.param.todayNetpriceVarient &&  data.param.todayNetpriceVarient > 5) {
                                 await this.mailerService
                                     .sendMail({
                                         to: mailConfig.admin,

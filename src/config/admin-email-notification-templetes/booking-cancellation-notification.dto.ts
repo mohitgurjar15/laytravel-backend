@@ -28,7 +28,7 @@ export async function BookingCancellationNotificationMail(param: EmailNotificati
                     Sale Price to Customer at Booking:</td>
                 <td align="left" valign="top"
                     style="width:85%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.sellingPrice} (includes LT markup)</td>
+                   ${param.currencySymbol}${param.sellingPrice}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -37,22 +37,26 @@ export async function BookingCancellationNotificationMail(param: EmailNotificati
                 <td align="left" valign="top"
                     style="width:85%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                    ${param.currencySymbol}${param.netRate} </td>
-            </tr>
+            </tr>`
+            if(param.todayNetPrice){
+                content += `
             <tr>
                 <td align="left" valign="top"
                     style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:85%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient})</td>
-            </tr>
-            <tr>
+                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}%)</td>
+            </tr>`
+
+            }
+                content += ` <tr>
                 <td align="left" valign="top"
                     style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                     Total Received from Customer:</td>
                 <td align="left" valign="top"
                     style="width:85%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage})</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"

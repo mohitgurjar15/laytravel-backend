@@ -53,19 +53,19 @@ export async function LaytripIntialCancelBookingRequestEmail(
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         Itinerary Details to be Cancelled:
                     </td>
-                </tr>
-                <tr>
-                    <td
-                          align="left" valign="top"bold;
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        <span  style="color: #000000; font-weight: 600;">
-                        Traveler: 
-                        </span>
-                        <span style="font-size: 18px" >
-                        ${traveleName}
-                        </span>
-                    </td>
-                </tr>`;
+                </tr>`
+                // <tr>
+                //     <td
+                //           align="left" valign="top"bold;
+                //                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                //         <span  style="color: #000000; font-weight: 600;">
+                //         Traveler: 
+                //         </span>
+                //         <span style="font-size: 18px" >
+                //         ${traveleName}
+                //         </span>
+                //     </td>
+                // </tr>`;
     // <tr>
     //     <td
     //           align="left" valign="top"bold;
@@ -129,13 +129,13 @@ export async function LaytripIntialCancelBookingRequestEmail(
             }
         }
     }
-    content += `<tr>
-                <td
-                     align="left" valign="top"bold;
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                    <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
-                </td>
-            </tr>`;
+    // content += `<tr>
+    //             <td
+    //                  align="left" valign="top"bold;
+    //                                     style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+    //                 <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+    //             </td>
+    //         </tr>`;
     // if (param.cart.rememberAmount && param.cart.rememberAmount != "$0") {
     //     content += `<tr>
     //             <td
@@ -184,21 +184,21 @@ export async function LaytripIntialCancelBookingRequestEmail(
     //     }
     // }
 
-    content += ` <tr>
-                    <td style="padding: 20px 0 0 0;">
-                        <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
-                            <tbody>
-                                <tr>
-                                    <td align="left" valign="top"
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>My Bookings</a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
+    // content += ` <tr>
+    //                 <td style="padding: 20px 0 0 0;">
+    //                     <table class="oc_wrapper" align="center" border="0" cellpadding="0" cellspacing="0">
+    //                         <tbody>
+    //                             <tr>
+    //                                 <td align="left" valign="top"
+    //                                     style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+    //                                     <a class="" style="color: #f725c5;" href = '${BookingLink}'>My Bookings</a>
+    //                                 </td>
+    //                             </tr>
+    //                         </tbody>
+    //                     </table>
+    //                 </td>
+    //             </tr>
+     content += `           <tr>
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         Per our <a href="${TermsConditonLink}" target="_blank" style="text-decoration: none; color:#0043FF">Terms</a>, a refund won’t be issued. Contact <a href="mailto:customerservice@laytrip.com" target="_blank" style="text-decoration: none; color:#0043FF"> customerservice@laytrip.com</a> if you have any questions.

@@ -61,11 +61,25 @@ export async function AdminStopLossNotificationMail(param: EmailNotificationMode
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                    ${param.currencySymbol}${param.netRate} </td>
-            </tr>
+            </tr>`
+            if(param.lastPrice){
+                content +=`
             <tr>
                 <td align="left" valign="top"
                     style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    Supplier Cost Today:</td>
+                    Supplier Cost in the Last Hour:</td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                   ${param.currencySymbol}${param.lastPrice} </td>
+            </tr>`
+
+            }
+            
+            content += `
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Latest Supplier Cost:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                    ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient})</td>

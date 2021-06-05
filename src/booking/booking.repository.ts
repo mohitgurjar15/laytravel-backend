@@ -1018,7 +1018,10 @@ export class BookingRepository extends Repository<Booking> {
             }
         }
         if (customer_name) {
-            const cipher = await CryptoUtility.encode(search);
+            console.log('customer_name',customer_name)
+
+            const cipher = await CryptoUtility.encode(customer_name);
+            console.log("cipher", cipher);
             where += `AND (("User"."first_name" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
 

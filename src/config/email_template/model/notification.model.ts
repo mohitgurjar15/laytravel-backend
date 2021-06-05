@@ -12,4 +12,5 @@ export class EmailNotificationModel {
     totalRecivedFromCustomerPercentage: number;
     laytripBookingId: string;
     todayNetpriceVarient ?: number
+    lastPrice ?: number
 }

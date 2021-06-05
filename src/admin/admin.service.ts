@@ -150,7 +150,7 @@ export class AdminService {
 			
 			await userData.save();
 
-			Activity.logActivity(adminId, "admin", `${userData.email} admin profile updated by ${adminId}`, previousData, newData);
+			Activity.logActivity(adminId, "Admin Accounts", `${userData.email} admin profile updated by ${adminId}`, previousData, newData);
 			return userData;
 		} catch (error) {
 			if (
@@ -192,7 +192,7 @@ export class AdminService {
 
 	//Export user
 	async exportAdmin(adminId: string, paginationOption: ExportUserDto): Promise<{ data: User[] }> {
-		Activity.logActivity(adminId, "admin", `Admin is export admin data`);
+		Activity.logActivity(adminId, "Admin Accounts", `Admin is export admin data`);
 		return await this.userRepository.exportUser(paginationOption, [Role.ADMIN, Role.SUPPORT, Role.SUPER_ADMIN]);
 	}
 
@@ -220,7 +220,7 @@ export class AdminService {
 				user.updatedDate = new Date();
 				await user.save();
 				const currentData = JSON.stringify(user);
-				Activity.logActivity(adminId, "admin", `${user.email} admin is deleted by ${adminId}`, previousData, currentData);
+				Activity.logActivity(adminId, "Admin Accounts", `${user.email} admin is deleted by ${adminId}`, previousData, currentData);
 				return { messge: `Admin deleted successfully` };
 			}
 		} catch (error) {
@@ -453,7 +453,7 @@ export class AdminService {
 				unsuccessRecord.push(row);
 			}
 		}
-		Activity.logActivity(userId, "admin", `Import ${count}  admin`);
+		Activity.logActivity(userId, "Admin Accounts", `Import ${count}  admin`);
 		return { importCount: count, unsuccessRecord: unsuccessRecord };
 	}
 

@@ -133,6 +133,8 @@ export class NotificationAlertUtility {
         param.laytripBookingId = bookingData.laytripBookingId;
         param.currencySymbol = bookingData.currency2.symbol;
 
+        param.lastPrice = predictiveData.lastPrice || 0
+
         const valuations = await ValuationPercentageUtility.calculations(
                 bookingData.cart.laytripCartId
             );

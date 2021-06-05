@@ -110,7 +110,7 @@ export class FlightRouteService {
 
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route export by admin`
         );
 
@@ -321,7 +321,7 @@ export class FlightRouteService {
 
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight routes added in ${category.name} category`
         );
 
@@ -352,7 +352,7 @@ export class FlightRouteService {
         const current = await route.save();
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route status changed successfully`,
             previous,
             JSON.stringify(current)
@@ -378,7 +378,7 @@ export class FlightRouteService {
         const current = await route.save();
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route deleted `,
             previous,
             JSON.stringify(current)
@@ -419,7 +419,7 @@ export class FlightRouteService {
         const current = await route.save();
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route deleted `,
             previous,
             JSON.stringify(current)
@@ -547,7 +547,7 @@ export class FlightRouteService {
                 }
             }
         }
-        Activity.logActivity(userId, "flight-route", `Import flight route`);
+        Activity.logActivity(userId, "Flight Route", `Import flight route`);
         return {
             importCount: count,
             unsuccessRecord: errors,
