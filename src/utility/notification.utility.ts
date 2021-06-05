@@ -12,6 +12,7 @@ import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { BookingType } from "src/enum/booking-type.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
+import { ValuationPercentageUtility } from "./valuation-per.utility";
 
 export class NotificationAlertUtility {
     static async notificationModelCreater(id) {
@@ -29,6 +30,7 @@ export class NotificationAlertUtility {
             return;
         }
 
+        
         if (bookingData.bookingInstalments.length > 0) {
             bookingData.bookingInstalments.sort((a, b) => a.id - b.id);
         }
@@ -43,7 +45,12 @@ export class NotificationAlertUtility {
         param.flightRoute =
             moduleInfo.departure_code + "-" + moduleInfo.arrival_code;
         param.routeType = bookingData.categoryName;
-        param.depatureDate = bookingData.checkInDate;
+       
+        param.depatureDate = DateTime.convertDateFormat(
+                    bookingData.checkInDate,
+                    "YYYY-MM-DD",
+                    "MMMM DD, YYYY"
+                );
         param.remainDays = moment(moment(bookingData.checkInDate)).diff(
             new Date(),
             "days"
@@ -110,17 +117,44 @@ export class NotificationAlertUtility {
                 remainAmount += parseFloat(installment.amount);
             }
         }
-        param.totalRecivedFromCustomer =Generic.formatPriceDecimal(paidAmount) ;
-        param.totalRecivedFromCustomerPercentage =
-            Generic.formatPriceDecimal((paidAmount * 100) /
-            parseFloat(bookingData.totalAmount));
-        param.todayNetpriceVarient =
-            Generic.formatPriceDecimal((
-                (predictiveData?.netPrice - parseFloat(bookingData.netRate)) *
-                    100
-            ) / parseFloat(bookingData.netRate));
+        //param.totalRecivedFromCustomer =Generic.formatPriceDecimal(paidAmount) ;
+        // param.totalRecivedFromCustomerPercentage =
+        //     Generic.formatPriceDecimal((paidAmount * 100) /
+        //     parseFloat(bookingData.totalAmount));
+        if (predictiveData?.lastPrice){
+            param.todayNetpriceVarient = Generic.formatPriceDecimal(
+                ((predictiveData?.netPrice -
+                    predictiveData?.lastPrice) *
+                    100) /
+                    predictiveData?.lastPrice
+            );
+        }
+            
         param.laytripBookingId = bookingData.laytripBookingId;
         param.currencySymbol = bookingData.currency2.symbol;
+
+        const valuations = await ValuationPercentageUtility.calculations(
+                bookingData.cart.laytripCartId
+            );
+            param.totalRecivedFromCustomerPercentage = Generic.formatPriceDecimal(
+                valuations[bookingData.laytripBookingId] || 0
+            );
+
+            console.log("booking id", bookingData.laytripBookingId);
+            console.log("valuation", valuations);
+            if (
+                valuations &&
+                typeof valuations["amount"] != "undefined" &&
+                typeof valuations["amount"][bookingData.laytripBookingId] !=
+                    "undefined"
+            ) {
+                param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
+                    valuations["amount"][bookingData.laytripBookingId] || 0
+                );
+            } else {
+                param.totalRecivedFromCustomer = 0;
+            }
+                
         return { param, email: bookingData.user.email, deadLineDate };
     }
 }

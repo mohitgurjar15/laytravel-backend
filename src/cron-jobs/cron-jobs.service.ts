@@ -1305,6 +1305,7 @@ export class CronJobsService {
                             .getOne();
                         if (query) {
                             query.bookingId = bookingData.id;
+                            query.lastPrice = query.netPrice
                             query.netPrice = flight.net_rate;
                             query.date = new Date();
                             query.isBelowMinimum =

@@ -226,11 +226,20 @@ export class FlightRouteService {
                 .where(where)
                 .getOne();
             if (dublicate) {
-                let r = {
+                if(dublicate.categoryId = category.id){
+                    let r = {
                     fromCode: parentFromCode,
                     ToCode: parentToCode,
                 };
                 dublicateRoutes.push(r);
+                }
+
+                dublicate.categoryId = category.id;
+                dublicate.updateBy = user.userId;
+                dublicate.status = true;
+                dublicate.updateDate = new Date();
+                await dublicate.save();
+               
                 //throw new ConflictException("Given route already added.");
             } else {
                 const fromAirport = airports[parentFromCode];
@@ -271,11 +280,19 @@ export class FlightRouteService {
                         .where(where)
                         .getOne();
                     if (dublicate) {
-                        let r = {
-                            fromCode: fromAirport.code,
-                            ToCode: toAirport.code,
-                        };
-                        dublicateRoutes.push(r);
+                        if ((dublicate.categoryId = category.id)) {
+                            let r = {
+                                fromCode: parentFromCode,
+                                ToCode: parentToCode,
+                            };
+                            dublicateRoutes.push(r);
+                        }
+
+                        dublicate.categoryId = category.id;
+                        dublicate.updateBy = user.userId;
+                        dublicate.status = true;
+                        dublicate.updateDate = new Date();
+                        await dublicate.save();
                         //throw new ConflictException(
                         //  "Given route already added."
                         //);

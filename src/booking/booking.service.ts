@@ -1332,11 +1332,11 @@ export class BookingService {
                     remainAmount += parseFloat(instalment.amount);
                 }
             }
-            result["paidAmount"] =
-                result.bookingType == BookingType.NOINSTALMENT &&
-                result.paymentStatus == PaymentStatus.CONFIRM
-                    ? parseFloat(result.totalAmount)
-                    : paidAmount;
+            //result["paidAmount"] =
+            //    result.bookingType == BookingType.NOINSTALMENT &&
+            //    result.paymentStatus == PaymentStatus.CONFIRM
+            //        ? parseFloat(result.totalAmount)
+             //       : paidAmount;
             result["remainAmount"] =
                 result.bookingType == BookingType.NOINSTALMENT &&
                 result.paymentStatus == PaymentStatus.CONFIRM
@@ -1345,6 +1345,28 @@ export class BookingService {
             delete result.user.updatedDate;
             delete result.user.salt;
             delete result.user.password;
+            const valuations = await ValuationPercentageUtility.calculations(
+                result.cart.laytripCartId
+            );
+            result["valuationPercentage"] = Generic.formatPriceDecimal(
+                valuations[result.laytripBookingId] || 0
+            );
+
+            console.log("booking id", result.laytripBookingId);
+            console.log("valuation", valuations);
+            if (
+                valuations &&
+                typeof valuations["amount"] != "undefined" &&
+                typeof valuations["amount"][result.laytripBookingId] !=
+                    "undefined"
+            ) {
+                result["paidAmount"] = Generic.formatPriceDecimal(
+                    valuations["amount"][result.laytripBookingId] || 0
+                );
+            } else {
+                result["paidAmount"] = 0;
+            }
+                
 
             result["status"] = await BookingStatusUtility.bookingStatus(
                 result.bookingStatus,
