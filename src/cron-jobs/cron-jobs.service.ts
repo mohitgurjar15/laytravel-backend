@@ -1286,7 +1286,7 @@ export class CronJobsService {
                         todayDate = todayDate
                             .replace(/T/, " ") // replace T with a space
                             .replace(/\..+/, "");
-                        let query = await getManager()
+                        let query = await getConnection()
                             .createQueryBuilder(
                                 PredictiveBookingData,
                                 "predictiveBookingData"
@@ -1296,14 +1296,16 @@ export class CronJobsService {
                                 "booking"
                             )
                             .where(
-                                `"predictiveBookingData"."created_date" = '${
+                                `date("predictiveBookingData"."created_date") = '${
                                     todayDate.split(" ")[0]
                                 }' AND "predictiveBookingData"."booking_id" = '${
                                     bookingData.id
                                 }'`
                             )
                             .getOne();
+                        console.log("result",query)
                         if (query) {
+                            
                             query.bookingId = bookingData.id;
                             query.lastPrice = query.netPrice
                             query.netPrice = flight.net_rate;
