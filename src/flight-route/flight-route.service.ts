@@ -226,12 +226,15 @@ export class FlightRouteService {
                 .where(where)
                 .getOne();
             if (dublicate) {
-                if(dublicate.categoryId == category.id && dublicate.type == type){
+                if (
+                    dublicate.categoryId == category.id &&
+                    dublicate.type == type
+                ) {
                     let r = {
-                    fromCode: parentFromCode,
-                    ToCode: parentToCode,
-                };
-                dublicateRoutes.push(r);
+                        fromCode: parentFromCode,
+                        ToCode: parentToCode,
+                    };
+                    dublicateRoutes.push(r);
                 }
 
                 dublicate.categoryId = category.id;
@@ -240,7 +243,7 @@ export class FlightRouteService {
                 dublicate.type = type;
                 dublicate.updateDate = new Date();
                 await dublicate.save();
-               
+
                 //throw new ConflictException("Given route already added.");
             } else {
                 const fromAirport = airports[parentFromCode];
@@ -281,7 +284,10 @@ export class FlightRouteService {
                         .where(where)
                         .getOne();
                     if (dublicate) {
-                        if ((dublicate.categoryId = category.id)) {
+                        if (
+                            dublicate.categoryId == category.id &&
+                            dublicate.type == type
+                        ) {
                             let r = {
                                 fromCode: parentFromCode,
                                 ToCode: parentToCode,
@@ -293,6 +299,7 @@ export class FlightRouteService {
                         dublicate.updateBy = user.userId;
                         dublicate.status = true;
                         dublicate.updateDate = new Date();
+                        dublicate.type = type;
                         await dublicate.save();
                         //throw new ConflictException(
                         //  "Given route already added."
@@ -479,11 +486,22 @@ export class FlightRouteService {
                             .where(where)
                             .getOne();
                         if (dublicate) {
-                           
+                            if (
+                                dublicate.categoryId == category.id &&
+                                dublicate.type == row.type
+                            ) {
+                                let r = {
+                                    fromCode: row.from_airport_code,
+                                    ToCode: row.to_airport_code,
+                                };
+                                dublicateRoutes.push(r);
+                            }
+
                             dublicate.categoryId = category.id;
                             dublicate.updateBy = userId;
                             dublicate.status = true;
                             dublicate.updateDate = new Date();
+                            dublicate.type = row.type;
                             await dublicate.save();
                             count++;
 
@@ -509,6 +527,7 @@ export class FlightRouteService {
                             route.toAirportCountry = toAirport.country;
                             route.toAirportName = toAirport.name;
                             route.status = true;
+                            route.type = row.type;
                             route.createDate = new Date();
                             route.isDeleted = false;
                             await route.save();
