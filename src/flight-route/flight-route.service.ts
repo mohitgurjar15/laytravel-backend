@@ -226,7 +226,7 @@ export class FlightRouteService {
                 .where(where)
                 .getOne();
             if (dublicate) {
-                if(dublicate.categoryId = category.id){
+                if(dublicate.categoryId == category.id && dublicate.type == type){
                     let r = {
                     fromCode: parentFromCode,
                     ToCode: parentToCode,
@@ -237,6 +237,7 @@ export class FlightRouteService {
                 dublicate.categoryId = category.id;
                 dublicate.updateBy = user.userId;
                 dublicate.status = true;
+                dublicate.type = type;
                 dublicate.updateDate = new Date();
                 await dublicate.save();
                
