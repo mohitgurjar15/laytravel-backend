@@ -289,8 +289,8 @@ export class FlightRouteService {
                             dublicate.type == type
                         ) {
                             let r = {
-                                fromCode: parentFromCode,
-                                ToCode: parentToCode,
+                                fromCode: fromAirport.code,
+                                ToCode: toAirport.code,
                             };
                             dublicateRoutes.push(r);
                         }
