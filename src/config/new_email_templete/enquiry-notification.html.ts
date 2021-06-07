@@ -1,9 +1,11 @@
 import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 
-export function EnquiryNotificationHTML(param:{ name:string , message:any ,id:string  })
-{
-const content = `
+export function EnquiryNotificationHTML(
+           param: { name: string; message: any; id: string }
+           
+       ) {
+           const content = `
 <!-- header Text section start -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
     <tr>
@@ -48,5 +50,5 @@ const content = `
 </table>
 <!-- header text section End -->
 `;
-return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter;
+       }

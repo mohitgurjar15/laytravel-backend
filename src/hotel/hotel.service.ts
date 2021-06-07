@@ -695,6 +695,7 @@ export class HotelService {
                 card_token,
                 booking_through,
                 cartCount,
+                reservationId
             } = bookHotelCartDto;
             const availabilityDto: AvailabilityDto = {
                 room_ppn: bundle,
@@ -950,7 +951,8 @@ export class HotelService {
                         null,
                         bookingResult || null,
                         travelers,
-                        cartId
+                        cartId,
+                        reservationId
                     );
 
                     // if (dayDiff <= 90) {
@@ -1077,7 +1079,8 @@ export class HotelService {
                         null,
                         bookingResult,
                         travelers,
-                        cartId
+                        cartId,
+                        reservationId
                     );
                     //send email here
                     bookingResult.laytrip_booking_id = laytripBookingResult.id;
@@ -1335,7 +1338,8 @@ export class HotelService {
         captureCardresult = null,
         supplierBookingData,
         travelers,
-        cartId = null
+        cartId = null,
+        reservationId = null
     ) {
         const {
             selling_price,
@@ -1393,7 +1397,7 @@ export class HotelService {
         //console.log(6);
         booking.bookingDate = bookingDate;
         //console.log("currencyDetails");
-
+        booking.reservationId = reservationId;
         //console.log("currencyDetails", currencyDetails);
         booking.usdFactor = currencyDetails?.liveRate.toString();
         booking.layCredit = laycredit_points || 0;

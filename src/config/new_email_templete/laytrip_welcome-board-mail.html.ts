@@ -2,7 +2,7 @@ import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { FrontEndUrl } from "../base-url";
 
-export function LaytripWelcomeBoardMail() {
+export function LaytripWelcomeBoardMail(referral_id:string = '') {
   const content = `<tr>
                                         <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
                                             <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
@@ -28,7 +28,11 @@ export function LaytripWelcomeBoardMail() {
                                                     <tr>
                                                          <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: center;">
-                                                            <a href = '${FrontEndUrl}'
+                                                            <a href = '${FrontEndUrl}${
+      referral_id
+          ? "?utm_source=" + referral_id + "&utm_medium=landingpage"
+          : ""
+  }'
                                                             style="color: #f725c5;">Search Travel</a>            
                                                          </td>
                                                     </tr>
@@ -37,5 +41,5 @@ export function LaytripWelcomeBoardMail() {
                                         </td>
                                     </tr>                               
  `;
-  return LaytripHeader + content + LaytripFooter;
+  return LaytripHeader + content + LaytripFooter(referral_id);
 }

@@ -7,7 +7,7 @@ import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
 export async function LaytripCartBookingComplationMail(
-    param: CartBookingEmailParameterModel
+    param: CartBookingEmailParameterModel,referral_id:string = ''
 ) {
     let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
@@ -195,7 +195,11 @@ export async function LaytripCartBookingComplationMail(
                                 <tr>
                                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                                        <a class="" style="color: #f725c5;" href = '${BookingLink}'>My  Bookings</a>
+                                        <a class="" style="color: #f725c5;" href = '${BookingLink}${
+        referral_id
+            ? "?utm_source=" + referral_id + "&utm_medium=landingpage"
+            : ""
+    }'>My  Bookings</a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -229,5 +233,5 @@ export async function LaytripCartBookingComplationMail(
     </table>
 </td>
 </tr>`;
-    return LaytripHeader + content + LaytripFooter;
+    return LaytripHeader + content + LaytripFooter(referral_id);
 }

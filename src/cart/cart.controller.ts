@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
+import { GetReferralId } from 'src/decorator/referral.decorator';
 import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
@@ -14,6 +15,11 @@ import { ListCartDto } from './dto/list-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 @Controller("cart")
 export class CartController {
     constructor(private cartService: CartService) {}
@@ -130,9 +136,9 @@ export class CartController {
     async bookCart(
         @Body() bookCartDto: CartBookDto,
         @GetUser() user: User,
-        @Req() req
+        @Req() req,@GetReferralId() referralId:string
     ) {
-        return await this.cartService.bookCart(bookCartDto, user, req.headers);
+        return await this.cartService.bookCart(bookCartDto, user, req.headers,referralId);
     }
 
     @Get("installment-detail")

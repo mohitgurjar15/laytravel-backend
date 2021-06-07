@@ -5,6 +5,8 @@ import * as cr from 'typeorm-encrypted'
 export class CryptoUtility {
 
     static async encode(plainText) {
+        console.log(plainText);
+        
         const transformer = new cr.EncryptionTransformer(CryptoKey)
         return transformer.to(plainText)
     }

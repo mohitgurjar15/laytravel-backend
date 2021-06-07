@@ -35,10 +35,18 @@ import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 import { DeleteBookingDto } from "./dto/delete-cart.dto";
 import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
 import { updateBookingDto } from "./dto/update-booking.dto";
+import { IntialCancelBookingDto } from "./dto/intial-cancelation-booking.dto";
+import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
+import { GetReferralId } from "src/decorator/referral.decorator";
 
 @ApiTags("Booking")
 @ApiBearerAuth()
 @UseGuards(AuthGuard())
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 @Controller("booking")
 export class BookingController {
     constructor(private bookingService: BookingService) {}
@@ -450,9 +458,9 @@ export class BookingController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteCart(
         @Query() deleteBookingDto: DeleteBookingDto,
-        @GetUser() user: User
+        @GetUser() user: User,@GetReferralId() referralId:string
     ) {
-        return await this.bookingService.deleteBooking(deleteBookingDto, user);
+        return await this.bookingService.deleteBooking(deleteBookingDto, user,referralId);
     }
 
     @Put("travelerInfo/:traveler_info_id")
@@ -519,7 +527,7 @@ export class BookingController {
         );
     }
 
-    @Put('primary-travel/:booking_id/:traveler_info_id')
+    @Put("primary-travel/:booking_id/:traveler_info_id")
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiOperation({ summary: "Update traveler to primery traveler" })
     @ApiResponse({ status: 200, description: "Api success" })
@@ -535,13 +543,64 @@ export class BookingController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async primaryTraveler(
-        @Param('booking_id') bookingId : string,
-        @Param('traveler_info_id') travelerId : number
+        @Param("booking_id") bookingId: string,
+        @Param("traveler_info_id") travelerId: number
     ) {
         return await this.bookingService.updatePrimaryTraveler(
             bookingId,
             travelerId
         );
+    }
+
+    @Put("initiate-cancellation/reverse")
+    @UseGuards(AuthGuard())
+    @Roles(Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER)
+    @ApiOperation({
+        summary: "Reverse request of initiate cancellation booking",
+    })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Given booking id not found" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async reverceInitiateCancellation(
+        @Body() reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
+        @GetUser() user: User
+    ): Promise<{ message: any }> {
+        return await this.bookingService.reverceIntialBookingCancel(reverceIntialCancelBookingDto, user);
+    }
+
+
+    @Post("initiate-cancellation/request")
+    @UseGuards(AuthGuard())
+    @Roles(Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER)
+    @ApiOperation({
+        summary: "create request for initiate cancellation booking",
+    })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Given booking id not found" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async initiateCancellation(
+        @Body() intialCancelBookingDto: IntialCancelBookingDto,
+        @GetUser() user: User
+    ): Promise<{ message: any }> {
+        return await this.bookingService.requestIntialCancelBooking(intialCancelBookingDto, user);
     }
 }
 
