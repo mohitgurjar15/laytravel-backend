@@ -85,6 +85,7 @@ import { LaytripResetPasswordMail } from "src/config/new_email_templete/laytrip_
 import { GuestUserDto } from "./dto/guest-user.dto";
 import { UserService } from "src/user/user.service";
 import { UpdateAppleUserDto } from "./dto/update-apple-user.dto";
+import { LandingPages } from "src/entity/landing-page.entity";
 
 @Injectable()
 export class AuthService {
@@ -97,7 +98,7 @@ export class AuthService {
         private forgetPasswordRepository: ForgetPassWordRepository
     ) {}
 
-    async signUp(createUser: CreateUserDto, request) {
+    async signUp(createUser: CreateUserDto, request,referralId) {
         const {
             first_name,
             last_name,
@@ -109,6 +110,7 @@ export class AuthService {
             os_version,
             app_version,
             device_model,
+            referral_id,
         } = createUser;
 
         let loginvia = "";
@@ -153,6 +155,11 @@ export class AuthService {
         user.status = 1;
         user.middleName = "";
         user.zipCode = "";
+        if (referral_id) {
+            let ref = await this.getReferralId(referral_id);
+            user.referralId = ref?.id || null;
+        }
+
         user.password = await this.hashPassword(password, salt);
         user.isVerified = false;
         user.otp = Math.round(new Date().getTime() % 1000000);
@@ -213,10 +220,13 @@ export class AuthService {
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: "Verify your Account",
-                    html: LaytripVerifyEmailIdTemplete({
-                        username: first_name || "",
-                        otp: user.otp,
-                    }),
+                    html: LaytripVerifyEmailIdTemplete(
+                        {
+                            username: first_name || "",
+                            otp: user.otp,
+                        },
+                        referralId
+                    ),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -341,7 +351,7 @@ export class AuthService {
         return bcrypt.hash(password, salt);
     }
 
-    async resendOtp(reSendVerifyoOtpDto: ReSendVerifyoOtpDto) {
+    async resendOtp(reSendVerifyoOtpDto: ReSendVerifyoOtpDto,referralId) {
         const { email } = reSendVerifyoOtpDto;
         const roles = [Role.FREE_USER, Role.PAID_USER];
 
@@ -374,7 +384,7 @@ export class AuthService {
                     html: LaytripVerifyEmailIdTemplete({
                         username: user.firstName + " " + user.lastName,
                         otp: user.otp,
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -389,7 +399,7 @@ export class AuthService {
         return { message: `Otp send on your email id` };
     }
 
-    async UpdateEmailId(updateEmailId: UpdateEmailId, userData: User) {
+    async UpdateEmailId(updateEmailId: UpdateEmailId, userData: User,referralId) {
         if (userData.email) {
             throw new ConflictException(`You have alredy added email id`);
         }
@@ -427,7 +437,7 @@ export class AuthService {
                     html: LaytripVerifyEmailIdTemplete({
                         username: user.firstName + " " + user.lastName,
                         otp: user.otp,
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -558,7 +568,8 @@ export class AuthService {
     async forgetPassword(
         forgetPasswordDto: ForgetPasswordDto,
         siteUrl,
-        roles: Role[]
+        roles: Role[],
+        referralId
     ) {
         const { email } = forgetPasswordDto;
 
@@ -624,9 +635,9 @@ export class AuthService {
                 sender: "laytrip",
                 subject: "Password Reset One Time Pin",
                 html: LaytripForgotPasswordMail({
-                    username: user.firstName ,
+                    username: user.firstName,
                     otp: otp,
-                }),
+                },referralId),
             })
             .then((res) => {
                 console.log("res", res);
@@ -652,7 +663,7 @@ export class AuthService {
         return msg;
     }
 
-    async updatePassword(newPasswordDto: NewPasswordDto) {
+    async updatePassword(newPasswordDto: NewPasswordDto,referralId) {
         try {
             //const { token } = updatePasswordDto;
             const { email, otp, new_password } = newPasswordDto;
@@ -730,7 +741,7 @@ export class AuthService {
                             subject: "Password Reset",
                             html: LaytripResetPasswordMail({
                                 username: user.firstName,
-                            }),
+                            },referralId),
                         })
                         .then((res) => {
                             console.log("res", res);
@@ -801,7 +812,7 @@ export class AuthService {
         });
         return user;
     }
-    async VerifyOtp(OtpDto: OtpDto, req, siteUrl: string) {
+    async VerifyOtp(OtpDto: OtpDto, req, siteUrl: string,referralId) {
         const { otp, email } = OtpDto;
 
         const roles = [Role.FREE_USER, Role.PAID_USER];
@@ -881,7 +892,7 @@ export class AuthService {
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
                         subject: "Welcome to Laytrip!",
-                        html: LaytripWelcomeBoardMail(),
+                        html: LaytripWelcomeBoardMail(referralId),
                     })
                     .then((res) => {
                         console.log("res", res);
@@ -1085,6 +1096,7 @@ export class AuthService {
             app_version,
             os_version,
             device_model,
+            referral_id,
         } = socialLoginDto;
 
         let conditions = [];
@@ -1138,6 +1150,10 @@ export class AuthService {
             user.gender = "";
             user.status = 1;
             user.middleName = "";
+            if (referral_id) {
+                let ref = await this.getReferralId(referral_id);
+                user.referralId = ref?.id || null;
+            }
             user.zipCode = "";
             user.password = "";
             user.isVerified = true;
@@ -1891,5 +1907,16 @@ export class AuthService {
         } catch (e) {
             throw new BadRequestException(`something went wrong ${e.message}`);
         }
+    }
+
+    async getReferralId(name: string) {
+        let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" like '${name}'`;
+
+        const query = getConnection()
+            .createQueryBuilder(LandingPages, "landingPages")
+            .where(where);
+
+        const result = await query.getOne();
+        return result;
     }
 }

@@ -8,7 +8,8 @@ import {
   TwitterSocialLink,
 } from "../base-url";
 
-export const LaytripFooter = `
+export function LaytripFooter(referralId) {
+    return `
 <tr>
 <td align="center" valign="top" style="padding: 20px 0;">
     <table  border="0" cellspacing="0" cellpadding="0" align="center">
@@ -55,7 +56,7 @@ export const LaytripFooter = `
             <td align="center" valign="top" style="font-family: 'Helvetica Neue', sans-serif;font-size: 11px; line-height: 12px; color: #BABABA; font-weight: 400;">Need help? Go to our home page Customer Service chat or <a href="mailto:contactus@laytrip.com" target="_blank" style="text-decoration: none; color:#0043FF">Contact Us</a>.</td>
         </tr>
         <tr>
-            <td align="center" valign="top" style="font-family: 'Helvetica Neue', sans-serif;font-size: 11px; line-height: 12px; color: #BABABA; padding-top: 15px; ">We have sent you this email because as a Laytrip account holder you agreed to our <a href="${TermsConditonLink}" target="_blank" style="text-decoration: none; color:#0043FF">Terms</a> which include terms from our suppliers and travel partners. To change your preferences, sign in and go to your My Account menu.</td>
+            <td align="center" valign="top" style="font-family: 'Helvetica Neue', sans-serif;font-size: 11px; line-height: 12px; color: #BABABA; padding-top: 15px; ">We have sent you this email because as a Laytrip account holder you agreed to our <a href="${TermsConditonLink}${referralId ? '?utm_source='+referralId+'&utm_medium=landingpage':''}" target="_blank" style="text-decoration: none; color:#0043FF">Terms</a> which include terms from our suppliers and travel partners. To change your preferences, sign in and go to your My Account menu.</td>
         </tr>
     </table>
 </td>
@@ -67,3 +68,4 @@ export const LaytripFooter = `
 </body>
 
 </html>`;
+}

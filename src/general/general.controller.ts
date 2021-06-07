@@ -5,6 +5,7 @@ import {
     HttpCode,
     Param,
     Post,
+    Query,
     Req,
     UploadedFiles,
     UseGuards,
@@ -37,6 +38,7 @@ import { GeneralService } from "./general.service";
 import { uploadFileDto } from "./dto/upload-file.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { UserIpAddress } from "src/decorator/ip-address.decorator";
+import { ListMassCommunicationDto } from "./dto/list-mass-communication.dto";
 
 @ApiTags("Generic")
 @Controller("generic")
@@ -213,8 +215,10 @@ export class GeneralController {
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    async listmassCommunication() {
-        return await this.generalService.ListMassCommunication();
+    async listmassCommunication(@Query() paginationOption:ListMassCommunicationDto) {
+        return await this.generalService.ListMassCommunication(
+            paginationOption
+        );
     }
 
     @Post(["test/email/:emailId"])
@@ -291,4 +295,35 @@ export class GeneralController {
     // async test2(@UserIpAddress() ip) {
     //    return await this.generalService.predictiveData()
     // }
+
+
+    @Post(["test/admin-model/:id/:email"])
+    @ApiOperation({ summary: "Update traveler info of user" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async testAdminModel(@Param('id') id:string,@Param('email') email:string ) {
+        return this.generalService.adminEmailModel(id, email);
+    }
+
+    @Post(["test/valuation-percentage/:id"])
+    @ApiOperation({ summary: "valuation percentage" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 406, description: "Please Verify Your Email Id" })
+    @ApiResponse({ status: 401, description: "Invalid Login credentials." })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async valuationPercentage(@Param('id') id:string) {
+        return await  this.generalService.valuationPercentages(id);
+    }
 }

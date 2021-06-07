@@ -105,7 +105,7 @@ export class CartDataUtility {
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.module", "module")
-            //.leftJoinAndSelect("cartBooking.user", "User")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect("booking.travelers", "traveler")
             //.leftJoinAndSelect("traveler.userData", "userData")
             // .leftJoinAndSelect("User.state", "state")
@@ -341,7 +341,7 @@ export class CartDataUtility {
             param.paymentDetail = cartInstallments;
             param.bookings = bookingsData;
 
-            return { param, email: user.email, confirmed };
+            return { param, email: user.email, confirmed ,referralId : cart?.referral?.name};
         } else {
             return;
         }

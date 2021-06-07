@@ -2,13 +2,16 @@ import { Generic } from "src/utility/generic.utility";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export function LaytripPaymentReminderTemplete(param: {
-  userName: string;
-  amount: string;
-  date: string;
-  bookingId: string;
-}) {
-  const content = `<tr>
+export function LaytripPaymentReminderTemplete(
+           param: {
+               userName: string;
+               amount: string;
+               date: string;
+               bookingId: string;
+           },
+           referral_id: string = ""
+       ) {
+           const content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
@@ -48,5 +51,5 @@ export function LaytripPaymentReminderTemplete(param: {
 </td>
 </tr>
 `;
-  return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter(referral_id);
+       }

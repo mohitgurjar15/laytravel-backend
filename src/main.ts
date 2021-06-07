@@ -48,7 +48,8 @@ async function bootstrap() {
   const server = express();
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
-    new ExpressAdapter(server)
+    new ExpressAdapter(server),
+    
   );
   //const app = express();
   app.setGlobalPrefix("v1");
@@ -66,10 +67,9 @@ async function bootstrap() {
     .setTitle("Lay Trip")
     .setDescription("")
     .setVersion("1.0")
+    
     .build();
   const document = SwaggerModule.createDocument(app, options);
-
-  
 
 
   SwaggerModule.setup("api-docs", app, document);

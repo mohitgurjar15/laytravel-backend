@@ -55,6 +55,11 @@ import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-r
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { AdminStopLossNotificationMail } from "src/config/admin-email-notification-templetes/stop-loss-notification.html";
+import { EnterInDeadlineMail } from "src/config/admin-email-notification-templetes/enter-in-deadline.html";
+import { Rule80perNotificationMail } from "src/config/admin-email-notification-templetes/rule-80-per-notification.html";
+import { BookingRunoutNotificationMail } from "src/config/admin-email-notification-templetes/booking-run-out-notification.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -209,7 +214,7 @@ export class CronJobsService {
                         bcc: mailConfig.BCC,
                         subject: `Travel Provider Reservation Confirmation`,
                         html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                            responce.param
+                            responce.param,responce.referralId
                         ),
                     })
                     .then((res) => {
@@ -276,6 +281,7 @@ export class CronJobsService {
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect(
                 "booking.bookingInstalments",
                 "BookingInstalments"
@@ -370,14 +376,111 @@ export class CronJobsService {
                             result[index],
                             Headers
                         );
+                        const data = await NotificationAlertUtility.notificationModelCreater(
+                            result[index].laytripBookingId
+                        );
                         if (flightPrice) {
-                            const priceDiff = await this.campareBookingPrice(
-                                flightPrice,
-                                result[index].netRate
-                            );
-                            if (priceDiff != 0) {
-                                message += `Product Id ${result[index].laytripBookingId} Net price diffrence is ${priceDiff} <br/>`;
+                            // const priceDiff = await this.campareBookingPrice(
+                            //     flightPrice,
+                            //     result[index].netRate
+                            // );
+
+                            if (
+                                (data.param.todayNetpriceVarient <= -60 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        20) ||
+                                (data.param.todayNetpriceVarient <= -50 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        30) ||
+                                (data.param.todayNetpriceVarient <= -40 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        40) ||
+                                (data.param.todayNetpriceVarient <= -30 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        50) ||
+                                (data.param.todayNetpriceVarient <= -20 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        60) ||
+                                (data.param.todayNetpriceVarient <= -10 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        70)
+                            ) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `80% Rule Alert for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await Rule80perNotificationMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
                             }
+                            if (new Date(data.deadLineDate) <= new Date()) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `Alert - ${data.param.routeType} Route Cost is Soon to Increase for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await EnterInDeadlineMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
+                            }
+                            if (data.param.todayNetpriceVarient &&  data.param.todayNetpriceVarient > 5) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `Stop Loss Alert for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await AdminStopLossNotificationMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
+                            }
+                        } else {
+                            await this.mailerService
+                                .sendMail({
+                                    to: mailConfig.admin,
+                                    from: mailConfig.from,
+                                    bcc: mailConfig.BCC,
+                                    subject: `Alert - BOOKING #${data.param.laytripBookingId} ran out of seats`,
+                                    html: await BookingRunoutNotificationMail(
+                                        data.param
+                                    ),
+                                })
+                                .then((res) => {
+                                    console.log("res", res);
+                                })
+                                .catch((err) => {
+                                    console.log("err", err);
+                                });
                         }
 
                         break;
@@ -424,12 +527,12 @@ export class CronJobsService {
             );
         }
 
-        if (message != "") {
-            this.cronfailedmail(
-                "Partial booking price : <br/><pre>" + message,
-                "Partial booking price"
-            );
-        }
+        // if (message != "") {
+        //     this.cronfailedmail(
+        //         "Partial booking price : <br/><pre>" + message,
+        //         "Partial booking price"
+        //     );
+        // }
 
         return { message: `today booking price added for pending booking` };
     }
@@ -806,6 +909,7 @@ export class CronJobsService {
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect(
                 "booking.bookingInstalments",
                 "BookingInstalments"
@@ -858,7 +962,10 @@ export class CronJobsService {
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
                         subject: `Booking ID ${param.bookingId} Upcoming Payment Reminder`,
-                        html: LaytripPaymentReminderTemplete(param),
+                        html: LaytripPaymentReminderTemplete(
+                            param,
+                            cartBooking?.referral?.name
+                        ),
                     })
                     .then((res) => {
                         console.log("res", res);
@@ -1182,7 +1289,7 @@ export class CronJobsService {
                         todayDate = todayDate
                             .replace(/T/, " ") // replace T with a space
                             .replace(/\..+/, "");
-                        let query = await getManager()
+                        let query = await getConnection()
                             .createQueryBuilder(
                                 PredictiveBookingData,
                                 "predictiveBookingData"
@@ -1192,15 +1299,18 @@ export class CronJobsService {
                                 "booking"
                             )
                             .where(
-                                `"predictiveBookingData"."created_date" = '${
+                                `date("predictiveBookingData"."created_date") = '${
                                     todayDate.split(" ")[0]
                                 }' AND "predictiveBookingData"."booking_id" = '${
                                     bookingData.id
                                 }'`
                             )
                             .getOne();
+                        console.log("result",query)
                         if (query) {
+                            
                             query.bookingId = bookingData.id;
+                            query.lastPrice = query.netPrice
                             query.netPrice = flight.net_rate;
                             query.date = new Date();
                             query.isBelowMinimum =
@@ -1775,7 +1885,7 @@ export class CronJobsService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Notice of Default and Cancellation`,
-                                html: await LaytripPaymentFailedTemplete(param),
+                                html: await LaytripPaymentFailedTemplete(param,cartBooking?.referral?.name),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1792,7 +1902,7 @@ export class CronJobsService {
                                 subject: `Booking ID ${param.bookingId} ${
                                     param.try == 4 ? "Final" : ""
                                 }Missed Payment Reminder #${param.try - 1}`,
-                                html: await LaytripMissedPaymentTemplete(param),
+                                html: await LaytripMissedPaymentTemplete(param,cartBooking?.referral?.name),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1940,7 +2050,7 @@ export class CronJobsService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Installment Recevied`,
-                                html: LaytripInstallmentRecevied(param),
+                                html: LaytripInstallmentRecevied(param,cartBooking?.referral?.name),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1961,7 +2071,7 @@ export class CronJobsService {
                                     bcc: mailConfig.BCC,
                                     subject: subject,
                                     html: await LaytripCartBookingComplationMail(
-                                        responce.param
+                                        responce.param,responce.referralId
                                     ),
                                 })
                                 .then((res) => {
@@ -2036,6 +2146,7 @@ export class CronJobsService {
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
             .leftJoinAndSelect(
                 "booking.bookingInstalments",
                 "BookingInstalments"

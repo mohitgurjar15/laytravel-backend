@@ -16,6 +16,7 @@ import {
     ApiOperation,
     ApiResponse,
     ApiConsumes,
+    ApiHeader,
 } from "@nestjs/swagger";
 import { EnquiryListDto } from "./dto/enquiry-list.dto";
 import { Enquiry } from "src/entity/enquiry.entity";
@@ -30,8 +31,14 @@ import { diskStorage } from "multer";
 import { editFileName } from "src/auth/file-validator";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { uploadFileDto } from "src/general/dto/attachment.dto";
+import { GetReferralId } from "src/decorator/referral.decorator";
 
 @ApiTags("Enquiry")
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 @Controller("enqiry")
 export class EnqiryController {
     constructor(private enqiryService: EnqiryService) {}
@@ -111,12 +118,13 @@ export class EnqiryController {
         @Body() newEnquiryDto: newEnquiryDto,
         @SiteUrl() siteUrl,
         // @UploadedFiles() files: uploadFileDto
-        @UploadedFiles() files
+        @UploadedFiles() files,@GetReferralId() referralId:string
     ): Promise<{ message: string }> {
         return await this.enqiryService.newEnquiry(
             newEnquiryDto,
             files,
-            siteUrl
+            siteUrl,
+            referralId
         );
     }
 }

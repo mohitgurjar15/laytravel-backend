@@ -3,14 +3,17 @@ import { TermsConditonLink } from "../base-url";
 import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
-export function LaytripPaymentFailedTemplete(param: {
-  userName: string;
-  amount: string;
-  date: string;
-  bookingId: string;
-  try: number;
-}) {
-  const content = `<tr>
+export function LaytripPaymentFailedTemplete(
+           param: {
+               userName: string;
+               amount: string;
+               date: string;
+               bookingId: string;
+               try: number;
+           },
+           referral_id: string = ""
+       ) {
+           const content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
             <tbody>
@@ -30,12 +33,16 @@ export function LaytripPaymentFailedTemplete(param: {
                     <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">We have made ${param.try -
                                             1} unsuccessful attempts to collect your installment payment of ${
-      param.amount
-  } originally scheduled for ${param.date}.</td>
+               param.amount
+           } originally scheduled for ${param.date}.</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">Per our <a href="${TermsConditonLink}" style="color: #0C7BFF;">Terms</a> and the information in our previous notifications to you, we have unfortunately had to cancel your booking and we will not be able to issue any refunds.</td>
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">Per our <a href="${TermsConditonLink}${
+               referral_id
+                   ? "?utm_source=" + referral_id + "&utm_medium=landingpage"
+                   : ""
+           }" style="color: #0C7BFF;">Terms</a> and the information in our previous notifications to you, we have unfortunately had to cancel your booking and we will not be able to issue any refunds.</td>
                 </tr>
                 <tr>
                     <td align="left" valign="top"
@@ -65,5 +72,5 @@ export function LaytripPaymentFailedTemplete(param: {
     </table>
 </td>
 </tr>`;
-  return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter(referral_id);
+       }

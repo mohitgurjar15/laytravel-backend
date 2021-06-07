@@ -61,7 +61,7 @@ export class PaymentService {
     constructor(
         private readonly mailerService: MailerService //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache, // @InjectRepository(BookingRepository) // private bookingRepository: BookingRepository,
     ) {}
-    async defaultCard(cardId: string, userId: string, guest_id) {
+    async defaultCard(cardId: string, userId: string, guest_id,referralId) {
         try {
             if (!uuidValidator(cardId)) {
                 throw new NotFoundException(
@@ -123,7 +123,7 @@ export class PaymentService {
                             subject: `Payment Method Change Confirmation`,
                             html: await LaytripPaymentMethodChangeMail({
                                 username: user.firstName || "",
-                            }),
+                            },referralId),
                         })
                         .then((res) => {
                             console.log("res", res);
@@ -1073,6 +1073,7 @@ export class PaymentService {
             let cart = await getConnection()
                 .createQueryBuilder(CartBooking, "cart")
                 .leftJoinAndSelect("cart.bookings", "booking")
+                .leftJoinAndSelect("cart.referral", "referral")
                 .leftJoinAndSelect(
                     "booking.bookingInstalments",
                     "BookingInstalments"
@@ -1436,7 +1437,7 @@ export class PaymentService {
                         bcc: mailConfig.BCC,
                         subject: subject,
                         html: await LaytripCartBookingComplationMail(
-                            responce.param
+                            responce.param,responce.referralId
                         ),
                     })
                     .then((res) => {
