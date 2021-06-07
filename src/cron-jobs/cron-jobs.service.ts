@@ -168,11 +168,10 @@ export class CronJobsService {
             //     "booking.laytripBookingId",
             // ])
             .where(
-                `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
+                `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."supplier_booking_id" !=''`
             );
 
         const result = await query.getMany();
-
         var total = 0;
         var failedlogArray = "";
         for await (const cart of result) {
