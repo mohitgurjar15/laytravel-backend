@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AddLaytripBookingFeedback } from 'src/booking-feedback/dto/add-laytrip-feedback.dto';
 import { LaytripFeedback } from 'src/entity/laytrip_feedback.entity';
 import { User } from 'src/entity/user.entity';
+import { ExportLaytripFeedbackForAdminDto } from './dto/export-laytrip-feedback.dto';
 import { ListLaytripFeedbackForAdminDto } from './dto/list-laytrip-feedback-admin.dto';
 import { LaytripFeedbackRepository } from './laytrip-feedback.repository';
 
@@ -35,5 +36,9 @@ export class LaytripFeedbackService {
 
     async listLaytripFeedbacksForAdmin(listLaytripFeedbackForAdminDto: ListLaytripFeedbackForAdminDto) {
         return await this.laytripFeedbackRepository.listLaytripFeedbackAdmin(listLaytripFeedbackForAdminDto);
+    }
+
+    async exportLaytripFeedbacksForAdmin(listLaytripFeedbackForAdminDto: ExportLaytripFeedbackForAdminDto) {
+        return await this.laytripFeedbackRepository.exportLaytripFeedbackAdmin(listLaytripFeedbackForAdminDto);
     }
 }

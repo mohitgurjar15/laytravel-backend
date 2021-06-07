@@ -8,7 +8,7 @@ import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
 export async function CartChangeAsperUserRequestMail(
-           param: CartBookingEmailParameterModel
+           param: CartBookingEmailParameterModel,referral_id:string = ''
        ) {
              let traveleName = "";
              let travelerEmail = "";
@@ -207,5 +207,5 @@ export async function CartChangeAsperUserRequestMail(
     </table>
 </td>
 </tr>`;
-             return LaytripHeader + content + LaytripFooter;
+             return LaytripHeader + content + LaytripFooter(referral_id);
          }

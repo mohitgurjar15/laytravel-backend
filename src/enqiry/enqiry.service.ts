@@ -71,7 +71,7 @@ export class EnqiryService {
         }
     }
 
-    async newEnquiry(newEnquiryDto: newEnquiryDto, files, siteUrl) {
+    async newEnquiry(newEnquiryDto: newEnquiryDto, files, siteUrl,referralId) {
         try {
             const { message, name, email } = newEnquiryDto;
             const enquiry = new Enquiry();
@@ -141,7 +141,7 @@ export class EnqiryService {
                     subject: `Message to Laytrip Received`,
                     html: await LaytripInquiryAutoReplayMail({
                         username: name || "",
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);

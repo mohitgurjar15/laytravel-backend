@@ -56,6 +56,16 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { flightDataUtility } from "src/utility/flight-data.utility";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/cart-changes-as-per-user-req.dto";
+import { BookingStatusUtility } from "src/utility/booking-status.utility";
+import { IntialCancelBookingDto } from "./dto/intial-cancelation-booking.dto";
+import { IntialCancelBooking } from "src/entity/intial-booking.entity";
+import { IntialCancelationStatus } from "src/enum/intial-cancelation.enum";
+import { LaytripIntialCancelBookingRequestEmail } from "src/config/new_email_templete/intial-booking-cancelation.html";
+import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
+import { CancellationReason } from "src/enum/cancellation-reason.enum";
+import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
 
 @Injectable()
 export class BookingService {
@@ -84,7 +94,7 @@ export class BookingService {
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param
+                        responce.param,responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -378,13 +388,7 @@ export class BookingService {
                         remainAmount += parseFloat(instalment.amount);
                     }
                 }
-                result.data[i]["paidAmount"] =
-                    result.data[i].bookingType == BookingType.NOINSTALMENT &&
-                    result.data[i].paymentStatus == PaymentStatus.CONFIRM
-                        ? Generic.formatPriceDecimal(
-                              parseFloat(result.data[i].totalAmount)
-                          )
-                        : Generic.formatPriceDecimal(paidAmount);
+                
                 result.data[i]["remainAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
@@ -402,6 +406,34 @@ export class BookingService {
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
+
+                result.data[i][
+                    "status"
+                ] = await BookingStatusUtility.bookingStatus(
+                    result.data[i].bookingStatus,
+                    result.data[i].paymentStatus,
+                    new Date(result.data[i].checkOutDate),
+                    result.data[i].isResedule
+                );
+
+                const valuations = await ValuationPercentageUtility.calculations(
+                    result.data[i].cart.laytripCartId
+                );
+                result.data[i][
+                    "valuationPercentage"
+                ] = Generic.formatPriceDecimal(
+                    valuations[result.data[i].laytripBookingId] || 0
+                );
+
+                console.log('booking id',result.data[i].laytripBookingId)
+                console.log("valuation", valuations);
+                if(valuations && typeof valuations['amount'] != "undefined" && typeof valuations['amount'][result.data[i].laytripBookingId] != "undefined"){
+                    result.data[i]["paidAmount"] = Generic.formatPriceDecimal(valuations['amount'][result.data[i].laytripBookingId] || 0 )
+                } else{
+                    result.data[i]["paidAmount"] = 0 
+                }
+                
+                    
                 // for (let j in result.data[i].travelers) {
                 //     if (result.data[i].travelers[j].travelerInfo?.dob) {
                 //         var birthDate = new Date(
@@ -1047,21 +1079,25 @@ export class BookingService {
 
     async getCartBookingDetail(cartId, user: User) {
         try {
-            const where = `("cartBooking"."user_id" = '${user.userId}') AND ("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
+            const where = `("cartBooking"."laytrip_cart_id" =  '${cartId}')`;
             const query = getConnection()
                 .createQueryBuilder(CartBooking, "cartBooking")
                 .leftJoinAndSelect("cartBooking.bookings", "booking")
                 .leftJoinAndSelect("booking.bookingInstalments", "instalments")
                 .leftJoinAndSelect("booking.currency2", "currency")
                 .leftJoinAndSelect("booking.module", "module")
+                .leftJoinAndSelect(
+                    "booking.cancellationRequest",
+                    "cancellationRequest"
+                )
                 //.leftJoinAndSelect("cartBooking.user", "User")
                 .leftJoinAndSelect("booking.travelers", "traveler")
                 //.leftJoinAndSelect("traveler.userData", "userData")
                 // .leftJoinAndSelect("User.state", "state")
                 // .leftJoinAndSelect("User.country", "countries")
 
-                .where(where)
-                .orderBy(`cartBooking.bookingDate`, "DESC");
+                .where(where);
+            //.orderBy(`cartBooking.bookingDate`, "DESC");
             const cart = await query.getOne();
 
             if (!cart) {
@@ -1193,6 +1229,7 @@ export class BookingService {
             cartResponce["remainAmount"] = Generic.formatPriceDecimal(
                 remainAmount
             );
+            //cartResponce["cancellationRequest"] =
             cartResponce["pandinginstallment"] = pandinginstallment;
             cartResponce["currency"] = currency;
             cartResponce["totalAmount"] = Generic.formatPriceDecimal(
@@ -1273,12 +1310,21 @@ export class BookingService {
                     `card_token = '${result.cardToken}' AND user_id = '${result.userId}'`
                 )
                 .getOne();
-
+            let downpaymentPer = 0;
+            let downPayment: number = 0;
             if (result.bookingInstalments.length > 0) {
                 result.bookingInstalments.sort((a, b) => a.id - b.id);
 
                 //result.bookingInstalments.reverse()
             }
+            for await (const install of result.bookingInstalments) {
+                if (install.instalmentNo == 1) {
+                    downPayment = parseFloat(install.amount);
+                }
+            }
+
+            console.log(downPayment);
+
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
                     paidAmount += parseFloat(instalment.amount);
@@ -1286,11 +1332,11 @@ export class BookingService {
                     remainAmount += parseFloat(instalment.amount);
                 }
             }
-            result["paidAmount"] =
-                result.bookingType == BookingType.NOINSTALMENT &&
-                result.paymentStatus == PaymentStatus.CONFIRM
-                    ? parseFloat(result.totalAmount)
-                    : paidAmount;
+            //result["paidAmount"] =
+            //    result.bookingType == BookingType.NOINSTALMENT &&
+            //    result.paymentStatus == PaymentStatus.CONFIRM
+            //        ? parseFloat(result.totalAmount)
+             //       : paidAmount;
             result["remainAmount"] =
                 result.bookingType == BookingType.NOINSTALMENT &&
                 result.paymentStatus == PaymentStatus.CONFIRM
@@ -1299,6 +1345,35 @@ export class BookingService {
             delete result.user.updatedDate;
             delete result.user.salt;
             delete result.user.password;
+            const valuations = await ValuationPercentageUtility.calculations(
+                result.cart.laytripCartId
+            );
+            result["valuationPercentage"] = Generic.formatPriceDecimal(
+                valuations[result.laytripBookingId] || 0
+            );
+
+            console.log("booking id", result.laytripBookingId);
+            console.log("valuation", valuations);
+            if (
+                valuations &&
+                typeof valuations["amount"] != "undefined" &&
+                typeof valuations["amount"][result.laytripBookingId] !=
+                    "undefined"
+            ) {
+                result["paidAmount"] = Generic.formatPriceDecimal(
+                    valuations["amount"][result.laytripBookingId] || 0
+                );
+            } else {
+                result["paidAmount"] = 0;
+            }
+                
+
+            result["status"] = await BookingStatusUtility.bookingStatus(
+                result.bookingStatus,
+                result.paymentStatus,
+                new Date(result.checkOutDate),
+                result.isResedule
+            );
             // for (let j in result.travelers) {
             //     if (result.travelers[j].travelerInfo?.dob) {
             //         var birthDate = new Date(
@@ -1320,6 +1395,11 @@ export class BookingService {
             // }
             let responce: any = result;
             responce["userData"] = cardData;
+            if (downPayment) {
+                responce["downPayment_percentage"] = Math.ceil(
+                    (downPayment * 100) / parseFloat(result.totalAmount)
+                );
+            }
             return responce;
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -1409,12 +1489,47 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
+            booking_status,
         } = listPaymentAdminDto;
 
         let where;
-        where = `"BookingInstalments"."attempt" = 0`;
+        where = `("booking"."module_id" in (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND "BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
+
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1452,6 +1567,16 @@ export class BookingService {
             limit,
             page_no
         );
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
+
         //const result: any = data;
 
         // for await (const instalment of result) {
@@ -1490,12 +1615,17 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
+            booking_status,
         } = listPaymentAdminDto;
 
         let where;
-        where = `"BookingInstalments"."attempt" = 0`;
+        where = `("booking"."module_id" in (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND "BookingInstalments"."attempt" = 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1508,7 +1638,35 @@ export class BookingService {
         if (start_date) {
             where += `AND (DATE("BookingInstalments".instalment_date) >= '${start_date}') `;
         }
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
 
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
         if (end_date) {
             where += `AND (DATE("BookingInstalments".instalment_date) <= '${end_date}') `;
         }
@@ -1532,6 +1690,15 @@ export class BookingService {
             data,
             total_count,
         } = await this.bookingRepository.exportPayment(where);
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
         //const result: any = data;
 
         // for await (const instalment of result) {
@@ -1570,12 +1737,17 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
+            booking_status,
         } = listPaymentAdminDto;
 
         let where;
         where = `"BookingInstalments"."attempt" > 0`;
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
+        }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
         }
 
         if (product_id) {
@@ -1608,11 +1780,50 @@ export class BookingService {
             const cipher = await CryptoUtility.encode(search);
             where += `AND (("User"."first_name" = '${cipher}')or("User"."email" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
+
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
         const { data, total_count } = await this.bookingRepository.listPayment(
             where,
             limit,
             page_no
         );
+
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
 
         return {
             data: data,
@@ -1633,6 +1844,8 @@ export class BookingService {
             booking_id,
             search,
             product_id,
+            reservationId,
+            booking_status,
         } = listPaymentAdminDto;
 
         let where;
@@ -1640,9 +1853,42 @@ export class BookingService {
         if (user_id) {
             where += `AND ("BookingInstalments"."user_id" = '${user_id}')`;
         }
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
+        }
 
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" =  '${product_id}')`;
+        }
+
+        if (booking_status?.length) {
+            if (typeof booking_status != "object") {
+                console.log(booking_status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(booking_status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                let or = "";
+                for await (const s of booking_status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
         }
 
         if (booking_id) {
@@ -1676,6 +1922,15 @@ export class BookingService {
             total_count,
         } = await this.bookingRepository.exportPayment(where);
 
+        for await (const payment of data) {
+            payment["status"] = await BookingStatusUtility.bookingStatus(
+                payment.booking.bookingStatus,
+                payment.booking.paymentStatus,
+                new Date(payment.booking.checkOutDate),
+                payment.booking.isResedule
+            );
+        }
+
         return {
             data: data,
             total_count: total_count,
@@ -1700,15 +1955,23 @@ export class BookingService {
             let todayPrice = [];
             let availableBookingId = [];
             console.log(result.data.length);
-            
+
             for await (const data of result.data) {
                 const bookingData = data.booking;
                 // booking data
                 const paidAmount = await this.paidAmountByUser(data.bookingId);
-                const totalPaidAmount = await this.totalpaidAmount(
-                    data.bookingId
+                const valuations = await ValuationPercentageUtility.calculations(
+                    data.booking.cart.laytripCartId
                 );
-                // value of amount paid by user
+               
+
+                const totalPaidAmount = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
+                   valuations["amount"][bookingData.laytripBookingId] || 0
+               ) : 0
+            //    const paidAmount = Generic.formatPriceDecimal(
+            //        valuations["amount"][bookingData.laytripBookingId] || 0
+            //    );
+                               // value of amount paid by user
                 //console.log(paidAmount);
 
                 const markups = await this.getPreductionMarkup();
@@ -1748,7 +2011,7 @@ export class BookingService {
                     bookingData.locationInfo;
                 predictiveBookingData["checkInDate"] = bookingData.checkInDate;
                 predictiveBookingData["categoryName"] =
-                    bookingData.categoryName|| '';
+                    bookingData.categoryName || "";
                 predictiveBookingData["remain_days"] = dayDiff;
                 predictiveBookingData["booking_time_total_amount"] =
                     bookingData.totalAmount;
@@ -1760,23 +2023,50 @@ export class BookingService {
                 predictiveBookingData["remain_seat"] = data.remainSeat;
                 predictiveBookingData["selling_price"] =
                     bookingData.totalAmount;
-                predictiveBookingData["paid_amount"] = totalPaidAmount;
+                //predictiveBookingData["paid_amount"] = totalPaidAmount;
                 predictiveBookingData["is_installation_on_track"] =
                     paidAmount?.attempt == 1 &&
                     paidAmount?.paymentStatus == PaymentStatus.CONFIRM
                         ? true
                         : false;
-                predictiveBookingData["paid_amount_in_percentage"] =
+                //predictiveBookingData["paid_amount_in_percentage"] =
                     (totalPaidAmount * 100) /
                     parseFloat(bookingData.totalAmount);
                 predictiveBookingData["booking_status"] =
                     bookingData.bookingStatus;
+
+                predictiveBookingData[
+                    "status"
+                ] = await BookingStatusUtility.bookingStatus(
+                    bookingData.bookingStatus,
+                    bookingData.paymentStatus,
+                    new Date(bookingData.checkOutDate),
+                    bookingData.isResedule
+                );
+
                 // //console.log(bookingData.laytripBookingId);
 
                 predictiveBookingData["departure_date"] =
                     bookingData.checkInDate || "";
                 predictiveBookingData["laytrip_booking_id"] =
                     bookingData.laytripBookingId;
+               
+                predictiveBookingData[
+                    "valuationPercentage"
+                ] = Generic.formatPriceDecimal(
+                    valuations[bookingData.laytripBookingId] || 0
+                );
+                predictiveBookingData[
+                    "paid_amount_in_percentage"
+                ] = Generic.formatPriceDecimal(
+                    valuations[bookingData.laytripBookingId] || 0
+                );
+
+               predictiveBookingData[
+                   "paid_amount"
+               ] = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
+                   valuations["amount"][bookingData.laytripBookingId] || 0
+               ) : 0
                 predictiveBookingData["bookIt"] = false;
                 predictiveBookingData["module_name"] = bookingData.module.name;
                 predictiveBookingData["is_reseduled"] = bookingData?.updateBy
@@ -1925,12 +2215,21 @@ export class BookingService {
                 }
 
                 if (category) {
-                    if (category.installmentAvailableAfter < dayDiff) {
+                    let checkInDate = new Date(bookingData.checkInDate);
+                    checkInDate.setDate(
+                        checkInDate.getDate() -
+                            category.installmentAvailableAfter
+                    );
+                    predictiveBookingData["deadline_date"] = checkInDate;
+                    if (category.installmentAvailableAfter > dayDiff) {
                         predictiveBookingData["reservation_status"] = "yellow";
                         predictiveBookingData["reservation_status_note"] =
-                            "category.installmentAvailableAfter < dayDiff";
+                            "category.installmentAvailableAfter > dayDiff";
                     }
                 }
+
+                predictiveBookingData["cancellationRequest"] =
+                    bookingData?.cancellationRequest;
 
                 const id = predictiveBookingData.laytrip_booking_id;
                 todayPrice.push(predictiveBookingData);
@@ -1957,9 +2256,13 @@ export class BookingService {
                     );
                 } else {
                     const paidAmount = await this.paidAmountByUser(booking.id);
-                    const totalPaidAmount = await this.totalpaidAmount(
-                        booking.id
+                    const valuations = await ValuationPercentageUtility.calculations(
+                        booking.cart.laytripCartId
                     );
+                    const totalPaidAmount = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
+                        valuations["amount"][booking.laytripBookingId] || 0
+                    ) : 0
+
                     //console.log(booking.laytripBookingId);
                     //console.log('booking.laytripBookingId');
 
@@ -1986,13 +2289,21 @@ export class BookingService {
                         booking.locationInfo;
                     predictiveBookingData["checkInDate"] = booking.checkInDate;
                     predictiveBookingData["categoryName"] =
-                        booking.categoryName|| '';
+                        booking.categoryName || "";
                     predictiveBookingData["remain_days"] = dayDiff;
                     predictiveBookingData["booking_time_total_amount"] =
                         booking.totalAmount;
                     predictiveBookingData["booking_id"] = booking.id;
                     predictiveBookingData["cart_id"] =
                         booking.cart.laytripCartId;
+                    // const valuations = await ValuationPercentageUtility.calculations(
+                    //     booking.cart.laytripCartId
+                    // );
+                    predictiveBookingData[
+                        "valuationPercentage"
+                    ] = Generic.formatPriceDecimal(
+                        valuations[booking.laytripBookingId] || 0
+                    );
                     predictiveBookingData["net_price"] = null;
                     predictiveBookingData["date"] = null;
                     predictiveBookingData["is_below_minimum"] = false;
@@ -2001,12 +2312,20 @@ export class BookingService {
                     predictiveBookingData["is_reseduled"] = booking?.updateBy
                         ? true
                         : false;
+                    predictiveBookingData[
+                        "status"
+                    ] = await BookingStatusUtility.bookingStatus(
+                        booking.bookingStatus,
+                        booking.paymentStatus,
+                        new Date(booking.checkOutDate),
+                        booking.isResedule
+                    );
                     predictiveBookingData["selling_price"] =
                         booking.totalAmount;
-                    predictiveBookingData["paid_amount"] = totalPaidAmount;
+                    //predictiveBookingData["paid_amount"] = totalPaidAmount;
                     predictiveBookingData["is_installation_on_track"] =
                         paidAmount?.attempt <= 1 ? true : false;
-                    predictiveBookingData["paid_amount_in_percentage"] =
+                    //predictiveBookingData["paid_amount_in_percentage"] =
                         (totalPaidAmount * 100) /
                         parseFloat(booking.totalAmount);
                     predictiveBookingData["booking_status"] =
@@ -2032,15 +2351,34 @@ export class BookingService {
                     predictiveBookingData[
                         "is_net_rate_price_change_above_threshold"
                     ] = false;
+                    predictiveBookingData[
+                        "paid_amount_in_percentage"
+                    ] = Generic.formatPriceDecimal(
+                        valuations[booking.laytripBookingId] || 0
+                    );
+
+                    predictiveBookingData[
+                        "paid_amount"
+                    ] = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
+                        valuations["amount"][booking.laytripBookingId] || 0
+                    ) : 0
 
                     if (category) {
-                        if (category.installmentAvailableAfter < dayDiff) {
+                        let checkInDate = new Date(booking.checkInDate);
+                        checkInDate.setDate(
+                            checkInDate.getDate() -
+                                category.installmentAvailableAfter
+                        );
+                        predictiveBookingData["deadline_date"] = checkInDate;
+                        if (category.installmentAvailableAfter > dayDiff) {
                             predictiveBookingData["reservation_status"] =
                                 "yellow";
                             predictiveBookingData["reservation_status_note"] =
-                                "category.installmentAvailableAfter < dayDiff";
+                                "category.installmentAvailableAfter > dayDiff";
                         }
                     }
+                    predictiveBookingData["cancellationRequest"] =
+                        booking?.cancellationRequest;
                     responce.push(predictiveBookingData);
                 }
             }
@@ -2206,12 +2544,11 @@ export class BookingService {
         try {
             let result = await this.bookingRepository.exportCSV(listBookingDto);
 
-            let paidAmount = 0;
-            let remainAmount = 0;
-
             ////console.log(result);
 
             for (let i in result.data) {
+                let paidAmount = 0;
+                let remainAmount = 0;
                 for (let instalment of result.data[i].bookingInstalments) {
                     if (instalment.instalmentStatus == 1) {
                         paidAmount += parseFloat(instalment.amount);
@@ -2219,20 +2556,60 @@ export class BookingService {
                         remainAmount += parseFloat(instalment.amount);
                     }
                 }
-                result.data[i]["paidAmount"] =
-                    result.data[i].bookingType == BookingType.NOINSTALMENT &&
-                    result.data[i].paymentStatus == PaymentStatus.CONFIRM
-                        ? result.data[i].totalAmount
-                        : paidAmount;
+                // result.data[i]["paidAmount"] =
+                //     result.data[i].bookingType == BookingType.NOINSTALMENT &&
+                //     result.data[i].paymentStatus == PaymentStatus.CONFIRM
+                //         ? Generic.formatPriceDecimal(
+                //               parseFloat(result.data[i].totalAmount)
+                //           )
+                //         : Generic.formatPriceDecimal(paidAmount);
                 result.data[i]["remainAmount"] =
                     result.data[i].bookingType == BookingType.NOINSTALMENT &&
                     result.data[i].paymentStatus == PaymentStatus.CONFIRM
                         ? 0
-                        : remainAmount;
+                        : Generic.formatPriceDecimal(remainAmount);
+                result.data[i][
+                    "paid_amount_in_percentage"
+                ] = Generic.formatPriceDecimal(
+                    (parseFloat(result.data[i]["paidAmount"]) * 100) /
+                        parseFloat(result.data[i].totalAmount)
+                );
+                // result.data[i][
+                //     "paid_amount_in_percentage"
+                // ] = Generic.formatPriceDecimal(
+                //     (parseFloat(result.data[i]["paidAmount"]) * 100) /
+                //         parseFloat(result.data[i].totalAmount)
+                // );
+
+                const valuations = await ValuationPercentageUtility.calculations(
+                    result.data[i].cart.laytripCartId
+                );
+                result.data[i][
+                    "valuationPercentage"
+                ] = Generic.formatPriceDecimal(
+                    valuations[result.data[i].laytripBookingId] || 0
+                );
+
+                result.data[i]["paidAmount"] = valuations && typeof valuations['amount'] != "undefined" ? Generic.formatPriceDecimal(
+                    valuations["amount"][result.data[i].laytripBookingId] || 0
+                ) : 0 
+
+                result.data[i]["remain_days"] = moment(
+                    moment(result.data[i].checkInDate)
+                ).diff(new Date(), "days");
 
                 delete result.data[i].user.updatedDate;
                 delete result.data[i].user.salt;
                 delete result.data[i].user.password;
+
+                result.data[i][
+                    "status"
+                ] = await BookingStatusUtility.bookingStatus(
+                    result.data[i].bookingStatus,
+                    result.data[i].paymentStatus,
+                    new Date(result.data[i].checkOutDate),
+                    result.data[i].isResedule
+                );
                 // for (let j in result.data[i].travelers) {
                 //     var birthDate = new Date(
                 //         result.data[i].travelers[j].travelerInfo.dob
@@ -2317,7 +2694,7 @@ export class BookingService {
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param
+                        responce.param,responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -2338,10 +2715,12 @@ export class BookingService {
     async getBookingIds() {
         return await this.bookingRepository.getBookingId();
     }
+    async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User,referralId) {
+         let { booking_id, product_id, message, reason } = deleteBookingDto;
 
-    async deleteBooking(deleteBookingDto: DeleteBookingDto, user: User) {
-        const { booking_id, product_id } = deleteBookingDto;
-
+        if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
+            reason = CancellationReason.CustomerChoice;
+        }
         let where = `("cartBooking"."laytrip_cart_id" =  '${booking_id}')`;
         if (product_id) {
             where += `AND ("booking"."laytrip_booking_id" = '${product_id}')`;
@@ -2367,8 +2746,10 @@ export class BookingService {
                 .set({
                     bookingStatus: BookingStatus.CANCELLED,
                     paymentStatus: PaymentStatus.CANCELLED,
-                    updatedDate : new Date(),
-                    updateBy : user.userId
+                    updatedDate: new Date(),
+                    updateBy: user.userId,
+                    message: message || null,
+                    cancellationReason: reason,
                 })
                 .where(
                     `id =:id AND booking_status <= ${BookingStatus.CONFIRM}`,
@@ -2387,15 +2768,41 @@ export class BookingService {
                     { id: booking.id }
                 )
                 .execute();
-        }
-        if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
 
-             Activity.logActivity(
-                 user.userId,
-                 "Booking",
-                 "Booking(" + booking_id + "" + product_id ||
-                     "" + ") deleted by admin "
-             );
+            if (
+                booking.bookingStatus == BookingStatus.PENDING &&
+                booking.moduleId == ModulesName.FLIGHT
+            ) {
+                const data = await NotificationAlertUtility.notificationModelCreater(
+                    booking.laytripBookingId
+                );
+                await this.mailerService
+                    .sendMail({
+                        to: mailConfig.admin,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Alert - BOOKING #${data.param.laytripBookingId} got cancelled `,
+                        html: await BookingCancellationNotificationMail(
+                            data.param
+                        ),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
+            }
+        }
+
+        if (user.roleId != Role.FREE_USER && user.roleId != Role.PAID_USER) {
+            Activity.logActivity(
+                user.userId,
+                "Bookings",
+                "Booking(" + booking_id + "" + product_id ||
+                    "" + ") deleted by admin "
+            );
+
             this.mailerService
                 .sendMail({
                     to: query.user.email,
@@ -2405,7 +2812,7 @@ export class BookingService {
                     html: await LaytripCancellationTravelProviderMail({
                         userName: query.user.firstName || "",
                         bookingId: booking_id,
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -2423,7 +2830,7 @@ export class BookingService {
                     html: await LaytripBookingCancellationCustomerMail({
                         username: query.user.firstName || "",
                         bookingId: booking_id,
-                    }),
+                    },referralId),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -2497,7 +2904,7 @@ export class BookingService {
         const currentValue = JSON.stringify(updatedValue);
         Activity.logActivity(
             admin.userId,
-            "Booking",
+            "Bookings",
             "Update traveler info of info id" + id,
             previousValue,
             currentValue
@@ -2548,6 +2955,7 @@ export class BookingService {
         booking.oldBookingInfo = JSON.parse(JSON.stringify(booking));
         booking.updatedDate = new Date();
         booking.moduleInfo = flightInfo;
+        booking.isResedule = true;
         booking.locationInfo = {
             journey_type:
                 flightInfo[0].routes.length > 1 ? "RoundTrip" : "oneway",
@@ -2568,17 +2976,19 @@ export class BookingService {
         dailyPrice.date = new Date();
         dailyPrice.isBelowMinimum = false;
         dailyPrice.netPrice = parseFloat(newBooking.netRate);
-        dailyPrice.price = flightInfo[0].selling_price
-        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0
-        await dailyPrice.save()
-        let mail = await CartDataUtility.CartMailModelDataGenerate(booking.cart.laytripCartId);
+        dailyPrice.price = flightInfo[0].selling_price;
+        dailyPrice.remainSeat = flightInfo[0]?.remain_seat || 0;
+        await dailyPrice.save();
+        let mail = await CartDataUtility.CartMailModelDataGenerate(
+            booking.cart.laytripCartId
+        );
         this.mailerService
             .sendMail({
                 to: mail.email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: `Booking ID ${mail.param.orderId} Customer Change`,
-                html: await CartChangeAsperUserRequestMail(mail.param),
+                html: await CartChangeAsperUserRequestMail(mail.param,mail.referralId),
             })
             .then((res) => {
                 console.log("res", res);
@@ -2634,5 +3044,213 @@ export class BookingService {
         return {
             message: `Traveler changed to primary traveler.`,
         };
+    }
+
+    async requestIntialCancelBooking(
+        intialCancelBookingDto: IntialCancelBookingDto,
+        admin: User
+    ) {
+        try {
+            const { message, product_id, booking_id } = intialCancelBookingDto;
+
+            let bookings = await getManager()
+                .createQueryBuilder(Booking, "booking")
+                .leftJoinAndSelect("booking.cart", "cart")
+                .where(
+                    `booking.laytrip_booking_id = '${product_id}' AND booking.booking_status in (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND cart.laytrip_cart_id = '${booking_id}'`
+                )
+                .getMany();
+
+            if (!bookings) {
+                throw new NotFoundException(`Inventry ID not found.`);
+            }
+
+            if (bookings.length != product_id.length) {
+                throw new NotFoundException(`Enter valid property ids.`);
+            }
+
+            for await (const booking of bookings) {
+                let requests = await getManager()
+                    .createQueryBuilder(IntialCancelBooking, "intiat")
+
+                    .where(`booking_id = '${booking.id}'`)
+                    .getOne();
+
+                if (requests) {
+                    if (requests.status == IntialCancelationStatus.Approve) {
+                        throw new ConflictException(
+                            `Given booking cancellation request already accepted`
+                        );
+                    }
+
+                    requests.updateBy = admin.userId;
+                    requests.message = message || null;
+                    requests.resendOn = new Date();
+                    requests.count = requests.count + 1;
+                    requests.status = IntialCancelationStatus.Pending;
+                    requests.updatedDate = new Date();
+
+                    await requests.save();
+                } else {
+                    let intialCancelation = new IntialCancelBooking();
+
+                    intialCancelation.bookingId = booking.id;
+                    intialCancelation.createBy = admin.userId;
+                    intialCancelation.createdDate = new Date();
+                    intialCancelation.message = message || null;
+                    intialCancelation.status = IntialCancelationStatus.Pending;
+
+                    await intialCancelation.save();
+                }
+            }
+
+            const responce = await CartDataUtility.CartMailModelDataGenerate(
+                bookings[0].cart.laytripCartId
+            );
+            let subject = `Booking ID ${responce.param.orderId} Cancellation Confirmation`;
+
+            this.mailerService
+                .sendMail({
+                    to: responce.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: subject,
+                    html: await LaytripIntialCancelBookingRequestEmail(
+                        responce.param,
+                        product_id
+                    ),
+                })
+                .then((res) => {
+                    //console.log("res", res);
+                })
+                .catch((err) => {
+                    //console.log("err", err);
+                });
+            Activity.logActivity(
+                admin.userId,
+                "Intiate-cancellation",
+                "Intiate cancelation request for booking number : " + product_id
+            );
+            return {
+                message: `Intial cancellation request send successfully.`,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log('m');
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
+        }
+    }
+
+    async reverceIntialBookingCancel(
+        reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
+        admin: User
+    ) {
+        try {
+            const { message, product_id } = reverceIntialCancelBookingDto;
+
+            let booking = await getManager()
+                .createQueryBuilder(Booking, "booking")
+                .leftJoinAndSelect("booking.cart", "cart")
+                .where(`booking.laytrip_booking_id = '${product_id}'`)
+                .getOne();
+
+            if (!booking) {
+                throw new NotFoundException(`Booking ID not found.`);
+            }
+
+            let requests = await getManager()
+                .createQueryBuilder(IntialCancelBooking, "intiat")
+                .where(`booking_id = '${booking.id}'`)
+                .getOne();
+
+            if (!requests) {
+                throw new NotFoundException(
+                    `Booking cancelation request not found.`
+                );
+            }
+            if (requests.status == IntialCancelationStatus.Approve) {
+                throw new ConflictException(
+                    `Given booking cancellation request already accepted`
+                );
+            }
+
+            requests.updateBy = admin.userId;
+            requests.message = message || null;
+            requests.status = IntialCancelationStatus.Reverse;
+            requests.updatedDate = new Date();
+
+            await requests.save();
+            Activity.logActivity(
+                admin.userId,
+                "Intiate-cancellation",
+                "Intiate cancelation request reverced for booking id : " +
+                    product_id
+            );
+            return {
+                message: `Intial cancellation request reverce successfully.`,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log('m');
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
+        }
     }
 }

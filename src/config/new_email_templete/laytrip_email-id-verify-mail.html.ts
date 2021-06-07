@@ -2,9 +2,11 @@ import { LaytripHeader } from "./laytrip_header.html";
 import {  LaytripFooter} from "./laytrip_footer.html";
 import { BaseUrl } from "../base-url";
 
-export function LaytripVerifyEmailIdTemplete(param:{ username:string , otp:number })
-{
-const content = `
+export function LaytripVerifyEmailIdTemplete(
+           param: { username: string; otp: number },
+           referral_id: string = ""
+       ) {
+           const content = `
                                 <tr>
                                     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
                                         <table  width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
@@ -51,5 +53,5 @@ const content = `
 </tr>
 
 `;
-return LaytripHeader + content + LaytripFooter;
-}
+           return LaytripHeader + content + LaytripFooter(referral_id);
+       }

@@ -2,6 +2,7 @@ import { NotFoundException } from "@nestjs/common";
 import { LaytripFeedback } from "src/entity/laytrip_feedback.entity";
 import { CryptoUtility } from "src/utility/crypto.utility";
 import { EntityRepository, getConnection, getManager, Repository } from "typeorm";
+import { ExportLaytripFeedbackForAdminDto } from "./dto/export-laytrip-feedback.dto";
 import { ListLaytripFeedbackForAdminDto } from "./dto/list-laytrip-feedback-admin.dto";
 
 @EntityRepository(LaytripFeedback)
@@ -123,6 +124,33 @@ export class LaytripFeedbackRepository extends Repository<LaytripFeedback>{
 
         const average_count = await getConnection().query(`select  ROUND(AVG(rating)) as rating from laytrip_feedback `)
         return { data: data, total_count: count, rating_count: rating_count, average_count: average_count[0], totalFeedbackCount: reviewCount };
+
+    }
+
+    async exportLaytripFeedbackAdmin(listLaytripFeedbackForAdminDto: ExportLaytripFeedbackForAdminDto) {
+        const { rating, search } = listLaytripFeedbackForAdminDto;
+
+        const cipher = await CryptoUtility.encode(search)
+        const query = getConnection()
+            .createQueryBuilder(LaytripFeedback, "laytrip_feedback")
+            .leftJoinAndSelect("laytrip_feedback.user", "User")
+            // .leftJoinAndSelect("feedback.booking", "booking")
+            // .leftJoinAndSelect("booking.module", "module")
+            .select(["laytrip_feedback.id", "laytrip_feedback.rating", "laytrip_feedback.message", "User.firstName", "User.lastName", "User.email", "User.profilePic"])
+            .where(` "laytrip_feedback"."is_deleted" =:is_deleted  `, { is_deleted: false })
+            .orderBy(`"laytrip_feedback"."id"`,'DESC')
+        if (search) {
+            query.andWhere(`"User"."first_name" =:firstName`, { firstName: cipher })
+        }
+        if (rating) {
+            query.andWhere(`"laytrip_feedback"."rating" =:rating`, { rating })
+        }
+        const [data, count] = await query.getManyAndCount();
+
+        if (!data.length) {
+            throw new NotFoundException(`No feedback found.`)
+        }
+        return { data: data, total_count: count};
 
     }
 }

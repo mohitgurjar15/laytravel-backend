@@ -3,9 +3,11 @@ import { LaytripFooter } from "./laytrip_footer.html";
 import { BaseUrl } from "../base-url";
 import { LaytripFooter2 } from "./laytrip-second-footer.html";
 
-export function LaytripInquiryAutoReplayMail(param:{ username:string })
-{
-const content = `
+export function LaytripInquiryAutoReplayMail(
+           param: { username: string },
+           referral_id: string = ""
+       ) {
+           const content = `
 <tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
         <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
@@ -38,5 +40,5 @@ const content = `
 </td>
 </tr>
 `;
-return LaytripHeader + content + LaytripFooter2;
-}
+           return LaytripHeader + content + LaytripFooter2;
+       }

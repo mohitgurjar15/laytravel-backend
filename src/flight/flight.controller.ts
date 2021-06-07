@@ -42,6 +42,12 @@ import { UserIpAddress } from "src/decorator/ip-address.decorator";
 
 @ApiTags("Flight")
 @Controller("flight")
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: ""
+      
+  })
 @ApiBearerAuth()
 export class FlightController {
   constructor(private flightService: FlightService) {}
