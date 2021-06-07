@@ -157,13 +157,8 @@ export class CronJobsService {
         let query = getManager()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
-            // .select([
-            //     "booking.supplierBookingId",
-            //     "booking.id",
-            //     "booking.laytripBookingId",
-            // ])
             .where(
-                `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."supplier_booking_id" !=''`
+                `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."supplier_booking_id" !='' and "booking"."booking_status" =1 and date(now()) < "booking"."check_in_date"`
             );
 
         const result = await query.getMany();
