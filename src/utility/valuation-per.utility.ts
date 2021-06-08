@@ -27,7 +27,7 @@ export class ValuationPercentageUtility {
         } else if(cart?.bookings[0].bookingType == BookingType.NOINSTALMENT){
             for await (const booking of cart.bookings){
                 if(booking.paymentStatus == PaymentStatus.CONFIRM){
-                    responce[booking.laytripBookingId] = parseFloat(booking.totalAmount);
+                    responce[booking.laytripBookingId] = 100;
                     amount[booking.laytripBookingId] = parseFloat(
                         booking.totalAmount
                     );
