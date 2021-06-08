@@ -14,7 +14,7 @@ export async function BookingCancellationNotificationMail(param: EmailNotificati
 <tr>
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-        A gold route (${param.flightRoute}) got cancelled by the supplier/customer.
+        A <b>${param.routeType} route (${param.flightRoute}) </b>got cancelled by the supplier/customer.
     </td>
 </tr>
 <tr>
@@ -37,7 +37,7 @@ export async function BookingCancellationNotificationMail(param: EmailNotificati
                 <td align="left" valign="top"
                     style="width:85%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                    ${param.currencySymbol}${param.netRate} </td>
-            </tr>`
+            </tr>`;
             if(param.todayNetPrice){
                 content += `
             <tr>

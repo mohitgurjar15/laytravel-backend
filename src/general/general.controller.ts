@@ -215,9 +215,9 @@ export class GeneralController {
     @ApiResponse({ status: 401, description: "Invalid Login credentials." })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
-    async listmassCommunication(@Query() paginationOption:ListMassCommunicationDto) {
+    async listmassCommunication(@Query() paginationOption:ListMassCommunicationDto,@SiteUrl() siteUrl: string) {
         return await this.generalService.ListMassCommunication(
-            paginationOption
+            paginationOption,siteUrl
         );
     }
 

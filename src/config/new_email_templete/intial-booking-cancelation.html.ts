@@ -225,5 +225,5 @@ export async function LaytripIntialCancelBookingRequestEmail(
     </table>
 </td>
 </tr>`;
-    return LaytripHeader + content + LaytripFooter;
+    return LaytripHeader + content + LaytripFooter('');
 }

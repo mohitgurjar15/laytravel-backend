@@ -111,7 +111,7 @@ export class AdminDashboardService {
                 .replace(/\..+/, "");
 
             const { moduleId, startDate, toDate } = filterOption;
-            var where = `role_id In (${Role.FREE_USER},${Role.PAID_USER}) `;
+            var where = `role_id In (${Role.FREE_USER},${Role.PAID_USER}) AND is_verified = true `;
             if (startDate) {
                 where += `AND (DATE(created_date) >= '${startDate}') `;
             } else {
@@ -212,9 +212,12 @@ export class AdminDashboardService {
                 COUNT(DISTINCT("User"."user_id")) as "count" 
                 FROM "user" "User" 
 				where 
+                
 					role_id In (${Role.FREE_USER},${Role.PAID_USER} ) 
 					AND (DATE(created_date) >= '${monthDate}')
 					AND (DATE(created_date) >= '${todayDate}')
+                    AND is_verified = true
+                    AND is_deleted = false
 			`
             );
 
@@ -226,6 +229,8 @@ export class AdminDashboardService {
 					role_id In (${Role.FREE_USER},${Role.PAID_USER} )
 					AND (DATE(created_date) >= '${mondayDate}')
 					AND (DATE(created_date) >= '${todayDate}')
+                    AND is_verified = true
+                    AND is_deleted = false
 			`
             );
 
@@ -235,6 +240,8 @@ export class AdminDashboardService {
 				FROM "user" "User" 
 				where 
 					role_id In (${Role.FREE_USER},${Role.PAID_USER})
+                    AND is_verified = true
+                    AND is_deleted = false
 			`
             );
 
@@ -285,7 +292,7 @@ export class AdminDashboardService {
     async userCountOnCountry() {
         try {
             const result = await getConnection().query(
-                `SELECT "countries"."iso2" AS "country_sort_code","countries"."iso3" AS "countries_code","countries"."name" AS "countries_name", "countries"."id" AS "countries_id", COUNT(DISTINCT("user"."user_id")) as "user_count" FROM "user" "user" RIGHT JOIN "countries" "countries" ON "countries"."id"="user"."country_id" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) AND "country_id" > 0  GROUP BY countries_id`
+                `SELECT "countries"."iso2" AS "country_sort_code","countries"."iso3" AS "countries_code","countries"."name" AS "countries_name", "countries"."id" AS "countries_id", COUNT(DISTINCT("user"."user_id")) as "user_count" FROM "user" "user" RIGHT JOIN "countries" "countries" ON "countries"."id"="user"."country_id" WHERE role_id In (${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER}) AND "country_id" > 0 AND is_verified = true AND is_deleted = false GROUP BY countries_id`
             );
             return result;
         } catch (error) {
@@ -421,14 +428,14 @@ export class AdminDashboardService {
             // complited trips :- complite bookings
             const completedTrips = await getConnection().query(
                 `SELECT  count(*) as "cnt"
-				FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`
+				FROM "booking" WHERE date(check_in_date) < date('${todayDate}') AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`
             );
 
             response["completed_trips"] = completedTrips[0].cnt;
 
             const completedTripsUsd = await getConnection()
                 .query(`SELECT  sum(total_amount) as "total"
-      FROM "booking" WHERE check_in_date < '${todayDate}' AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      FROM "booking" WHERE date(check_in_date) < date('${todayDate}') AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
 
             response["completed_trips_usd"] =
                 (Math.round(completedTripsUsd[0].total * 100) / 100).toFixed(
@@ -835,7 +842,7 @@ export class AdminDashboardService {
       FROM
       "user"
       WHERE
-      is_deleted=false
+      ${userConditon}
       AND
       is_verified=true`
         );
@@ -906,7 +913,7 @@ export class AdminDashboardService {
         var userRegisteredViaWeb = await getConnection().query(`
     SELECT COUNT(*) as cnt
       FROM
-      "user" where is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      "user" where register_via = 'web' AND is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
       `);
 
         response["user_registered_via_web"] =

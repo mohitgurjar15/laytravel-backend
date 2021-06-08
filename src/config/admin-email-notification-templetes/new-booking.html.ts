@@ -62,7 +62,7 @@ let content = `
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient})</td>
+                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -70,7 +70,7 @@ let content = `
                     Total Received from Customer:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage})</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
             </tr>
         </tbody>
     </table>

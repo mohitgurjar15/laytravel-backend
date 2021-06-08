@@ -85,7 +85,7 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
                     Total Received:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage})</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
             </tr>
         </tbody>
     </table>
