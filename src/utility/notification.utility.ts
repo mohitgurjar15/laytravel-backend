@@ -122,23 +122,26 @@ export class NotificationAlertUtility {
 
         const predictiveData = await query.getOne();
 
+        console.log("predictiveData", predictiveData);
+        console.log('1')
         param.todayNetPrice =
-            `${Generic.formatPriceDecimal(predictiveData?.netPrice)}` || "N/A";
+            `${Generic.formatPriceDecimal(predictiveData?.netPrice || 0)}` || "N/A";
 
-        let paidAmount = 0;
-        let remainAmount = 0;
+        // let paidAmount = 0;
+        // let remainAmount = 0;
 
-        for await (const installment of bookingData.bookingInstalments) {
-            if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-                paidAmount += parseFloat(installment.amount);
-            } else {
-                remainAmount += parseFloat(installment.amount);
-            }
-        }
+        // for await (const installment of bookingData.bookingInstalments) {
+        //     if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+        //         paidAmount += parseFloat(installment.amount);
+        //     } else {
+        //         remainAmount += parseFloat(installment.amount);
+        //     }
+        // }
         //param.totalRecivedFromCustomer =Generic.formatPriceDecimal(paidAmount) ;
         // param.totalRecivedFromCustomerPercentage =
         //     Generic.formatPriceDecimal((paidAmount * 100) /
         //     parseFloat(bookingData.totalAmount));
+
         if (predictiveData?.lastPrice) {
             param.todayNetpriceVarient = Generic.formatPriceDecimal(
                 ((predictiveData?.netPrice - predictiveData?.lastPrice) * 100) /
@@ -146,11 +149,13 @@ export class NotificationAlertUtility {
             );
         }
 
+        console.log(param.todayNetpriceVarient);
+
         param.laytripBookingId = bookingData.laytripBookingId;
         param.currencySymbol = bookingData.currency2.symbol;
-
         param.lastPrice = predictiveData.lastPrice || 0;
-
+        console.log('call for valuation per');
+        
         const valuations = await ValuationPercentageUtility.calculations(
             bookingData.cart.laytripCartId
         );

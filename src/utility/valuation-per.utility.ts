@@ -9,6 +9,8 @@ import { getConnection } from "typeorm";
 
 export class ValuationPercentageUtility {
     static async calculations(cart_id) {
+        console.log("cart_id", cart_id);
+        
         const query = getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -27,7 +29,7 @@ export class ValuationPercentageUtility {
         } else if(cart?.bookings[0].bookingType == BookingType.NOINSTALMENT){
             for await (const booking of cart.bookings){
                 if(booking.paymentStatus == PaymentStatus.CONFIRM){
-                    responce[booking.laytripBookingId] = parseFloat(booking.totalAmount);
+                    responce[booking.laytripBookingId] = 100;
                     amount[booking.laytripBookingId] = parseFloat(
                         booking.totalAmount
                     );
@@ -234,6 +236,8 @@ export class ValuationPercentageUtility {
             }
         }
         responce['amount'] = amount
+        console.log("responce", responce);
+        
         return responce;
     }
 }

@@ -1077,6 +1077,8 @@ export class GeneralService {
             id
         );
 
+        console.log('data',data)
+
         await this.mailerService
             .sendMail({
                 to: email,

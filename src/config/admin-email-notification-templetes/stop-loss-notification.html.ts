@@ -14,7 +14,7 @@ export async function AdminStopLossNotificationMail(param: EmailNotificationMode
 <tr>
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-        Supplier cost today rose by ${param.todayNetpriceVarient}% above the supplier cost at customer booking.
+        Supplier cost today rose by <span style="font-weight: 600; color: #000000; ">${param.todayNetpriceVarient}% </span>above the supplier cost at customer booking.
     </td>
 </tr>
 <tr>
@@ -61,7 +61,7 @@ export async function AdminStopLossNotificationMail(param: EmailNotificationMode
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                    ${param.currencySymbol}${param.netRate} </td>
-            </tr>`
+            </tr>`;
             if(param.lastPrice){
                 content +=`
             <tr>
