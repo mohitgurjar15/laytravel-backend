@@ -16,7 +16,7 @@ export async function Rule80perNotificationMail(
 <tr>
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-        Supplier cost dropped by ${param.todayNetpriceVarient}% and customer paid out ${param.totalRecivedFromCustomerPercentage}% of supplier cost today.
+        Supplier cost dropped by <span style="font-weight: 600; color: #000000; ">${param.todayNetpriceVarient}%</span> and customer paid out <span style="font-weight: 600; color: #000000; ">${param.totalRecivedFromCustomerPercentage}%</span> of supplier cost today.
     </td>
 </tr>
 <tr>
