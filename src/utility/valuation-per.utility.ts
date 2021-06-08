@@ -9,6 +9,8 @@ import { getConnection } from "typeorm";
 
 export class ValuationPercentageUtility {
     static async calculations(cart_id) {
+        console.log("cart_id", cart_id);
+        
         const query = getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -234,6 +236,8 @@ export class ValuationPercentageUtility {
             }
         }
         responce['amount'] = amount
+        console.log("responce", responce);
+        
         return responce;
     }
 }
