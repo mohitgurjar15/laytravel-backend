@@ -24,14 +24,7 @@ ${param.flightRoute} flight date has changed from 1:00 PM July 2, 2021 to 1:15 A
         style="width:100%; max-width:100%; table-layout:fixed; background: #ffffff;"
         class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
         <tbody>
-            <tr>
-                <td align="left" valign="top"
-                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    Route: </td>
-                <td align="left" valign="top"
-                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.flightRoute} (${param.routeType})</td>
-            </tr>
+            
             
             <tr>
                 <td align="left" valign="top"
@@ -44,10 +37,18 @@ ${param.flightRoute} flight date has changed from 1:00 PM July 2, 2021 to 1:15 A
             <tr>
                 <td align="left" valign="top"
                     style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Route: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param.flightRoute} (${param.routeType})</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
                     Sale Price to Customer at Booking:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.sellingPrice} (includes LT markup)</td>
+                   ${param.currencySymbol}${param.sellingPrice}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -63,7 +64,7 @@ ${param.flightRoute} flight date has changed from 1:00 PM July 2, 2021 to 1:15 A
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient})</td>
+                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -71,7 +72,7 @@ ${param.flightRoute} flight date has changed from 1:00 PM July 2, 2021 to 1:15 A
                     Total Received from Customer:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage})</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"

@@ -1,6 +1,7 @@
 import { Booking } from "src/entity/booking.entity";
 import { CartBooking } from "src/entity/cart-booking.entity";
 import { BookingStatus } from "src/enum/booking-status.enum";
+import { BookingType } from "src/enum/booking-type.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { HotelDetails } from "src/vacation-rental/model/room_details.model";
@@ -8,6 +9,8 @@ import { getConnection } from "typeorm";
 
 export class ValuationPercentageUtility {
     static async calculations(cart_id) {
+        console.log("cart_id", cart_id);
+        
         const query = getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
@@ -23,7 +26,20 @@ export class ValuationPercentageUtility {
         const amount = {};
         if (!cart?.bookings?.length) {
             return responce;
-        } else {
+        } else if(cart?.bookings[0].bookingType == BookingType.NOINSTALMENT){
+            for await (const booking of cart.bookings){
+                if(booking.paymentStatus == PaymentStatus.CONFIRM){
+                    responce[booking.laytripBookingId] = 100;
+                    amount[booking.laytripBookingId] = parseFloat(
+                        booking.totalAmount
+                    );
+                }else{
+                    responce[booking.laytripBookingId] = 0
+                    amount[booking.laytripBookingId] = 0
+                }
+            }
+        }
+        else {
             let flights: Booking[] = [];
             let hotels: Booking[] = [];
 
@@ -220,6 +236,8 @@ export class ValuationPercentageUtility {
             }
         }
         responce['amount'] = amount
+        console.log("responce", responce);
+        
         return responce;
     }
 }

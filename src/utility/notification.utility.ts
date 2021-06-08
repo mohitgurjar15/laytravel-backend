@@ -8,6 +8,7 @@ import { EmailNotificationModel } from "src/config/email_template/model/notifica
 import moment = require("moment");
 import { RouteCategory } from "./route-category.utility";
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { BookingType } from "src/enum/booking-type.enum";
@@ -30,7 +31,6 @@ export class NotificationAlertUtility {
             return;
         }
 
-        
         if (bookingData.bookingInstalments.length > 0) {
             bookingData.bookingInstalments.sort((a, b) => a.id - b.id);
         }
@@ -40,30 +40,43 @@ export class NotificationAlertUtility {
         const user = bookingData.user;
         const moduleInfo = bookingData.moduleInfo[0];
 
-        
-
         param.flightRoute =
             moduleInfo.departure_code + "-" + moduleInfo.arrival_code;
-        param.routeType = bookingData.categoryName;
-       
+        
+
         param.depatureDate = DateTime.convertDateFormat(
-                    bookingData.checkInDate,
-                    "YYYY-MM-DD",
-                    "MMMM DD, YYYY"
-                );
+            bookingData.checkInDate,
+            "YYYY-MM-DD",
+            "MMMM DD, YYYY"
+        );
         param.remainDays = moment(moment(bookingData.checkInDate)).diff(
             new Date(),
             "days"
         );
-        let routeDetails: any = await RouteCategory.flightRouteAvailability(
-            moduleInfo.departure_code,
-            moduleInfo.arrival_code
-        );
-        console.log(routeDetails);
-        if (routeDetails) {
+
+        let category: LaytripCategory;
+
+        if (bookingData?.categoryName) {
+            category = await getConnection()
+                .createQueryBuilder(LaytripCategory, "category")
+                .where(`name = '${bookingData?.categoryName}'`)
+                .getOne();
+        }else{
+                let routeDetails: any = await RouteCategory.flightRouteAvailability(
+                    moduleInfo.departure_code,
+                    moduleInfo.arrival_code
+                );
+                category = routeDetails?.category
+        }
+
+    
+        param.routeType = category.name || 'N/A';
+        
+        console.log(category);
+        if (category) {
             let deadLine = new Date(bookingData.checkInDate);
             console.log("deadLine", deadLine);
-            let categoryDays = routeDetails.category.installmentAvailableAfter;
+            let categoryDays = category.installmentAvailableAfter;
             console.log("categoryDays", categoryDays);
 
             deadLine.setDate(deadLine.getDate() - categoryDays);
@@ -84,8 +97,12 @@ export class NotificationAlertUtility {
             );
         }
 
-        param.sellingPrice = bookingData.totalAmount;
-        param.netRate = bookingData.netRate;
+        param.sellingPrice = `${Generic.formatPriceDecimal(
+            parseFloat(bookingData.totalAmount)
+        )}`;
+        param.netRate = `${Generic.formatPriceDecimal(
+            parseFloat(bookingData.netRate)
+        )}`;
 
         const date = new Date();
         var todayDate = date.toISOString();
@@ -105,58 +122,62 @@ export class NotificationAlertUtility {
 
         const predictiveData = await query.getOne();
 
-        param.todayNetPrice = `${predictiveData?.netPrice}` || "N/A";
+        console.log("predictiveData", predictiveData);
+        console.log('1')
+        param.todayNetPrice =
+            `${Generic.formatPriceDecimal(predictiveData?.netPrice || 0)}` || "N/A";
 
-        let paidAmount = 0;
-        let remainAmount = 0;
+        // let paidAmount = 0;
+        // let remainAmount = 0;
 
-        for await (const installment of bookingData.bookingInstalments) {
-            if (installment.paymentStatus == PaymentStatus.CONFIRM) {
-                paidAmount += parseFloat(installment.amount);
-            } else {
-                remainAmount += parseFloat(installment.amount);
-            }
-        }
+        // for await (const installment of bookingData.bookingInstalments) {
+        //     if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+        //         paidAmount += parseFloat(installment.amount);
+        //     } else {
+        //         remainAmount += parseFloat(installment.amount);
+        //     }
+        // }
         //param.totalRecivedFromCustomer =Generic.formatPriceDecimal(paidAmount) ;
         // param.totalRecivedFromCustomerPercentage =
         //     Generic.formatPriceDecimal((paidAmount * 100) /
         //     parseFloat(bookingData.totalAmount));
-        if (predictiveData?.lastPrice){
+
+        if (predictiveData?.lastPrice) {
             param.todayNetpriceVarient = Generic.formatPriceDecimal(
-                ((predictiveData?.netPrice -
-                    predictiveData?.lastPrice) *
-                    100) /
+                ((predictiveData?.netPrice - predictiveData?.lastPrice) * 100) /
                     predictiveData?.lastPrice
             );
         }
-            
+
+        console.log(param.todayNetpriceVarient);
+
         param.laytripBookingId = bookingData.laytripBookingId;
         param.currencySymbol = bookingData.currency2.symbol;
-
-        param.lastPrice = predictiveData.lastPrice || 0
-
+        param.lastPrice = predictiveData.lastPrice || 0;
+        console.log('call for valuation per');
+        
         const valuations = await ValuationPercentageUtility.calculations(
-                bookingData.cart.laytripCartId
-            );
-            param.totalRecivedFromCustomerPercentage = Generic.formatPriceDecimal(
-                valuations[bookingData.laytripBookingId] || 0
-            );
+            bookingData.cart.laytripCartId
+        );
+        param.totalRecivedFromCustomerPercentage = Generic.formatPriceDecimal(
+            valuations[bookingData.laytripBookingId] || 0
+        );
 
-            console.log("booking id", bookingData.laytripBookingId);
-            console.log("valuation", valuations);
-            if (
-                valuations &&
-                typeof valuations["amount"] != "undefined" &&
-                typeof valuations["amount"][bookingData.laytripBookingId] !=
-                    "undefined"
-            ) {
-                param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
-                    valuations["amount"][bookingData.laytripBookingId] || 0
-                );
-            } else {
-                param.totalRecivedFromCustomer = 0;
-            }
-                
+        console.log("booking id", bookingData.laytripBookingId);
+        console.log("valuation", valuations);
+        if (
+            valuations &&
+            typeof valuations["amount"] != "undefined" &&
+            typeof valuations["amount"][bookingData.laytripBookingId] !=
+                "undefined"
+        ) {
+            param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
+                valuations["amount"][bookingData.laytripBookingId] || 0
+            );
+        } else {
+            param.totalRecivedFromCustomer = 0;
+        }
+
         return { param, email: bookingData.user.email, deadLineDate };
     }
 }

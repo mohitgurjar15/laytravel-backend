@@ -14,7 +14,7 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
 <tr>
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-        A gold route (${param.flightRoute}) is to depart in ${param.remainDays} days (on ${param.depatureDate})
+        A ${param.routeType} route (${param.flightRoute}) is to depart in <span style="font-weight: 600; color: #000000; ">${param.remainDays} days</span> (on ${param.depatureDate})
     </td>
 </tr>
 <tr>
@@ -44,15 +44,15 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient})</td>
+                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
                     style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    Total Received from Customer:</td>
+                    Total Received:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage})</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"

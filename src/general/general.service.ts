@@ -288,7 +288,10 @@ export class GeneralService {
         };
     }
 
-    async ListMassCommunication(paginationOption: ListMassCommunicationDto) {
+    async ListMassCommunication(
+        paginationOption: ListMassCommunicationDto,
+        siteUrl
+    ) {
         const { page_no, search, limit } = paginationOption;
 
         const take = limit || 10;
@@ -335,7 +338,7 @@ export class GeneralService {
                 for (let index = 0; index < attachment?.file.length; index++) {
                     const file = attachment?.file[index];
                     attachment.file[index] =
-                        "https://laytrip.com/logs/mail/" + file;
+                        siteUrl + "logs/mail/" + file;
                 }
             }
             log.attachment = attachment;
@@ -1074,6 +1077,8 @@ export class GeneralService {
             id
         );
 
+        console.log('data',data)
+
         await this.mailerService
             .sendMail({
                 to: email,
@@ -1177,7 +1182,7 @@ export class GeneralService {
             });
     }
 
-    async valuationPercentages(cart_id){
-        return await ValuationPercentageUtility.calculations(cart_id)
+    async valuationPercentages(cart_id) {
+        return await ValuationPercentageUtility.calculations(cart_id);
     }
 }
