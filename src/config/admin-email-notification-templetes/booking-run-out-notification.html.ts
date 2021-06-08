@@ -14,7 +14,10 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
 <tr>
     <td align="center" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-       A <span style="font-weight: 600; color: #000000; ">${param.routeType || 'null'} route (${param.flightRoute})</span> that was supposed to depart on ${param.depatureDate} ran out of seats.
+       A <span style="font-weight: 600; color: #000000; ">${param.routeType ||
+           "null"} route</span> (${
+        param.flightRoute
+    }) that was supposed to depart on ${param.depatureDate} ran out of seats.
     </td>
 </tr>
 
