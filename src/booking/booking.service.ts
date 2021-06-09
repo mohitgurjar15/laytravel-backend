@@ -867,7 +867,7 @@ export class BookingService {
             todayDate = todayDate.split(" ")[0];
             let where;
             where = `("cartBooking"."user_id" = '${user.userId}') AND 
-				("booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING},${BookingStatus.CANCELLED},${BookingStatus.FAILED})) AND
+				("booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})) AND
 				(DATE("cartBooking"."check_in_date") < DATE('${todayDate}'))`;
 
             if (booking_through) {
