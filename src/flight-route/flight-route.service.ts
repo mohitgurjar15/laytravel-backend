@@ -546,7 +546,7 @@ export class FlightRouteService {
         Activity.logActivity(
             user.userId,
             "Flight Route",
-            `Flight route deleted `,
+            `Flight route updated.`,
             previous,
             JSON.stringify(current)
         );
