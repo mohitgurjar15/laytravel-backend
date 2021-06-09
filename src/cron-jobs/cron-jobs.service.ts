@@ -2333,8 +2333,8 @@ export class CronJobsService {
                 };
                 this.mailerService
                     .sendMail({
-                        //to: cartBooking.user.email,
-                        to: mailConfig.admin,
+                        to: cartBooking.user.email,
+                        //to: mailConfig.admin,
                         from: mailConfig.from,
                         bcc: mailConfig.BCC,
                         subject: `Booking ID ${param.bookingId} Notice of Default and Cancellation`,
