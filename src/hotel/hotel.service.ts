@@ -81,8 +81,51 @@ export class HotelService {
 
         // locations = plainToClass(Location, locations, );
 
+        console.log("totalCount", locations.length);
+
+
+        let filteredLocations = [];
+
+        let cites = []
+        let hotels = []
+
+        for await (const obj of locations) {
+            if(obj.type == 'city'){
+                
+                cites.push(obj)
+            }
+
+            if(obj.type == 'hotel'){
+                hotels.push(obj);
+            } 
+
+        }
+        console.log("city totalCount", cites.length);
+        console.log("hotel totalCount", hotels.length);
+        if(cites.length >= 8)
+        {
+            for (let index = 0; index < 8; index++) {
+                const element = cites[index];
+                filteredLocations.push(element)
+            }
+        }else{
+            filteredLocations = cites
+
+            let count = 8 - cites.length
+
+            console.log('count',count)
+
+            for (let index = 0; index < count ; index++) {
+                const element = hotels[index];
+                console.log("element", element);
+                filteredLocations.push(element)
+            }
+        }
+
+        console.log("filteredLocations", filteredLocations.length);
+
         return {
-            data: locations,
+            data: filteredLocations,
             message: locations.length ? "Result found" : "No result Found",
         };
     }
