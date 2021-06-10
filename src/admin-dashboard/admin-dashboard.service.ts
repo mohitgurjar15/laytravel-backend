@@ -449,7 +449,7 @@ export class AdminDashboardService {
             response["open_bookings"] = openBookings[0].cnt;
 
             const openBookingsUsd = await getConnection().query(
-                `SELECT sum("booking"."usd_factor"*"total_amount") as "total"  FROM "booking" WHERE booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition} AND ${dateConditon}`
+                `SELECT sum("booking"."usd_factor"*"total_amount") as "total"  FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition} AND ${dateConditon}`
             );
             response["open_bookings_usd"] =
                 (Math.round(openBookingsUsd[0].total * 100) / 100).toFixed(2) ||

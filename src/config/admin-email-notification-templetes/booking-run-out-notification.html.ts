@@ -69,7 +69,7 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
             </tr>
             `;
 
-            if(param.lastPrice){
+            // if(param.lastPrice){
                 content +=`
             <tr>
                 <td align="left" valign="top"
@@ -77,10 +77,10 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
                     Last Available Supplier Cost:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.lastPrice} </td>
+                   ${param.currencySymbol}${param?.lastPrice || 0} </td>
             </tr>`
 
-            }
+            // }
 
             content += `<tr>
                 <td align="left" valign="top"

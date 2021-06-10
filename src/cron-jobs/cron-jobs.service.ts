@@ -1300,7 +1300,7 @@ export class CronJobsService {
                                 }'`
                             )
                             .getOne();
-                        console.log("result",query)
+                        //console.log("result",query)
                         if (query) {
                             
                             query.bookingId = bookingData.id;
@@ -1315,15 +1315,31 @@ export class CronJobsService {
                             await query.save();
                         } else {
                             const predictiveBookingData = new PredictiveBookingData();
+
+                            let lastData = await getConnection()
+                            .createQueryBuilder(
+                                PredictiveBookingData,
+                                "predictiveBookingData"
+                            )
+                            
+                            .where(
+                                `"predictiveBookingData"."booking_id" = '${
+                                    bookingData.id
+                                }'`
+                            )
+                            .orderBy(`created_date`,'DESC')
+                            .getOne();
+
                             predictiveBookingData.bookingId = bookingData.id;
                             predictiveBookingData.netPrice = flight.net_rate;
+                            predictiveBookingData.lastPrice = lastData?.netPrice || 0
                             predictiveBookingData.date = new Date();
                             predictiveBookingData.isBelowMinimum =
                                 flight.routes[0].stops[0].below_minimum_seat;
                             predictiveBookingData.remainSeat =
                                 flight.routes[0].stops[0].remaining_seat;
                             predictiveBookingData.price = flight.selling_price;
-                            console.log(flight);
+                            //console.log(flight);
                             //predictiveBookingData.bookIt = false;
                             await predictiveBookingData.save();
                         }

@@ -14,7 +14,7 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
 <tr>
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-        A ${param.routeType} route (${param.flightRoute}) is to depart in <span style="font-weight: 600; color: #000000; ">${param.remainDays} days</span> (on ${param.depatureDate})
+        A <span style="font-weight: 600; color: #000000; ">${param.routeType} route</span> (${param.flightRoute}) is to depart in <span style="font-weight: 600; color: #000000; ">${param.remainDays} days</span> (on ${param.depatureDate})
     </td>
 </tr>
 <tr>
