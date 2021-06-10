@@ -47,11 +47,12 @@ export class Search {
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 
             for (let hotel of results.results.hotel_data) {
+                /// for alpha server condition bypass by parth virani
                 if (
-                    hotel["room_data"][0]["rate_data"][0].payment_type ==
+                    (hotel["room_data"][0]["rate_data"][0].payment_type ==
                         "PREPAID" &&
                     hotel["room_data"][0]["rate_data"][0].is_cancellable ==
-                        "true"
+                        "true") || 1==1
                 ) {
                     this.item = hotel;
                     this.rate = hotel["room_data"][0]["rate_data"][0];
