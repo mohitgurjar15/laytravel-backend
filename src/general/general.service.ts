@@ -338,7 +338,7 @@ export class GeneralService {
                 for (let index = 0; index < attachment?.file.length; index++) {
                     const file = attachment?.file[index];
                     attachment.file[index] =
-                        siteUrl + "logs/mail/" + file;
+                        siteUrl + "/logs/mail/" + file;
                 }
             }
             log.attachment = attachment;
