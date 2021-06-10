@@ -13,9 +13,9 @@ export class AddLaytripBookingFeedback {
     })
     rating:number;
 
-    @IsNotEmpty({
-        message : `Please enter message&&&message&&&Please enter message`
-    })
+    // @IsNotEmpty({
+    //     message : `Please enter message&&&message&&&Please enter message`
+    // })
     @ApiPropertyOptional({
         description:'enter message',
         example:""

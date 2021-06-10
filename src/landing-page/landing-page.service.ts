@@ -206,6 +206,7 @@ export class LandingPageService {
                 "user.roleId",
                 "user.countryCode",
                 "user.phoneNo",
+                "user.createdDate",
             ])
             .where(where)
             .take(take)
@@ -214,6 +215,7 @@ export class LandingPageService {
         if (!users.length) {
             throw new NotFoundException(`No data found.`);
         }
+    
         return { data: users, count };
     }
 
