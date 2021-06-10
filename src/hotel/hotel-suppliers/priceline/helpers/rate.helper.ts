@@ -52,13 +52,17 @@ export class RateHelper{
         searchParameters.rooms = searchParameters.rooms || inputData.num_rooms;
         let retail = this.getPublicPriceBreakUp(rate, searchParameters);
 
-        let selling = this.getSellingPriceBreakUp(rate);
+        let net_rate = this.getSellingPriceBreakUp(rate);
+
+        let selling = retail.total > net_rate.total ? retail : net_rate;
         
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         
 
+
         return {
             retail,
+            net_rate,
             selling,
             saving_percent
         }

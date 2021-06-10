@@ -769,7 +769,7 @@ export class HotelService {
                         : 0;
                 bookingRequestInfo.infant_count = 0;
                 bookingRequestInfo.net_rate =
-                    availability[0].retail.sub_total || 0;
+                    availability[0].net_rate.total || 0;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         availability[0].selling.total;
