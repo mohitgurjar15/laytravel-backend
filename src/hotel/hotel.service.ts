@@ -80,11 +80,7 @@ export class HotelService {
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
 
         // locations = plainToClass(Location, locations, );
-        let filteredLocations = [];
-        for (let index = 0; index < 7; index++) {
-            filteredLocations.push(locations[index]);
-        }
-
+       
         console.log("totalCount", locations.length);
 
 
