@@ -125,7 +125,7 @@ export class NotificationAlertUtility {
         console.log("predictiveData", predictiveData);
         console.log('1')
         param.todayNetPrice =
-            `${Generic.formatPriceDecimal(predictiveData?.netPrice || 0)}` || "N/A";
+            `${Generic.formatPriceDecimal(predictiveData?.netPrice || 0)}` || '0';
 
         // let paidAmount = 0;
         // let remainAmount = 0;
@@ -147,6 +147,8 @@ export class NotificationAlertUtility {
                 ((predictiveData?.netPrice - predictiveData?.lastPrice) * 100) /
                     predictiveData?.lastPrice
             );
+        }else{
+            param.todayNetpriceVarient = 0
         }
 
         console.log(param.todayNetpriceVarient);

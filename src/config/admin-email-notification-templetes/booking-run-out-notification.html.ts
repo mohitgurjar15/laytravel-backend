@@ -1,7 +1,7 @@
 import { EmailNotificationModel } from "../email_template/model/notification.model";
 import { notificationHeader } from "./notification-header.html";
 import { notificationFooter } from "./notification-footer.html";
-import { bookingDetailUrl } from "../base-url";
+import { bookingDetailUrl, NewEmailAssets } from "../base-url";
 
 export async function BookingRunoutNotificationMail(param: EmailNotificationModel) {
     let content = `
@@ -69,7 +69,7 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
             </tr>
             `;
 
-            // if(param.lastPrice){
+            if(param.lastPrice){
                 content +=`
             <tr>
                 <td align="left" valign="top"
@@ -77,10 +77,10 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
                     Last Available Supplier Cost:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param?.lastPrice || 0} </td>
+                   ${param.currencySymbol}${param.lastPrice} </td>
             </tr>`
 
-            // }
+            }
 
             content += `<tr>
                 <td align="left" valign="top"
@@ -88,7 +88,9 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
                     Total Received:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${
+                param.totalRecivedFromCustomerPercentage
+            }%)</td>
             </tr>
         </tbody>
     </table>
@@ -103,7 +105,9 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
 <tr>
     <td align="left" valign="top"
         style=" display: block; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #0026fc; text-align: left; margin-left:20%">
-        <a href="${bookingDetailUrl}${param.laytripBookingId}">Go to reservation</a>
+        <a href="${bookingDetailUrl}${
+                param.laytripBookingId
+            }">Go to reservation</a>
     </td>
 </tr>`;
     return notificationHeader + content + notificationFooter;

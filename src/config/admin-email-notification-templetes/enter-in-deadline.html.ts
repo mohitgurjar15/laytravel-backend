@@ -1,7 +1,7 @@
 import { EmailNotificationModel } from "../email_template/model/notification.model";
 import { notificationHeader } from "./notification-header.html";
 import { notificationFooter } from "./notification-footer.html";
-import { bookingDetailUrl } from "../base-url";
+import { bookingDetailUrl, NewEmailAssets } from "../base-url";
 
 export async function EnterInDeadlineMail(param: EmailNotificationModel) {
     let content = `
@@ -14,7 +14,11 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
 <tr>
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">
-        A <span style="font-weight: 600; color: #000000; ">${param.routeType} route</span> (${param.flightRoute}) is to depart in <span style="font-weight: 600; color: #000000; ">${param.remainDays} days</span> (on ${param.depatureDate})
+        A ${param.routeType} route (${
+        param.flightRoute
+    }) is to depart in <span style="font-weight: 600; color: #000000; ">${
+        param.remainDays
+    } days</span> (on ${param.depatureDate})
     </td>
 </tr>
 <tr>
@@ -28,7 +32,9 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
                     Sale Price to Customer at Booking:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.sellingPrice} (includes LT markup)</td>
+                   ${param.currencySymbol}${
+        param.sellingPrice
+    } (includes LT markup)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -44,7 +50,13 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}%)</td>
+                   ${param.currencySymbol}${param.todayNetPrice} (${
+        param.todayNetpriceVarient
+    }% <img src="${
+        param.todayNetpriceVarient > 0
+            ? NewEmailAssets + "/up.svg"
+            : NewEmailAssets + "/down.svg"
+    }">)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -52,7 +64,9 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
                     Total Received:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${param.totalRecivedFromCustomerPercentage}%)</td>
+                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${
+        param.totalRecivedFromCustomerPercentage
+    }%)</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -85,7 +99,9 @@ export async function EnterInDeadlineMail(param: EmailNotificationModel) {
 <tr>
     <td align="left" valign="top"
         style=" display: block; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #0026fc; text-align: left; margin-left:20%">
-        <a href="${bookingDetailUrl}${param.laytripBookingId}">Go to reservation</a>
+        <a href="${bookingDetailUrl}${
+        param.laytripBookingId
+    }">Go to reservation</a>
     </td>
 </tr>`;
     return notificationHeader + content + notificationFooter;
