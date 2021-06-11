@@ -8,7 +8,7 @@ export class AppLoggerMiddleware implements NestMiddleware {
     private logger = new Logger("HTTP");
 
     use(request: Request, response: Response, next: NextFunction): void {
-        console.log(request);
+        //console.log(request);
 
         let restrictedPath = ["/v1/auth/signup", "/v1/auth/signin"];
         const { ip, method, url, body, headers, baseUrl } = request;
@@ -17,7 +17,7 @@ export class AppLoggerMiddleware implements NestMiddleware {
 
         const userAgent = request.get("user-agent") || "";
 
-        console.log(baseUrl);
+        //console.log(baseUrl);
 
         if (restrictedPath.indexOf(baseUrl) == -1) {
             response.on("close", () => {

@@ -51,7 +51,7 @@ export class Generic {
         if (typeof price != 'number'){
             price = parseFloat(price);
         }
-        console.log(" price", price);
+        //console.log(" price", price);
          return Number(price.toFixed(2));
     }
 
