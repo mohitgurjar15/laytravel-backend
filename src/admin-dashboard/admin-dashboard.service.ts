@@ -905,7 +905,7 @@ export class AdminDashboardService {
       "user"
       WHERE
       register_via In ('android','ios') AND is_deleted = false
-      AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      AND Role_id IN(${Role.FREE_USER},${Role.PAID_USER})
       `);
 
         response["user_registered_via_app"] = userRegisteredViaApp[0].cnt || 0;
@@ -913,12 +913,11 @@ export class AdminDashboardService {
         var userRegisteredViaWeb = await getConnection().query(`
     SELECT COUNT(*) as cnt
       FROM
-      "user" where register_via = 'web' AND is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      "user" where register_via = 'web' AND is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.PAID_USER})
       `);
 
         response["user_registered_via_web"] =
-            parseInt(userRegisteredViaWeb[0].cnt) -
-                parseInt(userRegisteredViaApp[0].cnt) || 0;
+            parseInt(userRegisteredViaWeb[0].cnt) || 0;
 
         return response;
     }
