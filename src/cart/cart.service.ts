@@ -229,7 +229,7 @@ more than 10.`
             var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
             cart.moduleId = ModulesName.FLIGHT;
-            cart.timeStamp = unixTimestamp
+            cart.timeStamp = unixTimestamp || 0
             cart.moduleInfo = flightInfo;
             cart.oldModuleInfo = flightInfo;
             cart.expiryDate = new Date(formatedDepatureDate);
@@ -897,6 +897,7 @@ more than 10.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
+                    newCart["is_available"] = true;
                 }
                 if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);
