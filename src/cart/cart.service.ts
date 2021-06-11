@@ -801,7 +801,9 @@ more than 10.`
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
                             cart,
-                            flightResponse[cart.id]
+                            flightResponse[cart.id],
+                            headers,
+                            user
                         );
                         //return value
                         if (typeof value.message == "undefined") {
@@ -932,7 +934,7 @@ more than 10.`
         }
     }
 
-    async flightAvailiblity(cart, flights) {
+    async flightAvailiblity(cart, flights,headers,user) {
         ////console.log('match');
 
         var match = 0;
@@ -947,7 +949,24 @@ more than 10.`
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
                     ////console.log('match found');
                     match = match + 1;
-                    return flight;
+                     console.log('flight',flight)
+                    let revalidateFlight:any
+                    try{
+                        let routeIdDto = {
+                            route_code : flight.route_code
+                        }
+                        let data = await this.flightService.airRevalidate(routeIdDto,headers,user)
+                        revalidateFlight = data[0]
+                    }catch(e){
+                        console.log(e);
+                        
+                        revalidateFlight = {
+                            message : `Flight not air-revalidate`
+                        }
+
+                    }
+                   console.log('revalidateFlight',revalidateFlight)
+                    return revalidateFlight;
                 }
             }
         }
@@ -1485,60 +1504,61 @@ more than 10.`
                 ? BookingType.INSTALMENT
                 : BookingType.NOINSTALMENT;
 
-        let flightRequest;
-        if (bookingType == "oneway") {
-            let dto = {
-                source_location: cart.moduleInfo[0].departure_code,
-                destination_location: cart.moduleInfo[0].arrival_code,
-                departure_date: await this.flightService.changeDateFormat(
-                    cart.moduleInfo[0].departure_date
-                ),
-                flight_class: cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-                adult_count: cart.moduleInfo[0].adult_count
-                    ? cart.moduleInfo[0].adult_count
-                    : 0,
-                child_count: cart.moduleInfo[0].child_count
-                    ? cart.moduleInfo[0].child_count
-                    : 0,
-                infant_count: cart.moduleInfo[0].infant_count
-                    ? cart.moduleInfo[0].infant_count
-                    : 0,
-            };
-            //console.log(dto);
+        //let flightRequest;
+         let value : any = cart.moduleInfo[0]
+        // if (bookingType == "oneway") {
+        //     let dto = {
+        //         source_location: cart.moduleInfo[0].departure_code,
+        //         destination_location: cart.moduleInfo[0].arrival_code,
+        //         departure_date: await this.flightService.changeDateFormat(
+        //             cart.moduleInfo[0].departure_date
+        //         ),
+        //         flight_class: cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+        //         adult_count: cart.moduleInfo[0].adult_count
+        //             ? cart.moduleInfo[0].adult_count
+        //             : 0,
+        //         child_count: cart.moduleInfo[0].child_count
+        //             ? cart.moduleInfo[0].child_count
+        //             : 0,
+        //         infant_count: cart.moduleInfo[0].infant_count
+        //             ? cart.moduleInfo[0].infant_count
+        //             : 0,
+        //     };
+        //     //console.log(dto);
 
-            flightRequest = await this.flightService.searchOneWayZipFlight(
-                dto,
-                Headers,
-                user
-            );
-        } else {
-            let dto = {
-                source_location: cart.moduleInfo[0].departure_code,
-                destination_location: cart.moduleInfo[0].arrival_code,
-                departure_date: await this.flightService.changeDateFormat(
-                    cart.moduleInfo[0].departure_date
-                ),
-                flight_class: cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-                adult_count: cart.moduleInfo[0].adult_count
-                    ? cart.moduleInfo[0].adult_count
-                    : 0,
-                child_count: cart.moduleInfo[0].child_count
-                    ? cart.moduleInfo[0].child_count
-                    : 0,
-                infant_count: cart.moduleInfo[0].infant_count
-                    ? cart.moduleInfo[0].infant_count
-                    : 0,
-                arrival_date: await this.flightService.changeDateFormat(
-                    cart.moduleInfo[0].routes[1].stops[0].departure_date
-                ),
-            };
-            flightRequest = await this.flightService.searchRoundTripZipFlight(
-                dto,
-                Headers,
-                user
-            );
-        }
-        const value = await this.flightAvailiblity(cart, flightRequest);
+        //     flightRequest = await this.flightService.searchOneWayZipFlight(
+        //         dto,
+        //         Headers,
+        //         user
+        //     );
+        // } else {
+        //     let dto = {
+        //         source_location: cart.moduleInfo[0].departure_code,
+        //         destination_location: cart.moduleInfo[0].arrival_code,
+        //         departure_date: await this.flightService.changeDateFormat(
+        //             cart.moduleInfo[0].departure_date
+        //         ),
+        //         flight_class: cart.moduleInfo[0].routes[0].stops[0].cabin_class,
+        //         adult_count: cart.moduleInfo[0].adult_count
+        //             ? cart.moduleInfo[0].adult_count
+        //             : 0,
+        //         child_count: cart.moduleInfo[0].child_count
+        //             ? cart.moduleInfo[0].child_count
+        //             : 0,
+        //         infant_count: cart.moduleInfo[0].infant_count
+        //             ? cart.moduleInfo[0].infant_count
+        //             : 0,
+        //         arrival_date: await this.flightService.changeDateFormat(
+        //             cart.moduleInfo[0].routes[1].stops[0].departure_date
+        //         ),
+        //     };
+        //     flightRequest = await this.flightService.searchRoundTripZipFlight(
+        //         dto,
+        //         Headers,
+        //         user
+        //     );
+        // }
+        // const value = await this.flightAvailiblity(cart, flightRequest,Headers,cart.user);
         let newCart = {};
         newCart["id"] = cart.id;
         newCart["userId"] = cart.userId;
