@@ -155,7 +155,7 @@ export class UserService {
         if (userdata) {
             Activity.logActivity(
                 adminId,
-                "user",
+                "Customers",
                 `New user ${user.email} created by admin `,
                 "",
                 JSON.stringify(user)
@@ -261,7 +261,7 @@ export class UserService {
             const currentData = JSON.stringify(userData);
             Activity.logActivity(
                 adminId,
-                "user",
+                "Customers",
                 `${userData.email} is updated by admin`,
                 previousData,
                 JSON.stringify(userData)
@@ -344,7 +344,7 @@ export class UserService {
 
             Activity.logActivity(
                 adminId,
-                "user",
+                "Customers",
                 `User ${user.email}  status changed by admin`,
                 previousData,
                 currentData
@@ -474,7 +474,7 @@ export class UserService {
             } else {
                 Activity.logActivity(
                     adminId,
-                    "user",
+                    "Customers",
                     `${user.email} user is deleted by admin`,
                     user
                 );
@@ -590,7 +590,7 @@ export class UserService {
         }
         Activity.logActivity(
             userId,
-            "user",
+            "Customers",
             `Admin import the  ${count}  users`
         );
         return { importCount: count, unsuccessRecord: unsuccessRecord };
@@ -600,7 +600,7 @@ export class UserService {
         adminId: string,
         paginationOption: ExportUserDto
     ): Promise<{ data: User[] }> {
-        Activity.logActivity(adminId, "user", `All user list export by admin`);
+        Activity.logActivity(adminId, "Customers", `All user list export by admin`);
         return await this.userRepository.exportUser(paginationOption, [
             Role.PAID_USER,
             Role.FREE_USER,

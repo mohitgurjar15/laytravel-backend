@@ -1,6 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
+import { combineStatus } from "src/enum/booking-new-status.enum";
 export class ListPaymentAdminDto {
     @IsNotEmpty({
         message: `Please enter limit&&&limit&&&${errorMessage}`,
@@ -85,4 +86,9 @@ export class ListPaymentAdminDto {
         example: "",
     })
     reservationId: string;
+
+    @ApiPropertyOptional({
+        description: "status",
+    })
+    booking_status: combineStatus[];
 }

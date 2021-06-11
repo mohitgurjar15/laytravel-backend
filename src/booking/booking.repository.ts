@@ -17,6 +17,7 @@ import { BookingType } from "src/enum/booking-type.enum";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { CryptoUtility } from "src/utility/crypto.utility";
+import { BookingStatusUtility } from "src/utility/booking-status.utility";
 
 @EntityRepository(Booking)
 export class BookingRepository extends Repository<Booking> {
@@ -40,18 +41,65 @@ export class BookingRepository extends Repository<Booking> {
             product_id,
             depature_date,
             booking_date,
-            reservationId,category_name
+            reservationId,
+            category_name,
+            order_by_booking_date,
+            order_by_cancelation_date,
+            order_by_depature_date,
+            update_by,
+            status,
+            cancellation_reasons,
+            supplier_booking_id,
         } = listBookingDto;
         const take = limit || 10;
         const skip = (page_no - 1) * limit || 0;
-        console.table(module_id);
-        console.table(booking_status);
-        console.log(typeof module_id);
-        console.log(typeof booking_status);
+
         let where;
         where = `1=1 `;
         if (userId) {
             where += `AND ("booking"."user_id" = '${userId}')`;
+        }
+
+        if (supplier_booking_id) {
+            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        }
+
+        if (status?.length) {
+            if (typeof status != "object") {
+                console.log(status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                console.log(status);
+                let or = "";
+                for await (const s of status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
+            }
+        }
+        if (cancellation_reasons?.length) {
+            if (typeof cancellation_reasons != "object") {
+                where += `AND ("booking"."cancellation_reason" =:cancellation_reasons)`;
+            } else {
+                where += `AND ("booking"."cancellation_reason" in (:...cancellation_reasons))`;
+            }
         }
 
         if (booking_through?.length) {
@@ -59,6 +107,14 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."booking_through" =:booking_through)`;
             } else {
                 where += `AND ("booking"."booking_through" in (:...booking_through))`;
+            }
+        }
+
+        if (update_by?.length) {
+            if (typeof update_by != "object") {
+                where += `AND ("updateBy"."role_id" =:update_by)`;
+            } else {
+                where += `AND ("updateBy"."role_id" in (:...update_by))`;
             }
         }
 
@@ -156,12 +212,17 @@ export class BookingRepository extends Repository<Booking> {
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
             .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("booking.updateByUser", "updateBy")
             .leftJoinAndSelect("booking.travelers", "traveler")
             .leftJoinAndSelect("User.state", "state")
             .leftJoinAndSelect("User.country", "countries")
-            .leftJoinAndSelect("booking.supplier", "supplier")
+            // .leftJoinAndSelect("booking.supplier", "supplier")
             .where(where, {
                 booking_type,
                 booking_status,
@@ -170,12 +231,40 @@ export class BookingRepository extends Repository<Booking> {
                 product_id,
                 booking_id,
                 booking_through,
-                reservationId,category_name
+                reservationId,
+                category_name,
+                update_by,
+                cancellation_reasons,
             })
             .take(take)
-            .skip(skip)
-            .orderBy(`booking.bookingDate`, "DESC");
+            .skip(skip);
+        if(!order_by_depature_date && !order_by_booking_date && !order_by_cancelation_date){
+             query.addOrderBy(`booking.bookingDate`, "DESC");
+        }
+          
+        if (order_by_depature_date) {
+            query.addOrderBy(
+                `booking.checkInDate`,
+                order_by_depature_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_booking_date) {
+            query.addOrderBy(
+                `booking.bookingDate`,
+                order_by_booking_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_cancelation_date) {
+            query.addOrderBy(
+                `booking.updatedDate`,
+                order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+
+        //  console.log(query);
+
         const [data, count] = await query.getManyAndCount();
+
         if (!data.length) {
             throw new NotFoundException(
                 `No booking found&&&id&&&No booking found`
@@ -646,7 +735,10 @@ export class BookingRepository extends Repository<Booking> {
             .leftJoinAndSelect("predictiveBookingData.booking", "booking")
             .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.module", "moduleData")
-
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             .select([
                 "booking.bookingType",
                 "booking.updateBy",
@@ -685,6 +777,7 @@ export class BookingRepository extends Repository<Booking> {
                 "moduleData.name",
                 "moduleData.id",
                 "cart.laytripCartId",
+                "cancellationRequest",
             ])
 
             .where(
@@ -692,7 +785,9 @@ export class BookingRepository extends Repository<Booking> {
                     todayDate.split(" ")[0]
                 }' AND moduleData.id IN(:...id)  AND booking.booking_status In (${
                     BookingStatus.PENDING
-                }) AND predictiveBookingData.is_resedule = false `,
+                }) AND predictiveBookingData.is_resedule = false AND booking.check_in_date >= date('${
+                    todayDate.split(" ")[0]
+                }')`,
                 { id: [ModulesName.FLIGHT] }
             );
 
@@ -716,13 +811,22 @@ export class BookingRepository extends Repository<Booking> {
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.module", "moduleData")
-
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             // .select([
             // 	"booking.supplierBookingId",
             // 	"booking.id"
             // ])
             .where(
-                `"booking"."booking_type"= ${BookingType.INSTALMENT} AND "booking"."booking_status"= ${BookingStatus.PENDING} AND "booking"."module_id" IN(:...id)`,
+                `"booking"."booking_type"= ${
+                    BookingType.INSTALMENT
+                } AND "booking"."booking_status"= ${
+                    BookingStatus.PENDING
+                } AND "booking"."module_id" IN(:...id) AND booking.check_in_date >= date('${
+                    todayDate.split(" ")[0]
+                }')`,
                 { id: [ModulesName.FLIGHT] }
             );
 
@@ -786,11 +890,32 @@ export class BookingRepository extends Repository<Booking> {
             booking_date,
             reservationId,
             booking_through,
-            category_name
+            category_name,
+            update_by,
+            order_by_booking_date,
+            order_by_cancelation_date,
+            order_by_depature_date,
+            status,
+            cancellation_reasons,
+            supplier_booking_id,
         } = filterOption;
 
         let where;
         where = `1=1 `;
+        if (cancellation_reasons?.length) {
+            if (typeof cancellation_reasons != "object") {
+                where += `AND ("booking"."cancellation_reason" =:cancellation_reasons)`;
+            } else {
+                where += `AND ("booking"."cancellation_reason" in (:...cancellation_reasons))`;
+            }
+        }
+        if (supplier_booking_id) {
+            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        }
+
+        if (supplier_booking_id) {
+            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        }
         if (userId) {
             where += `AND ("booking"."user_id" = '${userId}')`;
         }
@@ -802,6 +927,37 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."module_id" =:module_id)`;
             } else {
                 where += `AND ("booking"."module_id" in (:...module_id))`;
+            }
+        }
+
+        if (status?.length) {
+            if (typeof status != "object") {
+                console.log(status);
+
+                let w = await BookingStatusUtility.filterCondition(
+                    parseInt(status),
+                    "booking"
+                );
+                console.log(w);
+
+                if (w) {
+                    where += `AND (${w})`;
+                }
+            } else {
+                console.log(status);
+                let or = "";
+                for await (const s of status) {
+                    let w = await BookingStatusUtility.filterCondition(
+                        s,
+                        "booking"
+                    );
+                    if (w) {
+                        or += `${or == "" ? "" : "or"}(${w})`;
+                    }
+                }
+                if (or != "") {
+                    where += `AND (${or})`;
+                }
             }
         }
 
@@ -862,7 +1018,10 @@ export class BookingRepository extends Repository<Booking> {
             }
         }
         if (customer_name) {
-            const cipher = await CryptoUtility.encode(search);
+            console.log('customer_name',customer_name)
+
+            const cipher = await CryptoUtility.encode(customer_name);
+            console.log("cipher", cipher);
             where += `AND (("User"."first_name" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
 
@@ -877,6 +1036,15 @@ export class BookingRepository extends Repository<Booking> {
                 where += `AND ("booking"."booking_through" in (:...booking_through))`;
             }
         }
+
+        if (update_by?.length) {
+            if (typeof update_by != "object") {
+                where += `AND ("updateBy"."role_id" =:update_by)`;
+            } else {
+                where += `AND ("updateBy"."role_id" in (:...update_by))`;
+            }
+        }
+
         const query = getManager()
             .createQueryBuilder(Booking, "booking")
             .leftJoinAndSelect("booking.cart", "cart")
@@ -897,8 +1065,37 @@ export class BookingRepository extends Repository<Booking> {
                 payment_type,
                 booking_through,
                 category_name,
-            })
-            .orderBy(`booking.bookingDate`, "DESC");
+                update_by,
+                cancellation_reasons,
+            });
+        //.orderBy(`booking.bookingDate`, "DESC");
+
+        if (
+            !order_by_depature_date &&
+            !order_by_booking_date &&
+            !order_by_cancelation_date
+        ) {
+            query.addOrderBy(`booking.bookingDate`, "DESC");
+        }
+
+        if (order_by_depature_date) {
+            query.addOrderBy(
+                `booking.checkInDate`,
+                order_by_depature_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_booking_date) {
+            query.addOrderBy(
+                `booking.bookingDate`,
+                order_by_booking_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
+        if (order_by_cancelation_date) {
+            query.addOrderBy(
+                `booking.updatedDate`,
+                order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
+            );
+        }
         const [data, count] = await query.getManyAndCount();
         //const count = await query.getCount();
         if (!data.length) {

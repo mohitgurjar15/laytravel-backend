@@ -1,9 +1,14 @@
 import {
     BadRequestException,
     ConflictException,
+    ForbiddenException,
     Injectable,
+    InternalServerErrorException,
+    NotAcceptableException,
     NotFoundException,
+    UnauthorizedException,
 } from "@nestjs/common";
+import { errorMessage } from "src/config/common.config";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { User } from "src/entity/user.entity";
@@ -21,12 +26,14 @@ import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
 @Injectable()
 export class FlightRouteService {
     async listFlightRoutes(listFlightRouteDto: ListFlightRouteDto) {
+        try{
         const {
             limit,
             page_no,
             search,
             status,
             category_id,
+            type
         } = listFlightRouteDto;
         let where = `("route"."is_deleted" = false)`;
 
@@ -41,8 +48,11 @@ export class FlightRouteService {
             or ("route"."from_airport_city" ILIKE '%${search}%')
             or("route"."from_airport_code" ILIKE '%${search}%')
             or("route"."from_airport_country" ILIKE '%${search}%') 
-            or ("route"."from_airport_name" ILIKE '%${search}%')
-            or ("route"."type" ILIKE '%${search}%'))`;
+            or ("route"."from_airport_name" ILIKE '%${search}%'))`;
+        }
+
+        if(type) {
+            where += `AND ("route"."type" = '${type}' )`;
         }
 
         if (status) {
@@ -68,11 +78,47 @@ export class FlightRouteService {
         }
 
         return { route: result, count };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
     async exportFlightRoutes(
         listFlightRouteDto: ExportFlightRouteDto,
         user: User
     ) {
+        try{
         const { search, status, category_id } = listFlightRouteDto;
         let where = `("route"."is_deleted" = false)`;
 
@@ -110,11 +156,46 @@ export class FlightRouteService {
 
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route export by admin`
         );
 
         return { route: result, count };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async routesCounts() {
@@ -147,7 +228,7 @@ export class FlightRouteService {
             }
         }
 
-        responce[FlightRouteType.DOMESTIC] = domestic
+        responce[FlightRouteType.DOMESTIC] = domestic;
         responce[FlightRouteType.INTERNATIONAL] = international;
 
         responce["flight_route_count"] = totalFlightRoutes[0].count;
@@ -160,6 +241,7 @@ export class FlightRouteService {
     }
 
     async addFlightRoute(addFlightRouteDto: AddFlightRouteDto, user: User) {
+        try{
         const {
             category_id,
             from_airport_codes,
@@ -226,11 +308,24 @@ export class FlightRouteService {
                 .where(where)
                 .getOne();
             if (dublicate) {
-                let r = {
-                    fromCode: parentFromCode,
-                    ToCode: parentToCode,
-                };
-                dublicateRoutes.push(r);
+                if (
+                    dublicate.categoryId == category.id &&
+                    dublicate.type == type
+                ) {
+                    let r = {
+                        fromCode: parentFromCode,
+                        ToCode: parentToCode,
+                    };
+                    dublicateRoutes.push(r);
+                }
+
+                dublicate.categoryId = category.id;
+                dublicate.updateBy = user.userId;
+                dublicate.status = true;
+                dublicate.type = type;
+                dublicate.updateDate = new Date();
+                await dublicate.save();
+
                 //throw new ConflictException("Given route already added.");
             } else {
                 const fromAirport = airports[parentFromCode];
@@ -271,11 +366,23 @@ export class FlightRouteService {
                         .where(where)
                         .getOne();
                     if (dublicate) {
-                        let r = {
-                            fromCode: fromAirport.code,
-                            ToCode: toAirport.code,
-                        };
-                        dublicateRoutes.push(r);
+                        if (
+                            dublicate.categoryId == category.id &&
+                            dublicate.type == type
+                        ) {
+                            let r = {
+                                fromCode: fromAirport.code,
+                                ToCode: toAirport.code,
+                            };
+                            dublicateRoutes.push(r);
+                        }
+
+                        dublicate.categoryId = category.id;
+                        dublicate.updateBy = user.userId;
+                        dublicate.status = true;
+                        dublicate.updateDate = new Date();
+                        dublicate.type = type;
+                        await dublicate.save();
                         //throw new ConflictException(
                         //  "Given route already added."
                         //);
@@ -304,7 +411,7 @@ export class FlightRouteService {
 
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight routes added in ${category.name} category`
         );
 
@@ -312,6 +419,41 @@ export class FlightRouteService {
             message: `Your routes added in ${category.name} category`,
             dublicateRoutes,
         };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async enableDisableFlightRoute(
@@ -335,7 +477,7 @@ export class FlightRouteService {
         const current = await route.save();
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route status changed successfully`,
             previous,
             JSON.stringify(current)
@@ -361,7 +503,7 @@ export class FlightRouteService {
         const current = await route.save();
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route deleted `,
             previous,
             JSON.stringify(current)
@@ -376,6 +518,7 @@ export class FlightRouteService {
         updateFlightRouteDto: UpdateFlightRouteDto,
         user: User
     ) {
+        try{
         const { category_id, type } = updateFlightRouteDto;
         const route = await getConnection()
             .createQueryBuilder(FlightRoute, "route")
@@ -402,7 +545,7 @@ export class FlightRouteService {
         const current = await route.save();
         Activity.logActivity(
             user.userId,
-            "flight-route",
+            "Flight Route",
             `Flight route deleted `,
             previous,
             JSON.stringify(current)
@@ -410,6 +553,41 @@ export class FlightRouteService {
         return {
             message: `Flight route updated successfully`,
         };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async importFlightRoute(
@@ -418,107 +596,188 @@ export class FlightRouteService {
         userId: string,
         siteUrl: string
     ) {
-        var count = 0;
-        const unsuccessRecord = new Array();
-        const csvData = [];
-        const csv = require("csvtojson");
-        const array = await csv().fromFile("./" + file[0].path);
+        try {
+            var count = 0;
+            const unsuccessRecord = new Array();
+            const csvData = [];
+            const csv = require("csvtojson");
+            const array = await csv().fromFile("./" + file[0].path);
 
-        let errors = [];
-        let dublicateRoutes = [];
+            let errors = [];
+            let dublicateRoutes = [];
+            let updatedRoutes = [];
 
-        for (let index = 0; index < array.length; index++) {
-            var row = array[index];
-            if (row) {
-                let categoryId = parseInt(row.category_id);
-                if (
-                    typeof airports[row.from_airport_code] != "undefined" &&
-                    typeof airports[row.to_airport_code] != "undefined" &&
-                    typeof categoryId == "number" &&
-                    (row.type == FlightRouteType.DOMESTIC ||
-                        row.type == FlightRouteType.INTERNATIONAL)
-                ) {
-                    var error_message = {};
-                    const category = await getConnection()
-                        .createQueryBuilder(LaytripCategory, "category")
-                        .where(`"id" =:id `, { id: row.category_id })
-                        .getOne();
+            for (let index = 0; index < array.length; index++) {
+                var row = array[index];
+                if (row) {
+                    let categoryId = parseInt(row.category_id);
+                    if (
+                        typeof airports[row.from_airport_code] != "undefined" &&
+                        typeof airports[row.to_airport_code] != "undefined" &&
+                        row.category_id &&
+                        typeof categoryId == "number" &&
+                        (row.type == FlightRouteType.DOMESTIC ||
+                            row.type == FlightRouteType.INTERNATIONAL)
+                    ) {
+                        var error_message = {};
+                        const category:LaytripCategory =  await getConnection()
+                            .createQueryBuilder(LaytripCategory, "category")
+                            .where(`"id" =:id `, { id: row.category_id })
+                            .getOne();
 
-                    if (!category) {
-                        error_message[
-                            "category_id"
-                        ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                        if (!category) {
+                            error_message[
+                                "category_id"
+                            ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
 
-                        errors.push(error_message);
-                    } else {
-                        let where = ` "route"."is_deleted" = false AND
+                            errors.push(error_message);
+                        } else {
+                            let where = ` "route"."is_deleted" = false AND
                         "route"."to_airport_code" = '${row.to_airport_code}' AND
                         "route"."from_airport_code" = '${row.from_airport_code}'`;
 
-                        const dublicate = await getConnection()
-                            .createQueryBuilder(FlightRoute, "route")
-                            .where(where)
-                            .getOne();
-                        if (dublicate) {
-                            let r = {
-                                fromCode: row.from_airport_code,
-                                ToCode: row.to_airport_code,
-                            };
-                            dublicateRoutes.push(r);
-                            //throw new ConflictException("Given route already added.");
-                        } else {
-                            const fromAirport = airports[row.from_airport_code];
-                            const toAirport = airports[row.to_airport_code];
-                            const route = new FlightRoute();
-                            route.categoryId = category.id;
-                            route.createBy = userId;
-                            route.parentRoute = null;
-                            route.fromAirportCity = fromAirport.city;
-                            route.fromAirportCode = fromAirport.code;
-                            route.fromAirportCountry = fromAirport.country;
-                            route.fromAirportName = fromAirport.name;
-                            route.toAirportCity = toAirport.city;
-                            route.toAirportCode = toAirport.code;
-                            route.toAirportCountry = toAirport.country;
-                            route.toAirportName = toAirport.name;
-                            route.status = true;
-                            route.createDate = new Date();
-                            route.isDeleted = false;
-                            await route.save();
-                            count++;
+                            const dublicate = await getConnection()
+                                .createQueryBuilder(FlightRoute, "route")
+                                .where(where)
+                                .getOne();
+                            if (dublicate) {
+                                if (
+                                    dublicate.categoryId == category.id &&
+                                    dublicate.type == row.type
+                                ) {
+                                    let r = {
+                                        fromCode: row.from_airport_code,
+                                        ToCode: row.to_airport_code,
+                                        category: category.id,
+                                        type: row.type,
+                                        message: `Route ${row.from_airport_code} to ${row.to_airport_code}, category ${category.name} and type ${row.type} is already exist.`,
+                                    };
+                                    errors.push(r);
+                                }
+
+                                dublicate.categoryId = category.id;
+                                dublicate.updateBy = userId;
+                                dublicate.status = true;
+                                dublicate.updateDate = new Date();
+                                dublicate.type = row.type;
+                                await dublicate.save();
+                                count++;
+
+                                let r = {
+                                    fromCode: row.from_airport_code,
+                                    ToCode: row.to_airport_code,
+                                };
+                                updatedRoutes.push(r);
+                                //throw new ConflictException("Given route already added.");
+                            } else {
+                                const fromAirport =
+                                    airports[row.from_airport_code];
+                                const toAirport = airports[row.to_airport_code];
+                                const route = new FlightRoute();
+                                route.categoryId = category.id;
+                                route.createBy = userId;
+                                route.parentRoute = null;
+                                route.fromAirportCity = fromAirport.city;
+                                route.fromAirportCode = fromAirport.code;
+                                route.fromAirportCountry = fromAirport.country;
+                                route.fromAirportName = fromAirport.name;
+                                route.toAirportCity = toAirport.city;
+                                route.toAirportCode = toAirport.code;
+                                route.toAirportCountry = toAirport.country;
+                                route.toAirportName = toAirport.name;
+                                route.status = true;
+                                route.type = row.type;
+                                route.createDate = new Date();
+                                route.isDeleted = false;
+                                await route.save();
+                                count++;
+                            }
                         }
+                    } else {
+                        var error_message = {};
+                        error_message["fromCode"] = row.from_airport_code;
+                        error_message["ToCode"] = row.to_airport_code;
+
+                        if (
+                            typeof airports[row.from_airport_code] ==
+                            "undefined"
+                        ) {
+                            error_message[
+                                "from_airport_code"
+                            ] = `From Airport code ${row.from_airport_code} not found.`;
+                        }
+                        if (
+                            typeof airports[row.to_airport_code] == "undefined"
+                        ) {
+                            error_message[
+                                "to_airport_code"
+                            ] = `To Airport code ${row.from_airport_code} not found.`;
+                        }
+                        if(!row.category_id){
+
+                            error_message[
+                                "category_id"
+                            ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in Category Id missing.`;
+
+                        }else if (!parseInt(row.category_id)) {
+                            error_message[
+                                "category_id"
+                            ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                        }
+                        if (
+                            row.type != FlightRouteType.DOMESTIC &&
+                            row.type != FlightRouteType.INTERNATIONAL
+                        ) {
+                            error_message[
+                                "type"
+                            ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                        }
+
+                        errors.push(error_message);
                     }
-                } else {
-                    var error_message = {};
-                    if (typeof airports[row.from_airport_code] == "undefined") {
-                        error_message[
-                            "from_airport_code"
-                        ] = `From Airport code ${row.from_airport_code} not found.`;
-                    }
-                    if (typeof airports[row.to_airport_code] == "undefined") {
-                        error_message[
-                            "to_airport_code"
-                        ] = `To Airport code ${row.from_airport_code} not found.`;
-                    }
-                    if (!parseInt(row.category_id)) {
-                        error_message[
-                            "category_id"
-                        ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
-                    }
-                    if (
-                        row.type != FlightRouteType.DOMESTIC &&
-                        row.type != FlightRouteType.INTERNATIONAL
-                    ) {
-                        error_message[
-                            "type"
-                        ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
-                    }
-                    errors.push(error_message);
                 }
             }
+            Activity.logActivity(userId, "Flight Route", `Import flight route`);
+            return {
+                importCount: count,
+                unsuccessRecord: errors,
+                dublicateRoutes,
+                updatedRoutes,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
         }
-        Activity.logActivity(userId, "flight-route", `Import flight route`);
-        return { importCount: count, unsuccessRecord: errors, dublicateRoutes };
     }
 
     async getFlightRoute(id) {

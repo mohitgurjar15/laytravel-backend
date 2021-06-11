@@ -20,6 +20,7 @@ import { UserCard } from "./user-card.entity";
 import { type } from "os";
 import { CartBooking } from "./cart-booking.entity";
 import { OtherPayments } from "./other-payment.entity";
+import { IntialCancelBooking } from "./intial-booking.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -167,6 +168,9 @@ export class Booking extends BaseEntity {
     @Column("integer", { name: "supplier_status", nullable: true })
     supplierStatus: number;
 
+    @Column("integer", { name: "cancellation_reason", nullable: true })
+    cancellationReason: number;
+
     @Column("integer", { name: "supplier_id", nullable: true })
     supplierId: number | null;
 
@@ -179,6 +183,9 @@ export class Booking extends BaseEntity {
         nullable: true,
     })
     supplierBookingId: string | null;
+
+    @Column("boolean", { name: "is_resedule", default: false })
+    isResedule: boolean;
 
     @ManyToOne(
         () => Currency,
@@ -228,6 +235,13 @@ export class Booking extends BaseEntity {
     user: User;
 
     @ManyToOne(
+        () => User,
+        (user) => user.updatedBookings
+    )
+    @JoinColumn([{ name: "update_by", referencedColumnName: "userId" }])
+    updateByUser: User;
+
+    @ManyToOne(
         () => CartBooking,
         (cartBooking) => cartBooking.bookings
     )
@@ -258,6 +272,11 @@ export class Booking extends BaseEntity {
     )
     predictiveBookingData: PredictiveBookingData[];
 
+    @OneToMany(
+        () => IntialCancelBooking,
+        (intialCancelBooking) => intialCancelBooking.booking
+    )
+    cancellationRequest: IntialCancelBooking[];
     // @ManyToOne(
     //   () => UserCard,
     //   card => card.bookings

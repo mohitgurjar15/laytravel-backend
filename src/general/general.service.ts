@@ -42,9 +42,19 @@ import { flightDataUtility } from "src/utility/flight-data.utility";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
 import { LaytripInquiryAutoReplayMail } from "src/config/new_email_templete/laytrip_inquiry-auto-replay-mail.html";
 import { CartChangeAsperUserRequestMail } from "src/config/new_email_templete/cart-changes-as-per-user-req.dto";
-import {TravelProviderReminderMail} from "src/config/new_email_templete/cart-reminder.mail"
-import {LaytripCartBookingTravelProviderConfirmtionMail} from "src/config/new_email_templete/cart-traveler-confirmation.html"
-import {LaytripTripReminderMail} from "src/config/new_email_templete/trip-reminder.dto"
+import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
+import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
+import { LaytripTripReminderMail } from "src/config/new_email_templete/trip-reminder.dto";
+import { ListMassCommunicationDto } from "./dto/list-mass-communication.dto";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
+import { AdminStopLossNotificationMail } from "src/config/admin-email-notification-templetes/stop-loss-notification.html";
+import { Rule80perNotificationMail } from "src/config/admin-email-notification-templetes/rule-80-per-notification.html";
+import { EnterInDeadlineMail } from "src/config/admin-email-notification-templetes/enter-in-deadline.html";
+import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
+import { BookingChangeBySupplierNotificationMail } from "src/config/admin-email-notification-templetes/booking-change-by-supplier-notification.html";
+import { BookingRunoutNotificationMail } from "src/config/admin-email-notification-templetes/booking-run-out-notification.html";
+import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -278,7 +288,23 @@ export class GeneralService {
         };
     }
 
-    async ListMassCommunication() {
+    async ListMassCommunication(
+        paginationOption: ListMassCommunicationDto,
+        siteUrl
+    ) {
+        const { page_no, search, limit } = paginationOption;
+
+        const take = limit || 10;
+        const skip = (page_no - 1) * limit || 0;
+        const keyword = search || "";
+
+        let where;
+        if (keyword) {
+            where = `("log"."subject" ILIKE '%${keyword}%') or ("user"."email" ILIKE '%${keyword}%')`;
+        } else {
+            where = `1=1`;
+        }
+
         const [result, count] = await getManager()
             .createQueryBuilder(MassCommunication, "log")
             .leftJoinAndSelect("log.user", "user")
@@ -296,6 +322,9 @@ export class GeneralService {
                 "log.users",
                 "user.roleId",
             ])
+            .where(where)
+            .take(take)
+            .skip(skip)
             .orderBy("log.id", "DESC")
             .getManyAndCount();
         if (!result.length) {
@@ -309,7 +338,7 @@ export class GeneralService {
                 for (let index = 0; index < attachment?.file.length; index++) {
                     const file = attachment?.file[index];
                     attachment.file[index] =
-                        "https://laytrip.com/logs/mail/" + file;
+                        siteUrl + "logs/mail/" + file;
                 }
             }
             log.attachment = attachment;
@@ -568,7 +597,7 @@ export class GeneralService {
                     totalAmount: mail10.totalAmounNumerict,
                     currencySymbol: "$",
                     nextDate: "March 18, 2021",
-                    pastDue : true
+                    pastDue: true,
                 }),
             })
             .then((res) => {
@@ -965,7 +994,7 @@ export class GeneralService {
     // async testEmail(email) {
     //     let partialBooking = "LTCKM3BOFDB";
     //     let fullBookingConfirm = "LTCKLUSXYJL";
-        
+
     //     let ConfirmFlight = "LTFKM3BQ5QW";
 
     //     let mail1 = await CartDataUtility.CartMailModelDataGenerate(
@@ -1042,4 +1071,118 @@ export class GeneralService {
     //             console.log("err", err);
     //         });
     // }
+
+    async adminEmailModel(id, email) {
+        const data = await NotificationAlertUtility.notificationModelCreater(
+            id
+        );
+
+        console.log('data',data)
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `New Customer Booking #${data.param.laytripBookingId} Made`,
+                html: await AdminNewBookingMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Stop Loss Alert for BOOKING #${data.param.laytripBookingId}`,
+                html: await AdminStopLossNotificationMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `80% Rule Alert for BOOKING #${data.param.laytripBookingId}`,
+                html: await Rule80perNotificationMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Alert - ${data.param.routeType} Route Cost is Soon to Increase for BOOKING #${data.param.laytripBookingId}`,
+                html: await EnterInDeadlineMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Alert - BOOKING #${data.param.laytripBookingId} got cancelled `,
+                html: await BookingCancellationNotificationMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `BOOKING #${data.param.laytripBookingId} changed`,
+                html: await BookingChangeBySupplierNotificationMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+
+        await this.mailerService
+            .sendMail({
+                to: email,
+                from: mailConfig.from,
+                bcc: mailConfig.BCC,
+                subject: `Alert - BOOKING #${data.param.laytripBookingId} ran out of seats`,
+                html: await BookingRunoutNotificationMail(data.param),
+            })
+            .then((res) => {
+                console.log("res", res);
+            })
+            .catch((err) => {
+                console.log("err", err);
+            });
+    }
+
+    async valuationPercentages(cart_id) {
+        return await ValuationPercentageUtility.calculations(cart_id);
+    }
 }

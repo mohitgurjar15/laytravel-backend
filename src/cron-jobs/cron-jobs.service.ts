@@ -55,6 +55,14 @@ import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-r
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 import { TravelProviderConfiramationMail } from "src/config/new_email_templete/travel-provider-confirmation.html";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { AdminStopLossNotificationMail } from "src/config/admin-email-notification-templetes/stop-loss-notification.html";
+import { EnterInDeadlineMail } from "src/config/admin-email-notification-templetes/enter-in-deadline.html";
+import { Rule80perNotificationMail } from "src/config/admin-email-notification-templetes/rule-80-per-notification.html";
+import { BookingRunoutNotificationMail } from "src/config/admin-email-notification-templetes/booking-run-out-notification.html";
+import { CancellationReason } from "src/enum/cancellation-reason.enum";
+import { Message } from "twilio/lib/twiml/MessagingResponse";
+import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -157,17 +165,11 @@ export class CronJobsService {
         let query = getManager()
             .createQueryBuilder(CartBooking, "cartBooking")
             .leftJoinAndSelect("cartBooking.bookings", "booking")
-            // .select([
-            //     "booking.supplierBookingId",
-            //     "booking.id",
-            //     "booking.laytripBookingId",
-            // ])
             .where(
-                `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."is_predictive" = false`
+                `"booking"."is_ticketd"= false and "booking"."fare_type" = 'GDS' and "booking"."supplier_booking_id" !='' and "booking"."booking_status" =1 and date(now()) < "booking"."check_in_date"`
             );
 
         const result = await query.getMany();
-
         var total = 0;
         var failedlogArray = "";
         for await (const cart of result) {
@@ -209,7 +211,8 @@ export class CronJobsService {
                         bcc: mailConfig.BCC,
                         subject: `Travel Provider Reservation Confirmation`,
                         html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                            responce.param,responce.referralId
+                            responce.param,
+                            responce.referralId
                         ),
                     })
                     .then((res) => {
@@ -265,13 +268,13 @@ export class CronJobsService {
             .replace(/\..+/, "")
             .split(" ")[0];
 
-        var after10Day = new Date();
-        after10Day.setDate(after10Day.getDate() - 10);
-        var date4 = after10Day.toISOString();
-        date4 = date4
-            .replace(/T/, " ") // replace T with a space
-            .replace(/\..+/, "")
-            .split(" ")[0];
+        // var after10Day = new Date();
+        // after10Day.setDate(after10Day.getDate() - 10);
+        // var date4 = after10Day.toISOString();
+        // date4 = date4
+        //     .replace(/T/, " ") // replace T with a space
+        //     .replace(/\..+/, "")
+        //     .split(" ")[0];
 
         let cartBookings = await getConnection()
             .createQueryBuilder(CartBooking, "cartBooking")
@@ -284,7 +287,7 @@ export class CronJobsService {
             .leftJoinAndSelect("BookingInstalments.currency", "currency")
             .leftJoinAndSelect("cartBooking.user", "User")
             .where(
-                `("BookingInstalments".instalment_date In ('${date2}','${date3}','${date4}')) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
+                `("BookingInstalments".instalment_date In ('${date2}','${date3}')) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
             )
             .getMany();
         if (!cartBookings.length) {
@@ -371,14 +374,114 @@ export class CronJobsService {
                             result[index],
                             Headers
                         );
+                        const data = await NotificationAlertUtility.notificationModelCreater(
+                            result[index].laytripBookingId
+                        );
                         if (flightPrice) {
-                            const priceDiff = await this.campareBookingPrice(
-                                flightPrice,
-                                result[index].netRate
-                            );
-                            if (priceDiff != 0) {
-                                message += `Product Id ${result[index].laytripBookingId} Net price diffrence is ${priceDiff} <br/>`;
+                            // const priceDiff = await this.campareBookingPrice(
+                            //     flightPrice,
+                            //     result[index].netRate
+                            // );
+
+                            if (
+                                (data.param.todayNetpriceVarient <= -60 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        20) ||
+                                (data.param.todayNetpriceVarient <= -50 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        30) ||
+                                (data.param.todayNetpriceVarient <= -40 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        40) ||
+                                (data.param.todayNetpriceVarient <= -30 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        50) ||
+                                (data.param.todayNetpriceVarient <= -20 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        60) ||
+                                (data.param.todayNetpriceVarient <= -10 &&
+                                    data.param
+                                        .totalRecivedFromCustomerPercentage >=
+                                        70)
+                            ) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `80% Rule Alert for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await Rule80perNotificationMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
                             }
+                            if (new Date(data.deadLineDate) <= new Date()) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `Alert - ${data.param.routeType} Route Cost is Soon to Increase for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await EnterInDeadlineMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
+                            }
+                            if (
+                                data.param.todayNetpriceVarient &&
+                                data.param.todayNetpriceVarient > 5
+                            ) {
+                                await this.mailerService
+                                    .sendMail({
+                                        to: mailConfig.admin,
+                                        from: mailConfig.from,
+                                        bcc: mailConfig.BCC,
+                                        subject: `Stop Loss Alert for BOOKING #${data.param.laytripBookingId}`,
+                                        html: await AdminStopLossNotificationMail(
+                                            data.param
+                                        ),
+                                    })
+                                    .then((res) => {
+                                        console.log("res", res);
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err);
+                                    });
+                            }
+                        } else {
+                            await this.mailerService
+                                .sendMail({
+                                    to: mailConfig.admin,
+                                    from: mailConfig.from,
+                                    bcc: mailConfig.BCC,
+                                    subject: `Alert - BOOKING #${data.param.laytripBookingId} ran out of seats`,
+                                    html: await BookingRunoutNotificationMail(
+                                        data.param
+                                    ),
+                                })
+                                .then((res) => {
+                                    console.log("res", res);
+                                })
+                                .catch((err) => {
+                                    console.log("err", err);
+                                });
                         }
 
                         break;
@@ -425,12 +528,12 @@ export class CronJobsService {
             );
         }
 
-        if (message != "") {
-            this.cronfailedmail(
-                "Partial booking price : <br/><pre>" + message,
-                "Partial booking price"
-            );
-        }
+        // if (message != "") {
+        //     this.cronfailedmail(
+        //         "Partial booking price : <br/><pre>" + message,
+        //         "Partial booking price"
+        //     );
+        // }
 
         return { message: `today booking price added for pending booking` };
     }
@@ -1187,7 +1290,7 @@ export class CronJobsService {
                         todayDate = todayDate
                             .replace(/T/, " ") // replace T with a space
                             .replace(/\..+/, "");
-                        let query = await getManager()
+                        let query = await getConnection()
                             .createQueryBuilder(
                                 PredictiveBookingData,
                                 "predictiveBookingData"
@@ -1197,15 +1300,17 @@ export class CronJobsService {
                                 "booking"
                             )
                             .where(
-                                `"predictiveBookingData"."created_date" = '${
+                                `date("predictiveBookingData"."created_date") = '${
                                     todayDate.split(" ")[0]
                                 }' AND "predictiveBookingData"."booking_id" = '${
                                     bookingData.id
                                 }'`
                             )
                             .getOne();
+                        console.log("result", query);
                         if (query) {
                             query.bookingId = bookingData.id;
+                            query.lastPrice = query.netPrice;
                             query.netPrice = flight.net_rate;
                             query.date = new Date();
                             query.isBelowMinimum =
@@ -1478,7 +1583,7 @@ export class CronJobsService {
                 let mailData = await CartDataUtility.CartMailModelDataGenerate(
                     cart.laytripCartId
                 );
-                const cartCheckingData = new Date(cart.checkInDate)
+                const cartCheckingData = new Date(cart.checkInDate);
                 var checkInday = cartCheckingData.toISOString();
                 checkInday = checkInday
                     .replace(/T/, " ") // replace T with a space
@@ -1494,7 +1599,7 @@ export class CronJobsService {
                         header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
                     }
                     //console.log(mailData.param);
-                    
+
                     this.mailerService
                         .sendMail({
                             to: mailData.email,
@@ -1780,7 +1885,10 @@ export class CronJobsService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Notice of Default and Cancellation`,
-                                html: await LaytripPaymentFailedTemplete(param,cartBooking?.referral?.name),
+                                html: await LaytripPaymentFailedTemplete(
+                                    param,
+                                    cartBooking?.referral?.name
+                                ),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1797,7 +1905,10 @@ export class CronJobsService {
                                 subject: `Booking ID ${param.bookingId} ${
                                     param.try == 4 ? "Final" : ""
                                 }Missed Payment Reminder #${param.try - 1}`,
-                                html: await LaytripMissedPaymentTemplete(param,cartBooking?.referral?.name),
+                                html: await LaytripMissedPaymentTemplete(
+                                    param,
+                                    cartBooking?.referral?.name
+                                ),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1945,7 +2056,10 @@ export class CronJobsService {
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
                                 subject: `Booking ID ${param.bookingId} Installment Recevied`,
-                                html: LaytripInstallmentRecevied(param,cartBooking?.referral?.name),
+                                html: LaytripInstallmentRecevied(
+                                    param,
+                                    cartBooking?.referral?.name
+                                ),
                             })
                             .then((res) => {
                                 console.log("res", res);
@@ -1966,7 +2080,8 @@ export class CronJobsService {
                                     bcc: mailConfig.BCC,
                                     subject: subject,
                                     html: await LaytripCartBookingComplationMail(
-                                        responce.param,responce.referralId
+                                        responce.param,
+                                        responce.referralId
                                     ),
                                 })
                                 .then((res) => {
@@ -2115,6 +2230,155 @@ export class CronJobsService {
 
         return {
             message: `${folderName} log uploaded on s3 bucket`,
+        };
+    }
+
+    async defaultUserOn10day() {
+        var after10Day = new Date();
+        after10Day.setDate(after10Day.getDate() - 10);
+        var date4 = after10Day.toISOString();
+        date4 = date4
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
+
+        let cartBookings = await getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("cartBooking.referral", "referral")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("BookingInstalments.currency", "currency")
+            .leftJoinAndSelect("cartBooking.user", "User")
+            .where(
+                `(date("BookingInstalments".instalment_date) <= date('${date4}')) AND ("BookingInstalments"."payment_status" = ${PaymentStatus.PENDING}) AND ("booking"."booking_type" = ${BookingType.INSTALMENT}) AND ("booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`
+            )
+            .getMany();
+        if (!cartBookings.length) {
+            throw new NotFoundException(`Partial Payment not available`);
+        }
+
+        var failedlogArray = "";
+        for await (const cartBooking of cartBookings) {
+            let amount = 0;
+            try {
+                for await (const booking of cartBooking.bookings) {
+                    for await (const instalment of booking.bookingInstalments) {
+                        amount += Generic.formatPriceDecimal(
+                            parseFloat(instalment.amount)
+                        );
+                    }
+                    await getConnection()
+                        .createQueryBuilder()
+                        .update(Booking)
+                        .set({
+                            bookingStatus: BookingStatus.NOTCOMPLETED,
+                            paymentStatus: PaymentStatus.FAILED,
+                            cancellationReason:
+                                CancellationReason.CustomerDefault,
+                            message: `user default on 10th day of due of booking by cron`,
+                        })
+                        .where("id = :id", { id: booking.id })
+                        .execute();
+
+                    await getConnection()
+                        .createQueryBuilder()
+                        .update(BookingInstalments)
+                        .set({ paymentStatus: PaymentStatus.CANCELLED })
+                        .where(
+                            `booking_id =:id AND payment_status = ${PaymentStatus.PENDING}`,
+                            { id: booking.id }
+                        )
+                        .execute();
+
+                    if (
+                        booking.moduleId == ModulesName.FLIGHT
+                    ) {
+                        const data = await NotificationAlertUtility.notificationModelCreater(
+                            booking.laytripBookingId
+                        );
+                        await this.mailerService
+                            .sendMail({
+                                to: mailConfig.admin,
+                                from: mailConfig.from,
+                                bcc: mailConfig.BCC,
+                                subject: `Alert - BOOKING #${data.param.laytripBookingId} got cancelled `,
+                                html: await BookingCancellationNotificationMail(
+                                    data.param
+                                ),
+                            })
+                            .then((res) => {
+                                console.log("res", res);
+                            })
+                            .catch((err) => {
+                                console.log("err", err);
+                            });
+                    }
+                }
+                let param: any = {
+                    userName: cartBooking.user.firstName,
+                    amount:
+                        cartBooking.bookings[0].bookingInstalments[0].currency
+                            .symbol + `${Generic.formatPriceDecimal(amount)}`,
+                    date: DateTime.convertDateFormat(
+                        cartBooking.bookings[0].bookingInstalments[0]
+                            .instalmentDate,
+                        "YYYY-MM-DD",
+                        "MMMM DD, YYYY"
+                    ),
+                    bookingId: cartBooking.laytripCartId,
+                    try: 5,
+                };
+                this.mailerService
+                    .sendMail({
+                        to: cartBooking.user.email,
+                        //to: mailConfig.admin,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: `Booking ID ${param.bookingId} Notice of Default and Cancellation`,
+                        html: await LaytripPaymentFailedTemplete(
+                            param,
+                            cartBooking?.referral?.name
+                        ),
+                    })
+                    .then((res) => {
+                        console.log("res", res);
+                    })
+                    .catch((err) => {
+                        console.log("err", err);
+                    });
+            } catch (error) {
+                console.log("error", error);
+                const filename =
+                    `default-user-cron-error-log-` +
+                    cartBooking.laytripCartId +
+                    "-" +
+                    new Date().getTime() +
+                    ".json";
+
+                Activity.createlogFile(
+                    filename,
+                    JSON.stringify(cartBooking.laytripCartId) +
+                        "-----------------------error-----------------------" +
+                        JSON.stringify(error),
+                    "payment"
+                );
+                failedlogArray += `<p>booking id:- ${cartBooking.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
+            }
+        }
+        if (failedlogArray != "") {
+            this.cronfailedmail(
+                "cron fail for given installment id please check log files: <br/><pre>" +
+                    failedlogArray,
+                "default user cron error log"
+            );
+            Activity.cronUpdateActivity("Partial payment cron", failedlogArray);
+        }
+
+        return {
+            message: `${new Date()} date default user successfully done`,
         };
     }
 }

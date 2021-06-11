@@ -83,6 +83,8 @@ import { Countries } from "src/entity/countries.entity";
 import { LaytripCancellationTravelProviderMail } from "src/config/new_email_templete/laytrip_cancellation-travel-provider-mail.html";
 import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete/cart-booking-confirmation.html";
 import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
+import { NotificationAlertUtility } from "src/utility/notification.utility";
+import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 
 @Injectable()
 export class FlightService {
@@ -541,9 +543,7 @@ export class FlightService {
                         custom_instalment_no: null,
                         custom_amount: 0,
                     };
-                    console.log(preductionMarkup);
-                    console.log(minimumForInstallment);
-                    console.log(installmentDTO);
+                    
                 }
             }
         }
@@ -597,12 +597,12 @@ export class FlightService {
             returnResponce[lowestPriceIndex]["date"] &&
             returnResponce[lowestPriceIndex]["date"] == depature
         ) {
-            console.log(returnResponce[lowestPriceIndex]);
+           
             const Installments = await this.instalmentService.calculateInstalemnt(
                 installmentDTO
             );
 
-            console.log(Installments);
+          
             if (Installments.instalment_available == true) {
                 var totalOfInstallment = 0;
                 for (
@@ -852,10 +852,10 @@ export class FlightService {
             }
 
             let date1 = date.split("-");
-            console.log("date1", date1);
+           
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
-            console.log("date1", date1);
+           
 
             if (obj == 0) {
                 var output = {
@@ -1192,7 +1192,7 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
-        console.log(count, "count", startDate, endDate);
+        
 
         //var count = 6
 
@@ -1328,7 +1328,6 @@ export class FlightService {
                     key++;
                 }
 
-                console.log("date", date);
 
                 if (date && lowestprice > 0) {
                     var output = {
@@ -1340,7 +1339,7 @@ export class FlightService {
                         arrival_date: arrivalDate,
                         secondary_start_price: secondaryStartPrice,
                     };
-                    console.log(output);
+                    
 
                     returnResponce.push(output);
                 }
@@ -1368,12 +1367,10 @@ export class FlightService {
             let date2 = arrivalofDate.split("-");
             date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
 
-            console.log(date);
-            console.log(obj);
+         
 
             if (obj == 0) {
-                console.log(date1);
-                console.log("++++++++++++++");
+                
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1388,8 +1385,7 @@ export class FlightService {
             }
         }
 
-        console.log(returnResponce);
-
+      
         returnResponce.sort((a, b) => {
             var dateTime = a.date;
             var d = dateTime.split("/");
@@ -1859,7 +1855,7 @@ export class FlightService {
         supplierBookingData,
         travelers,
         cartId = null,
-       reservationId = null
+        reservationId = null
     ) {
         const {
             selling_price,
@@ -2044,6 +2040,24 @@ export class FlightService {
                 booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
             await predictiveBooking.save();
             console.log("get booking");
+            const data = await NotificationAlertUtility.notificationModelCreater(
+                booking.laytripBookingId
+            );
+
+            await this.mailerService
+                .sendMail({
+                    to: mailConfig.admin,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: `New Customer Booking #${data.param.laytripBookingId} Made`,
+                    html: await AdminNewBookingMail(data.param),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
             return await this.bookingRepository.getBookingDetails(
                 booking.laytripBookingId
             );
@@ -2079,7 +2093,7 @@ export class FlightService {
 
         let booking = await this.bookingRepository.getBookingDetails(bookingId);
         booking.bookingStatus = BookingStatus.CONFIRM;
-        console.log("Net rate", net_rate);
+       
 
         booking.netRate = `${net_rate}`;
         booking.usdFactor = `${currencyDetails.liveRate}`;
@@ -2870,7 +2884,7 @@ export class FlightService {
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
                 "a:totalfare"
             ][0]["a:amount"][0];
-        console.log(moduleInfo["net_rate"]);
+        
 
         var depatureIndex = 0;
         var arrivalIndex = 0;
@@ -2884,15 +2898,7 @@ export class FlightService {
             "a:itineraryinfo"
         ][0]["a:reservationitems"][0]["a:reservationitem"]) {
             if (reservation != null) {
-                console.log(
-                    'reservation["a:airlinepnr"][0]',
-                    reservation["a:airlinepnr"][0]
-                );
-                console.log(
-                    'reservation["a:airlinepnr"]',
-                    reservation["a:airlinepnr"]
-                );
-
+               
                 var data = {
                     departure_code:
                         reservation["a:departureairportlocationcode"][0],
@@ -2945,7 +2951,7 @@ export class FlightService {
                 } else {
                     moduleInfo.routes[0].stops.push(data);
                 }
-                console.log(data);
+               
             }
         }
 
@@ -3136,7 +3142,7 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                 };
-                console.log("oneway dto", dto);
+                
                 flights = await this.searchOneWayZipFlight(
                     dto,
                     Headers,
@@ -3284,7 +3290,8 @@ export class FlightService {
                 laycredit_points,
                 card_token,
                 booking_through,
-                cartCount,reservationId
+                cartCount,
+                reservationId,
             } = bookFlightDto;
 
             cartCount = cartCount ? cartCount : 0;
@@ -3356,7 +3363,6 @@ export class FlightService {
                 bookingRequestInfo.fare_type = airRevalidateResult[0].fare_type;
                 bookingRequestInfo.card_token = card_token;
             }
-            console.log("bookingRequestInfo", bookingRequestInfo);
             let {
                 selling_price,
                 departure_date,

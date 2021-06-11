@@ -34,4 +34,7 @@ export const logUrl =
                ? `https://laytrip.com/logs/`
                : `https://ip.laytrip.com/logs/`;
 
-    
+export const bookingDetailUrl =
+           env != "prod"
+               ? `https://app.staging.laytrip.com/booking/detail/`
+               : `https://app.laytrip.com/booking/detail/`;
