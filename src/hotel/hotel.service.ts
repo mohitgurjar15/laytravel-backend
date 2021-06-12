@@ -1378,7 +1378,9 @@ export class HotelService {
         booking.moduleId = moduleDetails?.id;
         //console.log("moduleDetails", moduleDetails);
 
-        booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+       // booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+
+        booking.laytripBookingId = reservationId
         //console.log(1);
 
         booking.bookingType = bookingType;
@@ -1397,7 +1399,7 @@ export class HotelService {
         //console.log(6);
         booking.bookingDate = bookingDate;
         //console.log("currencyDetails");
-        booking.reservationId = reservationId;
+        //booking.reservationId = reservationId;
         //console.log("currencyDetails", currencyDetails);
         booking.usdFactor = currencyDetails?.liveRate.toString();
         booking.layCredit = laycredit_points || 0;

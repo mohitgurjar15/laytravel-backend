@@ -1,7 +1,7 @@
 import { EmailNotificationModel } from "../email_template/model/notification.model";
 import { notificationHeader } from "./notification-header.html";
 import { notificationFooter } from "./notification-footer.html";
-import { bookingDetailUrl } from "../base-url";
+import { bookingDetailUrl, NewEmailAssets } from "../base-url";
 
 export async function BookingCancellationNotificationMail(param: EmailNotificationModel) {
     let content = `
@@ -46,7 +46,7 @@ export async function BookingCancellationNotificationMail(param: EmailNotificati
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:85%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}%)</td>
+                   ${param.currencySymbol}${param.todayNetPrice} (${param.todayNetpriceVarient}% <img src="${param.todayNetpriceVarient > 0 ? NewEmailAssets + '/up.svg' : NewEmailAssets + '/down.svg' }">)</td>
             </tr>`
 
             }

@@ -1570,7 +1570,8 @@ more than 10.`
                         currencyId: 1,
                         booking_through: "web",
                     },
-                    cart.moduleId
+                    cart.moduleId,
+                    reservationId
                 );
             } else {
                 for await (const traveler of cart.travelers) {
@@ -1625,7 +1626,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
             return newCart;
         }
@@ -1654,7 +1656,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
         }
         return newCart;
@@ -1728,7 +1731,8 @@ more than 10.`
                         currencyId: 1,
                         booking_through: "web",
                     },
-                    cart.moduleId
+                    cart.moduleId,
+                    reservationId
                 );
             } else {
                 console.log("hhhhh", "1");
@@ -1789,7 +1793,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
             return newCart;
         }
@@ -1824,7 +1829,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
         }
         return newCart;
@@ -1840,8 +1846,10 @@ more than 10.`
             currencyId: number;
             booking_through: string;
         },
-        moduleId
+        moduleId,
+        reservationId
     ) {
+        //cartCount = cartCount ? cartCount : 1;
         if (typeof errorLog == "object") {
             errorLog = JSON.stringify(errorLog);
         }
@@ -1856,7 +1864,7 @@ more than 10.`
             let booking = new Booking();
             booking.id = uuidv4();
             booking.moduleId = ModulesName.FLIGHT;
-            booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+            booking.laytripBookingId = reservationId;
             booking.bookingType = bookingType;
             booking.currency = currencyId;
             booking.totalAmount = moduleInfo[0].selling_price;

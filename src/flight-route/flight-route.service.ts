@@ -614,12 +614,13 @@ export class FlightRouteService {
                     if (
                         typeof airports[row.from_airport_code] != "undefined" &&
                         typeof airports[row.to_airport_code] != "undefined" &&
+                        row.category_id &&
                         typeof categoryId == "number" &&
                         (row.type == FlightRouteType.DOMESTIC ||
                             row.type == FlightRouteType.INTERNATIONAL)
                     ) {
                         var error_message = {};
-                        const category = await getConnection()
+                        const category:LaytripCategory =  await getConnection()
                             .createQueryBuilder(LaytripCategory, "category")
                             .where(`"id" =:id `, { id: row.category_id })
                             .getOne();

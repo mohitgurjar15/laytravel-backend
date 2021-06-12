@@ -70,7 +70,7 @@ export class NotificationAlertUtility {
         }
 
     
-        param.routeType = category.name || 'N/A';
+        param.routeType = category?.name || 'N/A';
         
         console.log(category);
         if (category) {
@@ -153,7 +153,7 @@ export class NotificationAlertUtility {
 
         param.laytripBookingId = bookingData.laytripBookingId;
         param.currencySymbol = bookingData.currency2.symbol;
-        param.lastPrice = predictiveData.lastPrice || 0;
+        param.lastPrice = predictiveData?.lastPrice || 0;
         console.log('call for valuation per');
         
         const valuations = await ValuationPercentageUtility.calculations(
