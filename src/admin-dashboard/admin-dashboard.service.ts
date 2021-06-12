@@ -522,7 +522,7 @@ export class AdminDashboardService {
             var revenueFromInstallment =
                 revenues[0].total_profit - revenueNoInstallment[0].total_profit;
             response["revenue_from_installment"] =
-                (Math.round(revenueFromInstallment * 100) / 100).toFixed(2) ||
+                revenueFromInstallment ||
                 0;
 
             var revenueFromNoInstallmentPercent =

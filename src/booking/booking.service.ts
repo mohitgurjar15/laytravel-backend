@@ -1374,6 +1374,10 @@ export class BookingService {
                 new Date(result.checkOutDate),
                 result.isResedule
             );
+            const cartData = await CartDataUtility.cartData(result.cartId)
+            result['cartTotalAmount'] = cartData.totalAmount
+            result['cartpaidAmount'] = cartData.paidAmountNumeric
+
             // for (let j in result.travelers) {
             //     if (result.travelers[j].travelerInfo?.dob) {
             //         var birthDate = new Date(
