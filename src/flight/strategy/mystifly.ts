@@ -4633,10 +4633,7 @@ export class Mystifly implements StrategyAirline {
         let toLocations = [];
         let combinations = [];
 
-        console.log(toLocation)
-
-        console.log('1');
-
+        
          let from = await getConnection()
             .createQueryBuilder(Airport, "airport")
            
@@ -4646,7 +4643,6 @@ export class Mystifly implements StrategyAirline {
             .createQueryBuilder(Airport, "airport")
             .where(`airport.code = '${toLocation}'`)
             .getOne()
-        console.log('2',from,to);
         if (from && to) {
             // fromLocations.push(from.code)
             // toLocations.push(to.code)
@@ -4705,7 +4701,7 @@ export class Mystifly implements StrategyAirline {
                    for await (const iterator of flightRoutes) {
                        res.push(`${iterator.fromAirportCode + '-' + iterator.toAirportCode}`)
                    }
-                   console.log(res);
+                   
                    return res
                }else{
                     return; 

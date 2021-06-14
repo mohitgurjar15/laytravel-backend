@@ -17,7 +17,7 @@ export class AppLoggerMiddleware implements NestMiddleware {
 
         const userAgent = request.get("user-agent") || "";
 
-        console.log(baseUrl);
+        //console.log(baseUrl);
 
         if (restrictedPath.indexOf(baseUrl) == -1) {
             response.on("close", () => {
