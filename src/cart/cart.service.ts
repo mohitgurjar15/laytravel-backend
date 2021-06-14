@@ -1050,16 +1050,24 @@ more than 10.`
                 selected_down_payment,
                 transaction_token,
                 referral_id,
+                auth_log
             } = bookCart;
 
-            let logData =  await getConnection()
-                    .createQueryBuilder()
-                    .insert()
-                    .into(BookingLog)
-                    .values({ id: uuidv4()})
-                    .returning("id")
-                    .execute(); 
-            let logId = logData.raw[0].id;
+            // let logData =  await getConnection()
+            //         .createQueryBuilder()
+            //         .insert()
+            //         .into(BookingLog)
+            //         .values({ id: uuidv4()})
+            //         .returning("id")
+            //         .execute(); 
+            // let logId = logData.raw[0].id;
+
+             let logData = new BookingLog
+            logData.id = uuidv4()
+            logData.paymentAuthorizeLog = auth_log
+            logData.timeStamp = Math.round(new Date().getTime() / 1000)
+
+            const bookingLog = await logData.save()
             //console.log("log data",logData.raw[0].id)
             if (cart.length > 10) {
                 throw new BadRequestException(

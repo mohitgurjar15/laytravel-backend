@@ -255,11 +255,7 @@ export class Booking extends BaseEntity {
     )
     bookingInstalments: BookingInstalments[];
 
-    @OneToMany(
-        () => BookingLog,
-        bookinglog => bookinglog.module
-      )
-    bookinglogs: BookingLog[];
+    
 
     @OneToMany(
         () => OtherPayments,

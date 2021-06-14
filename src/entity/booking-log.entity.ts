@@ -8,6 +8,7 @@ import {
   ManyToOne
 } from "typeorm";
 import { Booking } from "./booking.entity";
+import { CartBooking } from "./cart-booking.entity";
 
 @Index("booking_log_module_id", ["moduleId"], {})
 @Index("booking_log_booking_id", ["bookingId"], {})
@@ -16,11 +17,14 @@ export class BookingLog extends BaseEntity {
     @Column("uuid", { primary: true, name: "id" })
     id: string;
 
-    @Column("uuid", { name: "booking_id", nullable: true })
-    bookingId: string | null;
+    @Column("uuid", { name: "cart_booking_id", nullable: true })
+    cartBookingId: string | null;
 
-    @Column("integer", { name: "module_id",nullable: true })
-    moduleId: number | null;
+    // @Column("integer", { name: "module_id",nullable: true })
+    // moduleId: number | null;
+
+    @Column("integer", { name: "last_updated_timestamp", default: 0, nullable: true })
+    timeStamp: number;
 
     @Column("json", { name: "cart_info",nullable: true })
     cartInfo: object | null;
@@ -56,9 +60,9 @@ export class BookingLog extends BaseEntity {
 
     
     @ManyToOne(
-        () => Booking,
+        () => CartBooking,
         module => module.bookinglogs
     )
-    @JoinColumn([{ name: "booking_id", referencedColumnName: "id" }])
-    booking: Booking;
+    @JoinColumn([{ name: "cart_booking_id", referencedColumnName: "id" }])
+    cartBookings: CartBooking;
 }
