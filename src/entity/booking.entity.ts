@@ -21,6 +21,7 @@ import { type } from "os";
 import { CartBooking } from "./cart-booking.entity";
 import { OtherPayments } from "./other-payment.entity";
 import { IntialCancelBooking } from "./intial-booking.entity";
+import { BookingLog } from "./booking-log.entity";
 
 @Index("booking_currency_id", ["currency"], {})
 @Index("booking_module_id", ["moduleId"], {})
@@ -253,6 +254,12 @@ export class Booking extends BaseEntity {
         (bookingInstalments) => bookingInstalments.booking
     )
     bookingInstalments: BookingInstalments[];
+
+    @OneToMany(
+        () => BookingLog,
+        bookinglog => bookinglog.module
+      )
+    bookinglogs: BookingLog[];
 
     @OneToMany(
         () => OtherPayments,

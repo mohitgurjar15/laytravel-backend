@@ -60,6 +60,7 @@ import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
+import { BookingLog } from "src/entity/booking-log.entity";
 @Injectable()
 export class CartService {
     constructor(
@@ -1051,12 +1052,21 @@ more than 10.`
                 referral_id,
             } = bookCart;
 
+            /* let logData =  await getConnection()
+                    .createQueryBuilder()
+                    .insert()
+                    .into(BookingLog)
+                    .values({ id: uuidv4()})
+                    .returning("id")
+                    .execute(); 
+            let logId = logData.raw[0].id;*/
+            //console.log("log data",logData.raw[0].id)
             if (cart.length > 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
-more than 10.`
-                );
-            }
+                    more than 10.`
+                    );
+                }
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);

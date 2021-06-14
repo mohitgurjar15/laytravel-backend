@@ -523,7 +523,7 @@ export class PaymentService {
             "authorise-card",
             userId
         );
-        // //console.log(authResult)
+        console.log(authResult,"1222")
         if (
             typeof authResult.transaction != "undefined" &&
             authResult.transaction.succeeded
@@ -715,6 +715,7 @@ export class PaymentService {
                 fileName += "_" + userId;
             }
             Activity.createlogFile(fileName, logData, "payment");
+            result.data['fileName'] = `${fileName}.json`;
             return result.data;
         } catch (error) {
             let logData = {};
@@ -1670,7 +1671,7 @@ export class PaymentService {
             user.userId,
             user.email
         );
-        console.log(JSON.stringify(authCardResult));
+        //console.log(JSON.stringify(authCardResult));
 
         // return authCardResult;
         if (authCardResult.meta_data) {
@@ -1680,6 +1681,7 @@ export class PaymentService {
             response.redirection =
                 redirection + "?transaction_token=" + transaction.token;
             response.authoriceAmount = authoriseAmount;
+            response.auth_url = authCardResult.meta_data.fileName
         }
 
         return response;
