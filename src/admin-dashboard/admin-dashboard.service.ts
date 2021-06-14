@@ -494,7 +494,7 @@ export class AdminDashboardService {
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
                 SUM( markup_amount ) as total_profit
-                from booking where  booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}
+                from booking where  booking_status IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}
 			`);
 
             response["revenues"] = revenues[0].total_profit || 0;
@@ -504,23 +504,23 @@ export class AdminDashboardService {
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.INSTALMENT} AND booking_status IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})  AND ${moduleIdCondition} AND ${dateConditon}`);
 
             var revenueNoInstallment = await getConnection().query(`
       SELECT count(id) as confirm_booking,
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.NOINSTALMENT} AND booking_status IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}`);
 
             var revenueFromNoInstallment =
-                revenues[0].total_profit - revenueInstallment[0].total_profit;
+                revenueNoInstallment[0].total_profit;
             response["revenue_from_full_price"] = (
                 Math.round(revenueFromNoInstallment * 100) / 100
             ).toFixed(2);
 
             var revenueFromInstallment =
-                revenues[0].total_profit - revenueNoInstallment[0].total_profit;
+                revenueInstallment[0].total_profit;
             response["revenue_from_installment"] =
                 revenueFromInstallment ||
                 0;
