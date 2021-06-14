@@ -1121,7 +1121,7 @@ more than 10.`
                     `Cart is empty.&&&cart&&&${errorMessage}`
                 );
             }
-            
+            bookingLog.cartInfo = result
             let smallestDate = "";
             let largestDate = "";
             //let ToatalAmount = ''
@@ -1191,7 +1191,8 @@ more than 10.`
                     : BookingType.NOINSTALMENT;
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
-
+             bookingLog.cartBookingId = cartData.id
+            await bookingLog.save()
             let responce = [];
             let successedResult = 0;
             let failedResult = 0;
@@ -1213,7 +1214,8 @@ more than 10.`
                             smallestDate,
                             cartData,
                             cartCount,
-                            flightCount
+                            flightCount,
+                            bookingLog
                         );
                         responce.push(flightResponce);
 
@@ -1482,7 +1484,8 @@ more than 10.`
         smallestDate: string,
         cartData: CartBooking,
         cartCount: number,
-        flightCount : number
+        flightCount : number,
+        bookingLog : BookingLog
     ) {
         let reservationId = `${cartData.laytripCartId}-F${flightCount}`
         const {
