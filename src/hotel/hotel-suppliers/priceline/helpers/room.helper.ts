@@ -59,7 +59,8 @@ export class RoomHelper {
             let { retail, selling, saving_percent , net_rate} = this.rateHelper.getRates(
                 rate,
                 roomsReqDto,
-                inputData
+                inputData,
+                mandatoryFeeDetails.prepaid_break_dwon
             );
             let board_type = rate.board_type != "NONE" ? rate.board_type : "";
             let start_price = 0;
