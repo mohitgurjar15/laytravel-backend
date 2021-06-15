@@ -70,9 +70,21 @@ export class RateHelper{
         
        
         let selling = net_rate
-        if (retail.total > net_rate.total && mendetoryFeesTotal) {
-            let selling = retail
-            selling.sub_total = selling.sub_total - mendetoryFeesTotal
+        if (retail.total > net_rate.total) {
+            console.log('retail', retail);
+            selling = retail
+            console.log('mendetoryFeesTotal', mendetoryFeesTotal);
+            console.log('selling', selling);
+            
+            console.log('selling.sub_total', selling.sub_total);
+            
+            if(mendetoryFeesTotal){
+                console.log('calculations', selling.sub_total - mendetoryFeesTotal);
+                
+                selling.sub_total = parseFloat(selling.sub_total)  - mendetoryFeesTotal
+                console.log('selling.sub_total', selling.sub_total);
+            }
+            
         }
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         return {
