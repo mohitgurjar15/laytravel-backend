@@ -69,10 +69,10 @@ export class RateHelper{
         //let selling = retail.total > net_rate.total ? retail : net_rate;
         
        
-        let selling = net_rate
-        if (retail.total > net_rate.total) {
+        let selling = Object.assign({}, net_rate)
+                 if (retail.total > net_rate.total) {
             console.log('retail', retail);
-            selling = retail
+            selling = Object.assign({},retail)
             console.log('mendetoryFeesTotal', mendetoryFeesTotal);
             console.log('selling', selling);
             
