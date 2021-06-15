@@ -10,8 +10,8 @@ import {
 import { Booking } from "./booking.entity";
 import { CartBooking } from "./cart-booking.entity";
 
-@Index("booking_log_module_id", ["moduleId"], {})
-@Index("booking_log_booking_id", ["bookingId"], {})
+// @Index("booking_log_module_id", ["moduleId"], {})
+@Index("booking_log_booking_id", ["cartBookingId"], {})
 @Entity("booking_log")
 export class BookingLog extends BaseEntity {
     @Column("uuid", { primary: true, name: "id" })
