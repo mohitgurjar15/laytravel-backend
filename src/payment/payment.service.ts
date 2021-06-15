@@ -561,6 +561,7 @@ export class PaymentService {
             "capture-card",
             userId
         );
+        
         if (
             typeof captureRes.transaction != "undefined" &&
             captureRes.transaction.succeeded
@@ -570,11 +571,13 @@ export class PaymentService {
                 token: captureRes.transaction.token,
                 meta_data: captureRes,
                 reference_token: captureRes.transaction?.reference_token,
+                logFile : captureRes['fileName']
             };
         } else {
             return {
                 status: false,
                 meta_data: captureRes,
+                logFile: captureRes['fileName']
             };
         }
     }
@@ -1770,11 +1773,14 @@ export class PaymentService {
                 status: true,
                 token: cardResult.transaction.token,
                 meta_data: cardResult,
+                logFile : cardResult['fileName']
+
             };
         } else {
             return {
                 status: false,
                 meta_data: cardResult,
+                logFile: cardResult['fileName']
             };
         }
     }

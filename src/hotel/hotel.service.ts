@@ -679,6 +679,7 @@ export class HotelService {
         selected_down_payment: number,
         transaction_token
     ) {
+        let logData = {}
         try {
             let headerDetails = await this.validateHeaders(headers);
             //console.log("header validate");
@@ -708,6 +709,7 @@ export class HotelService {
                 availabilityDto,
                 user.userId
             );
+            logData['revalidation-log'] = hotelAvailability.data["fileName"]
             let availability = hotelAvailability.data.items;
             //console.log("Availability", availability);
 
@@ -922,6 +924,8 @@ export class HotelService {
                         user.userId
                     );
 
+                    logData['supplier_side_booking_log'] = bookingResult["fileName"]
+
                     console.log("bookingResult?.status", bookingResult?.status);
 
                     if (bookingResult?.status != "success") {
@@ -931,6 +935,7 @@ export class HotelService {
                                 "Booking failed from supplier side at " +
                                 new Date(),
                             bookingResult,
+                            logData
                         };
                     }
 
@@ -974,12 +979,15 @@ export class HotelService {
                         booking_details: await this.bookingRepository.getBookingDetails(
                             laytripBookingResult.laytripBookingId
                         ),
+                        logData
                     };
                 } else {
                     return {
                         statusCode: 422,
                         message: `Instalment option is not available for your search criteria`,
+                        logData
                     };
+
                 }
             } else if (payment_type == PaymentType.NOINSTALMENT) {
                 let sellingPrice = selling_price;
@@ -1054,7 +1062,7 @@ export class HotelService {
                         bookData,
                         user.userId
                     );
-
+                    logData['supplier_side_booking_log'] = bookingResult["fileName"]
                     console.log("bookingResult?.status", bookingResult?.status);
 
                     if (bookingResult?.status != "success") {
@@ -1064,6 +1072,7 @@ export class HotelService {
                                 "Booking failed from supplier side at " +
                                 new Date(),
                             bookingResult,
+                            logData
                         };
                     }
 
@@ -1087,6 +1096,7 @@ export class HotelService {
                     bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
                         laytripBookingResult.laytripBookingId
                     );
+                    bookingResult['logData'] = logData
                     return bookingResult;
                 }
                 // else {
@@ -1133,6 +1143,7 @@ export class HotelService {
             return {
                 message: errorMessage,
                 error,
+                logData
             };
         }
     }

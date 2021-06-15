@@ -32,8 +32,11 @@ export class BookingLog extends BaseEntity {
     @Column("character varying", { name: "payment_authorize_log", nullable: true })
     paymentAuthorizeLog: string | null;
 
-    @Column("character varying", { name: "cart_book_log", nullable: true })
-    cartBookLog: string |  null;
+    @Column("character varying", { name: "payment_refund_log", nullable: true })
+    paymentRefundLog: string | null;
+
+    @Column("json", { name: "cart_book_log", nullable: true })
+    cartBookLog: object | null;
 
     @Column("character varying", { name: "markup_formula", nullable: true })
     markupFormula: string | null;
@@ -49,6 +52,9 @@ export class BookingLog extends BaseEntity {
 
     @Column("character varying", { name: "other", nullable: true })
     other: string |  null;
+
+    @Column("character varying", { name: "error", nullable: true })
+    error: string | null;
 
 
     @ManyToOne(
