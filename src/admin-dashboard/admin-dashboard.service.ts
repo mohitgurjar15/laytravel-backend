@@ -16,6 +16,7 @@ import { BookingStatus } from "src/enum/booking-status.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { BookingType } from "src/enum/booking-type.enum";
 import { ModulesName } from "src/enum/module.enum";
+import { Booking } from "src/entity/booking.entity";
 
 @Injectable()
 export class AdminDashboardService {
@@ -920,5 +921,70 @@ export class AdminDashboardService {
             parseInt(userRegisteredViaWeb[0].cnt) || 0;
 
         return response;
+    }
+
+    async dashboardBookingChart(filterOption: DashboardFilterDto){
+        var tDate = new Date();
+        var todayDate = tDate.toISOString();
+        todayDate = todayDate
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "");
+
+        const { moduleId, startDate, toDate } = filterOption;
+        var where = `"booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`;
+        if (startDate) {
+            where += `AND (DATE(booking_date) >= '${startDate}') `;
+        } else {
+            where += `AND (DATE(booking_date) <= '${todayDate}') `;
+        }
+
+        if (toDate) {
+            where += `AND (DATE(booking_date) >= '${toDate}') `;
+        } else {
+            where += `AND (DATE(booking_date) >= '${todayDate}') `;
+        }
+
+        const query = await getConnection()
+                .query(`select
+                            count(*),module_id,sum(total_amount) as total
+                        from
+                            booking
+                        where
+                            "booking"."booking_status" in (1, 0)
+                            and ("booking".booking_date >= '${startDate ? startDate : todayDate}')
+                            and ("booking".booking_date <= '${toDate ? toDate : todayDate}')
+                        group by module_id`)
+                
+           // const count = await query();
+           let flights = 0
+           let hotels = 0
+           let flightsTotal = 0
+           let hotelsTotal = 0
+
+         for await (const iterator of query) {
+             if (iterator.module_id == ModulesName.FLIGHT){
+                 flights = parseFloat(iterator.count)
+                 flightsTotal = parseFloat(iterator.total)
+             }
+
+             if (iterator.module_id == ModulesName.HOTEL){
+                 hotels = parseFloat(iterator.count)
+                 hotelsTotal = parseFloat(iterator.total)
+             }
+             
+         }
+        
+        return [{
+                moduleId : 1,
+            counts: flights,
+            total: flightsTotal,
+            name : 'Flight'
+        }, {
+                moduleId: 3,
+                counts: hotels,
+                total: hotelsTotal,
+                name: 'Hotel'
+            }]
+
     }
 }
