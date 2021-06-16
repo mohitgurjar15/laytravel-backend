@@ -45,8 +45,7 @@ export class AdminDashboardService {
 
             var totalBookings = await getConnection().query(`
                 SELECT count(id) as total_booking
-                from booking ${
-                    moduleId ? `WHERE "module_id" = '${moduleId}'` : ""
+                from booking ${moduleId ? `WHERE "module_id" = '${moduleId}'` : ""
                 }
             `);
             if (data[0].total_amount == null) {
@@ -521,7 +520,7 @@ export class AdminDashboardService {
             ).toFixed(2);
 
             var revenueFromInstallment =
-                revenueInstallment[0].total_profit;
+                (Math.round(revenueInstallment[0].total_profit * 100) / 100).toFixed(2);
             response["revenue_from_installment"] =
                 revenueFromInstallment ||
                 0;
@@ -535,13 +534,11 @@ export class AdminDashboardService {
                 ).toFixed(2) || 0;
 
             var revenueFromInstallmentPercent =
-                revenueFromInstallment ||
-                (0 * 100) / revenues[0].total_profit ||
+                ((parseFloat (revenueFromInstallment) ||
+                0 )* 100) / revenues[0].total_profit ||
                 0;
             response["revenue_from_installment_percentage"] =
-                (Math.round(revenueFromInstallmentPercent * 100) / 100).toFixed(
-                    2
-                ) || 0;
+                revenueFromInstallmentPercent|| 0;
 
             var installmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
@@ -923,7 +920,7 @@ export class AdminDashboardService {
         return response;
     }
 
-    async dashboardBookingChart(filterOption: DashboardFilterDto){
+    async dashboardBookingChart(filterOption: DashboardFilterDto) {
         var tDate = new Date();
         var todayDate = tDate.toISOString();
         todayDate = todayDate
@@ -945,7 +942,7 @@ export class AdminDashboardService {
         }
 
         const query = await getConnection()
-                .query(`select
+            .query(`select
                             count(*),module_id,sum(total_amount) as total
                         from
                             booking
@@ -954,37 +951,37 @@ export class AdminDashboardService {
                             and ("booking".booking_date >= '${startDate ? startDate : todayDate}')
                             and ("booking".booking_date <= '${toDate ? toDate : todayDate}')
                         group by module_id`)
-                
-           // const count = await query();
-           let flights = 0
-           let hotels = 0
-           let flightsTotal = 0
-           let hotelsTotal = 0
 
-         for await (const iterator of query) {
-             if (iterator.module_id == ModulesName.FLIGHT){
-                 flights = parseFloat(iterator.count)
-                 flightsTotal = parseFloat(iterator.total)
-             }
+        // const count = await query();
+        let flights = 0
+        let hotels = 0
+        let flightsTotal = 0
+        let hotelsTotal = 0
 
-             if (iterator.module_id == ModulesName.HOTEL){
-                 hotels = parseFloat(iterator.count)
-                 hotelsTotal = parseFloat(iterator.total)
-             }
-             
-         }
-        
+        for await (const iterator of query) {
+            if (iterator.module_id == ModulesName.FLIGHT) {
+                flights = parseFloat(iterator.count)
+                flightsTotal = parseFloat(iterator.total)
+            }
+
+            if (iterator.module_id == ModulesName.HOTEL) {
+                hotels = parseFloat(iterator.count)
+                hotelsTotal = parseFloat(iterator.total)
+            }
+
+        }
+
         return [{
-                moduleId : 1,
+            moduleId: 1,
             counts: flights,
             total: flightsTotal,
-            name : 'Flight'
+            name: 'Flight'
         }, {
-                moduleId: 3,
-                counts: hotels,
-                total: hotelsTotal,
-                name: 'Hotel'
-            }]
+            moduleId: 3,
+            counts: hotels,
+            total: hotelsTotal,
+            name: 'Hotel'
+        }]
 
     }
 }
