@@ -80,6 +80,7 @@ export class HotelService {
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
 
         // locations = plainToClass(Location, locations, );
+        
 
         console.log("totalCount", locations.length);
 

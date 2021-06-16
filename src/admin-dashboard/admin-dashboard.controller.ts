@@ -145,4 +145,25 @@ export class AdminDashboardController {
 		return await this.adminDashboardService.customerStatistics(filterOption);
 	}
 
+
+
+	@Get("booking-statistics-graph")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({
+		summary: "get booking graph detail",
+	})
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async bookingGraph(
+		@Query() filterOption: DashboardFilterDto
+    ) {
+		return await this.adminDashboardService.dashboardBookingChart(filterOption);
+	}
+
 }

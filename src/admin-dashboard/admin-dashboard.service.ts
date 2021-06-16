@@ -16,6 +16,7 @@ import { BookingStatus } from "src/enum/booking-status.enum";
 import { PaymentStatus } from "src/enum/payment-status.enum";
 import { BookingType } from "src/enum/booking-type.enum";
 import { ModulesName } from "src/enum/module.enum";
+import { Booking } from "src/entity/booking.entity";
 
 @Injectable()
 export class AdminDashboardService {
@@ -44,8 +45,7 @@ export class AdminDashboardService {
 
             var totalBookings = await getConnection().query(`
                 SELECT count(id) as total_booking
-                from booking ${
-                    moduleId ? `WHERE "module_id" = '${moduleId}'` : ""
+                from booking ${moduleId ? `WHERE "module_id" = '${moduleId}'` : ""
                 }
             `);
             if (data[0].total_amount == null) {
@@ -449,7 +449,7 @@ export class AdminDashboardService {
             response["open_bookings"] = openBookings[0].cnt;
 
             const openBookingsUsd = await getConnection().query(
-                `SELECT sum("booking"."usd_factor"*"total_amount") as "total"  FROM "booking" WHERE booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition} AND ${dateConditon}`
+                `SELECT sum("booking"."usd_factor"*"total_amount") as "total"  FROM "booking" WHERE check_in_date > '${todayDate}' AND booking_status IN (${BookingStatus.PENDING},${BookingStatus.CONFIRM}) AND ${moduleIdCondition} AND ${dateConditon}`
             );
             response["open_bookings_usd"] =
                 (Math.round(openBookingsUsd[0].total * 100) / 100).toFixed(2) ||
@@ -494,7 +494,7 @@ export class AdminDashboardService {
                 SUM( total_amount * usd_factor) as total_amount,
                 SUM( net_rate * usd_factor) as total_cost,
                 SUM( markup_amount ) as total_profit
-                from booking where  booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}
+                from booking where  booking_status IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}
 			`);
 
             response["revenues"] = revenues[0].total_profit || 0;
@@ -504,25 +504,25 @@ export class AdminDashboardService {
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where booking_type = ${BookingType.INSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.INSTALMENT} AND booking_status IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})  AND ${moduleIdCondition} AND ${dateConditon}`);
 
             var revenueNoInstallment = await getConnection().query(`
       SELECT count(id) as confirm_booking,
       SUM( total_amount * usd_factor) as total_amount,
       SUM( net_rate * usd_factor) as total_cost,
       SUM( markup_amount * usd_factor) as total_profit
-      from booking where booking_type = ${BookingType.NOINSTALMENT} AND booking_status = ${BookingStatus.CONFIRM} AND ${moduleIdCondition} AND ${dateConditon}`);
+      from booking where booking_type = ${BookingType.NOINSTALMENT} AND booking_status IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND ${moduleIdCondition} AND ${dateConditon}`);
 
             var revenueFromNoInstallment =
-                revenues[0].total_profit - revenueInstallment[0].total_profit;
+                revenueNoInstallment[0].total_profit;
             response["revenue_from_full_price"] = (
                 Math.round(revenueFromNoInstallment * 100) / 100
             ).toFixed(2);
 
             var revenueFromInstallment =
-                revenues[0].total_profit - revenueNoInstallment[0].total_profit;
+                (Math.round(revenueInstallment[0].total_profit * 100) / 100).toFixed(2);
             response["revenue_from_installment"] =
-                (Math.round(revenueFromInstallment * 100) / 100).toFixed(2) ||
+                revenueFromInstallment ||
                 0;
 
             var revenueFromNoInstallmentPercent =
@@ -534,13 +534,11 @@ export class AdminDashboardService {
                 ).toFixed(2) || 0;
 
             var revenueFromInstallmentPercent =
-                revenueFromInstallment ||
-                (0 * 100) / revenues[0].total_profit ||
+                ((parseFloat (revenueFromInstallment) ||
+                0 )* 100) / revenues[0].total_profit ||
                 0;
             response["revenue_from_installment_percentage"] =
-                (Math.round(revenueFromInstallmentPercent * 100) / 100).toFixed(
-                    2
-                ) || 0;
+                revenueFromInstallmentPercent|| 0;
 
             var installmentBookingQty = await getConnection().query(`
       SELECT count(id) as confirm_booking
@@ -905,7 +903,7 @@ export class AdminDashboardService {
       "user"
       WHERE
       register_via In ('android','ios') AND is_deleted = false
-      AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      AND Role_id IN(${Role.FREE_USER},${Role.PAID_USER})
       `);
 
         response["user_registered_via_app"] = userRegisteredViaApp[0].cnt || 0;
@@ -913,13 +911,77 @@ export class AdminDashboardService {
         var userRegisteredViaWeb = await getConnection().query(`
     SELECT COUNT(*) as cnt
       FROM
-      "user" where register_via = 'web' AND is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.GUEST_USER},${Role.PAID_USER})
+      "user" where register_via = 'web' AND is_deleted = false AND Role_id IN(${Role.FREE_USER},${Role.PAID_USER})
       `);
 
         response["user_registered_via_web"] =
-            parseInt(userRegisteredViaWeb[0].cnt) -
-                parseInt(userRegisteredViaApp[0].cnt) || 0;
+            parseInt(userRegisteredViaWeb[0].cnt) || 0;
 
         return response;
+    }
+
+    async dashboardBookingChart(filterOption: DashboardFilterDto) {
+        var tDate = new Date();
+        var todayDate = tDate.toISOString();
+        todayDate = todayDate
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "");
+
+        const { moduleId, startDate, toDate } = filterOption;
+        var where = `"booking"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`;
+        if (startDate) {
+            where += `AND (DATE(booking_date) >= '${startDate}') `;
+        } else {
+            where += `AND (DATE(booking_date) <= '${todayDate}') `;
+        }
+
+        if (toDate) {
+            where += `AND (DATE(booking_date) >= '${toDate}') `;
+        } else {
+            where += `AND (DATE(booking_date) >= '${todayDate}') `;
+        }
+
+        const query = await getConnection()
+            .query(`select
+                            count(*),module_id,sum(total_amount) as total
+                        from
+                            booking
+                        where
+                            "booking"."booking_status" in (1, 0)
+                            and ("booking".booking_date >= '${startDate ? startDate : todayDate}')
+                            and ("booking".booking_date <= '${toDate ? toDate : todayDate}')
+                        group by module_id`)
+
+        // const count = await query();
+        let flights = 0
+        let hotels = 0
+        let flightsTotal = 0
+        let hotelsTotal = 0
+
+        for await (const iterator of query) {
+            if (iterator.module_id == ModulesName.FLIGHT) {
+                flights = parseFloat(iterator.count)
+                flightsTotal = parseFloat(iterator.total)
+            }
+
+            if (iterator.module_id == ModulesName.HOTEL) {
+                hotels = parseFloat(iterator.count)
+                hotelsTotal = parseFloat(iterator.total)
+            }
+
+        }
+
+        return [{
+            moduleId: 1,
+            counts: flights,
+            total: flightsTotal,
+            name: 'Flight'
+        }, {
+            moduleId: 3,
+            counts: hotels,
+            total: hotelsTotal,
+            name: 'Hotel'
+        }]
+
     }
 }
