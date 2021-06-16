@@ -4229,7 +4229,9 @@ export class Mystifly implements StrategyAirline {
                     outbound: outBoundExtraService,
                     inbound: inBoundExtraService,
                 };
-                routes['log_file'] = logFile
+                console.log('logFile',logFile);
+                
+                route.log_file = logFile
                 routes.push(route);
             }
 

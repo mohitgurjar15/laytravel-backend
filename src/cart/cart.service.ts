@@ -1643,8 +1643,13 @@ more than 10.`
                     selected_down_payment,
                     transaction_token,
                 );
-                logFile[reservationId] = newCart["detail"]['logFile']
+
+                console.log(" newCart[detail]", newCart["detail"])
+            
+                logFile[reservationId] = newCart["detail"]['logData']
+                console.log('logFile',logFile)
                 newCart["logFile"] = logFile
+                console.log('logFile', logFile)
                 //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
@@ -1668,18 +1673,18 @@ more than 10.`
         }
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(CartTravelers)
-                .where(`"cart_id" = '${cart.id}'`)
-                .execute();
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(Cart)
-                .where(`"id" = '${cart.id}'`)
-                .execute();
+            // await getConnection()
+            //     .createQueryBuilder()
+            //     .delete()
+            //     .from(CartTravelers)
+            //     .where(`"cart_id" = '${cart.id}'`)
+            //     .execute();
+            // await getConnection()
+            //     .createQueryBuilder()
+            //     .delete()
+            //     .from(Cart)
+            //     .where(`"id" = '${cart.id}'`)
+            //     .execute();
         } else {
             await this.saveFailedBooking(
                 cartData.id,

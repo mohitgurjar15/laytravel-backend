@@ -13,6 +13,7 @@ export class FlightSearchResult {
     inbound_depature_time_slot: any;
     inbound_arrival_time_slot: any;
     category_name?: string;
+    
 }
 export class Route {
     type: string;
@@ -63,6 +64,7 @@ export class Route {
     no_of_weekly_installment_3: number;
     instalment_avail_after: number;
     category_name?: string;
+    log_file?: string;
 }
 
 export class RouteType {
