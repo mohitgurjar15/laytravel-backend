@@ -546,7 +546,7 @@ export class FlightRouteService {
         Activity.logActivity(
             user.userId,
             "Flight Route",
-            `Flight route deleted `,
+            `Flight route updated.`,
             previous,
             JSON.stringify(current)
         );
@@ -650,7 +650,7 @@ export class FlightRouteService {
                                         ToCode: row.to_airport_code,
                                         category: category.id,
                                         type: row.type,
-                                        message: `Route ${row.from_airport_code} to ${row.to_airport_code}, category ${category.name} and type ${row.type} is already exist.`,
+                                        category_id: `Route ${row.from_airport_code} to ${row.to_airport_code}, category ${category.name} and type ${row.type} is already exist.`,
                                     };
                                     errors.push(r);
                                 }
