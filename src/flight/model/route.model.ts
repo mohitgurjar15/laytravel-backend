@@ -65,6 +65,7 @@ export class Route {
     instalment_avail_after: number;
     category_name?: string;
     log_file?: string;
+    markUpDetails?: string;
 }
 
 export class RouteType {

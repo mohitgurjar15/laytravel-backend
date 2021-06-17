@@ -3305,6 +3305,7 @@ export class FlightService {
             console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])
             logData['revalidation-log'] = airRevalidateResult[0]['log_file']
+            logData['markUpDetails'] = airRevalidateResult[0]['markUpDetails']
             console.log(logData);
             
             let isPassportRequired = false;

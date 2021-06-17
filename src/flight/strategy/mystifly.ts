@@ -4232,6 +4232,7 @@ export class Mystifly implements StrategyAirline {
                 console.log('logFile',logFile);
                 
                 route.log_file = logFile
+                route.markUpDetails = JSON.stringify(markUpDetails)
                 routes.push(route);
             }
 
