@@ -31,7 +31,7 @@ export const reviewLink =
         : `https://alpha.laytrip.com/cart/confirm/`;
 export const logUrl =
            env == "prod"
-               ? `https://laytrip.com/logs/`
+               ? `https://https://logs.laytrip.com/`
                : `https://ip.laytrip.com/logs/`;
 
 export const bookingDetailUrl =

@@ -1902,11 +1902,8 @@ export class FlightService {
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
-        //booking.reservationId = reservationId
+
         booking.locationInfo = {
-            journey_type,
-            source_location,
-            destination_location,
         };
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 

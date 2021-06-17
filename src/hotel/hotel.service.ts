@@ -1421,7 +1421,9 @@ export class HotelService {
         booking.moduleId = moduleDetails?.id;
         //console.log("moduleDetails", moduleDetails);
 
-        booking.laytripBookingId = reservationId;
+       // booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+
+        booking.laytripBookingId = reservationId
         //console.log(1);
 
         booking.bookingType = bookingType;
