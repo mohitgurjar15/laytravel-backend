@@ -188,7 +188,7 @@ export class Mystifly implements StrategyAirline {
     async oneWaySearch(
         searchFlightDto: OneWaySearchFlightDto,
         user
-    ) /* :Promise<FlightSearchResult> */ {
+    ) {
         const mystiflyConfig = await this.getMystiflyCredential();
         console.log(mystiflyConfig);
         const sessionToken = await this.startSession();
@@ -201,10 +201,6 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
-
-        //  let filteredListes = await this.getRoutes(source_location,destination_location,true)
-        //  return filteredListes
-        console.log(searchFlightDto)
         
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
@@ -560,31 +556,12 @@ export class Mystifly implements StrategyAirline {
                 }
                 route.instalment_details = instalmentDetails;
 
-                /* if(instalmentEligibility){
-					instalmentDetails = Instalment.biWeeklyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-					if (instalmentDetails.instalment_available) {
-						route.biweekly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
-						route.biweekly_installment = instalmentDetails.instalment_date[1].instalment_amount;
-						route.no_of_biweekly_installment = instalmentDetails.instalment_date.length-1;
-					}
-				} */
-
-                /* if(instalmentEligibility){
-					instalmentDetails = Instalment.monthlyInstalment(route.selling_price, moment(stops[0].departure_date, 'DD/MM/YYYY').format("YYYY-MM-DD"), bookingDate, 0);
-					if (instalmentDetails.instalment_available) {
-						route.monthly_down_payment = instalmentDetails.instalment_date[0].instalment_amount;
-						route.monthly_installment = instalmentDetails.instalment_date[1].instalment_amount;
-						route.no_of_monthly_installment = instalmentDetails.instalment_date.length-1;
-					}
-				} */
-
                 route.stop_count = stops.length - 1;
                 route.is_passport_required =
                     flightRoutes[i]["a:ispassportmandatory"][0] == "true"
                         ? true
                         : false;
-                // route.departure_code = source_location;
-                // route.arrival_code = destination_location;
+                
                 route.departure_code = stops[0].departure_code;
                 route.arrival_code = stops[stops.length - 1].arrival_code;
                 route.departure_date = stops[0].departure_date;
