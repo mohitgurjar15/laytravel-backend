@@ -2421,55 +2421,55 @@ export class CronJobsService {
             .where("is_deleted = false AND status = true")
         .getMany();
 
-        let currencyDetails = await getManager()
-            .createQueryBuilder(Currency, "currency")
-            .where(`"currency"."code"=:currency and "currency"."status"=true`, {
-                currency : "USD",
-            })
-            .getOne();
-        if (!currencyDetails) {
-            throw new BadRequestException(`Currency not available.`);
-        }
+        // let currencyDetails = await getManager()
+        //     .createQueryBuilder(Currency, "currency")
+        //     .where(`"currency"."code"=:currency and "currency"."status"=true`, {
+        //         currency : "USD",
+        //     })
+        //     .getOne();
+        // if (!currencyDetails) {
+        //     throw new BadRequestException(`Currency not available.`);
+        // }
 
-        let languageDetails = await getManager()
-            .createQueryBuilder(Language, "language")
-            .where(
-                `"language"."iso_1_code"=:language and "language"."active"=true`,
-                {
-                    language:'en',
-                }
-            )
-            .getOne();
-        if (!languageDetails) {
-            throw new BadRequestException(`Language not available.`);
-        }
+        // let languageDetails = await getManager()
+        //     .createQueryBuilder(Language, "language")
+        //     .where(
+        //         `"language"."iso_1_code"=:language and "language"."active"=true`,
+        //         {
+        //             language:'en',
+        //         }
+        //     )
+        //     .getOne();
+        // if (!languageDetails) {
+        //     throw new BadRequestException(`Language not available.`);
+        // }
 
         const headers = {
-            currency: currencyDetails,
-            language: languageDetails,
+            currency: 'USD',
+            language: 'en',
         }
 
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 
-        const mystiflyConfig = await new Promise((resolve) =>
-            resolve(mystifly.getMystiflyCredential())
-        );
-        //console.log(mystiflyConfig);
+        // const mystiflyConfig = await new Promise((resolve) =>
+        //     resolve(mystifly.getMystiflyCredential())
+        // );
+        // //console.log(mystiflyConfig);
 
-        const sessionToken = await new Promise((resolve) =>
-            resolve(mystifly.startSession())
-        );
+        // const sessionToken = await new Promise((resolve) =>
+        //     resolve(mystifly.startSession())
+        // );
 
-        let module = await getManager()
-            .createQueryBuilder(Module, "module")
-            .where("module.name = :name", { name: "flight" })
-            .getOne();
+        // let module = await getManager()
+        //     .createQueryBuilder(Module, "module")
+        //     .where("module.name = :name", { name: "flight" })
+        //     .getOne();
 
-        if (!module) {
-            throw new InternalServerErrorException(
-                `Flight module is not configured in database`
-            );
-        }
+        // if (!module) {
+        //     throw new InternalServerErrorException(
+        //         `Flight module is not configured in database`
+        //     );
+        // }
 
 
         //var result = [];
@@ -2488,7 +2488,7 @@ export class CronJobsService {
 
             let dto = {
                 source_location: route.fromAirportCode,
-                destination_location: route.fromAirportCode,
+                destination_location: route.toAirportCode,
                 departure_date: depatureDate,
                 flight_class: 'economy',
                 adult_count: (index + 1),
@@ -2496,24 +2496,21 @@ export class CronJobsService {
                 infant_count: 0,
             }; 
             request[index] = dto
-            try{
-            const result = new Promise((resolve) =>
-            resolve(
-                mystifly.oneWaySearchZip(
-                    dto,
-                    {},
-                    mystiflyConfig,
-                    sessionToken,
-                    module,
-                    currencyDetails
-                )
-            )
+        //     const result = new Promise((resolve) =>
+        //     resolve(
+        //         mystifly.oneWaySearchZip(
+        //             dto,
+        //             {},
+        //             mystiflyConfig,
+        //             sessionToken,
+        //             module,
+        //             currencyDetails
+        //         )
+        //     )
 
-        );
-        response[index] = result
-            } catch (error) {
-                response[index] = {}
-            }
+        // );
+        response[index] = await this.flightService.searchOneWayZipFlight(dto, headers,{})
+            
         }
 
         for (let index = 5; index < 10; index++) {
@@ -2538,7 +2535,7 @@ export class CronJobsService {
 
             let dto = {
                 source_location: route.fromAirportCode,
-                destination_location: route.fromAirportCode,
+                destination_location: route.toAirportCode,
                 departure_date: depatureDate,
                 arrival_date: arrivalDate,
                 flight_class: 'economy',
@@ -2559,33 +2556,32 @@ export class CronJobsService {
             //         )
             //     )
             // );
-            try{
-            const result = new Promise((resolve) =>
-            //resolve(mystifly.roundTripSearch(searchFlightDto, user))
-            resolve(
-                mystifly.roundTripSearchZip(
-                    dto,
-                    {},
-                    mystiflyConfig,
-                    sessionToken,
-                    module,
-                    currencyDetails
-                )
-            )
-        );
-            response[index] = result
-            }catch(error){
-                response[index] = {}
-            }
+            
+            // const result = new Promise((resolve) =>
+            // //resolve(mystifly.roundTripSearch(searchFlightDto, user))
+            // resolve(
+            //     mystifly.roundTripSearchZip(
+            //         dto,
+            //         {},
+            //         mystiflyConfig,
+            //         sessionToken,
+            //         module,
+            //         currencyDetails
+            //     )
+            // )
+        //);
+            
+                response[index] = await this.flightService.searchRoundTripZipFlight(dto, headers,{})
+            
         }
         //const response = await Promise.all(result);
 
         let emailData = []
-
+        return response
     for (let index = 0; index < response.length; index++) {
         const flight = response[index];
 
-        const flightData = flight.items[0]
+        const flightData = flight?.items[0]
 
         emailData[index] = request[index]
 
