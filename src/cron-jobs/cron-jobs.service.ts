@@ -1,4 +1,7 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+    BadRequestException, Injectable, NotFoundException, Inject,
+    CACHE_MANAGER, 
+    InternalServerErrorException} from "@nestjs/common";
 import { UserRepository } from "src/auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -63,12 +66,21 @@ import { BookingRunoutNotificationMail } from "src/config/admin-email-notificati
 import { CancellationReason } from "src/enum/cancellation-reason.enum";
 import { Message } from "twilio/lib/twiml/MessagingResponse";
 import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
+import { FlightRoute } from "src/entity/flight-route.entity";
+import { Currency } from "src/entity/currency.entity";
+import { Language } from "src/entity/language.entity";
+import { Strategy } from "src/flight/strategy/strategy";
+import { Mystifly } from "src/flight/strategy/mystifly";
+import { Cache } from "cache-manager";
+import { Module } from "src/entity/module.entity";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
 @Injectable()
 export class CronJobsService {
     constructor(
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
 
@@ -2397,5 +2409,211 @@ export class CronJobsService {
         return {
             message: `${new Date()} date default user successfully done`,
         };
+    }
+
+
+    async flightAvailiblityAssure(){
+        let routes = await getConnection()
+        .createQueryBuilder(FlightRoute,"routes")
+            //.select('DISTINCT ON (LOWER("routes"."to_airport_code")) "routes"."to_airport_code" AND DISTINCT ON (LOWER("routes"."from_airport_code")) "routes"."from_airport_code"')
+            .orderBy("RANDOM()", 'ASC')
+            .limit(10)
+            .where("is_deleted = false AND status = true")
+        .getMany();
+
+        let currencyDetails = await getManager()
+            .createQueryBuilder(Currency, "currency")
+            .where(`"currency"."code"=:currency and "currency"."status"=true`, {
+                currency : "USD",
+            })
+            .getOne();
+        if (!currencyDetails) {
+            throw new BadRequestException(`Currency not available.`);
+        }
+
+        let languageDetails = await getManager()
+            .createQueryBuilder(Language, "language")
+            .where(
+                `"language"."iso_1_code"=:language and "language"."active"=true`,
+                {
+                    language:'en',
+                }
+            )
+            .getOne();
+        if (!languageDetails) {
+            throw new BadRequestException(`Language not available.`);
+        }
+
+        const headers = {
+            currency: currencyDetails,
+            language: languageDetails,
+        }
+
+        const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+
+        const mystiflyConfig = await new Promise((resolve) =>
+            resolve(mystifly.getMystiflyCredential())
+        );
+        //console.log(mystiflyConfig);
+
+        const sessionToken = await new Promise((resolve) =>
+            resolve(mystifly.startSession())
+        );
+
+        let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: "flight" })
+            .getOne();
+
+        if (!module) {
+            throw new InternalServerErrorException(
+                `Flight module is not configured in database`
+            );
+        }
+
+
+        //var result = [];
+        var request = [];
+        var response = []
+        for (let index = 0; index < 5; index++) {
+            const route = routes[index];
+             const today = new Date();
+             let depatureRange = ((index + 1) * 30) + 2
+            today.setDate(today.getDate() + depatureRange);
+
+            var depatureDate = today.toISOString().split("T")[0];
+            depatureDate = depatureDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+
+            let dto = {
+                source_location: route.fromAirportCode,
+                destination_location: route.fromAirportCode,
+                departure_date: depatureDate,
+                flight_class: 'economy',
+                adult_count: (index + 1),
+                child_count: 0,
+                infant_count: 0,
+            }; 
+            request[index] = dto
+            try{
+            const result = new Promise((resolve) =>
+            resolve(
+                mystifly.oneWaySearchZip(
+                    dto,
+                    {},
+                    mystiflyConfig,
+                    sessionToken,
+                    module,
+                    currencyDetails
+                )
+            )
+
+        );
+        response[index] = result
+            } catch (error) {
+                response[index] = {}
+            }
+        }
+
+        for (let index = 5; index < 10; index++) {
+            const route = routes[index];
+             const today = new Date();
+             let depatureRange = ((index + 1) * 30) + 2
+            today.setDate(today.getDate() + depatureRange);
+
+            var depatureDate = today.toISOString().split("T")[0];
+            depatureDate = depatureDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+
+            const day = new Date();
+             let arrivalRange = ((index + 1) * 30) + 6
+            day.setDate(day.getDate() + arrivalRange);
+
+            var arrivalDate = day.toISOString().split("T")[0];
+            arrivalDate = arrivalDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+
+            let dto = {
+                source_location: route.fromAirportCode,
+                destination_location: route.fromAirportCode,
+                departure_date: depatureDate,
+                arrival_date: arrivalDate,
+                flight_class: 'economy',
+                adult_count: (index - 4),
+                child_count: 0,
+                infant_count: 0,
+            }; 
+            request[index] = dto
+            // result[index] = new Promise((resolve) =>
+            //     resolve(
+            //         mystifly.roundTripSearchZipWithFilter(
+            //             dto,
+            //             {},
+            //             mystiflyConfig,
+            //             sessionToken,
+            //             module,
+            //             currencyDetails
+            //         )
+            //     )
+            // );
+            try{
+            const result = new Promise((resolve) =>
+            //resolve(mystifly.roundTripSearch(searchFlightDto, user))
+            resolve(
+                mystifly.roundTripSearchZip(
+                    dto,
+                    {},
+                    mystiflyConfig,
+                    sessionToken,
+                    module,
+                    currencyDetails
+                )
+            )
+        );
+            response[index] = result
+            }catch(error){
+                response[index] = {}
+            }
+        }
+        //const response = await Promise.all(result);
+
+        let emailData = []
+
+    for (let index = 0; index < response.length; index++) {
+        const flight = response[index];
+
+        const flightData = flight.items[0]
+
+        emailData[index] = request[index]
+
+        if(flightData){
+            let route_code = flightData?.route_code
+            emailData[index]['availiblity'] = true
+            emailData[index]['route_code'] = flightData?.route_code
+            emailData[index]['unique_code'] = flightData?.unique_code
+
+            const airRevalidateResult = await mystifly.airRevalidate(
+            { route_code },
+            {}
+        );
+
+        if (airRevalidateResult) {
+            emailData[index]['airRevalidateResult'] = true
+            }else{
+                emailData[index]['airRevalidateResult'] = false
+            }
+
+
+        }else{
+            emailData[index]['availiblity'] = false
+        }
+
+
+        
+    }        
+        return emailData
     }
 }
