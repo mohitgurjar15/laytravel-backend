@@ -1,6 +1,7 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { errorMessage } from "src/config/common.config";
+import { RouteType } from "src/flight/model/route.model";
 export class ListFlightRouteDto {
     @IsNotEmpty({
         message: `Please enter limit&&&limit&&&${errorMessage}`,
@@ -37,4 +38,11 @@ export class ListFlightRouteDto {
         example:1
     })
     category_id: number;
+
+    @ApiPropertyOptional({
+        description:'type',
+        example:1
+    })
+    type: string;
+
 }

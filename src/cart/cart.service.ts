@@ -1178,12 +1178,15 @@ more than 10.`
             let successedResult = 0;
             let failedResult = 0;
             let BookingIds = [];
+            let flightCount = 0;
+            let hotelCount = 0;
             //let mailResponce = []
 
             const cartCount = result.length;
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
+                        flightCount++;
                         let flightResponce = await this.bookFlight(
                             item,
                             user,
@@ -1191,7 +1194,8 @@ more than 10.`
                             bookCart,
                             smallestDate,
                             cartData,
-                            cartCount
+                            cartCount,
+                            flightCount
                         );
                         responce.push(flightResponce);
 
@@ -1207,6 +1211,7 @@ more than 10.`
                         break;
 
                     case ModulesName.HOTEL:
+                        hotelCount++;
                         let hotelResponce = await this.bookHotel(
                             item,
                             user,
@@ -1214,7 +1219,8 @@ more than 10.`
                             bookCart,
                             smallestDate,
                             cartData,
-                            cartCount
+                            cartCount,
+                            hotelCount
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
@@ -1420,6 +1426,7 @@ more than 10.`
                         paymentStatus: PaymentStatus.CONFIRM,
                         paymentInfo: captureCardresult.meta_data,
                         transactionToken: captureCardresult.token,
+                        paymentCaptureDate : new Date(),
                         attempt: 1,
                     })
                     .where(
@@ -1457,8 +1464,10 @@ more than 10.`
         bookCart: CartBookDto,
         smallestDate: string,
         cartData: CartBooking,
-        cartCount: number
+        cartCount: number,
+        flightCount : number
     ) {
+        let reservationId = `${cartData.laytripCartId}-F${flightCount}`
         const {
             payment_type,
             laycredit_points,
@@ -1562,7 +1571,8 @@ more than 10.`
                         currencyId: 1,
                         booking_through: "web",
                     },
-                    cart.moduleId
+                    cart.moduleId,
+                    reservationId
                 );
             } else {
                 for await (const traveler of cart.travelers) {
@@ -1585,6 +1595,7 @@ more than 10.`
                     card_token,
                     booking_through,
                     cartCount,
+                    reservationId,
                 };
 
                 console.log("cartBook request");
@@ -1616,7 +1627,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
             return newCart;
         }
@@ -1645,7 +1657,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
         }
         return newCart;
@@ -1658,8 +1671,10 @@ more than 10.`
         bookCart: CartBookDto,
         smallestDate: string,
         cartData: CartBooking,
-        cartCount: number
+        cartCount: number,
+        hotelCount
     ) {
+        let reservationId = `${cartData.laytripCartId}-H${hotelCount}`
         const {
             payment_type,
             laycredit_points,
@@ -1717,7 +1732,8 @@ more than 10.`
                         currencyId: 1,
                         booking_through: "web",
                     },
-                    cart.moduleId
+                    cart.moduleId,
+                    reservationId
                 );
             } else {
                 console.log("hhhhh", "1");
@@ -1744,6 +1760,7 @@ more than 10.`
                     booking_through,
                     bundle: value[0].bundle,
                     cartCount,
+                    reservationId
                 };
 
                 console.log("cartBook request");
@@ -1777,7 +1794,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
             return newCart;
         }
@@ -1812,7 +1830,8 @@ more than 10.`
                     currencyId: 1,
                     booking_through: "web",
                 },
-                cart.moduleId
+                cart.moduleId,
+                reservationId
             );
         }
         return newCart;
@@ -1828,8 +1847,10 @@ more than 10.`
             currencyId: number;
             booking_through: string;
         },
-        moduleId
+        moduleId,
+        reservationId
     ) {
+        //cartCount = cartCount ? cartCount : 1;
         if (typeof errorLog == "object") {
             errorLog = JSON.stringify(errorLog);
         }
@@ -1844,7 +1865,7 @@ more than 10.`
             let booking = new Booking();
             booking.id = uuidv4();
             booking.moduleId = ModulesName.FLIGHT;
-            booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
+            booking.laytripBookingId = reservationId;
             booking.bookingType = bookingType;
             booking.currency = currencyId;
             booking.totalAmount = moduleInfo[0].selling_price;

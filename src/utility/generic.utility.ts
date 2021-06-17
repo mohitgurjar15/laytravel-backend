@@ -47,7 +47,12 @@ export class Generic {
     }
 
     static formatPriceDecimal(price: number) {
-        return Number(price.toFixed(2));
+
+        if (typeof price != 'number'){
+            price = parseFloat(price);
+        }
+        console.log(" price", price);
+         return Number(price.toFixed(2));
     }
 
     static async getPaymentCredential() {

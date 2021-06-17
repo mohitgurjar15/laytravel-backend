@@ -35,6 +35,8 @@ import { ExportPaymentAdminDto } from "./dto/export-payment-list.dto";
 import { DeleteBookingDto } from "./dto/delete-cart.dto";
 import { UpdateTravelerInfoDto } from "./dto/update-traveler-info.dto";
 import { updateBookingDto } from "./dto/update-booking.dto";
+import { IntialCancelBookingDto } from "./dto/intial-cancelation-booking.dto";
+import { ReverceIntialCancelBookingDto } from "./dto/inrial-cancellation-reverce.dto";
 import { GetReferralId } from "src/decorator/referral.decorator";
 
 @ApiTags("Booking")
@@ -548,6 +550,57 @@ export class BookingController {
             bookingId,
             travelerId
         );
+    }
+
+    @Put("initiate-cancellation/reverse")
+    @UseGuards(AuthGuard())
+    @Roles(Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER)
+    @ApiOperation({
+        summary: "Reverse request of initiate cancellation booking",
+    })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Given booking id not found" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async reverceInitiateCancellation(
+        @Body() reverceIntialCancelBookingDto: ReverceIntialCancelBookingDto,
+        @GetUser() user: User
+    ): Promise<{ message: any }> {
+        return await this.bookingService.reverceIntialBookingCancel(reverceIntialCancelBookingDto, user);
+    }
+
+
+    @Post("initiate-cancellation/request")
+    @UseGuards(AuthGuard())
+    @Roles(Role.FREE_USER, Role.GUEST_USER, Role.PAID_USER)
+    @ApiOperation({
+        summary: "create request for initiate cancellation booking",
+    })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Given booking id not found" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async initiateCancellation(
+        @Body() intialCancelBookingDto: IntialCancelBookingDto,
+        @GetUser() user: User
+    ): Promise<{ message: any }> {
+        return await this.bookingService.requestIntialCancelBooking(intialCancelBookingDto, user);
     }
 }
 

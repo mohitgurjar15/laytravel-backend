@@ -256,6 +256,12 @@ export class User extends BaseEntity {
     bookings: Booking[];
 
     @OneToMany(
+        () => Booking,
+        (booking) => booking.updateByUser
+    )
+    updatedBookings: Booking[];
+
+    @OneToMany(
         () => BookingInstalments,
         (bookingInstalments) => bookingInstalments.user
     )

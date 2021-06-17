@@ -81,7 +81,7 @@ export class LangunageService {
 			const currentData = JSON.stringify(languageData)
 			
 			await getConnection().queryResultCache!.remove(["languages"]);
-			Activity.logActivity(adminId, "language", `${languageData.name} Languge is updated by admin`,previousData,currentData);
+			Activity.logActivity(adminId, "Language", `${languageData.name} Languge is updated by admin`,previousData,currentData);
         
 			return { message: "Language updated successfully." };
 		} catch (error) {
@@ -115,7 +115,7 @@ export class LangunageService {
 			languageData.save();
 			const currentData = JSON.stringify(languageData)
 			await getConnection().queryResultCache!.remove(["languages"]);
-			Activity.logActivity(adminId, "language", `${languageData.name} Languge is Deleted by admin`,previousData,currentData);
+			Activity.logActivity(adminId, "Language", `${languageData.name} Languge is Deleted by admin`,previousData,currentData);
         
 			return { message: "Language Deleted successfully" };
 		} catch (error) {
@@ -151,7 +151,7 @@ export class LangunageService {
 			Data.save();
 			const currentData = JSON.stringify(Data)
 			await getConnection().queryResultCache!.remove(["languages"]);
-			Activity.logActivity(adminId.userId, "language", ` Languge ${Data.name} status changed by admin`,previousData,currentData);
+			Activity.logActivity(adminId.userId, "Language", ` Languge ${Data.name} status changed by admin`,previousData,currentData);
         
 			return { message: `${Data.name} language status changed successfully` };
 		} catch (error) {

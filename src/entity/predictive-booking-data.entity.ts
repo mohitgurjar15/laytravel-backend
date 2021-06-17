@@ -1,4 +1,12 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    Index,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from "typeorm";
 import { Booking } from "./booking.entity";
 
 @Index("booking_id_idx2", ["bookingId"], {})
@@ -12,6 +20,14 @@ export class PredictiveBookingData extends BaseEntity {
 
     @Column("numeric", { name: "price", precision: 15, scale: 3 })
     price: number;
+
+    @Column("numeric", {
+        name: "last_price",
+        precision: 15,
+        scale: 3,
+        nullable: true,
+    })
+    lastPrice: number;
 
     @Column("integer", { name: "remain_seat" })
     remainSeat: number;

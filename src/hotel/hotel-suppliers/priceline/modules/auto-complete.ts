@@ -35,13 +35,15 @@ export class AutoComplete{
                     let city_id
 
                     switch (type) {
-                        case 'city':
-                            country = sub['country'];
-                            city = sub['city'];
-                            state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
-                            city_id = sub['cityid_ppn'] || "";
+                        case "city":
+                            country = sub["country"];
+                            city = sub["city"];
+                            state = this.genericHelper.isset(sub["state"])
+                                ? sub["state"]
+                                : "";
+                            city_id = sub["cityid_ppn"] || "";
                             break;
-                        
+
                         /* case 'airport':
                             country = sub['country_code'];
                             state = this.genericHelper.isset(sub['state_code']) ? sub['state_code'] : "";
@@ -58,15 +60,21 @@ export class AutoComplete{
                             state = this.genericHelper.isset(sub['state']) ? sub['state'] : "";
                             city = sub['city'];
                             country = sub['country'];
+                            break;*/
+
+                        case "hotel":
+                            line = sub["hotel_name"];
+                            city = sub["address"]["city_name"];
+                            state =
+                                sub["address"]["state_name"] == ""
+                                    ? sub["address"]["state_code"]
+                                    : sub["address"]["state_name"];
+                            country =
+                                sub["address"]["country_name"] == ""
+                                    ? sub["address"]["country_code"]
+                                    : sub["address"]["country_name"];
+                            hotel_id = sub["hotelid_ppn"];
                             break;
-                        
-                        case 'hotel':
-                            line = sub['hotel_name'];
-                            city = sub['address']['city_name'];
-                            state = (sub['address']['state_name'] == "") ? sub['address']['state_code'] : sub['address']['state_name'];
-                            country = (sub['address']['country_name'] == "") ? sub['address']['country_code'] : sub['address']['country_name'];
-                            hotel_id = sub['hotelid_ppn'];
-                            break; */
                     }
                     
                     let title = [line, city, state, country]

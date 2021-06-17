@@ -80,13 +80,53 @@ export class HotelService {
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
 
         // locations = plainToClass(Location, locations, );
+        
+
+        console.log("totalCount", locations.length);
+
+
         let filteredLocations = [];
-        for (let index = 0; index < 7; index++) {
-            filteredLocations.push(locations[index]);
+
+        let cites = []
+        let hotels = []
+
+        for await (const obj of locations) {
+            if(obj.type == 'city'){
+                
+                cites.push(obj)
+            }
+
+            if(obj.type == 'hotel'){
+                hotels.push(obj);
+            } 
+
+        }
+        console.log("city totalCount", cites.length);
+        console.log("hotel totalCount", hotels.length);
+        if(cites.length >= 8)
+        {
+            for (let index = 0; index < 8; index++) {
+                const element = cites[index];
+                filteredLocations.push(element)
+            }
+        }else{
+            filteredLocations = cites
+
+            let count = 8 - cites.length
+
+            console.log('count',count)
+
+            for (let index = 0; index < count ; index++) {
+                const element = hotels[index];
+                console.log("element", element);
+                filteredLocations.push(element)
+            }
         }
 
+        console.log("filteredLocations", filteredLocations.length);
+
         return {
-            data: locations,
+            data: filteredLocations,
             message: locations.length ? "Result found" : "No result Found",
         };
     }
@@ -699,6 +739,7 @@ export class HotelService {
                 card_token,
                 booking_through,
                 cartCount,
+                reservationId
             } = bookHotelCartDto;
             const availabilityDto: AvailabilityDto = {
                 room_ppn: bundle,
@@ -730,7 +771,7 @@ export class HotelService {
                         : 0;
                 bookingRequestInfo.infant_count = 0;
                 bookingRequestInfo.net_rate =
-                    availability[0].retail.sub_total || 0;
+                    availability[0].net_rate.total || 0;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         availability[0].selling.total;
@@ -954,7 +995,8 @@ export class HotelService {
                         null,
                         bookingResult || null,
                         travelers,
-                        cartId
+                        cartId,
+                        reservationId
                     );
 
                     // if (dayDiff <= 90) {
@@ -1081,7 +1123,8 @@ export class HotelService {
                         null,
                         bookingResult,
                         travelers,
-                        cartId
+                        cartId,
+                        reservationId
                     );
                     //send email here
                     bookingResult.laytrip_booking_id = laytripBookingResult.id;
@@ -1339,7 +1382,8 @@ export class HotelService {
         captureCardresult = null,
         supplierBookingData,
         travelers,
-        cartId = null
+        cartId = null,
+        reservationId = null
     ) {
         const {
             selling_price,
@@ -1378,7 +1422,9 @@ export class HotelService {
         booking.moduleId = moduleDetails?.id;
         //console.log("moduleDetails", moduleDetails);
 
-        booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+       // booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+
+        booking.laytripBookingId = reservationId
         //console.log(1);
 
         booking.bookingType = bookingType;
@@ -1397,7 +1443,7 @@ export class HotelService {
         //console.log(6);
         booking.bookingDate = bookingDate;
         //console.log("currencyDetails");
-
+        //booking.reservationId = reservationId;
         //console.log("currencyDetails", currencyDetails);
         booking.usdFactor = currencyDetails?.liveRate.toString();
         booking.layCredit = laycredit_points || 0;

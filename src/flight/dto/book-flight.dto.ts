@@ -134,6 +134,12 @@ export class BookFlightDto {
                example: false,
            })
            cartCount?: number;
+
+           @ApiPropertyOptional({
+               description: "reservation id",
+               example: 1,
+           })
+           reservationId?: string;
        }
 
 class Traveler {
