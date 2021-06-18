@@ -327,8 +327,9 @@ export class Mystifly implements StrategyAirline {
             let otherSegments = [];
             let totalDuration;
             let uniqueCode;
-
-            let offerData = LandingPage.getOfferData('AS-410','flight',source_location,destination_location,departure_date)
+            
+            let searchData = { departure:source_location,arrival:destination_location,checkInDate:departure_date}
+            let offerData = LandingPage.getOfferData('AS-410','flight',searchData)
             for (let i = 0; i < flightRoutes.length; i++) {
                 route = new Route();
                 stops = [];
@@ -492,7 +493,7 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
-                    
+
                     let weeklyCustomDownPayment=LandingPage.getDownPayment(offerData,0);
                     
                     instalmentDetails = Instalment.weeklyInstalment(

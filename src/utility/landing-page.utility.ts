@@ -10,15 +10,15 @@ export class LandingPage {
         return false;
       }
       
-    static getOfferData(lpNumber,type,departure,arrival,checkInDate){
+    static getOfferData(lpNumber,type,searchData){
       
         if(LANDING_PAGE[lpNumber].applicable){
           
           switch(type){
               case 'flight' : 
-                  return this.checkFlightoffer(lpNumber,departure,arrival,checkInDate)
+                  return this.checkFlightoffer(lpNumber,searchData)
               case 'hotel' :
-                  return this.checkHotelOffer(lpNumber,departure,checkInDate);
+                  return this.checkHotelOffer(lpNumber,searchData);
               default :
                   return {applicable : false}
             }
@@ -29,16 +29,16 @@ export class LandingPage {
 
     }
 
-    static checkFlightoffer(lpNumber,departure,arrival,checkInDate){
+    static checkFlightoffer(lpNumber,searchData){
         let LANDING_PAGE_DATA =LANDING_PAGE[lpNumber];
         let isRouteExist = LANDING_PAGE_DATA.deals.flight.findIndex(deal=>{
-            return  deal.from.code==departure && deal.to.code==arrival; 
+            return  deal.from.code==searchData.departure && deal.to.code==searchData.arrival; 
           })
           if(isRouteExist==-1){
             return {applicable : false}
           }
           
-          if(moment(checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
+          if(moment(searchData.checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
             return {applicable : false}
           }
     
@@ -50,17 +50,17 @@ export class LandingPage {
           }
     }
 
-    static checkHotelOffer(lpNumber,departure,checkInDate){
+    static checkHotelOffer(lpNumber,searchData){
 
         let LANDING_PAGE_DATA =LANDING_PAGE[lpNumber];
         let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal=>{
-            return  deal.location.city==departure
+            return  deal.location.city==searchData.departure
         })
         if(isRouteExist==-1){
           return {applicable : false};
         }
 
-        if(moment(checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
+        if(moment(searchData.checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
           return {applicable : false};
         }
 

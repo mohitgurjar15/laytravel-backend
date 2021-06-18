@@ -271,7 +271,6 @@ export class Instalment {
             firstInstalment = percentageAmount + additionalAmount;
         }
 
-        console.log(customDownPayment,downPayment,"====")
         if(customDownPayment){
             firstInstalment = customDownPayment + additionalAmount;
             let remainingInstalmentAmount = amount - firstInstalment;
