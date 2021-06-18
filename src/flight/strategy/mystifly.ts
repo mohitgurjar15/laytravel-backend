@@ -492,6 +492,7 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
+                    
                     let weeklyCustomDownPayment=LandingPage.getDownPayment(offerData,0);
                     
                     instalmentDetails = Instalment.weeklyInstalment(

@@ -14,15 +14,19 @@ export class LandingPage {
       
         if(LANDING_PAGE[lpNumber].applicable){
           
-        switch(type){
-            case 'flight' : 
-                return this.checkFlightoffer(lpNumber,departure,arrival,checkInDate)
-            case 'hotel' :
-                return this.checkHotelOffer(lpNumber,departure,checkInDate);
-            default :
-                return {applicable : false}
-          }
+          switch(type){
+              case 'flight' : 
+                  return this.checkFlightoffer(lpNumber,departure,arrival,checkInDate)
+              case 'hotel' :
+                  return this.checkHotelOffer(lpNumber,departure,checkInDate);
+              default :
+                  return {applicable : false}
+            }
         }
+        else{
+          return {applicable : false}
+        }
+
     }
 
     static checkFlightoffer(lpNumber,departure,arrival,checkInDate){
