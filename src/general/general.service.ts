@@ -55,6 +55,7 @@ import { BookingCancellationNotificationMail } from "src/config/admin-email-noti
 import { BookingChangeBySupplierNotificationMail } from "src/config/admin-email-notification-templetes/booking-change-by-supplier-notification.html";
 import { BookingRunoutNotificationMail } from "src/config/admin-email-notification-templetes/booking-run-out-notification.html";
 import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
+import { logUrl } from "src/config/base-url";
 @Injectable()
 export class GeneralService {
     constructor(private readonly mailerService: MailerService) {}
@@ -338,7 +339,7 @@ export class GeneralService {
                 for (let index = 0; index < attachment?.file.length; index++) {
                     const file = attachment?.file[index];
                     attachment.file[index] =
-                        siteUrl + "logs/mail/" + file;
+                        logUrl + "mail/" + file;
                 }
             }
             log.attachment = attachment;

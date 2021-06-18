@@ -236,4 +236,24 @@ export class CronJobsController {
         return await this.cronJobsService.defaultUserOn10day()
     }
 
+
+    @Get("flight-availiblity-assure")
+    @ApiOperation({ summary: "flight availiblity assure cron " })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Admin not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async assureFlightRoutes(
+    ) {
+        return await this.cronJobsService.flightAvailiblityAssure()
+    }
+
+
 }

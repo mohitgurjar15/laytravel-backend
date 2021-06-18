@@ -18,10 +18,13 @@ export class RateHelper{
         
         let total = +(publicPrice + taxes).toFixed(2);
 
+        let avg_night_price = +(total / nights).toFixed(2);
+
         return {
             sub_total,
             total,
-            taxes
+            taxes,
+            avg_night_price
         };
     }
 
@@ -47,18 +50,46 @@ export class RateHelper{
         };
     }
 
-    getRates(rate: any, searchParameters: any,inputData=null) {
+    getRates(rate: any, searchParameters: any,inputData=null, mandatoryFees = []) {
+
+        let mendetoryFeesTotal = 0 
+
+        if(mandatoryFees.length){
+            for (const mandatoryFee of mandatoryFees) {
+                mendetoryFeesTotal += parseFloat(mandatoryFee.price)
+            }
+            
+        }
         
         searchParameters.rooms = searchParameters.rooms || inputData.num_rooms;
         let retail = this.getPublicPriceBreakUp(rate, searchParameters);
 
-        let selling = this.getSellingPriceBreakUp(rate);
-        
-        let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
-        
+        let net_rate = this.getSellingPriceBreakUp(rate);
 
+        //let selling = retail.total > net_rate.total ? retail : net_rate;
+        
+       
+        let selling = Object.assign({}, net_rate)
+                 if (retail.total > net_rate.total) {
+            console.log('retail', retail);
+            selling = Object.assign({},retail)
+            console.log('mendetoryFeesTotal', mendetoryFeesTotal);
+            console.log('selling', selling);
+            
+            console.log('selling.sub_total', selling.sub_total);
+            
+            if(mendetoryFeesTotal){
+                console.log('calculations', selling.sub_total - mendetoryFeesTotal);
+                
+                selling.sub_total = parseFloat(selling.sub_total)  - mendetoryFeesTotal
+                console.log('selling.sub_total', selling.sub_total);
+            }
+            
+        }
+        let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         return {
             retail,
+            net_rate,
             selling,
             saving_percent
         }

@@ -59,7 +59,7 @@ export class Search {
                     let {
                         retail,
                         selling,
-                        saving_percent,
+                        saving_percent,net_rate
                     } = this.rateHelper.getRates(this.rate, parameters);
                     if (selling.total > 25) {
                         let details = this.detailHelper.getHotelDetails(
@@ -137,6 +137,7 @@ export class Search {
                             ...details,
                             retail,
                             selling,
+                            net_rate,
                             saving_percent,
                             night_rate:
                                 selling.total /
