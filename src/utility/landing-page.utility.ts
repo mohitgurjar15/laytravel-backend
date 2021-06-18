@@ -79,5 +79,17 @@ export class LandingPage {
       }
       return null;
     }
+
+    static applyDiscount(offerData,price){
+
+      if(offerData.discount.applicable){
+        if(offerData.discount.type=='flat'){
+          
+        }
+      }
+      
+      return price;
+      
+    }
 }
 
