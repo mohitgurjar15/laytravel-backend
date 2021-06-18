@@ -83,13 +83,21 @@ export class LandingPage {
     static applyDiscount(offerData,price){
 
       if(offerData.discount.applicable){
+        let discountPrice;
+
         if(offerData.discount.type=='flat'){
-          
+          discountPrice = price-offerData.discount.amount;
         }
+        else{
+          discountPrice = price-(price*offerData.discount.amount/100);  
+        }
+
+        if(discountPrice<0){
+          return 0;
+        }
+        return discountPrice;
       }
-      
       return price;
-      
     }
 }
 

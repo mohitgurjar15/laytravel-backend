@@ -33,6 +33,7 @@ export class Route {
     start_price: number;
     secondary_start_price: number;
     selling_price: number;
+    discounted_selling_price: number;
     secondary_selling_price: number;
     airline_name: string;
     airline_logo: string;
@@ -64,6 +65,8 @@ export class Route {
     instalment_avail_after: number;
     category_name?: string;
     offer_data:any;
+    discounted_start_price:number;
+    discounted_secondary_start_price:number;
 }
 
 export class RouteType {

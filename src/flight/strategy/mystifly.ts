@@ -482,11 +482,15 @@ export class Mystifly implements StrategyAirline {
                 route.selling_price = Generic.formatPriceDecimal(
                     PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                 );
+                route.discounted_selling_price=LandingPage.applyDiscount(offerData,route.selling_price)
                 route.start_price = 0;
                 route.secondary_start_price = 0;
+                route.discounted_start_price=0;
+                route.discounted_secondary_start_price=0;
                 route.no_of_weekly_installment = 0;
                 //route.instalment_avail_after =routeDetails.category.installmentAvailableAfter;
                 let instalmentDetails;
+                let discountedInstalmentDetails;
                 let instalmentEligibility = RouteCategory.checkInstalmentEligibility(
                     departure_date,
                     bookingDate,
@@ -525,6 +529,20 @@ export class Mystifly implements StrategyAirline {
                         null,
                         0
                     );
+                    
+                    
+                    discountedInstalmentDetails = Instalment.weeklyInstalment(
+                        route.discounted_selling_price,
+                        departure_date,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0,
+                        false,
+                        weeklyCustomDownPayment
+                    );
+                    
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
                             instalmentDetails.instalment_date[0].instalment_amount;
@@ -547,6 +565,12 @@ export class Mystifly implements StrategyAirline {
                             instalmentDetails3.instalment_date[1].instalment_amount;
                         route.no_of_weekly_installment_3 =
                             instalmentDetails3.instalment_date.length - 1;
+
+                        route.discounted_start_price =
+                            discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                        route.discounted_secondary_start_price =
+                            discountedInstalmentDetails.instalment_date[1].instalment_amount;
                     }
                 }
 
