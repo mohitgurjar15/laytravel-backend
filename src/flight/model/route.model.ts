@@ -63,6 +63,7 @@ export class Route {
     no_of_weekly_installment_3: number;
     instalment_avail_after: number;
     category_name?: string;
+    offer_data:any;
 }
 
 export class RouteType {

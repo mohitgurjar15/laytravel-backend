@@ -20,7 +20,7 @@ export class LandingPage {
             case 'hotel' :
                 return this.checkHotelOffer(lpNumber,departure,checkInDate);
             default :
-                return false;
+                return {applicable : false}
           }
         }
     }
@@ -28,17 +28,18 @@ export class LandingPage {
     static checkFlightoffer(lpNumber,departure,arrival,checkInDate){
         let LANDING_PAGE_DATA =LANDING_PAGE[lpNumber];
         let isRouteExist = LANDING_PAGE_DATA.deals.flight.findIndex(deal=>{
-            return  deal.from.code==departure && deal.from.to==arrival; 
+            return  deal.from.code==departure && deal.to.code==arrival; 
           })
           if(isRouteExist==-1){
-            return false;
+            return {applicable : false}
           }
-    
-          if(moment().diff(checkInDate,'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
-            return false;
+          
+          if(moment(checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
+            return {applicable : false}
           }
     
           return {
+            applicable : true,
             payment_frequency_options : LANDING_PAGE_DATA.payment_frequency_options,
             down_payment_options : LANDING_PAGE_DATA.down_payment_options,
             discount : LANDING_PAGE_DATA.discount
@@ -52,18 +53,27 @@ export class LandingPage {
             return  deal.location.city==departure
         })
         if(isRouteExist==-1){
-        return false;
+          return {applicable : false};
         }
 
-        if(moment().diff(checkInDate,'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
-        return false;
+        if(moment(checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
+          return {applicable : false};
         }
 
         return {
-        payment_frequency_options : LANDING_PAGE_DATA.payment_frequency_options,
-        down_payment_options : LANDING_PAGE_DATA.down_payment_options,
-        discount : LANDING_PAGE_DATA.discount
+          applicable : true,
+          payment_frequency_options : LANDING_PAGE_DATA.payment_frequency_options,
+          down_payment_options : LANDING_PAGE_DATA.down_payment_options,
+          discount : LANDING_PAGE_DATA.discount
         }
+    }
+
+    static getDownPayment(offerData,downPaymentOption){
+
+      if(offerData.applicable){
+        return offerData.down_payment_options[downPaymentOption].amount ? offerData.down_payment_options[downPaymentOption].amount :null; 
+      }
+      return null;
     }
 }
 

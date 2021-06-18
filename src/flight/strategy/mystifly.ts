@@ -35,6 +35,7 @@ import { RouteCategory } from "src/utility/route-category.utility";
 import { allAirpots } from "../all-airports";
 import { Airport } from "src/entity/airport.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
+import { LandingPage } from "src/utility/landing-page.utility";
 
 export const flightClass = {
     Economy: "Y",
@@ -240,7 +241,8 @@ export class Mystifly implements StrategyAirline {
         );
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
-
+        
+        //return false;
         let requestBody = "";
         requestBody += `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`;
         requestBody += `<soapenv:Header/>`;
@@ -325,6 +327,8 @@ export class Mystifly implements StrategyAirline {
             let otherSegments = [];
             let totalDuration;
             let uniqueCode;
+
+            let offerData = LandingPage.getOfferData('AS-410','flight',source_location,destination_location,departure_date)
             for (let i = 0; i < flightRoutes.length; i++) {
                 route = new Route();
                 stops = [];
@@ -480,8 +484,7 @@ export class Mystifly implements StrategyAirline {
                 route.start_price = 0;
                 route.secondary_start_price = 0;
                 route.no_of_weekly_installment = 0;
-                route.instalment_avail_after =
-                    routeDetails.category.installmentAvailableAfter;
+                //route.instalment_avail_after =routeDetails.category.installmentAvailableAfter;
                 let instalmentDetails;
                 let instalmentEligibility = RouteCategory.checkInstalmentEligibility(
                     departure_date,
@@ -489,6 +492,8 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
+                    let weeklyCustomDownPayment=LandingPage.getDownPayment(offerData,0);
+                    
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
@@ -496,7 +501,9 @@ export class Mystifly implements StrategyAirline {
                         0,
                         null,
                         null,
-                        0
+                        0,
+                        false,
+                        weeklyCustomDownPayment
                     );
                     let instalmentDetails2 = Instalment.biWeeklyInstalment(
                         route.selling_price,
@@ -554,7 +561,7 @@ export class Mystifly implements StrategyAirline {
                 } else {
                     route.secondary_selling_price = 0;
                 }
-                route.instalment_details = instalmentDetails;
+                //route.instalment_details = instalmentDetails;
 
                 route.stop_count = stops.length - 1;
                 route.is_passport_required =
@@ -589,6 +596,7 @@ export class Mystifly implements StrategyAirline {
                         : false;
                 route.unique_code = md5(uniqueCode);
                 route.category_name = categoryName;
+                route.offer_data=offerData;
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
                 ][0]["a:ptc_farebreakdowns"][0]["a:ptc_farebreakdown"]) {
@@ -630,6 +638,7 @@ export class Mystifly implements StrategyAirline {
             }
             let flightSearchResult = new FlightSearchResult();
             flightSearchResult.items = routes;
+            
 
             //Get min & max selling price
             let priceRange = new PriceRange();
