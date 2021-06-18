@@ -2509,7 +2509,7 @@ export class CronJobsService {
         //     )
 
         // );
-        response[index] = await this.flightService.searchOneWayZipFlight(dto, headers,{})
+        response[index] = await this.flightService.searchOneWayFlight(dto, headers,{},'')
             
         }
 
@@ -2571,7 +2571,7 @@ export class CronJobsService {
             // )
         //);
             
-                response[index] = await this.flightService.searchRoundTripZipFlight(dto, headers,{})
+                response[index] = await this.flightService.searchRoundTripFlight(dto, headers,{},'')
             
         }
         //const response = await Promise.all(result);
