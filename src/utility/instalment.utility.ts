@@ -8,7 +8,7 @@ const firstInstalmentPercentage2 = 20;
 export class Instalment {
 
 
-    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false) {
+    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false, customDownPayment=null) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
 
@@ -43,11 +43,11 @@ export class Instalment {
 
             //let amountPerInstalmentPercentage = amountPerInstalment/amount*100;
 
-            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount)
+            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount,customDownPayment)
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
 
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
             instalmentData.percentage = percentage;
         }
 
@@ -64,7 +64,7 @@ export class Instalment {
 
     }
 
-    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false) {
+    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false, customDownPayment=null) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -97,11 +97,11 @@ export class Instalment {
             let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
             let percentageAmount = (amount * percentage) / 100;
 
-            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount)
+            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount, customDownPayment)
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
 
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
             instalmentData.percentage = percentage;
         }
 
@@ -124,7 +124,7 @@ export class Instalment {
         return instalmentData;
     }
 
-    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false) {
+    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false, customDownPayment=null) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -157,11 +157,11 @@ export class Instalment {
             let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
             let percentageAmount = (amount * percentage) / 100;
 
-            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount)
+            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount, customDownPayment)
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
 
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
             instalmentData.percentage = percentage;
         }
 
@@ -185,7 +185,7 @@ export class Instalment {
 
     }
 
-        static adjustInstalment(amount, instalment_date) {
+    static adjustInstalment(amount, instalment_date) {
         let downPayment = instalment_date[0].instalment_amount;
         let remaingAmount = amount - downPayment;
         let totalInstalmentDates = instalment_date.length - 1;
@@ -246,14 +246,13 @@ export class Instalment {
         return instalmentDateWithAmount;
 
     }
-
-    static calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount = null, downPayment = null, customInstalmentNo = null) {
+    static calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount = null, downPayment = null, customInstalmentNo = null,customDownPayment=null) {
 
         let instalmentDatewithAmount = [];
         let firstInstalment;
         let firstInstalmentTemp;
         let remainingPerInstalmentAmount
-        if (amountPerInstalment > percentageAmount) {
+        /* if (amountPerInstalment > percentageAmount) {
             firstInstalment = amountPerInstalment;
             firstInstalmentTemp = amountPerInstalment;
             if (additionalAmount) {
@@ -265,9 +264,19 @@ export class Instalment {
             if (additionalAmount) {
                 firstInstalment = percentageAmount + additionalAmount;
             }
+        } */
+
+        firstInstalment = firstInstalmentTemp = percentageAmount;
+        if (additionalAmount) {
+            firstInstalment = percentageAmount + additionalAmount;
         }
 
-        if (downPayment) {
+        if(customDownPayment){
+            firstInstalment = customDownPayment + additionalAmount;
+            let remainingInstalmentAmount = amount - firstInstalment;
+            remainingPerInstalmentAmount = remainingInstalmentAmount / (instalmentsDates.length - 1);
+        }
+        else if (downPayment) {
                 //firstInstalment=customAmount+additionalAmount;
             firstInstalment = downPayment + additionalAmount;
             if (firstInstalment < firstInstalmentTemp) {
@@ -325,27 +334,34 @@ export class Instalment {
 
     }
 
-    static calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount = null) {
+    static calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount = null,customDownPayment=null) {
 
         let downPayments = [];
-        let additionalAmt = additionalAmount || 0;
-        let netAmount = amount - additionalAmt;
-        let activePercent;
-        if (percentageAmount > amountPerInstalment) {
-            activePercent = (percentageAmount * 100) / amount;
+        if(customDownPayment==null){
+
+            let additionalAmt = additionalAmount || 0;
+            let netAmount = amount - additionalAmt;
+            let activePercent;
+            if (percentageAmount > amountPerInstalment) {
+                activePercent = (percentageAmount * 100) / amount;
+            }
+            else {
+                activePercent = (amountPerInstalment * 100) / amount;
+            }
+            let instalment = Number((netAmount * activePercent / 100).toFixed(2))
+            downPayments.push(instalment);
+
+            instalment = Number((netAmount * (activePercent + 10) / 100).toFixed(2))
+            downPayments.push(instalment);
+            
+            instalment = Number((netAmount * (activePercent + 20) / 100).toFixed(2))
+            downPayments.push(instalment);
+            
+            return downPayments;
         }
-        else {
-            activePercent = (amountPerInstalment * 100) / amount;
+        else{
+            downPayments.push(customDownPayment)
+            return downPayments;
         }
-        let instalment = Number((netAmount * activePercent / 100).toFixed(2))
-        downPayments.push(instalment);
-
-        instalment = Number((netAmount * (activePercent + 10) / 100).toFixed(2))
-        downPayments.push(instalment);
-
-        instalment = Number((netAmount * (activePercent + 20) / 100).toFixed(2))
-        downPayments.push(instalment);
-
-        return downPayments;
     }
 }
