@@ -61,6 +61,9 @@ import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
 import { BookingLog } from "src/entity/booking-log.entity";
+
+
+
 @Injectable()
 export class CartService {
     constructor(
@@ -641,6 +644,7 @@ more than 10.`
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 //.leftJoinAndSelect("travelers.userData", "userData")
+                
                 .select([
                     "cart.id",
                     "cart.userId",
@@ -813,67 +817,71 @@ more than 10.`
 
                     var difference = unixTimestamp - (cart.timeStamp || 0);
                     var minuteDifference = Math.floor(difference / 1000 / 60);
+                
+                if (
+                    typeof live_availiblity != "undefined" &&
+                    live_availiblity == "yes" && minuteDifference > 5
+                ) {
+                    if (cart.moduleId == ModulesName.FLIGHT) {
+                        const value = await this.flightAvailiblity(
+                            cart,
+                            flightResponse[cart.id],
+                            headers,
+                            user
+                        );
+                        //return value
+                        if (typeof value.message == "undefined") {
+                            newCart["moduleInfo"] = [value];
+                            newCart["is_available"] = true;
 
-                    if (
-                        typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes"
-                    ) {
-                        if (cart.moduleId == ModulesName.FLIGHT) {
-                            const value = await this.flightAvailiblity(
-                                cart,
-                                flightResponse[cart.id]
-                            );
-                            //return value
-                            if (typeof value.message == "undefined") {
-                                newCart["moduleInfo"] = [value];
-                                newCart["is_available"] = true;
-
-                                cart.moduleInfo = [value];
-                                await getConnection()
-                                    .createQueryBuilder()
-                                    .update(Cart)
-                                    .set({ moduleInfo: [value] })
-                                    .where("id = :id", { id: cart.id })
-                                    .execute();
-                                await cart.save();
-                            } else {
+                            cart.moduleInfo = [value];
+                            
+                            await getConnection()
+                                .createQueryBuilder()
+                                .update(Cart)
+                                .set({ moduleInfo: [value], timeStamp: unixTimestamp})
+                                .where("id = :id", { id: cart.id })
+                                .execute();
+                            await cart.save();
+                        } else {
+                            newCart["is_available"] = false;
+                            newCart["moduleInfo"] = cart.moduleInfo;
+                            // await getConnection()
+                            //     .createQueryBuilder()
+                            //     .delete()
+                            //     .from(CartTravelers)
+                            //     .where(
+                            //         `"cart_id" = '${cart.id}'`
+                            //     )
+                            //     .execute()
+                            // await getConnection()
+                            //     .createQueryBuilder()
+                            //     .delete()
+                            //     .from(Cart)
+                            //     .where(
+                            //         `"id" = '${cart.id}'`
+                            //     )
+                            //     .execute()
+                        }
+                    } else if (cart.moduleId == ModulesName.HOTEL) {
+                        const moduleInfo: any = cart.moduleInfo;
+                        const oldModuleInfo: any = cart.oldModuleInfo;
+                        if (oldModuleInfo[0].bundle) {
+                            let roomDetails;
+                            try {
+                                roomDetails = await this.hotelService.availability(
+                                    {
+                                        room_ppn: oldModuleInfo[0].bundle,
+                                    },
+                                    user?.userId || null
+                                );
+                            } catch (error) {
                                 newCart["is_available"] = false;
                                 newCart["moduleInfo"] = cart.moduleInfo;
-                                // await getConnection()
-                                //     .createQueryBuilder()
-                                //     .delete()
-                                //     .from(CartTravelers)
-                                //     .where(
-                                //         `"cart_id" = '${cart.id}'`
-                                //     )
-                                //     .execute()
-                                // await getConnection()
-                                //     .createQueryBuilder()
-                                //     .delete()
-                                //     .from(Cart)
-                                //     .where(
-                                //         `"id" = '${cart.id}'`
-                                //     )
-                                //     .execute()
+                                newCart["error"] = error?.message;
                             }
-                        } else if (cart.moduleId == ModulesName.HOTEL) {
-                            const moduleInfo: any = cart.moduleInfo;
-                            const oldModuleInfo: any = cart.oldModuleInfo;
-                            if (oldModuleInfo[0].bundle) {
-                                let roomDetails;
-                                try {
-                                    roomDetails = await this.hotelService.availability(
-                                        {
-                                            room_ppn: oldModuleInfo[0].bundle,
-                                        },
-                                        user?.userId || null
-                                    );
-                                } catch (error) {
-                                    newCart["is_available"] = false;
-                                    newCart["moduleInfo"] = cart.moduleInfo;
-                                    newCart["error"] = error?.message;
-                                }
 
+                    
                                 if (roomDetails?.data) {
                                     newCart["moduleInfo"] = roomDetails.data;
                                     newCart["is_available"] = true;
@@ -953,7 +961,8 @@ more than 10.`
         }
     }
 
-    async flightAvailiblity(cart, flights) {
+    
+    async flightAvailiblity(cart, flights, headers, user) {
         ////console.log('match');
 
         var match = 0;
