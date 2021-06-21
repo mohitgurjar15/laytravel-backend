@@ -640,6 +640,7 @@ more than 10.`
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 //.leftJoinAndSelect("travelers.userData", "userData")
+                
                 .select([
                     "cart.id",
                     "cart.userId",
@@ -833,6 +834,7 @@ more than 10.`
                             newCart["is_available"] = true;
 
                             cart.moduleInfo = [value];
+                            
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
