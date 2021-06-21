@@ -287,7 +287,8 @@ export class Priceline implements HotelInterface {
         );
         // console.log(url);
         let responce = {};
-        let res = await this.httpsService
+        let fileName = "";
+        let res:any = await this.httpsService
             .get(url)
             .pipe(
                 map((res) => {
@@ -302,7 +303,7 @@ export class Priceline implements HotelInterface {
                 catchError((err) => {
                     console.log(err);
 
-                    let fileName = "";
+                    
                     let logData = {};
                     logData["url"] = url;
                     logData["method"] = "post";
@@ -321,7 +322,7 @@ export class Priceline implements HotelInterface {
             )
 
             .toPromise();
-        let fileName = "";
+        
         let logData = {};
         logData["url"] = url;
         logData["method"] = "post";
@@ -333,6 +334,7 @@ export class Priceline implements HotelInterface {
             fileName += "_" + user_id;
         }
         Activity.createlogFile(fileName, logData, "hotel");
+        res['fileName'] = fileName
         return res;
     }
 
@@ -341,6 +343,7 @@ export class Priceline implements HotelInterface {
 
         let parameters = GenericHotel.httpBuildQuery(bookDto);
         let responce = {};
+        let fileName = "";
         let res = await this.httpsService
             .post(url, parameters)
             .pipe(
@@ -349,7 +352,7 @@ export class Priceline implements HotelInterface {
                     return new Book().processBookResult(res);
                 }),
                 catchError((err) => {
-                    let fileName = "";
+                    
                     let logData = {};
                     logData["url"] = url;
                     logData["method"] = "post";
@@ -368,7 +371,7 @@ export class Priceline implements HotelInterface {
             )
             .toPromise();
 
-        let fileName = "";
+        
         let logData = {};
         logData["url"] = url;
         logData["method"] = "post";
@@ -387,7 +390,7 @@ export class Priceline implements HotelInterface {
         //     parameters,
         //     "availiblity"
         // );
-
+        res['fileName'] = fileName
         return res;
     }
 }
