@@ -12,6 +12,7 @@ import { User } from "./user.entity";
 import { Booking } from "./booking.entity";
 import { OtherPayments } from "./other-payment.entity";
 import { LandingPages } from "./landing-page.entity";
+import { BookingLog } from "./booking-log.entity";
 
 @Index("cart_booking_user_id", ["userId"], {})
 @Entity("cart_booking")
@@ -74,4 +75,10 @@ export class CartBooking extends BaseEntity {
     )
     @JoinColumn([{ name: "referral_id", referencedColumnName: "id" }])
     referral: LandingPages;
+
+    @OneToMany(
+        () => BookingLog,
+        bookinglog => bookinglog.cartBookings
+    )
+    bookinglogs: BookingLog[];
 }

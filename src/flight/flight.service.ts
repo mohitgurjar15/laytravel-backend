@@ -3273,6 +3273,7 @@ export class FlightService {
         selected_down_payment: number,
         transaction_token
     ) {
+         let logData = {}
         try {
             let headerDetails = await this.validateHeaders(headers);
             console.log("header validate");
@@ -3290,7 +3291,7 @@ export class FlightService {
                 cartCount,
                 reservationId,
             } = bookFlightDto;
-
+           
             cartCount = cartCount ? cartCount : 0;
             const mystifly = new Strategy(
                 new Mystifly(headers, this.cacheManager)
@@ -3299,6 +3300,12 @@ export class FlightService {
                 { route_code },
                 user
             );
+            console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
+            console.log("airRevalidateResult[0]", airRevalidateResult[0])
+            logData['revalidation-log'] = airRevalidateResult[0]['log_file']
+            logData['markUpDetails'] = airRevalidateResult[0]['markUpDetails']
+            console.log(logData);
+            
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
             if (airRevalidateResult) {
@@ -3484,7 +3491,7 @@ export class FlightService {
                         cartId,
                         reservationId
                     );
-                    // if (dayDiff <= 90) {
+                    
                     //     this.bookingUpdateFromSupplierside(
                     //         laytripBookingResult.laytripBookingId,
                     //         {
@@ -3503,11 +3510,13 @@ export class FlightService {
                         booking_details: await this.bookingRepository.getBookingDetails(
                             laytripBookingResult.laytripBookingId
                         ),
+                        logData: logData
                     };
                 } else {
                     return {
                         statusCode: 422,
                         message: `Instalment option is not available for your search criteria`,
+                        logData
                     };
                 }
             } else if (payment_type == PaymentType.NOINSTALMENT) {
@@ -3525,6 +3534,7 @@ export class FlightService {
                         travelersDetails,
                         isPassportRequired
                     );
+                    logData['supplier_side_booking_log'] = bookingResult['log_file']
                     // let bookingResult: any = {
                     // 	booking_status: "success"
                     // }
@@ -3563,6 +3573,7 @@ export class FlightService {
                                 bookingResult.supplier_booking_id
                             );
                         }
+                        bookingResult['logData'] = logData
                         return bookingResult;
                     } else {
                         // await this.paymentService.voidCard(
@@ -3573,6 +3584,7 @@ export class FlightService {
                         return {
                             statusCode: 424,
                             message: bookingResult.error_message,
+                            logData
                         };
                     }
                 }
@@ -3620,6 +3632,7 @@ export class FlightService {
             return {
                 message: errorMessage,
                 error,
+                logData
             };
         }
     }

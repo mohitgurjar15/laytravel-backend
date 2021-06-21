@@ -3719,6 +3719,7 @@ export class Mystifly implements StrategyAirline {
             requestBody,
             "AirRevalidate"
         );
+        const logFile = airRevalidateResult["log_file"]
         if (
             airRevalidateResult["s:envelope"]["s:body"][0]
                 .airrevalidateresponse[0].airrevalidateresult[0][
@@ -4228,8 +4229,13 @@ export class Mystifly implements StrategyAirline {
                     outbound: outBoundExtraService,
                     inbound: inBoundExtraService,
                 };
+                console.log('logFile',logFile);
+                
+                route.log_file = logFile
+                route.markUpDetails = JSON.stringify(markUpDetails)
                 routes.push(route);
             }
+
             return routes;
         } else {
             throw new NotFoundException(`Flight is not available now`);
@@ -4398,6 +4404,8 @@ export class Mystifly implements StrategyAirline {
             "BookFlight"
         );
 
+        const logFile = bookResult["log_file"]
+
         let bookResultSegment =
             bookResult["s:envelope"]["s:body"][0]["bookflightresponse"][0][
                 "bookflightresult"
@@ -4410,6 +4418,7 @@ export class Mystifly implements StrategyAirline {
                 supplier_booking_id: bookResultSegment["a:uniqueid"][0],
                 success_message: `Booking is successfully done!`,
                 error_message: "",
+                logFile
             };
         } else {
             bookingResponse = {
@@ -4417,6 +4426,7 @@ export class Mystifly implements StrategyAirline {
                 supplier_booking_id: "",
                 success_message: ``,
                 error_message: `Booking failed`,
+                logFile
             };
         }
         return bookingResponse;

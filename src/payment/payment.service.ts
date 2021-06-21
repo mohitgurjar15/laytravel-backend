@@ -523,7 +523,7 @@ export class PaymentService {
             "authorise-card",
             userId
         );
-        // //console.log(authResult)
+        console.log(authResult,"1222")
         if (
             typeof authResult.transaction != "undefined" &&
             authResult.transaction.succeeded
@@ -561,6 +561,7 @@ export class PaymentService {
             "capture-card",
             userId
         );
+        
         if (
             typeof captureRes.transaction != "undefined" &&
             captureRes.transaction.succeeded
@@ -570,11 +571,13 @@ export class PaymentService {
                 token: captureRes.transaction.token,
                 meta_data: captureRes,
                 reference_token: captureRes.transaction?.reference_token,
+                logFile : captureRes['fileName']
             };
         } else {
             return {
                 status: false,
                 meta_data: captureRes,
+                logFile: captureRes['fileName']
             };
         }
     }
@@ -715,6 +718,7 @@ export class PaymentService {
                 fileName += "_" + userId;
             }
             Activity.createlogFile(fileName, logData, "payment");
+            result.data['fileName'] = `${fileName}.json`;
             return result.data;
         } catch (error) {
             let logData = {};
@@ -1670,7 +1674,7 @@ export class PaymentService {
             user.userId,
             user.email
         );
-        console.log(JSON.stringify(authCardResult));
+        //console.log(JSON.stringify(authCardResult));
 
         // return authCardResult;
         if (authCardResult.meta_data) {
@@ -1680,6 +1684,7 @@ export class PaymentService {
             response.redirection =
                 redirection + "?transaction_token=" + transaction.token;
             response.authoriceAmount = authoriseAmount;
+            response.auth_url = authCardResult.meta_data.fileName
         }
 
         return response;
@@ -1768,11 +1773,14 @@ export class PaymentService {
                 status: true,
                 token: cardResult.transaction.token,
                 meta_data: cardResult,
+                logFile : cardResult['fileName']
+
             };
         } else {
             return {
                 status: false,
                 meta_data: cardResult,
+                logFile: cardResult['fileName']
             };
         }
     }

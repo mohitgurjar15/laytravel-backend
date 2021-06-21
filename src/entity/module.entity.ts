@@ -16,6 +16,7 @@ import { Markup } from "./markup.entity";
 import { Notification } from "./notification.entity";
 import { Cart } from "./cart.entity";
 import { SearchLog } from "./search-log.entity";
+import { BookingLog } from "./booking-log.entity";
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
 export class Module extends BaseEntity {
@@ -51,6 +52,12 @@ export class Module extends BaseEntity {
     booking => booking.module
   )
   bookings: Booking[];
+
+  @OneToMany(
+    () => BookingLog,
+    bookinglog => bookinglog.module
+  )
+  bookinglogs: BookingLog[];
 
   @OneToMany(
     () => Cart,

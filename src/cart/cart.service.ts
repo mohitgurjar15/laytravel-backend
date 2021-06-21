@@ -60,6 +60,7 @@ import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
+import { BookingLog } from "src/entity/booking-log.entity";
 @Injectable()
 export class CartService {
     constructor(
@@ -73,7 +74,7 @@ export class CartService {
 
         public readonly mailerService: MailerService,
         private hotelService: HotelService
-    ) { }
+    ) {}
 
     async addInCart(addInCartDto: AddInCartDto, user, Header) {
         try {
@@ -226,10 +227,8 @@ more than 10.`
                 //console.log(guestId);
                 cart.guestUserId = user.userId;
             }
-            var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
             cart.moduleId = ModulesName.FLIGHT;
-            cart.timeStamp = unixTimestamp || 0
             cart.moduleInfo = flightInfo;
             cart.oldModuleInfo = flightInfo;
             cart.expiryDate = new Date(formatedDepatureDate);
@@ -648,7 +647,6 @@ more than 10.`
                     "cart.oldModuleInfo",
                     "cart.isDeleted",
                     "cart.createdDate",
-                    "cart.timeStamp",
                     "module.id",
                     "module.name",
                     "travelers.id",
@@ -668,8 +666,6 @@ more than 10.`
             let responce = [];
             var flightRequest = [];
             let flightResponse = [];
-            var unixTimestamp = Math.round(new Date().getTime() / 1000);
-
 
             if (
                 typeof live_availiblity != "undefined" &&
@@ -707,97 +703,86 @@ more than 10.`
                 );
                 for await (const cart of result) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
-                        console.log('unixTimestamp', unixTimestamp);
-                        console.log('cart.timeStamp', cart.timeStamp);
-                        
-                        
-                        var difference = unixTimestamp - (cart.timeStamp || 0);
-                        var minuteDifference = Math.floor(difference / 1000 / 60);
-                        
-                        console.log('minuteDifference',minuteDifference)
-                        if (minuteDifference > 5) {
-                            const bookingType =
-                                cart.moduleInfo[0].routes.length > 1
-                                    ? "RoundTrip"
-                                    : "oneway";
+                        const bookingType =
+                            cart.moduleInfo[0].routes.length > 1
+                                ? "RoundTrip"
+                                : "oneway";
 
-                            if (bookingType == "oneway") {
-                                let dto = {
-                                    source_location:
-                                        cart.moduleInfo[0].departure_code,
-                                    destination_location:
-                                        cart.moduleInfo[0].arrival_code,
-                                    departure_date: await this.flightService.changeDateFormat(
-                                        cart.moduleInfo[0].departure_date
-                                    ),
-                                    flight_class:
-                                        cart.moduleInfo[0].routes[0].stops[0]
-                                            .cabin_class,
-                                    adult_count: cart.moduleInfo[0].adult_count
-                                        ? cart.moduleInfo[0].adult_count
-                                        : 0,
-                                    child_count: cart.moduleInfo[0].child_count
-                                        ? cart.moduleInfo[0].child_count
-                                        : 0,
-                                    infant_count: cart.moduleInfo[0].infant_count
-                                        ? cart.moduleInfo[0].infant_count
-                                        : 0,
-                                };
-                                //console.log(dto);
+                        if (bookingType == "oneway") {
+                            let dto = {
+                                source_location:
+                                    cart.moduleInfo[0].departure_code,
+                                destination_location:
+                                    cart.moduleInfo[0].arrival_code,
+                                departure_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].departure_date
+                                ),
+                                flight_class:
+                                    cart.moduleInfo[0].routes[0].stops[0]
+                                        .cabin_class,
+                                adult_count: cart.moduleInfo[0].adult_count
+                                    ? cart.moduleInfo[0].adult_count
+                                    : 0,
+                                child_count: cart.moduleInfo[0].child_count
+                                    ? cart.moduleInfo[0].child_count
+                                    : 0,
+                                infant_count: cart.moduleInfo[0].infant_count
+                                    ? cart.moduleInfo[0].infant_count
+                                    : 0,
+                            };
+                            //console.log(dto);
 
-                                flightRequest[cart.id] = new Promise((resolve) =>
-                                    resolve(
-                                        mystifly.oneWaySearchZip(
-                                            dto,
-                                            user,
-                                            mystiflyConfig,
-                                            sessionToken,
-                                            module,
-                                            currencyDetails
-                                        )
+                            flightRequest[cart.id] = new Promise((resolve) =>
+                                resolve(
+                                    mystifly.oneWaySearchZip(
+                                        dto,
+                                        user,
+                                        mystiflyConfig,
+                                        sessionToken,
+                                        module,
+                                        currencyDetails
                                     )
-                                );
-                            } else {
-                                let dto = {
-                                    source_location:
-                                        cart.moduleInfo[0].departure_code,
-                                    destination_location:
-                                        cart.moduleInfo[0].arrival_code,
-                                    departure_date: await this.flightService.changeDateFormat(
-                                        cart.moduleInfo[0].departure_date
-                                    ),
-                                    flight_class:
-                                        cart.moduleInfo[0].routes[0].stops[0]
-                                            .cabin_class,
-                                    adult_count: cart.moduleInfo[0].adult_count
-                                        ? cart.moduleInfo[0].adult_count
-                                        : 0,
-                                    child_count: cart.moduleInfo[0].child_count
-                                        ? cart.moduleInfo[0].child_count
-                                        : 0,
-                                    infant_count: cart.moduleInfo[0].infant_count
-                                        ? cart.moduleInfo[0].infant_count
-                                        : 0,
-                                    arrival_date: await this.flightService.changeDateFormat(
-                                        cart.moduleInfo[0].routes[1].stops[0].departure_date
-                                    ),
-                                };
-                                //console.log(dto);
-                                flightRequest[cart.id] = new Promise((resolve) =>
-                                    resolve(
-                                        mystifly.roundTripSearchZip(
-                                            dto,
-                                            user,
-                                            mystiflyConfig,
-                                            sessionToken,
-                                            module,
-                                            currencyDetails
-                                        )
+                                )
+                            );
+                        } else {
+                            let dto = {
+                                source_location:
+                                    cart.moduleInfo[0].departure_code,
+                                destination_location:
+                                    cart.moduleInfo[0].arrival_code,
+                                departure_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].departure_date
+                                ),
+                                flight_class:
+                                    cart.moduleInfo[0].routes[0].stops[0]
+                                        .cabin_class,
+                                adult_count: cart.moduleInfo[0].adult_count
+                                    ? cart.moduleInfo[0].adult_count
+                                    : 0,
+                                child_count: cart.moduleInfo[0].child_count
+                                    ? cart.moduleInfo[0].child_count
+                                    : 0,
+                                infant_count: cart.moduleInfo[0].infant_count
+                                    ? cart.moduleInfo[0].infant_count
+                                    : 0,
+                                arrival_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].routes[1].stops[0].departure_date
+                                ),
+                            };
+                            //console.log(dto);
+                            flightRequest[cart.id] = new Promise((resolve) =>
+                                resolve(
+                                    mystifly.roundTripSearchZip(
+                                        dto,
+                                        user,
+                                        mystiflyConfig,
+                                        sessionToken,
+                                        module,
+                                        currencyDetails
                                     )
-                                );
-                            }
+                                )
+                            );
                         }
-
                     }
 
                     resultIndex++;
@@ -809,20 +794,15 @@ more than 10.`
                 const cart = result[index];
 
                 let newCart = {};
-                var difference = unixTimestamp - (cart.timeStamp || 0);
-                var minuteDifference = Math.floor(difference / 1000 / 60);
 
-                
                 if (
                     typeof live_availiblity != "undefined" &&
-                    live_availiblity == "yes" && minuteDifference > 5
+                    live_availiblity == "yes"
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
                             cart,
-                            flightResponse[cart.id],
-                            headers,
-                            user
+                            flightResponse[cart.id]
                         );
                         //return value
                         if (typeof value.message == "undefined") {
@@ -833,7 +813,7 @@ more than 10.`
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value], timeStamp: unixTimestamp})
+                                .set({ moduleInfo: [value] })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
                             await cart.save();
@@ -897,7 +877,6 @@ more than 10.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
-                    newCart["is_available"] = true;
                 }
                 if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);
@@ -954,7 +933,7 @@ more than 10.`
         }
     }
 
-    async flightAvailiblity(cart, flights, headers, user) {
+    async flightAvailiblity(cart, flights) {
         ////console.log('match');
 
         var match = 0;
@@ -969,24 +948,7 @@ more than 10.`
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
                     ////console.log('match found');
                     match = match + 1;
-                    console.log('flight', flight)
-                    let revalidateFlight: any
-                    try {
-                        let routeIdDto = {
-                            route_code: flight.route_code
-                        }
-                        let data = await this.flightService.airRevalidate(routeIdDto, headers, user)
-                        revalidateFlight = data[0]
-                    } catch (e) {
-                        console.log(e);
-
-                        revalidateFlight = {
-                            message: `Flight not air-revalidate`
-                        }
-
-                    }
-                    console.log('revalidateFlight', revalidateFlight)
-                    return revalidateFlight;
+                    return flight;
                 }
             }
         }
@@ -1075,7 +1037,13 @@ more than 10.`
         }
     }
 
-    async bookCart(bookCart: CartBookDto, user: User, Headers, referralId) {
+    async bookCart(bookCart: CartBookDto, user: User, Headers,referralId) {
+        let logData = new BookingLog
+            logData.id = uuidv4()
+            logData.paymentAuthorizeLog = bookCart.auth_log
+            logData.timeStamp = Math.round(new Date().getTime() / 1000)
+
+            const bookingLog = await logData.save()
         try {
             const {
                 payment_type,
@@ -1088,14 +1056,26 @@ more than 10.`
                 selected_down_payment,
                 transaction_token,
                 referral_id,
+                auth_log
             } = bookCart;
 
+            // let logData =  await getConnection()
+            //         .createQueryBuilder()
+            //         .insert()
+            //         .into(BookingLog)
+            //         .values({ id: uuidv4()})
+            //         .returning("id")
+            //         .execute(); 
+            // let logId = logData.raw[0].id;
+
+             
+            //console.log("log data",logData.raw[0].id)
             if (cart.length > 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
-more than 10.`
-                );
-            }
+                    more than 10.`
+                    );
+                }
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);
@@ -1142,7 +1122,7 @@ more than 10.`
                     `Cart is empty.&&&cart&&&${errorMessage}`
                 );
             }
-
+            bookingLog.cartInfo = result
             let smallestDate = "";
             let largestDate = "";
             //let ToatalAmount = ''
@@ -1199,11 +1179,11 @@ more than 10.`
                 let ref = await this.getReferralId(referral_id);
                 console.log(ref);
                 console.log(result[0]?.user?.referralId);
-
-
+                
+                
                 if (ref?.id == result[0]?.user?.referralId) {
                     console.log('added');
-                    cartBook.referralId = ref?.id || null;
+                    cartBook.referralId =ref?.id || null;
                 }
             }
             cartBook.bookingType =
@@ -1212,7 +1192,8 @@ more than 10.`
                     : BookingType.NOINSTALMENT;
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
-
+             bookingLog.cartBookingId = cartData.id
+            await bookingLog.save()
             let responce = [];
             let successedResult = 0;
             let failedResult = 0;
@@ -1222,6 +1203,7 @@ more than 10.`
             //let mailResponce = []
 
             const cartCount = result.length;
+            let inventryLogs = [] 
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
@@ -1237,7 +1219,7 @@ more than 10.`
                             flightCount
                         );
                         responce.push(flightResponce);
-
+                        inventryLogs.push(flightResponce["logFile"])
                         if (flightResponce["status"] == 1) {
                             successedResult++;
 
@@ -1263,7 +1245,7 @@ more than 10.`
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
-
+                        inventryLogs.push(hotelResponce["logFile"])
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
 
@@ -1280,7 +1262,8 @@ more than 10.`
                 }
             }
             console.log(BookingIds);
-
+            bookingLog.cartBookLog = inventryLogs
+            await bookingLog.save()
             if (successedResult) {
                 let paymentType =
                     bookCart.payment_type == PaymentType.INSTALMENT
@@ -1292,13 +1275,15 @@ more than 10.`
                     paymentType,
                     user.userId
                 );
+                bookingLog.paymentCaptureLog = payment.logFile
+                await bookingLog.save()
                 await this.cartBookingEmailSend(
                     cartData.laytripCartId,
                     cartData.userId,
                     referralId
                 );
                 if (failedResult > 0 && payment.status == true) {
-                    await this.refundCart(
+                    let refaund = await this.refundCart(
                         cartData.id,
                         Headers,
                         payment_type,
@@ -1308,6 +1293,9 @@ more than 10.`
                         payment.reference_token,
                         user.userId
                     );
+
+                    bookingLog.paymentRefundLog = refaund
+                await bookingLog.save()
                 }
             } else {
                 cartData.status == BookingStatus.FAILED;
@@ -1319,6 +1307,8 @@ more than 10.`
 
             return returnResponce;
         } catch (error) {
+            bookingLog.error = error
+            await bookingLog.save()
             if (typeof error.response !== "undefined") {
                 //console.log("m");
                 switch (error.response.statusCode) {
@@ -1442,6 +1432,7 @@ more than 10.`
             .set({ refundPaymentInfo: refund })
             .where(`id = '${cartId}' `)
             .execute();
+        return refund.logFile
     }
     async capturePayment(
         BookingIds,
@@ -1449,10 +1440,13 @@ more than 10.`
         payment_type: number,
         userId
     ) {
+       
         let captureCardresult = await this.paymentService.captureCard(
             transaction_token,
             userId
         );
+
+       
 
         console.log("captureCardresult", captureCardresult);
 
@@ -1504,8 +1498,9 @@ more than 10.`
         smallestDate: string,
         cartData: CartBooking,
         cartCount: number,
-        flightCount: number
+        flightCount : number,
     ) {
+        let logFile = {}
         let reservationId = `${cartData.laytripCartId}-F${flightCount}`
         const {
             payment_type,
@@ -1525,7 +1520,7 @@ more than 10.`
                 ? BookingType.INSTALMENT
                 : BookingType.NOINSTALMENT;
 
-        //let flightRequest;
+        let flightRequest;
         let value: any = cart.moduleInfo[0]
         // if (bookingType == "oneway") {
         //     let dto = {
@@ -1579,7 +1574,7 @@ more than 10.`
         //         user
         //     );
         // }
-        // const value = await this.flightAvailiblity(cart, flightRequest,Headers,cart.user);
+        //const value = await this.flightAvailiblity(cart, flightRequest);
         let newCart = {};
         newCart["id"] = cart.id;
         newCart["userId"] = cart.userId;
@@ -1648,8 +1643,15 @@ more than 10.`
                     smallestDate,
                     cartData.id,
                     selected_down_payment,
-                    transaction_token
+                    transaction_token,
                 );
+
+                console.log(" newCart[detail]", newCart["detail"])
+            
+                logFile[reservationId] = newCart["detail"]['logData']
+                console.log('logFile',logFile)
+                newCart["logFile"] = logFile
+                console.log('logFile', logFile)
                 //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
@@ -1714,6 +1716,7 @@ more than 10.`
         cartCount: number,
         hotelCount
     ) {
+        let logFile = {}
         let reservationId = `${cartData.laytripCartId}-H${hotelCount}`
         const {
             payment_type,
@@ -1815,6 +1818,9 @@ more than 10.`
                     selected_down_payment,
                     transaction_token
                 );
+                console.log("newCart[detail]",newCart["detail"])
+                logFile[reservationId] = newCart["detail"]['logData']
+                newCart["logFile"] = logFile
                 //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
@@ -2045,8 +2051,8 @@ more than 10.`
             const userName = user.firstName
                 ? user.firstName
                 : "" + " " + user.lastName
-                    ? user.lastName
-                    : "";
+                ? user.lastName
+                : "";
 
             const subject = `Booking Not Completed`;
             this.mailerService
