@@ -60,6 +60,9 @@ import { HotelService } from "src/hotel/hotel.service";
 import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
+
+
+
 @Injectable()
 export class CartService {
     constructor(
@@ -959,6 +962,7 @@ more than 10.`
         }
     }
 
+    
     async flightAvailiblity(cart, flights, headers, user) {
         ////console.log('match');
 
