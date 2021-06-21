@@ -226,9 +226,11 @@ more than 10.`
                 //console.log(guestId);
                 cart.guestUserId = user.userId;
             }
+            
             var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
             cart.moduleId = ModulesName.FLIGHT;
+            
             cart.timeStamp = unixTimestamp || 0
             cart.moduleInfo = flightInfo;
             cart.oldModuleInfo = flightInfo;
@@ -668,6 +670,8 @@ more than 10.`
             let responce = [];
             var flightRequest = [];
             let flightResponse = [];
+            
+            
             var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
 
@@ -707,8 +711,6 @@ more than 10.`
                 );
                 for await (const cart of result) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
-                        console.log('unixTimestamp', unixTimestamp);
-                        console.log('cart.timeStamp', cart.timeStamp);
                         
                         
                         var difference = unixTimestamp - (cart.timeStamp || 0);
@@ -809,6 +811,7 @@ more than 10.`
                 const cart = result[index];
 
                 let newCart = {};
+                
                 var difference = unixTimestamp - (cart.timeStamp || 0);
                 var minuteDifference = Math.floor(difference / 1000 / 60);
 
