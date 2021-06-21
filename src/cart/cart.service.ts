@@ -1036,12 +1036,12 @@ more than 10.`
                 .where(`"id" = '${id}'`)
                 .execute();
 
+
             return {
                 message: `Item removed successfully`,
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
