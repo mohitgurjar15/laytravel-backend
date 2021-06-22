@@ -31,10 +31,8 @@ export class LandingPage {
 
     static checkFlightoffer(lpNumber,searchData){
         let LANDING_PAGE_DATA =LANDING_PAGE[lpNumber];
-        let isRouteExist = LANDING_PAGE_DATA.deals.flight.findIndex(deal=>{
-            return  deal.from.code==searchData.departure && deal.to.code==searchData.arrival; 
-          })
-          if(isRouteExist==-1){
+        
+          if(LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`)==-1){
             return {applicable : false}
           }
           
