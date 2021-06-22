@@ -200,7 +200,8 @@ more than 10.`
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
-            user ? user : null
+            user ? user : null,
+            ""
         );
 
         if (flightInfo) {

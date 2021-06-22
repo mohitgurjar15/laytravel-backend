@@ -288,7 +288,8 @@ export class FlightService {
         searchFlightDto: OneWaySearchFlightDto,
         headers,
         user,
-        userIp
+        userIp,
+        referralId
     ) {
         if (user?.roleId < Role.PAID_USER) {
             user.user_id = searchFlightDto.user_id;
@@ -298,7 +299,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.oneWaySearch(searchFlightDto, user))
+            resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
         );
         Activity.addSearchLog(
             ModulesName.FLIGHT,
@@ -1427,7 +1428,8 @@ export class FlightService {
         searchFlightDto: RoundtripSearchFlightDto,
         headers,
         user,
-        userIp
+        userIp,
+        referralId
     ) {
         if (user?.roleId < Role.PAID_USER) {
             user.user_id = searchFlightDto.user_id;
@@ -1436,7 +1438,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.roundTripSearch(searchFlightDto, user))
+            resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
         );
 
         Activity.addSearchLog(
@@ -1449,11 +1451,11 @@ export class FlightService {
         return result;
     }
 
-    async airRevalidate(routeIdDto, headers, user) {
+    async airRevalidate(routeIdDto, headers, user, referralId) {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.airRevalidate(routeIdDto, user))
+            resolve(mystifly.airRevalidate(routeIdDto, user,referralId))
         );
         return result;
     }
@@ -1491,7 +1493,8 @@ export class FlightService {
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const airRevalidateResult = await mystifly.airRevalidate(
             { route_code },
-            user
+            user,
+            ""
         );
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
@@ -2128,7 +2131,8 @@ export class FlightService {
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const airRevalidateResult = await mystifly.airRevalidate(
             { route_code },
-            user
+            user,
+            ""
         );
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
@@ -3175,6 +3179,7 @@ export class FlightService {
                     dto,
                     Headers,
                     bookingData.user,
+                    "",
                     ""
                 );
             }
@@ -3298,7 +3303,8 @@ export class FlightService {
             );
             const airRevalidateResult = await mystifly.airRevalidate(
                 { route_code },
-                user
+                user,
+                ""
             );
             console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])

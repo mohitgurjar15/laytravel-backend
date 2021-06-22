@@ -1,108 +1,110 @@
 
 import * as moment from 'moment';
 import { LANDING_PAGE } from 'src/config/landing-page.config';
+import { LandingPages } from 'src/entity/landing-page.entity';
+import { getConnection } from 'typeorm';
 export class LandingPage {
-    static getLandingPageValidity(lpNumber){
+	static getLandingPageValidity(lpNumber) {
 
-        if(LANDING_PAGE[lpNumber].applicable){
-          return true;
-        }
-        return false;
-      }
-      
-    static getOfferData(lpNumber,type,searchData){
-      
-        if(LANDING_PAGE[lpNumber].applicable){
-          
-          switch(type){
-              case 'flight' : 
-                  return this.checkFlightoffer(lpNumber,searchData)
-              case 'hotel' :
-                  return this.checkHotelOffer(lpNumber,searchData);
-              default :
-                  return {applicable : false}
-            }
-        }
-        else{
-          return {applicable : false}
-        }
+		if (LANDING_PAGE[lpNumber].applicable) {
+			return true;
+		}
+		return false;
+	}
 
-    }
+	static getOfferData(lpNumber, type, searchData) {
 
-    static checkFlightoffer(lpNumber,searchData){
-        let LANDING_PAGE_DATA =LANDING_PAGE[lpNumber];
-        let isRouteExist = LANDING_PAGE_DATA.deals.flight.findIndex(deal=>{
-            return  deal.from.code==searchData.departure && deal.to.code==searchData.arrival; 
-          })
-          if(isRouteExist==-1){
-            return {applicable : false}
-          }
-          
-          if(moment(searchData.checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
-            return {applicable : false}
-          }
-    
-          return {
-            applicable : true,
-            payment_frequency_options : LANDING_PAGE_DATA.payment_frequency_options,
-            down_payment_options : LANDING_PAGE_DATA.down_payment_options,
-            discount : LANDING_PAGE_DATA.discount
-          }
-    }
+		console.log("lpNumber", lpNumber)
 
-    static checkHotelOffer(lpNumber,searchData){
+		if (LANDING_PAGE[lpNumber].applicable) {
 
-        let LANDING_PAGE_DATA =LANDING_PAGE[lpNumber];
-        let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal=>{
-            return  deal.location.city==searchData.departure
-        })
-        if(isRouteExist==-1){
-          return {applicable : false};
-        }
+			switch (type) {
+				case 'flight':
+					return this.checkFlightoffer(lpNumber, searchData)
+				case 'hotel':
+					return this.checkHotelOffer(lpNumber, searchData);
+				default:
+					return { applicable: false }
+			}
+		}
+		else {
+			return { applicable: false }
+		}
 
-        if(moment(searchData.checkInDate).diff(moment(),'days')<LANDING_PAGE_DATA.promotional.min_promotional_day){
-          return {applicable : false};
-        }
+	}
 
-        return {
-          applicable : true,
-          payment_frequency_options : LANDING_PAGE_DATA.payment_frequency_options,
-          down_payment_options : LANDING_PAGE_DATA.down_payment_options,
-          discount : LANDING_PAGE_DATA.discount
-        }
-    }
+	static checkFlightoffer(lpNumber, searchData) {
+		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
 
-    static getDownPayment(offerData,downPaymentOption){
+		if (LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`) == -1) {
+			return { applicable: false }
+		}
 
-      if(offerData.applicable){
-        return offerData.down_payment_options[downPaymentOption].amount ? offerData.down_payment_options[downPaymentOption].amount :null; 
-      }
-      return null;
-    }
+		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
+			return { applicable: false }
+		}
 
-    static applyDiscount(offerData,price){
+		return {
+			applicable: true,
+			payment_frequency_options: LANDING_PAGE_DATA.payment_frequency_options,
+			down_payment_options: LANDING_PAGE_DATA.down_payment_options,
+			discount: LANDING_PAGE_DATA.discount
+		}
+	}
 
-      if(!offerData.applicable){
+	static checkHotelOffer(lpNumber, searchData) {
 
-        return price;
-      }
+		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
+		let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal => {
+			return deal.location.city == searchData.departure
+		})
+		if (isRouteExist == -1) {
+			return { applicable: false };
+		}
 
-      if(offerData.discount.applicable){
-        let discountPrice;
+		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
+			return { applicable: false };
+		}
 
-        if(offerData.discount.type=='flat'){
-          discountPrice = price-offerData.discount.amount;
-        }
-        else{
-          discountPrice = price-(price*offerData.discount.amount/100);  
-        }
+		return {
+			applicable: true,
+			payment_frequency_options: LANDING_PAGE_DATA.payment_frequency_options,
+			down_payment_options: LANDING_PAGE_DATA.down_payment_options,
+			discount: LANDING_PAGE_DATA.discount
+		}
+	}
 
-        if(discountPrice<0){
-          return 0;
-        }
-        return discountPrice;
-      }
-      return price;
-    }
+	static getDownPayment(offerData, downPaymentOption) {
+
+		if (offerData.applicable) {
+			return offerData.down_payment_options[downPaymentOption].amount ? offerData.down_payment_options[downPaymentOption].amount : null;
+		}
+		return null;
+	}
+
+	static applyDiscount(offerData, price) {
+
+		if (!offerData.applicable) {
+
+			return price;
+		}
+
+		if (offerData.discount.applicable) {
+			let discountPrice;
+
+			if (offerData.discount.type == 'flat') {
+				discountPrice = price - offerData.discount.amount;
+			}
+			else {
+				discountPrice = price - (price * offerData.discount.amount / 100);
+			}
+
+			if (discountPrice < 0) {
+				return 0;
+			}
+			return discountPrice;
+		}
+		return price;
+	}
 }
 
