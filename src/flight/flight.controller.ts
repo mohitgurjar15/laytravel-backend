@@ -39,6 +39,7 @@ import { User } from "src/entity/user.entity";
 import { query } from "express";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
 import { UserIpAddress } from "src/decorator/ip-address.decorator";
+import { GetReferralId } from "src/decorator/referral.decorator";
 
 @ApiTags("Flight")
 @Controller("flight")
@@ -99,7 +100,8 @@ export class FlightController {
     @Body() searchFlightDto: OneWaySearchFlightDto,
     @Req() req,
     @LogInUser() user,
-    @UserIpAddress() userIp : string
+    @UserIpAddress() userIp : string,
+    @GetReferralId() referralId: string
   ) {
     if (
       moment(searchFlightDto.departure_date).isBefore(
@@ -125,7 +127,8 @@ export class FlightController {
       searchFlightDto,
       req.headers,
       user,
-      userIp
+      userIp,
+      referralId
     );
   }
 

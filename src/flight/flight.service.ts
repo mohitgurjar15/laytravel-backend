@@ -288,7 +288,8 @@ export class FlightService {
         searchFlightDto: OneWaySearchFlightDto,
         headers,
         user,
-        userIp
+        userIp,
+        referralId
     ) {
         if (user?.roleId < Role.PAID_USER) {
             user.user_id = searchFlightDto.user_id;
@@ -298,7 +299,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.oneWaySearch(searchFlightDto, user))
+            resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
         );
         Activity.addSearchLog(
             ModulesName.FLIGHT,

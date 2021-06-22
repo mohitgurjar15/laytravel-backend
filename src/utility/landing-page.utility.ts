@@ -1,18 +1,35 @@
 
 import * as moment from 'moment';
 import { LANDING_PAGE } from 'src/config/landing-page.config';
+import { LandingPages } from 'src/entity/landing-page.entity';
+import { getConnection } from 'typeorm';
 export class LandingPage {
-    static getLandingPageValidity(lpNumber){
+    static async getLandingPageValidity(lpNumber){
 
-        if(LANDING_PAGE[lpNumber].applicable){
+      let where = `"landingPages"."is_deleted" = false AND "landingPages"."status" = true AND "landingPages"."name" like '${lpNumber}'`;
+
+      const query = getConnection()
+        .createQueryBuilder(LandingPages, "landingPages")
+        // .leftJoinAndSelect("landingPages.createByUser", "Users")
+        // .select([
+        //     "landingPages",
+        //     "Users.firstName",
+        //     "Users.lastName",
+        //     "Users.email",
+        // ])
+        .where(where);
+
+      const landingPageDetail = await query.getOne();
+    
+      if (landingPageDetail && LANDING_PAGE[landingPageDetail?.name].applicable){
           return true;
         }
         return false;
       }
       
-    static getOfferData(lpNumber,type,searchData){
+    static async getOfferData(lpNumber,type,searchData){
       
-        if(LANDING_PAGE[lpNumber].applicable){
+      if (await this.getLandingPageValidity(lpNumber)){
           
           switch(type){
               case 'flight' : 

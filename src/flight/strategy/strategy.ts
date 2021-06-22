@@ -17,8 +17,8 @@ export class Strategy {
                return data;
            }
 
-           async oneWaySearch(param1, param2) {
-               const data = await this.airline.oneWaySearch(param1, param2);
+    async oneWaySearch(param1, param2, param3) {
+               const data = await this.airline.oneWaySearch(param1, param2, param3);
                return data;
            }
 

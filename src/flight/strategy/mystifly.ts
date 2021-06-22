@@ -36,6 +36,7 @@ import { allAirpots } from "../all-airports";
 import { Airport } from "src/entity/airport.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
+import { LandingPages } from "src/entity/landing-page.entity";
 
 export const flightClass = {
     Economy: "Y",
@@ -188,7 +189,8 @@ export class Mystifly implements StrategyAirline {
 
     async oneWaySearch(
         searchFlightDto: OneWaySearchFlightDto,
-        user
+        user,
+        referralId
     ) {
         const mystiflyConfig = await this.getMystiflyCredential();
         console.log(mystiflyConfig);
@@ -208,6 +210,8 @@ export class Mystifly implements StrategyAirline {
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
         let categoryName = caegory?.categoryname;
+
+
 
         let module = await getManager()
             .createQueryBuilder(Module, "module")
@@ -232,7 +236,7 @@ export class Mystifly implements StrategyAirline {
                 `Fligh is not available for search route`
             );
         }
-
+        
         let markup = await this.getMarkupDetails(
             departure_date,
             bookingDate,
@@ -329,7 +333,7 @@ export class Mystifly implements StrategyAirline {
             let uniqueCode;
             
             let searchData = { departure:source_location,arrival:destination_location,checkInDate:departure_date}
-            let offerData = LandingPage.getOfferData('AS-410','flight',searchData)
+            let offerData = await LandingPage.getOfferData(referralId,'flight',searchData)
             for (let i = 0; i < flightRoutes.length; i++) {
                 route = new Route();
                 stops = [];
@@ -3113,6 +3117,7 @@ export class Mystifly implements StrategyAirline {
             let totalDuration;
             let uniqueCode;
             for (let i = 0; i < flightRoutes.length; i++) {
+                
                 totalDuration = 0;
                 route = new Route();
                 stops = [];
