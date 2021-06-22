@@ -9,7 +9,7 @@ export interface StrategyAirline {
 
     cancelBooking(param1);
 
-    roundTripSearch(params1, params2);
+    roundTripSearch(params1, params2, param3);
 
     roundTripSearchZip(params1, params2, param3, param4, param5, param6);
 
@@ -22,7 +22,7 @@ export interface StrategyAirline {
         param6
     );
 
-    airRevalidate(params1, params2);
+    airRevalidate(params1, params2, param3);
 
     bookFlight(params1, params2, param3);
 

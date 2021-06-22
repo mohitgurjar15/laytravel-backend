@@ -3009,7 +3009,8 @@ export class BookingService {
         return await this.flightService.airRevalidate(
             { route_code: routCode },
             Header,
-            user ? user : null
+            user ? user : null,
+            ""
         );
     }
 

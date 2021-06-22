@@ -2592,7 +2592,8 @@ export class CronJobsService {
 
                     const airRevalidateResult = await mystifly.airRevalidate(
                         { route_code },
-                        {}
+                        {},
+                        ""
                     );
 
                     if (airRevalidateResult) {

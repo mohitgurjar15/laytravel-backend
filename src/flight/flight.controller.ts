@@ -152,7 +152,8 @@ export class FlightController {
     @Body() searchFlightDto: RoundtripSearchFlightDto,
     @Req() req,
     @LogInUser() user,
-    @UserIpAddress() userIp : string
+    @UserIpAddress() userIp : string,
+    @GetReferralId() referralId: string
   ) {
     if (
       moment(searchFlightDto.departure_date).isBefore(
@@ -177,7 +178,8 @@ export class FlightController {
       searchFlightDto,
       req.headers,
       user,
-      userIp
+      userIp,
+      referralId
     );
   }
 
@@ -222,12 +224,14 @@ export class FlightController {
   async airRevalidate(
     @Body() routeIdDto: RouteIdsDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @GetReferralId() referralId: string
   ) {
     return await this.flightService.airRevalidate(
       routeIdDto,
       req.headers,
-      user
+      user,
+      referralId
     );
   }
 
