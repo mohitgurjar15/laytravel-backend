@@ -138,6 +138,32 @@ export const LANDING_PAGE={
             {
               location : {"title":"Tulum, Quintana Roo, Mexico","city":"Tulum","state":"Quintana Roo","country":"Mexico","type":"city","hotel_id":"","city_id":"800026663","lat":"20.2107","long":"-87.4630","image":"https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tulum.png"}
             }
+          ],
+          flight_offer_location:[
+            "EWR-CUN",
+            "EWR-DEN",
+            "EWR-FLL",
+            "EWR-LAS",
+            "EWR-MCO",
+            "EWR-MIA",
+            "EWR-PBI",
+            "EWR-PUJ",
+            "EWR-RSW",
+            "EWR-TPA",
+            "JFK-CUN",
+            "JFK-FLL",
+            "JFK-LAS",
+            "JFK-MCO",
+            "JFK-MIA",
+            "JFK-PUJ",
+            "JFK-TPA",
+            "LGA-CUN",
+            "LGA-DEN",
+            "LGA-FLL",
+            "LGA-MCO",
+            "LGA-MIA",
+            "LGA-PBI",
+            "LGA-PUJ"
           ]
         },
         promotional : {
