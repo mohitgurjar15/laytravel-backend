@@ -16,6 +16,7 @@ import { CryptoUtility } from "src/utility/crypto.utility";
 import { Role } from "src/enum/role.enum";
 import * as uuidValidator from "uuid-validate";
 import { ExportReferralDto } from "./dto/export-referrals.dto";
+import { LANDING_PAGE } from "src/config/landing-page.config";
 
 @Injectable()
 export class LandingPageService {
@@ -235,7 +236,7 @@ export class LandingPageService {
         if (!result) {
             throw new NotFoundException(`Id not found.`);
         }
-        return { data: result };
+        return { data: result, config: LANDING_PAGE[result.name] };
     }
 
     async exportReferralBooking(paginationOption: ExportReferralDto) {
