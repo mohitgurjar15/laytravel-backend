@@ -121,7 +121,7 @@ export class CartBookDto {
         description: `Enter authorisation log`,
         example: ``,
     })
-    auth_log: string;
+    auth_url: string;
 }
 
 class Cart {
