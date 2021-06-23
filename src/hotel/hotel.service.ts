@@ -130,9 +130,9 @@ export class HotelService {
         };
     }
 
-    async search(searchReqDto: SearchReqDto) {
+    async search(searchReqDto: SearchReqDto, referralId: string) {
         /* This should return direct hotel response (Directly from supplier's and as per our decided structure) */
-        let hotels = await this.hotel.search(searchReqDto);
+        let hotels = await this.hotel.search(searchReqDto, referralId);
         // return hotels;
         /* Add any type of Business logic for hotel object's */
         //hotels = this.rate.generateInstalments(hotels, searchReqDto.check_in);
@@ -185,7 +185,7 @@ export class HotelService {
         };
     }
 
-    async rooms(roomsReqDto: RoomsReqDto, user_id) {
+    async rooms(roomsReqDto: RoomsReqDto, user_id,referralId) {
         /*let cached = await this.cacheManager.get(roomsReqDto.token);
 
         if (!cached) {
@@ -213,7 +213,7 @@ export class HotelService {
         //roomsReqDto.bundle = hotel['bundle'];
         //roomsReqDto.rooms = details.occupancies.length;
 
-        let result = await this.hotel.rooms(roomsReqDto, user_id);
+        let result = await this.hotel.rooms(roomsReqDto, user_id, referralId);
         // return rooms;
 
         /* Add any type of Business logic for hotel object's */
@@ -258,10 +258,11 @@ export class HotelService {
         };
     }
 
-    async availability(availabilityDto: AvailabilityDto, user_id) {
+    async availability(availabilityDto: AvailabilityDto, user_id,referralId: string) {
         let availability = await this.hotel.availability(
             availabilityDto,
-            user_id
+            user_id,
+            referralId
         );
 
         //console.log("availiblity");
@@ -543,7 +544,7 @@ export class HotelService {
             searchReqDto.hotel_id = info.hotel.id;
 
             /* Search for Hotel */
-            let searchReq: any = await this.search(searchReqDto);
+            let searchReq: any = await this.search(searchReqDto,"");
             let hotel: any = collect(searchReq.data.hotels).first();
 
             /* Set Room DTO for finding latest rooms rates */
@@ -557,7 +558,8 @@ export class HotelService {
 
             let rooms = await this.hotel.rooms(
                 roomsReqDto,
-                bookingData.userId || ""
+                bookingData.userId || "",
+                ""
             );
 
             let room: any = collect(rooms)
@@ -603,7 +605,8 @@ export class HotelService {
 
                     let availabilityRes = await this.hotel.availability(
                         availabilityDto,
-                        booking.userId
+                        booking.userId,
+                        ""
                     );
 
                     if (availabilityRes) {
@@ -750,7 +753,8 @@ export class HotelService {
             // });
             let hotelAvailability = await this.availability(
                 availabilityDto,
-                user.userId
+                user.userId,
+                ""
             );
             logData['revalidation-log'] = hotelAvailability.data["fileName"]
             let availability = hotelAvailability.data.items;
