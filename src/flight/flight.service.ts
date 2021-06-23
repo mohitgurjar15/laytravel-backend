@@ -1907,7 +1907,11 @@ export class FlightService {
         booking.cartId = cartId;
 
         booking.locationInfo = {
+            journey_type,
+            source_location,
+            destination_location,
         };
+
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
