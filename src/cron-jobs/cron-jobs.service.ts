@@ -2649,7 +2649,7 @@ export class CronJobsService {
                     Route: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.source_location}-${param.destination_location}</td>
+                    ${param?.source_location}-${param?.destination_location}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2657,7 +2657,7 @@ export class CronJobsService {
                     dates: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.departure_date}-${param?.arrival_date || ""}</td>
+                    ${param?.departure_date}-${param?.arrival_date || ""}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2665,7 +2665,7 @@ export class CronJobsService {
                     adult_count: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.adult_count}</td>
+                    ${param?.adult_count}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2673,7 +2673,7 @@ export class CronJobsService {
                     availiblity: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.availiblity}</td>
+                    ${param?.availiblity}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2689,7 +2689,7 @@ export class CronJobsService {
                     unique_code: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.unique_code}</td>
+                    ${param?.unique_code}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2697,7 +2697,7 @@ export class CronJobsService {
                     airRevalidateResult: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.airRevalidateResult}</td>
+                    ${param?.airRevalidateResult}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2705,7 +2705,7 @@ export class CronJobsService {
                     error: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${JSON.stringify(param.error) }</td>
+                    ${param?.error ? JSON.stringify(param?.error) : "" }</td>
             </tr>
 
             <tbody></table></tr>`
