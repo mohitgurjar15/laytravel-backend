@@ -2493,6 +2493,7 @@ export class CronJobsService {
                 child_count: 0,
                 infant_count: 0,
             };
+            console.log('dto', dto)
             request[index] = dto
             result[index] = new Promise((resolve) =>
                 resolve(
@@ -2631,7 +2632,7 @@ export class CronJobsService {
             `
             for (let index = 0; index < emailData.length; index++) {
                 let param = emailData[index]
-                emailHtml += `<table align="center"
+                emailHtml += `<hr><table align="center"
         style="width:100%; max-width:100%; table-layout:fixed; background: #ffffff;"
         class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
         <tbody>
@@ -2649,7 +2650,7 @@ export class CronJobsService {
                     Route: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.source_location}-${param.destination_location}</td>
+                    ${param?.source_location}-${param?.destination_location}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2657,7 +2658,7 @@ export class CronJobsService {
                     dates: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.departure_date}-${param?.arrival_date || ""}</td>
+                    ${param?.departure_date}-${param?.arrival_date || ""}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2665,7 +2666,7 @@ export class CronJobsService {
                     adult_count: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.adult_count}</td>
+                    ${param?.adult_count}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2673,7 +2674,7 @@ export class CronJobsService {
                     availiblity: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.availiblity}</td>
+                    ${param?.availiblity}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2689,7 +2690,7 @@ export class CronJobsService {
                     unique_code: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.unique_code}</td>
+                    ${param?.unique_code}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2697,7 +2698,7 @@ export class CronJobsService {
                     airRevalidateResult: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.airRevalidateResult}</td>
+                    ${param?.airRevalidateResult}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2705,7 +2706,7 @@ export class CronJobsService {
                     error: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${JSON.stringify(param.error) }</td>
+                    ${param?.error ? JSON.stringify(param?.error) : "" }</td>
             </tr>
 
             <tbody></table></tr>`
