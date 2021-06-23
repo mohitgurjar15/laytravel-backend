@@ -2,6 +2,7 @@ import { collect } from "collect.js";
 import * as moment from "moment";
 import { DateTime } from "src/utility/datetime.utility";
 import { Instalment } from "src/utility/instalment.utility";
+import { LandingPage } from "src/utility/landing-page.utility";
 import { RateHelper } from "./rate.helper";
 
 export class RoomHelper {
@@ -11,7 +12,7 @@ export class RoomHelper {
         this.rateHelper = new RateHelper();
     }
 
-    processRoom(hotel: any, roomsReqDto: any, inputData = null) {
+    processRoom(hotel: any, roomsReqDto: any, inputData = null, offerData) {
         let roomData = hotel.room_data;
         //console.log("Inputdata",parseInt(inputData.num_rooms))
         //let rooms = collect(roomData).pluck('rate_data').map((rates: any) => {
@@ -31,6 +32,8 @@ export class RoomHelper {
             let cancellation_policies = this.processCancellationPolicies(
                 rate.cancellation_details
             );
+
+
 
             console.log("rate.mandatory_fee_details",rate.price_details.mandatory_fee_details)
             let mandatoryFeeDetails={ is_prepaid : false, prepaid_break_dwon:[],is_postpaid : false, postpaid_break_dwon:[] };
@@ -60,8 +63,11 @@ export class RoomHelper {
                 rate,
                 roomsReqDto,
                 inputData,
-                mandatoryFeeDetails.prepaid_break_dwon
+                mandatoryFeeDetails.prepaid_break_dwon,
+                offerData
             );
+            let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
+
             let board_type = rate.board_type != "NONE" ? rate.board_type : "";
             let start_price = 0;
             let secondary_start_price = 0;
@@ -72,6 +78,17 @@ export class RoomHelper {
             let third_down_payment = 0;
             let secondary_start_price_3 = 0;
             let no_of_weekly_installment_3 = 0;
+            let discounted_start_price = 0;
+            let discounted_secondary_start_price = 0;
+            // let instalmentDetails = Instalment.weeklyInstalment(
+            //     selling.total,
+            //     inputData.check_in,
+            //     bookingDate,
+            //     0,
+            //     null,
+            //     null,
+            //     0
+            // );
             let instalmentDetails = Instalment.weeklyInstalment(
                 selling.total,
                 inputData.check_in,
@@ -79,7 +96,9 @@ export class RoomHelper {
                 0,
                 null,
                 null,
-                0
+                0,
+                false,
+                weeklyCustomDownPayment
             );
             let instalmentDetails2 = Instalment.biWeeklyInstalment(
                 selling.total,
@@ -98,6 +117,18 @@ export class RoomHelper {
                 null,
                 null,
                 0
+            );
+
+            let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                selling.total,
+                inputData.check_in,
+                bookingDate,
+                0,
+                null,
+                null,
+                0,
+                false,
+                weeklyCustomDownPayment
             );
             if (instalmentDetails.instalment_available) {
                 start_price =
@@ -121,6 +152,11 @@ export class RoomHelper {
                     instalmentDetails3.instalment_date[1].instalment_amount;
                 no_of_weekly_installment_3 =
                     instalmentDetails3.instalment_date.length - 1;
+                discounted_start_price =
+                    discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                discounted_secondary_start_price =
+                    discountedInstalmentDetails.instalment_date[1].instalment_amount;
             }
 
             newItem = {
@@ -161,6 +197,8 @@ export class RoomHelper {
                 third_down_payment,
                 secondary_start_price_3,
                 no_of_weekly_installment_3,
+                discounted_start_price,
+                discounted_secondary_start_price
             };
 
             return newItem;

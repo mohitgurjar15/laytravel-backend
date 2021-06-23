@@ -16,20 +16,20 @@ export class Hotel {
         return this.hotel.autoComplete(term);
     }
 
-    search(searchReqDto: SearchReqDto) {
-        return this.hotel.search(searchReqDto);
+    search(searchReqDto: SearchReqDto, refferal) {
+        return this.hotel.search(searchReqDto, refferal);
     }
 
     detail(detailReqDto: DetailReqDto) {
         return this.hotel.detail(detailReqDto);
     }
 
-    rooms(roomsReqDto: RoomsReqDto, user_id: string) {
-        return this.hotel.rooms(roomsReqDto, user_id);
+    rooms(roomsReqDto: RoomsReqDto, user_id: string, referralId) {
+        return this.hotel.rooms(roomsReqDto, user_id, referralId);
     }
 
-    availability(availabilityDto: AvailabilityDto, user_id: string) {
-        return this.hotel.availability(availabilityDto, user_id);
+    availability(availabilityDto: AvailabilityDto, user_id: string, referralId: string) {
+        return this.hotel.availability(availabilityDto, user_id, referralId);
     }
 
     book(bookDto: BookDto, user_id: string) {

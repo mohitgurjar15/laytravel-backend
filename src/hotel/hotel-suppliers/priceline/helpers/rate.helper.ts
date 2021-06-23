@@ -1,3 +1,5 @@
+import { LandingPage } from "src/utility/landing-page.utility";
+
 export class RateHelper{
     
     getPublicPriceBreakUp(rate, searchParameters) {
@@ -50,7 +52,7 @@ export class RateHelper{
         };
     }
 
-    getRates(rate: any, searchParameters: any,inputData=null, mandatoryFees = []) {
+    getRates(rate: any, searchParameters: any, inputData = null, mandatoryFees = [], offerData) {
 
         let mendetoryFeesTotal = 0 
 
@@ -68,7 +70,7 @@ export class RateHelper{
 
         //let selling = retail.total > net_rate.total ? retail : net_rate;
         
-       
+        
         let selling = Object.assign({}, net_rate)
                  if (retail.total > net_rate.total) {
             console.log('retail', retail);
@@ -86,12 +88,19 @@ export class RateHelper{
             }
             
         }
+
+        
+        let discounted_selling_price = LandingPage.applyDiscount(offerData, selling.total)
+        selling['before_discount_total'] = selling.total
+        selling.total = discounted_selling_price
+
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         return {
             retail,
             net_rate,
             selling,
-            saving_percent
+            saving_percent,
+            discounted_selling_price
         }
     }
 }

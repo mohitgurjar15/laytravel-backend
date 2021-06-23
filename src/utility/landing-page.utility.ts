@@ -6,6 +6,10 @@ import { getConnection } from 'typeorm';
 export class LandingPage {
 	static getLandingPageValidity(lpNumber) {
 
+		if (!lpNumber) {
+			return false;
+		}
+
 		if (LANDING_PAGE[lpNumber].applicable) {
 			return true;
 		}
@@ -13,6 +17,10 @@ export class LandingPage {
 	}
 
 	static getOfferData(lpNumber, type, searchData) {
+
+		if (!lpNumber) {
+			return { applicable: false }
+		}
 
 		console.log("lpNumber", lpNumber)
 
@@ -34,6 +42,11 @@ export class LandingPage {
 	}
 
 	static checkFlightoffer(lpNumber, searchData) {
+
+		if (!lpNumber) {
+			return { applicable: false }
+		}
+
 		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
 
 		if (LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`) == -1) {
@@ -53,6 +66,10 @@ export class LandingPage {
 	}
 
 	static checkHotelOffer(lpNumber, searchData) {
+
+		if (!lpNumber) {
+			return { applicable: false }
+		}
 
 		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
 		let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal => {
