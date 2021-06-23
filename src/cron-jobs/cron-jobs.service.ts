@@ -2408,11 +2408,12 @@ export class CronJobsService {
 
 
     async flightAvailiblityAssure() {
+        let limit = 50
         let routes = await getConnection()
             .createQueryBuilder(FlightRoute, "routes")
             //.select('DISTINCT ON (LOWER("routes"."to_airport_code")) "routes"."to_airport_code" AND DISTINCT ON (LOWER("routes"."from_airport_code")) "routes"."from_airport_code"')
             .orderBy("RANDOM()", 'ASC')
-            .limit(10)
+            .limit(limit)
             .where("is_deleted = false AND status = true")
             .getMany();
 
@@ -2467,10 +2468,11 @@ export class CronJobsService {
         }
 
 
+
         var result = [];
         var request = [];
         //var response = []
-        for (let index = 0; index < 5; index++) {
+        for (let index = 0; index < limit/2; index++) {
             const route = routes[index];
             const today = new Date();
             let depatureRange = ((index + 1) * 30) + 2
@@ -2480,13 +2482,12 @@ export class CronJobsService {
             depatureDate = depatureDate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
-
             let dto = {
                 source_location: route.fromAirportCode,
                 destination_location: route.toAirportCode,
                 departure_date: depatureDate,
                 flight_class: 'Economy',
-                adult_count: (index + 1),
+                adult_count: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
                 child_count: 0,
                 infant_count: 0,
             };
@@ -2508,7 +2509,7 @@ export class CronJobsService {
 
         }
 
-        for (let index = 5; index < 10; index++) {
+        for (let index = limit/2; index < limit; index++) {
             const route = routes[index];
             const today = new Date();
             let depatureRange = ((index + 1) * 30) + 2
@@ -2534,7 +2535,7 @@ export class CronJobsService {
                 departure_date: depatureDate,
                 arrival_date: arrivalDate,
                 flight_class: 'Economy',
-                adult_count: (index - 4),
+                adult_count: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
                 child_count: 0,
                 infant_count: 0,
             };
@@ -2570,6 +2571,11 @@ export class CronJobsService {
 
         }
         const response = await Promise.all(result);
+        let logData = {
+            response, request
+        }
+        const fileName = `Flight-assure-crongit-${new Date().getTime()}`;
+        Activity.createlogFile(fileName, logData, "cron");
 
         let emailData = []
         let failed = 0
