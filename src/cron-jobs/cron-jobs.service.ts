@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+    BadRequestException, Injectable, NotFoundException, Inject,
+    CACHE_MANAGER,
+    InternalServerErrorException
+} from "@nestjs/common";
 import { UserRepository } from "src/auth/user.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -63,12 +67,21 @@ import { BookingRunoutNotificationMail } from "src/config/admin-email-notificati
 import { CancellationReason } from "src/enum/cancellation-reason.enum";
 import { Message } from "twilio/lib/twiml/MessagingResponse";
 import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
+import { FlightRoute } from "src/entity/flight-route.entity";
+import { Currency } from "src/entity/currency.entity";
+import { Language } from "src/entity/language.entity";
+import { Strategy } from "src/flight/strategy/strategy";
+import { Mystifly } from "src/flight/strategy/mystifly";
+import { Cache } from "cache-manager";
+import { Module } from "src/entity/module.entity";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
 @Injectable()
 export class CronJobsService {
     constructor(
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
 
@@ -84,7 +97,7 @@ export class CronJobsService {
         private readonly mailerService: MailerService,
 
         private vacationRentalService: VacationRentalService // @InjectTwilio() private readonly client: TwilioClient, // private twilioSMS: TwilioSMS,
-    ) {}
+    ) { }
 
     async convertCustomer() {
         // try {
@@ -190,8 +203,8 @@ export class CronJobsService {
                     Activity.createlogFile(
                         filename,
                         JSON.stringify(element.laytripBookingId) +
-                            "-----------------------error-----------------------" +
-                            JSON.stringify(error),
+                        "-----------------------error-----------------------" +
+                        JSON.stringify(error),
                         "flight"
                     );
                     failedlogArray += `<p>BookingId:- ${element.laytripBookingId}-----Log file----->/var/www/src/flight/${filename}</p> <br/>`;
@@ -226,7 +239,7 @@ export class CronJobsService {
         if (failedlogArray != "") {
             this.cronfailedmail(
                 "cron fail for given booking id please check log files: <br/>" +
-                    failedlogArray,
+                failedlogArray,
                 "update pending flight cron error log"
             );
 
@@ -310,8 +323,8 @@ export class CronJobsService {
                 Activity.createlogFile(
                     filename,
                     JSON.stringify(cartBooking.laytripCartId) +
-                        "-----------------------error-----------------------" +
-                        JSON.stringify(error),
+                    "-----------------------error-----------------------" +
+                    JSON.stringify(error),
                     "payment"
                 );
                 failedlogArray += `<p>instalmentId:- ${cartBooking.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
@@ -320,7 +333,7 @@ export class CronJobsService {
         if (failedlogArray != "") {
             this.cronfailedmail(
                 "cron fail for given installment id please check log files: <br/><pre>" +
-                    failedlogArray,
+                failedlogArray,
                 "partial payment cron error log"
             );
             Activity.cronUpdateActivity("Partial payment cron", failedlogArray);
@@ -387,27 +400,27 @@ export class CronJobsService {
                                 (data.param.todayNetpriceVarient <= -60 &&
                                     data.param
                                         .totalRecivedFromCustomerPercentage >=
-                                        20) ||
+                                    20) ||
                                 (data.param.todayNetpriceVarient <= -50 &&
                                     data.param
                                         .totalRecivedFromCustomerPercentage >=
-                                        30) ||
+                                    30) ||
                                 (data.param.todayNetpriceVarient <= -40 &&
                                     data.param
                                         .totalRecivedFromCustomerPercentage >=
-                                        40) ||
+                                    40) ||
                                 (data.param.todayNetpriceVarient <= -30 &&
                                     data.param
                                         .totalRecivedFromCustomerPercentage >=
-                                        50) ||
+                                    50) ||
                                 (data.param.todayNetpriceVarient <= -20 &&
                                     data.param
                                         .totalRecivedFromCustomerPercentage >=
-                                        60) ||
+                                    60) ||
                                 (data.param.todayNetpriceVarient <= -10 &&
                                     data.param
                                         .totalRecivedFromCustomerPercentage >=
-                                        70)
+                                    70)
                             ) {
                                 await this.mailerService
                                     .sendMail({
@@ -508,8 +521,8 @@ export class CronJobsService {
                 Activity.createlogFile(
                     filename,
                     JSON.stringify(result[index]) +
-                        "-----------------------error-----------------------" +
-                        JSON.stringify(error),
+                    "-----------------------error-----------------------" +
+                    JSON.stringify(error),
                     "booking"
                 );
                 failedlogArray += `<p>BookingId:- ${result[index].laytripBookingId}-----Log file----->/var/www/src/booking/${filename}</p> <br/>`;
@@ -519,7 +532,7 @@ export class CronJobsService {
         if (failedlogArray != "") {
             this.cronfailedmail(
                 "cron fail for given booking id please check log files: <br/><pre>" +
-                    failedlogArray,
+                failedlogArray,
                 "daily booking price cron error log"
             );
             Activity.cronUpdateActivity(
@@ -838,13 +851,13 @@ export class CronJobsService {
         //joining path of directory
         const directoryPath = path.join("/var/www/html/logs/" + folderName);
         //passsing directoryPath and callback function
-        fs.readdir(directoryPath, function(err, files) {
+        fs.readdir(directoryPath, function (err, files) {
             //handling error
             if (err) {
                 return console.log("Unable to scan directory: " + err);
             }
             //listing all files using forEach
-            files.forEach(function(file) {
+            files.forEach(function (file) {
                 // Do whatever you want to do with the file
                 console.log(file);
 
@@ -869,7 +882,7 @@ export class CronJobsService {
                             Key: file, // file will be saved as testBucket/contacts.csv
                             Body: data,
                         };
-                        s3.upload(params, function(s3Err, data) {
+                        s3.upload(params, function (s3Err, data) {
                             if (s3Err) {
                                 throw s3Err;
                             } else {
@@ -1300,10 +1313,8 @@ export class CronJobsService {
                                 "booking"
                             )
                             .where(
-                                `date("predictiveBookingData"."created_date") = '${
-                                    todayDate.split(" ")[0]
-                                }' AND "predictiveBookingData"."booking_id" = '${
-                                    bookingData.id
+                                `date("predictiveBookingData"."created_date") = '${todayDate.split(" ")[0]
+                                }' AND "predictiveBookingData"."booking_id" = '${bookingData.id
                                 }'`
                             )
                             .getOne();
@@ -1324,18 +1335,17 @@ export class CronJobsService {
                             const predictiveBookingData = new PredictiveBookingData();
 
                             let lastData = await getConnection()
-                            .createQueryBuilder(
-                                PredictiveBookingData,
-                                "predictiveBookingData"
-                            )
-                            
-                            .where(
-                                `"predictiveBookingData"."booking_id" = '${
-                                    bookingData.id
-                                }'`
-                            )
-                            .orderBy(`created_date`,'DESC')
-                            .getOne();
+                                .createQueryBuilder(
+                                    PredictiveBookingData,
+                                    "predictiveBookingData"
+                                )
+
+                                .where(
+                                    `"predictiveBookingData"."booking_id" = '${bookingData.id
+                                    }'`
+                                )
+                                .orderBy(`created_date`, 'DESC')
+                                .getOne();
 
                             predictiveBookingData.bookingId = bookingData.id;
                             predictiveBookingData.netPrice = flight.net_rate;
@@ -1408,10 +1418,8 @@ export class CronJobsService {
                         "booking"
                     )
                     .where(
-                        `"predictiveBookingData"."created_date" = '${
-                            todayDate.split(" ")[0]
-                        }' AND "predictiveBookingData"."booking_id" = '${
-                            bookingData.id
+                        `"predictiveBookingData"."created_date" = '${todayDate.split(" ")[0]
+                        }' AND "predictiveBookingData"."booking_id" = '${bookingData.id
                         }'`
                     )
                     .getOne();
@@ -1611,7 +1619,7 @@ export class CronJobsService {
                     if (
                         mailData.param.bookings.length == 1 &&
                         mailData.param.bookings[0].moduleId ==
-                            ModulesName.FLIGHT
+                        ModulesName.FLIGHT
                     ) {
                         header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
                     }
@@ -1640,7 +1648,7 @@ export class CronJobsService {
                     if (
                         mailData.param.bookings.length == 1 &&
                         mailData.param.bookings[0].moduleId ==
-                            ModulesName.FLIGHT
+                        ModulesName.FLIGHT
                     ) {
                         header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
                     }
@@ -1690,8 +1698,8 @@ export class CronJobsService {
                 Activity.createlogFile(
                     filename,
                     JSON.stringify(cart.laytripCartId) +
-                        "-----------------------error-----------------------" +
-                        JSON.stringify(error),
+                    "-----------------------error-----------------------" +
+                    JSON.stringify(error),
                     "payment"
                 );
                 failedlogArray += `<p>booking:- ${cart.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
@@ -1700,7 +1708,7 @@ export class CronJobsService {
         if (failedlogArray != "") {
             this.cronfailedmail(
                 "cron fail for given booking id please check log files: <br/><pre>" +
-                    failedlogArray,
+                failedlogArray,
                 "Booking reminder cron error log"
             );
             Activity.cronUpdateActivity("BookingReminder", failedlogArray);
@@ -1919,9 +1927,8 @@ export class CronJobsService {
                                 to: cartBooking.user.email,
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
-                                subject: `Booking ID ${param.bookingId} ${
-                                    param.try == 4 ? "Final" : ""
-                                }Missed Payment Reminder #${param.try - 1}`,
+                                subject: `Booking ID ${param.bookingId} ${param.try == 4 ? "Final" : ""
+                                    }Missed Payment Reminder #${param.try - 1}`,
                                 html: await LaytripMissedPaymentTemplete(
                                     param,
                                     cartBooking?.referral?.name
@@ -2204,8 +2211,8 @@ export class CronJobsService {
                 Activity.createlogFile(
                     filename,
                     JSON.stringify(cartBooking.laytripCartId) +
-                        "-----------------------error-----------------------" +
-                        JSON.stringify(error),
+                    "-----------------------error-----------------------" +
+                    JSON.stringify(error),
                     "payment"
                 );
                 failedlogArray += `<p>instalmentId:- ${cartBooking.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
@@ -2214,7 +2221,7 @@ export class CronJobsService {
         if (failedlogArray != "") {
             this.cronfailedmail(
                 "cron fail for given installment id please check log files: <br/><pre>" +
-                    failedlogArray,
+                failedlogArray,
                 "Daily payment cron error log"
             );
             Activity.cronUpdateActivity("Partial payment cron", failedlogArray);
@@ -2230,13 +2237,13 @@ export class CronJobsService {
         const fs = require("fs");
         const directoryPath = path.join("/var/www/html/logs/" + folderName);
         //passsing directoryPath and callback function
-        fs.readdir(directoryPath, function(err, files) {
+        fs.readdir(directoryPath, function (err, files) {
             //handling error
             if (err) {
                 return console.log("Unable to scan directory: " + err);
             }
             //listing all files using forEach
-            files.forEach(function(file) {
+            files.forEach(function (file) {
                 // Do whatever you want to do with the file
                 const fileName =
                     "/var/www/html/logs/" + folderName + "/" + file;
@@ -2378,8 +2385,8 @@ export class CronJobsService {
                 Activity.createlogFile(
                     filename,
                     JSON.stringify(cartBooking.laytripCartId) +
-                        "-----------------------error-----------------------" +
-                        JSON.stringify(error),
+                    "-----------------------error-----------------------" +
+                    JSON.stringify(error),
                     "payment"
                 );
                 failedlogArray += `<p>booking id:- ${cartBooking.laytripCartId}-----Log file----->/var/www/src/payment/${filename}</p> <br/>`;
@@ -2388,7 +2395,7 @@ export class CronJobsService {
         if (failedlogArray != "") {
             this.cronfailedmail(
                 "cron fail for given installment id please check log files: <br/><pre>" +
-                    failedlogArray,
+                failedlogArray,
                 "default user cron error log"
             );
             Activity.cronUpdateActivity("Partial payment cron", failedlogArray);
@@ -2397,5 +2404,233 @@ export class CronJobsService {
         return {
             message: `${new Date()} date default user successfully done`,
         };
+    }
+
+
+    async flightAvailiblityAssure() {
+        let limit = 50
+        let routes = await getConnection()
+            .createQueryBuilder(FlightRoute, "routes")
+            //.select('DISTINCT ON (LOWER("routes"."to_airport_code")) "routes"."to_airport_code" AND DISTINCT ON (LOWER("routes"."from_airport_code")) "routes"."from_airport_code"')
+            .orderBy("RANDOM()", 'ASC')
+            .limit(limit)
+            .where("is_deleted = false AND status = true")
+            .getMany();
+
+        let currencyDetails = await getManager()
+            .createQueryBuilder(Currency, "currency")
+            .where(`"currency"."code"=:currency and "currency"."status"=true`, {
+                currency: "USD",
+            })
+            .getOne();
+        if (!currencyDetails) {
+            throw new BadRequestException(`Currency not available.`);
+        }
+
+        let languageDetails = await getManager()
+            .createQueryBuilder(Language, "language")
+            .where(
+                `"language"."iso_1_code"=:language and "language"."active"=true`,
+                {
+                    language: 'en',
+                }
+            )
+            .getOne();
+        if (!languageDetails) {
+            throw new BadRequestException(`Language not available.`);
+        }
+
+        const headers = {
+            currency: currencyDetails,
+            language: languageDetails,
+        }
+
+        const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+
+        const mystiflyConfig = await new Promise((resolve) =>
+            resolve(mystifly.getMystiflyCredential())
+        );
+        //console.log(mystiflyConfig);
+
+        const sessionToken = await new Promise((resolve) =>
+            resolve(mystifly.startSession())
+        );
+
+        let module = await getManager()
+            .createQueryBuilder(Module, "module")
+            .where("module.name = :name", { name: "flight" })
+            .getOne();
+
+        if (!module) {
+            throw new InternalServerErrorException(
+                `Flight module is not configured in database`
+            );
+        }
+
+
+
+        var result = [];
+        var request = [];
+        //var response = []
+        for (let index = 0; index < limit/2; index++) {
+            const route = routes[index];
+            const today = new Date();
+            let depatureRange = ((index + 1) * 30) + 2
+            today.setDate(today.getDate() + depatureRange);
+
+            var depatureDate = today.toISOString().split("T")[0];
+            depatureDate = depatureDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            let dto = {
+                source_location: route.fromAirportCode,
+                destination_location: route.toAirportCode,
+                departure_date: depatureDate,
+                flight_class: 'Economy',
+                adult_count: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
+                child_count: 0,
+                infant_count: 0,
+            };
+            request[index] = dto
+            result[index] = new Promise((resolve) =>
+                resolve(
+                    mystifly.oneWaySearchZip(
+                        dto,
+                        {},
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails
+                    )
+                )
+
+            );
+            //response[index] = await this.flightService.searchOneWayFlight(dto, headers,{},'')
+
+        }
+
+        for (let index = limit/2; index < limit; index++) {
+            const route = routes[index];
+            const today = new Date();
+            let depatureRange = ((index + 1) * 30) + 2
+            today.setDate(today.getDate() + depatureRange);
+
+            var depatureDate = today.toISOString().split("T")[0];
+            depatureDate = depatureDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+
+            const day = new Date();
+            let arrivalRange = ((index + 1) * 30) + 6
+            day.setDate(day.getDate() + arrivalRange);
+
+            var arrivalDate = day.toISOString().split("T")[0];
+            arrivalDate = arrivalDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+
+            let dto = {
+                source_location: route.fromAirportCode,
+                destination_location: route.toAirportCode,
+                departure_date: depatureDate,
+                arrival_date: arrivalDate,
+                flight_class: 'Economy',
+                adult_count: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
+                child_count: 0,
+                infant_count: 0,
+            };
+            request[index] = dto
+            result[index] = new Promise((resolve) =>
+                resolve(
+                    mystifly.roundTripSearchZipWithFilter(
+                        dto,
+                        {},
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails
+                    )
+                )
+            );
+
+            // const result = new Promise((resolve) =>
+            // //resolve(mystifly.roundTripSearch(searchFlightDto, user))
+            // resolve(
+            //     mystifly.roundTripSearchZip(
+            //         dto,
+            //         {},
+            //         mystiflyConfig,
+            //         sessionToken,
+            //         module,
+            //         currencyDetails
+            //     )
+            // )
+            //);
+
+            // response[index] = await this.flightService.searchRoundTripFlight(dto, headers,{},'')
+
+        }
+        const response = await Promise.all(result);
+        let logData = {
+            response, request
+        }
+        const fileName = `Flight-assure-crongit-${new Date().getTime()}`;
+        Activity.createlogFile(fileName, logData, "cron");
+
+        let emailData = []
+        let failed = 0
+        for (let index = 0; index < response.length; index++) {
+            
+
+            emailData[index] = request[index]
+
+            try {
+
+                const flight = response[index];
+
+            const flightData = flight?.items[0]
+
+                if (flightData) {
+                    let route_code = flightData?.route_code
+                    emailData[index]['availiblity'] = true
+                    emailData[index]['route_code'] = flightData?.route_code
+                    emailData[index]['unique_code'] = flightData?.unique_code
+
+                    const airRevalidateResult = await mystifly.airRevalidate(
+                        { route_code },
+                        {}
+                    );
+
+                    if (airRevalidateResult) {
+                        emailData[index]['airRevalidateResult'] = true
+                    } else {
+                        failed++
+                        emailData[index]['airRevalidateResult'] = false
+                    }
+
+
+                } else {
+                    emailData[index]['availiblity'] = false
+                    failed++
+                }
+            } catch (error) {
+                emailData[index]['availiblity'] = false
+                emailData[index]['error'] = error
+                failed++
+            }
+
+
+
+        }
+
+        if (failed != 0) {
+            this.cronfailedmail(
+                "cron fail for given flight route please check this: <br/><pre>" +
+                emailData,
+                "flight assure cron failed for some route"
+            );
+            Activity.cronUpdateActivity("flight assure cron", emailData);
+        }
+        return emailData
     }
 }

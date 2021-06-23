@@ -13,6 +13,7 @@ export class FlightSearchResult {
     inbound_depature_time_slot: any;
     inbound_arrival_time_slot: any;
     category_name?: string;
+    
 }
 export class Route {
     type: string;
@@ -33,6 +34,7 @@ export class Route {
     start_price: number;
     secondary_start_price: number;
     selling_price: number;
+    discounted_selling_price: number;
     secondary_selling_price: number;
     airline_name: string;
     airline_logo: string;
@@ -63,6 +65,11 @@ export class Route {
     no_of_weekly_installment_3: number;
     instalment_avail_after: number;
     category_name?: string;
+    log_file?: string;
+    markUpDetails?: string;
+    offer_data:any;
+    discounted_start_price:number;
+    discounted_secondary_start_price:number;
 }
 
 export class RouteType {
