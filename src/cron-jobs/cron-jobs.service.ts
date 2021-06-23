@@ -2493,6 +2493,7 @@ export class CronJobsService {
                 child_count: 0,
                 infant_count: 0,
             };
+            console.log('dto', dto)
             request[index] = dto
             result[index] = new Promise((resolve) =>
                 resolve(
@@ -2631,7 +2632,7 @@ export class CronJobsService {
             `
             for (let index = 0; index < emailData.length; index++) {
                 let param = emailData[index]
-                emailHtml += `<table align="center"
+                emailHtml += `<hr><table align="center"
         style="width:100%; max-width:100%; table-layout:fixed; background: #ffffff;"
         class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
         <tbody>
