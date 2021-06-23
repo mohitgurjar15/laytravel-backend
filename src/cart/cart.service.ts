@@ -1040,7 +1040,7 @@ more than 10.`
     async bookCart(bookCart: CartBookDto, user: User, Headers,referralId) {
         let logData = new BookingLog
             logData.id = uuidv4()
-            logData.paymentAuthorizeLog = bookCart.auth_log
+            logData.paymentAuthorizeLog = bookCart.auth_url
             logData.timeStamp = Math.round(new Date().getTime() / 1000)
 
             const bookingLog = await logData.save()
@@ -1056,7 +1056,7 @@ more than 10.`
                 selected_down_payment,
                 transaction_token,
                 referral_id,
-                auth_log
+                auth_url
             } = bookCart;
 
             // let logData =  await getConnection()
