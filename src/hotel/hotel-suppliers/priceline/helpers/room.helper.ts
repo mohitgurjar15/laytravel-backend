@@ -198,7 +198,8 @@ export class RoomHelper {
                 secondary_start_price_3,
                 no_of_weekly_installment_3,
                 discounted_start_price,
-                discounted_secondary_start_price
+                discounted_secondary_start_price,
+                offer_data: offerData
             };
 
             return newItem;
