@@ -59,7 +59,7 @@ export class LandingPage {
 
 		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location)
 		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`))
-		// console.log(`${searchData.departure}-${searchData.arrival}`)
+		 console.log(`${searchData.departure}-${searchData.arrival}`)
 
 		if (LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`) == -1) {
 			return { applicable: false }
