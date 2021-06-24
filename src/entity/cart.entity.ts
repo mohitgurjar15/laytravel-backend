@@ -38,11 +38,17 @@ export class Cart extends BaseEntity {
     @Column("timestamp with time zone", { name: "created_date", nullable: true })
     createdDate: Date | null;
 
+    @Column("character varying", { name: "offer_from", nullable: true })
+    offerFrom: string;
+
     @Column("timestamp with time zone", { name: "expiry_date" })
     expiryDate: Date;
 
     @Column("boolean", { name: "is_deleted", default: () => false })
     isDeleted: boolean;
+
+    @Column("boolean", { name: "is_promotional", default: () => false })
+    isPromotional: boolean;
 
     @Column("json", { name: "module_info" })
     moduleInfo: object;

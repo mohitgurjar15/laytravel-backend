@@ -22,12 +22,13 @@ export class LandingPage {
 			return { applicable: false }
 		}
 
-		console.log("lpNumber", lpNumber)
+		//console.log("lpNumber", lpNumber)
 
 		if (LANDING_PAGE[lpNumber].applicable) {
 
 			switch (type) {
 				case 'flight':
+					//console.log(1)
 					return this.checkFlightoffer(lpNumber, searchData)
 				case 'hotel':
 					return this.checkHotelOffer(lpNumber, searchData);
@@ -46,16 +47,23 @@ export class LandingPage {
 		if (!lpNumber) {
 			return { applicable: false }
 		}
-
+		//console.log(2)
 		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
+
+		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location)
+		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`))
+		// console.log(`${searchData.departure}-${searchData.arrival}`)
 
 		if (LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`) == -1) {
 			return { applicable: false }
 		}
+		//console.log(3)
 
 		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false }
 		}
+
+		//console.log(4)
 
 		return {
 			applicable: true,

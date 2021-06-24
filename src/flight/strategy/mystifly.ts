@@ -3244,6 +3244,7 @@ export class Mystifly implements StrategyAirline {
                     flightRoutes[i]["a:ispassportmandatory"][0] == "true"
                         ? true
                         : false;
+                let depatureOfInbound = stops[0].departure_code 
                 route.departure_code = stops[0].departure_code;
                 route.departure_date = stops[0].departure_date;
                 route.departure_time = stops[0].departure_time;
@@ -3390,8 +3391,9 @@ export class Mystifly implements StrategyAirline {
                         secondaryMarkUpDetails
                     );
                 }
-                let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].departure_code, checkInDate: departure_date }
+                let searchData = { departure: depatureOfInbound, arrival: arrivalCodeOfOutbound, checkInDate: departure_date }
                 let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
+                
                 route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
                 route.start_price = 0;
                 route.secondary_start_price = 0;

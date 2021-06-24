@@ -76,7 +76,7 @@ export class CartService {
         private hotelService: HotelService
     ) {}
 
-    async addInCart(addInCartDto: AddInCartDto, user, Header) {
+    async addInCart(addInCartDto: AddInCartDto, user, Header,referralId) {
         try {
             let userData;
             const {
@@ -110,14 +110,38 @@ export class CartService {
                 .where(
                     `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`
                 );
-            const result = await query.getCount();
-            if (result >= 10) {
+            const [result,count] = await query.getManyAndCount();
+            if (count >= 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
 more than 10.`
                 );
             }
-            console.log("user", user);
+            let promotional = 0
+            let nonPromotional = 0 
+            let promotionalItem = []
+            let nonPromotionalItem = []
+        for (let index = 0; index < result.length; index++) {
+            const cart = result[index];
+            
+            if(cart.isPromotional == true){
+                promotional++
+               promotionalItem.push(cart.id)
+            }else{
+                nonPromotional++
+                nonPromotionalItem.push(cart.id)
+            }
+        }
+
+        if(promotional>0 && nonPromotional > 0){
+           throw new NotAcceptableException(`In cart promotional and not promotional both inventry found.`) 
+        }
+
+        let cartIsPromotional =  false 
+        if(promotional>0){
+            cartIsPromotional = true
+        }
+            
 
             userData = await getConnection()
                 .createQueryBuilder(User, "user")
@@ -126,14 +150,14 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional);
                     break;
 
                 case ModulesName.FLIGHT:
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header
+                        Header, referralId, cartIsPromotional
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:
@@ -191,17 +215,24 @@ more than 10.`
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header) {
+    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional) {
         //console.log('validate');
 
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
             user ? user : null,
-            ""
+            referralId
         );
 
         if (flightInfo) {
+             if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false){ 
+            throw new NotAcceptableException(`In cart not-promotional item found`)
+        }
+
+        if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true){ 
+            throw new NotAcceptableException(`In cart promotional item found`)
+        }
             const depatureDate = flightInfo[0].departure_date;
 
             const formatedDepatureDate = DateTime.convertDateFormat(
@@ -231,6 +262,8 @@ more than 10.`
 
             cart.moduleId = ModulesName.FLIGHT;
             cart.moduleInfo = flightInfo;
+            cart.isPromotional = flightInfo[0]?.offer_data?.applicable == true ? true : false
+        cart.offerFrom = referralId
             cart.oldModuleInfo = flightInfo;
             cart.expiryDate = new Date(formatedDepatureDate);
             // diffrence > 2
@@ -2241,14 +2274,23 @@ more than 10.`
     //     );
     // }
 
-    async addHotelIntoCart(ppnBundle: string, user) {
+    async addHotelIntoCart(ppnBundle: string, user,referralId,cartIsPromotional) {
         let roomDetails = await this.hotelService.availability(
             {
                 room_ppn: ppnBundle,
             },
             user.userId || null,
-            ""
+            referralId
         );
+
+        if (roomDetails.data[0]?.offer_data?.applicable == true && cartIsPromotional == false){ 
+            throw new NotAcceptableException(`In cart not-promotional item found`)
+        }
+
+        if (roomDetails.data[0]?.offer_data?.applicable == false && cartIsPromotional == true){ 
+            throw new NotAcceptableException(`In cart promotional item found`)
+        }
+
 
         const cart = new Cart();
 
@@ -2260,6 +2302,8 @@ more than 10.`
 
         cart.moduleId = ModulesName.HOTEL;
         cart.moduleInfo = roomDetails.data;
+        cart.isPromotional = roomDetails.data[0]?.offer_data?.applicable == true ? true : false
+        cart.offerFrom = referralId
         cart.oldModuleInfo = roomDetails.data;
         console.log("cart.moduleInfo", cart.moduleInfo);
         console.log("cart.moduleInfo", cart.moduleInfo["items"][0]);
