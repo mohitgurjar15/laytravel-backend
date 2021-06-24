@@ -77,6 +77,7 @@ export class CartService {
     ) {}
 
     async addInCart(addInCartDto: AddInCartDto, user, Header,referralId) {
+
         try {
             let userData;
             const {
@@ -647,7 +648,7 @@ more than 10.`
         }
     }
 
-    async listCart(dto: ListCartDto, user, headers) {
+    async listCart(dto: ListCartDto, user, headers, referralId) {
         try {
             const { live_availiblity } = dto;
             var tDate = new Date();
@@ -672,15 +673,7 @@ more than 10.`
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 //.leftJoinAndSelect("travelers.userData", "userData")
                 .select([
-                    "cart.id",
-                    "cart.userId",
-                    "cart.guestUserId",
-                    "cart.moduleId",
-                    "cart.moduleInfo",
-                    "cart.expiryDate",
-                    "cart.oldModuleInfo",
-                    "cart.isDeleted",
-                    "cart.createdDate",
+                    "cart",
                     "module.id",
                     "module.name",
                     "travelers.id",
@@ -697,6 +690,31 @@ more than 10.`
                 throw new NotFoundException(`Cart is empty`);
             }
 
+            let error = ''
+            let promotional = 0
+            let nonPromotional = 0
+            let promotionalItem = []
+            let nonPromotionalItem = []
+            for (let index = 0; index < result.length; index++) {
+                const cart = result[index];
+
+                if (cart.isPromotional == true) {
+                    promotional++
+                    promotionalItem.push(cart.id)
+                } else {
+                    nonPromotional++
+                    nonPromotionalItem.push(cart.id)
+                }
+            }
+
+            if (promotional > 0 && nonPromotional > 0) {
+                error = `In cart promotional and not promotional both inventry found.`
+            }
+
+            let cartIsPromotional = false
+            if (promotional > 0) {
+                cartIsPromotional = true
+            }
             let responce = [];
             var flightRequest = [];
             let flightResponse = [];
@@ -931,6 +949,8 @@ more than 10.`
             return {
                 data: responce,
                 count: count,
+                cartIsPromotional,
+                error
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
