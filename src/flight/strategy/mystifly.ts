@@ -3553,6 +3553,7 @@ export class Mystifly implements StrategyAirline {
                         : false;
                 route.unique_code = md5(uniqueCode);
                 route.category_name = categoryName;
+                route.offer_data = offerData;
                 for (let intnery of flightRoutes[i][
                     "a:airitinerarypricinginfo"
                 ][0]["a:ptc_farebreakdowns"][0]["a:ptc_farebreakdown"]) {
@@ -4241,6 +4242,7 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
                 route.unique_code = md5(uniqueCode);
+                route.offer_data = offerData;
                 const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryName 
         from flight_route 
