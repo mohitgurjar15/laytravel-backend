@@ -112,6 +112,8 @@ export class CartService {
                     `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`
                 );
             const [result, count] = await query.getManyAndCount();
+
+            console.log(result)
             if (count >= 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
@@ -135,13 +137,18 @@ more than 10.`
             }
 
             if (promotional > 0 && nonPromotional > 0) {
-                throw new NotAcceptableException(`In cart promotional and not promotional both inventry found.`)
+                throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
             }
+
+            console.log("promotional", promotional, "nonPromotional", nonPromotional)
 
             let cartIsPromotional = false
             if (promotional > 0) {
                 cartIsPromotional = true
+                console.log("cartIsPromotional", cartIsPromotional)
             }
+
+            console.log("cartIsPromotional", cartIsPromotional)
 
 
             userData = await getConnection()
@@ -218,7 +225,7 @@ more than 10.`
 
     async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional) {
         //console.log('validate');
-
+        console.log("cartIsPromotional", cartIsPromotional)
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
@@ -227,12 +234,14 @@ more than 10.`
         );
 
         if (flightInfo) {
+
+            console.log("applicable", flightInfo[0]?.offer_data?.applicable)
             if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                throw new NotAcceptableException(`In cart not-promotional item found`)
+                throw new ConflictException(`In cart not-promotional item found`)
             }
 
             if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                throw new NotAcceptableException(`In cart promotional item found`)
+                throw new ConflictException(`In cart promotional item found`)
             }
             const depatureDate = flightInfo[0].departure_date;
 
@@ -315,7 +324,7 @@ more than 10.`
                 )
                 .orderBy(`id`, "ASC")
                 .getMany();
-            
+
             let ids = [];
             if (postCart.length) {
                 for await (const cart of postCart) {
@@ -423,13 +432,13 @@ more than 10.`
 
                 deleteCartIds = lowestCart.isPromotional == true ? nonPromotionalItem : promotionalItem
 
-                if(deleteCartIds.length){
+                if (deleteCartIds.length) {
                     await getConnection()
                         .createQueryBuilder()
                         .delete()
                         .from(CartTravelers)
                         .where(`"cart_id" in (:...cartIds)`, {
-                            cartIds:deleteCartIds,
+                            cartIds: deleteCartIds,
                         })
                         .execute();
                     await getConnection()
@@ -437,12 +446,12 @@ more than 10.`
                         .delete()
                         .from(Cart)
                         .where(`"id" in (:...cartIds)`, {
-                            cartIds:deleteCartIds,
+                            cartIds: deleteCartIds,
                         })
                         .execute();
                 }
 
-                
+
             }
 
 
@@ -941,15 +950,16 @@ more than 10.`
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             newCart["is_available"] = true;
+                            newCart["isPromotional"] = value?.offer_data?.applicable
 
                             if (value?.offer_data?.applicable == true && cartIsPromotional == false) {
                                 error = `In cart not-promotional item found`
-                                newCart["is_available"] = false;
+                                //newCart["is_available"] = false;
                             }
 
                             if (value?.offer_data?.applicable == false && cartIsPromotional == true) {
                                 error = `In cart promotional item found`
-                                newCart["is_available"] = false;
+                               // newCart["is_available"] = false;
                             }
 
                             cart.moduleInfo = [value];
@@ -959,7 +969,7 @@ more than 10.`
                                 .set({ moduleInfo: [value], isPromotional: value?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
-                                
+
                             await cart.save();
                         } else {
                             newCart["is_available"] = false;
@@ -1001,14 +1011,26 @@ more than 10.`
                             }
 
                             if (roomDetails?.data) {
+                                if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                    //throw new ConflictException(`In cart not-promotional item found`)
+                                    error = `In cart not-promotional item found`
+                                    
+                                }
+
+                                if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                    error = `In cart promotional item found`
+                                    
+                                }
+
                                 newCart["moduleInfo"] = roomDetails.data;
                                 newCart["is_available"] = true;
+                                newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
 
                                 cart.moduleInfo = roomDetails;
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data })
+                                    .set({ moduleInfo: roomDetails.data ,isPromotional: roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
@@ -2403,6 +2425,8 @@ more than 10.`
     // }
 
     async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional) {
+
+        console.log(cartIsPromotional)
         let roomDetails = await this.hotelService.availability(
             {
                 room_ppn: ppnBundle,
@@ -2410,13 +2434,13 @@ more than 10.`
             user.userId || null,
             referralId
         );
-
-        if (roomDetails.data[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-            throw new NotAcceptableException(`In cart not-promotional item found`)
+        console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable)
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+            throw new ConflictException(`In cart not-promotional item found`)
         }
 
-        if (roomDetails.data[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-            throw new NotAcceptableException(`In cart promotional item found`)
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+            throw new ConflictException(`In cart promotional item found`)
         }
 
 
@@ -2430,7 +2454,7 @@ more than 10.`
 
         cart.moduleId = ModulesName.HOTEL;
         cart.moduleInfo = roomDetails.data;
-        cart.isPromotional = roomDetails.data[0]?.offer_data?.applicable == true ? true : false
+        cart.isPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
         cart.offerFrom = referralId
         cart.oldModuleInfo = roomDetails.data;
         console.log("cart.moduleInfo", cart.moduleInfo);

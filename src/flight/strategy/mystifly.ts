@@ -4119,10 +4119,10 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
 
-                let arrivalFlightcode  = stops.length == 1 ? stops[stops.length - 1].arrival_code : stops[stops.length - 1].departure_code
+                //let arrivalFlightcode  = stops.length == 1 ? stops[stops.length - 1].arrival_code : stops[stops.length - 1].departure_code
 
                 let searchData = {
-                    departure: stops[0].departure_code, arrival: arrivalFlightcode, checkInDate: moment(stops[0].departure_date, "DD/MM/YYYY").format(
+                    departure: route.departure_code, arrival: route.arrival_code, checkInDate: moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
                     ) }
                 let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
