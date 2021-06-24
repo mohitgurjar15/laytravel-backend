@@ -46,12 +46,14 @@ export class CartController {
     async addInCart(
         @Body() addInCartDto: AddInCartDto,
         @LogInUser() user,
-        @Req() req
+        @Req() req,
+        @GetReferralId() referralId: string
     ) {
         return await this.cartService.addInCart(
             addInCartDto,
             user,
-            req.headers
+            req.headers,
+            referralId
         );
     }
 
