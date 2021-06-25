@@ -1006,7 +1006,7 @@ more than 10.`
                                         room_ppn: oldModuleInfo[0].bundle,
                                     },
                                     user?.userId || null,
-                                    ""
+                                    referralId
                                 );
                             } catch (error) {
                                 newCart["is_available"] = false;
