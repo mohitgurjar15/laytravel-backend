@@ -145,11 +145,11 @@ more than 10.`
 
             console.log("promotional", promotional, "nonPromotional", nonPromotional)
 
-            let cartIsPromotional 
+            let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
                 //console.log("cartIsPromotional", cartIsPromotional)
-            }else if(nonPromotional > 0){
+            } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
 
@@ -811,7 +811,7 @@ more than 10.`
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-            }else if(nonPromotional > 0){
+            } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
             let responce = [];
@@ -864,89 +864,89 @@ more than 10.`
                         var minuteDifference = Math.floor(difference / 1000 / 60);
 
                         console.log('minuteDifference', minuteDifference)
-                        if (minuteDifference > 5) {
-                            const bookingType =
-                                cart.moduleInfo[0].routes.length > 1
-                                    ? "RoundTrip"
-                                    : "oneway";
 
-                            if (bookingType == "oneway") {
-                                let dto = {
-                                    source_location:
-                                        cart.moduleInfo[0].departure_code,
-                                    destination_location:
-                                        cart.moduleInfo[0].arrival_code,
-                                    departure_date: await this.flightService.changeDateFormat(
-                                        cart.moduleInfo[0].departure_date
-                                    ),
-                                    flight_class:
-                                        cart.moduleInfo[0].routes[0].stops[0]
-                                            .cabin_class,
-                                    adult_count: cart.moduleInfo[0].adult_count
-                                        ? cart.moduleInfo[0].adult_count
-                                        : 0,
-                                    child_count: cart.moduleInfo[0].child_count
-                                        ? cart.moduleInfo[0].child_count
-                                        : 0,
-                                    infant_count: cart.moduleInfo[0].infant_count
-                                        ? cart.moduleInfo[0].infant_count
-                                        : 0,
-                                };
-                                //console.log(dto);
+                        const bookingType =
+                            cart.moduleInfo[0].routes.length > 1
+                                ? "RoundTrip"
+                                : "oneway";
 
-                                flightRequest[cart.id] = new Promise((resolve) =>
-                                    resolve(
-                                        mystifly.oneWaySearchZip(
-                                            dto,
-                                            user,
-                                            mystiflyConfig,
-                                            sessionToken,
-                                            module,
-                                            currencyDetails
-                                        )
+                        if (bookingType == "oneway") {
+                            let dto = {
+                                source_location:
+                                    cart.moduleInfo[0].departure_code,
+                                destination_location:
+                                    cart.moduleInfo[0].arrival_code,
+                                departure_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].departure_date
+                                ),
+                                flight_class:
+                                    cart.moduleInfo[0].routes[0].stops[0]
+                                        .cabin_class,
+                                adult_count: cart.moduleInfo[0].adult_count
+                                    ? cart.moduleInfo[0].adult_count
+                                    : 0,
+                                child_count: cart.moduleInfo[0].child_count
+                                    ? cart.moduleInfo[0].child_count
+                                    : 0,
+                                infant_count: cart.moduleInfo[0].infant_count
+                                    ? cart.moduleInfo[0].infant_count
+                                    : 0,
+                            };
+                            //console.log(dto);
+
+                            flightRequest[cart.id] = new Promise((resolve) =>
+                                resolve(
+                                    mystifly.oneWaySearchZip(
+                                        dto,
+                                        user,
+                                        mystiflyConfig,
+                                        sessionToken,
+                                        module,
+                                        currencyDetails
                                     )
-                                );
+                                )
+                            );
 
-                            } else {
-                                let dto = {
-                                    source_location:
-                                        cart.moduleInfo[0].departure_code,
-                                    destination_location:
-                                        cart.moduleInfo[0].arrival_code,
-                                    departure_date: await this.flightService.changeDateFormat(
-                                        cart.moduleInfo[0].departure_date
-                                    ),
-                                    flight_class:
-                                        cart.moduleInfo[0].routes[0].stops[0]
-                                            .cabin_class,
-                                    adult_count: cart.moduleInfo[0].adult_count
-                                        ? cart.moduleInfo[0].adult_count
-                                        : 0,
-                                    child_count: cart.moduleInfo[0].child_count
-                                        ? cart.moduleInfo[0].child_count
-                                        : 0,
-                                    infant_count: cart.moduleInfo[0].infant_count
-                                        ? cart.moduleInfo[0].infant_count
-                                        : 0,
-                                    arrival_date: await this.flightService.changeDateFormat(
-                                        cart.moduleInfo[0].routes[1].stops[0].departure_date
-                                    ),
-                                };
-                                //console.log(dto);
-                                flightRequest[cart.id] = new Promise((resolve) =>
-                                    resolve(
-                                        mystifly.roundTripSearchZip(
-                                            dto,
-                                            user,
-                                            mystiflyConfig,
-                                            sessionToken,
-                                            module,
-                                            currencyDetails
-                                        )
+                        } else {
+                            let dto = {
+                                source_location:
+                                    cart.moduleInfo[0].departure_code,
+                                destination_location:
+                                    cart.moduleInfo[0].arrival_code,
+                                departure_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].departure_date
+                                ),
+                                flight_class:
+                                    cart.moduleInfo[0].routes[0].stops[0]
+                                        .cabin_class,
+                                adult_count: cart.moduleInfo[0].adult_count
+                                    ? cart.moduleInfo[0].adult_count
+                                    : 0,
+                                child_count: cart.moduleInfo[0].child_count
+                                    ? cart.moduleInfo[0].child_count
+                                    : 0,
+                                infant_count: cart.moduleInfo[0].infant_count
+                                    ? cart.moduleInfo[0].infant_count
+                                    : 0,
+                                arrival_date: await this.flightService.changeDateFormat(
+                                    cart.moduleInfo[0].routes[1].stops[0].departure_date
+                                ),
+                            };
+                            //console.log(dto);
+                            flightRequest[cart.id] = new Promise((resolve) =>
+                                resolve(
+                                    mystifly.roundTripSearchZip(
+                                        dto,
+                                        user,
+                                        mystiflyConfig,
+                                        sessionToken,
+                                        module,
+                                        currencyDetails
                                     )
-                                );
-                            }
+                                )
+                            );
                         }
+
 
                         resultIndex++;
                     }
@@ -963,7 +963,7 @@ more than 10.`
 
                     if (
                         typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes" && minuteDifference > 5
+                        live_availiblity == "yes"
                     ) {
                         if (cart.moduleId == ModulesName.FLIGHT) {
                             const value = await this.flightAvailiblity(
