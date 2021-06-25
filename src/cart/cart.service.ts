@@ -1084,7 +1084,7 @@ more than 10.`
                         newCart["travelers"] = cart.travelers;
                         responce.push(newCart);
                     }
-
+                }
                     return {
                         data: responce,
                         count: count,
@@ -1094,7 +1094,7 @@ more than 10.`
 
                 }
             }
-        } catch (error) {
+         catch (error) {
             if (typeof error.response !== "undefined") {
                 //console.log("m");
                 switch (error.response.statusCode) {
