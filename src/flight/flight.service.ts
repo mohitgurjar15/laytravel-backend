@@ -85,6 +85,7 @@ import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete
 import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
 import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
+import { LandingPage } from "src/utility/landing-page.utility";
 
 @Injectable()
 export class FlightService {
@@ -1858,7 +1859,8 @@ export class FlightService {
         supplierBookingData,
         travelers,
         cartId = null,
-        reservationId = null
+        reservationId = null,
+        referral_id = null
     ) {
         const {
             selling_price,
@@ -1871,6 +1873,7 @@ export class FlightService {
             fare_type,
             card_token,
             booking_through,
+            total_price
         } = bookFlightDto;
 
         let moduleDetails = await getManager()
@@ -1898,6 +1901,9 @@ export class FlightService {
         booking.bookingType = bookingType;
         booking.currency = currencyId;
         booking.totalAmount = selling_price.toString();
+        booking.actualSellingPrice = total_price.toString();
+        booking.isPromotional = airRevalidateResult[0]?.offer_data?.applicable
+        booking.offerFrom = referral_id
         booking.netRate = net_rate.toString();
         booking.markupAmount = (selling_price - net_rate).toString();
         booking.bookingDate = bookingDate;
@@ -3280,7 +3286,9 @@ export class FlightService {
         smallestDipatureDate,
         cartId,
         selected_down_payment: number,
-        transaction_token
+        transaction_token,
+        cartIsPromotional,
+        referral_id
     ) {
          let logData = {}
         try {
@@ -3308,7 +3316,7 @@ export class FlightService {
             const airRevalidateResult = await mystifly.airRevalidate(
                 { route_code },
                 user,
-                ""
+                referral_id
             );
             console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])
@@ -3330,9 +3338,11 @@ export class FlightService {
                         ? airRevalidateResult[0].infant_count
                         : 0;
                 bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
+                bookingRequestInfo.total_price =
+                        airRevalidateResult[0].selling_price;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
-                        airRevalidateResult[0].selling_price;
+                        airRevalidateResult[0].discounted_selling_price
                 } else {
                     if (
                         typeof airRevalidateResult[0].secondary_selling_price !=
@@ -3343,7 +3353,7 @@ export class FlightService {
                             airRevalidateResult[0].secondary_selling_price;
                     } else {
                         bookingRequestInfo.selling_price =
-                            airRevalidateResult[0].selling_price;
+                            airRevalidateResult[0].discounted_selling_price;
                     }
                 }
 
@@ -3423,6 +3433,25 @@ export class FlightService {
                 }
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
+
+                    let weeklyCustomDownPayment = LandingPage.getDownPayment(airRevalidateResult[0].offer_data, 0);
+
+                    if(cartIsPromotional){
+
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        selling_price,
+                        smallestDipatureDate,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0,
+                        false,
+                        weeklyCustomDownPayment
+                    );
+                    console.log(instalmentDetails)
+
+                }else{
                     instalmentDetails = Instalment.weeklyInstalment(
                         selling_price,
                         smallestDipatureDate,
@@ -3433,6 +3462,8 @@ export class FlightService {
                         selected_down_payment,
                         cartCount > 1 ? true : false
                     );
+                }
+                    
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
                     instalmentDetails = Instalment.biWeeklyInstalment(
@@ -3562,7 +3593,8 @@ export class FlightService {
                             bookingResult,
                             travelers,
                             cartId,
-                            reservationId
+                            reservationId,
+                            referral_id
                         );
                         //send email here
                         bookingResult.laytrip_booking_id =
