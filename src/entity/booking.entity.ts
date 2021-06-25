@@ -52,8 +52,17 @@ export class Booking extends BaseEntity {
     @Column("numeric", { name: "total_amount", precision: 15, scale: 3 })
     totalAmount: string;
 
+    @Column("boolean", { name: "is_promotional", default: () => false })
+    isPromotional: boolean;
+
+    @Column("character varying", { name: "offer_from", nullable: true })
+    offerFrom: string;
+
     @Column("numeric", { name: "net_rate", precision: 15, scale: 3 })
     netRate: string;
+
+    @Column("numeric", { name: "actual_selling_price", precision: 15, scale: 3, nullable:true })
+    actualSellingPrice: string;
 
     @Column("numeric", { name: "markup_amount", precision: 15, scale: 3 })
     markupAmount: string;

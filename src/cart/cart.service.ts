@@ -1265,6 +1265,8 @@ more than 10.`
                     more than 10.`
                 );
             }
+
+            
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);
@@ -1277,13 +1279,7 @@ more than 10.`
                 .leftJoinAndSelect("travelers.userData", "userData")
                 .leftJoinAndSelect("cart.user", "User")
                 .select([
-                    "cart.id",
-                    "cart.userId",
-                    "cart.moduleId",
-                    "cart.moduleInfo",
-                    "cart.expiryDate",
-                    "cart.isDeleted",
-                    "cart.createdDate",
+                    "cart",
                     "module.id",
                     "module.name",
                     "travelers.id",
@@ -1314,6 +1310,40 @@ more than 10.`
             bookingLog.cartInfo = result
             let smallestDate = "";
             let largestDate = "";
+
+            let promotional = 0
+            let nonPromotional = 0
+            let promotionalItem = []
+            let nonPromotionalItem = []
+            for (let index = 0; index < result.length; index++) {
+                const item = result[index];
+
+                if (item.isPromotional == true) {
+                    promotional++
+                    promotionalItem.push(item.id)
+                } else {
+                    nonPromotional++
+                    nonPromotionalItem.push(item.id)
+                }
+            }
+
+            if (promotional > 0 && nonPromotional > 0) {
+                throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
+            }
+
+            console.log("promotional", promotional, "nonPromotional", nonPromotional)
+
+            let cartIsPromotional
+            if (promotional > 0) {
+                cartIsPromotional = true
+                console.log("cartIsPromotional", cartIsPromotional)
+            } else if (nonPromotional > 0) {
+                cartIsPromotional = false
+            }
+
+            console.log("cartIsPromotional", cartIsPromotional)
+
+
             //let ToatalAmount = ''
             for await (const item of result) {
                 if (item.moduleId == ModulesName.FLIGHT) {
@@ -1405,7 +1435,9 @@ more than 10.`
                             smallestDate,
                             cartData,
                             cartCount,
-                            flightCount
+                            flightCount,
+                            cartIsPromotional,
+                            referral_id
                         );
                         responce.push(flightResponce);
                         inventryLogs.push(flightResponce["logFile"])
@@ -1688,6 +1720,8 @@ more than 10.`
         cartData: CartBooking,
         cartCount: number,
         flightCount: number,
+        cartIsPromotional,
+        referral_id
     ) {
         let logFile = {}
         let reservationId = `${cartData.laytripCartId}-F${flightCount}`
@@ -1833,6 +1867,8 @@ more than 10.`
                     cartData.id,
                     selected_down_payment,
                     transaction_token,
+                    cartIsPromotional,
+                    referral_id
                 );
 
                 console.log(" newCart[detail]", newCart["detail"])
