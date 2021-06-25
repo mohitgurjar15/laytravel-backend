@@ -91,8 +91,10 @@ export class RateHelper{
 
         
         let discounted_selling_price = LandingPage.applyDiscount(offerData, selling.total)
-        selling['discounted_selling_price'] = discounted_selling_price
+        selling['discounted_total'] = discounted_selling_price
         selling.total = selling.total
+        let discounted_sub_total = LandingPage.applyDiscount(offerData, selling.sub_total)
+        selling['discounted_sub_total'] = discounted_sub_total
 
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         return {

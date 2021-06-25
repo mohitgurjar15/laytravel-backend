@@ -1576,7 +1576,7 @@ export class PaymentService {
                     smallestDate = dipatureDate;
                 }
                 console.log(item.moduleInfo[0].selling);
-                totalAmount += parseFloat(item.moduleInfo[0].selling['discounted_selling_price']);
+                totalAmount += parseFloat(item.moduleInfo[0].selling['discounted_total']);
                 offerDownPayment += parseFloat(item.moduleInfo[0].discounted_start_price)
             }
         }
