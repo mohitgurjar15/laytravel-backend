@@ -145,13 +145,15 @@ more than 10.`
 
             console.log("promotional", promotional, "nonPromotional", nonPromotional)
 
-            let cartIsPromotional = false
+            let cartIsPromotional 
             if (promotional > 0) {
                 cartIsPromotional = true
-                console.log("cartIsPromotional", cartIsPromotional)
+                //console.log("cartIsPromotional", cartIsPromotional)
+            }else{
+                cartIsPromotional = false
             }
 
-            console.log("cartIsPromotional", cartIsPromotional)
+            //console.log("cartIsPromotional", cartIsPromotional)
 
 
             userData = await getConnection()
@@ -806,9 +808,11 @@ more than 10.`
                 error = `In cart promotional and not promotional both inventry found.`
             }
 
-            let cartIsPromotional = false
+            let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
+            }else{
+                cartIsPromotional = false
             }
             let responce = [];
             var flightRequest = [];
