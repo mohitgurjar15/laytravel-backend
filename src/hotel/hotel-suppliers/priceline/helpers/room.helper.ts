@@ -120,7 +120,7 @@ export class RoomHelper {
             );
 
             let discountedInstalmentDetails = Instalment.weeklyInstalment(
-                selling.total,
+                selling['discounted_selling_price'],
                 inputData.check_in,
                 bookingDate,
                 0,
