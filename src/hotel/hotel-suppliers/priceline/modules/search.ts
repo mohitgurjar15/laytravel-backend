@@ -124,7 +124,7 @@ export class Search {
                         );
 
                         let discountedInstalmentDetails = Instalment.weeklyInstalment(
-                            selling.total,
+                            selling['discounted_selling_price'],
                             parameters.check_in,
                             bookingDate,
                             0,
