@@ -149,7 +149,7 @@ more than 10.`
             if (promotional > 0) {
                 cartIsPromotional = true
                 //console.log("cartIsPromotional", cartIsPromotional)
-            }else{
+            }else if(nonPromotional > 0){
                 cartIsPromotional = false
             }
 
@@ -811,7 +811,7 @@ more than 10.`
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-            }else{
+            }else if(nonPromotional > 0){
                 cartIsPromotional = false
             }
             let responce = [];
