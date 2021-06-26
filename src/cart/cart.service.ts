@@ -34,6 +34,7 @@ import { Generic } from "src/utility/generic.utility";
 import { errorMessage } from "src/config/common.config";
 import { Cache } from "cache-manager";
 import { CartBookDto } from "./dto/book-cart.dto";
+import { MultipleInventryDeleteFromCartDto } from "./dto/multiple-inventry-delete.dto";
 import { v4 as uuidv4 } from "uuid";
 import * as uniqid from "uniqid";
 import { CartBooking } from "src/entity/cart-booking.entity";
@@ -1210,6 +1211,82 @@ more than 10.`
                 .delete()
                 .from(Cart)
                 .where(`"id" = '${id}'`)
+                .execute();
+
+            return {
+                message: `Item removed successfully`,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                //console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
+        }
+    }
+
+    async multipleInventryDeleteFromCart(dto : MultipleInventryDeleteFromCartDto, user) {
+        const {id} = dto
+        try {
+            let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`;
+            if (user.roleId == Role.GUEST_USER) {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(
+                        `Please enter guest user id &&&user_id&&&${errorMessage}`
+                    );
+                }
+                where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = ${id})`;
+            }
+
+            
+
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(where);
+
+            const cartItem = await query.getOne();
+
+            if (!cartItem) {
+                throw new NotFoundException(`Given item not found`);
+            }
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(`"cart_id" In (:...id)`,{id})
+                .execute();
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(`"cart_id" In (:...id)`,{id})
                 .execute();
 
             return {
@@ -2506,7 +2583,7 @@ more than 10.`
             referralId
         );
         console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
-        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
             throw new ConflictException(`In cart not-promotional item found`)
         }
 
