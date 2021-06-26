@@ -1462,7 +1462,9 @@ more than 10.`
                             smallestDate,
                             cartData,
                             cartCount,
-                            hotelCount
+                            hotelCount,
+                            referral_id,
+                            cartIsPromotional
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
@@ -1939,7 +1941,9 @@ more than 10.`
         smallestDate: string,
         cartData: CartBooking,
         cartCount: number,
-        hotelCount
+        hotelCount,
+        referral_id,
+        cartIsPromotional
     ) {
         let logFile = {}
         let reservationId = `${cartData.laytripCartId}-H${hotelCount}`
@@ -2041,7 +2045,9 @@ more than 10.`
                     smallestDate,
                     cartData.id,
                     selected_down_payment,
-                    transaction_token
+                    transaction_token,
+                    referral_id,
+                    cartIsPromotional
                 );
                 console.log("newCart[detail]", newCart["detail"])
                 logFile[reservationId] = newCart["detail"]['logData']

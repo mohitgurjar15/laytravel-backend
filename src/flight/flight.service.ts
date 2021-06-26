@@ -3445,7 +3445,7 @@ export class FlightService {
                         null,
                         null,
                         0,
-                        false,
+                        cartCount > 1 ? true : false,
                         weeklyCustomDownPayment
                     );
                     console.log(instalmentDetails)

@@ -55,6 +55,7 @@ import * as config from "config";
 const card = config.get("card");
 const supporterEmail = config.get("supporterEmail");
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
+import { LandingPage } from "src/utility/landing-page.utility";
 
 @Injectable()
 export class HotelService {
@@ -724,7 +725,8 @@ export class HotelService {
         smallestDipatureDate,
         cartId,
         selected_down_payment: number,
-        transaction_token
+        transaction_token,
+        referral_id, cartIsPromotional
     ) {
         let logData = {}
         try {
@@ -755,7 +757,7 @@ export class HotelService {
             let hotelAvailability = await this.availability(
                 availabilityDto,
                 user.userId,
-                ""
+                referral_id
             );
             logData['revalidation-log'] = hotelAvailability.data["fileName"]
             let availability = hotelAvailability.data.items;
@@ -778,12 +780,14 @@ export class HotelService {
                 bookingRequestInfo.infant_count = 0;
                 bookingRequestInfo.net_rate =
                     availability[0].net_rate.total || 0;
+                bookingRequestInfo.total_price =
+                    availability[0].selling.total || 0;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
-                        availability[0].selling.total;
+                        availability[0].selling['discounted_total'];
                 } else {
                     bookingRequestInfo.selling_price =
-                        availability[0].selling.total;
+                        availability[0].selling['discounted_total'];
                 }
 
                 bookingRequestInfo.departure_date =
@@ -858,6 +862,23 @@ export class HotelService {
                 //console.log("test2");
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
+                    let weeklyCustomDownPayment = LandingPage.getDownPayment(availability[0].offer_data, 0);
+                    if (cartIsPromotional) {
+
+                        instalmentDetails = Instalment.weeklyInstalment(
+                            selling_price,
+                            smallestDipatureDate,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            cartCount > 1 ? true : false,
+                            weeklyCustomDownPayment
+                        );
+                        console.log(instalmentDetails)
+
+                    } else {
                     instalmentDetails = Instalment.weeklyInstalment(
                         selling_price,
                         smallestDipatureDate,
@@ -868,6 +889,7 @@ export class HotelService {
                         selected_down_payment,
                         cartCount > 1 ? true : false
                     );
+                    }
                 }
                 //console.log("test3");
                 if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1005,7 +1027,8 @@ export class HotelService {
                         bookingResult || null,
                         travelers,
                         cartId,
-                        reservationId
+                        reservationId,
+                        referral_id
                     );
 
                     // if (dayDiff <= 90) {
@@ -1398,7 +1421,8 @@ export class HotelService {
         supplierBookingData,
         travelers,
         cartId = null,
-        reservationId = null
+        reservationId = null,
+        referral_id=null
     ) {
         const {
             selling_price,
@@ -1411,6 +1435,7 @@ export class HotelService {
             fare_type,
             card_token,
             booking_through,
+            total_price
         } = bookFlightDto;
 
         let moduleDetails = await getManager()
@@ -1465,6 +1490,9 @@ export class HotelService {
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
         //console.log("saveBooking", 2);
+        booking.actualSellingPrice = total_price.toString();
+        booking.isPromotional = revalidateResult[0]?.offer_data?.applicable
+        booking.offerFrom = referral_id
         booking.locationInfo = {
             hotel_id: revalidateResult[0].hotel_id,
             hotel_name: revalidateResult[0].hotel_name,
