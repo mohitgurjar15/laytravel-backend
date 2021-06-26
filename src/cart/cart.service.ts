@@ -792,7 +792,6 @@ more than 10.`
             let nonPromotional = 0
             let promotionalItem = []
             let nonPromotionalItem = []
-
             let cartIsConflicted = false
             for (let index = 0; index < result.length; index++) {
                 const cart = result[index];
