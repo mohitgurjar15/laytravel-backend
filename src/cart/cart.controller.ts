@@ -12,6 +12,7 @@ import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { ListCartDto } from './dto/list-cart.dto';
+import { MultipleInventryDeleteFromCartDto } from './dto/multiple-inventry-delete.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
@@ -112,6 +113,19 @@ export class CartController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteFromCart(@LogInUser() user, @Param("id") id: number) {
         return await this.cartService.deleteFromCart(id, user);
+    }
+
+    @Delete("delete-conflicted-cart-item")
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Delete multiple item in cart of user" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async multipleDeleteFromCart(@LogInUser() user, @Body() dto : MultipleInventryDeleteFromCartDto) {
+        return await this.cartService.multipleInventryDeleteFromCart(dto, user);
     }
 
     @Post("book")
