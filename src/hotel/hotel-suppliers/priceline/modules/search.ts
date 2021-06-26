@@ -58,7 +58,7 @@ export class Search {
                     this.item = hotel;
                     this.rate = hotel["room_data"][0]["rate_data"][0];
                     let searchData = {
-                        departure: hotel['address']['city_name'],checkInDate: parameters.check_in}
+                        departure: hotel['address']['city_name'],checkInDate: parameters.check_in, state: hotel['address']['state']}
                     let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
                     let {
                         retail,

@@ -35,7 +35,7 @@ export class Rooms {
             let hotel = results.results.hotel_data[0];
             let inputData = results.results.input_data;
             let searchData = {
-                departure: hotel['address']['city_name'], checkInDate: inputData.check_in
+                departure: hotel['address']['city_name'], checkInDate: inputData.check_in, state: hotel['address']['state']
             }
             let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
             let rooms: any = this.roomHelper.processRoom(

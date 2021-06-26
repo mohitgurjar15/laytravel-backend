@@ -5,7 +5,7 @@ import { LandingPages } from 'src/entity/landing-page.entity';
 import { getConnection } from 'typeorm';
 export class LandingPage {
 	static getLandingPageValidity(lpNumber) {
-		if (!lpNumber){
+		if (!lpNumber) {
 			return false;
 		}
 
@@ -59,14 +59,14 @@ export class LandingPage {
 
 		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location)
 		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`))
-		 console.log(`${searchData.departure}-${searchData.arrival}`)
+		console.log(`${searchData.departure}-${searchData.arrival}`)
 
 		if (LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`) == -1) {
 			return { applicable: false }
 		}
 		//console.log(3)
 
-		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
+		if (moment(searchData.checkInDate).diff(moment(), 'days') <= LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false }
 		}
 
@@ -88,13 +88,16 @@ export class LandingPage {
 
 		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
 		let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal => {
-			return deal.location.city == searchData.departure
+			if (deal.location.city_names.indexOf(searchData.departure) && searchData.state == deal.location.state) {
+				return 1
+			}
+			return -1
 		})
 		if (isRouteExist == -1) {
 			return { applicable: false };
 		}
 
-		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
+		if (moment(searchData.checkInDate).diff(moment(), 'days') <= LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false };
 		}
 
