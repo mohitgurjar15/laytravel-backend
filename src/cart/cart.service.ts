@@ -241,11 +241,11 @@ more than 10.`
         if (flightInfo) {
 
             console.log("applicable", flightInfo[0]?.offer_data?.applicable)
-            if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+            if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
                 throw new ConflictException(`In cart not-promotional item found`)
             }
 
-            if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+            if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
                 throw new ConflictException(`In cart promotional item found`)
             }
             const depatureDate = flightInfo[0].departure_date;
@@ -359,109 +359,109 @@ more than 10.`
                     .execute();
             }
 
-            let guestCart = await getConnection()
-                .createQueryBuilder(Cart, "cart")
-                .where("guest_user_id =:id", { id: guestUserId })
-                .getMany();
-            let guestlowestCart = guestCart[0]
-            if (guestCart.length) {
-                for await (const cart of guestCart) {
-                    let cartTraveler = await getConnection()
-                        .createQueryBuilder(CartTravelers, "traveler")
-                        .where("cart_id =:id", {
-                            id: cart.id,
-                        })
-                        .orderBy(`id`, "ASC")
-                        .getOne();
+            // let guestCart = await getConnection()
+            //     .createQueryBuilder(Cart, "cart")
+            //     .where("guest_user_id =:id", { id: guestUserId })
+            //     .getMany();
+            // let guestlowestCart = guestCart[0]
+            // if (guestCart.length) {
+            //     for await (const cart of guestCart) {
+            //         let cartTraveler = await getConnection()
+            //             .createQueryBuilder(CartTravelers, "traveler")
+            //             .where("cart_id =:id", {
+            //                 id: cart.id,
+            //             })
+            //             .orderBy(`id`, "ASC")
+            //             .getOne();
 
-                    if (cartTraveler && cartTraveler.userId != user.userId) {
-                        await getConnection()
-                            .createQueryBuilder()
-                            .update(User)
-                            //.set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
-                            .set({
-                                email: user.email || null,
-                            })
-                            .where("user_id =:id", {
-                                id: cartTraveler.userId,
-                            })
-                            .execute();
-                    }
-                }
-            }
+            //         if (cartTraveler && cartTraveler.userId != user.userId) {
+            //             await getConnection()
+            //                 .createQueryBuilder()
+            //                 .update(User)
+            //                 //.set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
+            //                 .set({
+            //                     email: user.email || null,
+            //                 })
+            //                 .where("user_id =:id", {
+            //                     id: cartTraveler.userId,
+            //                 })
+            //                 .execute();
+            //         }
+            //     }
+            // }
 
-            let userCart = await getConnection()
-                .createQueryBuilder(Cart, "cart")
-                .where(`"cart"."user_id" = '${user.userId}'`)
-                .getMany();
-            let userlowestCart = userCart[0]
+            // let userCart = await getConnection()
+            //     .createQueryBuilder(Cart, "cart")
+            //     .where(`"cart"."user_id" = '${user.userId}'`)
+            //     .getMany();
+            // let userlowestCart = userCart[0]
 
-            let promotional = 0
-            let nonPromotional = 0
-            let promotionalItem = []
-            let nonPromotionalItem = []
-            for (let index = 0; index < guestCart.length; index++) {
-                const cart = guestCart[index];
+            // let promotional = 0
+            // let nonPromotional = 0
+            // let promotionalItem = []
+            // let nonPromotionalItem = []
+            // for (let index = 0; index < guestCart.length; index++) {
+            //     const cart = guestCart[index];
 
-                if (cart.isPromotional == true) {
-                    promotional++
-                    promotionalItem.push(cart.id)
-                } else {
-                    nonPromotional++
-                    nonPromotionalItem.push(cart.id)
-                }
-            }
+            //     if (cart.isPromotional == true) {
+            //         promotional++
+            //         promotionalItem.push(cart.id)
+            //     } else {
+            //         nonPromotional++
+            //         nonPromotionalItem.push(cart.id)
+            //     }
+            // }
 
-            for (let index = 0; index < userCart.length; index++) {
-                const cart = userCart[index];
+            // for (let index = 0; index < userCart.length; index++) {
+            //     const cart = userCart[index];
 
-                if (cart.isPromotional == true) {
-                    promotional++
-                    promotionalItem.push(cart.id)
-                } else {
-                    nonPromotional++
-                    nonPromotionalItem.push(cart.id)
-                }
-            }
+            //     if (cart.isPromotional == true) {
+            //         promotional++
+            //         promotionalItem.push(cart.id)
+            //     } else {
+            //         nonPromotional++
+            //         nonPromotionalItem.push(cart.id)
+            //     }
+            // }
 
-            for (let index = 0; index < guestCart.length; index++) {
-                const cart = guestCart[index];
+            // for (let index = 0; index < guestCart.length; index++) {
+            //     const cart = guestCart[index];
 
-                if (cart.isPromotional == true) {
-                    promotional++
-                    promotionalItem.push(cart.id)
-                } else {
-                    nonPromotional++
-                    nonPromotionalItem.push(cart.id)
-                }
-            }
-            let deleteCartIds = []
-            if (promotional > 0 && nonPromotional > 0) {
-                let lowestCart = guestlowestCart.id > userlowestCart.id ? userlowestCart : guestlowestCart
+            //     if (cart.isPromotional == true) {
+            //         promotional++
+            //         promotionalItem.push(cart.id)
+            //     } else {
+            //         nonPromotional++
+            //         nonPromotionalItem.push(cart.id)
+            //     }
+            // }
+            // let deleteCartIds = []
+            // if (promotional > 0 && nonPromotional > 0) {
+            //     let lowestCart = guestlowestCart.id > userlowestCart.id ? userlowestCart : guestlowestCart
 
-                deleteCartIds = lowestCart.isPromotional == true ? nonPromotionalItem : promotionalItem
+            //     deleteCartIds = lowestCart.isPromotional == true ? nonPromotionalItem : promotionalItem
 
-                if (deleteCartIds.length) {
-                    await getConnection()
-                        .createQueryBuilder()
-                        .delete()
-                        .from(CartTravelers)
-                        .where(`"cart_id" in (:...cartIds)`, {
-                            cartIds: deleteCartIds,
-                        })
-                        .execute();
-                    await getConnection()
-                        .createQueryBuilder()
-                        .delete()
-                        .from(Cart)
-                        .where(`"id" in (:...cartIds)`, {
-                            cartIds: deleteCartIds,
-                        })
-                        .execute();
-                }
+            //     if (deleteCartIds.length) {
+            //         await getConnection()
+            //             .createQueryBuilder()
+            //             .delete()
+            //             .from(CartTravelers)
+            //             .where(`"cart_id" in (:...cartIds)`, {
+            //                 cartIds: deleteCartIds,
+            //             })
+            //             .execute();
+            //         await getConnection()
+            //             .createQueryBuilder()
+            //             .delete()
+            //             .from(Cart)
+            //             .where(`"id" in (:...cartIds)`, {
+            //                 cartIds: deleteCartIds,
+            //             })
+            //             .execute();
+            //     }
 
 
-            }
+            // }
 
 
 
@@ -792,6 +792,8 @@ more than 10.`
             let nonPromotional = 0
             let promotionalItem = []
             let nonPromotionalItem = []
+
+            let cartIsConflicted = false
             for (let index = 0; index < result.length; index++) {
                 const cart = result[index];
 
@@ -806,6 +808,7 @@ more than 10.`
 
             if (promotional > 0 && nonPromotional > 0) {
                 error = `In cart promotional and not promotional both inventry found.`
+                cartIsConflicted = true
             }
 
             let cartIsPromotional
@@ -979,14 +982,26 @@ more than 10.`
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = value?.offer_data?.applicable
 
+
                                 if (value?.offer_data?.applicable == true && cartIsPromotional == false) {
                                     error = `In cart not-promotional item found`
-                                    //newCart["is_available"] = false;
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true
+
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
                                 }
 
                                 if (value?.offer_data?.applicable == false && cartIsPromotional == true) {
                                     error = `In cart promotional item found`
-                                    // newCart["is_available"] = false;
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true
+
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
                                 }
 
                                 cart.moduleInfo = [value];
@@ -1039,20 +1054,35 @@ more than 10.`
                                 }
 
                                 if (roomDetails?.data) {
+                                    newCart["moduleInfo"] = roomDetails.data;
+                                    newCart["is_available"] = true;
+                                    newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
+                                    newCart["is_conflict"] = false
+
                                     if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
                                         //throw new ConflictException(`In cart not-promotional item found`)
                                         error = `In cart not-promotional item found`
+
+                                        if (cartIsConflicted) {
+                                            newCart["is_conflict"] = true
+
+                                        } else {
+                                            newCart["is_available"] = false;
+                                        }
 
                                     }
 
                                     if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
                                         error = `In cart promotional item found`
+                                        if (cartIsConflicted) {
+                                            newCart["is_conflict"] = true
+
+                                        } else {
+                                            newCart["is_available"] = false;
+                                        }
 
                                     }
 
-                                    newCart["moduleInfo"] = roomDetails.data;
-                                    newCart["is_available"] = true;
-                                    newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
 
                                     cart.moduleInfo = roomDetails;
                                     await getConnection()
@@ -1085,16 +1115,16 @@ more than 10.`
                         responce.push(newCart);
                     }
                 }
-                    return {
-                        data: responce,
-                        count: count,
-                        cartIsPromotional,
-                        error
-                    };
+                return {
+                    data: responce,
+                    count: count,
+                    cartIsPromotional,
+                    error
+                };
 
-                }
             }
-         catch (error) {
+        }
+        catch (error) {
             if (typeof error.response !== "undefined") {
                 //console.log("m");
                 switch (error.response.statusCode) {
@@ -1290,7 +1320,7 @@ more than 10.`
                 );
             }
 
-            
+
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);
@@ -2505,11 +2535,11 @@ more than 10.`
             referralId
         );
         console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable)
-        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
             throw new ConflictException(`In cart not-promotional item found`)
         }
 
-        if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
             throw new ConflictException(`In cart promotional item found`)
         }
 
