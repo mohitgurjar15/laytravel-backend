@@ -1115,14 +1115,15 @@ more than 10.`
                         responce.push(newCart);
                     }
                 }
-                return {
+                
+
+            }
+            return {
                     data: responce,
                     count: count,
                     cartIsPromotional,
                     error
                 };
-
-            }
         }
         catch (error) {
             if (typeof error.response !== "undefined") {
