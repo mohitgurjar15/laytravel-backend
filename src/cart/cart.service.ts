@@ -1119,11 +1119,11 @@ more than 10.`
 
             }
             return {
-                    data: responce,
-                    count: count,
-                    cartIsPromotional,
-                    error
-                };
+                data: responce,
+                count: count,
+                cartIsPromotional,
+                error
+            };
         }
         catch (error) {
             if (typeof error.response !== "undefined") {
