@@ -577,6 +577,9 @@ export class Mystifly implements StrategyAirline {
 
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
+                        
+                        route.discounted_no_of_weekly_installment =
+                    discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
 
@@ -3489,6 +3492,8 @@ export class Mystifly implements StrategyAirline {
 
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
+                        route.discounted_no_of_weekly_installment =
+                    discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
 
@@ -4191,6 +4196,8 @@ export class Mystifly implements StrategyAirline {
 
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
+                        route.discounted_no_of_weekly_installment =
+                    discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
 

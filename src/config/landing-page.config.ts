@@ -82,7 +82,7 @@ export const LANDING_PAGE = {
       flight: [
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "DEN", "name": "Punta Cana Intl.", "city": "Punta Cana", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "key": "P" }
+          to: { "code": "PUJ", "name": "Punta Cana Intl.", "city": "Punta Cana", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "key": "P" }
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
@@ -167,7 +167,7 @@ export const LANDING_PAGE = {
       ]
     },
     promotional: {
-      min_promotional_day: 91,
+      min_promotional_day: 90,
       max_promotional_day: 365,
     },
     payment_frequency_options: {

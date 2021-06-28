@@ -80,6 +80,7 @@ export class RoomHelper {
             let no_of_weekly_installment_3 = 0;
             let discounted_start_price = 0;
             let discounted_secondary_start_price = 0;
+            let discounted_no_of_weekly_installment = 0
             // let instalmentDetails = Instalment.weeklyInstalment(
             //     selling.total,
             //     inputData.check_in,
@@ -157,6 +158,9 @@ export class RoomHelper {
 
                 discounted_secondary_start_price =
                     discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
+                discounted_no_of_weekly_installment =
+                    discountedInstalmentDetails.instalment_date.length - 1;
             }
 
             newItem = {
@@ -199,6 +203,7 @@ export class RoomHelper {
                 no_of_weekly_installment_3,
                 discounted_start_price,
                 discounted_secondary_start_price,
+                discounted_no_of_weekly_installment,
                 offer_data: offerData
             };
 
