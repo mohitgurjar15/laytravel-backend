@@ -1216,7 +1216,7 @@ more than 10.`
             return {
                 message: `Item removed successfully`,
             };
-        } catch (error) {
+        } catch (error) {throw new BadRequestException(error.response.message);
             if (typeof error.response !== "undefined") {
                 //console.log("m");
                 switch (error.response.statusCode) {
@@ -1255,6 +1255,9 @@ more than 10.`
     async multipleInventryDeleteFromCart(dto : MultipleInventryDeleteFromCartDto, user) {
         const {id} = dto
         try {
+            if(!id.length){
+                throw new BadRequestException(`Please enter valid id.`);
+            }
             let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`;
             if (user.roleId == Role.GUEST_USER) {
                 if (!uuidValidator(user.user_id)) {
