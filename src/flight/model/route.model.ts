@@ -70,6 +70,7 @@ export class Route {
     offer_data:any;
     discounted_start_price:number;
     discounted_secondary_start_price:number;
+    discounted_no_of_weekly_installment?:any
 }
 
 export class RouteType {

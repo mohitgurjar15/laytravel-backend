@@ -66,7 +66,7 @@ export class LandingPage {
 		}
 		//console.log(3)
 
-		if (moment(searchData.checkInDate).diff(moment(), 'days') <= LANDING_PAGE_DATA.promotional.min_promotional_day) {
+		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false }
 		}
 
@@ -97,7 +97,7 @@ export class LandingPage {
 			return { applicable: false };
 		}
 
-		if (moment(searchData.checkInDate).diff(moment(), 'days') <= LANDING_PAGE_DATA.promotional.min_promotional_day) {
+		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false };
 		}
 

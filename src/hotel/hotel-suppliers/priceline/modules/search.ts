@@ -84,6 +84,7 @@ export class Search {
                         let no_of_weekly_installment_3 = 0;
                         let discounted_start_price = 0; 
                         let discounted_secondary_start_price = 0;
+                        let discounted_no_of_weekly_installment = 0;
                         // let instalmentDetails = Instalment.weeklyInstalment(
                         //     selling.total,
                         //     parameters.check_in,
@@ -167,6 +168,9 @@ export class Search {
 
                             discounted_secondary_start_price =
                                 discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
+                            discounted_no_of_weekly_installment =
+                                discountedInstalmentDetails.instalment_date.length - 1;
                         }
 
                         let newItem = {
@@ -193,6 +197,7 @@ export class Search {
                             no_of_weekly_installment_3,
                             discounted_start_price,
                             discounted_secondary_start_price,
+                            discounted_no_of_weekly_installment,
                             offer_data:offerData
                         };
 
