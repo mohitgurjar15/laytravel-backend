@@ -70,6 +70,7 @@ export class RateHelper{
 
         //let selling = retail.total > net_rate.total ? retail : net_rate;
         
+        let nights = (rate['price_details']['night_price_data']).length;
         
         let selling = Object.assign({}, net_rate)
                  if (retail.total > net_rate.total) {
@@ -96,6 +97,8 @@ export class RateHelper{
         let discounted_sub_total = LandingPage.applyDiscount(offerData, selling.sub_total)
         selling['discounted_sub_total'] = discounted_sub_total
 
+        let discounted_avg_night_price = (discounted_selling_price / nights).toFixed(2);
+        selling['discounted_avg_night_price'] = discounted_avg_night_price
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         return {
             retail,
