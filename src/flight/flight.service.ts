@@ -2213,6 +2213,8 @@ export class FlightService {
             isPassportRequired
         );
 
+        Activity.logActivity(userId, "Booking", `${bookingId} Booked from supplier side by admin`, null, JSON.stringify(bookingResult));
+
         if (bookingResult.booking_status == "success") {
             
             console.log(`step - 3 save Booking`, bookingResult);

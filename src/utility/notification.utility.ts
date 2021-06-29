@@ -42,7 +42,7 @@ export class NotificationAlertUtility {
 
         param.flightRoute =
             moduleInfo.departure_code + "-" + moduleInfo.arrival_code;
-        
+
 
         param.depatureDate = DateTime.convertDateFormat(
             bookingData.checkInDate,
@@ -61,23 +61,42 @@ export class NotificationAlertUtility {
                 .createQueryBuilder(LaytripCategory, "category")
                 .where(`name = '${bookingData?.categoryName}'`)
                 .getOne();
-        }else{
-                let routeDetails: any = await RouteCategory.flightRouteAvailability(
-                    moduleInfo.departure_code,
-                    moduleInfo.arrival_code
-                );
-                category = routeDetails?.category
+        } else {
+            let routeDetails: any = await RouteCategory.flightRouteAvailability(
+                moduleInfo.departure_code,
+                moduleInfo.arrival_code
+            );
+            category = routeDetails?.category
         }
 
-    
+        console.log('category', category)
+
         param.routeType = category?.name || 'N/A';
-        
+
         console.log(category);
         if (category) {
             let deadLine = new Date(bookingData.checkInDate);
             console.log("deadLine", deadLine);
-            let categoryDays = category.installmentAvailableAfter;
-            console.log("categoryDays", categoryDays);
+
+
+            let categoryDays = 30
+
+            switch (category?.name) {
+                case "Gold":
+                    categoryDays = 30
+                    break;
+                case "Silver":
+                    categoryDays = 60
+                    break;
+                case "Bronze":
+                    categoryDays = 90
+                    break;
+
+                default:
+                    categoryDays = 30
+                    break;
+            }
+            //console.log("categoryDays", categoryDays);
 
             deadLine.setDate(deadLine.getDate() - categoryDays);
             console.log("deadLine1", deadLine);
@@ -113,10 +132,8 @@ export class NotificationAlertUtility {
         let query = getConnection()
             .createQueryBuilder(PredictiveBookingData, "predictiveBookingData")
             .where(
-                `date(predictiveBookingData.created_date) = '${
-                    todayDate.split(" ")[0]
-                }' AND predictiveBookingData.is_resedule = false AND predictiveBookingData.booking_id = '${
-                    bookingData.id
+                `date(predictiveBookingData.created_date) = '${todayDate.split(" ")[0]
+                }' AND predictiveBookingData.is_resedule = false AND predictiveBookingData.booking_id = '${bookingData.id
                 }' `
             );
 
@@ -145,9 +162,9 @@ export class NotificationAlertUtility {
         if (predictiveData?.lastPrice) {
             param.todayNetpriceVarient = Generic.formatPriceDecimal(
                 ((predictiveData?.netPrice - predictiveData?.lastPrice) * 100) /
-                    predictiveData?.lastPrice
+                predictiveData?.lastPrice
             );
-        }else{
+        } else {
             param.todayNetpriceVarient = 0
         }
 
@@ -157,7 +174,7 @@ export class NotificationAlertUtility {
         param.currencySymbol = bookingData.currency2.symbol;
         param.lastPrice = predictiveData?.lastPrice || 0;
         console.log('call for valuation per');
-        
+
         const valuations = await ValuationPercentageUtility.calculations(
             bookingData.cart.laytripCartId
         );
@@ -171,7 +188,7 @@ export class NotificationAlertUtility {
             valuations &&
             typeof valuations["amount"] != "undefined" &&
             typeof valuations["amount"][bookingData.laytripBookingId] !=
-                "undefined"
+            "undefined"
         ) {
             param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
                 valuations["amount"][bookingData.laytripBookingId] || 0
