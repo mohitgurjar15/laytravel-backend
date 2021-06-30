@@ -1287,21 +1287,21 @@ more than 10.`
             if(!id.length){
                 throw new BadRequestException(`Please enter valid id.`);
             }
-            let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" = ${id})`;
+            let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" In (:...id))`;
             if (user.roleId == Role.GUEST_USER) {
                 if (!uuidValidator(user.user_id)) {
                     throw new NotFoundException(
                         `Please enter guest user id &&&user_id&&&${errorMessage}`
                     );
                 }
-                where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" = ${id})`;
+                where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" In (:...id))`;
             }
 
             
 
             let query = getConnection()
                 .createQueryBuilder(Cart, "cart")
-                .where(where);
+                .where(where,{id});
 
             const cartItem = await query.getOne();
 
@@ -1312,13 +1312,13 @@ more than 10.`
                 .createQueryBuilder()
                 .delete()
                 .from(CartTravelers)
-                .where(`"cart_id" In (:...id)`,{id})
+                .where(`"id" In (:...id)`,{id})
                 .execute();
             await getConnection()
                 .createQueryBuilder()
                 .delete()
                 .from(Cart)
-                .where(`"cart_id" In (:...id)`,{id})
+                .where(`"id" In (:...id)`,{id})
                 .execute();
 
             return {

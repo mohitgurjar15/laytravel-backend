@@ -112,13 +112,17 @@ export class Priceline implements HotelInterface {
                 hotel_ids: hotel_id,
             };
         } else {
-            if (city_id) {
+            if(latitude && longitude){
+                extra = {
+                    latitude,
+                    longitude,
+                    radius:19
+                };
+            }
+            else if (city_id) {
                 parameters["city_id"] = city_id;
             }
-            extra = {
-                latitude,
-                longitude,
-            };
+            
         }
 
         parameters = {
