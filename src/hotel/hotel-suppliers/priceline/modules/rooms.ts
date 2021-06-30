@@ -60,6 +60,7 @@ export class Rooms {
                     rooms.items[i].photos=[];
                 }
             }
+            rooms.sort((a, b) => a.discounted_secondary_start_price - b.discounted_secondary_start_price);
             return { rooms, details };
         }
     }

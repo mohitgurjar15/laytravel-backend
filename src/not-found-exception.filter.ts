@@ -21,17 +21,19 @@ export class NotFoundExceptionFilter implements ExceptionFilter {
 	filterResponse(message) {
 		let msg = [];
 		msg.push(message);
-
+		console.log(message)
 		if (msg.length) {
 			let result = [];
 			for (let i = 0; i < msg.length; i++) {
 				let errors = msg[i].split("&&&");
+				console.log(errors)
 				let error = {};
 				if (errors.length > 2) {
 					result.push({ key: errors[1], error_type: "system", actual_error: errors[0], display_error: errors[2] });
 				} else {
 					result.push({ key: errors[1], error_type: "ui", actual_error: errors[0], display_error: errors[0] });
 				}
+				console.log(result)
 			}
 
 			return result;

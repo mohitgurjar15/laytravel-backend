@@ -1362,9 +1362,9 @@ more than 10.`
 
     async bookCart(bookCart: CartBookDto, user: User, Headers, referralId) {
         let logData = new BookingLog
-        logData.id = uuidv4()
-        logData.paymentAuthorizeLog = bookCart.auth_url
-        logData.timeStamp = Math.round(new Date().getTime() / 1000)
+            logData.id = uuidv4()
+            logData.paymentAuthorizeLog = bookCart.auth_url
+            logData.timeStamp = Math.round(new Date().getTime() / 1000)
 
         const bookingLog = await logData.save()
         try {

@@ -3772,7 +3772,7 @@ export class Mystifly implements StrategyAirline {
 			</soapenv:Body>
 			</soapenv:Envelope>`;
         const currencyDetails = await Generic.getAmountTocurrency(
-            this.headers.currency
+            this.headers.currency 
         );
         let airRevalidateResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
@@ -3780,6 +3780,7 @@ export class Mystifly implements StrategyAirline {
             "AirRevalidate"
         );
         const logFile = airRevalidateResult["log_file"]
+        
         if (
             airRevalidateResult["s:envelope"]["s:body"][0]
                 .airrevalidateresponse[0].airrevalidateresult[0][
@@ -3813,7 +3814,7 @@ export class Mystifly implements StrategyAirline {
             let stopDuration;
 
             if (typeof flightRoutes != "object") {
-                throw new NotFoundException(`Flight is not available now`);
+                throw new NotFoundException(`Flight is not available now. Log File : ${logFile}`);
             }
 
             let totalDuration;
@@ -4345,7 +4346,8 @@ export class Mystifly implements StrategyAirline {
 
             return routes;
         } else {
-            throw new NotFoundException(`Flight is not available now`);
+            throw new NotFoundException(`Flight is not available now. Log File : ${logFile}`);
+
         }
     }
 
