@@ -1096,26 +1096,27 @@ more than 10.`
                                     newCart["moduleInfo"] = cart.moduleInfo;
                                 }
                             }
-                        } else {
-                            newCart["moduleInfo"] = cart.moduleInfo;
                         }
-                        if (cart.travelers.length) {
-                            cart.travelers.sort((a, b) => a.id - b.id);
-                        }
-                        newCart["oldModuleInfo"] = cart.oldModuleInfo || {};
-                        newCart["id"] = cart.id;
-                        newCart["userId"] = cart.userId;
-                        newCart["guestUserId"] = cart.guestUserId;
-                        newCart["moduleId"] = cart.moduleId;
-                        newCart["expiryDate"] = cart.expiryDate;
-                        newCart["isDeleted"] = cart.isDeleted;
-                        newCart["createdDate"] = cart.createdDate;
-                        newCart["type"] = cart.module.name;
-                        newCart["travelers"] = cart.travelers;
-                        responce.push(newCart);
+                    } else {
+                        newCart["moduleInfo"] = cart.moduleInfo;
                     }
+                    if (cart.travelers.length) {
+                        cart.travelers.sort((a, b) => a.id - b.id);
+                    }
+                    newCart["oldModuleInfo"] = cart.oldModuleInfo || {};
+                    newCart["id"] = cart.id;
+                    newCart["userId"] = cart.userId;
+                    newCart["guestUserId"] = cart.guestUserId;
+                    newCart["moduleId"] = cart.moduleId;
+                    newCart["expiryDate"] = cart.expiryDate;
+                    newCart["isDeleted"] = cart.isDeleted;
+                    newCart["createdDate"] = cart.createdDate;
+                    newCart["type"] = cart.module.name;
+                    newCart["travelers"] = cart.travelers;
+                    responce.push(newCart);
                 }
-                
+
+
 
             }
             return {
@@ -1246,7 +1247,8 @@ more than 10.`
             return {
                 message: `Item removed successfully`,
             };
-        } catch (error) {throw new BadRequestException(error.response.message);
+        } catch (error) {
+            throw new BadRequestException(error.response.message);
             if (typeof error.response !== "undefined") {
                 switch (error.response.statusCode) {
                     case 404:
@@ -1281,10 +1283,10 @@ more than 10.`
         }
     }
 
-    async multipleInventryDeleteFromCart(dto : MultipleInventryDeleteFromCartDto, user) {
-        const {id} = dto
+    async multipleInventryDeleteFromCart(dto: MultipleInventryDeleteFromCartDto, user) {
+        const { id } = dto
         try {
-            if(!id.length){
+            if (!id.length) {
                 throw new BadRequestException(`Please enter valid id.`);
             }
             let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" In (:...id))`;
@@ -1297,11 +1299,11 @@ more than 10.`
                 where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" In (:...id))`;
             }
 
-            
+
 
             let query = getConnection()
                 .createQueryBuilder(Cart, "cart")
-                .where(where,{id});
+                .where(where, { id });
 
             const cartItem = await query.getOne();
 
@@ -1312,13 +1314,13 @@ more than 10.`
                 .createQueryBuilder()
                 .delete()
                 .from(CartTravelers)
-                .where(`"id" In (:...id)`,{id})
+                .where(`"id" In (:...id)`, { id })
                 .execute();
             await getConnection()
                 .createQueryBuilder()
                 .delete()
                 .from(Cart)
-                .where(`"id" In (:...id)`,{id})
+                .where(`"id" In (:...id)`, { id })
                 .execute();
 
             return {
@@ -1362,9 +1364,9 @@ more than 10.`
 
     async bookCart(bookCart: CartBookDto, user: User, Headers, referralId) {
         let logData = new BookingLog
-            logData.id = uuidv4()
-            logData.paymentAuthorizeLog = bookCart.auth_url
-            logData.timeStamp = Math.round(new Date().getTime() / 1000)
+        logData.id = uuidv4()
+        logData.paymentAuthorizeLog = bookCart.auth_url
+        logData.timeStamp = Math.round(new Date().getTime() / 1000)
 
         const bookingLog = await logData.save()
         try {
