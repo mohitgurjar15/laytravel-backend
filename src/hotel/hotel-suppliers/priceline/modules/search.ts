@@ -65,7 +65,7 @@ export class Search {
                         saving_percent,net_rate,
                         discounted_selling_price
                     } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
-                    if (selling.total > 25) {
+                    if (selling['discounted_total'] > 25) {
                         let details = this.detailHelper.getHotelDetails(
                             hotel,
                             "list"
