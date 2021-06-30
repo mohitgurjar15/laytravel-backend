@@ -1109,6 +1109,7 @@ export class BookingService {
             let remainAmount = 0;
             let pandinginstallment = 0;
             let totalAmount = 0;
+             let actualAmount = 0;
             const currency = cart.bookings[0]?.currency2;
             const baseBooking = cart.bookings[0]?.bookingInstalments;
             const installmentType =
@@ -1181,6 +1182,7 @@ export class BookingService {
                     }
 
                     totalAmount += parseFloat(booking.totalAmount);
+                    actualAmount += parseFloat(booking.actualSellingPrice || '0');
                     //console.log(totalAmount, 'totalAmount');
                 }
 
@@ -1234,6 +1236,9 @@ export class BookingService {
             cartResponce["currency"] = currency;
             cartResponce["totalAmount"] = Generic.formatPriceDecimal(
                 totalAmount
+            );
+            cartResponce["actualAmount"] = Generic.formatPriceDecimal(
+                actualAmount
             );
             if (cart.bookings[0]?.nextInstalmentDate) {
                 cartResponce["nextInstalmentDate"] =
