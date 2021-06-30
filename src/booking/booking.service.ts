@@ -2219,13 +2219,31 @@ export class BookingService {
                 }
 
                 if (category) {
+                    let categoryDays = 30
+
+                    switch (category?.name) {
+                        case "Gold":
+                            categoryDays = 30
+                            break;
+                        case "Silver":
+                            categoryDays = 60
+                            break;
+                        case "Bronze":
+                            categoryDays = 90
+                            break;
+
+                        default:
+                            categoryDays = 30
+                            break;
+                    }
                     let checkInDate = new Date(bookingData.checkInDate);
                     checkInDate.setDate(
                         checkInDate.getDate() -
-                            category.installmentAvailableAfter
+                        categoryDays
                     );
+                    
                     predictiveBookingData["deadline_date"] = checkInDate;
-                    if (category.installmentAvailableAfter > dayDiff) {
+                    if (categoryDays > dayDiff) {
                         predictiveBookingData["reservation_status"] = "yellow";
                         predictiveBookingData["reservation_status_note"] =
                             "category.installmentAvailableAfter > dayDiff";
@@ -2368,13 +2386,30 @@ export class BookingService {
                     ) : 0
 
                     if (category) {
+                        let categoryDays = 30
+
+                        switch (category?.name) {
+                            case "Gold":
+                                categoryDays = 30
+                                break;
+                            case "Silver":
+                                categoryDays = 60
+                                break;
+                            case "Bronze":
+                                categoryDays = 90
+                                break;
+
+                            default:
+                                categoryDays = 30
+                                break;
+                        }
                         let checkInDate = new Date(booking.checkInDate);
                         checkInDate.setDate(
                             checkInDate.getDate() -
-                                category.installmentAvailableAfter
+                            categoryDays
                         );
                         predictiveBookingData["deadline_date"] = checkInDate;
-                        if (category.installmentAvailableAfter > dayDiff) {
+                        if (categoryDays > dayDiff) {
                             predictiveBookingData["reservation_status"] =
                                 "yellow";
                             predictiveBookingData["reservation_status_note"] =

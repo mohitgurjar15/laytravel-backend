@@ -1078,6 +1078,8 @@ export class GeneralService {
             id
         );
 
+        return data
+
         console.log('data',data)
 
         await this.mailerService

@@ -74,6 +74,8 @@ import { Strategy } from "src/flight/strategy/strategy";
 import { Mystifly } from "src/flight/strategy/mystifly";
 import { Cache } from "cache-manager";
 import { Module } from "src/entity/module.entity";
+import { notificationFooter } from "src/config/admin-email-notification-templetes/notification-footer.html";
+import { notificationHeader } from "src/config/admin-email-notification-templetes/notification-header.html";
 // const twilio = config.get("twilio");
 // var client = require('twilio')(twilio.accountSid,twilio.authToken);
 
@@ -2408,11 +2410,12 @@ export class CronJobsService {
 
 
     async flightAvailiblityAssure() {
+        let limit = 2
         let routes = await getConnection()
             .createQueryBuilder(FlightRoute, "routes")
             //.select('DISTINCT ON (LOWER("routes"."to_airport_code")) "routes"."to_airport_code" AND DISTINCT ON (LOWER("routes"."from_airport_code")) "routes"."from_airport_code"')
             .orderBy("RANDOM()", 'ASC')
-            .limit(10)
+            .limit(limit)
             .where("is_deleted = false AND status = true")
             .getMany();
 
@@ -2467,29 +2470,30 @@ export class CronJobsService {
         }
 
 
+
         var result = [];
         var request = [];
         //var response = []
-        for (let index = 0; index < 5; index++) {
+        for (let index = 0; index < limit / 2; index++) {
             const route = routes[index];
             const today = new Date();
-            let depatureRange = ((index + 1) * 30) + 2
+            let depatureRange = Math.floor(Math.random() * (300 - 35 + 1)) + 35
             today.setDate(today.getDate() + depatureRange);
 
             var depatureDate = today.toISOString().split("T")[0];
             depatureDate = depatureDate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
-
             let dto = {
                 source_location: route.fromAirportCode,
                 destination_location: route.toAirportCode,
                 departure_date: depatureDate,
                 flight_class: 'Economy',
-                adult_count: (index + 1),
+                adult_count: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
                 child_count: 0,
                 infant_count: 0,
             };
+            console.log('dto', dto)
             request[index] = dto
             result[index] = new Promise((resolve) =>
                 resolve(
@@ -2508,10 +2512,10 @@ export class CronJobsService {
 
         }
 
-        for (let index = 5; index < 10; index++) {
+        for (let index = limit / 2; index < limit; index++) {
             const route = routes[index];
             const today = new Date();
-            let depatureRange = ((index + 1) * 30) + 2
+            let depatureRange = Math.floor(Math.random() * (300 - 35 + 1)) + 35
             today.setDate(today.getDate() + depatureRange);
 
             var depatureDate = today.toISOString().split("T")[0];
@@ -2520,7 +2524,7 @@ export class CronJobsService {
                 .replace(/\..+/, "");
 
             const day = new Date();
-            let arrivalRange = ((index + 1) * 30) + 6
+            let arrivalRange = depatureRange + 6
             day.setDate(day.getDate() + arrivalRange);
 
             var arrivalDate = day.toISOString().split("T")[0];
@@ -2534,7 +2538,7 @@ export class CronJobsService {
                 departure_date: depatureDate,
                 arrival_date: arrivalDate,
                 flight_class: 'Economy',
-                adult_count: (index - 4),
+                adult_count: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
                 child_count: 0,
                 infant_count: 0,
             };
@@ -2570,58 +2574,174 @@ export class CronJobsService {
 
         }
         const response = await Promise.all(result);
+        let logData = {
+            response, request
+        }
+        const fileName = `Flight-assure-crongit-${new Date().getTime()}`;
+        Activity.createlogFile(fileName, logData, "cron");
 
         let emailData = []
         let failed = 0
+        let failedEmailData = []
+
+        let i = 0
+
         for (let index = 0; index < response.length; index++) {
-            
+
 
             emailData[index] = request[index]
 
-            try {
 
-                const flight = response[index];
+
+            const flight = response[index];
 
             const flightData = flight?.items[0]
 
-                if (flightData) {
-                    let route_code = flightData?.route_code
-                    emailData[index]['availiblity'] = true
-                    emailData[index]['route_code'] = flightData?.route_code
-                    emailData[index]['unique_code'] = flightData?.unique_code
-
+            if (flightData) {
+                let route_code = flightData?.route_code
+                emailData[index]['availiblity'] = true
+                emailData[index]['airline'] = flightData.airline_name
+                emailData[index]['route_code'] = flightData?.route_code
+                emailData[index]['unique_code'] = flightData?.unique_code
+                emailData[index]['arrival_time'] = flightData?.arrival_time
+                emailData[index]['departure_time'] = flightData?.departure_time
+                try {
                     const airRevalidateResult = await mystifly.airRevalidate(
                         { route_code },
-                        {},
+                        undefined,
                         ""
                     );
+
+                    console.log("airRevalidateResult",airRevalidateResult)
 
                     if (airRevalidateResult) {
                         emailData[index]['airRevalidateResult'] = true
                     } else {
                         failed++
                         emailData[index]['airRevalidateResult'] = false
+                        failedEmailData[i] = emailData[index]
+                        i++
                     }
-
-
-                } else {
-                    emailData[index]['availiblity'] = false
+                } catch (error) {
+                    console.log("excepation called")
+                    console.log(error)
+                    emailData[index]['airRevalidateResult'] = false
+                    emailData[index]['error'] = error
                     failed++
+                    failedEmailData[i] = emailData[index]
+                    i++
                 }
-            } catch (error) {
+            } else {
                 emailData[index]['availiblity'] = false
-                emailData[index]['error'] = error
                 failed++
+                failedEmailData[i] = emailData[index]
+                i++
             }
-
-
-
         }
 
         if (failed != 0) {
+
+            let emailHtml = `<tr>
+            `
+            for (let index = 0; index < failedEmailData.length; index++) {
+                let param = failedEmailData[index]
+                emailHtml += `<hr><table align="center"
+        style="width:100%; max-width:100%; table-layout:fixed; background: #ffffff;"
+        class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
+        <tbody>
+        <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    <b>Flight Assure logs</b> </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    </td>
+            </tr>
+        <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Route: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.source_location}-${param?.destination_location}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Airline: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.airline}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Flight Time: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.departure_time}-${param?.arrival_time}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    dates: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.departure_date}-${param?.arrival_date || ""}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    adult_count: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.adult_count}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    availiblity: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.availiblity}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    route_code: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param.route_code}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    unique_code: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.unique_code}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    airRevalidateResult: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.airRevalidateResult}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    error: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.error ? JSON.stringify(param?.error) : ""}</td>
+            </tr>
+
+            <tbody></table></tr>`
+            }
             this.cronfailedmail(
-                "cron fail for given flight route please check this: <br/><pre>" +
-                emailData,
+                notificationHeader + emailHtml + notificationFooter,
                 "flight assure cron failed for some route"
             );
             Activity.cronUpdateActivity("flight assure cron", emailData);
