@@ -114,7 +114,7 @@ export class CartService {
                 );
             const [result, count] = await query.getManyAndCount();
 
-            console.log(result)
+
             if (count >= 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
@@ -143,11 +143,11 @@ more than 10.`
 
             console.log("promotional", promotional, "nonPromotional", nonPromotional)
 
-            let cartIsPromotional 
+            let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
                 //console.log("cartIsPromotional", cartIsPromotional)
-            }else if(nonPromotional > 0){
+            } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
 
@@ -273,7 +273,11 @@ more than 10.`
                 cart.guestUserId = user.userId;
             }
 
+            var unixTimestamp = Math.round(new Date().getTime() / 1000);
+
             cart.moduleId = ModulesName.FLIGHT;
+
+            cart.timeStamp = unixTimestamp || 0
             cart.moduleInfo = flightInfo;
             cart.isPromotional = flightInfo[0]?.offer_data?.applicable == true ? true : false
             cart.offerFrom = referralId
@@ -762,14 +766,14 @@ more than 10.`
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 //.leftJoinAndSelect("travelers.userData", "userData")
-                .select([
-                    "cart",
-                    "module.id",
-                    "module.name",
-                    "travelers.id",
-                    "travelers.userId",
-                    "travelers.baggageServiceCode",
-                ])
+                // .select([
+                //     "cart",
+                //     "module.id",
+                //     "module.name",
+                //     "travelers.id",
+                //     "travelers.userId",
+                //     "travelers.baggageServiceCode",
+                // ])
 
                 .where(where)
                 .orderBy(`cart.id`, "ASC")
@@ -806,12 +810,16 @@ more than 10.`
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-            }else if(nonPromotional > 0){
+            } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
             let responce = [];
             var flightRequest = [];
             let flightResponse = [];
+
+            var unixTimestamp = Math.round(new Date().getTime() / 1000);
+
+
 
             if (
                 typeof live_availiblity != "undefined" &&
@@ -849,85 +857,91 @@ more than 10.`
                 );
                 for await (const cart of result) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
-                        const bookingType =
-                            cart.moduleInfo[0].routes.length > 1
-                                ? "RoundTrip"
-                                : "oneway";
+                        var difference = unixTimestamp - (cart.timeStamp || 0);
 
-                        if (bookingType == "oneway") {
-                            let dto = {
-                                source_location:
-                                    cart.moduleInfo[0].departure_code,
-                                destination_location:
-                                    cart.moduleInfo[0].arrival_code,
-                                departure_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].departure_date
-                                ),
-                                flight_class:
-                                    cart.moduleInfo[0].routes[0].stops[0]
-                                        .cabin_class,
-                                adult_count: cart.moduleInfo[0].adult_count
-                                    ? cart.moduleInfo[0].adult_count
-                                    : 0,
-                                child_count: cart.moduleInfo[0].child_count
-                                    ? cart.moduleInfo[0].child_count
-                                    : 0,
-                                infant_count: cart.moduleInfo[0].infant_count
-                                    ? cart.moduleInfo[0].infant_count
-                                    : 0,
-                            };
-                            //console.log(dto);
+                        var minuteDifference = Math.floor(difference / 60) % 60;
+                        console.log('minuteDifference', minuteDifference)
+                        if (minuteDifference > 5) {
+                            const bookingType =
+                                cart.moduleInfo[0].routes.length > 1
+                                    ? "RoundTrip"
+                                    : "oneway";
 
-                            flightRequest[cart.id] = new Promise((resolve) =>
-                                resolve(
-                                    mystifly.oneWaySearchZip(
-                                        dto,
-                                        user,
-                                        mystiflyConfig,
-                                        sessionToken,
-                                        module,
-                                        currencyDetails
+                            if (bookingType == "oneway") {
+                                let dto = {
+                                    source_location:
+                                        cart.moduleInfo[0].departure_code,
+                                    destination_location:
+                                        cart.moduleInfo[0].arrival_code,
+                                    departure_date: await this.flightService.changeDateFormat(
+                                        cart.moduleInfo[0].departure_date
+                                    ),
+                                    flight_class:
+                                        cart.moduleInfo[0].routes[0].stops[0]
+                                            .cabin_class,
+                                    adult_count: cart.moduleInfo[0].adult_count
+                                        ? cart.moduleInfo[0].adult_count
+                                        : 0,
+                                    child_count: cart.moduleInfo[0].child_count
+                                        ? cart.moduleInfo[0].child_count
+                                        : 0,
+                                    infant_count: cart.moduleInfo[0].infant_count
+                                        ? cart.moduleInfo[0].infant_count
+                                        : 0,
+                                };
+                                //console.log(dto);
+
+                                flightRequest[cart.id] = new Promise((resolve) =>
+                                    resolve(
+                                        mystifly.oneWaySearchZip(
+                                            dto,
+                                            user,
+                                            mystiflyConfig,
+                                            sessionToken,
+                                            module,
+                                            currencyDetails
+                                        )
                                     )
-                                )
-                            );
-                        } else {
-                            let dto = {
-                                source_location:
-                                    cart.moduleInfo[0].departure_code,
-                                destination_location:
-                                    cart.moduleInfo[0].arrival_code,
-                                departure_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].departure_date
-                                ),
-                                flight_class:
-                                    cart.moduleInfo[0].routes[0].stops[0]
-                                        .cabin_class,
-                                adult_count: cart.moduleInfo[0].adult_count
-                                    ? cart.moduleInfo[0].adult_count
-                                    : 0,
-                                child_count: cart.moduleInfo[0].child_count
-                                    ? cart.moduleInfo[0].child_count
-                                    : 0,
-                                infant_count: cart.moduleInfo[0].infant_count
-                                    ? cart.moduleInfo[0].infant_count
-                                    : 0,
-                                arrival_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].routes[1].stops[0].departure_date
-                                ),
-                            };
-                            //console.log(dto);
-                            flightRequest[cart.id] = new Promise((resolve) =>
-                                resolve(
-                                    mystifly.roundTripSearchZip(
-                                        dto,
-                                        user,
-                                        mystiflyConfig,
-                                        sessionToken,
-                                        module,
-                                        currencyDetails
+                                );
+                            } else {
+                                let dto = {
+                                    source_location:
+                                        cart.moduleInfo[0].departure_code,
+                                    destination_location:
+                                        cart.moduleInfo[0].arrival_code,
+                                    departure_date: await this.flightService.changeDateFormat(
+                                        cart.moduleInfo[0].departure_date
+                                    ),
+                                    flight_class:
+                                        cart.moduleInfo[0].routes[0].stops[0]
+                                            .cabin_class,
+                                    adult_count: cart.moduleInfo[0].adult_count
+                                        ? cart.moduleInfo[0].adult_count
+                                        : 0,
+                                    child_count: cart.moduleInfo[0].child_count
+                                        ? cart.moduleInfo[0].child_count
+                                        : 0,
+                                    infant_count: cart.moduleInfo[0].infant_count
+                                        ? cart.moduleInfo[0].infant_count
+                                        : 0,
+                                    arrival_date: await this.flightService.changeDateFormat(
+                                        cart.moduleInfo[0].routes[1].stops[0].departure_date
+                                    ),
+                                };
+                                //console.log(dto);
+                                flightRequest[cart.id] = new Promise((resolve) =>
+                                    resolve(
+                                        mystifly.roundTripSearchZip(
+                                            dto,
+                                            user,
+                                            mystiflyConfig,
+                                            sessionToken,
+                                            module,
+                                            currencyDetails
+                                        )
                                     )
-                                )
-                            );
+                                );
+                            }
                         }
                     }
 
@@ -941,9 +955,15 @@ more than 10.`
 
                 let newCart = {};
 
+                var difference = unixTimestamp - (cart.timeStamp || 0);
+                var minuteDifference = Math.floor(difference / 60) % 60;
+                console.log('minuteDifference2', minuteDifference)
+                console.log('cart.timeStamp', cart.timeStamp)
+                console.log('unixTimestamp', unixTimestamp)
+
                 if (
                     typeof live_availiblity != "undefined" &&
-                    live_availiblity == "yes"
+                    live_availiblity == "yes" && minuteDifference > 5
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
@@ -962,33 +982,33 @@ more than 10.`
 
                             if (value?.offer_data?.applicable == true && cartIsPromotional == false) {
                                 error = `In cart not-promotional item found`
-                                if(cartIsConflicted){
+                                if (cartIsConflicted) {
                                     newCart["is_conflict"] = true;
-                                }else{
+                                } else {
                                     newCart["is_available"] = false;
                                 }
-                                
+
                             }
 
                             if (value?.offer_data?.applicable == false && cartIsPromotional == true) {
                                 error = `In cart promotional item found`
-                                if(cartIsConflicted){
+                                if (cartIsConflicted) {
                                     newCart["is_conflict"] = true;
-                                }else{
+                                } else {
                                     newCart["is_available"] = false;
                                 }
-                               // newCart["is_available"] = false;
+                                // newCart["is_available"] = false;
                             }
-
+                            console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value], isPromotional: value?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
+                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: value?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
 
-                            await cart.save();
+                            //await cart.save();
                         } else {
                             newCart["is_available"] = false;
                             newCart["moduleInfo"] = cart.moduleInfo;
@@ -1036,31 +1056,31 @@ more than 10.`
                                 if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
                                     //throw new ConflictException(`In cart not-promotional item found`)
                                     error = `In cart not-promotional item found`
-                                    if(cartIsConflicted){
-                                    newCart["is_conflict"] = true;
-                                }else{
-                                    newCart["is_available"] = false;
-                                }
-                                    
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
                                 }
 
                                 if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
                                     error = `In cart promotional item found`
-                                    if(cartIsConflicted){
-                                    newCart["is_conflict"] = true;
-                                }else{
-                                    newCart["is_available"] = false;
-                                }
-                                    
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
                                 }
 
-                                
 
+                                console.log(Math.round(new Date().getTime() / 1000))
                                 cart.moduleInfo = roomDetails;
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data ,isPromotional: roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
+                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
@@ -1216,7 +1236,8 @@ more than 10.`
             return {
                 message: `Item removed successfully`,
             };
-        } catch (error) {throw new BadRequestException(error.response.message);
+        } catch (error) {
+            throw new BadRequestException(error.response.message);
             if (typeof error.response !== "undefined") {
                 //console.log("m");
                 switch (error.response.statusCode) {
@@ -1252,10 +1273,10 @@ more than 10.`
         }
     }
 
-    async multipleInventryDeleteFromCart(dto : MultipleInventryDeleteFromCartDto, user) {
-        const {id} = dto
+    async multipleInventryDeleteFromCart(dto: MultipleInventryDeleteFromCartDto, user) {
+        const { id } = dto
         try {
-            if(!id.length){
+            if (!id.length) {
                 throw new BadRequestException(`Please enter valid id.`);
             }
             let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" In (:...id))`;
@@ -1268,11 +1289,11 @@ more than 10.`
                 where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" In (:...id))`;
             }
 
-            
+
 
             let query = getConnection()
                 .createQueryBuilder(Cart, "cart")
-                .where(where,{id});
+                .where(where, { id });
 
             const cartItem = await query.getOne();
 
@@ -1283,13 +1304,13 @@ more than 10.`
                 .createQueryBuilder()
                 .delete()
                 .from(CartTravelers)
-                .where(`"id" In (:...id)`,{id})
+                .where(`"id" In (:...id)`, { id })
                 .execute();
             await getConnection()
                 .createQueryBuilder()
                 .delete()
                 .from(Cart)
-                .where(`"id" In (:...id)`,{id})
+                .where(`"id" In (:...id)`, { id })
                 .execute();
 
             return {
@@ -1333,9 +1354,9 @@ more than 10.`
 
     async bookCart(bookCart: CartBookDto, user: User, Headers, referralId) {
         let logData = new BookingLog
-            logData.id = uuidv4()
-            logData.paymentAuthorizeLog = bookCart.auth_url
-            logData.timeStamp = Math.round(new Date().getTime() / 1000)
+        logData.id = uuidv4()
+        logData.paymentAuthorizeLog = bookCart.auth_url
+        logData.timeStamp = Math.round(new Date().getTime() / 1000)
 
         const bookingLog = await logData.save()
         try {
@@ -1371,7 +1392,7 @@ more than 10.`
                 );
             }
 
-            
+
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);
@@ -1850,7 +1871,7 @@ more than 10.`
                 ? BookingType.INSTALMENT
                 : BookingType.NOINSTALMENT;
 
-        let flightRequest;
+        //let flightRequest;
         let value: any = cart.moduleInfo[0]
         // if (bookingType == "oneway") {
         //     let dto = {

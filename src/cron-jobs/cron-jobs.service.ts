@@ -2551,7 +2551,8 @@ export class CronJobsService {
                         mystiflyConfig,
                         sessionToken,
                         module,
-                        currencyDetails
+                        currencyDetails,
+                        ""
                     )
                 )
             );

@@ -88,12 +88,16 @@ export class LandingPage {
 
 		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
 		let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal => {
-			if (deal.location.city_names.indexOf(searchData.departure) && searchData.state == deal.location.state) {
-				return 1
-			}
-			return -1
+
+			console.log('searchData', searchData)
+			console.log('deal.location.city_names.indexOf(searchData.departure)', deal.location.city_names.indexOf(searchData.departure))
+			console.log('searchData.state',searchData.state)
+			console.log('deal.location.state', deal.location.state)
+			return deal.location.city_names.indexOf(searchData.departure)
 		})
-		if (isRouteExist == -1) {
+
+		console.log('isRouteExist', isRouteExist)
+		if (isRouteExist <= 0 ) {
 			return { applicable: false };
 		}
 

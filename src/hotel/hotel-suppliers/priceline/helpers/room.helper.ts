@@ -14,13 +14,11 @@ export class RoomHelper {
 
     processRoom(hotel: any, roomsReqDto: any, inputData = null, offerData) {
         let roomData = hotel.room_data;
-        //console.log("Inputdata",parseInt(inputData.num_rooms))
-        //let rooms = collect(roomData).pluck('rate_data').map((rates: any) => {
+      
         let rooms = collect(roomData).map((rates: any) => {
             let newItem: any = {};
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-            // collect(rates).map((rate: any) => {
-            // console.log(rates);
+            
 
             let rate = rates.rate_data[0];
 
@@ -35,7 +33,7 @@ export class RoomHelper {
 
 
 
-            console.log("rate.mandatory_fee_details", rate.price_details.mandatory_fee_details)
+            //console.log("rate.mandatory_fee_details", rate.price_details.mandatory_fee_details)
             let mandatoryFeeDetails = { is_prepaid: false, prepaid_break_dwon: [], is_postpaid: false, postpaid_break_dwon: [] };
             if (rate.price_details.mandatory_fee_details != null) {
                 if (rate.price_details.mandatory_fee_details.breakdown.prepaid.breakdown.length) {
@@ -66,8 +64,7 @@ export class RoomHelper {
                 mandatoryFeeDetails.prepaid_break_dwon,
                 offerData
             );
-            console.log("selling['discounted_total']", selling['discounted_total'])
-            console.log(selling)
+           
             if (selling['discounted_total'] > 25) {
                 let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
 

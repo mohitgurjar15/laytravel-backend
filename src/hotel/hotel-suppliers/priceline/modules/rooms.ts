@@ -45,7 +45,7 @@ export class Rooms {
                 offerData
             );
 
-            console.log('rooms', rooms)
+            
 
             if (!rooms.items.length) {
                 throw new NotFoundException(

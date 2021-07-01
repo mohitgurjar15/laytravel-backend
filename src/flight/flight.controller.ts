@@ -399,12 +399,14 @@ export class FlightController {
   async flexibleDayRate(
     @Body() searchFlightDto: OneWaySearchFlightDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @GetReferralId() referralId: string
   ) {
     return await this.flightService.flexibleDateRate(
       searchFlightDto,
       req.headers,
-      user
+      user,
+      referralId
     );
   }
 
@@ -430,12 +432,14 @@ export class FlightController {
   async flexibleDayRateForRoundtrip(
     @Body() searchFlightDto: RoundtripSearchFlightDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @GetReferralId() referralId: string
   ) {
     return await this.flightService.flexibleDateRateForRoundTrip(
       searchFlightDto,
       req.headers,
-      user
+      user,
+      referralId
     );
   }
 
@@ -461,12 +465,14 @@ export class FlightController {
   async callenderDayRates(
     @Body() searchFlightDto: FullCalenderRateDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @GetReferralId() referralId: string
   ) {
     return await this.flightService.fullcalenderRate(
       searchFlightDto,
       req.headers,
-      user
+      user,
+      referralId
     );
   }
 
