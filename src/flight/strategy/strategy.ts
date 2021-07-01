@@ -47,7 +47,8 @@ export class Strategy {
         param3,
         param4,
         param5,
-        param6
+        param6,
+        param7
     ) {
         const data = await this.airline.oneWaySearchZipWithFilter(
             param1,
@@ -55,7 +56,8 @@ export class Strategy {
             param3,
             param4,
             param5,
-            param6
+            param6,
+            param7
         );
         return data;
     }
@@ -71,7 +73,7 @@ export class Strategy {
         param3,
         param4,
         param5,
-        param6
+        param6,
     ) {
         const data = await this.airline.roundTripSearchZip(
             param1,
@@ -90,7 +92,8 @@ export class Strategy {
         param3,
         param4,
         param5,
-        param6
+        param6,
+        param7
     ) {
         const data = await this.airline.roundTripSearchZipWithFilter(
             param1,
@@ -98,7 +101,8 @@ export class Strategy {
             param3,
             param4,
             param5,
-            param6
+            param6,
+            param7
         );
         return data;
     }

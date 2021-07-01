@@ -44,10 +44,19 @@ export class Rooms {
                 inputData,
                 offerData
             );
+
+            
+
+            if (!rooms.items.length) {
+                throw new NotFoundException(
+                    "No result found &&&rooms&&&" + errorMessage
+                );
+            }
             
             let details = this.detailHelper.getHotelDetails(hotel);
             let roomPhotos = await this.getRoomPhotos(hotel.id);
             for(let i=0; i <rooms.items.length; i++){
+                
                 let roomPhoto = roomPhotos.find(room=>room.roomid_ppn==rooms.items[i].room_id)
                 if(roomPhoto.photos.length){
                     rooms.items[i].photos=[];
@@ -60,7 +69,7 @@ export class Rooms {
                     rooms.items[i].photos=[];
                 }
             }
-            rooms.sort((a, b) => a.discounted_secondary_start_price - b.discounted_secondary_start_price);
+            
             return { rooms, details };
         }
     }

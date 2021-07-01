@@ -677,14 +677,14 @@ export class Mystifly implements StrategyAirline {
 
             //Get min & max selling price
             let priceRange = new PriceRange();
-            let priceType = "selling_price";
+            let priceType = "discounted_selling_price";
             priceRange.min_price = this.getMinPrice(routes, priceType);
             priceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.price_range = priceRange;
 
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
-            priceType = "secondary_start_price";
+            priceType = "discounted_secondary_start_price";
             partialPaymentPriceRange.min_price = this.getMinPrice(
                 routes,
                 priceType
@@ -1703,7 +1703,8 @@ export class Mystifly implements StrategyAirline {
         mystiflyConfig,
         sessionToken,
         module,
-        currencyDetails
+        currencyDetails,
+        referralId
     ) {
         const {
             source_location,
@@ -1986,24 +1987,46 @@ export class Mystifly implements StrategyAirline {
                     ][0]["ptc_farebreakdown"],
                     markUpDetails
                 );
-
+                let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
+                let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
+                route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
                 route.selling_price = Generic.formatPriceDecimal(
                     PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                 );
-
+                let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                 let instalmentDetails = Instalment.weeklyInstalment(
                     route.selling_price,
                     moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
                     ),
                     bookingDate,
-                    0
+                    0,
+                    weeklyCustomDownPayment
+                );
+               let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                        route.discounted_selling_price,
+                        departure_date,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0,
+                        false,
+                        weeklyCustomDownPayment
                 );
                 if (instalmentDetails.instalment_available) {
                     route.start_price =
                         instalmentDetails.instalment_date[0].instalment_amount;
                     route.secondary_start_price =
                         instalmentDetails.instalment_date[1].instalment_amount;
+                    route.discounted_start_price =
+                        discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                    route.discounted_secondary_start_price =
+                        discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
+                    route.discounted_no_of_weekly_installment =
+                        discountedInstalmentDetails.instalment_date.length - 1;
                 } else {
                     route.start_price = 0;
                     route.secondary_start_price = 0;
@@ -2131,7 +2154,8 @@ export class Mystifly implements StrategyAirline {
         mystiflyConfig,
         sessionToken,
         module,
-        currencyDetails
+        currencyDetails,
+        referralId
     ) {
         const {
             source_location,
@@ -2401,6 +2425,7 @@ export class Mystifly implements StrategyAirline {
                     flightRoutes[i]["ispassportmandatory"][0] == "true"
                         ? true
                         : false;
+                let depatureOfInbound = stops[0].departure_code
                 route.departure_code = stops[0].departure_code;
                 route.departure_date = stops[0].departure_date;
                 route.departure_time = stops[0].departure_time;
@@ -2543,7 +2568,10 @@ export class Mystifly implements StrategyAirline {
                         secondaryMarkUpDetails
                     );
                 }
+                let searchData = { departure: depatureOfInbound, arrival: arrivalCodeOfOutbound, checkInDate: departure_date }
+                let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
 
+                route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
                 let instalmentDetails: any = {};
                 let instalmentDetails2: any = {};
                 let instalmentDetails3: any = {};
@@ -2553,6 +2581,7 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
+                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
@@ -2560,7 +2589,8 @@ export class Mystifly implements StrategyAirline {
                         0,
                         null,
                         null,
-                        0
+                        0,
+                        weeklyCustomDownPayment
                     );
 
                     instalmentDetails2 = Instalment.biWeeklyInstalment(
@@ -2580,6 +2610,18 @@ export class Mystifly implements StrategyAirline {
                         null,
                         null,
                         0
+                    );
+
+                    let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                        route.discounted_selling_price,
+                        departure_date,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0,
+                        false,
+                        weeklyCustomDownPayment
                     );
                     if (instalmentDetails.instalment_available) {
                         route.start_price =
@@ -2602,6 +2644,13 @@ export class Mystifly implements StrategyAirline {
                             instalmentDetails3.instalment_date[0].instalment_amount;
                         route.no_of_weekly_installment_3 =
                             instalmentDetails3.instalment_date.length - 1;
+                        route.discounted_start_price =
+                            discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                        route.discounted_secondary_start_price =
+                            discountedInstalmentDetails.instalment_date[1].instalment_amount;
+                        route.discounted_no_of_weekly_installment =
+                    discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
                 if (
@@ -3613,14 +3662,14 @@ export class Mystifly implements StrategyAirline {
 
             //Get min & max selling price
             let priceRange = new PriceRange();
-            let priceType = "selling_price";
+            let priceType = "discounted_selling_price";
             priceRange.min_price = this.getMinPrice(routes, priceType);
             priceRange.max_price = this.getMaxPrice(routes, priceType);
             flightSearchResult.price_range = priceRange;
 
             //Get min & max partail payment price
             let partialPaymentPriceRange = new PriceRange();
-            priceType = "secondary_start_price";
+            priceType = "discounted_secondary_start_price";
             partialPaymentPriceRange.min_price = this.getMinPrice(
                 routes,
                 priceType

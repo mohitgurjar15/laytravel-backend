@@ -3,7 +3,7 @@ export interface StrategyAirline {
 
     oneWaySearchZip(params1, params2, param3, param4, param5, param6);
 
-    oneWaySearchZipWithFilter(params1, params2, param3, param4, param5, param6);
+    oneWaySearchZipWithFilter(params1, params2, param3, param4, param5, param6, param7);
 
     baggageDetails(params);
 
@@ -19,7 +19,8 @@ export interface StrategyAirline {
         param3,
         param4,
         param5,
-        param6
+        param6,
+        param7
     );
 
     airRevalidate(params1, params2, param3);

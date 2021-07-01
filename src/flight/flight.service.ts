@@ -640,7 +640,8 @@ export class FlightService {
     async flexibleDateRate(
         serchFlightDto: OneWaySearchFlightDto,
         headers,
-        user: User
+        user: User,
+        refferalId
     ) {
         await this.validateHeaders(headers);
 
@@ -731,7 +732,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -767,7 +769,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -791,12 +794,12 @@ export class FlightService {
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -805,14 +808,14 @@ export class FlightService {
                     // 	lowestprice = flightData.net_rate;
                     // 	is_booking_avaible = true
                     // }
-                    else if (lowestprice > flightData.selling_price) {
+                    else if (lowestprice > flightData.discounted_selling_price) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -890,7 +893,8 @@ export class FlightService {
     async fullcalenderRate(
         serchFlightDto: FullCalenderRateDto,
         headers,
-        user: User
+        user: User,
+        refferalId
     ) {
         await this.validateHeaders(headers);
 
@@ -972,7 +976,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -998,7 +1003,8 @@ export class FlightService {
                                 mystiflyConfig,
                                 sessionToken,
                                 module,
-                                currencyDetails
+                                currencyDetails,
+                                refferalId
                             )
                         )
                     );
@@ -1025,12 +1031,12 @@ export class FlightService {
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1039,14 +1045,14 @@ export class FlightService {
                     // 	lowestprice = flightData.net_rate;
                     // 	is_booking_avaible = true
                     // }
-                    else if (lowestprice > flightData.selling_price) {
+                    else if (lowestprice > flightData.discounted_selling_price) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -1120,7 +1126,8 @@ export class FlightService {
     async flexibleDateRateForRoundTrip(
         serchFlightDto: RoundtripSearchFlightDto,
         headers,
-        user: User
+        user: User,
+        refferalId
     ) {
         await this.validateHeaders(headers);
 
@@ -1277,7 +1284,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -1302,13 +1310,13 @@ export class FlightService {
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1317,15 +1325,15 @@ export class FlightService {
                     // 	lowestprice = flightData.net_rate;
                     // 	is_booking_avaible = true
                     // }
-                    else if (lowestprice > flightData.selling_price) {
+                    else if (lowestprice > flightData.discounted_selling_price) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     key++;
                 }
