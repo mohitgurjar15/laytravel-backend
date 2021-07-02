@@ -16,9 +16,9 @@ export class FilterHelper{
         let sellings = hotels.pluck('selling');
         console.log(sellings.items.length,"----")
         if(sellings!=null){
-            let min = sellings.min('total');
+            let min = sellings.min('discounted_total');
         
-            let max = sellings.max('total');
+            let max = sellings.max('discounted_total');
             
             let fix_ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
             
@@ -31,8 +31,8 @@ export class FilterHelper{
             let refund_policy = hotels.pluck('refundable').countBy().union(fix_refund_policy).map(mapper).values();
             
             let secondary_price = {
-                min: hotels.min('secondary_start_price'),
-                max: hotels.max('secondary_start_price')
+                min: hotels.min('discounted_secondary_start_price'),
+                max: hotels.max('discounted_secondary_start_price')
             };
 
 

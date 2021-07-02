@@ -243,7 +243,7 @@ export class Search {
                 
             }
             let hotelsList =  hotels.sort(function (a, b) {
-                return a.secondary_start_price - b.secondary_start_price;
+                return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
             });
             //console.log("hotelsList",hotelsList)
             return hotelsList;
