@@ -1905,7 +1905,7 @@ export class FlightService {
         booking.id = uuidv4();
         booking.moduleId = moduleDetails.id;
         //booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.laytripBookingId = reservationId
+        booking.laytripBookingId = reservationId 
         booking.bookingType = bookingType;
         booking.currency = currencyId;
         booking.totalAmount = selling_price.toString();
@@ -1919,12 +1919,13 @@ export class FlightService {
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
-        //booking.reservationId = reservationId;
+
         booking.locationInfo = {
             journey_type,
             source_location,
             destination_location,
         };
+
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 

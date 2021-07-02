@@ -115,7 +115,7 @@ export const LANDING_PAGE = {
       ],
       hotel: [
         {
-          location: { "title": "Punta Cana, Dominican Republic", "city": "Punta Cana", "state": "", "country": "Dominican Republic", "type": "city", "hotel_id": "", "city_id": "800013751", "lat": "18.6149", "long": "-68.3884", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana-2.png", "city_names": ["Punta Cana"] }
+          location: { "title": "Punta Cana, Dominican Republic", "city": "Punta Cana", "state": "", "country": "Dominican Republic", "type": "city", "hotel_id": "", "city_id": "800013751", "lat": "18.6149", "long": "-68.3884", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "city_names": ["Punta Cana"] }
         },
         {
           location: { "title": "Tampa, Florida, United States", "city": "Tampa", "state": "Florida", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800047518", "lat": "27.9472", "long": "-82.4586", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png", "city_names": ["Tampa"] }

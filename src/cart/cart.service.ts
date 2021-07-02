@@ -62,6 +62,9 @@ import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
 import { BookingLog } from "src/entity/booking-log.entity";
+
+
+
 @Injectable()
 export class CartService {
     constructor(
@@ -742,7 +745,7 @@ more than 10.`
         }
     }
 
-    async listCart(dto: ListCartDto, user, headers, referralId) {
+   async listCart(dto: ListCartDto, user, headers, referralId) {
         try {
             const { live_availiblity } = dto;
             var tDate = new Date();
@@ -1233,13 +1236,13 @@ more than 10.`
                 .where(`"id" = '${id}'`)
                 .execute();
 
+
             return {
                 message: `Item removed successfully`,
             };
         } catch (error) {
             throw new BadRequestException(error.response.message);
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
