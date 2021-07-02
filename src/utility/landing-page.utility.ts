@@ -93,11 +93,11 @@ export class LandingPage {
 			console.log('deal.location.city_names.indexOf(searchData.departure)', deal.location.city_names.indexOf(searchData.departure))
 			console.log('searchData.state',searchData.state)
 			console.log('deal.location.state', deal.location.state)
-			return deal.location.city_names.indexOf(searchData.departure)
+			return deal.location.city_names.includes(searchData.departure)
 		})
 
 		console.log('isRouteExist', isRouteExist)
-		if (isRouteExist <= 0 ) {
+		if (isRouteExist ==false) {
 			return { applicable: false };
 		}
 
