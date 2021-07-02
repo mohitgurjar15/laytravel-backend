@@ -1987,12 +1987,15 @@ export class Mystifly implements StrategyAirline {
                     ][0]["ptc_farebreakdown"],
                     markUpDetails
                 );
-                let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
-                let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
-                route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
+                
+                
                 route.selling_price = Generic.formatPriceDecimal(
                     PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                 );
+                let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
+                let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
+                route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
+                
                 let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                 let instalmentDetails = Instalment.weeklyInstalment(
                     route.selling_price,

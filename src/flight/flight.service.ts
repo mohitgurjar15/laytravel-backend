@@ -311,7 +311,7 @@ export class FlightService {
         return result;
     }
 
-    async searchOneWayZipFlight(searchFlightDto, headers, user) {
+    async searchOneWayZipFlight(searchFlightDto, headers, user,referralId='') {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const mystiflyConfig = await new Promise((resolve) =>
@@ -341,13 +341,14 @@ export class FlightService {
         );
         const result = new Promise((resolve) =>
             resolve(
-                mystifly.oneWaySearchZip(
+                mystifly.oneWaySearchZipWithFilter(
                     searchFlightDto,
                     user,
                     mystiflyConfig,
                     sessionToken,
                     module,
-                    currencyDetails
+                    currencyDetails,
+                    referralId
                 )
             )
         );
@@ -800,6 +801,9 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        console.log(flightData)
+                        console.log('lowestprice', lowestprice)
+                        console.log('flightData.discounted_selling_price', flightData.discounted_selling_price)
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -809,6 +813,8 @@ export class FlightService {
                     // 	is_booking_avaible = true
                     // }
                     else if (lowestprice > flightData.discounted_selling_price) {
+                        console.log('lowestprice',lowestprice)
+                        console.log('flightData.discounted_selling_price',flightData.discounted_selling_price)
                         netRate = flightData.net_rate;
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;

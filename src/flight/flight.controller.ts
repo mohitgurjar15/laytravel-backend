@@ -310,12 +310,14 @@ export class FlightController {
   async searchOneWayFlightZip(
     @Body() searchFlightDto: OneWaySearchFlightDto,
     @Req() req,
-    @LogInUser() user
+    @LogInUser() user,
+    @GetReferralId() referralId: string
   ) {
     return await this.flightService.searchOneWayZipFlight(
       searchFlightDto,
       req.headers,
-      user
+      user,
+      referralId
     );
   }
 

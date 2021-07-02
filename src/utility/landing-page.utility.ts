@@ -127,11 +127,12 @@ export class LandingPage {
 
 	static applyDiscount(offerData, price) {
 
+
 		if (!offerData.applicable) {
 
 			return price;
 		}
-
+		
 		if (offerData.discount.applicable) {
 			let discountPrice;
 
