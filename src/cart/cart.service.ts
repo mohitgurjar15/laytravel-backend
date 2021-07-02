@@ -1097,6 +1097,54 @@ more than 10.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
+                     if (cart.moduleId == ModulesName.FLIGHT) {
+                        newCart["is_available"] = true;
+                        newCart["is_conflict"] = false;
+                    if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                error = `In cart not-promotional item found`
+                                if (cartIsConflicted) {
+                                    newCart["is_conflict"] = true;
+                                } else {
+                                    newCart["is_available"] = false;
+                                }
+
+                            }
+
+                            if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                error = `In cart promotional item found`
+                                if (cartIsConflicted) {
+                                    newCart["is_conflict"] = true;
+                                } else {
+                                    newCart["is_available"] = false;
+                                }
+                                // newCart["is_available"] = false;
+                            }
+                    }
+                     if (cart.moduleId == ModulesName.HOTEL) {
+                         newCart["is_available"] = true;
+                         newCart["is_conflict"] = false;
+                         if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                    //throw new ConflictException(`In cart not-promotional item found`)
+                                    error = `In cart not-promotional item found`
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
+                                }
+
+                         if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                    error = `In cart promotional item found`
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
+                                }
+
+                     }
                 }
                 if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);

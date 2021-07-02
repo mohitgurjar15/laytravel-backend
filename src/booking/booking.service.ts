@@ -2013,6 +2013,10 @@ export class BookingService {
 
                 const predictiveBookingData: any = {};
                 predictiveBookingData["booking_id"] = data.bookingId;
+                predictiveBookingData["offer_data"] = bookingData.moduleInfo[0]?.offer_data
+                predictiveBookingData["actualSellingPrice"] = bookingData.actualSellingPrice
+                predictiveBookingData["offerFrom"] = bookingData.offerFrom
+                predictiveBookingData["isPromotional"] = bookingData.isPromotional
                 predictiveBookingData["product_id"] =
                     bookingData.laytripBookingId;
                 predictiveBookingData["payment_status"] =
@@ -2311,6 +2315,10 @@ export class BookingService {
                     );
                     predictiveBookingData["product_id"] =
                         booking.laytripBookingId;
+                    predictiveBookingData["offer_data"] = booking.moduleInfo[0]?.offer_data
+                predictiveBookingData["actualSellingPrice"] = booking.actualSellingPrice
+                predictiveBookingData["offerFrom"] = booking.offerFrom
+                predictiveBookingData["isPromotional"] = booking.isPromotional
                     predictiveBookingData["payment_status"] =
                         booking.paymentStatus;
                     predictiveBookingData["location_info"] =
