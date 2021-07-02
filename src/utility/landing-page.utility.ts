@@ -59,14 +59,14 @@ export class LandingPage {
 
 		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location)
 		// console.log(LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`))
-		console.log(`${searchData.departure}-${searchData.arrival}`)
+		//console.log(`${searchData.departure}-${searchData.arrival}`)
 
 		if (LANDING_PAGE_DATA.deals.flight_offer_location.indexOf(`${searchData.departure}-${searchData.arrival}`) == -1) {
 			return { applicable: false }
 		}
 		//console.log(3)
 
-		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
+		if (moment(searchData.checkInDate).diff(moment().format("YYYY-MM-DD"), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false }
 		}
 
@@ -86,22 +86,26 @@ export class LandingPage {
 			return { applicable: false }
 		}
 
-		let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
-		let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal => {
+		 let LANDING_PAGE_DATA = LANDING_PAGE[lpNumber];
+		/**let isRouteExist = LANDING_PAGE_DATA.deals.hotel.findIndex(deal => {
 
-			console.log('searchData', searchData)
-			console.log('deal.location.city_names.indexOf(searchData.departure)', deal.location.city_names.indexOf(searchData.departure))
-			console.log('searchData.state',searchData.state)
-			console.log('deal.location.state', deal.location.state)
 			return deal.location.city_names.includes(searchData.departure)
-		})
+		}) */
+		let isRouteExist=false;
+		for(let deal of LANDING_PAGE_DATA.deals.hotel){
+			isRouteExist = deal.location.city_names.includes(searchData.departure)
+			if(isRouteExist){
+				break;
+			}
+		}
 
-		console.log('isRouteExist', isRouteExist)
+
+		//console.log('isRouteExist', isRouteExist,searchData.checkInDate,moment(searchData.checkInDate).diff(moment().format("YYYY-MM-DD"), 'days'),LANDING_PAGE_DATA.promotional.min_promotional_day,moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day)
 		if (isRouteExist ==false) {
 			return { applicable: false };
 		}
 
-		if (moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
+		if (moment(searchData.checkInDate).diff(moment().format("YYYY-MM-DD"), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day) {
 			return { applicable: false };
 		}
 

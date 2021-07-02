@@ -167,7 +167,7 @@ export const LANDING_PAGE = {
       ]
     },
     promotional: {
-      min_promotional_day: 90,
+      min_promotional_day: 91,
       max_promotional_day: 365,
     },
     payment_frequency_options: {
