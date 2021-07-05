@@ -94,7 +94,8 @@ export class BookingService {
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param,responce.referralId
+                        responce.param,
+                        responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -1109,6 +1110,7 @@ export class BookingService {
             let remainAmount = 0;
             let pandinginstallment = 0;
             let totalAmount = 0;
+             let actualAmount = 0;
             const currency = cart.bookings[0]?.currency2;
             const baseBooking = cart.bookings[0]?.bookingInstalments;
             const installmentType =
@@ -1181,6 +1183,7 @@ export class BookingService {
                     }
 
                     totalAmount += parseFloat(booking.totalAmount);
+                    actualAmount += parseFloat(booking.actualSellingPrice || '0');
                     //console.log(totalAmount, 'totalAmount');
                 }
 
@@ -1234,6 +1237,9 @@ export class BookingService {
             cartResponce["currency"] = currency;
             cartResponce["totalAmount"] = Generic.formatPriceDecimal(
                 totalAmount
+            );
+            cartResponce["actualAmount"] = Generic.formatPriceDecimal(
+                actualAmount
             );
             if (cart.bookings[0]?.nextInstalmentDate) {
                 cartResponce["nextInstalmentDate"] =
@@ -2007,6 +2013,10 @@ export class BookingService {
 
                 const predictiveBookingData: any = {};
                 predictiveBookingData["booking_id"] = data.bookingId;
+                predictiveBookingData["offer_data"] = bookingData.moduleInfo[0]?.offer_data
+                predictiveBookingData["actualSellingPrice"] = bookingData.actualSellingPrice
+                predictiveBookingData["offerFrom"] = bookingData.offerFrom
+                predictiveBookingData["isPromotional"] = bookingData.isPromotional
                 predictiveBookingData["product_id"] =
                     bookingData.laytripBookingId;
                 predictiveBookingData["payment_status"] =
@@ -2219,13 +2229,31 @@ export class BookingService {
                 }
 
                 if (category) {
+                    let categoryDays = 30
+
+                    switch (category?.name) {
+                        case "Gold":
+                            categoryDays = 30
+                            break;
+                        case "Silver":
+                            categoryDays = 60
+                            break;
+                        case "Bronze":
+                            categoryDays = 90
+                            break;
+
+                        default:
+                            categoryDays = 30
+                            break;
+                    }
                     let checkInDate = new Date(bookingData.checkInDate);
                     checkInDate.setDate(
                         checkInDate.getDate() -
-                            category.installmentAvailableAfter
+                        categoryDays
                     );
+                    
                     predictiveBookingData["deadline_date"] = checkInDate;
-                    if (category.installmentAvailableAfter > dayDiff) {
+                    if (categoryDays > dayDiff) {
                         predictiveBookingData["reservation_status"] = "yellow";
                         predictiveBookingData["reservation_status_note"] =
                             "category.installmentAvailableAfter > dayDiff";
@@ -2287,6 +2315,10 @@ export class BookingService {
                     );
                     predictiveBookingData["product_id"] =
                         booking.laytripBookingId;
+                    predictiveBookingData["offer_data"] = booking.moduleInfo[0]?.offer_data
+                predictiveBookingData["actualSellingPrice"] = booking.actualSellingPrice
+                predictiveBookingData["offerFrom"] = booking.offerFrom
+                predictiveBookingData["isPromotional"] = booking.isPromotional
                     predictiveBookingData["payment_status"] =
                         booking.paymentStatus;
                     predictiveBookingData["location_info"] =
@@ -2368,13 +2400,30 @@ export class BookingService {
                     ) : 0
 
                     if (category) {
+                        let categoryDays = 30
+
+                        switch (category?.name) {
+                            case "Gold":
+                                categoryDays = 30
+                                break;
+                            case "Silver":
+                                categoryDays = 60
+                                break;
+                            case "Bronze":
+                                categoryDays = 90
+                                break;
+
+                            default:
+                                categoryDays = 30
+                                break;
+                        }
                         let checkInDate = new Date(booking.checkInDate);
                         checkInDate.setDate(
                             checkInDate.getDate() -
-                                category.installmentAvailableAfter
+                            categoryDays
                         );
                         predictiveBookingData["deadline_date"] = checkInDate;
-                        if (category.installmentAvailableAfter > dayDiff) {
+                        if (categoryDays > dayDiff) {
                             predictiveBookingData["reservation_status"] =
                                 "yellow";
                             predictiveBookingData["reservation_status_note"] =
@@ -2698,7 +2747,8 @@ export class BookingService {
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripCartBookingConfirmtionMail(
-                        responce.param,responce.referralId
+                        responce.param,
+                        responce.referralId
                     ),
                 })
                 .then((res) => {
@@ -2813,10 +2863,13 @@ export class BookingService {
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: `Booking ID ${booking_id} Provider Cancellation Notice`,
-                    html: await LaytripCancellationTravelProviderMail({
-                        userName: query.user.firstName || "",
-                        bookingId: booking_id,
-                    },referralId),
+                    html: await LaytripCancellationTravelProviderMail(
+                        {
+                            userName: query.user.firstName || "",
+                            bookingId: booking_id,
+                        },
+                        referralId
+                    ),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -2831,10 +2884,13 @@ export class BookingService {
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: `Booking ID ${booking_id} Customer Cancellation`,
-                    html: await LaytripBookingCancellationCustomerMail({
-                        username: query.user.firstName || "",
-                        bookingId: booking_id,
-                    },referralId),
+                    html: await LaytripBookingCancellationCustomerMail(
+                        {
+                            username: query.user.firstName || "",
+                            bookingId: booking_id,
+                        },
+                        referralId
+                    ),
                 })
                 .then((res) => {
                     console.log("res", res);
@@ -2992,7 +3048,10 @@ export class BookingService {
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
                 subject: `Booking ID ${mail.param.orderId} Customer Change`,
-                html: await CartChangeAsperUserRequestMail(mail.param,mail.referralId),
+                html: await CartChangeAsperUserRequestMail(
+                    mail.param,
+                    mail.referralId
+                ),
             })
             .then((res) => {
                 console.log("res", res);
@@ -3009,7 +3068,8 @@ export class BookingService {
         return await this.flightService.airRevalidate(
             { route_code: routCode },
             Header,
-            user ? user : null
+            user ? user : null,
+            ""
         );
     }
 

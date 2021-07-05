@@ -60,8 +60,8 @@ import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
 export class PaymentService {
     constructor(
         private readonly mailerService: MailerService //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache, // @InjectRepository(BookingRepository) // private bookingRepository: BookingRepository,
-    ) {}
-    async defaultCard(cardId: string, userId: string, guest_id,referralId) {
+    ) { }
+    async defaultCard(cardId: string, userId: string, guest_id, referralId) {
         try {
             if (!uuidValidator(cardId)) {
                 throw new NotFoundException(
@@ -82,7 +82,7 @@ export class PaymentService {
                 if (!uuidValidator(userId)) {
                     throw new NotFoundException(
                         "Given guest id not avilable&&&guest_id&&&" +
-                            errorMessage
+                        errorMessage
                     );
                 }
                 whr = `guest_user_id = '${guest_id}' AND id = '${cardId}'`;
@@ -123,7 +123,7 @@ export class PaymentService {
                             subject: `Payment Method Change Confirmation`,
                             html: await LaytripPaymentMethodChangeMail({
                                 username: user.firstName || "",
-                            },referralId),
+                            }, referralId),
                         })
                         .then((res) => {
                             console.log("res", res);
@@ -523,7 +523,7 @@ export class PaymentService {
             "authorise-card",
             userId
         );
-        console.log(authResult,"1222")
+        // console.log(authResult, "1222")
         if (
             typeof authResult.transaction != "undefined" &&
             authResult.transaction.succeeded
@@ -561,7 +561,7 @@ export class PaymentService {
             "capture-card",
             userId
         );
-        
+
         if (
             typeof captureRes.transaction != "undefined" &&
             captureRes.transaction.succeeded
@@ -571,7 +571,7 @@ export class PaymentService {
                 token: captureRes.transaction.token,
                 meta_data: captureRes,
                 reference_token: captureRes.transaction?.reference_token,
-                logFile : captureRes['fileName']
+                logFile: captureRes['fileName']
             };
         } else {
             return {
@@ -638,7 +638,7 @@ export class PaymentService {
             "verify-auth",
             userId
         );
-        console.log("verifyAuthRes",verifyAuthRes)
+        console.log("verifyAuthRes", verifyAuthRes)
         if (
             typeof verifyAuthRes != "undefined" &&
             verifyAuthRes.transaction.succeeded
@@ -1441,7 +1441,7 @@ export class PaymentService {
                         bcc: mailConfig.BCC,
                         subject: subject,
                         html: await LaytripCartBookingComplationMail(
-                            responce.param,responce.referralId
+                            responce.param, responce.referralId
                         ),
                     })
                     .then((res) => {
@@ -1496,12 +1496,12 @@ export class PaymentService {
 
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
-            .select(["cart.moduleInfo", "cart.moduleId"])
+            //.select(["cart.moduleInfo", "cart.moduleId"])
             .where(
                 `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("cart"."id" IN (${cartIds}))`
             )
             .orderBy(`cart.id`, "DESC")
-            .limit(5);
+            .limit(10);
         const [result, count] = await query.getManyAndCount();
 
         if (!result.length) {
@@ -1509,46 +1509,75 @@ export class PaymentService {
                 `Cart is empty.&&&cart&&&${errorMessage}`
             );
         }
+        let promotional = 0
+        let nonPromotional = 0
+        let promotionalItem = []
+        let nonPromotionalItem = []
+        for (let index = 0; index < result.length; index++) {
+            const cart = result[index];
+
+            if (cart.isPromotional == true) {
+                promotional++
+                promotionalItem.push(cart.id)
+            } else {
+                nonPromotional++
+                nonPromotionalItem.push(cart.id)
+            }
+        }
+
+        if (promotional > 0 && nonPromotional > 0) {
+            throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
+        }
+
+        console.log("promotional", promotional, "nonPromotional", nonPromotional)
+
+        let cartIsPromotional
+        if (promotional > 0) {
+            cartIsPromotional = true
+            console.log("cartIsPromotional", cartIsPromotional)
+        } else if (nonPromotional > 0) {
+            cartIsPromotional = false
+        }
+
+        console.log("cartIsPromotional", cartIsPromotional)
+
+
 
         let smallestDate = "";
         let totalAmount: number = 0;
+        let offerDownPayment:number=0
 
         for await (const item of result) {
-            console.log("moduleId", item.moduleId);
-
+           
             if (item.moduleId == ModulesName.FLIGHT) {
-                console.log("1");
-                console.log(result[0].moduleInfo[0].departure_date);
+                // console.log("1");
+                // console.log(result[0].moduleInfo[0].departure_date);
                 const dipatureDate = await this.changeDateFormat(
                     item.moduleInfo[0].departure_date
                 );
-                console.log("2");
+                //console.log("2");
                 if (smallestDate == "") {
                     smallestDate = dipatureDate;
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
-                console.log("smallestDate", smallestDate);
+                // console.log("smallestDate", smallestDate);
                 console.log(item.moduleInfo[0].selling_price);
+                console.log(item.moduleInfo[0].discounted_selling_price);
 
-                totalAmount += parseFloat(item.moduleInfo[0].selling_price);
-
-                console.log("totalAmount", totalAmount);
+                totalAmount += parseFloat(item.moduleInfo[0].discounted_selling_price) 
+                offerDownPayment += parseFloat(item.moduleInfo[0].discounted_start_price)
             } else if (item.moduleId == ModulesName.HOTEL) {
-                console.log("3");
-                console.log(item.moduleInfo[0].input_data.check_in);
+
                 const dipatureDate = item.moduleInfo[0].input_data.check_in;
                 if (smallestDate == "") {
                     smallestDate = dipatureDate;
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
-                console.log("smallestDate", smallestDate);
-                console.log(item.moduleInfo[0].selling.total);
-
-                totalAmount += parseFloat(item.moduleInfo[0].selling.total);
-
-                console.log("totalAmount", totalAmount);
+                console.log(item.moduleInfo[0].selling);
+                totalAmount += parseFloat(item.moduleInfo[0].selling['discounted_total']);
+                offerDownPayment += parseFloat(item.moduleInfo[0].discounted_start_price)
             }
         }
 
@@ -1562,7 +1591,24 @@ export class PaymentService {
             }
             //save entry for future booking
             if (instalment_type == InstalmentType.WEEKLY) {
-                instalmentDetails = Instalment.weeklyInstalment(
+                if(cartIsPromotional){
+
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        null,
+                        null,
+                        0,
+                        false,
+                        offerDownPayment
+                    );
+                    console.log("offerDownPayment", offerDownPayment)
+                    console.log(instalmentDetails)
+
+                }else{
+                    instalmentDetails = Instalment.weeklyInstalment(
                     totalAmount,
                     smallestDate,
                     date1,
@@ -1572,6 +1618,8 @@ export class PaymentService {
                     selected_down_payment,
                     false
                 );
+                }
+                
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
                 instalmentDetails = Instalment.biWeeklyInstalment(
@@ -1599,6 +1647,7 @@ export class PaymentService {
             }
 
             if (instalmentDetails.instalment_available) {
+                console.log("instalmentDetails.",instalmentDetails)
                 let firstInstalemntAmount =
                     instalmentDetails.instalment_date[0].instalment_amount;
                 if (laycredit_points > 0) {
@@ -1664,10 +1713,12 @@ export class PaymentService {
             // }
         }
 
+        console.log("authoriseAmount", authoriseAmount)
+
         let authCardResult = await this.authorizeCard(
             card_token,
             Math.ceil(authoriseAmount * 100), //make it dynamic
-            //3005,
+            //50,
             "USD",
             browser_info,
             redirection,
@@ -1773,7 +1824,7 @@ export class PaymentService {
                 status: true,
                 token: cardResult.transaction.token,
                 meta_data: cardResult,
-                logFile : cardResult['fileName']
+                logFile: cardResult['fileName']
 
             };
         } else {

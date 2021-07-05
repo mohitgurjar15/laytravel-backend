@@ -21,13 +21,14 @@ export class Generic {
         return credentail;
     }
 
-    static async getAmountTocurrency(code: string) {
+    static async getAmountTocurrency(code: string = 'USD') {
         const currencyDetails = await getConnection()
             .createQueryBuilder()
             .select(["currency.code", "currency.symbol", "currency.liveRate"])
             .from(Currency, "currency")
             .where("currency.code = :code", { code })
             .getOne();
+        console.log(currencyDetails)
         return currencyDetails;
     }
 

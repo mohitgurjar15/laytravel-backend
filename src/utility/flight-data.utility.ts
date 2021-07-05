@@ -8,6 +8,7 @@ import { CartDataUtility } from "./cart-data.utility";
 import { DateTime } from "./datetime.utility";
 import { Generic } from "./generic.utility";
 import * as moment from "moment";
+import { Airport } from "src/entity/airport.entity";
 
 export class flightDataUtility {
     static async flightData(flightId) {
@@ -188,7 +189,7 @@ export class flightDataUtility {
                 `No booking found&&&id&&&No booking found`
             );
         }
-		let bookingData:any = booking.oldBookingInfo
+        let bookingData: any = booking.oldBookingInfo
         if (booking.bookingInstalments.length > 0) {
             booking.bookingInstalments.sort((a, b) => a.id - b.id);
         }
@@ -212,9 +213,8 @@ export class flightDataUtility {
                 var rout =
                     index == 0
                         ? `${moduleInfo.departure_info.city ||
-                              ""} To ${moduleInfo.arrival_info.city || ""} (${
-                              moduleInfo.routes[0].type
-                          } || '')`
+                        ""} To ${moduleInfo.arrival_info.city || ""} (${moduleInfo.routes[0].type
+                        } || '')`
                         : `${moduleInfo.arrival_info.city} To ${moduleInfo.departure_info.city} (${moduleInfo.routes[1].type})`;
                 var status =
                     bookingData.bookingStatus == 0 ? "Pending" : "Confirm";
@@ -289,7 +289,7 @@ export class flightDataUtility {
                 travelerInfo.push({
                     name:
                         traveler.oldTravelerInfo.firstName +
-                            traveler.oldTravelerInfo.lastName ||
+                        traveler.oldTravelerInfo.lastName ||
                         "",
                     email: traveler.oldTravelerInfo.email,
                     type: user_type,
@@ -319,4 +319,53 @@ export class flightDataUtility {
             return { param, userMail: user.email };
         }
     }
+
+
+
+    static async getFlightRoutes(fromLocation, toLocation) {
+        let fromLocations = [];
+        let toLocations = [];
+
+
+
+        let from = await getConnection()
+            .createQueryBuilder(Airport, "airport")
+
+            .where(`airport.code = '${fromLocation}'`)
+            .getOne();
+        let to = await getConnection()
+            .createQueryBuilder(Airport, "airport")
+            .where(`airport.code = '${toLocation}'`)
+            .getOne()
+        if (from && to) {
+            // fromLocations.push(from.code)
+            // toLocations.push(to.code)
+            let fromParent = from?.parentId ? from.parentId : -1;
+            let toParent = to?.parentId ? to.parentId : -1;
+            let getAllfrom = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .where(`airport.id = ${from.id} OR airport.parent_id = ${fromParent} OR airport.id = ${fromParent} OR airport.parent_id = ${from.id}`)
+                .getMany()
+
+            for await (const iterator of getAllfrom) {
+                fromLocations.push(iterator.code)
+            }
+
+
+            let getAllTo = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .where(`airport.id = ${to.id} OR airport.parent_id = ${toParent} OR airport.id = ${toParent} OR airport.parent_id = ${to.id}`)
+                .getMany()
+
+            for await (const iterator of getAllTo) {
+                toLocations.push(iterator.code)
+            }
+        }
+
+        return {
+            fromLocations, toLocations
+        }
+
+    }
+
 }

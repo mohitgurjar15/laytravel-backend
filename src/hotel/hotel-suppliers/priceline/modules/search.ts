@@ -11,6 +11,7 @@ import { Instalment } from "src/utility/instalment.utility";
 import moment = require("moment");
 import { CommonHelper } from "../helpers/common.helper";
 import { catchError, map } from "rxjs/operators";
+import { LandingPage } from "src/utility/landing-page.utility";
 
 export class Search {
     private item: any;
@@ -31,7 +32,7 @@ export class Search {
         this.httpsService = new HttpService();
     }
 
-    async processSearchResult(res, parameters) {
+    async processSearchResult(res, parameters, referralId: string) {
         let results = res.data["getHotelExpress.Results"];
         //console.log(parameters,"---")
         if (results.error) {
@@ -47,25 +48,30 @@ export class Search {
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
 
             for (let hotel of results.results.hotel_data) {
+                /// for alpha server condition bypass by parth virani
                 if (
-                    hotel["room_data"][0]["rate_data"][0].payment_type ==
+                    (hotel["room_data"][0]["rate_data"][0].payment_type ==
                         "PREPAID" &&
                     hotel["room_data"][0]["rate_data"][0].is_cancellable ==
-                        "true"
+                        "true") || 1==1
                 ) {
                     this.item = hotel;
                     this.rate = hotel["room_data"][0]["rate_data"][0];
-
+                    let searchData = {
+                        departure: hotel['address']['city_name'],checkInDate: parameters.check_in, state: hotel['address']['state_name']}
+                    let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
                     let {
                         retail,
                         selling,
-                        saving_percent,net_rate
-                    } = this.rateHelper.getRates(this.rate, parameters);
-                    if (selling.total > 25) {
+                        saving_percent,net_rate,
+                        discounted_selling_price
+                    } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
+                    if (selling['discounted_total'] > 25) {
                         let details = this.detailHelper.getHotelDetails(
                             hotel,
                             "list"
                         );
+                        let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                         hotelIds += details.id + ",";
                         let start_price = 0;
                         let secondary_start_price = 0;
@@ -76,6 +82,18 @@ export class Search {
                         let third_down_payment = 0;
                         let secondary_start_price_3 = 0;
                         let no_of_weekly_installment_3 = 0;
+                        let discounted_start_price = 0; 
+                        let discounted_secondary_start_price = 0;
+                        let discounted_no_of_weekly_installment = 0;
+                        // let instalmentDetails = Instalment.weeklyInstalment(
+                        //     selling.total,
+                        //     parameters.check_in,
+                        //     bookingDate,
+                        //     0,
+                        //     null,
+                        //     null,
+                        //     0
+                        // );
                         let instalmentDetails = Instalment.weeklyInstalment(
                             selling.total,
                             parameters.check_in,
@@ -83,7 +101,9 @@ export class Search {
                             0,
                             null,
                             null,
-                            0
+                            0,
+                            false,
+                            weeklyCustomDownPayment
                         );
                         let instalmentDetails2 = Instalment.biWeeklyInstalment(
                             selling.total,
@@ -102,6 +122,18 @@ export class Search {
                             null,
                             null,
                             0
+                        );
+
+                        let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                            selling['discounted_total'],
+                            parameters.check_in,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            false,
+                            weeklyCustomDownPayment
                         );
                         if (instalmentDetails.instalment_available) {
                             start_price =
@@ -131,6 +163,14 @@ export class Search {
                                     .instalment_amount;
                             no_of_weekly_installment_3 =
                                 instalmentDetails3.instalment_date.length - 1;
+                            discounted_start_price =
+                                discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                            discounted_secondary_start_price =
+                                discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
+                            discounted_no_of_weekly_installment =
+                                discountedInstalmentDetails.instalment_date.length - 1;
                         }
 
                         let newItem = {
@@ -155,6 +195,10 @@ export class Search {
                             third_down_payment,
                             secondary_start_price_3,
                             no_of_weekly_installment_3,
+                            discounted_start_price,
+                            discounted_secondary_start_price,
+                            discounted_no_of_weekly_installment,
+                            offer_data:offerData
                         };
 
                         hotels.push(newItem);
@@ -199,7 +243,7 @@ export class Search {
                 
             }
             let hotelsList =  hotels.sort(function (a, b) {
-                return a.secondary_start_price - b.secondary_start_price;
+                return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
             });
             //console.log("hotelsList",hotelsList)
             return hotelsList;

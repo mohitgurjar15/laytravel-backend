@@ -1,6 +1,7 @@
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { getManager } from "typeorm";
 import * as moment from 'moment';
+import { flightDataUtility } from "./flight-data.utility";
 
 export class RouteCategory{
 
@@ -9,9 +10,11 @@ export class RouteCategory{
      */
     static async flightRouteAvailability(departureCode:string,arrivalCode:string){
 
+        let data = await flightDataUtility.getFlightRoutes(departureCode, arrivalCode)
+
         let routeDetails = await getManager()
                     .createQueryBuilder(FlightRoute, "flight_route")
-                    .where("flight_route.from_airport_code = :departureCode and flight_route.to_airport_code=:arrivalCode", { departureCode,arrivalCode })
+            .where("flight_route.from_airport_code In (:...departureCode) and flight_route.to_airport_code In (:...arrivalCode)", { departureCode: data.fromLocations ,arrivalCode:data.toLocations })
                     .leftJoinAndSelect("flight_route.category", "category")
                     .getOne();
         return routeDetails;

@@ -14,6 +14,7 @@ import { HotelService } from './hotel.service';
 import { LogInUser } from 'src/auth/get-user.dacorator';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { BookDto } from './dto/book-req.dto';
+import { GetReferralId } from 'src/decorator/referral.decorator';
 
 
 @ApiTags("Hotel")
@@ -23,8 +24,14 @@ import { BookDto } from './dto/book-req.dto';
 @ApiResponse({ status: 404, description: "Not Found" })
 @ApiResponse({ status: 500, description: "Internal server error!" })
 @ApiBearerAuth()
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: ""
+
+})
 export class HotelController {
-    constructor(private readonly hotelService: HotelService) {}
+    constructor(private readonly hotelService: HotelService) { }
 
     @Post("/search-location")
     @HttpCode(200)
@@ -47,8 +54,8 @@ export class HotelController {
     })
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.PAID_USER, Role.FREE_USER, Role.GUEST_USER)
-    search(@Body() searchReqDto: SearchReqDto, @LogInUser() user) {
-        return this.hotelService.search(searchReqDto);
+    search(@Body() searchReqDto: SearchReqDto, @LogInUser() user, @GetReferralId() referralId: string) {
+        return this.hotelService.search(searchReqDto, referralId);
     }
 
     @Post("filter-objects")
@@ -97,11 +104,11 @@ export class HotelController {
     rooms(
         @Body() roomsReqDto: RoomsReqDto,
         @Headers() hotelHeaderDto: HotelHeaderDto,
-        @LogInUser() user
+        @LogInUser() user, @GetReferralId() referralId: string
     ) {
         roomsReqDto.token = hotelHeaderDto.token;
 
-        return this.hotelService.rooms(roomsReqDto, user.user_id);
+        return this.hotelService.rooms(roomsReqDto, user.user_id,referralId);
     }
 
     @Post("availability")
@@ -117,11 +124,11 @@ export class HotelController {
     availability(
         @Body() availabilityDto: AvailabilityDto,
         @Headers() hotelHeaderDto: HotelHeaderDto,
-        @LogInUser() user
+        @LogInUser() user, @GetReferralId() referralId: string
     ) {
         availabilityDto.token = hotelHeaderDto.token;
 
-        return this.hotelService.availability(availabilityDto, user.user_id || "");
+        return this.hotelService.availability(availabilityDto, user.user_id || "", referralId);
     }
 
     @Post("book")
