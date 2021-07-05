@@ -1421,10 +1421,10 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
-                referral_id,
+               
                 auth_url
             } = bookCart;
-
+            let  referral_id = referralId
             // let logData =  await getConnection()
             //         .createQueryBuilder()
             //         .insert()
@@ -1571,14 +1571,9 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
-            if (referral_id) {
-                let ref = await this.getReferralId(referral_id);
-                console.log(ref);
-                console.log(result[0]?.user?.referralId);
-
-
-                if (ref?.id == result[0]?.user?.referralId) {
-                    console.log('added');
+            if (referralId) {
+                let ref = await this.getReferralId(referralId);
+                if (ref?.id){ 
                     cartBook.referralId = ref?.id || null;
                 }
             }
