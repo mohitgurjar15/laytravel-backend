@@ -1,5 +1,5 @@
 export const LANDING_PAGE = {
-  'AS-410': {
+  '421': {
     applicable: true,
     slides: [
       {
@@ -130,7 +130,7 @@ export const LANDING_PAGE = {
           location: { "title": "Las Vegas, Nevada, United States", "city": "Las Vegas", "state": "Nevada", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800049030", "lat": "36.1190", "long": "-115.1680", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/lasvegas.png", "city_names": ["Las Vegas"] }
         },
         {
-          location: { "title": "Denver City, Texas, United States", "city": "Denver", "state": "Texas", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800098479", "lat": "32.9644", "long": "-102.8290", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/denver.png", "city_names": ["Denver City", "Denver"] }
+          location: { "title": "Denver, Colorado, United States", "city": "Denver", "state": "Colorado", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800047125", "lat": "39.7458", "long": "-104.9932", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/denver.png", "city_names": ["Denver City", "Denver"] }
         },
         {
           location: { "title": "Miami Beach, Florida, United States", "city": "Miami Beach", "city_id": "800047419", "state": "", "country": "United States", "type": "city", "hotel_id": "", "lat": "25.7903", "long": "-80.1303", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "city_names": ["Miami Beach", "Miami Gardens", "Miami Lakes", "Miami Springs", "Miami"] }

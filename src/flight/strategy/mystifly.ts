@@ -577,9 +577,9 @@ export class Mystifly implements StrategyAirline {
 
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
-                        
+
                         route.discounted_no_of_weekly_installment =
-                    discountedInstalmentDetails.instalment_date.length - 1;
+                            discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
 
@@ -1987,15 +1987,15 @@ export class Mystifly implements StrategyAirline {
                     ][0]["ptc_farebreakdown"],
                     markUpDetails
                 );
-                
-                
+
+
                 route.selling_price = Generic.formatPriceDecimal(
                     PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                 );
                 let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
                 let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
                 route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
-                
+
                 let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                 let instalmentDetails = Instalment.weeklyInstalment(
                     route.selling_price,
@@ -2006,16 +2006,16 @@ export class Mystifly implements StrategyAirline {
                     0,
                     weeklyCustomDownPayment
                 );
-               let discountedInstalmentDetails = Instalment.weeklyInstalment(
-                        route.discounted_selling_price,
-                        departure_date,
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        0,
-                        false,
-                        weeklyCustomDownPayment
+                let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                    route.discounted_selling_price,
+                    departure_date,
+                    bookingDate,
+                    0,
+                    null,
+                    null,
+                    0,
+                    false,
+                    weeklyCustomDownPayment
                 );
                 if (instalmentDetails.instalment_available) {
                     route.start_price =
@@ -2584,7 +2584,7 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
-                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
+                    let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                     instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
@@ -2653,7 +2653,7 @@ export class Mystifly implements StrategyAirline {
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
                         route.discounted_no_of_weekly_installment =
-                    discountedInstalmentDetails.instalment_date.length - 1;
+                            discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
                 if (
@@ -3156,6 +3156,7 @@ export class Mystifly implements StrategyAirline {
                 .airlowfaresearchresult[0]["a:success"][0] == "true"
         ) {
             let filteredListes = await this.getRoutes(source_location, destination_location, true)
+            console.log('filteredListes', filteredListes)
             let flightRoutes =
                 searchResult["s:envelope"]["s:body"][0]
                     .airlowfaresearchresponse[0].airlowfaresearchresult[0][
@@ -3299,7 +3300,7 @@ export class Mystifly implements StrategyAirline {
                     flightRoutes[i]["a:ispassportmandatory"][0] == "true"
                         ? true
                         : false;
-                let depatureOfInbound = stops[0].departure_code 
+                let depatureOfInbound = stops[0].departure_code
                 route.departure_code = stops[0].departure_code;
                 route.departure_date = stops[0].departure_date;
                 route.departure_time = stops[0].departure_time;
@@ -3448,7 +3449,7 @@ export class Mystifly implements StrategyAirline {
                 }
                 let searchData = { departure: depatureOfInbound, arrival: arrivalCodeOfOutbound, checkInDate: departure_date }
                 let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
-                
+
                 route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
                 route.start_price = 0;
                 route.secondary_start_price = 0;
@@ -3465,7 +3466,7 @@ export class Mystifly implements StrategyAirline {
                     routeDetails.category.installmentAvailableAfter
                 );
                 if (instalmentEligibility) {
-                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
+                    let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                     // instalmentDetails = Instalment.weeklyInstalment(
                     //     route.selling_price,
                     //     departure_date,
@@ -3476,7 +3477,7 @@ export class Mystifly implements StrategyAirline {
                     //     0
                     // );
 
-                     instalmentDetails = Instalment.weeklyInstalment(
+                    instalmentDetails = Instalment.weeklyInstalment(
                         route.selling_price,
                         departure_date,
                         bookingDate,
@@ -3545,7 +3546,7 @@ export class Mystifly implements StrategyAirline {
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
                         route.discounted_no_of_weekly_installment =
-                    discountedInstalmentDetails.instalment_date.length - 1;
+                            discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
 
@@ -3650,8 +3651,8 @@ export class Mystifly implements StrategyAirline {
                     routes.push(route);
                 } else if (filteredListes.length) {
 
-                    console.log(route.departure_code + '-' + arrivalCodeOfOutbound, filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`));
-                    console.log(route.arrival_code + '-' + depatureCodeOfInbound, filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`))
+                    // console.log(route.departure_code + '-' + arrivalCodeOfOutbound, filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`));
+                    // console.log(route.arrival_code + '-' + depatureCodeOfInbound, filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`))
 
                     if (filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`) != -1 &&
                         filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`) != -1) {
@@ -3824,7 +3825,7 @@ export class Mystifly implements StrategyAirline {
 			</soapenv:Body>
 			</soapenv:Envelope>`;
         const currencyDetails = await Generic.getAmountTocurrency(
-            this.headers.currency 
+            this.headers.currency
         );
         let airRevalidateResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
@@ -3832,7 +3833,7 @@ export class Mystifly implements StrategyAirline {
             "AirRevalidate"
         );
         const logFile = airRevalidateResult["log_file"]
-        
+
         if (
             airRevalidateResult["s:envelope"]["s:body"][0]
                 .airrevalidateresponse[0].airrevalidateresult[0][
@@ -4182,7 +4183,8 @@ export class Mystifly implements StrategyAirline {
                 let searchData = {
                     departure: route.departure_code, arrival: route.arrival_code, checkInDate: moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
-                    ) }
+                    )
+                }
                 let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
                 route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
                 route.start_price = 0;
@@ -4250,7 +4252,7 @@ export class Mystifly implements StrategyAirline {
                         route.discounted_secondary_start_price =
                             discountedInstalmentDetails.instalment_date[1].instalment_amount;
                         route.discounted_no_of_weekly_installment =
-                    discountedInstalmentDetails.instalment_date.length - 1;
+                            discountedInstalmentDetails.instalment_date.length - 1;
                     }
                 }
 
@@ -4815,50 +4817,36 @@ export class Mystifly implements StrategyAirline {
             .where(`airport.code = '${toLocation}'`)
             .getOne()
         if (from && to) {
-            // fromLocations.push(from.code)
-            // toLocations.push(to.code)
+            
             let fromParent = from?.parentId ? from.parentId : -1;
             let toParent = to?.parentId ? to.parentId : -1;
-            let getAllfrom = await getConnection()
+            let q1 = await getConnection()
                 .createQueryBuilder(Airport, "airport")
-                .where(`airport.id = ${from.id} OR airport.parent_id = ${fromParent} OR airport.id = ${fromParent} OR airport.parent_id = ${from.id}`)
-                .getMany()
-
+                .where(`airport.id = ${from.id} OR airport.parent_id = ${from.id}`)
+            if (fromParent) {
+                q1.orWhere(`airport.parent_id = ${fromParent} OR airport.id = ${fromParent}`)
+            }
+            let getAllfrom = await q1.getMany()
             for await (const iterator of getAllfrom) {
                 fromLocations.push(iterator.code)
             }
 
 
-            let getAllTo = await getConnection()
+            let q2 = await getConnection()
                 .createQueryBuilder(Airport, "airport")
-                .where(`airport.id = ${to.id} OR airport.parent_id = ${toParent} OR airport.id = ${toParent} OR airport.parent_id = ${to.id}`)
-                .getMany()
+                .where(`airport.id = ${to.id} OR  airport.parent_id = ${to.id}`)
 
+            if (toParent) {
+                q2.orWhere(`airport.parent_id = ${toParent} OR airport.id = ${toParent}`)
+            }
+            let getAllTo = await q2.getMany()
             for await (const iterator of getAllTo) {
                 toLocations.push(iterator.code)
             }
         }
 
         if (fromLocations.length && toLocations.length) {
-            // for (let i = 0; i < fromLocations.length; i++) {
-            //     for (let j = 0; j < toLocations.length; j++) {
-            //         if (fromLocations[i] != toLocations[j]) {
-            //             combinations.push(
-            //                 `${fromLocations[i] + "-" + toLocations[j]}`
-            //             );
-            //             if(isRoundTrip){
-            //                 combinations.push(
-            //                     `${fromLocations[i] + "-" + toLocations[j]}`
-            //                 );
-            //             }
-            //         }
-            //     }
-            // }
-            // let flightRoutes = await getConnection()
-            // .createQueryBuilder()
-            // .from("select concat(from_airport_code,'-',to_airport_code) as route from flight_route )","fr")
-            // .where(`"fr"."route" in (:...combinations)`,{combinations})
-            // .getMany()
+            
             let where = `from_airport_code in (:...fromLocations) AND to_airport_code in (:...toLocations) AND "is_deleted" = false`
             if (isRoundTrip) {
                 where = `((from_airport_code in (:...fromLocations) AND to_airport_code in (:...toLocations))OR(from_airport_code in (:...toLocations) AND to_airport_code in (:...fromLocations))) AND "is_deleted" = false`
@@ -4867,6 +4855,8 @@ export class Mystifly implements StrategyAirline {
                 .createQueryBuilder(FlightRoute, "flightRoute")
                 .where(where, { fromLocations, toLocations })
                 .getMany()
+
+            //console.log('flightRoutes', flightRoutes)
             if (flightRoutes.length) {
                 let res = []
                 for await (const iterator of flightRoutes) {
