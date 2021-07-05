@@ -25,13 +25,13 @@ export class LandingPage {
 			return { applicable: false }
 		}
 
-		//console.log("lpNumber", lpNumber)
+		console.log("lpNumber", lpNumber)
 
 		if (!lpNumber) {
 			return { applicable: false }
 		}
 
-		if (LANDING_PAGE[lpNumber].applicable) {
+		if (LANDING_PAGE[lpNumber]?.applicable) {
 
 			switch (type) {
 				case 'flight':
@@ -94,7 +94,8 @@ export class LandingPage {
 		let isRouteExist=false;
 		for(let deal of LANDING_PAGE_DATA.deals.hotel){
 			isRouteExist = deal.location.city_names.includes(searchData.departure)
-			if(isRouteExist){
+			console.log('searchData.state',searchData.state,'--------','deal.location.state',deal.location.state)
+			if(isRouteExist  && (searchData.state || '') == deal.location.state){
 				break;
 			}
 		}

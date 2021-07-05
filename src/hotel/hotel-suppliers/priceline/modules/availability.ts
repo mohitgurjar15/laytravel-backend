@@ -29,7 +29,7 @@ export class Availability {
             let hotel = res.hotel_data[0];
             // console.log('room')
             let searchData = {
-                departure: hotel['address']['city_name'], checkInDate: res.input_data.check_in, state: hotel['address']['state']
+                departure: hotel['address']['city_name'], checkInDate: res.input_data.check_in, state: hotel['address']['state_name']
             }
             let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
             let room = this.roomHelper.processRoom(
