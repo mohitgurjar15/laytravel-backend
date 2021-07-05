@@ -74,18 +74,18 @@ export class RateHelper{
         
         let selling = Object.assign({}, net_rate)
                  if (retail.total > net_rate.total) {
-            console.log('retail', retail);
+            //console.log('retail', retail);
             selling = Object.assign({},retail)
-            console.log('mendetoryFeesTotal', mendetoryFeesTotal);
-            console.log('selling', selling);
+            //console.log('mendetoryFeesTotal', mendetoryFeesTotal);
+            //console.log('selling', selling);
             
-            console.log('selling.sub_total', selling.sub_total);
+            //console.log('selling.sub_total', selling.sub_total);
             
             if(mendetoryFeesTotal){
-                console.log('calculations', selling.sub_total - mendetoryFeesTotal);
+                //console.log('calculations', selling.sub_total - mendetoryFeesTotal);
                 
                 selling.sub_total = parseFloat(selling.sub_total)  - mendetoryFeesTotal
-                console.log('selling.sub_total', selling.sub_total);
+                //console.log('selling.sub_total', selling.sub_total);
             }
             
         }

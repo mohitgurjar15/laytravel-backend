@@ -91,14 +91,22 @@ export class LandingPage {
 
 			return deal.location.city_names.includes(searchData.departure)
 		}) */
+		//console.log("Innnnnnnnnnn")
 		let isRouteExist=false;
+		let state;
 		for(let deal of LANDING_PAGE_DATA.deals.hotel){
-			isRouteExist = deal.location.city_names.includes(searchData.departure)
-			console.log('searchData.state',searchData.state,'--------','deal.location.state',deal.location.state)
-			if(isRouteExist  && (searchData.state || '') == deal.location.state){
+			state = searchData.state || '';
+
+			//if(state == deal.location.state){
+				isRouteExist = deal.location.city_names.includes(searchData.departure);
+			//}
+			
+			//console.log("state == deal.location.state:::",state == deal.location.state,state,"==",deal.location.state)
+			if(isRouteExist){
 				break;
 			}
 		}
+		//console.log("isRouteExist",isRouteExist)
 
 
 		//console.log('isRouteExist', isRouteExist,searchData.checkInDate,moment(searchData.checkInDate).diff(moment().format("YYYY-MM-DD"), 'days'),LANDING_PAGE_DATA.promotional.min_promotional_day,moment(searchData.checkInDate).diff(moment(), 'days') < LANDING_PAGE_DATA.promotional.min_promotional_day)
