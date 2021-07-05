@@ -864,7 +864,7 @@ more than 10.`
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
                         console.log('minuteDifference', minuteDifference)
-                        if (minuteDifference > 5) {
+                        if (minuteDifference > 5 ||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )) {
                             const bookingType =
                                 cart.moduleInfo[0].routes.length > 1
                                     ? "RoundTrip"
@@ -965,8 +965,8 @@ more than 10.`
                 console.log('unixTimestamp', unixTimestamp)
 
                 if (
-                    typeof live_availiblity != "undefined" &&
-                    live_availiblity == "yes" && minuteDifference > 5
+                    (typeof live_availiblity != "undefined" &&
+                    live_availiblity == "yes" && minuteDifference > 5)||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
