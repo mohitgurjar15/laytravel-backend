@@ -1208,8 +1208,8 @@ more than 10.`
 
         var match = 0;
         //console.log(flights);
-
-        if (flights.items) {
+        
+        if (flights?.items) {
             //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
             for await (const flight of flights.items) {
