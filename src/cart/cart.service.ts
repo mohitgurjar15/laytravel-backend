@@ -745,7 +745,7 @@ more than 10.`
         }
     }
 
-   async listCart(dto: ListCartDto, user, headers, referralId) {
+    async listCart(dto: ListCartDto, user, headers, referralId) {
         try {
             const { live_availiblity } = dto;
             var tDate = new Date();
@@ -864,7 +864,7 @@ more than 10.`
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
                         console.log('minuteDifference', minuteDifference)
-                        if (minuteDifference > 5 ||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )) {
+                        if (minuteDifference > 5 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
                             const bookingType =
                                 cart.moduleInfo[0].routes.length > 1
                                     ? "RoundTrip"
@@ -966,7 +966,7 @@ more than 10.`
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                    live_availiblity == "yes" && minuteDifference > 5)||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )
+                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
@@ -1097,54 +1097,54 @@ more than 10.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
-                     if (cart.moduleId == ModulesName.FLIGHT) {
+                    if (cart.moduleId == ModulesName.FLIGHT) {
                         newCart["is_available"] = true;
                         newCart["is_conflict"] = false;
-                    if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                                error = `In cart not-promotional item found`
-                                if (cartIsConflicted) {
-                                    newCart["is_conflict"] = true;
-                                } else {
-                                    newCart["is_available"] = false;
-                                }
-
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                            error = `In cart not-promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
                             }
 
-                            if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                                error = `In cart promotional item found`
-                                if (cartIsConflicted) {
-                                    newCart["is_conflict"] = true;
-                                } else {
-                                    newCart["is_available"] = false;
-                                }
-                                // newCart["is_available"] = false;
+                        }
+
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                            error = `In cart promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
                             }
+                            // newCart["is_available"] = false;
+                        }
                     }
-                     if (cart.moduleId == ModulesName.HOTEL) {
-                         newCart["is_available"] = true;
-                         newCart["is_conflict"] = false;
-                         if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                                    //throw new ConflictException(`In cart not-promotional item found`)
-                                    error = `In cart not-promotional item found`
-                                    if (cartIsConflicted) {
-                                        newCart["is_conflict"] = true;
-                                    } else {
-                                        newCart["is_available"] = false;
-                                    }
+                    if (cart.moduleId == ModulesName.HOTEL) {
+                        newCart["is_available"] = true;
+                        newCart["is_conflict"] = false;
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                            //throw new ConflictException(`In cart not-promotional item found`)
+                            error = `In cart not-promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
+                            }
 
-                                }
+                        }
 
-                         if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                                    error = `In cart promotional item found`
-                                    if (cartIsConflicted) {
-                                        newCart["is_conflict"] = true;
-                                    } else {
-                                        newCart["is_available"] = false;
-                                    }
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                            error = `In cart promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
+                            }
 
-                                }
+                        }
 
-                     }
+                    }
                 }
                 if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);
@@ -1208,7 +1208,7 @@ more than 10.`
 
         var match = 0;
         //console.log(flights);
-        
+
         if (flights?.items) {
             //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
@@ -1421,10 +1421,10 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
-               
+
                 auth_url
             } = bookCart;
-            let  referral_id = referralId
+            let referral_id = referralId
             // let logData =  await getConnection()
             //         .createQueryBuilder()
             //         .insert()
@@ -1573,7 +1573,7 @@ more than 10.`
             cartBook.userId = user.userId;
             if (referralId) {
                 let ref = await this.getReferralId(referralId);
-                if (ref?.id){ 
+                if (ref?.id) {
                     cartBook.referralId = ref?.id || null;
                 }
             }
@@ -2408,29 +2408,30 @@ more than 10.`
             bookingId
         );
         if (responce?.param) {
-            let subject =
-                responce.param.bookingType == BookingType.INSTALMENT
-                    ? `Booking ID ${responce.param.orderId} Confirmation`
-                    : `Booking ID ${responce.param.orderId} Confirmation`;
-            this.mailerService
-                .sendMail({
-                    to: responce.email,
-                    from: mailConfig.from,
-                    bcc: mailConfig.BCC,
-                    subject: subject,
-                    html: await LaytripCartBookingConfirmtionMail(
-                        responce.param,
-                        responce.referralId
-                    ),
-                })
-                .then((res) => {
-                    //console.log("res", res);
-                })
-                .catch((err) => {
-                    //console.log("err", err);
-                });
+            if (responce.param.bookingType == BookingType.INSTALMENT) {
+                let subject =
+                    responce.param.bookingType == BookingType.INSTALMENT
+                        ? `Booking ID ${responce.param.orderId} Confirmation`
+                        : `Booking ID ${responce.param.orderId} Confirmation`;
+                this.mailerService
+                    .sendMail({
+                        to: responce.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: subject,
+                        html: await LaytripCartBookingConfirmtionMail(
+                            responce.param,
+                            responce.referralId
+                        ),
+                    })
+                    .then((res) => {
+                        //console.log("res", res);
+                    })
+                    .catch((err) => {
+                        //console.log("err", err);
+                    });
+            } else {
 
-            if (responce?.confirmed == true) {
                 await this.mailerService
                     .sendMail({
                         to: responce.email,
@@ -2448,6 +2449,7 @@ more than 10.`
                     .catch((err) => {
                         console.log("err", err);
                     });
+
             }
         } else {
             const user = await CartDataUtility.userData(userId);
