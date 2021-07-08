@@ -337,11 +337,12 @@ export class CartDataUtility {
                 rememberAmount:
                     currency.symbol +
                     `${Generic.formatPriceDecimal(remainAmount)}`,
+                totalAmountInNumeric: Generic.formatPriceDecimal(totalAmount)
             };
             param.paymentDetail = cartInstallments;
             param.bookings = bookingsData;
 
-            return { param, email: user.email, confirmed ,referralId : cart?.referral?.name};
+            return { param, email: user.email, confirmed, referralId: cart?.referral?.name, currency};
         } else {
             return;
         }

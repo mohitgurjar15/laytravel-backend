@@ -62,6 +62,8 @@ import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
 import { BookingLog } from "src/entity/booking-log.entity";
+import { CartOverChargeMail } from "src/config/new_email_templete/cart-overcharge-mail.html";
+import { CartLessChargeMail } from "src/config/new_email_templete/cart-lessCharge-mail.html";
 
 
 
@@ -1670,13 +1672,17 @@ more than 10.`
                     paymentType,
                     user.userId
                 );
+
+                let metaData = payment.meta_data
                 bookingLog.paymentCaptureLog = payment.logFile
                 await bookingLog.save()
                 await this.cartBookingEmailSend(
                     cartData.laytripCartId,
                     cartData.userId,
-                    referralId
+                    referralId,
+                    metaData
                 );
+
                 if (failedResult > 0 && payment.status == true) {
                     let refaund = await this.refundCart(
                         cartData.id,
@@ -2403,7 +2409,7 @@ more than 10.`
         }
     }
 
-    async cartBookingEmailSend(bookingId, userId, referralId) {
+    async cartBookingEmailSend(bookingId, userId, referralId,metaData) {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
@@ -2450,6 +2456,57 @@ more than 10.`
                         console.log("err", err);
                     });
 
+            }
+            let capturedAmount = parseFloat(metaData.transaction.amount)/100
+            let cartAmount = responce.param.bookingType == BookingType.INSTALMENT ? parseFloat(responce?.param.paymentDetail[0].amount) : responce?.param.cart.totalAmountInNumeric
+            let priceDiff = cartAmount - capturedAmount
+            if (priceDiff > 1){
+                let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`      
+                this.mailerService
+                    .sendMail({
+                        to: responce.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: subject,
+                        html: await CartOverChargeMail(
+                            { 
+                                priceDifferance: `${responce.currency.symbol}${priceDiff}`,
+                                user_name: responce.param.user_name
+                            },
+                            responce.referralId
+                        ),
+                    })
+                    .then((res) => {
+                        //console.log("res", res);
+                    })
+                    .catch((err) => {
+                        //console.log("err", err);
+                    });
+            }else if(priceDiff < -1){
+                
+
+                let subject = `BOOKING ID ${responce.param.orderId} UNDERCHARGED`
+
+                this.mailerService
+                    .sendMail({
+                        to: responce.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: subject,
+                        html: await CartLessChargeMail(
+                            {
+                                priceDifferance: `${responce.currency.symbol}${Math.abs(priceDiff)}`,
+                                user_name: responce.param.user_name
+                            },
+                            responce.referralId
+                        ),
+                    })
+                    .then((res) => {
+                        //console.log("res", res);
+                    })
+                    .catch((err) => {
+                        //console.log("err", err);
+                    });
             }
         } else {
             const user = await CartDataUtility.userData(userId);

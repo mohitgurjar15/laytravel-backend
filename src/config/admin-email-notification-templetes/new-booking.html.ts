@@ -12,6 +12,18 @@ let content = `
     </td>
 </tr>
 <tr>
+    <td align="left" valign="top"
+        style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">`
+    if (param.alredyUnderDeadLine){
+        content += `<span style = "color: green;">Booking has not yet passed its reservation deadline.</span>`
+    }else{
+        content += `<span style = "color: red;">Booking has alredy passed its reservation deadline.</span>`
+    }
+
+        
+    content +=`</td>
+</tr>
+<tr>
     <table align="center"
         style="width:100%; max-width:100%; table-layout:fixed; background: #ffffff;"
         class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
