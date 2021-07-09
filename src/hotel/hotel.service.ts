@@ -53,7 +53,8 @@ import { BookingInstalments } from "src/entity/booking-instalments.entity";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import * as config from "config";
 const card = config.get("card");
-const supporterEmail = config.get("supporterEmail");
+//const supporterEmail = config.get("supporterEmail");
+const supporterEmail   = 'customerservice@laytrip.com'
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
 

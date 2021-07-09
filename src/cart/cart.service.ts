@@ -65,6 +65,7 @@ import { BookingLog } from "src/entity/booking-log.entity";
 import { CartOverChargeMail } from "src/config/new_email_templete/cart-overcharge-mail.html";
 import { CartLessChargeMail } from "src/config/new_email_templete/cart-lessCharge-mail.html";
 import { CartFailedInventryMail } from "src/config/new_email_templete/cart-failed-inventry.html";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
 
 
 
@@ -1667,13 +1668,21 @@ more than 10.`
                     bookCart.payment_type == PaymentType.INSTALMENT
                         ? BookingType.INSTALMENT
                         : BookingType.NOINSTALMENT;
+                let partialAmount = 0 
+                if (failedResult > 0) {
+                    partialAmount = await this.calculatePartialAmount(
+                        cartData.id,
+                        payment_type
+                    );
+                }
                 const payment = await this.capturePayment(
                     BookingIds,
                     transaction_token,
                     paymentType,
-                    user.userId
+                    user.userId,
+                    partialAmount
                 );
-
+                
                 let metaData = payment.meta_data
                 bookingLog.paymentCaptureLog = payment.logFile
                 await bookingLog.save()
@@ -1837,20 +1846,59 @@ more than 10.`
             .execute();
         return refund.logFile
     }
+
+    async calculatePartialAmount(cartId,
+        payment_type,
+    ) {
+        let refundAmount = 0
+
+        let allBooking = await getConnection()
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("booking.currency2", "currency")
+            .where(
+                `"booking"."cart_id" = '${cartId}' AND "BookingInstalments"."instalment_no" = 1  AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}`
+            )
+            .getMany();
+        if (payment_type == PaymentType.INSTALMENT) {
+            let captureAmount = 0
+            if (allBooking.length) {
+                for await (const booking of allBooking) {
+                    if (booking?.bookingInstalments?.length) {
+                        captureAmount += parseFloat(booking.bookingInstalments[0].amount)
+                    }
+                }
+            }
+            refundAmount = captureAmount;
+        } else if (payment_type == PaymentType.NOINSTALMENT) {
+            let captureAmount = 0
+            if (allBooking.length) {
+                for await (const booking of allBooking) {
+                    captureAmount += parseFloat(booking.totalAmount)
+                }
+            }
+            refundAmount = captureAmount;
+        }
+        return refundAmount
+    }
     async capturePayment(
         BookingIds,
         transaction_token,
         payment_type: number,
-        userId
+        userId,
+        partialAmount = 0 
     ) {
+
+        
 
         let captureCardresult = await this.paymentService.captureCard(
             transaction_token,
-            userId
+            userId,
+            Math.ceil(partialAmount * 100)
         );
-
-
-
         console.log("captureCardresult", captureCardresult);
 
         if (captureCardresult.status == true) {
@@ -2083,18 +2131,18 @@ more than 10.`
         }
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(CartTravelers)
-                .where(`"cart_id" = '${cart.id}'`)
-                .execute();
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(Cart)
-                .where(`"id" = '${cart.id}'`)
-                .execute();
+            // await getConnection()
+            //     .createQueryBuilder()
+            //     .delete()
+            //     .from(CartTravelers)
+            //     .where(`"cart_id" = '${cart.id}'`)
+            //     .execute();
+            // await getConnection()
+            //     .createQueryBuilder()
+            //     .delete()
+            //     .from(Cart)
+            //     .where(`"id" = '${cart.id}'`)
+            //     .execute();
         } else {
             await this.saveFailedBooking(
                 cartData.id,
@@ -2263,18 +2311,18 @@ more than 10.`
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
 
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(CartTravelers)
-                .where(`"cart_id" = '${cart.id}'`)
-                .execute();
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(Cart)
-                .where(`"id" = '${cart.id}'`)
-                .execute();
+            // await getConnection()
+            //     .createQueryBuilder()
+            //     .delete()
+            //     .from(CartTravelers)
+            //     .where(`"cart_id" = '${cart.id}'`)
+            //     .execute();
+            // await getConnection()
+            //     .createQueryBuilder()
+            //     .delete()
+            //     .from(Cart)
+            //     .where(`"id" = '${cart.id}'`)
+            //     .execute();
         } else {
             console.log("failed booking");
             await this.saveFailedBooking(

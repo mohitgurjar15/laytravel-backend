@@ -541,7 +541,7 @@ export class PaymentService {
         }
     }
 
-    async captureCard(authorizeToken, userId) {
+    async captureCard(authorizeToken, userId, partialAmount = 0) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         const authorization = GatewayCredantial.credentials.authorization;
@@ -553,6 +553,14 @@ export class PaymentService {
 
         let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
         let requestBody = {};
+        if (partialAmount > 0){
+            requestBody = {
+                transaction: {
+                    amount: partialAmount,
+                    currency_code: 'USD',
+                },
+            };
+        }
         let captureRes = await this.axiosRequest(
             url,
             requestBody,

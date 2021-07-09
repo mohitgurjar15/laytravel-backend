@@ -15,9 +15,9 @@ let content = `
     <td align="left" valign="top"
         style="font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; display: block; line-height: 20px; color: #000000; text-align: left;">`
     if (param.alredyUnderDeadLine){
-        content += `<span style = "color: green;">Booking has not yet passed its reservation deadline.</span>`
-    }else{
         content += `<span style = "color: red;">Booking has alredy passed its reservation deadline.</span>`
+    }else{
+        content += `<span style = "color: green;">Booking has not yet passed its reservation deadline.</span>`
     }
 
         
