@@ -7,16 +7,17 @@ import { LaytripFooter } from "./laytrip_footer.html";
 import { LaytripHeader } from "./laytrip_header.html";
 
 export async function CartFailedInventryMail(
-    param: { user_name: string, totalAmount: string, totalPaid: string, rememberAmount: string,paymentDetail : {
-        amount: string;
-        date: string;
-        status: string;
-    }[],FailedBooking: {
+    param: {
+        user_name: string, paymentDetail: {
+            amount: string;
+            date: string;
+            status: string;
+        }[], FailedBooking: {
             moduleId: number,
-            name: number,
+            name: string,
             price: string
         }[]
- }, referral_id: string = ''
+    }, referral_id: string = ''
 ) {
     let content = `<tr>
     <td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
@@ -33,9 +34,24 @@ export async function CartFailedInventryMail(
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         We are sorry, but due to a technical issue, one of the items in your cart has become unavailable while we were processing your payment. You will be issued a refund for the following:
                     </td>
-                </tr>
-                
-            <tr>
+                </tr>`
+    for await (const iterator of param.FailedBooking) {
+        content += `<tr>
+                        <td
+                            align="left" valign="top"bold;
+                                                style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                                <span  style="color: #000000; font-weight: 600;">
+                        ${iterator.name}:
+                        </span>
+                        <span style="font-size: 18px" >
+                        ${iterator.price}
+                        </span>
+                            </td>
+                    </tr>
+            `
+    }
+
+    content += `<tr>
                 <td
                     align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">

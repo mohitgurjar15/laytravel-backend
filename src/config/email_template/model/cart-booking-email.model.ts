@@ -41,6 +41,7 @@ class cart {
     totalPaid?: string;
     rememberAmount?: string;
     totalAmountInNumeric?: number;
+    totalPaidInnumeric?:number
 }
 
 class paymentDetail {

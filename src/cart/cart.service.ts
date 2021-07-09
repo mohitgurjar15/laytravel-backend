@@ -64,6 +64,7 @@ import { LandingPages } from "src/entity/landing-page.entity";
 import { BookingLog } from "src/entity/booking-log.entity";
 import { CartOverChargeMail } from "src/config/new_email_templete/cart-overcharge-mail.html";
 import { CartLessChargeMail } from "src/config/new_email_templete/cart-lessCharge-mail.html";
+import { CartFailedInventryMail } from "src/config/new_email_templete/cart-failed-inventry.html";
 
 
 
@@ -1680,7 +1681,8 @@ more than 10.`
                     cartData.laytripCartId,
                     cartData.userId,
                     referralId,
-                    metaData
+                    metaData,
+                    failedResult
                 );
 
                 if (failedResult > 0 && payment.status == true) {
@@ -2409,7 +2411,7 @@ more than 10.`
         }
     }
 
-    async cartBookingEmailSend(bookingId, userId, referralId,metaData) {
+    async cartBookingEmailSend(bookingId, userId, referralId, metaData, failedResult) {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
@@ -2457,56 +2459,63 @@ more than 10.`
                     });
 
             }
-            let capturedAmount = parseFloat(metaData.transaction.amount)/100
-            let cartAmount = responce.param.bookingType == BookingType.INSTALMENT ? parseFloat(responce?.param.paymentDetail[0].amount) : responce?.param.cart.totalAmountInNumeric
-            let priceDiff = cartAmount - capturedAmount
-            if (priceDiff > 1){
-                let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`      
-                this.mailerService
-                    .sendMail({
-                        to: responce.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: subject,
-                        html: await CartOverChargeMail(
-                            { 
-                                priceDifferance: `${responce.currency.symbol}${priceDiff}`,
-                                user_name: responce.param.user_name
-                            },
-                            responce.referralId
-                        ),
-                    })
-                    .then((res) => {
-                        //console.log("res", res);
-                    })
-                    .catch((err) => {
-                        //console.log("err", err);
-                    });
-            }else if(priceDiff < -1){
-                
+            if (failedResult == 0) {
 
-                let subject = `BOOKING ID ${responce.param.orderId} UNDERCHARGED`
 
-                this.mailerService
-                    .sendMail({
-                        to: responce.email,
-                        from: mailConfig.from,
-                        bcc: mailConfig.BCC,
-                        subject: subject,
-                        html: await CartLessChargeMail(
-                            {
-                                priceDifferance: `${responce.currency.symbol}${Math.abs(priceDiff)}`,
-                                user_name: responce.param.user_name
-                            },
-                            responce.referralId
-                        ),
-                    })
-                    .then((res) => {
-                        //console.log("res", res);
-                    })
-                    .catch((err) => {
-                        //console.log("err", err);
-                    });
+                let capturedAmount = parseFloat(metaData.transaction.amount) / 100
+                console.log('capturedAmount', capturedAmount)
+                let cartAmount = responce?.param.cart.totalPaidInnumeric
+                console.log('cartAmount', cartAmount)
+                let priceDiff = capturedAmount - cartAmount
+                console.log('cartAmount', priceDiff)
+                if (priceDiff > 1) {
+                    let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`
+                    this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: subject,
+                            html: await CartOverChargeMail(
+                                {
+                                    priceDifferance: `${responce.currency.symbol}${priceDiff}`,
+                                    user_name: responce.param.user_name
+                                },
+                                responce.referralId
+                            ),
+                        })
+                        .then((res) => {
+                            //console.log("res", res);
+                        })
+                        .catch((err) => {
+                            //console.log("err", err);
+                        });
+                } else if (priceDiff < -1) {
+
+
+                    let subject = `BOOKING ID ${responce.param.orderId} UNDERCHARGED`
+
+                    this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: subject,
+                            html: await CartLessChargeMail(
+                                {
+                                    priceDifferance: `${responce.currency.symbol}${Math.abs(priceDiff)}`,
+                                    user_name: responce.param.user_name
+                                },
+                                responce.referralId
+                            ),
+                        })
+                        .then((res) => {
+                            //console.log("res", res);
+                        })
+                        .catch((err) => {
+                            //console.log("err", err);
+                        });
+                }
             }
         } else {
             const user = await CartDataUtility.userData(userId);
@@ -2526,6 +2535,34 @@ more than 10.`
                     html: await BookingNotCompletedMail(
                         { userName },
                         referralId
+                    ),
+                })
+                .then((res) => {
+                    //console.log("res", res);
+                })
+                .catch((err) => {
+                    //console.log("err", err);
+                });
+        }
+        const failedBooking = await CartDataUtility.CartFailedMailModelDataGenerate(
+            bookingId
+        );
+        if (failedBooking) {
+            let subject = `BOOKING ID ${responce.param.orderId} CART ITEM UNAVAILABLE`
+
+            this.mailerService
+                .sendMail({
+                    to: responce.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: subject,
+                    html: await CartFailedInventryMail(
+                        {
+                            user_name: responce.param.user_name,
+                            FailedBooking: failedBooking,
+                            paymentDetail: responce?.param.paymentDetail
+                        },
+                        responce.referralId
                     ),
                 })
                 .then((res) => {
