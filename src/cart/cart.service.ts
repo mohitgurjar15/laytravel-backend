@@ -1007,6 +1007,7 @@ more than 10.`
                             let inventryIsPromotional = false
                             if (cart.isPromotional == true && referralId){
                                 inventryIsPromotional = value?.offer_data?.applicable == true ? true : false
+                                newCart["isPromotional"] == inventryIsPromotional
                             }
                             await getConnection()
                                 .createQueryBuilder()
@@ -1087,6 +1088,7 @@ more than 10.`
                                 let inventryIsPromotional = false
                                 if (cart.isPromotional == true && referralId) {
                                     inventryIsPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
+                                    newCart["isPromotional"] == inventryIsPromotional
                                 }
                                 await getConnection()
                                     .createQueryBuilder()
