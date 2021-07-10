@@ -972,7 +972,8 @@ more than 10.`
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
-                            user, headers, referralId
+                            user, headers, 
+                            cartIsPromotional ? referralId : ''
                         );
                         //return value
 
@@ -1048,7 +1049,7 @@ more than 10.`
                                         room_ppn: oldModuleInfo[0].bundle,
                                     },
                                     user?.userId || null,
-                                    referralId
+                                    cartIsPromotional ? referralId : ''
                                 );
                             } catch (error) {
                                 newCart["is_available"] = false;
