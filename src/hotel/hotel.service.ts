@@ -756,7 +756,7 @@ export class HotelService {
             let hotelAvailability = await this.availability(
                 availabilityDto,
                 user.userId,
-                referral_id
+                cartIsPromotional ? referral_id : ''
             );
             logData['revalidation-log'] = hotelAvailability.data["fileName"]
             let availability = hotelAvailability.data.items;

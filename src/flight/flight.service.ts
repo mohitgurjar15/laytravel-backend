@@ -3332,7 +3332,7 @@ export class FlightService {
             const airRevalidateResult = await mystifly.airRevalidate(
                 { route_code },
                 user,
-                referral_id
+                cartIsPromotional == true ? referral_id : ''
             );
             console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])
