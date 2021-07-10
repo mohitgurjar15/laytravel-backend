@@ -976,7 +976,8 @@ more than 10.`
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
-                            user, headers, referralId
+                            user, headers, 
+                            cartIsPromotional ? referralId : ''
                         );
                         //return value
 
@@ -1008,10 +1009,15 @@ more than 10.`
                             }
                             console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
+                            let inventryIsPromotional = false
+                            if (cart.isPromotional == true && referralId){
+                                inventryIsPromotional = value?.offer_data?.applicable == true ? true : false
+                                newCart["isPromotional"] == inventryIsPromotional
+                            }
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: value?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
+                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
 
@@ -1047,7 +1053,7 @@ more than 10.`
                                         room_ppn: oldModuleInfo[0].bundle,
                                     },
                                     user?.userId || null,
-                                    referralId
+                                    cartIsPromotional ? referralId : ''
                                 );
                             } catch (error) {
                                 newCart["is_available"] = false;
@@ -1084,10 +1090,15 @@ more than 10.`
 
                                 console.log(Math.round(new Date().getTime() / 1000))
                                 cart.moduleInfo = roomDetails;
+                                let inventryIsPromotional = false
+                                if (cart.isPromotional == true && referralId) {
+                                    inventryIsPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
+                                    newCart["isPromotional"] == inventryIsPromotional
+                                }
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
+                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
