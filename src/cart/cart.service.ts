@@ -976,7 +976,7 @@ more than 10.`
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
-                            user, headers, 
+                            user, headers,
                             cartIsPromotional ? referralId : ''
                         );
                         //return value
@@ -1010,7 +1010,7 @@ more than 10.`
                             console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
                             let inventryIsPromotional = false
-                            if (cart.isPromotional == true && referralId){
+                            if (cart.isPromotional == true && referralId) {
                                 inventryIsPromotional = value?.offer_data?.applicable == true ? true : false
                                 newCart["isPromotional"] == inventryIsPromotional
                             }
@@ -1679,9 +1679,9 @@ more than 10.`
                     bookCart.payment_type == PaymentType.INSTALMENT
                         ? BookingType.INSTALMENT
                         : BookingType.NOINSTALMENT;
-                let partialAmount = 0 
+                let partialAmount = 0
                 if (failedResult > 0) {
-                    partialAmount = await this.calculatePartialAmount(
+                    partialAmount = await this.calculatePartialAmountAndSattelAmount(
                         cartData.id,
                         payment_type
                     );
@@ -1693,7 +1693,7 @@ more than 10.`
                     user.userId,
                     partialAmount
                 );
-                
+
                 let metaData = payment.meta_data
                 bookingLog.paymentCaptureLog = payment.logFile
                 await bookingLog.save()
@@ -1858,7 +1858,7 @@ more than 10.`
         return refund.logFile
     }
 
-    async calculatePartialAmount(cartId,
+    async calculatePartialAmountAndSattelAmount(cartId,
         payment_type,
     ) {
         let refundAmount = 0
@@ -1884,6 +1884,7 @@ more than 10.`
                 }
             }
             refundAmount = captureAmount;
+
         } else if (payment_type == PaymentType.NOINSTALMENT) {
             let captureAmount = 0
             if (allBooking.length) {
@@ -1895,16 +1896,98 @@ more than 10.`
         }
         return refundAmount
     }
+
+    async sattelInstalment(cartId, instalment_type,
+        smallestDate,
+        selected_down_payment) {
+        let allBooking = await getConnection()
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("booking.currency2", "currency")
+            .where(
+                `"booking"."cart_id" = '${cartId}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}`
+            )
+            .getMany();
+        let downPayment = 0;
+        let totalAmount = 0
+        let installmentTotal = 0
+        if (allBooking.length) {
+            for await (const booking of allBooking) {
+                if (booking.bookingInstalments.length) {
+                    for await (const installment of booking.bookingInstalments) {
+                        if (installment.instalmentNo == 1) {
+                            downPayment += parseFloat(installment.amount)
+                        }
+                        else if (installment.instalmentNo == 2) {
+                            installmentTotal += parseFloat(installment.amount)
+                        }
+                        else {
+                            totalAmount += parseFloat(installment.amount)
+                        }
+
+                    }
+                }
+            }
+            if (installmentTotal < 5) {
+                let instalmentDetails;
+                const date = new Date();
+                var date1 = date.toISOString();
+                if (instalment_type == InstalmentType.WEEKLY) {
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        0,
+                        0,
+                        selected_down_payment,
+                        false,
+                        downPayment
+                    );
+                }
+                if (instalment_type == InstalmentType.BIWEEKLY) {
+                    instalmentDetails = Instalment.biWeeklyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        0,
+                        0,
+                        selected_down_payment,
+                        false,
+                        downPayment
+                    );
+                }
+                if (instalment_type == InstalmentType.MONTHLY) {
+                    instalmentDetails = Instalment.monthlyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        0,
+                        0,
+                        selected_down_payment,
+                        false,
+                        downPayment
+                    );
+                }
+
+
+            }
+        }
+
+
+    }
     async capturePayment(
         BookingIds,
         transaction_token,
         payment_type: number,
         userId,
-        partialAmount = 0 
+        partialAmount = 0
     ) {
-
-        
-
         let captureCardresult = await this.paymentService.captureCard(
             transaction_token,
             userId,
