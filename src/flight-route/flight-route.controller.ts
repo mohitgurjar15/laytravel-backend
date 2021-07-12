@@ -175,7 +175,7 @@ export class FlightRouteController {
         );
     }
 
-    @Patch("blacklisted-unblacklisted/:id")
+    @Patch("blacklisted-unblacklisted")
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
@@ -187,16 +187,13 @@ export class FlightRouteController {
     })
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
+
     async blacklistedUnblacklisted(
         @Body() enableDisableFlightRouteDto: BlacklistedUnblacklistedFlightRouteDto,
         @GetUser() user: User,
-        @Param("id") id: number
     ) {
-        return await this.flightRouteService.blacklistedUnblacklistedFlightRoute(
-            id,
-            enableDisableFlightRouteDto,
-            user
-        );
+        console.log(enableDisableFlightRouteDto)
+        return await this.flightRouteService.blacklistedUnblacklistedFlightRoute(enableDisableFlightRouteDto,user);
     }
 
     @Delete(":id")

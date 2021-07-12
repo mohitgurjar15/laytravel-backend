@@ -16,7 +16,7 @@ import { User } from "src/entity/user.entity";
 import { FlightRouteType } from "src/enum/flight-route-type.enum";
 import { airports } from "src/flight/airports";
 import { Activity } from "src/utility/activity.utility";
-import { getConnection } from "typeorm";
+import { getConnection, getManager } from "typeorm";
 import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
 import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblacklisted-route.dto";
 import { EnableDisableFlightRouteDto } from "./dto/enable-disable-route.dto";
@@ -28,22 +28,22 @@ import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
 @Injectable()
 export class FlightRouteService {
     async listFlightRoutes(listFlightRouteDto: ListFlightRouteDto) {
-        try{
-        const {
-            limit,
-            page_no,
-            search,
-            status,
-            category_id,
-            type
-        } = listFlightRouteDto;
-        let where = `("route"."is_deleted" = false)`;
+        try {
+            const {
+                limit,
+                page_no,
+                search,
+                status,
+                category_id,
+                type
+            } = listFlightRouteDto;
+            let where = `("route"."is_deleted" = false)`;
 
-        const take = limit || 10;
-        const skip = (page_no - 1) * limit || 0;
+            const take = limit || 10;
+            const skip = (page_no - 1) * limit || 0;
 
-        if (search) {
-            where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
+            if (search) {
+                where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
             or("route"."to_airport_code" ILIKE '%${search}%')
             or("route"."to_airport_country" ILIKE '%${search}%') 
             or ("route"."to_airport_name" ILIKE '%${search}%') 
@@ -51,41 +51,41 @@ export class FlightRouteService {
             or("route"."from_airport_code" ILIKE '%${search}%')
             or("route"."from_airport_country" ILIKE '%${search}%') 
             or ("route"."from_airport_name" ILIKE '%${search}%'))`;
-        }
+            }
 
-        if(type) {
-            where += `AND ("route"."type" = '${type}' )`;
-        }
+            if (type) {
+                where += `AND ("route"."type" = '${type}' )`;
+            }
 
-        if (status) {
-            where += `AND ("route"."status" = ${status} )`;
-        }
-        if (category_id) {
-            where += `AND ("route"."category_id" = ${category_id} )`;
-        }
+            if (status) {
+                where += `AND ("route"."status" = ${status} )`;
+            }
+            if (category_id) {
+                where += `AND ("route"."category_id" = ${category_id} )`;
+            }
 
-        let [result, count] = await getConnection()
-            .createQueryBuilder(FlightRoute, "route")
-            .leftJoinAndSelect("route.category", "category")
-            .where(where)
-            .skip(skip)
-            .take(take)
-            .orderBy(`route.id`, "DESC")
-            .getManyAndCount();
+            let [result, count] = await getConnection()
+                .createQueryBuilder(FlightRoute, "route")
+                .leftJoinAndSelect("route.category", "category")
+                .where(where)
+                .skip(skip)
+                .take(take)
+                .orderBy(`route.id`, "DESC")
+                .getManyAndCount();
 
-        if (!result) {
-            throw new NotFoundException(
-                `No any route available for given location`
-            );
-        }
+            if (!result) {
+                throw new NotFoundException(
+                    `No any route available for given location`
+                );
+            }
 
-        return { route: result, count };
+            return { route: result, count };
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
-                        
+
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
@@ -120,12 +120,12 @@ export class FlightRouteService {
         listFlightRouteDto: ExportFlightRouteDto,
         user: User
     ) {
-        try{
-        const { search, status, category_id } = listFlightRouteDto;
-        let where = `("route"."is_deleted" = false)`;
+        try {
+            const { search, status, category_id } = listFlightRouteDto;
+            let where = `("route"."is_deleted" = false)`;
 
-        if (search) {
-            where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
+            if (search) {
+                where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
             or("route"."to_airport_code" ILIKE '%${search}%')
             or("route"."to_airport_country" ILIKE '%${search}%') 
             or ("route"."to_airport_name" ILIKE '%${search}%') 
@@ -134,41 +134,41 @@ export class FlightRouteService {
             or("route"."from_airport_country" ILIKE '%${search}%') 
             or ("route"."from_airport_name" ILIKE '%${search}%')
             or ("route"."type" ILIKE '%${search}%'))`;
-        }
+            }
 
-        if (status) {
-            where += `AND ("route"."status" = ${status} )`;
-        }
-        if (category_id) {
-            where += `AND ("route"."category_id" = ${category_id} )`;
-        }
+            if (status) {
+                where += `AND ("route"."status" = ${status} )`;
+            }
+            if (category_id) {
+                where += `AND ("route"."category_id" = ${category_id} )`;
+            }
 
-        let [result, count] = await getConnection()
-            .createQueryBuilder(FlightRoute, "route")
-            .leftJoinAndSelect("route.category", "category")
-            .where(where)
-            .orderBy(`route.id`, "DESC")
-            .getManyAndCount();
+            let [result, count] = await getConnection()
+                .createQueryBuilder(FlightRoute, "route")
+                .leftJoinAndSelect("route.category", "category")
+                .where(where)
+                .orderBy(`route.id`, "DESC")
+                .getManyAndCount();
 
-        if (!result) {
-            throw new NotFoundException(
-                `No any route available for given location`
+            if (!result) {
+                throw new NotFoundException(
+                    `No any route available for given location`
+                );
+            }
+
+            Activity.logActivity(
+                user.userId,
+                "Flight Route",
+                `Flight route export by admin`
             );
-        }
 
-        Activity.logActivity(
-            user.userId,
-            "Flight Route",
-            `Flight route export by admin`
-        );
-
-        return { route: result, count };
+            return { route: result, count };
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
-                        
+
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
@@ -243,190 +243,190 @@ export class FlightRouteService {
     }
 
     async addFlightRoute(addFlightRouteDto: AddFlightRouteDto, user: User) {
-        try{
-        const {
-            category_id,
-            from_airport_codes,
-            to_airport_codes,
-            type,
-        } = addFlightRouteDto;
+        try {
+            const {
+                category_id,
+                from_airport_codes,
+                to_airport_codes,
+                type,
+            } = addFlightRouteDto;
 
-        const category = await getConnection()
-            .createQueryBuilder(LaytripCategory, "category")
-            .where(`"id" =:id `, { id: category_id })
-            .getOne();
+            const category = await getConnection()
+                .createQueryBuilder(LaytripCategory, "category")
+                .where(`"id" =:id `, { id: category_id })
+                .getOne();
 
-        if (!category) {
-            throw new BadRequestException("Given category id not found.");
-        }
-
-        let parentFromCode = "";
-        let parentToCode = "";
-        let parentFromCount = 0;
-        for await (const airport of from_airport_codes) {
-            if (airport.is_parent == true) {
-                parentFromCount++;
-                parentFromCode = airport.airport_code;
+            if (!category) {
+                throw new BadRequestException("Given category id not found.");
             }
-            if (typeof airports[airport.airport_code] == "undefined") {
+
+            let parentFromCode = "";
+            let parentToCode = "";
+            let parentFromCount = 0;
+            for await (const airport of from_airport_codes) {
+                if (airport.is_parent == true) {
+                    parentFromCount++;
+                    parentFromCode = airport.airport_code;
+                }
+                if (typeof airports[airport.airport_code] == "undefined") {
+                    throw new BadRequestException(
+                        `${airport.airport_code} is not available please check it`
+                    );
+                }
+            }
+            if (parentFromCount > 1) {
                 throw new BadRequestException(
-                    `${airport.airport_code} is not available please check it`
+                    "You have pass only one parent in from locations"
                 );
             }
-        }
-        if (parentFromCount > 1) {
-            throw new BadRequestException(
-                "You have pass only one parent in from locations"
-            );
-        }
-        let parentToCount = 0;
-        for await (const airport of to_airport_codes) {
-            if (airport.is_parent == true) {
-                parentToCount++;
-                parentToCode = airport.airport_code;
+            let parentToCount = 0;
+            for await (const airport of to_airport_codes) {
+                if (airport.is_parent == true) {
+                    parentToCount++;
+                    parentToCode = airport.airport_code;
+                }
+                if (typeof airports[airport.airport_code] == "undefined") {
+                    throw new BadRequestException(
+                        `${airport.airport_code} is not available please check it`
+                    );
+                }
             }
-            if (typeof airports[airport.airport_code] == "undefined") {
+            if (parentToCount > 1) {
                 throw new BadRequestException(
-                    `${airport.airport_code} is not available please check it`
+                    "You have pass only one parent in to locations"
                 );
             }
-        }
-        if (parentToCount > 1) {
-            throw new BadRequestException(
-                "You have pass only one parent in to locations"
-            );
-        }
 
-        let dublicateRoutes = [];
+            let dublicateRoutes = [];
 
-        let parentRoute: FlightRoute;
-        if (parentFromCode && parentToCode && parentToCode != parentFromCode) {
-            let where = ` "route"."is_deleted" = false AND
+            let parentRoute: FlightRoute;
+            if (parentFromCode && parentToCode && parentToCode != parentFromCode) {
+                let where = ` "route"."is_deleted" = false AND
             "route"."to_airport_code" = '${parentToCode}' AND
             "route"."from_airport_code" = '${parentFromCode}'`;
 
-            const dublicate = await getConnection()
-                .createQueryBuilder(FlightRoute, "route")
-                .where(where)
-                .getOne();
-            if (dublicate) {
-                if (
-                    dublicate.categoryId == category.id &&
-                    dublicate.type == type
-                ) {
-                    let r = {
-                        fromCode: parentFromCode,
-                        ToCode: parentToCode,
-                    };
-                    dublicateRoutes.push(r);
+                const dublicate = await getConnection()
+                    .createQueryBuilder(FlightRoute, "route")
+                    .where(where)
+                    .getOne();
+                if (dublicate) {
+                    if (
+                        dublicate.categoryId == category.id &&
+                        dublicate.type == type
+                    ) {
+                        let r = {
+                            fromCode: parentFromCode,
+                            ToCode: parentToCode,
+                        };
+                        dublicateRoutes.push(r);
+                    }
+
+                    dublicate.categoryId = category.id;
+                    dublicate.updateBy = user.userId;
+                    dublicate.status = true;
+                    dublicate.type = type;
+                    dublicate.updateDate = new Date();
+                    await dublicate.save();
+
+                    //throw new ConflictException("Given route already added.");
+                } else {
+                    const fromAirport = airports[parentFromCode];
+                    const toAirport = airports[parentToCode];
+                    const route = new FlightRoute();
+                    route.categoryId = category.id;
+                    route.createBy = user.userId;
+                    route.fromAirportCity = fromAirport.city;
+                    route.fromAirportCode = fromAirport.code;
+                    route.fromAirportCountry = fromAirport.country;
+                    route.fromAirportName = fromAirport.name;
+                    route.toAirportCity = toAirport.city;
+                    route.toAirportCode = toAirport.code;
+                    route.toAirportCountry = toAirport.country;
+                    route.toAirportName = toAirport.name;
+                    route.status = true;
+                    route.isDeleted = false;
+                    route.createDate = new Date();
+                    route.type = type;
+                    parentRoute = await route.save();
                 }
-
-                dublicate.categoryId = category.id;
-                dublicate.updateBy = user.userId;
-                dublicate.status = true;
-                dublicate.type = type;
-                dublicate.updateDate = new Date();
-                await dublicate.save();
-
-                //throw new ConflictException("Given route already added.");
-            } else {
-                const fromAirport = airports[parentFromCode];
-                const toAirport = airports[parentToCode];
-                const route = new FlightRoute();
-                route.categoryId = category.id;
-                route.createBy = user.userId;
-                route.fromAirportCity = fromAirport.city;
-                route.fromAirportCode = fromAirport.code;
-                route.fromAirportCountry = fromAirport.country;
-                route.fromAirportName = fromAirport.name;
-                route.toAirportCity = toAirport.city;
-                route.toAirportCode = toAirport.code;
-                route.toAirportCountry = toAirport.country;
-                route.toAirportName = toAirport.name;
-                route.status = true;
-                route.isDeleted = false;
-                route.createDate = new Date();
-                route.type = type;
-                parentRoute = await route.save();
             }
-        }
 
-        for await (const fromCode of from_airport_codes) {
-            const fromAirport = airports[fromCode.airport_code];
-            for await (const toCode of to_airport_codes) {
-                const toAirport = airports[toCode.airport_code];
-                if (
-                    parentFromCode != fromCode.airport_code ||
-                    parentToCode != toCode.airport_code
-                ) {
-                    let where = ` "route"."is_deleted" = false AND
+            for await (const fromCode of from_airport_codes) {
+                const fromAirport = airports[fromCode.airport_code];
+                for await (const toCode of to_airport_codes) {
+                    const toAirport = airports[toCode.airport_code];
+                    if (
+                        parentFromCode != fromCode.airport_code ||
+                        parentToCode != toCode.airport_code
+                    ) {
+                        let where = ` "route"."is_deleted" = false AND
                             "route"."to_airport_code" = '${toAirport.code}' AND
                             "route"."from_airport_code" = '${fromAirport.code}'`;
 
-                    const dublicate = await getConnection()
-                        .createQueryBuilder(FlightRoute, "route")
-                        .where(where)
-                        .getOne();
-                    if (dublicate) {
-                        if (
-                            dublicate.categoryId == category.id &&
-                            dublicate.type == type
-                        ) {
-                            let r = {
-                                fromCode: fromAirport.code,
-                                ToCode: toAirport.code,
-                            };
-                            dublicateRoutes.push(r);
-                        }
+                        const dublicate = await getConnection()
+                            .createQueryBuilder(FlightRoute, "route")
+                            .where(where)
+                            .getOne();
+                        if (dublicate) {
+                            if (
+                                dublicate.categoryId == category.id &&
+                                dublicate.type == type
+                            ) {
+                                let r = {
+                                    fromCode: fromAirport.code,
+                                    ToCode: toAirport.code,
+                                };
+                                dublicateRoutes.push(r);
+                            }
 
-                        dublicate.categoryId = category.id;
-                        dublicate.updateBy = user.userId;
-                        dublicate.status = true;
-                        dublicate.updateDate = new Date();
-                        dublicate.type = type;
-                        await dublicate.save();
-                        //throw new ConflictException(
-                        //  "Given route already added."
-                        //);
-                    } else {
-                        const route = new FlightRoute();
-                        route.categoryId = category.id;
-                        route.createBy = user.userId;
-                        route.parentRoute = parentRoute || null;
-                        route.fromAirportCity = fromAirport.city;
-                        route.fromAirportCode = fromAirport.code;
-                        route.fromAirportCountry = fromAirport.country;
-                        route.fromAirportName = fromAirport.name;
-                        route.toAirportCity = toAirport.city;
-                        route.toAirportCode = toAirport.code;
-                        route.toAirportCountry = toAirport.country;
-                        route.toAirportName = toAirport.name;
-                        route.status = true;
-                        route.createDate = new Date();
-                        route.isDeleted = false;
-                        route.type = type;
-                        await route.save();
+                            dublicate.categoryId = category.id;
+                            dublicate.updateBy = user.userId;
+                            dublicate.status = true;
+                            dublicate.updateDate = new Date();
+                            dublicate.type = type;
+                            await dublicate.save();
+                            //throw new ConflictException(
+                            //  "Given route already added."
+                            //);
+                        } else {
+                            const route = new FlightRoute();
+                            route.categoryId = category.id;
+                            route.createBy = user.userId;
+                            route.parentRoute = parentRoute || null;
+                            route.fromAirportCity = fromAirport.city;
+                            route.fromAirportCode = fromAirport.code;
+                            route.fromAirportCountry = fromAirport.country;
+                            route.fromAirportName = fromAirport.name;
+                            route.toAirportCity = toAirport.city;
+                            route.toAirportCode = toAirport.code;
+                            route.toAirportCountry = toAirport.country;
+                            route.toAirportName = toAirport.name;
+                            route.status = true;
+                            route.createDate = new Date();
+                            route.isDeleted = false;
+                            route.type = type;
+                            await route.save();
+                        }
                     }
                 }
             }
-        }
 
-        Activity.logActivity(
-            user.userId,
-            "Flight Route",
-            `Flight routes added in ${category.name} category`
-        );
+            Activity.logActivity(
+                user.userId,
+                "Flight Route",
+                `Flight routes added in ${category.name} category`
+            );
 
-        return {
-            message: `Your routes added in ${category.name} category`,
-            dublicateRoutes,
-        };
+            return {
+                message: `Your routes added in ${category.name} category`,
+                dublicateRoutes,
+            };
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
-                        
+
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
@@ -490,34 +490,70 @@ export class FlightRouteService {
     }
 
     async blacklistedUnblacklistedFlightRoute(
-        id: number,
         blacklistedUnblacklistedFlightRouteDto: BlacklistedUnblacklistedFlightRouteDto,
         user: User
     ) {
-        const { isBlackListed } = blacklistedUnblacklistedFlightRouteDto;
-        const route = await getConnection()
-            .createQueryBuilder(Airport, "airport")
-            .where(`"id" = ${id} AND "is_deleted" = false`)
-            .getOne();
-        if (!route) {
-            throw new NotFoundException("Given route not found.");
-        }
-        const previous = JSON.stringify(route);
-        route.updateDate = new Date();
-        route.updateBy = user.userId;
-        route.isBlackListed = isBlackListed;
+        try {
+            const { blackListedArray } = blacklistedUnblacklistedFlightRouteDto;
+            for await (const data of blackListedArray) {
+                const route = await getManager()
+                    .createQueryBuilder(Airport, "airport")
+                    .where(`"code"='${data.code}' AND "is_deleted" = false`)
+                    .getOne();
+                if (!route) {
+                    throw new NotFoundException("Given route not found.");
+                }
+                const previous = JSON.stringify(route);
+                route.updateDate = new Date();
+                route.updateBy = user.userId;
+                route.isBlackListed = data.isBlackListed;
+                const current = await route.save();
+                Activity.logActivity(
+                    user.userId,
+                    "Flight Route",
+                    `Flight route status changed successfully`,
+                    previous,
+                    JSON.stringify(current)
+                );
+            }
 
-        const current = await route.save();
-        Activity.logActivity(
-            user.userId,
-            "Flight Route",
-            `Flight route status changed successfully`,
-            previous,
-            JSON.stringify(current)
-        );
-        return {
-            message: `Flight route status changed successfully`,
-        };
+            return {
+                message: `Flight route status changed successfully`,
+            };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
     }
 
     async deleteFlightRoute(id: number, user: User) {
@@ -551,47 +587,46 @@ export class FlightRouteService {
         updateFlightRouteDto: UpdateFlightRouteDto,
         user: User
     ) {
-        try{
-        const { category_id, type } = updateFlightRouteDto;
-        const route = await getConnection()
-            .createQueryBuilder(FlightRoute, "route")
-            .where(`"id" = ${id} AND "is_deleted" = false`)
-            .getOne();
-        if (!route) {
-            throw new ConflictException("Given route not found.");
-        }
+        try {
+            const { category_id, type } = updateFlightRouteDto;
+            const route = await getConnection()
+                .createQueryBuilder(FlightRoute, "route")
+                .where(`"id" = ${id} AND "is_deleted" = false`)
+                .getOne();
+            if (!route) {
+                throw new ConflictException("Given route not found.");
+            }
 
-        const category = await getConnection()
-            .createQueryBuilder(LaytripCategory, "category")
-            .where(`"id" =:id `, { id: category_id })
-            .getOne();
+            const category = await getConnection()
+                .createQueryBuilder(LaytripCategory, "category")
+                .where(`"id" =:id `, { id: category_id })
+                .getOne();
 
-        if (!category) {
-            throw new BadRequestException("Given category id not found.");
-        }
-        const previous = JSON.stringify(route);
-        route.updateDate = new Date();
-        route.updateBy = user.userId;
-        route.type = type;
-        route.categoryId = category_id;
+            if (!category) {
+                throw new BadRequestException("Given category id not found.");
+            }
+            const previous = JSON.stringify(route);
+            route.updateDate = new Date();
+            route.updateBy = user.userId;
+            route.type = type;
+            route.categoryId = category_id;
 
-        const current = await route.save();
-        Activity.logActivity(
-            user.userId,
-            "Flight Route",
-            `Flight route updated.`,
-            previous,
-            JSON.stringify(current)
-        );
-        return {
-            message: `Flight route updated successfully`,
-        };
+            const current = await route.save();
+            Activity.logActivity(
+                user.userId,
+                "Flight Route",
+                `Flight route updated.`,
+                previous,
+                JSON.stringify(current)
+            );
+            return {
+                message: `Flight route updated successfully`,
+            };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
-                        
+
                         throw new NotFoundException(error.response.message);
                     case 409:
                         throw new ConflictException(error.response.message);
@@ -653,7 +688,7 @@ export class FlightRouteService {
                             row.type == FlightRouteType.INTERNATIONAL)
                     ) {
                         var error_message = {};
-                        const category:LaytripCategory =  await getConnection()
+                        const category: LaytripCategory = await getConnection()
                             .createQueryBuilder(LaytripCategory, "category")
                             .where(`"id" =:id `, { id: row.category_id })
                             .getOne();
@@ -746,13 +781,13 @@ export class FlightRouteService {
                                 "to_airport_code"
                             ] = `To Airport code ${row.from_airport_code} not found.`;
                         }
-                        if(!row.category_id){
+                        if (!row.category_id) {
 
                             error_message[
                                 "category_id"
                             ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in Category Id missing.`;
 
-                        }else if (!parseInt(row.category_id)) {
+                        } else if (!parseInt(row.category_id)) {
                             error_message[
                                 "category_id"
                             ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;

@@ -42,7 +42,7 @@ export class Airport extends BaseEntity {
   parentId: number;
 
   @Column("boolean", { name: "is_blacklisted", default: () => "false" })
-  isBlackListed: boolean;
+  isBlackListed: any;
   
   @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;

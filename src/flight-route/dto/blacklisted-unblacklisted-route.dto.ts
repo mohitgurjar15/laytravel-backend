@@ -9,12 +9,26 @@ import {
 } from "class-validator";
 
 export class BlacklistedUnblacklistedFlightRouteDto {
-    @IsNotEmpty({
-        message: `Please enter status.`,
-    })
-    @ApiProperty({
-        description: "status",
-        example: "",
-    })
-    isBlackListed: boolean;
+    @IsArray()
+	@ValidateNested({ each: true })
+	@Type(() => blackListedArray)
+	@ApiProperty({
+		description: `blackListedArray`,
+		example: [{ "code": "Amd","isBlackListed":true }]
+	})
+ blackListedArray:blackListedArray[];
+}
+
+class blackListedArray {
+
+	@ApiProperty({
+		description: `Enter code`,
+		example: `AMD`
+	})
+	code: string;
+	@ApiProperty({
+		description: `Enter status`,
+		example: true
+	})
+	isBlackListed: boolean;
 }
