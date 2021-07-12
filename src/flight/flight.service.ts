@@ -85,6 +85,7 @@ import { LaytripCartBookingConfirmtionMail } from "src/config/new_email_templete
 import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-reminder.mail";
 import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
+import { LandingPage } from "src/utility/landing-page.utility";
 
 @Injectable()
 export class FlightService {
@@ -288,7 +289,8 @@ export class FlightService {
         searchFlightDto: OneWaySearchFlightDto,
         headers,
         user,
-        userIp
+        userIp,
+        referralId
     ) {
         if (user?.roleId < Role.PAID_USER) {
             user.user_id = searchFlightDto.user_id;
@@ -298,7 +300,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.oneWaySearch(searchFlightDto, user))
+            resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
         );
         Activity.addSearchLog(
             ModulesName.FLIGHT,
@@ -309,7 +311,7 @@ export class FlightService {
         return result;
     }
 
-    async searchOneWayZipFlight(searchFlightDto, headers, user) {
+    async searchOneWayZipFlight(searchFlightDto, headers, user,referralId='') {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const mystiflyConfig = await new Promise((resolve) =>
@@ -339,13 +341,14 @@ export class FlightService {
         );
         const result = new Promise((resolve) =>
             resolve(
-                mystifly.oneWaySearchZip(
+                mystifly.oneWaySearchZipWithFilter(
                     searchFlightDto,
                     user,
                     mystiflyConfig,
                     sessionToken,
                     module,
-                    currencyDetails
+                    currencyDetails,
+                    referralId
                 )
             )
         );
@@ -638,7 +641,8 @@ export class FlightService {
     async flexibleDateRate(
         serchFlightDto: OneWaySearchFlightDto,
         headers,
-        user: User
+        user: User,
+        refferalId
     ) {
         await this.validateHeaders(headers);
 
@@ -729,7 +733,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -765,7 +770,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -789,12 +795,15 @@ export class FlightService {
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
+                        console.log(flightData)
+                        console.log('lowestprice', lowestprice)
+                        console.log('flightData.discounted_selling_price', flightData.discounted_selling_price)
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -803,14 +812,16 @@ export class FlightService {
                     // 	lowestprice = flightData.net_rate;
                     // 	is_booking_avaible = true
                     // }
-                    else if (lowestprice > flightData.selling_price) {
+                    else if (lowestprice > flightData.discounted_selling_price) {
+                        console.log('lowestprice',lowestprice)
+                        console.log('flightData.discounted_selling_price',flightData.discounted_selling_price)
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -888,7 +899,8 @@ export class FlightService {
     async fullcalenderRate(
         serchFlightDto: FullCalenderRateDto,
         headers,
-        user: User
+        user: User,
+        refferalId
     ) {
         await this.validateHeaders(headers);
 
@@ -970,7 +982,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -996,7 +1009,8 @@ export class FlightService {
                                 mystiflyConfig,
                                 sessionToken,
                                 module,
-                                currencyDetails
+                                currencyDetails,
+                                refferalId
                             )
                         )
                     );
@@ -1023,12 +1037,12 @@ export class FlightService {
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1037,14 +1051,14 @@ export class FlightService {
                     // 	lowestprice = flightData.net_rate;
                     // 	is_booking_avaible = true
                     // }
-                    else if (lowestprice > flightData.selling_price) {
+                    else if (lowestprice > flightData.discounted_selling_price) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -1118,7 +1132,8 @@ export class FlightService {
     async flexibleDateRateForRoundTrip(
         serchFlightDto: RoundtripSearchFlightDto,
         headers,
-        user: User
+        user: User,
+        refferalId
     ) {
         await this.validateHeaders(headers);
 
@@ -1275,7 +1290,8 @@ export class FlightService {
                             mystiflyConfig,
                             sessionToken,
                             module,
-                            currencyDetails
+                            currencyDetails,
+                            refferalId
                         )
                     )
                 );
@@ -1300,13 +1316,13 @@ export class FlightService {
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1315,15 +1331,15 @@ export class FlightService {
                     // 	lowestprice = flightData.net_rate;
                     // 	is_booking_avaible = true
                     // }
-                    else if (lowestprice > flightData.selling_price) {
+                    else if (lowestprice > flightData.discounted_selling_price) {
                         netRate = flightData.net_rate;
-                        lowestprice = flightData.selling_price;
+                        lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         startPrice = flightData.start_price || 0;
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
-                            flightData.secondary_start_price || 0;
+                            flightData.discounted_secondary_start_price || 0;
                     }
                     key++;
                 }
@@ -1427,7 +1443,8 @@ export class FlightService {
         searchFlightDto: RoundtripSearchFlightDto,
         headers,
         user,
-        userIp
+        userIp,
+        referralId
     ) {
         if (user?.roleId < Role.PAID_USER) {
             user.user_id = searchFlightDto.user_id;
@@ -1436,7 +1453,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.roundTripSearch(searchFlightDto, user))
+            resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
         );
 
         Activity.addSearchLog(
@@ -1449,11 +1466,11 @@ export class FlightService {
         return result;
     }
 
-    async airRevalidate(routeIdDto, headers, user) {
+    async airRevalidate(routeIdDto, headers, user, referralId) {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.airRevalidate(routeIdDto, user))
+            resolve(mystifly.airRevalidate(routeIdDto, user,referralId))
         );
         return result;
     }
@@ -1491,7 +1508,8 @@ export class FlightService {
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const airRevalidateResult = await mystifly.airRevalidate(
             { route_code },
-            user
+            user,
+            ""
         );
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
@@ -1855,7 +1873,8 @@ export class FlightService {
         supplierBookingData,
         travelers,
         cartId = null,
-        reservationId = null
+        reservationId = null,
+        referral_id = null
     ) {
         const {
             selling_price,
@@ -1868,6 +1887,7 @@ export class FlightService {
             fare_type,
             card_token,
             booking_through,
+            total_price
         } = bookFlightDto;
 
         let moduleDetails = await getManager()
@@ -1891,10 +1911,13 @@ export class FlightService {
         booking.id = uuidv4();
         booking.moduleId = moduleDetails.id;
         //booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.laytripBookingId = reservationId
+        booking.laytripBookingId = reservationId 
         booking.bookingType = bookingType;
         booking.currency = currencyId;
         booking.totalAmount = selling_price.toString();
+        booking.actualSellingPrice = total_price.toString();
+        booking.isPromotional = airRevalidateResult[0]?.offer_data?.applicable
+        booking.offerFrom = referral_id
         booking.netRate = net_rate.toString();
         booking.markupAmount = (selling_price - net_rate).toString();
         booking.bookingDate = bookingDate;
@@ -1902,12 +1925,13 @@ export class FlightService {
         booking.layCredit = laycredit_points || 0;
         booking.bookingThrough = booking_through || "";
         booking.cartId = cartId;
-        //booking.reservationId = reservationId;
+
         booking.locationInfo = {
             journey_type,
             source_location,
             destination_location,
         };
+
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
@@ -2131,7 +2155,8 @@ export class FlightService {
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const airRevalidateResult = await mystifly.airRevalidate(
             { route_code },
-            user
+            user,
+            ""
         );
         let isPassportRequired = false;
         let bookingRequestInfo: any = {};
@@ -2212,6 +2237,8 @@ export class FlightService {
             travelersDetails,
             isPassportRequired
         );
+
+        Activity.logActivity(userId, "Booking", `${bookingId} Booked from supplier side by admin`, null, JSON.stringify(bookingResult));
 
         if (bookingResult.booking_status == "success") {
             
@@ -3178,6 +3205,7 @@ export class FlightService {
                     dto,
                     Headers,
                     bookingData.user,
+                    "",
                     ""
                 );
             }
@@ -3274,7 +3302,9 @@ export class FlightService {
         smallestDipatureDate,
         cartId,
         selected_down_payment: number,
-        transaction_token
+        transaction_token,
+        cartIsPromotional,
+        referral_id
     ) {
          let logData = {}
         try {
@@ -3301,7 +3331,8 @@ export class FlightService {
             );
             const airRevalidateResult = await mystifly.airRevalidate(
                 { route_code },
-                user
+                user,
+                referral_id
             );
             console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])
@@ -3323,9 +3354,11 @@ export class FlightService {
                         ? airRevalidateResult[0].infant_count
                         : 0;
                 bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
+                bookingRequestInfo.total_price =
+                        airRevalidateResult[0].selling_price;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
-                        airRevalidateResult[0].selling_price;
+                        airRevalidateResult[0].discounted_selling_price
                 } else {
                     if (
                         typeof airRevalidateResult[0].secondary_selling_price !=
@@ -3336,7 +3369,7 @@ export class FlightService {
                             airRevalidateResult[0].secondary_selling_price;
                     } else {
                         bookingRequestInfo.selling_price =
-                            airRevalidateResult[0].selling_price;
+                            airRevalidateResult[0].discounted_selling_price;
                     }
                 }
 
@@ -3416,6 +3449,25 @@ export class FlightService {
                 }
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
+
+                    let weeklyCustomDownPayment = LandingPage.getDownPayment(airRevalidateResult[0].offer_data, 0);
+
+                    if(cartIsPromotional){
+
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        selling_price,
+                        smallestDipatureDate,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0,
+                        cartCount > 1 ? true : false,
+                        weeklyCustomDownPayment
+                    );
+                    console.log(instalmentDetails)
+
+                }else{
                     instalmentDetails = Instalment.weeklyInstalment(
                         selling_price,
                         smallestDipatureDate,
@@ -3426,6 +3478,8 @@ export class FlightService {
                         selected_down_payment,
                         cartCount > 1 ? true : false
                     );
+                }
+                    
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
                     instalmentDetails = Instalment.biWeeklyInstalment(
@@ -3492,7 +3546,8 @@ export class FlightService {
                         bookingResult || null,
                         travelers,
                         cartId,
-                        reservationId
+                        reservationId,
+                        referral_id
                     );
                     
                     //     this.bookingUpdateFromSupplierside(
@@ -3555,7 +3610,8 @@ export class FlightService {
                             bookingResult,
                             travelers,
                             cartId,
-                            reservationId
+                            reservationId,
+                            referral_id
                         );
                         //send email here
                         bookingResult.laytrip_booking_id =

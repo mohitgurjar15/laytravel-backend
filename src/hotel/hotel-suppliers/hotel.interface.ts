@@ -1,13 +1,13 @@
 export interface HotelInterface {
     autoComplete(term);
 
-    search(request);
+    search(request,refferal);
 
     detail(request);
 
-    rooms(request, user_id);
+    rooms(request, user_id, referralId);
 
-    availability(request, user_id);
+    availability(request, user_id, referralId);
 
     book(request, user_id);
 }

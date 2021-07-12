@@ -247,7 +247,7 @@ export class Instalment {
         return instalmentDateWithAmount;
 
     }
-    static calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount = null, downPayment = null, customInstalmentNo = null,customDownPayment=null) {
+    static calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount = null, downPayment = 0, customInstalmentNo = null,customDownPayment=null) {
 
         let instalmentDatewithAmount = [];
         let firstInstalment;

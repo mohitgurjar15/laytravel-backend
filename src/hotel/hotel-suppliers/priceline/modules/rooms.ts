@@ -8,6 +8,7 @@ import { errorMessage } from "src/config/common.config";
 import { CommonHelper } from "../helpers/common.helper";
 import { catchError } from "rxjs/operators";
 import { DetailHelper } from "../helpers/detail.helper";
+import { LandingPage } from "src/utility/landing-page.utility";
 
 export class Rooms {
     private roomHelper: RoomHelper;
@@ -21,7 +22,7 @@ export class Rooms {
         this.detailHelper = new DetailHelper();
     }
 
-    async processRoomsResult(res, roomsReqDto) {
+    async processRoomsResult(res, roomsReqDto, referralId) {
         let results = res.data["getHotelExpress.MultiContract"];
 
         if (results.error) {
@@ -33,15 +34,29 @@ export class Rooms {
         if (results.results.status && results.results.status === "Success") {
             let hotel = results.results.hotel_data[0];
             let inputData = results.results.input_data;
+            let searchData = {
+                departure: hotel['address']['city_name'], checkInDate: inputData.check_in, state: hotel['address']['state_name']
+            }
+            let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
             let rooms: any = this.roomHelper.processRoom(
                 hotel,
                 roomsReqDto,
-                inputData
+                inputData,
+                offerData
             );
 
+            
+
+            if (!rooms.items.length) {
+                throw new NotFoundException(
+                    "No result found &&&rooms&&&" + errorMessage
+                );
+            }
+            
             let details = this.detailHelper.getHotelDetails(hotel);
             let roomPhotos = await this.getRoomPhotos(hotel.id);
             for(let i=0; i <rooms.items.length; i++){
+                
                 let roomPhoto = roomPhotos.find(room=>room.roomid_ppn==rooms.items[i].room_id)
                 if(roomPhoto.photos.length){
                     rooms.items[i].photos=[];
@@ -54,6 +69,7 @@ export class Rooms {
                     rooms.items[i].photos=[];
                 }
             }
+            
             return { rooms, details };
         }
     }

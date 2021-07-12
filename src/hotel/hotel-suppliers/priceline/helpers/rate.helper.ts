@@ -1,3 +1,5 @@
+import { LandingPage } from "src/utility/landing-page.utility";
+
 export class RateHelper{
     
     getPublicPriceBreakUp(rate, searchParameters) {
@@ -50,7 +52,7 @@ export class RateHelper{
         };
     }
 
-    getRates(rate: any, searchParameters: any,inputData=null, mandatoryFees = []) {
+    getRates(rate: any, searchParameters: any, inputData = null, mandatoryFees = [], offerData) {
 
         let mendetoryFeesTotal = 0 
 
@@ -68,30 +70,42 @@ export class RateHelper{
 
         //let selling = retail.total > net_rate.total ? retail : net_rate;
         
-       
+        let nights = (rate['price_details']['night_price_data']).length;
+        
         let selling = Object.assign({}, net_rate)
                  if (retail.total > net_rate.total) {
-            console.log('retail', retail);
+            //console.log('retail', retail);
             selling = Object.assign({},retail)
-            console.log('mendetoryFeesTotal', mendetoryFeesTotal);
-            console.log('selling', selling);
+            //console.log('mendetoryFeesTotal', mendetoryFeesTotal);
+            //console.log('selling', selling);
             
-            console.log('selling.sub_total', selling.sub_total);
+            //console.log('selling.sub_total', selling.sub_total);
             
             if(mendetoryFeesTotal){
-                console.log('calculations', selling.sub_total - mendetoryFeesTotal);
+                //console.log('calculations', selling.sub_total - mendetoryFeesTotal);
                 
                 selling.sub_total = parseFloat(selling.sub_total)  - mendetoryFeesTotal
-                console.log('selling.sub_total', selling.sub_total);
+                //console.log('selling.sub_total', selling.sub_total);
             }
             
         }
+
+        
+        let discounted_selling_price = LandingPage.applyDiscount(offerData, selling.total)
+        selling['discounted_total'] = discounted_selling_price
+        selling.total = selling.total
+        let discounted_sub_total = LandingPage.applyDiscount(offerData, selling.sub_total)
+        selling['discounted_sub_total'] = discounted_sub_total
+
+        let discounted_avg_night_price = (discounted_selling_price / nights).toFixed(2);
+        selling['discounted_avg_night_price'] = discounted_avg_night_price
         let saving_percent = +(100 - ((selling.total * 100) / retail.total)).toFixed(2);
         return {
             retail,
             net_rate,
             selling,
-            saving_percent
+            saving_percent,
+            discounted_selling_price
         }
     }
 }

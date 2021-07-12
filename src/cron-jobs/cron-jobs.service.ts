@@ -2474,7 +2474,7 @@ export class CronJobsService {
         var result = [];
         var request = [];
         //var response = []
-        for (let index = 0; index < limit/2; index++) {
+        for (let index = 0; index < limit / 2; index++) {
             const route = routes[index];
             const today = new Date();
             let depatureRange = Math.floor(Math.random() * (300 - 35 + 1)) + 35
@@ -2493,6 +2493,7 @@ export class CronJobsService {
                 child_count: 0,
                 infant_count: 0,
             };
+            console.log('dto', dto)
             request[index] = dto
             result[index] = new Promise((resolve) =>
                 resolve(
@@ -2511,7 +2512,7 @@ export class CronJobsService {
 
         }
 
-        for (let index = limit/2; index < limit; index++) {
+        for (let index = limit / 2; index < limit; index++) {
             const route = routes[index];
             const today = new Date();
             let depatureRange = Math.floor(Math.random() * (300 - 35 + 1)) + 35
@@ -2550,7 +2551,8 @@ export class CronJobsService {
                         mystiflyConfig,
                         sessionToken,
                         module,
-                        currencyDetails
+                        currencyDetails,
+                        ""
                     )
                 )
             );
@@ -2581,57 +2583,70 @@ export class CronJobsService {
 
         let emailData = []
         let failed = 0
+        let failedEmailData = []
+
+        let i = 0
+
         for (let index = 0; index < response.length; index++) {
-            
+
 
             emailData[index] = request[index]
 
-            try {
 
-                const flight = response[index];
+
+            const flight = response[index];
 
             const flightData = flight?.items[0]
 
-                if (flightData) {
-                    let route_code = flightData?.route_code
-                    emailData[index]['availiblity'] = true
-                    emailData[index]['route_code'] = flightData?.route_code
-                    emailData[index]['unique_code'] = flightData?.unique_code
-
+            if (flightData) {
+                let route_code = flightData?.route_code
+                emailData[index]['availiblity'] = true
+                emailData[index]['airline'] = flightData.airline_name
+                emailData[index]['route_code'] = flightData?.route_code
+                emailData[index]['unique_code'] = flightData?.unique_code
+                emailData[index]['arrival_time'] = flightData?.arrival_time
+                emailData[index]['departure_time'] = flightData?.departure_time
+                try {
                     const airRevalidateResult = await mystifly.airRevalidate(
                         { route_code },
-                        {}
+                        undefined,
+                        ""
                     );
+
+                    console.log("airRevalidateResult",airRevalidateResult)
 
                     if (airRevalidateResult) {
                         emailData[index]['airRevalidateResult'] = true
                     } else {
                         failed++
                         emailData[index]['airRevalidateResult'] = false
+                        failedEmailData[i] = emailData[index]
+                        i++
                     }
-
-
-                } else {
-                    emailData[index]['availiblity'] = false
+                } catch (error) {
+                    console.log("excepation called")
+                    console.log(error)
+                    emailData[index]['airRevalidateResult'] = false
+                    emailData[index]['error'] = error
                     failed++
+                    failedEmailData[i] = emailData[index]
+                    i++
                 }
-            } catch (error) {
+            } else {
                 emailData[index]['availiblity'] = false
-                emailData[index]['error'] = error
                 failed++
+                failedEmailData[i] = emailData[index]
+                i++
             }
-
-
-
         }
 
         if (failed != 0) {
 
             let emailHtml = `<tr>
             `
-            for (let index = 0; index < emailData.length; index++) {
-                let param = emailData[index]
-                emailHtml += `<table align="center"
+            for (let index = 0; index < failedEmailData.length; index++) {
+                let param = failedEmailData[index]
+                emailHtml += `<hr><table align="center"
         style="width:100%; max-width:100%; table-layout:fixed; background: #ffffff;"
         class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
         <tbody>
@@ -2649,7 +2664,23 @@ export class CronJobsService {
                     Route: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.source_location}-${param.destination_location}</td>
+                    ${param?.source_location}-${param?.destination_location}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Airline: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.airline}</td>
+            </tr>
+            <tr>
+                <td align="left" valign="top"
+                    style="width:30%; font-family: 'Poppins', sans-serif; font-weight: 600;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Flight Time: </td>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    ${param?.departure_time}-${param?.arrival_time}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2657,7 +2688,7 @@ export class CronJobsService {
                     dates: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.departure_date}-${param?.arrival_date || ""}</td>
+                    ${param?.departure_date}-${param?.arrival_date || ""}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2665,7 +2696,7 @@ export class CronJobsService {
                     adult_count: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.adult_count}</td>
+                    ${param?.adult_count}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2673,7 +2704,7 @@ export class CronJobsService {
                     availiblity: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.availiblity}</td>
+                    ${param?.availiblity}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2689,7 +2720,7 @@ export class CronJobsService {
                     unique_code: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.unique_code}</td>
+                    ${param?.unique_code}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2697,7 +2728,7 @@ export class CronJobsService {
                     airRevalidateResult: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.airRevalidateResult}</td>
+                    ${param?.airRevalidateResult}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -2705,11 +2736,12 @@ export class CronJobsService {
                     error: </td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${JSON.stringify(param.error) }</td>
+                    ${param?.error ? JSON.stringify(param?.error) : ""}</td>
             </tr>
 
-            <tbody></table></tr>`
+            <tbody></table>`
             }
+            emailHtml += `</tr>`;
             this.cronfailedmail(
                 notificationHeader + emailHtml + notificationFooter,
                 "flight assure cron failed for some route"

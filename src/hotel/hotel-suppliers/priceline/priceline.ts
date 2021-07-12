@@ -81,7 +81,7 @@ export class Priceline implements HotelInterface {
         return locations;
     }
 
-    async search(searchReqDto: SearchReqDto) {
+    async search(searchReqDto: SearchReqDto,referralId: string) {
         let {
             latitude,
             longitude,
@@ -112,13 +112,17 @@ export class Priceline implements HotelInterface {
                 hotel_ids: hotel_id,
             };
         } else {
-            if (city_id) {
+            if(latitude && longitude){
+                extra = {
+                    latitude,
+                    longitude,
+                    radius:19
+                };
+            }
+            else if (city_id) {
                 parameters["city_id"] = city_id;
             }
-            extra = {
-                latitude,
-                longitude,
-            };
+            
         }
 
         parameters = {
@@ -138,7 +142,7 @@ export class Priceline implements HotelInterface {
                     responce = res?.data;
                     // console.log(responce);
 
-                    return new Search().processSearchResult(res, parameters);
+                    return new Search().processSearchResult(res, parameters, referralId);
                 }),
                 catchError((err) => {
                     //console.log("Error", err);
@@ -223,7 +227,7 @@ export class Priceline implements HotelInterface {
         return res;
     }
 
-    async rooms(roomsReqDto: RoomsReqDto, user_id) {
+    async rooms(roomsReqDto: RoomsReqDto, user_id, referralId) {
         let parameters = {
             ppn_bundle: roomsReqDto.bundle,
             room_grouping: 1,
@@ -239,7 +243,7 @@ export class Priceline implements HotelInterface {
             .pipe(
                 map((res) => {
                     responce = res?.data;
-                    return new Rooms().processRoomsResult(res, roomsReqDto);
+                    return new Rooms().processRoomsResult(res, roomsReqDto, referralId);
                 }),
                 catchError((err) => {
                     let fileName = "";
@@ -276,7 +280,7 @@ export class Priceline implements HotelInterface {
         return res;
     }
 
-    async availability(availabilityDto: AvailabilityDto, user_id) {
+    async availability(availabilityDto: AvailabilityDto, user_id, referralId: string) {
         let parameters = {
             ppn_bundle: availabilityDto.room_ppn,
         };
@@ -297,7 +301,8 @@ export class Priceline implements HotelInterface {
 
                     return new Availability().processAvailabilityResult(
                         res,
-                        availabilityDto
+                        availabilityDto,
+                        referralId
                     );
                 }),
                 catchError((err) => {

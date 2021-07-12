@@ -34,6 +34,7 @@ import { Generic } from "src/utility/generic.utility";
 import { errorMessage } from "src/config/common.config";
 import { Cache } from "cache-manager";
 import { CartBookDto } from "./dto/book-cart.dto";
+import { MultipleInventryDeleteFromCartDto } from "./dto/multiple-inventry-delete.dto";
 import { v4 as uuidv4 } from "uuid";
 import * as uniqid from "uniqid";
 import { CartBooking } from "src/entity/cart-booking.entity";
@@ -61,6 +62,9 @@ import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
 import { BookingLog } from "src/entity/booking-log.entity";
+
+
+
 @Injectable()
 export class CartService {
     constructor(
@@ -74,9 +78,10 @@ export class CartService {
 
         public readonly mailerService: MailerService,
         private hotelService: HotelService
-    ) {}
+    ) { }
 
-    async addInCart(addInCartDto: AddInCartDto, user, Header) {
+    async addInCart(addInCartDto: AddInCartDto, user, Header, referralId) {
+
         try {
             let userData;
             const {
@@ -110,14 +115,47 @@ export class CartService {
                 .where(
                     `(DATE("cart"."expiry_date") >= DATE('${todayDate}') )  AND ("cart"."is_deleted" = false) ${where}`
                 );
-            const result = await query.getCount();
-            if (result >= 10) {
+            const [result, count] = await query.getManyAndCount();
+
+
+            if (count >= 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
 more than 10.`
                 );
             }
-            console.log("user", user);
+            let promotional = 0
+            let nonPromotional = 0
+            let promotionalItem = []
+            let nonPromotionalItem = []
+            for (let index = 0; index < result.length; index++) {
+                const cart = result[index];
+
+                if (cart.isPromotional == true) {
+                    promotional++
+                    promotionalItem.push(cart.id)
+                } else {
+                    nonPromotional++
+                    nonPromotionalItem.push(cart.id)
+                }
+            }
+
+            if (promotional > 0 && nonPromotional > 0) {
+                throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
+            }
+
+            console.log("promotional", promotional, "nonPromotional", nonPromotional)
+
+            let cartIsPromotional
+            if (promotional > 0) {
+                cartIsPromotional = true
+                //console.log("cartIsPromotional", cartIsPromotional)
+            } else if (nonPromotional > 0) {
+                cartIsPromotional = false
+            }
+
+            //console.log("cartIsPromotional", cartIsPromotional)
+
 
             userData = await getConnection()
                 .createQueryBuilder(User, "user")
@@ -126,14 +164,14 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional);
                     break;
 
                 case ModulesName.FLIGHT:
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header
+                        Header, referralId, cartIsPromotional
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:
@@ -191,16 +229,26 @@ more than 10.`
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header) {
+    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional) {
         //console.log('validate');
-
+        console.log("cartIsPromotional", cartIsPromotional)
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
-            user ? user : null
+            user ? user : null,
+            referralId
         );
 
         if (flightInfo) {
+
+            console.log("applicable", flightInfo[0]?.offer_data?.applicable)
+            if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
+                throw new ConflictException(`In cart not-promotional item found`)
+            }
+
+            if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
+                throw new ConflictException(`In cart promotional item found`)
+            }
             const depatureDate = flightInfo[0].departure_date;
 
             const formatedDepatureDate = DateTime.convertDateFormat(
@@ -228,8 +276,14 @@ more than 10.`
                 cart.guestUserId = user.userId;
             }
 
+            var unixTimestamp = Math.round(new Date().getTime() / 1000);
+
             cart.moduleId = ModulesName.FLIGHT;
+
+            cart.timeStamp = unixTimestamp || 0
             cart.moduleInfo = flightInfo;
+            cart.isPromotional = flightInfo[0]?.offer_data?.applicable == true ? true : false
+            cart.offerFrom = referralId
             cart.oldModuleInfo = flightInfo;
             cart.expiryDate = new Date(formatedDepatureDate);
             // diffrence > 2
@@ -280,6 +334,7 @@ more than 10.`
                 )
                 .orderBy(`id`, "ASC")
                 .getMany();
+
             let ids = [];
             if (postCart.length) {
                 for await (const cart of postCart) {
@@ -305,35 +360,111 @@ more than 10.`
                     .execute();
             }
 
-            let guestCart = await getConnection()
-                .createQueryBuilder(Cart, "cart")
-                .where("guest_user_id =:id", { id: guestUserId })
-                .getMany();
-            if (guestCart.length) {
-                for await (const cart of guestCart) {
-                    let cartTraveler = await getConnection()
-                        .createQueryBuilder(CartTravelers, "traveler")
-                        .where("cart_id =:id", {
-                            id: cart.id,
-                        })
-                        .orderBy(`id`, "ASC")
-                        .getOne();
+            // let guestCart = await getConnection()
+            //     .createQueryBuilder(Cart, "cart")
+            //     .where("guest_user_id =:id", { id: guestUserId })
+            //     .getMany();
+            // let guestlowestCart = guestCart[0]
+            // if (guestCart.length) {
+            //     for await (const cart of guestCart) {
+            //         let cartTraveler = await getConnection()
+            //             .createQueryBuilder(CartTravelers, "traveler")
+            //             .where("cart_id =:id", {
+            //                 id: cart.id,
+            //             })
+            //             .orderBy(`id`, "ASC")
+            //             .getOne();
 
-                    if (cartTraveler && cartTraveler.userId != user.userId) {
-                        await getConnection()
-                            .createQueryBuilder()
-                            .update(User)
-                            //.set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
-                            .set({
-                                email: user.email || null,
-                            })
-                            .where("user_id =:id", {
-                                id: cartTraveler.userId,
-                            })
-                            .execute();
-                    }
-                }
-            }
+            //         if (cartTraveler && cartTraveler.userId != user.userId) {
+            //             await getConnection()
+            //                 .createQueryBuilder()
+            //                 .update(User)
+            //                 //.set({ createdBy: user.userId, parentGuestUserId: null , email : user.email })
+            //                 .set({
+            //                     email: user.email || null,
+            //                 })
+            //                 .where("user_id =:id", {
+            //                     id: cartTraveler.userId,
+            //                 })
+            //                 .execute();
+            //         }
+            //     }
+            // }
+
+            // let userCart = await getConnection()
+            //     .createQueryBuilder(Cart, "cart")
+            //     .where(`"cart"."user_id" = '${user.userId}'`)
+            //     .getMany();
+            // let userlowestCart = userCart[0]
+
+            // let promotional = 0
+            // let nonPromotional = 0
+            // let promotionalItem = []
+            // let nonPromotionalItem = []
+            // for (let index = 0; index < guestCart.length; index++) {
+            //     const cart = guestCart[index];
+
+            //     if (cart.isPromotional == true) {
+            //         promotional++
+            //         promotionalItem.push(cart.id)
+            //     } else {
+            //         nonPromotional++
+            //         nonPromotionalItem.push(cart.id)
+            //     }
+            // }
+
+            // for (let index = 0; index < userCart.length; index++) {
+            //     const cart = userCart[index];
+
+            //     if (cart.isPromotional == true) {
+            //         promotional++
+            //         promotionalItem.push(cart.id)
+            //     } else {
+            //         nonPromotional++
+            //         nonPromotionalItem.push(cart.id)
+            //     }
+            // }
+
+            // for (let index = 0; index < guestCart.length; index++) {
+            //     const cart = guestCart[index];
+
+            //     if (cart.isPromotional == true) {
+            //         promotional++
+            //         promotionalItem.push(cart.id)
+            //     } else {
+            //         nonPromotional++
+            //         nonPromotionalItem.push(cart.id)
+            //     }
+            // }
+            // let deleteCartIds = []
+            // if (promotional > 0 && nonPromotional > 0) {
+            //     let lowestCart = guestlowestCart.id > userlowestCart.id ? userlowestCart : guestlowestCart
+
+            //     deleteCartIds = lowestCart.isPromotional == true ? nonPromotionalItem : promotionalItem
+
+            //     if (deleteCartIds.length) {
+            //         await getConnection()
+            //             .createQueryBuilder()
+            //             .delete()
+            //             .from(CartTravelers)
+            //             .where(`"cart_id" in (:...cartIds)`, {
+            //                 cartIds: deleteCartIds,
+            //             })
+            //             .execute();
+            //         await getConnection()
+            //             .createQueryBuilder()
+            //             .delete()
+            //             .from(Cart)
+            //             .where(`"id" in (:...cartIds)`, {
+            //                 cartIds: deleteCartIds,
+            //             })
+            //             .execute();
+            //     }
+
+
+            // }
+
+
 
             let userDefaultCard = await getConnection()
                 .createQueryBuilder(UserCard, "card")
@@ -394,7 +525,7 @@ more than 10.`
             let [query, count] = await getConnection()
                 .createQueryBuilder(Cart, "cart")
                 .where(where)
-                .skip(5)
+                .skip(10)
                 .getManyAndCount();
             let cartOverLimit = false;
             if (count > 10) {
@@ -456,6 +587,7 @@ more than 10.`
                         );
                 }
             }
+
             throw new NotFoundException(
                 `${error.message}&&&id&&&${error.message}`
             );
@@ -613,7 +745,7 @@ more than 10.`
         }
     }
 
-    async listCart(dto: ListCartDto, user, headers) {
+   async listCart(dto: ListCartDto, user, headers, referralId) {
         try {
             const { live_availiblity } = dto;
             var tDate = new Date();
@@ -637,22 +769,14 @@ more than 10.`
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
                 //.leftJoinAndSelect("travelers.userData", "userData")
-                .select([
-                    "cart.id",
-                    "cart.userId",
-                    "cart.guestUserId",
-                    "cart.moduleId",
-                    "cart.moduleInfo",
-                    "cart.expiryDate",
-                    "cart.oldModuleInfo",
-                    "cart.isDeleted",
-                    "cart.createdDate",
-                    "module.id",
-                    "module.name",
-                    "travelers.id",
-                    "travelers.userId",
-                    "travelers.baggageServiceCode",
-                ])
+                // .select([
+                //     "cart",
+                //     "module.id",
+                //     "module.name",
+                //     "travelers.id",
+                //     "travelers.userId",
+                //     "travelers.baggageServiceCode",
+                // ])
 
                 .where(where)
                 .orderBy(`cart.id`, "ASC")
@@ -663,9 +787,42 @@ more than 10.`
                 throw new NotFoundException(`Cart is empty`);
             }
 
+            let error = ''
+            let promotional = 0
+            let nonPromotional = 0
+            let promotionalItem = []
+            let nonPromotionalItem = []
+            let cartIsConflicted = false
+            for (let index = 0; index < result.length; index++) {
+                const cart = result[index];
+
+                if (cart.isPromotional == true) {
+                    promotional++
+                    promotionalItem.push(cart.id)
+                } else {
+                    nonPromotional++
+                    nonPromotionalItem.push(cart.id)
+                }
+            }
+
+            if (promotional > 0 && nonPromotional > 0) {
+                error = `In cart promotional and not promotional both inventry found.`
+                cartIsConflicted = true
+            }
+
+            let cartIsPromotional
+            if (promotional > 0) {
+                cartIsPromotional = true
+            } else if (nonPromotional > 0) {
+                cartIsPromotional = false
+            }
             let responce = [];
             var flightRequest = [];
             let flightResponse = [];
+
+            var unixTimestamp = Math.round(new Date().getTime() / 1000);
+
+
 
             if (
                 typeof live_availiblity != "undefined" &&
@@ -703,85 +860,91 @@ more than 10.`
                 );
                 for await (const cart of result) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
-                        const bookingType =
-                            cart.moduleInfo[0].routes.length > 1
-                                ? "RoundTrip"
-                                : "oneway";
+                        var difference = unixTimestamp - (cart.timeStamp || 0);
 
-                        if (bookingType == "oneway") {
-                            let dto = {
-                                source_location:
-                                    cart.moduleInfo[0].departure_code,
-                                destination_location:
-                                    cart.moduleInfo[0].arrival_code,
-                                departure_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].departure_date
-                                ),
-                                flight_class:
-                                    cart.moduleInfo[0].routes[0].stops[0]
-                                        .cabin_class,
-                                adult_count: cart.moduleInfo[0].adult_count
-                                    ? cart.moduleInfo[0].adult_count
-                                    : 0,
-                                child_count: cart.moduleInfo[0].child_count
-                                    ? cart.moduleInfo[0].child_count
-                                    : 0,
-                                infant_count: cart.moduleInfo[0].infant_count
-                                    ? cart.moduleInfo[0].infant_count
-                                    : 0,
-                            };
-                            //console.log(dto);
+                        var minuteDifference = Math.floor(difference / 60) % 60;
+                        console.log('minuteDifference', minuteDifference)
+                        if (minuteDifference > 5 ||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )) {
+                            const bookingType =
+                                cart.moduleInfo[0].routes.length > 1
+                                    ? "RoundTrip"
+                                    : "oneway";
 
-                            flightRequest[cart.id] = new Promise((resolve) =>
-                                resolve(
-                                    mystifly.oneWaySearchZip(
-                                        dto,
-                                        user,
-                                        mystiflyConfig,
-                                        sessionToken,
-                                        module,
-                                        currencyDetails
+                            if (bookingType == "oneway") {
+                                let dto = {
+                                    source_location:
+                                        cart.moduleInfo[0].departure_code,
+                                    destination_location:
+                                        cart.moduleInfo[0].arrival_code,
+                                    departure_date: await this.flightService.changeDateFormat(
+                                        cart.moduleInfo[0].departure_date
+                                    ),
+                                    flight_class:
+                                        cart.moduleInfo[0].routes[0].stops[0]
+                                            .cabin_class,
+                                    adult_count: cart.moduleInfo[0].adult_count
+                                        ? cart.moduleInfo[0].adult_count
+                                        : 0,
+                                    child_count: cart.moduleInfo[0].child_count
+                                        ? cart.moduleInfo[0].child_count
+                                        : 0,
+                                    infant_count: cart.moduleInfo[0].infant_count
+                                        ? cart.moduleInfo[0].infant_count
+                                        : 0,
+                                };
+                                //console.log(dto);
+
+                                flightRequest[cart.id] = new Promise((resolve) =>
+                                    resolve(
+                                        mystifly.oneWaySearchZip(
+                                            dto,
+                                            user,
+                                            mystiflyConfig,
+                                            sessionToken,
+                                            module,
+                                            currencyDetails
+                                        )
                                     )
-                                )
-                            );
-                        } else {
-                            let dto = {
-                                source_location:
-                                    cart.moduleInfo[0].departure_code,
-                                destination_location:
-                                    cart.moduleInfo[0].arrival_code,
-                                departure_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].departure_date
-                                ),
-                                flight_class:
-                                    cart.moduleInfo[0].routes[0].stops[0]
-                                        .cabin_class,
-                                adult_count: cart.moduleInfo[0].adult_count
-                                    ? cart.moduleInfo[0].adult_count
-                                    : 0,
-                                child_count: cart.moduleInfo[0].child_count
-                                    ? cart.moduleInfo[0].child_count
-                                    : 0,
-                                infant_count: cart.moduleInfo[0].infant_count
-                                    ? cart.moduleInfo[0].infant_count
-                                    : 0,
-                                arrival_date: await this.flightService.changeDateFormat(
-                                    cart.moduleInfo[0].routes[1].stops[0].departure_date
-                                ),
-                            };
-                            //console.log(dto);
-                            flightRequest[cart.id] = new Promise((resolve) =>
-                                resolve(
-                                    mystifly.roundTripSearchZip(
-                                        dto,
-                                        user,
-                                        mystiflyConfig,
-                                        sessionToken,
-                                        module,
-                                        currencyDetails
+                                );
+                            } else {
+                                let dto = {
+                                    source_location:
+                                        cart.moduleInfo[0].departure_code,
+                                    destination_location:
+                                        cart.moduleInfo[0].arrival_code,
+                                    departure_date: await this.flightService.changeDateFormat(
+                                        cart.moduleInfo[0].departure_date
+                                    ),
+                                    flight_class:
+                                        cart.moduleInfo[0].routes[0].stops[0]
+                                            .cabin_class,
+                                    adult_count: cart.moduleInfo[0].adult_count
+                                        ? cart.moduleInfo[0].adult_count
+                                        : 0,
+                                    child_count: cart.moduleInfo[0].child_count
+                                        ? cart.moduleInfo[0].child_count
+                                        : 0,
+                                    infant_count: cart.moduleInfo[0].infant_count
+                                        ? cart.moduleInfo[0].infant_count
+                                        : 0,
+                                    arrival_date: await this.flightService.changeDateFormat(
+                                        cart.moduleInfo[0].routes[1].stops[0].departure_date
+                                    ),
+                                };
+                                //console.log(dto);
+                                flightRequest[cart.id] = new Promise((resolve) =>
+                                    resolve(
+                                        mystifly.roundTripSearchZip(
+                                            dto,
+                                            user,
+                                            mystiflyConfig,
+                                            sessionToken,
+                                            module,
+                                            currencyDetails
+                                        )
                                     )
-                                )
-                            );
+                                );
+                            }
                         }
                     }
 
@@ -795,28 +958,60 @@ more than 10.`
 
                 let newCart = {};
 
+                var difference = unixTimestamp - (cart.timeStamp || 0);
+                var minuteDifference = Math.floor(difference / 60) % 60;
+                console.log('minuteDifference2', minuteDifference)
+                console.log('cart.timeStamp', cart.timeStamp)
+                console.log('unixTimestamp', unixTimestamp)
+
                 if (
-                    typeof live_availiblity != "undefined" &&
-                    live_availiblity == "yes"
+                    (typeof live_availiblity != "undefined" &&
+                    live_availiblity == "yes" && minuteDifference > 5)||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
                             cart,
-                            flightResponse[cart.id]
+                            flightResponse[cart.id],
+                            user, headers, referralId
                         );
                         //return value
+
+
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             newCart["is_available"] = true;
+                            newCart["isPromotional"] = value?.offer_data?.applicable
+                            newCart["is_conflict"] = false;
 
+                            if (value?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                error = `In cart not-promotional item found`
+                                if (cartIsConflicted) {
+                                    newCart["is_conflict"] = true;
+                                } else {
+                                    newCart["is_available"] = false;
+                                }
+
+                            }
+
+                            if (value?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                error = `In cart promotional item found`
+                                if (cartIsConflicted) {
+                                    newCart["is_conflict"] = true;
+                                } else {
+                                    newCart["is_available"] = false;
+                                }
+                                // newCart["is_available"] = false;
+                            }
+                            console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value] })
+                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: value?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
-                            await cart.save();
+
+                            //await cart.save();
                         } else {
                             newCart["is_available"] = false;
                             newCart["moduleInfo"] = cart.moduleInfo;
@@ -847,7 +1042,8 @@ more than 10.`
                                     {
                                         room_ppn: oldModuleInfo[0].bundle,
                                     },
-                                    user?.userId || null
+                                    user?.userId || null,
+                                    referralId
                                 );
                             } catch (error) {
                                 newCart["is_available"] = false;
@@ -858,12 +1054,36 @@ more than 10.`
                             if (roomDetails?.data) {
                                 newCart["moduleInfo"] = roomDetails.data;
                                 newCart["is_available"] = true;
+                                newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
+                                newCart["is_conflict"] = false;
+                                if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                    //throw new ConflictException(`In cart not-promotional item found`)
+                                    error = `In cart not-promotional item found`
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
 
+                                }
+
+                                if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                    error = `In cart promotional item found`
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
+                                }
+
+
+                                console.log(Math.round(new Date().getTime() / 1000))
                                 cart.moduleInfo = roomDetails;
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data })
+                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false, offerFrom: referralId })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
@@ -877,6 +1097,54 @@ more than 10.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
+                     if (cart.moduleId == ModulesName.FLIGHT) {
+                        newCart["is_available"] = true;
+                        newCart["is_conflict"] = false;
+                    if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                error = `In cart not-promotional item found`
+                                if (cartIsConflicted) {
+                                    newCart["is_conflict"] = true;
+                                } else {
+                                    newCart["is_available"] = false;
+                                }
+
+                            }
+
+                            if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                error = `In cart promotional item found`
+                                if (cartIsConflicted) {
+                                    newCart["is_conflict"] = true;
+                                } else {
+                                    newCart["is_available"] = false;
+                                }
+                                // newCart["is_available"] = false;
+                            }
+                    }
+                     if (cart.moduleId == ModulesName.HOTEL) {
+                         newCart["is_available"] = true;
+                         newCart["is_conflict"] = false;
+                         if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                                    //throw new ConflictException(`In cart not-promotional item found`)
+                                    error = `In cart not-promotional item found`
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
+                                }
+
+                         if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                                    error = `In cart promotional item found`
+                                    if (cartIsConflicted) {
+                                        newCart["is_conflict"] = true;
+                                    } else {
+                                        newCart["is_available"] = false;
+                                    }
+
+                                }
+
+                     }
                 }
                 if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);
@@ -896,6 +1164,8 @@ more than 10.`
             return {
                 data: responce,
                 count: count,
+                cartIsPromotional,
+                error
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -933,13 +1203,13 @@ more than 10.`
         }
     }
 
-    async flightAvailiblity(cart, flights) {
+    async flightAvailiblity(cart, flights, user, headers, referralId) {
         ////console.log('match');
 
         var match = 0;
         //console.log(flights);
-
-        if (flights.items) {
+        
+        if (flights?.items) {
             //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
             for await (const flight of flights.items) {
@@ -948,7 +1218,23 @@ more than 10.`
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
                     ////console.log('match found');
                     match = match + 1;
-                    return flight;
+                    let revalidateFlight: any
+                    try {
+                        let routeIdDto = {
+                            route_code: flight.route_code
+                        }
+                        let data = await this.flightService.airRevalidate(routeIdDto, headers, user, referralId)
+                        revalidateFlight = data[0]
+                    } catch (e) {
+                        //console.log(e);
+
+                        revalidateFlight = {
+                            message: `Flight not air-revalidate`
+                        }
+
+                    }
+                    //console.log('revalidateFlight', revalidateFlight)
+                    return revalidateFlight;
                 }
             }
         }
@@ -998,6 +1284,86 @@ more than 10.`
                 .where(`"id" = '${id}'`)
                 .execute();
 
+
+            return {
+                message: `Item removed successfully`,
+            };
+        } catch (error) {
+            throw new BadRequestException(error.response.message);
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new NotFoundException(
+                `${error.message}&&&id&&&${error.message}`
+            );
+        }
+    }
+
+    async multipleInventryDeleteFromCart(dto: MultipleInventryDeleteFromCartDto, user) {
+        const { id } = dto
+        try {
+            if (!id.length) {
+                throw new BadRequestException(`Please enter valid id.`);
+            }
+            let where = `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user?.user_id}') AND ("cart"."id" In (:...id))`;
+            if (user.roleId == Role.GUEST_USER) {
+                if (!uuidValidator(user.user_id)) {
+                    throw new NotFoundException(
+                        `Please enter guest user id &&&user_id&&&${errorMessage}`
+                    );
+                }
+                where = `("cart"."is_deleted" = false) AND ("cart"."guest_user_id" = '${user.user_id}') AND ("cart"."id" In (:...id))`;
+            }
+
+
+
+            let query = getConnection()
+                .createQueryBuilder(Cart, "cart")
+                .where(where, { id });
+
+            const cartItem = await query.getOne();
+
+            if (!cartItem) {
+                throw new NotFoundException(`Given item not found`);
+            }
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(CartTravelers)
+                .where(`"id" In (:...id)`, { id })
+                .execute();
+            await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(Cart)
+                .where(`"id" In (:...id)`, { id })
+                .execute();
+
             return {
                 message: `Item removed successfully`,
             };
@@ -1037,13 +1403,13 @@ more than 10.`
         }
     }
 
-    async bookCart(bookCart: CartBookDto, user: User, Headers,referralId) {
+    async bookCart(bookCart: CartBookDto, user: User, Headers, referralId) {
         let logData = new BookingLog
-            logData.id = uuidv4()
-            logData.paymentAuthorizeLog = bookCart.auth_url
-            logData.timeStamp = Math.round(new Date().getTime() / 1000)
+        logData.id = uuidv4()
+        logData.paymentAuthorizeLog = bookCart.auth_url
+        logData.timeStamp = Math.round(new Date().getTime() / 1000)
 
-            const bookingLog = await logData.save()
+        const bookingLog = await logData.save()
         try {
             const {
                 payment_type,
@@ -1055,10 +1421,10 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
-                referral_id,
+               
                 auth_url
             } = bookCart;
-
+            let  referral_id = referralId
             // let logData =  await getConnection()
             //         .createQueryBuilder()
             //         .insert()
@@ -1068,14 +1434,16 @@ more than 10.`
             //         .execute(); 
             // let logId = logData.raw[0].id;
 
-             
+
             //console.log("log data",logData.raw[0].id)
             if (cart.length > 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
                     more than 10.`
-                    );
-                }
+                );
+            }
+
+
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);
@@ -1088,13 +1456,7 @@ more than 10.`
                 .leftJoinAndSelect("travelers.userData", "userData")
                 .leftJoinAndSelect("cart.user", "User")
                 .select([
-                    "cart.id",
-                    "cart.userId",
-                    "cart.moduleId",
-                    "cart.moduleInfo",
-                    "cart.expiryDate",
-                    "cart.isDeleted",
-                    "cart.createdDate",
+                    "cart",
                     "module.id",
                     "module.name",
                     "travelers.id",
@@ -1125,6 +1487,40 @@ more than 10.`
             bookingLog.cartInfo = result
             let smallestDate = "";
             let largestDate = "";
+
+            let promotional = 0
+            let nonPromotional = 0
+            let promotionalItem = []
+            let nonPromotionalItem = []
+            for (let index = 0; index < result.length; index++) {
+                const item = result[index];
+
+                if (item.isPromotional == true) {
+                    promotional++
+                    promotionalItem.push(item.id)
+                } else {
+                    nonPromotional++
+                    nonPromotionalItem.push(item.id)
+                }
+            }
+
+            if (promotional > 0 && nonPromotional > 0) {
+                throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
+            }
+
+            console.log("promotional", promotional, "nonPromotional", nonPromotional)
+
+            let cartIsPromotional
+            if (promotional > 0) {
+                cartIsPromotional = true
+                console.log("cartIsPromotional", cartIsPromotional)
+            } else if (nonPromotional > 0) {
+                cartIsPromotional = false
+            }
+
+            console.log("cartIsPromotional", cartIsPromotional)
+
+
             //let ToatalAmount = ''
             for await (const item of result) {
                 if (item.moduleId == ModulesName.FLIGHT) {
@@ -1175,15 +1571,10 @@ more than 10.`
             cartBook.checkInDate = new Date(smallestDate);
             cartBook.checkOutDate = new Date(largestDate);
             cartBook.userId = user.userId;
-            if (referral_id) {
-                let ref = await this.getReferralId(referral_id);
-                console.log(ref);
-                console.log(result[0]?.user?.referralId);
-                
-                
-                if (ref?.id == result[0]?.user?.referralId) {
-                    console.log('added');
-                    cartBook.referralId =ref?.id || null;
+            if (referralId) {
+                let ref = await this.getReferralId(referralId);
+                if (ref?.id){ 
+                    cartBook.referralId = ref?.id || null;
                 }
             }
             cartBook.bookingType =
@@ -1192,7 +1583,7 @@ more than 10.`
                     : BookingType.NOINSTALMENT;
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
-             bookingLog.cartBookingId = cartData.id
+            bookingLog.cartBookingId = cartData.id
             await bookingLog.save()
             let responce = [];
             let successedResult = 0;
@@ -1203,7 +1594,7 @@ more than 10.`
             //let mailResponce = []
 
             const cartCount = result.length;
-            let inventryLogs = [] 
+            let inventryLogs = []
             for await (const item of result) {
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
@@ -1216,7 +1607,9 @@ more than 10.`
                             smallestDate,
                             cartData,
                             cartCount,
-                            flightCount
+                            flightCount,
+                            cartIsPromotional,
+                            referral_id
                         );
                         responce.push(flightResponce);
                         inventryLogs.push(flightResponce["logFile"])
@@ -1241,7 +1634,9 @@ more than 10.`
                             smallestDate,
                             cartData,
                             cartCount,
-                            hotelCount
+                            hotelCount,
+                            referral_id,
+                            cartIsPromotional
                         );
                         responce.push(hotelResponce);
                         console.log(hotelResponce);
@@ -1295,7 +1690,7 @@ more than 10.`
                     );
 
                     bookingLog.paymentRefundLog = refaund
-                await bookingLog.save()
+                    await bookingLog.save()
                 }
             } else {
                 cartData.status == BookingStatus.FAILED;
@@ -1440,13 +1835,13 @@ more than 10.`
         payment_type: number,
         userId
     ) {
-       
+
         let captureCardresult = await this.paymentService.captureCard(
             transaction_token,
             userId
         );
 
-       
+
 
         console.log("captureCardresult", captureCardresult);
 
@@ -1459,7 +1854,7 @@ more than 10.`
                         paymentStatus: PaymentStatus.CONFIRM,
                         paymentInfo: captureCardresult.meta_data,
                         transactionToken: captureCardresult.token,
-                        paymentCaptureDate : new Date(),
+                        paymentCaptureDate: new Date(),
                         attempt: 1,
                     })
                     .where(
@@ -1498,7 +1893,9 @@ more than 10.`
         smallestDate: string,
         cartData: CartBooking,
         cartCount: number,
-        flightCount : number,
+        flightCount: number,
+        cartIsPromotional,
+        referral_id
     ) {
         let logFile = {}
         let reservationId = `${cartData.laytripCartId}-F${flightCount}`
@@ -1520,7 +1917,7 @@ more than 10.`
                 ? BookingType.INSTALMENT
                 : BookingType.NOINSTALMENT;
 
-        let flightRequest;
+        //let flightRequest;
         let value: any = cart.moduleInfo[0]
         // if (bookingType == "oneway") {
         //     let dto = {
@@ -1644,12 +2041,14 @@ more than 10.`
                     cartData.id,
                     selected_down_payment,
                     transaction_token,
+                    cartIsPromotional,
+                    referral_id
                 );
 
                 console.log(" newCart[detail]", newCart["detail"])
-            
+
                 logFile[reservationId] = newCart["detail"]['logData']
-                console.log('logFile',logFile)
+                console.log('logFile', logFile)
                 newCart["logFile"] = logFile
                 console.log('logFile', logFile)
                 //console.log(JSON.stringify(newCart['detail']));
@@ -1714,7 +2113,9 @@ more than 10.`
         smallestDate: string,
         cartData: CartBooking,
         cartCount: number,
-        hotelCount
+        hotelCount,
+        referral_id,
+        cartIsPromotional
     ) {
         let logFile = {}
         let reservationId = `${cartData.laytripCartId}-H${hotelCount}`
@@ -1816,9 +2217,11 @@ more than 10.`
                     smallestDate,
                     cartData.id,
                     selected_down_payment,
-                    transaction_token
+                    transaction_token,
+                    referral_id,
+                    cartIsPromotional
                 );
-                console.log("newCart[detail]",newCart["detail"])
+                console.log("newCart[detail]", newCart["detail"])
                 logFile[reservationId] = newCart["detail"]['logData']
                 newCart["logFile"] = logFile
                 //console.log(JSON.stringify(newCart['detail']));
@@ -2051,8 +2454,8 @@ more than 10.`
             const userName = user.firstName
                 ? user.firstName
                 : "" + " " + user.lastName
-                ? user.lastName
-                : "";
+                    ? user.lastName
+                    : "";
 
             const subject = `Booking Not Completed`;
             this.mailerService
@@ -2239,13 +2642,25 @@ more than 10.`
     //     );
     // }
 
-    async addHotelIntoCart(ppnBundle: string, user) {
+    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional) {
+
+        console.log(cartIsPromotional)
         let roomDetails = await this.hotelService.availability(
             {
                 room_ppn: ppnBundle,
             },
-            user.userId || null
+            user.userId || null,
+            referralId
         );
+        console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
+            throw new ConflictException(`In cart not-promotional item found`)
+        }
+
+        if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
+            throw new ConflictException(`In cart promotional item found`)
+        }
+
 
         const cart = new Cart();
 
@@ -2257,6 +2672,8 @@ more than 10.`
 
         cart.moduleId = ModulesName.HOTEL;
         cart.moduleInfo = roomDetails.data;
+        cart.isPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
+        cart.offerFrom = referralId
         cart.oldModuleInfo = roomDetails.data;
         console.log("cart.moduleInfo", cart.moduleInfo);
         console.log("cart.moduleInfo", cart.moduleInfo["items"][0]);

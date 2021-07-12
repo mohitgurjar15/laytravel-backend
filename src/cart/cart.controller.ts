@@ -12,6 +12,7 @@ import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
 import { cartInstallmentsDto } from './dto/cart-installment-detil.dto';
 import { ListCartDto } from './dto/list-cart.dto';
+import { MultipleInventryDeleteFromCartDto } from './dto/multiple-inventry-delete.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 @ApiTags("Cart")
@@ -46,12 +47,14 @@ export class CartController {
     async addInCart(
         @Body() addInCartDto: AddInCartDto,
         @LogInUser() user,
-        @Req() req
+        @Req() req,
+        @GetReferralId() referralId: string
     ) {
         return await this.cartService.addInCart(
             addInCartDto,
             user,
-            req.headers
+            req.headers,
+            referralId
         );
     }
 
@@ -91,12 +94,12 @@ export class CartController {
         name: "language",
         description: "Enter language code(ex. en)",
     })
-    async listCart(@LogInUser() user, @Req() req, @Query() dto: ListCartDto) {
+    async listCart(@LogInUser() user, @Req() req, @Query() dto: ListCartDto, @GetReferralId() referralId: string) {
         console.log("user");
 
         console.log(user);
 
-        return await this.cartService.listCart(dto, user, req.headers);
+        return await this.cartService.listCart(dto, user, req.headers, referralId);
     }
 
     @Delete("delete/:id")
@@ -110,6 +113,19 @@ export class CartController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     async deleteFromCart(@LogInUser() user, @Param("id") id: number) {
         return await this.cartService.deleteFromCart(id, user);
+    }
+
+    @Delete("delete-conflicted-cart-item")
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Delete multiple item in cart of user" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async multipleDeleteFromCart(@LogInUser() user, @Body() dto : MultipleInventryDeleteFromCartDto) {
+        return await this.cartService.multipleInventryDeleteFromCart(dto, user);
     }
 
     @Post("book")

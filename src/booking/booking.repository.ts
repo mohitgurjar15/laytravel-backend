@@ -739,46 +739,7 @@ export class BookingRepository extends Repository<Booking> {
                 "booking.cancellationRequest",
                 "cancellationRequest"
             )
-            .select([
-                "booking.bookingType",
-                "booking.updateBy",
-                "booking.bookingStatus",
-                "booking.checkInDate",
-                "booking.currency",
-                "booking.totalAmount",
-                "booking.netRate",
-                "booking.markupAmount",
-                "booking.usdFactor",
-                "booking.bookingDate",
-                "booking.totalInstallments",
-                "booking.moduleInfo",
-                "booking.categoryName",
-                "booking.locationInfo",
-                "booking.paymentGatewayId",
-                "booking.paymentStatus",
-                "booking.paymentInfo",
-                "booking.isPredictive",
-                "booking.layCredit",
-                "booking.fareType",
-                "booking.isTicketd",
-                "booking.laytripBookingId",
-                "booking.paymentGatewayProcessingFee",
-                "booking.supplierId",
-                "booking.nextInstalmentDate",
-                "booking.supplierBookingId",
-                "predictiveBookingData.id",
-                "predictiveBookingData.bookingId",
-                "predictiveBookingData.price",
-                "predictiveBookingData.date",
-                "booking.categoryName",
-                "predictiveBookingData.isBelowMinimum",
-                "predictiveBookingData.netPrice",
-                "predictiveBookingData.remainSeat",
-                "moduleData.name",
-                "moduleData.id",
-                "cart.laytripCartId",
-                "cancellationRequest",
-            ])
+            
 
             .where(
                 `date(predictiveBookingData.created_date) = '${

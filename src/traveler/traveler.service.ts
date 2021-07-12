@@ -24,6 +24,7 @@ import { errorMessage } from "src/config/common.config";
 import { Gender } from "src/enum/gender.enum";
 import * as uuidValidator from "uuid-validate";
 import { MultipleTravelersDto } from "./dto/multiple-add-traveler.dto";
+import { ModulesName } from "src/enum/module.enum";
 
 @Injectable()
 export class TravelerService {
@@ -31,7 +32,7 @@ export class TravelerService {
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
         private jwtService: JwtService
-    ) {}
+    ) { }
 
     async multipleTravelerAdd(
         TravelerDto: MultipleTravelersDto,
@@ -514,6 +515,7 @@ export class TravelerService {
                 passport_number,
                 phone_no,
                 country_id,
+                module_id
             } = updateTravelerDto;
             if (country_id) {
                 let countryDetails = await getManager()
@@ -528,10 +530,7 @@ export class TravelerService {
             }
 
             traveler.countryCode = country_code;
-            traveler.passportExpiry =
-                passport_expiry == "" ? null : passport_expiry;
-            traveler.passportNumber =
-                passport_number == "" ? null : passport_number;
+
             traveler.firstName = first_name;
             traveler.lastName = last_name;
             traveler.isVerified = true;
@@ -541,14 +540,21 @@ export class TravelerService {
             if (gender) {
                 traveler.title = gender == Gender.M ? "mr" : "ms";
             }
+            if (module_id == ModulesName.FLIGHT) {
+                traveler.dob = dob || null;
+                traveler.gender = gender || null;
+                traveler.countryId = country_id || null;
+                traveler.passportExpiry =
+                    passport_expiry == "" ? null : passport_expiry;
+                traveler.passportNumber =
+                    passport_number == "" ? null : passport_number;
+            }
 
-            traveler.dob = dob || null;
-            traveler.gender = gender || null;
             traveler.updatedBy = updateBy ? updateBy : guest_id;
             traveler.phoneNo =
                 phone_no == "" || phone_no == null ? "" : phone_no;
             traveler.updatedDate = new Date();
-            traveler.countryId = country_id || null;
+
             traveler.status = 1;
             //console.log("countryDetails.id",traveler)
             await traveler.save();
