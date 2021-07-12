@@ -415,7 +415,7 @@ export class CartDataUtility {
 
                 let name = ``
                 if (booking.moduleId == ModulesName.FLIGHT) {
-                    name = `${booking.moduleInfo[0].airline} ${booking.moduleInfo[0].flight_number}`
+                    name = `${booking.moduleInfo[0].departure_code} ${booking.moduleInfo[0].arrival_code}`
                 }
 
                 if (booking.moduleId == ModulesName.HOTEL) {
