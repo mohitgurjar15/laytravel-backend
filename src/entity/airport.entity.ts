@@ -41,6 +41,6 @@ export class Airport extends BaseEntity {
   @Column("integer", { name: "parent_id",default: () => 0 })
   parentId: number;
 
-  @Column("boolean", { name: "is_balcklisted", default: () => "false" })
+  @Column("boolean", { name: "is_blacklisted", default: () => "false" })
   isBlackListed: boolean;
 }
