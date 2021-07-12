@@ -41,6 +41,7 @@ import { csvFileDto } from "src/user/dto/csv-file.dto";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { csvFileFilter, editFileName } from "src/auth/file-validator";
 import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
+import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblacklisted-route.dto";
 @ApiTags("Flight Route")
 @Controller("flight-route")
 @ApiBearerAuth()
@@ -168,6 +169,30 @@ export class FlightRouteController {
         @Param("id") id: number
     ) {
         return await this.flightRouteService.enableDisableFlightRoute(
+            id,
+            enableDisableFlightRouteDto,
+            user
+        );
+    }
+
+    @Patch("blacklisted-unblacklisted/:id")
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "Flight route blacklisted-Unblacklisted" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async blacklistedUnblacklisted(
+        @Body() enableDisableFlightRouteDto: BlacklistedUnblacklistedFlightRouteDto,
+        @GetUser() user: User,
+        @Param("id") id: number
+    ) {
+        return await this.flightRouteService.blacklistedUnblacklistedFlightRoute(
             id,
             enableDisableFlightRouteDto,
             user

@@ -9,6 +9,7 @@ import {
     UnauthorizedException,
 } from "@nestjs/common";
 import { errorMessage } from "src/config/common.config";
+import { Airport } from "src/entity/airport.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { LaytripCategory } from "src/entity/laytrip-category.entity";
 import { User } from "src/entity/user.entity";
@@ -17,6 +18,7 @@ import { airports } from "src/flight/airports";
 import { Activity } from "src/utility/activity.utility";
 import { getConnection } from "typeorm";
 import { AddFlightRouteDto } from "./dto/add-flight-route.dto";
+import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblacklisted-route.dto";
 import { EnableDisableFlightRouteDto } from "./dto/enable-disable-route.dto";
 import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { ImportRouteDto } from "./dto/import-route.dto";
@@ -473,6 +475,37 @@ export class FlightRouteService {
         route.updateDate = new Date();
         route.updateBy = user.userId;
         route.status = status;
+
+        const current = await route.save();
+        Activity.logActivity(
+            user.userId,
+            "Flight Route",
+            `Flight route status changed successfully`,
+            previous,
+            JSON.stringify(current)
+        );
+        return {
+            message: `Flight route status changed successfully`,
+        };
+    }
+
+    async blacklistedUnblacklistedFlightRoute(
+        id: number,
+        blacklistedUnblacklistedFlightRouteDto: BlacklistedUnblacklistedFlightRouteDto,
+        user: User
+    ) {
+        const { isBlackListed } = blacklistedUnblacklistedFlightRouteDto;
+        const route = await getConnection()
+            .createQueryBuilder(Airport, "airport")
+            .where(`"id" = ${id} AND "is_deleted" = false`)
+            .getOne();
+        if (!route) {
+            throw new NotFoundException("Given route not found.");
+        }
+        const previous = JSON.stringify(route);
+        route.updateDate = new Date();
+        route.updateBy = user.userId;
+        route.isBlackListed = isBlackListed;
 
         const current = await route.save();
         Activity.logActivity(
