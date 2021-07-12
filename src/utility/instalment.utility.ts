@@ -186,6 +186,7 @@ export class Instalment {
     }
 
     static adjustInstalment(amount, instalment_date) {
+        amount = amount.toFixed(2)
         let downPayment = instalment_date[0].instalment_amount;
         let remaingAmount = amount - downPayment;
         let totalInstalmentDates = instalment_date.length - 1;
