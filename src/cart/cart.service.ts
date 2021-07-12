@@ -1685,6 +1685,11 @@ more than 10.`
                         cartData.id,
                         payment_type
                     );
+                    if (payment_type == PaymentType.INSTALMENT) {
+                        await this.sattelInstalment(cartData.id,
+                            instalment_type, smallestDate, selected_down_payment)
+                    }
+
                 }
                 const payment = await this.capturePayment(
                     BookingIds,
@@ -1705,21 +1710,21 @@ more than 10.`
                     failedResult
                 );
 
-                if (failedResult > 0 && payment.status == true) {
-                    let refaund = await this.refundCart(
-                        cartData.id,
-                        Headers,
-                        payment_type,
-                        instalment_type,
-                        smallestDate,
-                        selected_down_payment,
-                        payment.reference_token,
-                        user.userId
-                    );
+                // if (failedResult > 0 && payment.status == true) {
+                //     let refaund = await this.refundCart(
+                //         cartData.id,
+                //         Headers,
+                //         payment_type,
+                //         instalment_type,
+                //         smallestDate,
+                //         selected_down_payment,
+                //         payment.reference_token,
+                //         user.userId
+                //     );
 
-                    bookingLog.paymentRefundLog = refaund
-                    await bookingLog.save()
-                }
+                //     bookingLog.paymentRefundLog = refaund
+                //     await bookingLog.save()
+                // }
             } else {
                 cartData.status == BookingStatus.FAILED;
                 await cartData.save();
@@ -1871,14 +1876,18 @@ more than 10.`
             )
             .leftJoinAndSelect("booking.currency2", "currency")
             .where(
-                `"booking"."cart_id" = '${cartId}' AND "BookingInstalments"."instalment_no" = 1  AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}`
+                `"booking"."cart_id" = '${cartId}' AND "BookingInstalments"."instalment_no" = 1  AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
             )
             .getMany();
+        //console.log(JSON.stringify(allBooking))
+        //console.log('payment_type', payment_type, PaymentType.INSTALMENT, payment_type == PaymentType.INSTALMENT)
         if (payment_type == PaymentType.INSTALMENT) {
+            //console.log('payment_type', payment_type)
             let captureAmount = 0
             if (allBooking.length) {
                 for await (const booking of allBooking) {
                     if (booking?.bookingInstalments?.length) {
+                        booking.bookingInstalments.sort((a, b) => a.id - b.id);
                         captureAmount += parseFloat(booking.bookingInstalments[0].amount)
                     }
                 }
@@ -1908,15 +1917,22 @@ more than 10.`
             )
             .leftJoinAndSelect("booking.currency2", "currency")
             .where(
-                `"booking"."cart_id" = '${cartId}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}`
+                `"booking"."cart_id" = '${cartId}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
             )
             .getMany();
+
+
         let downPayment = 0;
         let totalAmount = 0
         let installmentTotal = 0
+        let installment = {}
+        let onIndexCalcualation = []
+        let bookingIds = []
         if (allBooking.length) {
             for await (const booking of allBooking) {
+                let installmentAmount = []
                 if (booking.bookingInstalments.length) {
+
                     for await (const installment of booking.bookingInstalments) {
                         if (installment.instalmentNo == 1) {
                             downPayment += parseFloat(installment.amount)
@@ -1924,18 +1940,28 @@ more than 10.`
                         else if (installment.instalmentNo == 2) {
                             installmentTotal += parseFloat(installment.amount)
                         }
-                        else {
-                            totalAmount += parseFloat(installment.amount)
-                        }
-
+                        //console.log('installment.instalmentNo', installment.instalmentNo)
+                        installmentAmount[installment.instalmentNo] = parseFloat(installment.amount)
+                        totalAmount += parseFloat(installment.amount)
+                        onIndexCalcualation[installment.instalmentNo] = onIndexCalcualation[installment.instalmentNo] ? onIndexCalcualation[installment.instalmentNo] + parseFloat(installment.amount) : parseFloat(installment.amount)
                     }
                 }
+                installment[booking.id] = installmentAmount
+                bookingIds.push(booking.id)
             }
+            // console.log("downPayment", downPayment)
+            // console.log("totalAmount", totalAmount)
+            // console.log("installmentTotal", installmentTotal);
+            // console.table(onIndexCalcualation)
+            // console.log("bookingIds", bookingIds)
+
             if (installmentTotal < 5) {
                 let instalmentDetails;
                 const date = new Date();
                 var date1 = date.toISOString();
+                //console.log("instalment_type", instalment_type, typeof instalment_type, InstalmentType.WEEKLY, typeof InstalmentType.WEEKLY, InstalmentType.WEEKLY == instalment_type)
                 if (instalment_type == InstalmentType.WEEKLY) {
+                    console.log('Weekly')
                     instalmentDetails = Instalment.weeklyInstalment(
                         totalAmount,
                         smallestDate,
@@ -1974,12 +2000,48 @@ more than 10.`
                         downPayment
                     );
                 }
+                //console.log("instalmentDetails", instalmentDetails)
+                if (instalmentDetails?.instalment_date?.length) {
+                    let totalLength = instalmentDetails?.instalment_date?.length
 
+                    for (let index = 1; index < totalLength; index++) {
+                        const element = instalmentDetails?.instalment_date[index];
+                        for await (const booking of allBooking) {
+                            let bookingInstallment = installment[booking.id][index]
+                            let cartInstallment = onIndexCalcualation[index]
+                            let newSettledInstallment = parseFloat(element.instalment_amount)
+                            let percentageOfBookingInstallment = (bookingInstallment * 100) / cartInstallment
+                            let settlePercentageBaseAmount = (percentageOfBookingInstallment * newSettledInstallment) / 100
 
+                            // console.log("bookingInstallment", bookingInstallment)
+                            // console.log("cartInstallment", cartInstallment)
+                            // console.log("newSettledInstallment", newSettledInstallment)
+                            // console.log("percentageOfBookingInstallment", percentageOfBookingInstallment)
+                            // console.log("settlePercentageBaseAmount", settlePercentageBaseAmount)
+                            await getConnection()
+                                .createQueryBuilder()
+                                .update(BookingInstalments)
+                                .set({
+                                    amount: settlePercentageBaseAmount.toString()
+                                })
+                                .where(
+                                    `booking_id = '${booking.id}' AND instalment_no = ${index+1}`
+                                )
+                                .execute();
+
+                        }
+                    }
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(BookingInstalments)
+                        .where(`"booking_id" in (:...bookingIds) AND instalment_no > ${totalLength}`, {
+                            bookingIds,
+                        })
+                        .execute();
+                }
             }
         }
-
-
     }
     async capturePayment(
         BookingIds,
