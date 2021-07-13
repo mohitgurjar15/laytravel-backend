@@ -3072,7 +3072,7 @@ export class Mystifly implements StrategyAirline {
             destination_location
         );
         if (typeof routeDetails == "undefined") {
-            throw new InternalServerErrorException(
+            throw new NotAcceptableException(
                 `Sorry, location not served, coming soon. Please choose alternative.`
             );
         }
