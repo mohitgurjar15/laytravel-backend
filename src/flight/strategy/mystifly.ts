@@ -242,7 +242,7 @@ export class Mystifly implements StrategyAirline {
         );
         if (typeof routeDetails == "undefined") {
             throw new NotAcceptableException(
-                `Fligh is not available for search route`
+                `Sorry, location not served, coming soon. Please choose alternative.`
             );
         }
 
@@ -3073,7 +3073,7 @@ export class Mystifly implements StrategyAirline {
         );
         if (typeof routeDetails == "undefined") {
             throw new InternalServerErrorException(
-                `Fligh is not available for search route`
+                `Sorry, location not served, coming soon. Please choose alternative.`
             );
         }
         let markup = await this.getMarkupDetails(
