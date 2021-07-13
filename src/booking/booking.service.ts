@@ -2833,7 +2833,7 @@ export class BookingService {
                 await this.mailerService
                     .sendMail({
                         to: mailConfig.admin,
-                        from: mailConfig.from,
+                        from: 'customerservice@laytrip.com',
                         bcc: mailConfig.BCC,
                         subject: `Alert - BOOKING #${data.param.laytripBookingId} got cancelled `,
                         html: await BookingCancellationNotificationMail(
@@ -2860,7 +2860,7 @@ export class BookingService {
             this.mailerService
                 .sendMail({
                     to: query.user.email,
-                    from: mailConfig.from,
+                    from: 'customerservice@laytrip.com',
                     bcc: mailConfig.BCC,
                     subject: `Booking ID ${booking_id} Provider Cancellation Notice`,
                     html: await LaytripCancellationTravelProviderMail(
@@ -3176,7 +3176,7 @@ export class BookingService {
             this.mailerService
                 .sendMail({
                     to: responce.email,
-                    from: mailConfig.from,
+                    from:'customerservice@laytrip.com',
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripIntialCancelBookingRequestEmail(

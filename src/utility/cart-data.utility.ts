@@ -167,7 +167,7 @@ export class CartDataUtility {
                             paymentStatus[baseInstallments.instalmentStatus],
                         amount:
                             currency.symbol +
-                            `${Generic.formatPriceDecimal(amount)}`,
+                            `${amount.toFixed(2)}`,
                     };
                     cartInstallments.push(installment);
                 }
@@ -330,13 +330,13 @@ export class CartDataUtility {
             param.cart = {
                 totalAmount:
                     currency.symbol +
-                    `${Generic.formatPriceDecimal(totalAmount)}`,
+                    `${totalAmount.toFixed(2)}`,
                 totalPaid:
                     currency.symbol +
-                    `${Generic.formatPriceDecimal(paidAmount)}`,
+                    `${paidAmount.toFixed(2)}`,
                 rememberAmount:
                     currency.symbol +
-                    `${Generic.formatPriceDecimal(remainAmount)}`,
+                    `${remainAmount}`,
             };
             param.paymentDetail = cartInstallments;
             param.bookings = bookingsData;

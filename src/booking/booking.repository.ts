@@ -1008,34 +1008,33 @@ export class BookingRepository extends Repository<Booking> {
 
         const query = getManager()
             .createQueryBuilder(Booking, "booking")
-            .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
+            .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("booking.updateByUser", "updateBy")
             .leftJoinAndSelect("booking.travelers", "traveler")
             .leftJoinAndSelect("User.state", "state")
             .leftJoinAndSelect("User.country", "countries")
-            // .leftJoinAndSelect("userData.state", "state")
-            // .leftJoinAndSelect("userData.country", "countries")
-            .leftJoinAndSelect("booking.supplier", "supplier")
-
+            // .leftJoinAndSelect("booking.supplier", "supplier")
             .where(where, {
                 booking_type,
                 booking_status,
                 module_id,
                 payment_type,
+                product_id,
+                booking_id,
                 booking_through,
+                reservationId,
                 category_name,
                 update_by,
                 cancellation_reasons,
-            });
-        //.orderBy(`booking.bookingDate`, "DESC");
-
-        if (
-            !order_by_depature_date &&
-            !order_by_booking_date &&
-            !order_by_cancelation_date
-        ) {
+            })
+        if (!order_by_depature_date && !order_by_booking_date && !order_by_cancelation_date) {
             query.addOrderBy(`booking.bookingDate`, "DESC");
         }
 
@@ -1057,6 +1056,9 @@ export class BookingRepository extends Repository<Booking> {
                 order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
             );
         }
+
+        //  console.log(query);
+
         const [data, count] = await query.getManyAndCount();
         //const count = await query.getCount();
         if (!data.length) {
