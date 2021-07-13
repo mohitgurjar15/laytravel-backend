@@ -14,7 +14,7 @@ export class BlacklistedUnblacklistedFlightRouteDto {
 	@Type(() => blackListedArray)
 	@ApiProperty({
 		description: `blackListedArray`,
-		example: [{ "code": "Amd","isBlackListed":true }]
+		example: [{ "code": "Amd","is_blacklisted":true }]
 	})
  blackListedArray:blackListedArray[];
 }
@@ -30,5 +30,5 @@ class blackListedArray {
 		description: `Enter status`,
 		example: true
 	})
-	isBlackListed: boolean;
+	is_blacklisted: boolean;
 }

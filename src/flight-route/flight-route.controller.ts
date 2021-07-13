@@ -42,6 +42,7 @@ import { SiteUrl } from "src/decorator/site-url.decorator";
 import { csvFileFilter, editFileName } from "src/auth/file-validator";
 import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblacklisted-route.dto";
+import { ListAirportRouteDto } from "./dto/list-airport.dto";
 @ApiTags("Flight Route")
 @Controller("flight-route")
 @ApiBearerAuth()
@@ -175,6 +176,27 @@ export class FlightRouteController {
         );
     }
 
+    @Get("list-Airport")
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "List all flight route for admin" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async listAirportRoutes(
+        @Query() listAirportRouteDto: ListAirportRouteDto,
+        @GetUser() user: User
+    ) {
+        return await this.flightRouteService.listAirportRoutes(
+            listAirportRouteDto
+        );
+    }
+
     @Patch("blacklisted-unblacklisted")
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
     @ApiBearerAuth()
@@ -195,6 +217,57 @@ export class FlightRouteController {
         console.log(enableDisableFlightRouteDto)
         return await this.flightRouteService.blacklistedUnblacklistedFlightRoute(enableDisableFlightRouteDto,user);
     }
+
+    @Get('filter-options/flight-code')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all code of FlightRoute" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "Code not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFlightCode() {
+		return await this.flightRouteService.getFlightCode();
+	}
+
+    @Get('filter-options/flight-city')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all city of FlightRoute" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "city not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFlightCity() {
+		return await this.flightRouteService.getFlightCity();
+	}
+
+    @Get('filter-options/flight-country')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all country of FlightRoute" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "country not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFlightCountry() {
+		return await this.flightRouteService.getFlightCountry();
+	}
 
     @Delete(":id")
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)

@@ -22,6 +22,7 @@ import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblac
 import { EnableDisableFlightRouteDto } from "./dto/enable-disable-route.dto";
 import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { ImportRouteDto } from "./dto/import-route.dto";
+import { ListAirportRouteDto } from "./dto/list-airport.dto";
 import { ListFlightRouteDto } from "./dto/list-flight-route.dto";
 import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
 
@@ -489,6 +490,89 @@ export class FlightRouteService {
         };
     }
 
+    async listAirportRoutes(listAirportRouteDto: ListAirportRouteDto) {
+        try {
+            const {
+                limit,
+                page_no,
+                code,
+                city,
+                country,
+            } = listAirportRouteDto;
+            let where = `("airport"."is_deleted" = false)`;
+            let results = await getConnection()
+            .createQueryBuilder(Airport, "airport")
+                .where(where)
+                .orderBy(`airport.id`, "ASC")
+                .getMany();
+            const take = limit || results.length;
+            const skip = (page_no - 1) * limit || 0 ;
+
+            if (code) {
+                where +=  `AND ("airport"."code" = '${code}' )`;
+           
+            }
+
+            if (country) {
+                where += `AND ("airport"."country" = '${country}' )`;
+            }
+
+            if (city) {
+                where += `AND ("airport"."city" = '${city}' )`;
+            } 
+            console.log(where)
+            let [result, count] = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .where(where)
+                .skip(skip)
+                .take(take)
+                .orderBy(`airport.id`, "ASC")
+                .getManyAndCount();
+
+            if (!result) {
+                throw new NotFoundException(
+                    `No any Airport available for given location`
+                );
+            }
+
+            return { route: result, count };
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                console.log("m");
+                switch (error.response.statusCode) {
+                    case 404:
+
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
+    }
+
     async blacklistedUnblacklistedFlightRoute(
         blacklistedUnblacklistedFlightRouteDto: BlacklistedUnblacklistedFlightRouteDto,
         user: User
@@ -506,7 +590,7 @@ export class FlightRouteService {
                 const previous = JSON.stringify(route);
                 route.updateDate = new Date();
                 route.updateBy = user.userId;
-                route.isBlackListed = data.isBlackListed;
+                route.isBlackListed = data.is_blacklisted;
                 const current = await route.save();
                 Activity.logActivity(
                     user.userId,
@@ -554,6 +638,81 @@ export class FlightRouteService {
                 `${error.message}&&&id&&&${errorMessage}`
             );
         }
+    }
+
+        async getFlightCode() {
+        var andWhere = {
+			isDeleted: false,
+		}
+        let [result] = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .where(andWhere)
+                .orderBy(`airport.code`, "ASC")
+                .getManyAndCount();
+
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+
+		let responce = [];
+		for await (const item of result) {
+			if (item.code) {
+				responce.push(item.code)
+			}
+		}
+		return {
+			data: responce
+		}
+    }
+
+    async getFlightCountry() {
+        var andWhere = {
+			isDeleted: false,
+		}
+        let [result] = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .where(andWhere)
+                .orderBy(`airport.country`, "ASC")
+                .getManyAndCount();
+
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+
+		let responce = [];
+		for await (const item of result) {
+			if (item.country) {
+				responce.push(item.country)
+			}
+		}
+		return {
+			data: responce
+		}
+    }
+
+    async getFlightCity() {
+        var andWhere = {
+			isDeleted: false,
+		}
+        let [result] = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .where(andWhere)
+                .orderBy(`airport.city`, "ASC")
+                .getManyAndCount();
+
+		if (!result.length) {
+			throw new NotFoundException('no data found')
+		}
+
+		let responce = [];
+		for await (const item of result) {
+			if (item.city) {
+				responce.push(item.city)
+			}
+		}
+		return {
+			data: responce
+		}
     }
 
     async deleteFlightRoute(id: number, user: User) {
