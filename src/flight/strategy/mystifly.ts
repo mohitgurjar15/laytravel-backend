@@ -37,6 +37,7 @@ import { Airport } from "src/entity/airport.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { LandingPages } from "src/entity/landing-page.entity";
+import { Session } from "inspector";
 
 export const flightClass = {
     Economy: "Y",
@@ -125,15 +126,21 @@ export class Mystifly implements StrategyAirline {
     }
     async startSession() {
         try {
-            let sessionDetails = await this.cacheManager.get(this.sessionName);
+            //let sessionDetails = await this.cacheManager.get(this.sessionName);
             //sessionDetails = JSON.parse(sessionDetails);
             //let currentTime = new Date();
             //let diff = moment(currentTime).diff(sessionDetails.created_time, 'seconds')
-            if (sessionDetails) {
-                return sessionDetails;
-            } else {
-                return await this.createSession();
+
+            const config = await Generic.getCredential("flight");
+
+            let mystiflyConfig = JSON.parse(config.testCredential);
+
+            if (config.mode) {
+                mystiflyConfig = JSON.parse(config.liveCredential);
             }
+            console.log('mystiflyConfig',mystiflyConfig)
+            console.log('mystiflyConfig.sessionId',mystiflyConfig.sessionId)
+            return mystiflyConfig.sessionId
         } catch (e) {
             return await this.createSession();
         }
