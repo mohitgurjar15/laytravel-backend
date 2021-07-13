@@ -6,6 +6,7 @@ import {
     Inject,
     CACHE_MANAGER,
     BadRequestException,
+    NotAcceptableException,
 } from "@nestjs/common";
 import { RoundtripSearchFlightDto } from "../dto/roundtrip-flight.dto";
 import * as moment from "moment";
@@ -216,6 +217,7 @@ export class Mystifly implements StrategyAirline {
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        
         let categoryName = caegory?.categoryname;
 
 
@@ -239,7 +241,7 @@ export class Mystifly implements StrategyAirline {
             destination_location
         );
         if (typeof routeDetails == "undefined") {
-            throw new NotFoundException(
+            throw new NotAcceptableException(
                 `Fligh is not available for search route`
             );
         }
@@ -3070,7 +3072,7 @@ export class Mystifly implements StrategyAirline {
             destination_location
         );
         if (typeof routeDetails == "undefined") {
-            throw new NotFoundException(
+            throw new InternalServerErrorException(
                 `Fligh is not available for search route`
             );
         }
