@@ -492,7 +492,7 @@ export class FlightRouteService {
 
     async listAirportRoutes(listAirportRouteDto: ListAirportRouteDto) {
         try {
-            const {
+            var {
                 limit,
                 page_no,
                 code,
@@ -505,8 +505,11 @@ export class FlightRouteService {
                 .where(where)
                 .orderBy(`airport.id`, "ASC")
                 .getMany();
+                if(limit === 0 ){
+                  limit = results.length
+                }
             const take = limit || results.length;
-            const skip = (page_no - 1) * limit || 0 ;
+            const skip = (page_no - 1) * take || 0 ;
 
             if (code) {
                 where +=  `AND ("airport"."code" = '${code}' )`;
