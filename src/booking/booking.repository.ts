@@ -272,7 +272,7 @@ export class BookingRepository extends Repository<Booking> {
         }
 
         
-        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? 1:-1 });
+        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? -1:1 });
         
         return { data: data, total_count: count };
     }
@@ -1082,7 +1082,7 @@ export class BookingRepository extends Repository<Booking> {
                 `No booking found&&&id&&&No booking found`
             );
         } 
-        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? 1 : -1 });
+        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? -1 : 1 });
    return { data: data, total_count: count };
     }
 
