@@ -501,19 +501,19 @@ export class FlightRouteService {
             } = listAirportRouteDto;
             let where = `("airport"."is_deleted" = false)`;
             let results = await getConnection()
-            .createQueryBuilder(Airport, "airport")
+                .createQueryBuilder(Airport, "airport")
                 .where(where)
                 .orderBy(`airport.id`, "ASC")
                 .getMany();
-                if(limit === 0 ){
-                  limit = results.length
-                }
+            if (limit === 0) {
+                limit = results.length
+            }
             const take = limit || results.length;
-            const skip = (page_no - 1) * take || 0 ;
+            const skip = (page_no - 1) * take || 0;
 
             if (code) {
-                where +=  `AND ("airport"."code" = '${code}' )`;
-           
+                where += `AND ("airport"."code" = '${code}' )`;
+
             }
 
             if (country) {
@@ -522,7 +522,7 @@ export class FlightRouteService {
 
             if (city) {
                 where += `AND ("airport"."city" = '${city}' )`;
-            } 
+            }
             console.log(where)
             let [result, count] = await getConnection()
                 .createQueryBuilder(Airport, "airport")
@@ -643,82 +643,77 @@ export class FlightRouteService {
         }
     }
 
-        async getFlightCode() {
+    async getFlightCode() {
         var andWhere = {
-			isDeleted: false,
-		}
+            isDeleted: false,
+        }
         let [result] = await getConnection()
-                .createQueryBuilder(Airport, "airport")
-                .where(andWhere)
-                .orderBy(`airport.code`, "ASC")
-                .getManyAndCount();
+            .createQueryBuilder(Airport, "airport")
+            .where(andWhere)
+            .orderBy(`airport.code`, "ASC")
+            .getManyAndCount();
 
-		if (!result.length) {
-			throw new NotFoundException('no data found')
-		}
+        if (!result.length) {
+            throw new NotFoundException('no data found')
+        }
 
-		let responce = [];
-		for await (const item of result) {
-			if (item.code) {
-				responce.push(item.code)
-			}
-		}
-		return {
-			data: responce
-		}
+        let responce = [];
+        for await (const item of result) {
+            if (item.code) {
+                responce.push(item.code)
+            }
+        }
+        return {
+            data: responce
+        }
     }
 
     async getFlightCountry() {
-        var andWhere = {
-			isDeleted: false,
-		}
-        let result = await getConnection()
-                .createQueryBuilder(Airport, "airport")
-                .select(`"airport"."country"`)
-                .distinct(true)
-                .where(andWhere)
-                .orderBy(`airport.country`, "ASC")
-                .getManyAndCount();
-            console.log("result",result)
-		if (!result.length) {
-			throw new NotFoundException('no data found')
-		}
+        let results = await getManager()
+            .createQueryBuilder(Airport, "airports")
+            .select([
+                "airports.country"
+            ])
+            .distinctOn(["airports.country"])
+            .getMany()
 
-		// let responce = [];
-		// for await (const item of result) {
-		// 	if (item.country) {
-		// 		responce.push(item.country)
-		// 	}
-		// }
-        // console.log(responce)
-		// return {
-		// 	data: responce
-		// }
+            if (!results.length) {
+                throw new NotFoundException('no data found')
+            }
+    
+            let responce = [];
+            for await (const item of results) {
+                if (item.country) {
+                    responce.push(item.country)
+                }
+            }
+            return {
+                data: responce
+            }
     }
 
     async getFlightCity() {
-        var andWhere = {
-			isDeleted: false,
-		}
-        let [result] = await getConnection()
-                .createQueryBuilder(Airport, "airport")
-                .where(andWhere)
-                .orderBy(`airport.city`, "ASC")
-                .getManyAndCount();
+        let results = await getManager()
+        .createQueryBuilder(Airport, "airports")
+        .select([
+            "airports.city"
+        ])
+        .distinctOn(["airports.city"])
+        .getMany()
 
-		if (!result.length) {
-			throw new NotFoundException('no data found')
-		}
+        if (!results.length) {
+            throw new NotFoundException('no data found')
+        }
 
-		let responce = [];
-		for await (const item of result) {
-			if (item.city) {
-				responce.push(item.city)
-			}
-		}
-		return {
-			data: responce
-		}
+        let responce = [];
+        for await (const item of results) {
+            if (item.city) {
+                responce.push(item.city)
+            }
+        }
+        return {
+            data: responce
+        }
     }
 
     async deleteFlightRoute(id: number, user: User) {
