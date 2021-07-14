@@ -672,28 +672,28 @@ export class FlightRouteService {
         var andWhere = {
 			isDeleted: false,
 		}
-        let [result] = await getConnection().query(`SELECT DISTINCT "airport"."country" as country FROM "airport" "airport" WHERE "airport"."is_deleted" = false ORDER BY "airport"."country" ASC`)
-                // .createQueryBuilder(Airport, "airport")
-                // .select(`"airport"."country"`)
-                // .distinct(true)
-                // .where(andWhere)
-                // .orderBy(`airport.country`, "ASC")
-                // .getManyAndCount();
+        let result = await getConnection()
+                .createQueryBuilder(Airport, "airport")
+                .select(`"airport"."country"`)
+                .distinct(true)
+                .where(andWhere)
+                .orderBy(`airport.country`, "ASC")
+                .getManyAndCount();
             console.log("result",result)
-		if (!result.country.length) {
+		if (!result.length) {
 			throw new NotFoundException('no data found')
 		}
 
-		let responce = [];
-		for await (const item of result) {
-			if (item.country) {
-				responce.push(item.country)
-			}
-		}
-        console.log('endless response',responce)
-		return {
-			data: responce
-		}
+		// let responce = [];
+		// for await (const item of result) {
+		// 	if (item.country) {
+		// 		responce.push(item.country)
+		// 	}
+		// }
+        // console.log(responce)
+		// return {
+		// 	data: responce
+		// }
     }
 
     async getFlightCity() {
