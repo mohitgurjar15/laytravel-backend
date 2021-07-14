@@ -597,15 +597,15 @@ export class FlightRouteService {
                 const current = await route.save();
                 Activity.logActivity(
                     user.userId,
-                    "Flight Route",
-                    `Flight route status changed successfully`,
+                    "All Airport",
+                    `All Airport Blacklisted status changed successfully`,
                     previous,
                     JSON.stringify(current)
                 );
             }
 
             return {
-                message: `Flight route status changed successfully`,
+                message: `All Airport Blacklisted status changed successfully`,
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
