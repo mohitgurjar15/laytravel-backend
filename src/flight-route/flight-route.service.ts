@@ -23,6 +23,7 @@ import { EnableDisableFlightRouteDto } from "./dto/enable-disable-route.dto";
 import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { ImportRouteDto } from "./dto/import-route.dto";
 import { ListAirportRouteDto } from "./dto/list-airport.dto";
+import { ListCityDto } from "./dto/list-city.dto";
 import { ListFlightRouteDto } from "./dto/list-flight-route.dto";
 import { UpdateFlightRouteDto } from "./dto/update-flight-route.dto";
 
@@ -500,15 +501,15 @@ export class FlightRouteService {
                 country,
             } = listAirportRouteDto;
             let where = `("airport"."is_deleted" = false)`;
-            let results = await getConnection()
-                .createQueryBuilder(Airport, "airport")
-                .where(where)
-                .orderBy(`airport.id`, "ASC")
-                .getMany();
-            if (limit === 0) {
-                limit = results.length
-            }
-            const take = limit || results.length;
+            // let results = await getConnection()
+            //     .createQueryBuilder(Airport, "airport")
+            //     .where(where)
+            //     .orderBy(`airport.id`, "ASC")
+            //     .getMany();
+            // if (limit === 0) {
+            //     limit = results.length
+            // }
+            const take = limit
             const skip = (page_no - 1) * take || 0;
 
             if (code) {
@@ -524,14 +525,16 @@ export class FlightRouteService {
                 where += `AND ("airport"."city" = '${city}' )`;
             }
             console.log(where)
-            let [result, count] = await getConnection()
+            let query = await getConnection()
                 .createQueryBuilder(Airport, "airport")
                 .where(where)
-                .skip(skip)
-                .take(take)
-                .orderBy(`airport.id`, "ASC")
-                .getManyAndCount();
 
+                .orderBy(`airport.id`, "ASC")
+            if (limit != 0) {
+                query.skip(skip)
+                    .take(take)
+            }
+            let [result, count] = await query.getManyAndCount();
             if (!result) {
                 throw new NotFoundException(
                     `No any Airport available for given location`
@@ -677,35 +680,49 @@ export class FlightRouteService {
             .distinctOn(["airports.country"])
             .getMany()
 
-            if (!results.length) {
-                throw new NotFoundException('no data found')
-            }
-    
-            let responce = [];
-            for await (const item of results) {
-                if (item.country) {
-                    responce.push(item.country)
-                }
-            }
-            return {
-                data: responce
-            }
-    }
-
-    async getFlightCity() {
-        let results = await getManager()
-        .createQueryBuilder(Airport, "airports")
-        .select([
-            "airports.city"
-        ])
-        .distinctOn(["airports.city"])
-        .getMany()
-
         if (!results.length) {
             throw new NotFoundException('no data found')
         }
 
         let responce = [];
+        for await (const item of results) {
+            if (item.country) {
+                responce.push(item.country)
+            }
+        }
+        return {
+            data: responce
+        }
+    }
+
+    async getFlightCity(listCityDto: ListCityDto) {
+        const {
+            country
+        } = listCityDto;
+        console.log(country)
+        var andWhere = `("airport"."is_deleted" = false)`
+        if (country) {
+            andWhere += ` AND ("airport"."country" = '${country}' )`;
+
+        }
+        console.log(andWhere)
+        let results = await getManager()
+            // .createQueryBuilder(Airport, "airports")
+            // .select([
+            //     "airports.city"
+            // ])
+            // .where(andWhere)
+            // .getMany()
+            .createQueryBuilder(Airport, "airport")
+            .select("airport.city")
+            .where(andWhere)
+            .getMany();
+        if (!results.length) {
+            throw new NotFoundException('no data found')
+        }
+
+        let responce = [];
+        console.log(results)
         for await (const item of results) {
             if (item.city) {
                 responce.push(item.city)

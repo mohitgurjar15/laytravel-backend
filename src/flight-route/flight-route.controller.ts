@@ -43,6 +43,7 @@ import { csvFileFilter, editFileName } from "src/auth/file-validator";
 import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblacklisted-route.dto";
 import { ListAirportRouteDto } from "./dto/list-airport.dto";
+import { ListCityDto } from "./dto/list-city.dto";
 @ApiTags("Flight Route")
 @Controller("flight-route")
 @ApiBearerAuth()
@@ -248,8 +249,9 @@ export class FlightRouteController {
 	})
 	@ApiResponse({ status: 404, description: "city not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getFlightCity() {
-		return await this.flightRouteService.getFlightCity();
+	async getFlightCity(
+        @Query() listCityDto: ListCityDto) {
+		return await this.flightRouteService.getFlightCity(listCityDto);
 	}
 
     @Get('filter-options/flight-country')
