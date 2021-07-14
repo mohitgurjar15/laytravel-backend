@@ -270,6 +270,10 @@ export class BookingRepository extends Repository<Booking> {
                 `No booking found&&&id&&&No booking found`
             );
         }
+
+        
+        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? 1:-1 });
+        
         return { data: data, total_count: count };
     }
 
@@ -1047,7 +1051,7 @@ export class BookingRepository extends Repository<Booking> {
             
         if (!order_by_depature_date && !order_by_booking_date && !order_by_cancelation_date) {
             query.addOrderBy(`booking.bookingDate`, "DESC");
-            query.addOrderBy(`booking.id`, "ASC");
+            
         }
 
         if (order_by_depature_date) {
@@ -1078,6 +1082,7 @@ export class BookingRepository extends Repository<Booking> {
                 `No booking found&&&id&&&No booking found`
             );
         } 
+        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? 1 : -1 });
    return { data: data, total_count: count };
     }
 
