@@ -2,6 +2,7 @@ import { FlightRoute } from "src/entity/flight-route.entity";
 import { getManager } from "typeorm";
 import * as moment from 'moment';
 import { flightDataUtility } from "./flight-data.utility";
+import { NotFoundException } from "@nestjs/common";
 
 export class RouteCategory{
 
