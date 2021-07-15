@@ -148,6 +148,14 @@ export class CronJobsController {
         return await this.cronJobsService.uploadLogIntoS3Bucket("payment");
     }
 
+    @Get("upload-hotel-log")
+    @ApiOperation({ summary: "upload payment log on s3 bucket" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async uploadHotelLog() {
+        return await this.cronJobsService.uploadLogIntoS3Bucket("hotel");
+    }
+
     @Delete("log")
     @ApiOperation({ summary: "delete logs" })
     @ApiResponse({ status: 200, description: "Api success" })
