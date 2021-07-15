@@ -847,60 +847,78 @@ export class CronJobsService {
     }
 
     async uploadLogIntoS3Bucket(folderName) {
+        let bucketName = "laytrip/logs/" + folderName
+        console.log()
+        var today = new Date();
+        var date1 = today.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
         Activity.cronActivity("Upload log file on s3 bucket cron ");
         const path = require("path");
         const fs = require("fs");
         //joining path of directory
+        var unixTimestamp = Math.round(new Date().getTime() / 1000);
         const directoryPath = path.join("/var/www/html/logs/" + folderName);
         //passsing directoryPath and callback function
-        fs.readdir(directoryPath, function (err, files) {
-            //handling error
-            if (err) {
-                return console.log("Unable to scan directory: " + err);
-            }
-            //listing all files using forEach
-            files.forEach(function (file) {
-                // Do whatever you want to do with the file
-                console.log(file);
+        let zipName = folderName + '_' + date1 + '_' + unixTimestamp
+        const child_process = require("child_process");
+        child_process.execSync(`zip -r ${zipName} *`, {
+            cwd: directoryPath
+        })
 
-                const AWSconfig = config.get("AWS");
+        const AWSconfig = config.get("AWS");
 
-                const s3 = new AWS.S3({
-                    accessKeyId:
-                        process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId,
-                    secretAccessKey:
-                        process.env.AWS_SECRET_ACCESS_KEY ||
-                        AWSconfig.secretAccessKey,
-                });
-
-                const fileName =
-                    "/var/www/html/logs/" + folderName + "/" + file;
-
-                const uploadFile = () => {
-                    fs.readFile(fileName, (err, data) => {
-                        if (err) throw err;
-                        const params = {
-                            Bucket: "laytrip/logs/" + folderName, // pass your bucket name
-                            Key: file, // file will be saved as testBucket/contacts.csv
-                            Body: data,
-                        };
-                        s3.upload(params, function (s3Err, data) {
-                            if (s3Err) {
-                                throw s3Err;
-                            } else {
-                                fs.unlinkSync(fileName);
-                                console.log(
-                                    `File uploaded successfully at ${data.Location}`
-                                );
-                            }
-                        });
-                    });
-                };
-
-                uploadFile();
-            });
+        const s3 = new AWS.S3({
+            accessKeyId:
+                process.env.AWS_ACCESS_KEY || AWSconfig.accessKeyId,
+            secretAccessKey:
+                process.env.AWS_SECRET_ACCESS_KEY ||
+                AWSconfig.secretAccessKey,
         });
 
+        const fileName =
+            "/var/www/html/logs/" + folderName + "/" + zipName + '.zip'
+
+        const uploadFile = () => {
+            fs.readFile(fileName, (err, data) => {
+                if (err) throw err;
+                const params = {
+                    Bucket: bucketName, // pass your bucket name
+                    Key: date1 + '/'+zipName + '.zip', // file will be saved as testBucket/contacts.csv
+                    Body: data,
+                };
+                s3.upload(params, function (s3Err, data) {
+                    if (s3Err) {
+                        throw s3Err;
+                    } else {
+                        fs.unlinkSync(fileName);
+                        console.log(
+                            `File uploaded successfully at ${data.Location}`
+                        );
+                        fs.readdir(directoryPath, function (err, files) {
+                            //handling error
+                            if (err) {
+                                return console.log("Unable to scan directory: " + err);
+                            }
+
+
+                            //listing all files using forEach
+                            files.forEach(function (file) {
+                                // Do whatever you want to do with the file
+                                console.log(file);
+                                const logFile =
+                                    "/var/www/html/logs/" + folderName + "/" + file;
+                                fs.unlinkSync(logFile);
+                            });
+                        });
+                    }
+                });
+            });
+        };
+
+        uploadFile();
         return {
             message: `${folderName} log uploaded on s3 bucket`,
         };
@@ -2613,7 +2631,7 @@ export class CronJobsService {
                         ""
                     );
 
-                    console.log("airRevalidateResult",airRevalidateResult)
+                    console.log("airRevalidateResult", airRevalidateResult)
 
                     if (airRevalidateResult) {
                         emailData[index]['airRevalidateResult'] = true
