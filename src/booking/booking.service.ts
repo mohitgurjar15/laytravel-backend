@@ -1412,7 +1412,7 @@ export class BookingService {
             let responce: any = result;
             responce["userData"] = cardData;
             if (downPayment) {
-                responce["downPayment_percentage"] = Math.ceil(
+                responce["downPayment_percentage"] = (
                     (downPayment * 100) / parseFloat(result.totalAmount)
                 );
             }

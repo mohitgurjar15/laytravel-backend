@@ -715,6 +715,7 @@ export class FlightRouteService {
             .createQueryBuilder(Airport, "airport")
             .select("airport.city")
             .where(andWhere)
+            .orderBy(`airport.city`, "ASC")
             .getMany();
         if (!results.length) {
             throw new NotFoundException('no data found')
@@ -985,7 +986,7 @@ export class FlightRouteService {
                         }
                         if (
                             row.type != FlightRouteType.DOMESTIC &&
-                            row.type != FlightRouteType.INTERNATIONAL
+                            row.type != FlightRouteType.INTERNATIONAL && row.type != ''
                         ) {
                             error_message[
                                 "type"
@@ -993,9 +994,18 @@ export class FlightRouteService {
                             error_message[
                                 "message"
                             ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                        }else if(row.type === ''){
+                            error_message[
+                                "type"
+                            ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in type is missing`;
+                            error_message[
+                                "message"
+                            ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in type is missing.`;
+                            
                         }
 
                         errors.push(error_message);
+                        console.log('---------',errors)
                     }
                 }
             }
@@ -1006,6 +1016,7 @@ export class FlightRouteService {
                 dublicateRoutes,
                 updatedRoutes,
             };
+            console.log(unsuccessRecord)
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 console.log("m");
