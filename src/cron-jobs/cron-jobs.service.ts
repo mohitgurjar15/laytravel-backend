@@ -886,7 +886,7 @@ export class CronJobsService {
                 if (err) throw err;
                 const params = {
                     Bucket: bucketName, // pass your bucket name
-                    Key: date1 + '/'+zipName + '.zip', // file will be saved as testBucket/contacts.csv
+                    Key: date1 + '/' + zipName + '.zip', // file will be saved as testBucket/contacts.csv
                     Body: data,
                 };
                 s3.upload(params, function (s3Err, data) {
@@ -1090,6 +1090,14 @@ export class CronJobsService {
 
     async backupDatabase() {
         Activity.cronActivity("backup database cron");
+
+        var today = new Date();
+        var date1 = today.toISOString();
+        date1 = date1
+            .replace(/T/, " ") // replace T with a space
+            .replace(/\..+/, "")
+            .split(" ")[0];
+
         const AWSconfig = config.get("AWS");
         const dbConfig = config.get("db");
 
@@ -1118,7 +1126,7 @@ export class CronJobsService {
                 /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z$/,
                 "$1$2$3.$4$5$6.$7000000"
             );
-        const fileName = "laytrip" + timestamp + ".sql";
+        const fileName = "laytrip" + "_" + date1 + "_" + timestamp + ".sql";
         var filepath = "/var/www/html/logs/database/" + fileName;
 
         if (!fs.existsSync("/var/www/html/logs/database/")) {
@@ -1131,83 +1139,87 @@ export class CronJobsService {
         // DEV: We write to disk so S3 client can calculate `Content-Length` of final result before uploading
         console.log("Dumping `pg_dump` into `gzip`");
 
-        //await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
-        console.log("Finito");
-        console.log('Uploading "' + filepath + '" to S3');
-        // s3.putObject({
-        // 	Bucket: S3_BUCKET,
-        // 	Key: fileName,
-        // 	// ACL: 'public',
-        // 	// ContentType: 'text/plain',
-        // 	Body: fs.createReadStream(filepath)
-        // }, function handlePutObject(err, data) {
-        // 	// If there was an error, throw it
-        // 	if (err) {
-        // 		throw err;
-        // 		return err
-        // 	} else {}
-        // });
+        await execute(`PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -d ${dbName} -f ${filepath} -F t`,).then(async () => {
+            console.log("Finito");
+            console.log('Uploading "' + filepath + '" to S3');
+            s3.putObject({
+                Bucket: S3_BUCKET,
+                Key: date1 + "/" + fileName,
+                // ACL: 'public',
+                // ContentType: 'text/plain',
+                Body: fs.createReadStream(filepath)
+            }, function handlePutObject(err, data) {
+                // If there was an error, throw it
+                if (err) {
+                    throw err;
+                    return err
+                } else {
+                    console.log('Backup updated successfully')
+                }
+            });
 
-        console.log("started....");
+        });
+
+        //console.log("started....");
         // Simple-git without promise
-        const simpleGit = require("simple-git")();
-        // Shelljs package for running shell tasks optional
-        const shellJs = require("shelljs");
-        // Simple Git with Promise for handling success and failure
-        const simpleGitPromise = require("simple-git/promise")();
+        // const simpleGit = require("simple-git")();
+        // // Shelljs package for running shell tasks optional
+        // const shellJs = require("shelljs");
+        // // Simple Git with Promise for handling success and failure
+        // const simpleGitPromise = require("simple-git/promise")();
 
-        shellJs.cd("/var/www/html/logs/database/");
-        // Repo name
-        const repo = "laytrip-database-backup"; //Repo name
-        // User name and password of your GitHub
-        const userName = "suresh555";
-        const password1 = "Oneclick1@";
-        // Set up GitHub url like this so no manual entry of user pass needed
-        const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
-        // add local git config like username and email
+        // shellJs.cd("/var/www/html/logs/database/");
+        // // Repo name
+        // const repo = "laytrip-database-backup"; //Repo name
+        // // User name and password of your GitHub
+        // const userName = "suresh555";
+        // const password1 = "Oneclick1@";
+        // // Set up GitHub url like this so no manual entry of user pass needed
+        // const gitHubUrl = `https://${userName}:${password1}@github.com/${userName}/${repo}`;
+        // // add local git config like username and email
 
-        simpleGit.addConfig("user.email", "suresh@itoneclick.com");
-        console.log("step1");
+        // simpleGit.addConfig("user.email", "suresh@itoneclick.com");
+        // console.log("step1");
 
-        simpleGit.addConfig("user.name", "Suresh Suthar");
-        console.log("step2");
+        // simpleGit.addConfig("user.name", "Suresh Suthar");
+        // console.log("step2");
 
-        // Add remore repo url as origin to repo
-        simpleGitPromise.addRemote("origin", gitHubUrl);
-        console.log("step3");
+        // // Add remore repo url as origin to repo
+        // simpleGitPromise.addRemote("origin", gitHubUrl);
+        // console.log("step3");
 
-        // Add all files for commit
-        simpleGitPromise.add(".").then(
-            (addSuccess) => {
-                console.log(addSuccess);
-            },
-            (failedAdd) => {
-                console.log("adding files failed");
-            }
-        );
-        console.log("step4");
+        // // Add all files for commit
+        // simpleGitPromise.add(".").then(
+        //     (addSuccess) => {
+        //         console.log(addSuccess);
+        //     },
+        //     (failedAdd) => {
+        //         console.log("adding files failed");
+        //     }
+        // );
+        // console.log("step4");
 
-        // Commit files as Initial Commit
-        simpleGitPromise.commit("Intial commit by simplegit").then(
-            (successCommit) => {
-                console.log(successCommit);
-            },
-            (failed) => {
-                console.log("failed commmit");
-            }
-        );
-        console.log("step5");
-        // Finally push to online repository
-        simpleGitPromise.push("origin", "master").then(
-            (success) => {
-                console.log("repo successfully pushed");
-            },
-            (failed) => {
-                console.log("repo push failed");
-            }
-        );
-        console.log("step5");
-        console.log('Successfully uploaded "' + filepath + '"');
+        // // Commit files as Initial Commit
+        // simpleGitPromise.commit("Intial commit by simplegit").then(
+        //     (successCommit) => {
+        //         console.log(successCommit);
+        //     },
+        //     (failed) => {
+        //         console.log("failed commmit");
+        //     }
+        // );
+        // console.log("step5");
+        // // Finally push to online repository
+        // simpleGitPromise.push("origin", "master").then(
+        //     (success) => {
+        //         console.log("repo successfully pushed");
+        //     },
+        //     (failed) => {
+        //         console.log("repo push failed");
+        //     }
+        // );
+        // console.log("step5");
+        // console.log('Successfully uploaded "' + filepath + '"');
         return { message: 'Successfully uploaded "' + filepath + '"' };
         //})
         // .catch(err => {
@@ -1219,7 +1231,7 @@ export class CronJobsService {
         // Upload our gzip stream into S3
         // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
 
-        return { message: `database backup uploadsuccefully ` };
+        //return { message: `database backup uploadsuccefully ` };
     }
 
     async getDailyPriceOfFlight(bookingData: Booking, Headers) {
