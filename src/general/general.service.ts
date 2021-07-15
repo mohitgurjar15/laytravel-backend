@@ -552,7 +552,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Completion Notice`,
+                subject: `TRAVEL PROVIDER RESERVATION CONFIRMATION #${partialBooking}`,
                 html: await LaytripCartBookingComplationMail(mail8.param),
             })
             .then((res) => {
@@ -905,7 +905,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${pendingHotelId} Completion Notice`,
+                subject: `TRAVEL PROVIDER RESERVATION CONFIRMATION #${pendingHotelId}`,
                 html: await LaytripCartBookingComplationMail(hotelmail.param),
             })
             .then((res) => {
@@ -968,21 +968,6 @@ export class GeneralService {
                 bcc: mailConfig.BCC,
                 subject: `Reminder - Booking Number ${pendingHotelId}`,
                 html: await TravelProviderReminderMail(hotelmail.param),
-            })
-            .then((res) => {
-                console.log("res", res);
-            })
-            .catch((err) => {
-                console.log("err", err);
-            });
-
-        await this.mailerService
-            .sendMail({
-                to: email,
-                from: mailConfig.from,
-                bcc: mailConfig.BCC,
-                subject: `Booking ID ${pendingHotelId} Reminder for your Upcoming Trip`,
-                html: await LaytripTripReminderMail(hotelmail.param),
             })
             .then((res) => {
                 console.log("res", res);

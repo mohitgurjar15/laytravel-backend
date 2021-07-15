@@ -72,7 +72,7 @@ export class NotificationAlertUtility {
         console.log('category', category)
 
         param.routeType = category?.name || 'N/A';
-
+        param.alredyUnderDeadLine = false
         console.log(category);
         if (category) {
             let deadLine = new Date(bookingData.checkInDate);
@@ -97,6 +97,10 @@ export class NotificationAlertUtility {
                     break;
             }
             //console.log("categoryDays", categoryDays);
+
+            if (param.remainDays < categoryDays){
+                param.alredyUnderDeadLine = true
+            }
 
             deadLine.setDate(deadLine.getDate() - categoryDays);
             console.log("deadLine1", deadLine);
@@ -139,8 +143,7 @@ export class NotificationAlertUtility {
 
         const predictiveData = await query.getOne();
 
-        console.log("predictiveData", predictiveData);
-        console.log('1')
+       
         param.todayNetPrice =
             `${Generic.formatPriceDecimal(predictiveData?.netPrice || 0)}` || '0';
 

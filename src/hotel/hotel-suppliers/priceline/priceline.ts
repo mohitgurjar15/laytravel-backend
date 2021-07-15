@@ -164,7 +164,7 @@ export class Priceline implements HotelInterface {
         // if (user_id) {
         //     fileName += "_" + user_id;
         // }
-        //Activity.createlogFile(fileName, logData, "hotel");
+        Activity.createlogFile(fileName, logData, "hotel");
 
         return res;
     }

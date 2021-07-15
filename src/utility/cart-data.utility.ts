@@ -7,6 +7,7 @@ import * as moment from "moment";
 import { User } from "src/entity/user.entity";
 import { BookingStatus } from "src/enum/booking-status.enum";
 import { ModulesName } from "src/enum/module.enum";
+import { BookingType } from "src/enum/booking-type.enum";
 
 export class CartDataUtility {
     static async cartData(cart_id) {
@@ -68,6 +69,8 @@ export class CartDataUtility {
             if (booking.bookingInstalments.length > 0) {
                 booking.bookingInstalments.sort((a, b) => a.id - b.id);
             }
+
+
 
             for await (const installment of booking.bookingInstalments) {
                 if (installment.paymentStatus == PaymentStatus.CONFIRM) {
@@ -174,8 +177,8 @@ export class CartDataUtility {
             }
             //console.log('2');
 
-                let travelers = [];
-                let travelersName = [];
+            let travelers = [];
+            let travelersName = [];
             for await (const booking of cart.bookings) {
                 if (booking.bookingInstalments.length > 0) {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id);
@@ -193,7 +196,7 @@ export class CartDataUtility {
                 totalAmount += parseFloat(booking.totalAmount);
                 let flightData = [];
                 const bookingData = booking;
-                
+
                 const moduleInfo = booking.moduleInfo[0];
                 let hotelData: {
                     hotelName: string,
@@ -201,19 +204,19 @@ export class CartDataUtility {
                     room: number,
                     adult: number,
                     child: number,
-                }={
+                } = {
                     hotelName: "",
                     checkIn: "",
                     room: 0,
                     adult: 0,
                     child: 0,
-                } 
-                 if (!booking.supplierId) {
-                     confirmed = false
-                 }
+                }
+                if (!booking.supplierId) {
+                    confirmed = false
+                }
                 if (booking.moduleId == ModulesName.FLIGHT) {
-                    
-                   
+
+
                     const routes = moduleInfo.routes;
                     //console.log('23');
                     for (let index = 0; index < routes.length; index++) {
@@ -273,13 +276,13 @@ export class CartDataUtility {
                     }
                 } else if (booking.moduleId == ModulesName.HOTEL) {
                     console.log(moduleInfo.hotel_name);
-                    
+
                     hotelData.hotelName = moduleInfo?.hotel_name || "";
                     hotelData.checkIn = moduleInfo?.input_data?.check_in;
-                    hotelData.room = parseInt(moduleInfo?.input_data?.num_rooms || 0) ;
+                    hotelData.room = parseInt(moduleInfo?.input_data?.num_rooms || 0);
                     hotelData.adult = parseInt(
                         moduleInfo?.input_data?.num_adults || 0
-                     );
+                    );
                     hotelData.child = parseInt(moduleInfo?.input_data?.num_children || 0);
                 }
 
@@ -336,12 +339,14 @@ export class CartDataUtility {
                     `${paidAmount.toFixed(2)}`,
                 rememberAmount:
                     currency.symbol +
-                    `${remainAmount}`,
+                    `${Generic.formatPriceDecimal(remainAmount)}`,
+                totalAmountInNumeric: Generic.formatPriceDecimal(totalAmount),
+                totalPaidInnumeric: Generic.formatPriceDecimal(paidAmount)
             };
             param.paymentDetail = cartInstallments;
             param.bookings = bookingsData;
 
-            return { param, email: user.email, confirmed ,referralId : cart?.referral?.name};
+            return { param, email: user.email, confirmed, referralId: cart?.referral?.name, currency };
         } else {
             return;
         }
@@ -366,13 +371,72 @@ export class CartDataUtility {
             .getOne();
         return user;
     }
-    static async formatTime(time:string) {
-   const splitTime = time.split(":");
-   const ma = splitTime[1].split(" ");
-    const h = parseInt(splitTime[0])
-    let mB:any = parseInt(ma[0])
-    const m = mB > 0 ? mB : ''
-    const j = ma[1]
-    return `${h}${m}${j}`;
-  }
+    static async formatTime(time: string) {
+        const splitTime = time.split(":");
+        const ma = splitTime[1].split(" ");
+        const h = parseInt(splitTime[0])
+        let mB: any = parseInt(ma[0])
+        const m = mB > 0 ? mB : ''
+        const j = ma[1]
+        return `${h}${m}${j}`;
+    }
+
+
+    static async CartFailedMailModelDataGenerate(cart_id) {
+        const where = `("cartBooking"."laytrip_cart_id" =  '${cart_id}' AND "booking"."booking_status" Not IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}))`;
+        const query = getConnection()
+            .createQueryBuilder(CartBooking, "cartBooking")
+            .leftJoinAndSelect("cartBooking.bookings", "booking")
+            .leftJoinAndSelect("booking.bookingInstalments", "instalments")
+            .leftJoinAndSelect("booking.currency2", "currency")
+            // .leftJoinAndSelect("booking.module", "module")
+            // .leftJoinAndSelect("cartBooking.referral", "referral")
+            // .leftJoinAndSelect("booking.travelers", "traveler")
+            //.leftJoinAndSelect("traveler.userData", "userData")
+            // .leftJoinAndSelect("User.state", "state")
+            // .leftJoinAndSelect("User.country", "countries")
+
+            .where(where)
+            .orderBy(`cartBooking.bookingDate`, "DESC");
+        const cart = await query.getOne();
+
+        if (cart?.bookings?.length) {
+            let failedBooking = []
+            for await (const booking of cart.bookings) {
+                let amount = 0
+                // if (booking.bookingType == BookingType.INSTALMENT) {
+                //     if (booking.bookingInstalments.length > 0) {
+                //         booking.bookingInstalments.sort((a, b) => a.id - b.id);
+                //     }
+                //     amount = parseFloat(booking.bookingInstalments[0].amount)
+                // } else {
+                    amount = parseFloat(booking.totalAmount)
+                // }
+
+                let name = ``
+                if (booking.moduleId == ModulesName.FLIGHT) {
+                    name = `${booking.moduleInfo[0].departure_code}-${booking.moduleInfo[0].arrival_code}`
+                }
+
+                if (booking.moduleId == ModulesName.HOTEL) {
+                    name = booking.moduleInfo[0].hotel_name
+                }
+
+
+                let info: {
+                    moduleId: number,
+                    name: string,
+                    price: string
+                } = {
+                    moduleId: booking.moduleId,
+                    name: name,
+                    price: `${booking.currency2.symbol}${amount}`
+                }
+                failedBooking.push(info)
+            }
+            return failedBooking
+        } else {
+            return;
+        }
+    }
 }

@@ -137,7 +137,7 @@ export class DetailHelper {
     }
 
     setDistance() {
-        return this.hotel['distance'] / 1000;
+        return this.hotel['distance'];
     }
 
     setReviews() {

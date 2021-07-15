@@ -23,7 +23,7 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 })
 @Controller("cart")
 export class CartController {
-    constructor(private cartService: CartService) {}
+    constructor(private cartService: CartService) { }
 
     @Post("add")
     @ApiBearerAuth()
@@ -124,7 +124,7 @@ export class CartController {
         description: "Bad Request or API error message",
     })
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    async multipleDeleteFromCart(@LogInUser() user, @Body() dto : MultipleInventryDeleteFromCartDto) {
+    async multipleDeleteFromCart(@LogInUser() user, @Body() dto: MultipleInventryDeleteFromCartDto) {
         return await this.cartService.multipleInventryDeleteFromCart(dto, user);
     }
 
@@ -152,9 +152,9 @@ export class CartController {
     async bookCart(
         @Body() bookCartDto: CartBookDto,
         @GetUser() user: User,
-        @Req() req,@GetReferralId() referralId:string
+        @Req() req, @GetReferralId() referralId: string
     ) {
-        return await this.cartService.bookCart(bookCartDto, user, req.headers,referralId);
+        return await this.cartService.bookCart(bookCartDto, user, req.headers, referralId);
     }
 
     @Get("installment-detail")
@@ -203,6 +203,20 @@ export class CartController {
     ) {
         return await this.cartService.mapGuestUser(guestUserId, user);
     }
+
+
+    // @Get("test/settale-installment/:cartId/:instalment_type/:smallestDate/:selected_down_payment")
+    // @ApiOperation({ summary: "installment detail of specific cart " })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({
+    //     status: 422,
+    //     description: "Bad Request or API error message",
+    // })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // async settleInstallment(@Param('cartId') cartId: string, @Param('instalment_type') instalment_type: string, @Param('smallestDate') smallestDate: string, @Param('selected_down_payment') selected_down_payment: string) {
+    //     //return await this.cartService.sattelInstalment(cartId, instalment_type, smallestDate, selected_down_payment);
+    //     return await this.cartService.calculatePartialAmountAndSattelAmount(cartId, instalment_type);
+    // }
 
     // @Put("/test/refaund/:booking_id")
     // @ApiOperation({ summary: "test-refaund api" })
