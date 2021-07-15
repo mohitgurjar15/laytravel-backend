@@ -2667,11 +2667,11 @@ more than 10.`
 
 
                 let capturedAmount = parseFloat(metaData.transaction.amount) / 100
-                console.log('capturedAmount', capturedAmount)
+                //console.log('capturedAmount', capturedAmount)
                 let cartAmount = responce?.param.cart.totalPaidInnumeric
-                console.log('cartAmount', cartAmount)
+                //console.log('cartAmount', cartAmount)
                 let priceDiff = capturedAmount - cartAmount
-                console.log('cartAmount', priceDiff)
+                //console.log('cartAmount', priceDiff)
                 if (priceDiff > 1) {
                     let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`
                     this.mailerService
