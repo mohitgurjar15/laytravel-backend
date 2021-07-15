@@ -1680,15 +1680,16 @@ more than 10.`
                         ? BookingType.INSTALMENT
                         : BookingType.NOINSTALMENT;
                 let partialAmount = 0
+                if (payment_type == PaymentType.INSTALMENT) {
+                    await this.sattelInstalment(cartData.id,
+                        instalment_type, smallestDate, selected_down_payment)
+                }
                 if (failedResult > 0) {
                     partialAmount = await this.calculatePartialAmountAndSattelAmount(
                         cartData.id,
                         payment_type
                     );
-                    if (payment_type == PaymentType.INSTALMENT) {
-                        await this.sattelInstalment(cartData.id,
-                            instalment_type, smallestDate, selected_down_payment)
-                    }
+                    
 
                 }
                 const payment = await this.capturePayment(
