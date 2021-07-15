@@ -541,7 +541,7 @@ export class PaymentService {
         }
     }
 
-    async captureCard(authorizeToken, userId) {
+    async captureCard(authorizeToken, userId, partialAmount = 0) {
         const GatewayCredantial = await Generic.getPaymentCredential();
 
         const authorization = GatewayCredantial.credentials.authorization;
@@ -553,6 +553,14 @@ export class PaymentService {
 
         let url = `https://core.spreedly.com/v1/transactions/${authorizeToken}/capture.json`;
         let requestBody = {};
+        if (partialAmount > 0){
+            requestBody = {
+                transaction: {
+                    amount: partialAmount,
+                    currency_code: 'USD',
+                },
+            };
+        }
         let captureRes = await this.axiosRequest(
             url,
             requestBody,
@@ -1280,7 +1288,7 @@ export class PaymentService {
                                 cart.laytripCartId
                             );
                             if (responce?.param) {
-                                let subject = `Booking ID ${cart.laytripCartId} Completion Notice`;
+                                let subject = `TRAVEL PROVIDER RESERVATION CONFIRMATION #${cart.laytripCartId}`;
                                 this.mailerService
                                     .sendMail({
                                         to: responce.email,
@@ -1350,9 +1358,9 @@ export class PaymentService {
                 }
                 //console.log('booking Update');
 
-                for await (const booking of cart.bookings) {
-                    await this.checkAllinstallmentPaid(booking.id);
-                }
+                // for await (const booking of cart.bookings) {
+                //     await this.checkAllinstallmentPaid(booking.id);
+                // }
                 Activity.logActivity(
                     admin.userId,
                     "Payment",
@@ -1433,7 +1441,7 @@ export class PaymentService {
                 bookingId
             );
             if (responce?.param) {
-                let subject = `Booking ID ${responce.param.orderId} Completion Notice`;
+                let subject = `TRAVEL PROVIDER RESERVATION CONFIRMATION #${responce.param.orderId}`;
                 this.mailerService
                     .sendMail({
                         to: responce.email,

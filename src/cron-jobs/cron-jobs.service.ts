@@ -1578,7 +1578,7 @@ export class CronJobsService {
             .leftJoinAndSelect("cartBooking.bookings", "bookings")
             .leftJoinAndSelect("cartBooking.user", "User")
             .where(
-                `date("cartBooking"."check_in_date") in (date('${date1}'),date('${date2}')) AND "bookings"."booking_status" In (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+                `date("cartBooking"."check_in_date") in (date('${date1}')) AND "bookings"."booking_status" In (${BookingStatus.CONFIRM})`
             )
             .getMany();
         console.log("cart1");
@@ -1616,35 +1616,35 @@ export class CronJobsService {
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "")
                     .split(" ")[0];
-                if (checkInday == date2) {
-                    let header = "Travel Provider Reservation Confirmation";
-                    if (
-                        mailData.param.bookings.length == 1 &&
-                        mailData.param.bookings[0].moduleId ==
-                        ModulesName.FLIGHT
-                    ) {
-                        header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
-                    }
-                    //console.log(mailData.param);
+                // if (checkInday == date2) {
+                //     let header = "Travel Provider Reservation Confirmation";
+                //     if (
+                //         mailData.param.bookings.length == 1 &&
+                //         mailData.param.bookings[0].moduleId ==
+                //         ModulesName.FLIGHT
+                //     ) {
+                //         header += ` #${mailData.param.bookings[0].flighData[0].droups[0].depature.pnr_no}`;
+                //     }
+                //     //console.log(mailData.param);
 
-                    this.mailerService
-                        .sendMail({
-                            to: mailData.email,
-                            //to: mailConfig.BCC,
-                            from: mailConfig.from,
-                            bcc: mailConfig.BCC,
-                            subject: header,
-                            html: await LaytripCartBookingTravelProviderConfirmtionMail(
-                                mailData.param
-                            ),
-                        })
-                        .then((res) => {
-                            console.log("res", res);
-                        })
-                        .catch((err) => {
-                            console.log("err", err);
-                        });
-                } else {
+                //     this.mailerService
+                //         .sendMail({
+                //             to: mailData.email,
+                //             //to: mailConfig.BCC,
+                //             from: mailConfig.from,
+                //             bcc: mailConfig.BCC,
+                //             subject: header,
+                //             html: await LaytripCartBookingTravelProviderConfirmtionMail(
+                //                 mailData.param
+                //             ),
+                //         })
+                //         .then((res) => {
+                //             console.log("res", res);
+                //         })
+                //         .catch((err) => {
+                //             console.log("err", err);
+                //         });
+                // } else {
                     let header =
                         "Reminder - Travel Provider Reservation Confirmation";
                     if (
@@ -1670,7 +1670,7 @@ export class CronJobsService {
                         .catch((err) => {
                             console.log("err", err);
                         });
-                }
+                //}
                 //console.log(mail.confirmed);
 
                 // await this.mailerService
@@ -2098,7 +2098,7 @@ export class CronJobsService {
                             cartBooking.laytripCartId
                         );
                         if (responce?.param) {
-                            let subject = `Booking ID ${cartBooking.laytripCartId} Completion Notice`;
+                            let subject = `TRAVEL PROVIDER RESERVATION CONFIRMATION #${cartBooking.laytripCartId}`;
                             this.mailerService
                                 .sendMail({
                                     to: responce.email,

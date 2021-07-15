@@ -873,7 +873,9 @@ export class FlightRouteService {
                             error_message[
                                 "category_id"
                             ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
-
+                            error_message[
+                                "message"
+                            ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                             errors.push(error_message);
                         } else {
                             let where = ` "route"."is_deleted" = false AND
@@ -895,6 +897,7 @@ export class FlightRouteService {
                                         category: category.id,
                                         type: row.type,
                                         category_id: `Route ${row.from_airport_code} to ${row.to_airport_code}, category ${category.name} and type ${row.type} is already exist.`,
+                                        message: `Route ${row.from_airport_code} to ${row.to_airport_code}, category ${category.name} and type ${row.type} is already exist.`,
                                     };
                                     errors.push(r);
                                 }
@@ -949,6 +952,9 @@ export class FlightRouteService {
                             error_message[
                                 "from_airport_code"
                             ] = `From Airport code ${row.from_airport_code} not found.`;
+                            error_message[
+                                "message"
+                            ] = `From Airport code ${row.from_airport_code} not found.`;
                         }
                         if (
                             typeof airports[row.to_airport_code] == "undefined"
@@ -956,16 +962,25 @@ export class FlightRouteService {
                             error_message[
                                 "to_airport_code"
                             ] = `To Airport code ${row.from_airport_code} not found.`;
+                            error_message[
+                                "message"
+                            ] = `To Airport code ${row.from_airport_code} not found.`;
                         }
                         if (!row.category_id) {
 
                             error_message[
                                 "category_id"
                             ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in Category Id missing.`;
+                            error_message[
+                                "message"
+                            ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in Category Id missing.`;
 
                         } else if (!parseInt(row.category_id)) {
                             error_message[
                                 "category_id"
+                            ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                            error_message[
+                                "message"
                             ] = `Wrong category id for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                         }
                         if (
@@ -974,6 +989,9 @@ export class FlightRouteService {
                         ) {
                             error_message[
                                 "type"
+                            ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
+                            error_message[
+                                "message"
                             ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
                         }
 

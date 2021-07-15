@@ -13,4 +13,5 @@ export class EmailNotificationModel {
     laytripBookingId: string;
     todayNetpriceVarient ?: number
     lastPrice ?: number
+    alredyUnderDeadLine ?: boolean
 }

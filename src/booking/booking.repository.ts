@@ -270,6 +270,10 @@ export class BookingRepository extends Repository<Booking> {
                 `No booking found&&&id&&&No booking found`
             );
         }
+
+        
+        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? -1:1 });
+        
         return { data: data, total_count: count };
     }
 
@@ -859,36 +863,17 @@ export class BookingRepository extends Repository<Booking> {
             status,
             cancellation_reasons,
             supplier_booking_id,
+            email,transaction_token
         } = filterOption;
 
         let where;
         where = `1=1 `;
-        if (cancellation_reasons?.length) {
-            if (typeof cancellation_reasons != "object") {
-                where += `AND ("booking"."cancellation_reason" =:cancellation_reasons)`;
-            } else {
-                where += `AND ("booking"."cancellation_reason" in (:...cancellation_reasons))`;
-            }
-        }
-        if (supplier_booking_id) {
-            where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
+        if (userId) {
+            where += `AND ("booking"."user_id" = '${userId}')`;
         }
 
         if (supplier_booking_id) {
             where += `AND ("booking"."supplier_booking_id" = '${supplier_booking_id}')`;
-        }
-        if (userId) {
-            where += `AND ("booking"."user_id" = '${userId}')`;
-        }
-        if (reservationId) {
-            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
-        }
-        if (module_id?.length) {
-            if (typeof module_id != "object") {
-                where += `AND ("booking"."module_id" =:module_id)`;
-            } else {
-                where += `AND ("booking"."module_id" in (:...module_id))`;
-            }
         }
 
         if (status?.length) {
@@ -921,12 +906,55 @@ export class BookingRepository extends Repository<Booking> {
                 }
             }
         }
+        if (cancellation_reasons?.length) {
+            if (typeof cancellation_reasons != "object") {
+                where += `AND ("booking"."cancellation_reason" =:cancellation_reasons)`;
+            } else {
+                where += `AND ("booking"."cancellation_reason" in (:...cancellation_reasons))`;
+            }
+        }
+
+        if (booking_through?.length) {
+            if (typeof booking_through != "object") {
+                where += `AND ("booking"."booking_through" =:booking_through)`;
+            } else {
+                where += `AND ("booking"."booking_through" in (:...booking_through))`;
+            }
+        }
+
+        if (update_by?.length) {
+            if (typeof update_by != "object") {
+                where += `AND ("updateBy"."role_id" =:update_by)`;
+            } else {
+                where += `AND ("updateBy"."role_id" in (:...update_by))`;
+            }
+        }
 
         if (category_name?.length) {
             if (typeof category_name != "object") {
                 where += `AND ("booking"."category_name" =:category_name)`;
             } else {
                 where += `AND ("booking"."category_name" in (:...category_name))`;
+            }
+        }
+
+        if (payment_type?.length) {
+            if (typeof payment_type != "object") {
+                where += `AND ("booking"."payment_type" =:payment_type)`;
+            } else {
+                where += `AND ("booking"."payment_type" in (:...payment_type))`;
+            }
+        }
+
+        if (reservationId) {
+            where += `AND ("booking"."reservation_id" = '${reservationId}')`;
+        }
+
+        if (module_id?.length) {
+            if (typeof module_id != "object") {
+                where += `AND ("booking"."module_id" =:module_id)`;
+            } else {
+                where += `AND ("booking"."module_id" in (:...module_id))`;
             }
         }
 
@@ -971,72 +999,59 @@ export class BookingRepository extends Repository<Booking> {
             where += `AND ("cart"."laytrip_cart_id" =  '${booking_id}')`;
         }
 
-        if (payment_type?.length) {
-            if (typeof payment_type != "object") {
-                where += `AND ("booking"."payment_type" =:payment_type)`;
-            } else {
-                where += `AND ("booking"."payment_type" in (:...payment_type))`;
-            }
-        }
         if (customer_name) {
-            console.log('customer_name',customer_name)
-
             const cipher = await CryptoUtility.encode(customer_name);
-            console.log("cipher", cipher);
             where += `AND (("User"."first_name" = '${cipher}')or("User"."last_name" = '${cipher}'))`;
         }
 
         if (search) {
             const cipher = await CryptoUtility.encode(search);
-            where += `AND (("User"."first_name" = '${cipher}'))or("User"."email" = '${cipher}'))or("User"."last_name" = '${cipher}')))`;
-        }
-        if (booking_through?.length) {
-            if (typeof booking_through != "object") {
-                where += `AND ("booking"."booking_through" =:booking_through)`;
-            } else {
-                where += `AND ("booking"."booking_through" in (:...booking_through))`;
-            }
+            where += `AND (("User"."first_name" = '${cipher}'))or("User"."email" = '${cipher}'))or("User"."last_name" = '${cipher}')) or ("instalments"."transaction_token" = '${cipher}')))`;
         }
 
-        if (update_by?.length) {
-            if (typeof update_by != "object") {
-                where += `AND ("updateBy"."role_id" =:update_by)`;
-            } else {
-                where += `AND ("updateBy"."role_id" in (:...update_by))`;
-            }
+        if (email) {
+            where += `AND ("User"."email" = '${await CryptoUtility.encode(
+                email
+            )}')`;
         }
+
+        if (transaction_token) {
+            where += `AND ("instalments"."transaction_token" ILIKE '%${transaction_token}%')`;
+        }
+        console.log(where);
 
         const query = getManager()
             .createQueryBuilder(Booking, "booking")
-            .leftJoinAndSelect("booking.cart", "cart")
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
+            .leftJoinAndSelect("booking.cart", "cart")
+            .leftJoinAndSelect(
+                "booking.cancellationRequest",
+                "cancellationRequest"
+            )
             .leftJoinAndSelect("booking.currency2", "currency")
             .leftJoinAndSelect("booking.user", "User")
+            .leftJoinAndSelect("booking.updateByUser", "updateBy")
             .leftJoinAndSelect("booking.travelers", "traveler")
             .leftJoinAndSelect("User.state", "state")
             .leftJoinAndSelect("User.country", "countries")
-            // .leftJoinAndSelect("userData.state", "state")
-            // .leftJoinAndSelect("userData.country", "countries")
-            .leftJoinAndSelect("booking.supplier", "supplier")
-
+            // .leftJoinAndSelect("booking.supplier", "supplier")
             .where(where, {
                 booking_type,
                 booking_status,
                 module_id,
                 payment_type,
+                product_id,
+                booking_id,
                 booking_through,
+                reservationId,
                 category_name,
                 update_by,
                 cancellation_reasons,
-            });
-        //.orderBy(`booking.bookingDate`, "DESC");
-
-        if (
-            !order_by_depature_date &&
-            !order_by_booking_date &&
-            !order_by_cancelation_date
-        ) {
+            })
+            
+        if (!order_by_depature_date && !order_by_booking_date && !order_by_cancelation_date) {
             query.addOrderBy(`booking.bookingDate`, "DESC");
+            
         }
 
         if (order_by_depature_date) {
@@ -1057,14 +1072,18 @@ export class BookingRepository extends Repository<Booking> {
                 order_by_cancelation_date == "ASC" ? "ASC" : "DESC"
             );
         }
+
+        //  console.log(query);
+
         const [data, count] = await query.getManyAndCount();
-        //const count = await query.getCount();
+
         if (!data.length) {
             throw new NotFoundException(
                 `No booking found&&&id&&&No booking found`
             );
-        }
-        return { data: data, total_count: count };
+        } 
+        data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? -1 : 1 });
+   return { data: data, total_count: count };
     }
 
     async getBookingId() {

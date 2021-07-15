@@ -62,6 +62,10 @@ import { BookHotelCartDto } from "src/hotel/dto/cart-book.dto";
 import { LaytripCartBookingTravelProviderConfirmtionMail } from "src/config/new_email_templete/cart-traveler-confirmation.html";
 import { LandingPages } from "src/entity/landing-page.entity";
 import { BookingLog } from "src/entity/booking-log.entity";
+import { CartOverChargeMail } from "src/config/new_email_templete/cart-overcharge-mail.html";
+import { CartLessChargeMail } from "src/config/new_email_templete/cart-lessCharge-mail.html";
+import { CartFailedInventryMail } from "src/config/new_email_templete/cart-failed-inventry.html";
+import { InstalmentStatus } from "src/enum/instalment-status.enum";
 
 
 
@@ -745,7 +749,7 @@ more than 10.`
         }
     }
 
-   async listCart(dto: ListCartDto, user, headers, referralId) {
+    async listCart(dto: ListCartDto, user, headers, referralId) {
         try {
             const { live_availiblity } = dto;
             var tDate = new Date();
@@ -864,7 +868,7 @@ more than 10.`
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
                         console.log('minuteDifference', minuteDifference)
-                        if (minuteDifference > 5 ||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )) {
+                        if (minuteDifference > 5 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
                             const bookingType =
                                 cart.moduleInfo[0].routes.length > 1
                                     ? "RoundTrip"
@@ -966,13 +970,13 @@ more than 10.`
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                    live_availiblity == "yes" && minuteDifference > 5)||(cartIsPromotional == false && referralId )||(cartIsPromotional == true && !referralId )
+                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
-                            user, headers, 
+                            user, headers,
                             cartIsPromotional ? referralId : ''
                         );
                         //return value
@@ -1006,7 +1010,7 @@ more than 10.`
                             console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
                             let inventryIsPromotional = false
-                            if (cart.isPromotional == true && referralId){
+                            if (cart.isPromotional == true && referralId) {
                                 inventryIsPromotional = value?.offer_data?.applicable == true ? true : false
                                 newCart["isPromotional"] == inventryIsPromotional
                             }
@@ -1108,54 +1112,54 @@ more than 10.`
                     }
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
-                     if (cart.moduleId == ModulesName.FLIGHT) {
+                    if (cart.moduleId == ModulesName.FLIGHT) {
                         newCart["is_available"] = true;
                         newCart["is_conflict"] = false;
-                    if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                                error = `In cart not-promotional item found`
-                                if (cartIsConflicted) {
-                                    newCart["is_conflict"] = true;
-                                } else {
-                                    newCart["is_available"] = false;
-                                }
-
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                            error = `In cart not-promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
                             }
 
-                            if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                                error = `In cart promotional item found`
-                                if (cartIsConflicted) {
-                                    newCart["is_conflict"] = true;
-                                } else {
-                                    newCart["is_available"] = false;
-                                }
-                                // newCart["is_available"] = false;
+                        }
+
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                            error = `In cart promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
                             }
+                            // newCart["is_available"] = false;
+                        }
                     }
-                     if (cart.moduleId == ModulesName.HOTEL) {
-                         newCart["is_available"] = true;
-                         newCart["is_conflict"] = false;
-                         if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                                    //throw new ConflictException(`In cart not-promotional item found`)
-                                    error = `In cart not-promotional item found`
-                                    if (cartIsConflicted) {
-                                        newCart["is_conflict"] = true;
-                                    } else {
-                                        newCart["is_available"] = false;
-                                    }
+                    if (cart.moduleId == ModulesName.HOTEL) {
+                        newCart["is_available"] = true;
+                        newCart["is_conflict"] = false;
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
+                            //throw new ConflictException(`In cart not-promotional item found`)
+                            error = `In cart not-promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
+                            }
 
-                                }
+                        }
 
-                         if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                                    error = `In cart promotional item found`
-                                    if (cartIsConflicted) {
-                                        newCart["is_conflict"] = true;
-                                    } else {
-                                        newCart["is_available"] = false;
-                                    }
+                        if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
+                            error = `In cart promotional item found`
+                            if (cartIsConflicted) {
+                                newCart["is_conflict"] = true;
+                            } else {
+                                newCart["is_available"] = false;
+                            }
 
-                                }
+                        }
 
-                     }
+                    }
                 }
                 if (cart.travelers.length) {
                     cart.travelers.sort((a, b) => a.id - b.id);
@@ -1219,7 +1223,7 @@ more than 10.`
 
         var match = 0;
         //console.log(flights);
-        
+
         if (flights?.items) {
             //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
@@ -1432,10 +1436,10 @@ more than 10.`
                 cart,
                 selected_down_payment,
                 transaction_token,
-               
+
                 auth_url
             } = bookCart;
-            let  referral_id = referralId
+            let referral_id = referralId
             // let logData =  await getConnection()
             //         .createQueryBuilder()
             //         .insert()
@@ -1584,7 +1588,7 @@ more than 10.`
             cartBook.userId = user.userId;
             if (referralId) {
                 let ref = await this.getReferralId(referralId);
-                if (ref?.id){ 
+                if (ref?.id) {
                     cartBook.referralId = ref?.id || null;
                 }
             }
@@ -1675,34 +1679,52 @@ more than 10.`
                     bookCart.payment_type == PaymentType.INSTALMENT
                         ? BookingType.INSTALMENT
                         : BookingType.NOINSTALMENT;
+                let partialAmount = 0
+                if (failedResult > 0) {
+                    partialAmount = await this.calculatePartialAmountAndSattelAmount(
+                        cartData.id,
+                        payment_type
+                    );
+                    if (payment_type == PaymentType.INSTALMENT) {
+                        await this.sattelInstalment(cartData.id,
+                            instalment_type, smallestDate, selected_down_payment)
+                    }
+
+                }
                 const payment = await this.capturePayment(
                     BookingIds,
                     transaction_token,
                     paymentType,
-                    user.userId
+                    user.userId,
+                    partialAmount
                 );
+
+                let metaData = payment.meta_data
                 bookingLog.paymentCaptureLog = payment.logFile
                 await bookingLog.save()
                 await this.cartBookingEmailSend(
                     cartData.laytripCartId,
                     cartData.userId,
-                    referralId
+                    referralId,
+                    metaData,
+                    failedResult
                 );
-                if (failedResult > 0 && payment.status == true) {
-                    let refaund = await this.refundCart(
-                        cartData.id,
-                        Headers,
-                        payment_type,
-                        instalment_type,
-                        smallestDate,
-                        selected_down_payment,
-                        payment.reference_token,
-                        user.userId
-                    );
 
-                    bookingLog.paymentRefundLog = refaund
-                    await bookingLog.save()
-                }
+                // if (failedResult > 0 && payment.status == true) {
+                //     let refaund = await this.refundCart(
+                //         cartData.id,
+                //         Headers,
+                //         payment_type,
+                //         instalment_type,
+                //         smallestDate,
+                //         selected_down_payment,
+                //         payment.reference_token,
+                //         user.userId
+                //     );
+
+                //     bookingLog.paymentRefundLog = refaund
+                //     await bookingLog.save()
+                // }
             } else {
                 cartData.status == BookingStatus.FAILED;
                 await cartData.save();
@@ -1840,20 +1862,199 @@ more than 10.`
             .execute();
         return refund.logFile
     }
+
+    async calculatePartialAmountAndSattelAmount(cartId,
+        payment_type,
+    ) {
+        let refundAmount = 0
+
+        let allBooking = await getConnection()
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("booking.currency2", "currency")
+            .where(
+                `"booking"."cart_id" = '${cartId}' AND "BookingInstalments"."instalment_no" = 1  AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+            )
+            .getMany();
+        //console.log(JSON.stringify(allBooking))
+        //console.log('payment_type', payment_type, PaymentType.INSTALMENT, payment_type == PaymentType.INSTALMENT)
+        if (payment_type == PaymentType.INSTALMENT) {
+            //console.log('payment_type', payment_type)
+            let captureAmount = 0
+            if (allBooking.length) {
+                for await (const booking of allBooking) {
+                    if (booking?.bookingInstalments?.length) {
+                        booking.bookingInstalments.sort((a, b) => a.id - b.id);
+                        captureAmount += parseFloat(booking.bookingInstalments[0].amount)
+                    }
+                }
+            }
+            refundAmount = captureAmount;
+
+        } else if (payment_type == PaymentType.NOINSTALMENT) {
+            let captureAmount = 0
+            if (allBooking.length) {
+                for await (const booking of allBooking) {
+                    captureAmount += parseFloat(booking.totalAmount)
+                }
+            }
+            refundAmount = captureAmount;
+        }
+        return refundAmount
+    }
+
+    async sattelInstalment(cartId, instalment_type,
+        smallestDate,
+        selected_down_payment) {
+        let allBooking = await getConnection()
+            .createQueryBuilder(Booking, "booking")
+            .leftJoinAndSelect(
+                "booking.bookingInstalments",
+                "BookingInstalments"
+            )
+            .leftJoinAndSelect("booking.currency2", "currency")
+            .where(
+                `"booking"."cart_id" = '${cartId}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+            )
+            .getMany();
+
+
+        let downPayment = 0;
+        let totalAmount = 0
+        let installmentTotal = 0
+        let installment = {}
+        let onIndexCalcualation = []
+        let bookingIds = []
+        if (allBooking.length) {
+            for await (const booking of allBooking) {
+                let installmentAmount = []
+                if (booking.bookingInstalments.length) {
+
+                    for await (const installment of booking.bookingInstalments) {
+                        if (installment.instalmentNo == 1) {
+                            downPayment += parseFloat(installment.amount)
+                        }
+                        else if (installment.instalmentNo == 2) {
+                            installmentTotal += parseFloat(installment.amount)
+                        }
+                        //console.log('installment.instalmentNo', installment.instalmentNo)
+                        installmentAmount[installment.instalmentNo] = parseFloat(installment.amount)
+                        totalAmount += parseFloat(installment.amount)
+                        onIndexCalcualation[installment.instalmentNo] = onIndexCalcualation[installment.instalmentNo] ? onIndexCalcualation[installment.instalmentNo] + parseFloat(installment.amount) : parseFloat(installment.amount)
+                    }
+                }
+                installment[booking.id] = installmentAmount
+                bookingIds.push(booking.id)
+            }
+            // console.log("downPayment", downPayment)
+            // console.log("totalAmount", totalAmount)
+            // console.log("installmentTotal", installmentTotal);
+            // console.table(onIndexCalcualation)
+            // console.log("bookingIds", bookingIds)
+
+            if (installmentTotal < 5) {
+                let instalmentDetails;
+                const date = new Date();
+                var date1 = date.toISOString();
+                //console.log("instalment_type", instalment_type, typeof instalment_type, InstalmentType.WEEKLY, typeof InstalmentType.WEEKLY, InstalmentType.WEEKLY == instalment_type)
+                if (instalment_type == InstalmentType.WEEKLY) {
+                    console.log('Weekly')
+                    instalmentDetails = Instalment.weeklyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        0,
+                        0,
+                        selected_down_payment,
+                        false,
+                        downPayment
+                    );
+                }
+                if (instalment_type == InstalmentType.BIWEEKLY) {
+                    instalmentDetails = Instalment.biWeeklyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        0,
+                        0,
+                        selected_down_payment,
+                        false,
+                        downPayment
+                    );
+                }
+                if (instalment_type == InstalmentType.MONTHLY) {
+                    instalmentDetails = Instalment.monthlyInstalment(
+                        totalAmount,
+                        smallestDate,
+                        date1,
+                        0,
+                        0,
+                        0,
+                        selected_down_payment,
+                        false,
+                        downPayment
+                    );
+                }
+                //console.log("instalmentDetails", instalmentDetails)
+                if (instalmentDetails?.instalment_date?.length) {
+                    let totalLength = instalmentDetails?.instalment_date?.length
+
+                    for (let index = 1; index < totalLength; index++) {
+                        const element = instalmentDetails?.instalment_date[index];
+                        for await (const booking of allBooking) {
+                            let bookingInstallment = installment[booking.id][index]
+                            let cartInstallment = onIndexCalcualation[index]
+                            let newSettledInstallment = parseFloat(element.instalment_amount)
+                            let percentageOfBookingInstallment = (bookingInstallment * 100) / cartInstallment
+                            let settlePercentageBaseAmount = (percentageOfBookingInstallment * newSettledInstallment) / 100
+
+                            // console.log("bookingInstallment", bookingInstallment)
+                            // console.log("cartInstallment", cartInstallment)
+                            // console.log("newSettledInstallment", newSettledInstallment)
+                            // console.log("percentageOfBookingInstallment", percentageOfBookingInstallment)
+                            // console.log("settlePercentageBaseAmount", settlePercentageBaseAmount)
+                            await getConnection()
+                                .createQueryBuilder()
+                                .update(BookingInstalments)
+                                .set({
+                                    amount: settlePercentageBaseAmount.toString()
+                                })
+                                .where(
+                                    `booking_id = '${booking.id}' AND instalment_no = ${index+1}`
+                                )
+                                .execute();
+
+                        }
+                    }
+                    await getConnection()
+                        .createQueryBuilder()
+                        .delete()
+                        .from(BookingInstalments)
+                        .where(`"booking_id" in (:...bookingIds) AND instalment_no > ${totalLength}`, {
+                            bookingIds,
+                        })
+                        .execute();
+                }
+            }
+        }
+    }
     async capturePayment(
         BookingIds,
         transaction_token,
         payment_type: number,
-        userId
+        userId,
+        partialAmount = 0
     ) {
-
         let captureCardresult = await this.paymentService.captureCard(
             transaction_token,
-            userId
+            userId,
+            Math.ceil(partialAmount * 100)
         );
-
-
-
         console.log("captureCardresult", captureCardresult);
 
         if (captureCardresult.status == true) {
@@ -2414,34 +2615,35 @@ more than 10.`
         }
     }
 
-    async cartBookingEmailSend(bookingId, userId, referralId) {
+    async cartBookingEmailSend(bookingId, userId, referralId, metaData, failedResult) {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
         if (responce?.param) {
-            let subject =
-                responce.param.bookingType == BookingType.INSTALMENT
-                    ? `Booking ID ${responce.param.orderId} Confirmation`
-                    : `Booking ID ${responce.param.orderId} Confirmation`;
-            this.mailerService
-                .sendMail({
-                    to: responce.email,
-                    from: mailConfig.from,
-                    bcc: mailConfig.BCC,
-                    subject: subject,
-                    html: await LaytripCartBookingConfirmtionMail(
-                        responce.param,
-                        responce.referralId
-                    ),
-                })
-                .then((res) => {
-                    //console.log("res", res);
-                })
-                .catch((err) => {
-                    //console.log("err", err);
-                });
+            if (responce.param.bookingType == BookingType.INSTALMENT) {
+                let subject =
+                    responce.param.bookingType == BookingType.INSTALMENT
+                        ? `Booking ID ${responce.param.orderId} Confirmation`
+                        : `Booking ID ${responce.param.orderId} Confirmation`;
+                this.mailerService
+                    .sendMail({
+                        to: responce.email,
+                        from: mailConfig.from,
+                        bcc: mailConfig.BCC,
+                        subject: subject,
+                        html: await LaytripCartBookingConfirmtionMail(
+                            responce.param,
+                            responce.referralId
+                        ),
+                    })
+                    .then((res) => {
+                        //console.log("res", res);
+                    })
+                    .catch((err) => {
+                        //console.log("err", err);
+                    });
+            } else {
 
-            if (responce?.confirmed == true) {
                 await this.mailerService
                     .sendMail({
                         to: responce.email,
@@ -2459,6 +2661,65 @@ more than 10.`
                     .catch((err) => {
                         console.log("err", err);
                     });
+
+            }
+            if (failedResult == 0) {
+
+
+                let capturedAmount = parseFloat(metaData.transaction.amount) / 100
+                //console.log('capturedAmount', capturedAmount)
+                let cartAmount = responce?.param.cart.totalPaidInnumeric
+                //console.log('cartAmount', cartAmount)
+                let priceDiff = capturedAmount - cartAmount
+                //console.log('cartAmount', priceDiff)
+                if (priceDiff > 1) {
+                    let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`
+                    this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: subject,
+                            html: await CartOverChargeMail(
+                                {
+                                    priceDifferance: `${responce.currency.symbol}${priceDiff}`,
+                                    user_name: responce.param.user_name
+                                },
+                                responce.referralId
+                            ),
+                        })
+                        .then((res) => {
+                            //console.log("res", res);
+                        })
+                        .catch((err) => {
+                            //console.log("err", err);
+                        });
+                } else if (priceDiff < -1) {
+
+
+                    let subject = `BOOKING ID ${responce.param.orderId} UNDERCHARGED`
+
+                    this.mailerService
+                        .sendMail({
+                            to: responce.email,
+                            from: mailConfig.from,
+                            bcc: mailConfig.BCC,
+                            subject: subject,
+                            html: await CartLessChargeMail(
+                                {
+                                    priceDifferance: `${responce.currency.symbol}${Math.abs(priceDiff)}`,
+                                    user_name: responce.param.user_name
+                                },
+                                responce.referralId
+                            ),
+                        })
+                        .then((res) => {
+                            //console.log("res", res);
+                        })
+                        .catch((err) => {
+                            //console.log("err", err);
+                        });
+                }
             }
         } else {
             const user = await CartDataUtility.userData(userId);
@@ -2478,6 +2739,34 @@ more than 10.`
                     html: await BookingNotCompletedMail(
                         { userName },
                         referralId
+                    ),
+                })
+                .then((res) => {
+                    //console.log("res", res);
+                })
+                .catch((err) => {
+                    //console.log("err", err);
+                });
+        }
+        const failedBooking = await CartDataUtility.CartFailedMailModelDataGenerate(
+            bookingId
+        );
+        if (failedBooking) {
+            let subject = `BOOKING ID ${responce.param.orderId} CART ITEM UNAVAILABLE`
+
+            this.mailerService
+                .sendMail({
+                    to: responce.email,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: subject,
+                    html: await CartFailedInventryMail(
+                        {
+                            user_name: responce.param.user_name,
+                            FailedBooking: failedBooking,
+                            paymentDetail: responce?.param.paymentDetail
+                        },
+                        responce.referralId
                     ),
                 })
                 .then((res) => {

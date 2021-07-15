@@ -24,15 +24,38 @@ export async function LaytripCartBookingComplationMail(
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                         Congratulations on completing your installment plan! We have processed your final payment for Booking ID ${
                             param.orderId
-                        }.
+                        }.Please use this number when referencing your booking with Laytrip.
                     </td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td align="left" valign="top"
-                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                        Below you will find your applicable airline, hotel, home and car rental reservation number(s) so you can contact your travel providers directly for any of your final travel preparations.
-                        </td>
-                </tr>`;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">`
+
+                    for (let index = 1; index <= param.bookings.length; index++) {
+                        const booking = param.bookings[index - 1];
+                        if (booking.moduleId == ModulesName.FLIGHT) {
+                            if (booking.flighData[0].droups[0].depature?.pnr_no) {
+                                content += `<span style = "color: #000000; font-weight: 600;">Your ${booking.flighData[0].droups[0].flight} Travel Provider Confirmation Number is ${booking.flighData[0].droups[0].depature?.pnr_no}.</span> `;
+                            }
+                        }
+                        if (booking.moduleId == ModulesName.HOTEL) {
+                            content += `<span style = "color: #000000; font-weight: 600;">Your Hotel Travel Provider Confirmation Number is Your Lastname.</span> `;
+                        }
+                        if (index != param.bookings.length) {
+                            content += `,`;
+                        } else {
+                            content += `As your reservation with your Travel Provider is confirmed, please contact your Travel Provider directly for any of your travel needs from this time forward. Here are your Reservation Details:`;
+                        }
+                    }
+            content += ` </td>
+                        </tr>`;
+                // <tr>
+                //     <td align="left" valign="top"
+                //                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                //         Below you will find your applicable airline, hotel, home and car rental reservation number(s) so you can contact your travel providers directly for any of your final travel preparations.
+                //         </td>
+                // </tr>`;
+
+
     let traveleName = "";
     let travelerEmail = "";
     for await (const traveler of param.travelers) {
@@ -187,6 +210,23 @@ export async function LaytripCartBookingComplationMail(
             }
         }
     }
+
+    for await (const booking of param.bookings) {
+        if (booking.moduleId == ModulesName.FLIGHT) {
+            if (booking.flighData[0].droups[0].depature?.pnr_no) {
+                content += `<tr>
+                <td
+                      align="left" valign="top"bold;
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #707070">Flight ${booking.flighData[0].droups[0].arrival.code} Provider Reservation Number: ${booking.flighData[0].droups[0].depature?.pnr_no}</span>
+                    </span>
+                </td>
+            </tr>`;
+            }
+        }
+    }
+
+
     content += `
                 <tr>
                     <td style="padding: 5px 0 15px 0;">

@@ -6,6 +6,7 @@ import {
     Inject,
     CACHE_MANAGER,
     BadRequestException,
+    NotAcceptableException,
 } from "@nestjs/common";
 import { RoundtripSearchFlightDto } from "../dto/roundtrip-flight.dto";
 import * as moment from "moment";
@@ -37,6 +38,7 @@ import { Airport } from "src/entity/airport.entity";
 import { FlightRoute } from "src/entity/flight-route.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { LandingPages } from "src/entity/landing-page.entity";
+import { Session } from "inspector";
 
 export const flightClass = {
     Economy: "Y",
@@ -125,15 +127,21 @@ export class Mystifly implements StrategyAirline {
     }
     async startSession() {
         try {
-            let sessionDetails = await this.cacheManager.get(this.sessionName);
+            //let sessionDetails = await this.cacheManager.get(this.sessionName);
             //sessionDetails = JSON.parse(sessionDetails);
             //let currentTime = new Date();
             //let diff = moment(currentTime).diff(sessionDetails.created_time, 'seconds')
-            if (sessionDetails) {
-                return sessionDetails;
-            } else {
-                return await this.createSession();
+
+            const config = await Generic.getCredential("flight");
+
+            let mystiflyConfig = JSON.parse(config.testCredential);
+
+            if (config.mode) {
+                mystiflyConfig = JSON.parse(config.liveCredential);
             }
+            console.log('mystiflyConfig',mystiflyConfig)
+            console.log('mystiflyConfig.sessionId',mystiflyConfig.sessionId)
+            return mystiflyConfig.sessionId
         } catch (e) {
             return await this.createSession();
         }
@@ -209,6 +217,7 @@ export class Mystifly implements StrategyAirline {
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        
         let categoryName = caegory?.categoryname;
 
 
@@ -232,8 +241,8 @@ export class Mystifly implements StrategyAirline {
             destination_location
         );
         if (typeof routeDetails == "undefined") {
-            throw new NotFoundException(
-                `Fligh is not available for search route`
+            throw new NotAcceptableException(
+                `Sorry, location not served, coming soon. Please choose alternative.`
             );
         }
 
@@ -3063,8 +3072,8 @@ export class Mystifly implements StrategyAirline {
             destination_location
         );
         if (typeof routeDetails == "undefined") {
-            throw new NotFoundException(
-                `Fligh is not available for search route`
+            throw new NotAcceptableException(
+                `Sorry, location not served, coming soon. Please choose alternative.`
             );
         }
         let markup = await this.getMarkupDetails(

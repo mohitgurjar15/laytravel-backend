@@ -1112,10 +1112,16 @@ export class BookingService {
             let totalAmount = 0;
              let actualAmount = 0;
             const currency = cart.bookings[0]?.currency2;
-            const baseBooking = cart.bookings[0]?.bookingInstalments;
+            let baseBooking = cart.bookings[0]?.bookingInstalments;
             const installmentType =
                 cart.bookings[0]?.bookingInstalments[0]?.instalmentType;
             let cartInstallments = [];
+
+            let bookingIndex = 0 
+            while (cart.bookings[bookingIndex] && baseBooking?.length == 0) {
+                bookingIndex++
+                baseBooking = cart.bookings[bookingIndex]?.bookingInstalments;
+            }
             if (
                 baseBooking?.length &&
                 cart.bookings[0].bookingType == BookingType.INSTALMENT
@@ -2833,7 +2839,7 @@ export class BookingService {
                 await this.mailerService
                     .sendMail({
                         to: mailConfig.admin,
-                        from: mailConfig.from,
+                        from: 'customerservice@laytrip.com',
                         bcc: mailConfig.BCC,
                         subject: `Alert - BOOKING #${data.param.laytripBookingId} got cancelled `,
                         html: await BookingCancellationNotificationMail(
@@ -2860,7 +2866,7 @@ export class BookingService {
             this.mailerService
                 .sendMail({
                     to: query.user.email,
-                    from: mailConfig.from,
+                    from: 'customerservice@laytrip.com',
                     bcc: mailConfig.BCC,
                     subject: `Booking ID ${booking_id} Provider Cancellation Notice`,
                     html: await LaytripCancellationTravelProviderMail(
@@ -3176,7 +3182,7 @@ export class BookingService {
             this.mailerService
                 .sendMail({
                     to: responce.email,
-                    from: mailConfig.from,
+                    from:'customerservice@laytrip.com',
                     bcc: mailConfig.BCC,
                     subject: subject,
                     html: await LaytripIntialCancelBookingRequestEmail(

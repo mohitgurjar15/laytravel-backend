@@ -521,22 +521,23 @@ export class AuthService {
         const user = await this.userRepository.findOne({
             where: { email, isDeleted: false, roleId: In(roles) },
         });
+        if (user?.status != 1)
+            throw new UnauthorizedException(
+                `Your account has been disabled. Please contact customerservice@laytrip.com.`
+            );
+        if (!user?.isVerified) {
+            throw new NotAcceptableException(
+                `Your email has been verified.&&&email&&&Your email has been verified.`
+            );
+        }
+        if (user?.socialAccountId) {
+            throw new UnauthorizedException(
+                `Invalid login credentials. Please enter correct email and password.`
+            );
+        }
 
         if (user && (await user.validatePassword(password))) {
-            if (user.status != 1)
-                throw new UnauthorizedException(
-                    `Your account has been disabled. Please contact customerservice@laytrip.com.`
-                );
-            if (!user.isVerified) {
-                throw new NotAcceptableException(
-                    `Your email has been verified.&&&email&&&Your email has been verified.`
-                );
-            }
-            if (user.socialAccountId) {
-                throw new UnauthorizedException(
-                    `Invalid login credentials. Please enter correct email and password.`
-                );
-            }
+            
 
             const payload: JwtPayload = {
                 user_id: user.userId,
@@ -593,7 +594,7 @@ export class AuthService {
         }
         if (user.socialAccountId) {
             throw new UnauthorizedException(
-                `Invalid login credentials. Please enter correct email and password.`
+                `Invalid login credentials. Please enter correct email`
             );
         }
 

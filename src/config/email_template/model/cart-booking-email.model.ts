@@ -40,6 +40,8 @@ class cart {
     totalAmount: string;
     totalPaid?: string;
     rememberAmount?: string;
+    totalAmountInNumeric?: number;
+    totalPaidInnumeric?:number
 }
 
 class paymentDetail {
