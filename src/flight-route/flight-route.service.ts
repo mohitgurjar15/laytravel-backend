@@ -134,8 +134,7 @@ export class FlightRouteService {
             or ("route"."from_airport_city" ILIKE '%${search}%')
             or("route"."from_airport_code" ILIKE '%${search}%')
             or("route"."from_airport_country" ILIKE '%${search}%') 
-            or ("route"."from_airport_name" ILIKE '%${search}%')
-            or ("route"."type" ILIKE '%${search}%'))`;
+            or ("route"."from_airport_name" ILIKE '%${search}%'))`;
             }
 
             if (status) {
