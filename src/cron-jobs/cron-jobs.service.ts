@@ -859,9 +859,10 @@ export class CronJobsService {
         const path = require("path");
         const fs = require("fs");
         //joining path of directory
+        var unixTimestamp = Math.round(new Date().getTime() / 1000);
         const directoryPath = path.join("/var/www/html/logs/" + folderName);
         //passsing directoryPath and callback function
-        let zipName = folderName + '_' + date1
+        let zipName = folderName + '_' + date1 + '_' + unixTimestamp
         const child_process = require("child_process");
         child_process.execSync(`zip -r ${zipName} *`, {
             cwd: directoryPath
@@ -884,8 +885,8 @@ export class CronJobsService {
             fs.readFile(fileName, (err, data) => {
                 if (err) throw err;
                 const params = {
-                    Bucket: "laytrip/logs/" + folderName, // pass your bucket name
-                    Key: fileName, // file will be saved as testBucket/contacts.csv
+                    Bucket: bucketName, // pass your bucket name
+                    Key: date1 + '/'+zipName + '.zip', // file will be saved as testBucket/contacts.csv
                     Body: data,
                 };
                 s3.upload(params, function (s3Err, data) {
