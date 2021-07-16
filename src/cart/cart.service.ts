@@ -132,6 +132,7 @@ more than 10.`
             let nonPromotional = 0
             let promotionalItem = []
             let nonPromotionalItem = []
+            let paymentType = 0
             for (let index = 0; index < result.length; index++) {
                 const cart = result[index];
 
@@ -141,6 +142,12 @@ more than 10.`
                 } else {
                     nonPromotional++
                     nonPromotionalItem.push(cart.id)
+                }
+
+                if (paymentType == 0) {
+                    paymentType = cart.paymentType
+                } else if (paymentType != cart.paymentType) {
+                    throw new NotAcceptableException(`In cart Installment and no-installment both inventry found.`)
                 }
             }
 
@@ -168,14 +175,14 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType);
                     break;
 
                 case ModulesName.FLIGHT:
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header, referralId, cartIsPromotional
+                        Header, referralId, cartIsPromotional, paymentType
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:
@@ -233,7 +240,7 @@ more than 10.`
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional) {
+    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType) {
         //console.log('validate');
         console.log("cartIsPromotional", cartIsPromotional)
         const flightInfo: any = await this.flightService.airRevalidate(
@@ -252,6 +259,10 @@ more than 10.`
 
             if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
                 throw new ConflictException(`In cart promotional item found`)
+            }
+
+            if ((paymentType == BookingType.INSTALMENT && flightInfo[0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && flightInfo[0].is_installment_available == true)){
+                throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
             }
             const depatureDate = flightInfo[0].departure_date;
 
@@ -1689,7 +1700,7 @@ more than 10.`
                         cartData.id,
                         payment_type
                     );
-                    
+
 
                 }
                 const payment = await this.capturePayment(
@@ -2026,7 +2037,7 @@ more than 10.`
                                     amount: settlePercentageBaseAmount.toString()
                                 })
                                 .where(
-                                    `booking_id = '${booking.id}' AND instalment_no = ${index+1}`
+                                    `booking_id = '${booking.id}' AND instalment_no = ${index + 1}`
                                 )
                                 .execute();
 
@@ -2943,7 +2954,7 @@ more than 10.`
     //     );
     // }
 
-    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional) {
+    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType) {
 
         console.log(cartIsPromotional)
         let roomDetails = await this.hotelService.availability(
@@ -2960,6 +2971,10 @@ more than 10.`
 
         if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
             throw new ConflictException(`In cart promotional item found`)
+        }
+
+        if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0].is_installment_available == true)) {
+            throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
         }
 
 

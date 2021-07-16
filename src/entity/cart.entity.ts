@@ -29,6 +29,9 @@ export class Cart extends BaseEntity {
     @Column("integer", { name: "last_updated_timestamp", default:0 , nullable :  true})
     timeStamp: number;
 
+    @Column("integer", { name: "payment_type", nullable :true })
+    paymentType: number;
+
     // @Column("character varying", { name: "payment_type", nullable: true })
     // paymentType: string;
 

@@ -135,7 +135,9 @@ export class Search {
                             false,
                             weeklyCustomDownPayment
                         );
+                        //const is_installment_available = instalmentDetails.instalment_available
                         if (instalmentDetails.instalment_available) {
+                            
                             start_price =
                                 instalmentDetails.instalment_date[0]
                                     .instalment_amount;
@@ -198,7 +200,8 @@ export class Search {
                             discounted_start_price,
                             discounted_secondary_start_price,
                             discounted_no_of_weekly_installment,
-                            offer_data:offerData
+                            offer_data:offerData,
+                            is_installment_available : instalmentDetails.instalment_available
                         };
 
                         hotels.push(newItem);

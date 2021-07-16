@@ -204,7 +204,8 @@ export class RoomHelper {
                     discounted_start_price,
                     discounted_secondary_start_price,
                     discounted_no_of_weekly_installment,
-                    offer_data: offerData
+                    offer_data: offerData,
+                    is_installment_available: instalmentDetails.instalment_available
                 };
 
                 return newItem;

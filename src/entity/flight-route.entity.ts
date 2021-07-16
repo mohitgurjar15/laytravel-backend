@@ -82,7 +82,7 @@ export class FlightRoute extends BaseEntity {
         (laytripCategory) => laytripCategory.flightRoutes
     )
     @JoinColumn([{ name: "category_id", referencedColumnName: "id" }])
-    category: FlightRoute;
+    category: LaytripCategory;
 
     @OneToMany(
         () => FlightRoute,
