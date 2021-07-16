@@ -113,7 +113,7 @@ export class FlightService {
     async searchAirport(name: String, type: string) {
         try {
             let result = await this.airportRepository.find({
-                where: `("code" ILIKE '%${name}%'  or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
+                where: `("code" ILIKE '%${name}%'  or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false and is_blacklisted = false`,
                 order: { parentId: "ASC" },
             });
             if (type == "web") result = this.sortAirport(result);
