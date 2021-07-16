@@ -65,6 +65,8 @@ const mealCodes = {
     V: "Refreshment For Purchase",
     G: "Food And Beverage For Purchase",
 };
+
+const blacklistedAirlines = ["DL"]
 export class Mystifly implements StrategyAirline {
     private headers;
     private cacheManager;
@@ -139,8 +141,8 @@ export class Mystifly implements StrategyAirline {
             if (config.mode) {
                 mystiflyConfig = JSON.parse(config.liveCredential);
             }
-            console.log('mystiflyConfig',mystiflyConfig)
-            console.log('mystiflyConfig.sessionId',mystiflyConfig.sessionId)
+            console.log('mystiflyConfig', mystiflyConfig)
+            console.log('mystiflyConfig.sessionId', mystiflyConfig.sessionId)
             return mystiflyConfig.sessionId
         } catch (e) {
             return await this.createSession();
@@ -217,7 +219,7 @@ export class Mystifly implements StrategyAirline {
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
-        
+
         let categoryName = caegory?.categoryname;
 
 
@@ -324,6 +326,7 @@ export class Mystifly implements StrategyAirline {
             searchResult["s:envelope"]["s:body"][0].airlowfaresearchresponse[0]
                 .airlowfaresearchresult[0]["a:success"][0] == "true"
         ) {
+
             let filteredListes = await this.getRoutes(source_location, destination_location, false)
             let flightRoutes =
                 searchResult["s:envelope"]["s:body"][0]
@@ -344,6 +347,7 @@ export class Mystifly implements StrategyAirline {
 
 
             for (let i = 0; i < flightRoutes.length; i++) {
+                let blacklistedAirlinesFound = 0
                 route = new Route();
                 stops = [];
                 totalDuration = 0;
@@ -413,6 +417,7 @@ export class Mystifly implements StrategyAirline {
                     stop.airline_name =
                         airlines[flightSegment["a:marketingairlinecode"][0]];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
                     stop.cabin_baggage = this.getBaggageDetails(
                         typeof otherSegments["a:cabinbaggageinfo"] !==
                             "undefined"
@@ -669,14 +674,16 @@ export class Mystifly implements StrategyAirline {
                             ][0];
                     }
                 }
-                if (
-                    route.departure_code == source_location &&
-                    route.arrival_code == destination_location
-                ) {
-                    routes.push(route);
-                } else if (filteredListes.length) {
-                    if (filteredListes.indexOf(`${route.departure_code + '-' + route.arrival_code}`) != -1) {
+                if (blacklistedAirlinesFound == 0) {
+                    if (
+                        route.departure_code == source_location &&
+                        route.arrival_code == destination_location
+                    ) {
                         routes.push(route);
+                    } else if (filteredListes.length) {
+                        if (filteredListes.indexOf(`${route.departure_code + '-' + route.arrival_code}`) != -1) {
+                            routes.push(route);
+                        }
                     }
                 }
             }
@@ -875,6 +882,7 @@ export class Mystifly implements StrategyAirline {
             let totalDuration;
             let uniqueCode;
             for (let i = 0; i < flightRoutes.length; i++) {
+
                 route = new Route();
                 stops = [];
                 totalDuration = 0;
@@ -955,6 +963,7 @@ export class Mystifly implements StrategyAirline {
                             ? otherSegments["cabinbaggageinfo"][0]["string"][j]
                             : ""
                     );
+
                     //stop.cabin_baggage = '';
                     stop.checkin_baggage = this.getBaggageDetails(
                         otherSegments["baggageinfo"][0]["string"][j]
@@ -1854,6 +1863,7 @@ export class Mystifly implements StrategyAirline {
             let totalDuration;
             let uniqueCode;
             for (let i = 0; i < flightRoutes.length; i++) {
+                let blacklistedAirlinesFound = 0
                 route = new Route();
                 stops = [];
                 totalDuration = 0;
@@ -1928,6 +1938,8 @@ export class Mystifly implements StrategyAirline {
                         airlines[flightSegment["marketingairlinecode"][0]];
 
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+
+                    blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
 
                     stop.cabin_baggage = this.getBaggageDetails(
                         typeof otherSegments["cabinbaggageinfo"] !== "undefined"
@@ -2093,18 +2105,20 @@ export class Mystifly implements StrategyAirline {
                             intnery["passengertypequantity"][0]["quantity"][0];
                     }
                 }
-                if (
-                    route.departure_code == source_location &&
-                    route.arrival_code == destination_location
-                ) {
-                    routes.push(route);
-                } else if (filteredListes.length) {
+                if (blacklistedAirlinesFound == 0) {
                     if (
-                        filteredListes.indexOf(
-                            `${route.departure_code + "-" + route.arrival_code}`
-                        ) != -1
+                        route.departure_code == source_location &&
+                        route.arrival_code == destination_location
                     ) {
                         routes.push(route);
+                    } else if (filteredListes.length) {
+                        if (
+                            filteredListes.indexOf(
+                                `${route.departure_code + "-" + route.arrival_code}`
+                            ) != -1
+                        ) {
+                            routes.push(route);
+                        }
                     }
                 }
             }
@@ -2313,6 +2327,7 @@ export class Mystifly implements StrategyAirline {
             let uniqueCode;
             let j;
             for (let i = 0; i < flightRoutes.length; i++) {
+                let blacklistedAirlinesFound = 0
                 route = new Route();
                 stops = [];
                 totalDuration = 0;
@@ -2391,7 +2406,7 @@ export class Mystifly implements StrategyAirline {
                         airlines[flightSegment["marketingairlinecode"][0]];
 
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
-
+                    blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
                     stop.cabin_baggage = this.getBaggageDetails(
                         typeof otherSegments["cabinbaggageinfo"] !== "undefined"
                             ? otherSegments["cabinbaggageinfo"][0]["string"][j]
@@ -2491,6 +2506,7 @@ export class Mystifly implements StrategyAirline {
                     stop.airline = flightSegment["marketingairlinecode"][0];
                     stop.airline_name = airlines[stop.airline];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
                     stop.remaining_seat = parseInt(
                         flightSegment["seatsremaining"][0]["number"][0]
                     );
@@ -2725,17 +2741,19 @@ export class Mystifly implements StrategyAirline {
                             intnery["passengertypequantity"][0]["quantity"][0];
                     }
                 }
-                if (
-                    route.departure_code == source_location &&
-                    depatureCodeOfInbound == destination_location &&
-                    arrivalCodeOfOutbound == destination_location &&
-                    route.arrival_code == source_location
-                ) {
-                    routes.push(route);
-                } else if (filteredListes.length) {
-                    if (filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`) != -1 &&
-                        filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`) != -1) {
+                if (blacklistedAirlinesFound == 0) {
+                    if (
+                        route.departure_code == source_location &&
+                        depatureCodeOfInbound == destination_location &&
+                        arrivalCodeOfOutbound == destination_location &&
+                        route.arrival_code == source_location
+                    ) {
                         routes.push(route);
+                    } else if (filteredListes.length) {
+                        if (filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`) != -1 &&
+                            filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`) != -1) {
+                            routes.push(route);
+                        }
                     }
                 }
             }
@@ -3184,7 +3202,7 @@ export class Mystifly implements StrategyAirline {
             let totalDuration;
             let uniqueCode;
             for (let i = 0; i < flightRoutes.length; i++) {
-
+                let blacklistedAirlinesFound = 0
                 totalDuration = 0;
                 route = new Route();
                 stops = [];
@@ -3247,6 +3265,7 @@ export class Mystifly implements StrategyAirline {
                     stop.airline = flightSegment["a:marketingairlinecode"][0];
                     stop.airline_name = airlines[stop.airline];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
                     stop.remaining_seat = parseInt(
                         flightSegment["a:seatsremaining"][0]["a:number"][0]
                     );
@@ -3363,6 +3382,7 @@ export class Mystifly implements StrategyAirline {
                     stop.airline = flightSegment["a:marketingairlinecode"][0];
                     stop.airline_name = airlines[stop.airline];
                     stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                    blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
                     stop.remaining_seat = parseInt(
                         flightSegment["a:seatsremaining"][0]["a:number"][0]
                     );
@@ -3651,21 +3671,26 @@ export class Mystifly implements StrategyAirline {
                             ][0];
                     }
                 }
-                if (
-                    route.departure_code == source_location &&
-                    depatureCodeOfInbound == destination_location &&
-                    arrivalCodeOfOutbound == destination_location &&
-                    route.arrival_code == source_location
-                ) {
-                    routes.push(route);
-                } else if (filteredListes.length) {
+                if (blacklistedAirlinesFound == 0) {
 
-                    // console.log(route.departure_code + '-' + arrivalCodeOfOutbound, filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`));
-                    // console.log(route.arrival_code + '-' + depatureCodeOfInbound, filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`))
 
-                    if (filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`) != -1 &&
-                        filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`) != -1) {
+                    if (
+                        route.departure_code == source_location &&
+                        depatureCodeOfInbound == destination_location &&
+                        arrivalCodeOfOutbound == destination_location &&
+                        route.arrival_code == source_location
+
+                    ) {
                         routes.push(route);
+                    } else if (filteredListes.length) {
+
+                        // console.log(route.departure_code + '-' + arrivalCodeOfOutbound, filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`));
+                        // console.log(route.arrival_code + '-' + depatureCodeOfInbound, filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`))
+
+                        if (filteredListes.indexOf(`${route.departure_code + '-' + arrivalCodeOfOutbound}`) != -1 &&
+                            filteredListes.indexOf(`${route.arrival_code + '-' + depatureCodeOfInbound}`) != -1) {
+                            routes.push(route);
+                        }
                     }
                 }
             }
@@ -4826,7 +4851,7 @@ export class Mystifly implements StrategyAirline {
             .where(`airport.code = '${toLocation}'`)
             .getOne()
         if (from && to) {
-            
+
             let fromParent = from?.parentId ? from.parentId : -1;
             let toParent = to?.parentId ? to.parentId : -1;
             let q1 = await getConnection()
@@ -4855,7 +4880,7 @@ export class Mystifly implements StrategyAirline {
         }
 
         if (fromLocations.length && toLocations.length) {
-            
+
             let where = `from_airport_code in (:...fromLocations) AND to_airport_code in (:...toLocations) AND "is_deleted" = false`
             if (isRoundTrip) {
                 where = `((from_airport_code in (:...fromLocations) AND to_airport_code in (:...toLocations))OR(from_airport_code in (:...toLocations) AND to_airport_code in (:...fromLocations))) AND "is_deleted" = false`
