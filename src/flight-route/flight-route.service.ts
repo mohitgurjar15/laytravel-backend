@@ -48,11 +48,9 @@ export class FlightRouteService {
                 where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
             or("route"."to_airport_code" ILIKE '%${search}%')
             or("route"."to_airport_country" ILIKE '%${search}%') 
-            or ("route"."to_airport_name" ILIKE '%${search}%') 
             or ("route"."from_airport_city" ILIKE '%${search}%')
             or("route"."from_airport_code" ILIKE '%${search}%')
-            or("route"."from_airport_country" ILIKE '%${search}%') 
-            or ("route"."from_airport_name" ILIKE '%${search}%'))`;
+            or("route"."from_airport_country" ILIKE '%${search}%'))`;
             }
 
             if (type) {
@@ -130,11 +128,9 @@ export class FlightRouteService {
                 where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
             or("route"."to_airport_code" ILIKE '%${search}%')
             or("route"."to_airport_country" ILIKE '%${search}%') 
-            or ("route"."to_airport_name" ILIKE '%${search}%') 
             or ("route"."from_airport_city" ILIKE '%${search}%')
             or("route"."from_airport_code" ILIKE '%${search}%')
-            or("route"."from_airport_country" ILIKE '%${search}%') 
-            or ("route"."from_airport_name" ILIKE '%${search}%'))`;
+            or("route"."from_airport_country" ILIKE '%${search}%'))`;
             }
 
             if (status) {
@@ -517,7 +513,7 @@ export class FlightRouteService {
             }
 
             if (country) {
-                where += `AND ("airport"."country" = '${country}' )`;
+                where += `AND ("airport"."country" ILIKE '%${country}%' )`;
             }
 
             if (city) {
@@ -686,7 +682,10 @@ export class FlightRouteService {
         let responce = [];
         for await (const item of results) {
             if (item.country) {
-                responce.push(item.country)
+                let filteredStrings = responce.filter((str) => str.toLowerCase().includes(item.country.toLowerCase()))
+                if (!filteredStrings[0]) {
+                    responce.push(item.country)
+                }
             }
         }
         return {
@@ -701,7 +700,7 @@ export class FlightRouteService {
         console.log(country)
         var andWhere = `("airport"."is_deleted" = false)`
         if (country) {
-            andWhere += ` AND ("airport"."country" = '${country}' )`;
+            andWhere += ` AND ("airport"."country" ILIKE '%${country}%' )`;
 
         }
         console.log(andWhere)
@@ -994,18 +993,18 @@ export class FlightRouteService {
                             error_message[
                                 "message"
                             ] = `Add valid route type for route ${row.from_airport_code} to ${row.to_airport_code}.`;
-                        }else if(row.type === ''){
+                        } else if (row.type === '') {
                             error_message[
                                 "type"
                             ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in type is missing`;
                             error_message[
                                 "message"
                             ] = `Route ${row.from_airport_code} to ${row.to_airport_code} in type is missing.`;
-                            
+
                         }
 
                         errors.push(error_message);
-                        console.log('---------',errors)
+                        console.log('---------', errors)
                     }
                 }
             }
