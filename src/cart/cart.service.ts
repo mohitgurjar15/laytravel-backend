@@ -320,6 +320,7 @@ more than 10.`
             //     : new Date(formatedDepatureDate);
             cart.isDeleted = false;
             cart.createdDate = new Date();
+            cart.paymentType = flightInfo[0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
             // cart.instalmentType = instalment_type;
             // cart.paymentType = payment_type
 
@@ -1227,7 +1228,8 @@ more than 10.`
                 count: count,
                 cartIsPromotional,
                 error,
-                is_payment_plan_conflict
+                is_payment_plan_conflict,
+                cart_payment_type:paymentType
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -3027,12 +3029,10 @@ more than 10.`
         cart.isPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
         cart.offerFrom = referralId
         cart.oldModuleInfo = roomDetails.data;
-        console.log("cart.moduleInfo", cart.moduleInfo);
-        console.log("cart.moduleInfo", cart.moduleInfo["items"][0]);
-
+        cart.paymentType = roomDetails.data[0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
+        
         let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
-        console.log("depatureDate", depatureDate);
-
+       
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
         cart.createdDate = new Date();
