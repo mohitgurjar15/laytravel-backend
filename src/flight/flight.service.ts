@@ -712,34 +712,32 @@ export class FlightService {
             predate = predate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
-            if (
-                moment(new Date(predate)).diff(moment(new Date()), "days") >= 30
-            ) {
-                reqDates.push(predate);
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: predate,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.oneWaySearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+
+            reqDates.push(predate);
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: predate,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.oneWaySearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            }
+                )
+            );
+            resultIndex++;
+
             previousWeekDates.setDate(previousWeekDates.getDate() + 1);
         }
 
@@ -748,35 +746,31 @@ export class FlightService {
             nextdate = nextdate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
-            if (
-                moment(new Date(nextdate)).diff(moment(new Date()), "days") >=
-                30
-            ) {
-                reqDates.push(nextdate);
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: nextdate,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.oneWaySearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+            reqDates.push(nextdate);
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: nextdate,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.oneWaySearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            }
+                )
+            );
+            resultIndex++;
+
             nextWeekDates.setDate(nextWeekDates.getDate() + 1);
         }
 
@@ -1292,52 +1286,49 @@ export class FlightService {
         );
 
         for (let index = 0; index <= count; index++) {
-            if (
-                moment(new Date(depature)).diff(moment(new Date()), "days") >=
-                30
-            ) {
-                var beforeDateString = depature.toISOString().split("T")[0];
-                beforeDateString = beforeDateString
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-                console.log("Dept", depature, beforeDateString);
 
-                const arrival = new Date(depature);
-                arrival.setDate(depature.getDate() + tourDiffrence);
-                var afterDateString = arrival.toISOString().split("T")[0];
-                afterDateString = afterDateString
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-                console.log("seatch dates", beforeDateString, afterDateString);
-                reqDates.push(beforeDateString);
-                secondDate.push(afterDateString);
+            var beforeDateString = depature.toISOString().split("T")[0];
+            beforeDateString = beforeDateString
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            console.log("Dept", depature, beforeDateString);
 
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: beforeDateString,
-                    arrival_date: afterDateString,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
+            const arrival = new Date(depature);
+            arrival.setDate(depature.getDate() + tourDiffrence);
+            var afterDateString = arrival.toISOString().split("T")[0];
+            afterDateString = afterDateString
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            console.log("seatch dates", beforeDateString, afterDateString);
+            reqDates.push(beforeDateString);
+            secondDate.push(afterDateString);
 
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.roundTripSearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: beforeDateString,
+                arrival_date: afterDateString,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.roundTripSearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            }
+                )
+            );
+            resultIndex++;
+
             depature.setDate(depature.getDate() + 1);
         }
 
