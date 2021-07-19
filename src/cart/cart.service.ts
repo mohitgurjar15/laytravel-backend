@@ -3029,7 +3029,7 @@ more than 10.`
         cart.isPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
         cart.offerFrom = referralId
         cart.oldModuleInfo = roomDetails.data;
-        cart.paymentType = roomDetails.data[0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
+        cart.paymentType = roomDetails.data["items"][0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
         
         let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
        
