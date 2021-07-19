@@ -3501,7 +3501,7 @@ export class Mystifly implements StrategyAirline {
                     route.secondary_start_price = 0;
                     route.no_of_weekly_installment = 0;
                     route.instalment_avail_after =
-                        routeDetails.category.installmentAvailableAfter;
+                        routeDetails?.category?.installmentAvailableAfter;
                     let instalmentDetails: any = {};
                     let instalmentDetails2: any = {};
                     let instalmentDetails3: any = {};
