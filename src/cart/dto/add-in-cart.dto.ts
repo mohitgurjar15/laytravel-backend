@@ -57,11 +57,11 @@ export class AddInCartDto {
 
 	@ValidateIf((o) => o.module_id == ModulesName.FLIGHT)
 	@IsNotEmpty({
-		message: `Please select route code.&&&route_code`,
+		message: `Please select search data.&&&search_data`,
 	})
 	@ApiProperty({
 		description: `Select search data`,
-		example: `{ departure: 'string', arrival: 'string', checkInDate: 'string' }`,
+		example: { "departure": "BWI", "arrival": "BOS", "checkInDate": "2021-07-21" },
 	})
 	searchData: object;
 

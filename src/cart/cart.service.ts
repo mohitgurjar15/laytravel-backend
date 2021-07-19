@@ -1226,7 +1226,8 @@ more than 10.`
                 data: responce,
                 count: count,
                 cartIsPromotional,
-                error
+                error,
+                is_payment_plan_conflict
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
