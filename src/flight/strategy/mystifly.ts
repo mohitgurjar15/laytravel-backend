@@ -242,15 +242,15 @@ export class Mystifly implements StrategyAirline {
         const currencyDetails = await Generic.getAmountTocurrency(
             this.headers.currency
         );
-        let routeDetails: any = await RouteCategory.flightRouteAvailability(
-            source_location,
-            destination_location
-        );
-        if (typeof routeDetails == "undefined") {
-            throw new NotAcceptableException(
-                `Sorry, location not served, coming soon. Please choose alternative.`
-            );
-        }
+        // let routeDetails: any = await RouteCategory.flightRouteAvailability(
+        //     source_location,
+        //     destination_location
+        // );
+        // if (typeof routeDetails == "undefined") {
+        //     throw new NotAcceptableException(
+        //         `Sorry, location not served, coming soon. Please choose alternative.`
+        //     );
+        // }
 
         let markup = await this.getMarkupDetails(
             departure_date,
@@ -2227,11 +2227,6 @@ export class Mystifly implements StrategyAirline {
             );
         }
 
-        let routeDetails: any = await RouteCategory.flightRouteAvailability(
-            source_location,
-            destination_location
-        );
-
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
 	xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`;
         requestBody += `<soapenv:Header/>`;
@@ -3107,11 +3102,11 @@ export class Mystifly implements StrategyAirline {
             source_location,
             destination_location
         );
-        if (typeof routeDetails == "undefined") {
-            throw new NotAcceptableException(
-                `Sorry, location not served, coming soon. Please choose alternative.`
-            );
-        }
+        // if (typeof routeDetails == "undefined") {
+        //     throw new NotAcceptableException(
+        //         `Sorry, location not served, coming soon. Please choose alternative.`
+        //     );
+        // }
         let markup = await this.getMarkupDetails(
             departure_date,
             bookingDate,

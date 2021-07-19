@@ -60,7 +60,7 @@ export class RouteCategory {
 
             let routeDetails = await getManager()
                 .createQueryBuilder(FlightRoute, "flight_route")
-                .where("flight_route.from_airport_code In (departureCode) and flight_route.to_airport_code In (arrivalCode)", { departureCode: searchData.departure, arrivalCode: searchData.arrival })
+                .where("flight_route.from_airport_code In (:departureCode) and flight_route.to_airport_code In (:arrivalCode)", { departureCode: searchData.departure, arrivalCode: searchData.arrival })
                 .leftJoinAndSelect("flight_route.category", "category")
                 .getOne();
             if (routeDetails?.category?.isInstallmentAvailable) {

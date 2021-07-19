@@ -55,6 +55,16 @@ export class AddInCartDto {
 	})
 	route_code: string;
 
+	@ValidateIf((o) => o.module_id == ModulesName.FLIGHT)
+	@IsNotEmpty({
+		message: `Please select route code.&&&route_code`,
+	})
+	@ApiProperty({
+		description: `Select search data`,
+		example: `{ departure: 'string', arrival: 'string', checkInDate: 'string' }`,
+	})
+	searchData: object;
+
 	@ValidateIf((o) => o.module_id == ModulesName.VACATION_RENTEL)
 	@IsNotEmpty({
 		message: `Please enter property_id.&&&property_id`,
