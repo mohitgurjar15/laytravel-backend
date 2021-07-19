@@ -1215,20 +1215,20 @@ export class FlightService {
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
         console.log("dayDiff", dayDiff);
-        if (dayDiff == 33) {
+        if (dayDiff == 2) {
             afterDateDiffrence = 4;
         }
-        if (dayDiff == 32) {
+        if (dayDiff == 1) {
             afterDateDiffrence = 5;
         }
 
-        if (dayDiff == 31) {
+        if (dayDiff == 0) {
             afterDateDiffrence = 6;
         }
 
-        if (dayDiff == 30) {
-            afterDateDiffrence = 7;
-        }
+        // if (dayDiff == 30) {
+        //     afterDateDiffrence = 7;
+        // }
 
         console.log(afterDateDiffrence);
         dayDiffrence = 3;
