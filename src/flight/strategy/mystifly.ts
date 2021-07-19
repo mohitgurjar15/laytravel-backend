@@ -4223,11 +4223,11 @@ export class Mystifly implements StrategyAirline {
                     route.departure_code,
                     route.arrival_code
                 );
-                if (typeof routeDetails == "undefined") {
-                    throw new NotFoundException(
-                        `Fligh is not available for search route`
-                    );
-                }
+                // if (typeof routeDetails == "undefined") {
+                //     throw new NotFoundException(
+                //         `Fligh is not available for search route`
+                //     );
+                // }
 
                 //let arrivalFlightcode  = stops.length == 1 ? stops[stops.length - 1].arrival_code : stops[stops.length - 1].departure_code
 
@@ -4241,7 +4241,7 @@ export class Mystifly implements StrategyAirline {
                 route.start_price = 0;
                 route.secondary_start_price = 0;
                 route.instalment_avail_after =
-                    routeDetails.category.installmentAvailableAfter;
+                    routeDetails?.category?.installmentAvailableAfter;
                 let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
                     searchData
                 );
