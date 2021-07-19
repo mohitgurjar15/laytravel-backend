@@ -3861,6 +3861,8 @@ export class Mystifly implements StrategyAirline {
         const currencyDetails = await Generic.getAmountTocurrency(
             this.headers.currency
         );
+
+        
         let airRevalidateResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
             requestBody,
@@ -4177,6 +4179,7 @@ export class Mystifly implements StrategyAirline {
                     module
                 );
                 let markUpDetails = markup.markUpDetails;
+                
                 let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
                 if (!markUpDetails) {
                     throw new InternalServerErrorException(

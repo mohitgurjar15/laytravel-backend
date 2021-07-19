@@ -2440,7 +2440,7 @@ export class CronJobsService {
 
 
     async flightAvailiblityAssure() {
-        let limit = 50
+        let limit = 2
         let routes = await getConnection()
             .createQueryBuilder(FlightRoute, "routes")
             //.select('DISTINCT ON (LOWER("routes"."to_airport_code")) "routes"."to_airport_code" AND DISTINCT ON (LOWER("routes"."from_airport_code")) "routes"."from_airport_code"')
@@ -2639,7 +2639,7 @@ export class CronJobsService {
                 try {
                     const airRevalidateResult = await mystifly.airRevalidate(
                         { route_code },
-                        undefined,
+                        '',
                         ""
                     );
 
