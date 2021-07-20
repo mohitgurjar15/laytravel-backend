@@ -1025,7 +1025,7 @@ export class FlightService {
             } else {
                 if (
                     moment(new Date(date)).diff(moment(new Date()), "days") >=
-                    30
+                    2
                 ) {
                     let dto = {
                         source_location: source_location,
