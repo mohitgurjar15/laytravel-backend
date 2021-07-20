@@ -712,9 +712,9 @@ export class FlightRouteService {
             // .where(andWhere)
             // .getMany()
             .createQueryBuilder(Airport, "airport")
-            .select("airport.city")
+            .select(["airport.city"])
             .where(andWhere)
-            .orderBy(`airport.city`, "ASC")
+            .distinctOn(["airport.city"])
             .getMany();
         if (!results.length) {
             throw new NotFoundException('no data found')
