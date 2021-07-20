@@ -179,7 +179,6 @@ more than 10.`
                 .where(`user_id = '${user.user_id}'`)
                 .getOne();
 
-            let search: any = searchData
 
             switch (module_id) {
                 case ModulesName.HOTEL:
