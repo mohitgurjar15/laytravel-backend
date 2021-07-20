@@ -99,7 +99,6 @@ export class CartService {
                 check_out_date,
                 adult_count,
                 number_and_children_ages = [],
-                searchData
             } = addInCartDto;
             var tDate = new Date();
 
@@ -188,12 +187,12 @@ more than 10.`
                     break;
 
                 case ModulesName.FLIGHT:
-                    let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
-                        search
-                    );
-                    if ((paymentType == BookingType.INSTALMENT && instalmentEligibility == false) || (paymentType == BookingType.NOINSTALMENT && instalmentEligibility == true)) {
-                        throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
-                    }
+                    // let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                    //     search
+                    // );
+                    // if ((paymentType == BookingType.INSTALMENT && instalmentEligibility == false) || (paymentType == BookingType.NOINSTALMENT && instalmentEligibility == true)) {
+                    //     throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
+                    // }
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,

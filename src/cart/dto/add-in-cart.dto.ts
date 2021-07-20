@@ -55,15 +55,15 @@ export class AddInCartDto {
 	})
 	route_code: string;
 
-	@ValidateIf((o) => o.module_id == ModulesName.FLIGHT)
-	@IsNotEmpty({
-		message: `Please select search data.&&&search_data`,
-	})
-	@ApiProperty({
-		description: `Select search data`,
-		example: { "departure": "BWI", "arrival": "BOS", "checkInDate": "2021-07-21" },
-	})
-	searchData: object;
+	// @ValidateIf((o) => o.module_id == ModulesName.FLIGHT)
+	// @IsNotEmpty({
+	// 	message: `Please select search data.&&&search_data`,
+	// })
+	// @ApiProperty({
+	// 	description: `Select search data`,
+	// 	example: { "departure": "BWI", "arrival": "BOS", "checkInDate": "2021-07-21" },
+	// })
+	// searchData: object;
 
 	@ValidateIf((o) => o.module_id == ModulesName.VACATION_RENTEL)
 	@IsNotEmpty({
