@@ -17,6 +17,7 @@ import { Notification } from "./notification.entity";
 import { Cart } from "./cart.entity";
 import { SearchLog } from "./search-log.entity";
 import { BookingLog } from "./booking-log.entity";
+import { PaymentConfiguration } from "./payment-configuration.entity";
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
 export class Module extends BaseEntity {
@@ -107,4 +108,10 @@ export class Module extends BaseEntity {
     searchLog => searchLog.module
   )
   searchLog: SearchLog[];
+
+  @OneToMany(
+    () => PaymentConfiguration,
+    markup => markup.module
+  )
+  paymentConfiguration: PaymentConfiguration[];
 }

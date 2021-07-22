@@ -52,6 +52,7 @@ import { FlightRouteModule } from "./flight-route/flight-route.module";
 import { LandingPageModule } from "./landing-page/landing-page.module";
 import { AppController } from "./app/app.controller";
 import { AppLoggerMiddleware } from "./http-interceptor";
+import { PaymentConfigurationModule } from './payment-configuration/payment-configuration.module';
 console.log(typeOrmConfig);
 
 @Module({
@@ -130,6 +131,7 @@ console.log(typeOrmConfig);
         LaytripCategoryModule,
         FlightRouteModule,
         LandingPageModule,
+        PaymentConfigurationModule,
         /* CacheModule.register({
       store: redisStore,
       host: 'localhost',

@@ -9,6 +9,7 @@ import {
     PrimaryGeneratedColumn
 } from "typeorm";
 import { FlightRoute } from "./flight-route.entity";
+import { PaymentConfiguration } from "./payment-configuration.entity";
 import { User } from "./user.entity";
 
 //@Index("login_log_pk", ["id"], { unique: true })
@@ -26,6 +27,7 @@ export class LaytripCategory extends BaseEntity {
 
     @Column("integer", { name: "installment_available_after" , nullable: true })
     installmentAvailableAfter: number;
+
 
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;
@@ -58,4 +60,10 @@ export class LaytripCategory extends BaseEntity {
         flightRoute => flightRoute.category
     )
     flightRoutes: FlightRoute[];
+
+    @OneToMany(
+        () => PaymentConfiguration,
+        flightRoute => flightRoute.category
+    )
+    paymentConfiguration: PaymentConfiguration[];
 }
