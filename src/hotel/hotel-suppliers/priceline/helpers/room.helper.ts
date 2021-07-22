@@ -14,11 +14,11 @@ export class RoomHelper {
 
     processRoom(hotel: any, roomsReqDto: any, inputData = null, offerData) {
         let roomData = hotel.room_data;
-      
+
         let rooms = collect(roomData).map((rates: any) => {
             let newItem: any = {};
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-            
+
 
             let rate = rates.rate_data[0];
 
@@ -64,7 +64,7 @@ export class RoomHelper {
                 mandatoryFeeDetails.prepaid_break_dwon,
                 offerData
             );
-           
+
             if (selling['discounted_total'] > 25) {
                 let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
 
@@ -214,10 +214,22 @@ export class RoomHelper {
         var filtered = rooms.filter(function (el) {
             return el != null;
         });
+        let data
+        let a:any = filtered
 
-        let data = filtered.sort(function (a, b) {
-            return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
-        });
+        if (a[0]?.discounted_secondary_start_price) {
+            data = filtered.sort(function (a, b) {
+                return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
+            });
+
+
+        } else {
+            data = filtered.sort(function (a, b) {
+                return a.selling.total - b.selling.total;
+            });
+        }
+
+
         return data;
     }
 

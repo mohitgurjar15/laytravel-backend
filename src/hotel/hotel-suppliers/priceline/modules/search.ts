@@ -245,9 +245,17 @@ export class Search {
 
                 
             }
-            let hotelsList =  hotels.sort(function (a, b) {
-                return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
-            });
+            let hotelsList
+            if (hotels[0]?.discounted_secondary_start_price){
+                hotelsList = hotels.sort(function (a, b) {
+                    return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
+                });
+            }else{
+                hotelsList = hotels.sort(function (a, b) {
+                    return a.selling.total - b.selling.total;
+                });
+            }
+            
             //console.log("hotelsList",hotelsList)
             return hotelsList;
             //return hotels;
