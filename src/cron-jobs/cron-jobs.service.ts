@@ -2779,6 +2779,20 @@ export class CronJobsService {
             );
             Activity.cronUpdateActivity("flight assure cron", emailData);
         }
+        else {
+            let emailHtml = `<tr>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Today Flight assure cron have no any failer.
+                    </td>
+            </tr>
+        <tr>`
+            this.cronfailedmail(
+                notificationHeader + emailHtml + notificationFooter,
+                `Flight assure cron successfully run for ${limit} search data`
+            );
+            Activity.cronUpdateActivity("Airline assure cron", "");
+        }
         return emailData
     }
 
@@ -3136,8 +3150,22 @@ export class CronJobsService {
                 notificationHeader + emailHtml + notificationFooter,
                 "Airline assure cron failed for some route"
             );
-            Activity.cronUpdateActivity("flight assure cron", emailData);
+            Activity.cronUpdateActivity("flight assure cron", {});
+        }else{
+            let emailHtml = `<tr>
+                <td align="left" valign="top"
+                    style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
+                    Today Airline assure cron have no any failer.
+                    </td>
+            </tr>
+        <tr>`
+            this.cronfailedmail(
+                notificationHeader + emailHtml + notificationFooter,
+                `Airline assure cron successfully run for ${limit} search data`
+            );
+            Activity.cronUpdateActivity("Airline assure cron","");
         }
+
         return emailData
-    }
+    } 
 }
