@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsNotEmpty, ValidateIf, ValidateNested, ValidationArguments } from "class-validator";
 import { DownPaymentType } from "src/enum/down-payment-type.enum";
+import { InstalmentType } from "src/enum/instalment-type.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { PaymentType } from "src/enum/payment-type.enum";
 
@@ -21,7 +22,7 @@ export class UpdatePaymentConfigurationDto {
     })
     @ApiPropertyOptional({
         description: 'category name',
-        example: 1
+        example: "Gold"
     })
     category_name: string;
 
@@ -30,7 +31,7 @@ export class UpdatePaymentConfigurationDto {
     })
     @ApiProperty({
         description: `Enter days config id`,
-        example: 1,
+        example: 2,
     })
     days_config_id: number;
 
@@ -42,7 +43,7 @@ export class UpdatePaymentConfigurationDto {
     })
     @ApiProperty({
         description: `Enter days down payment option`,
-        example: 1,
+        example: [20,30,40],
     })
     down_payment_option: number[];
 
@@ -54,9 +55,9 @@ export class UpdatePaymentConfigurationDto {
     })
     @ApiProperty({
         description: `Enter  payment frequency`,
-        example: 1,
+        example: [InstalmentType.MONTHLY, InstalmentType.WEEKLY, InstalmentType.BIWEEKLY],
     })
-    payment_frequency: PaymentType[];
+    payment_frequency: InstalmentType[];
 
     @ValidateIf((o) => o.allow_installment == 'true')
     @IsEnum([DownPaymentType.PERCENTAGE, DownPaymentType.FLAT], {
@@ -79,7 +80,7 @@ export class UpdatePaymentConfigurationDto {
     })
     @ApiProperty({
         description: `Enter days allow installment`,
-        example: 1,
+        example: true,
     })
     allow_installment: boolean;
 }

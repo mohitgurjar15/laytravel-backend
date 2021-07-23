@@ -19,7 +19,7 @@ export class PaymentConfigurationService {
 		let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id}`
 
 		if (category_name) {
-			where += `AND category.name = ${'category_id'}`
+			where += `AND category.name = '${category_name}'`
 		}
 
 		let config = await getConnection()
@@ -51,14 +51,14 @@ export class PaymentConfigurationService {
 
 		if (payment_frequency.length){
 			for await (const iterator of payment_frequency) {
-				if (!Object.values(PaymentType).includes(iterator)) {
+				if (!Object.values(InstalmentType).includes(iterator)) {
 					throw new BadRequestException(`${iterator} not valid payment type`)
 				}
 			}
 		}
 		
 		if (category_name) {
-			where += `AND category.name = ${'category_id'}`
+			where += `AND category.name = '${category_name}'`
 		}
 
 		let config = await getConnection()
@@ -77,14 +77,15 @@ export class PaymentConfigurationService {
 		config.isInstallmentAvailable = allow_installment
 		config.updatedDate = new Date()
 		config.updateBy = user.userId
-		config.isWeeklyInstallmentAvailable = payment_frequency[InstalmentType.WEEKLY] ? true : false
-		config.isBiWeeklyInstallmentAvailable = payment_frequency[InstalmentType.BIWEEKLY] ? true : false
-		config.isMonthlyInstallmentAvailable = payment_frequency[InstalmentType.MONTHLY] ? true : false
+		config.isWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.WEEKLY) ? true : false
+		config.isBiWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.BIWEEKLY) ? true : false
+		config.isMonthlyInstallmentAvailable = payment_frequency.includes(InstalmentType.MONTHLY) ? true : false
 
-		await config.save()
+		const newConfig = await config.save()
 
 		return {
-			message : `Payment configuration updated successfully.`
+			message : `Payment configuration updated successfully.`,
+			data: newConfig
 		}
 
 

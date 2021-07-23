@@ -20,7 +20,7 @@ export class GetPaymentConfigurationDto {
     })
     @ApiPropertyOptional({
         description: 'category id',
-        example: 1
+        example: 'Gold'
     })
     category_name: string;
 
