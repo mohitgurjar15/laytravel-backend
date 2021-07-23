@@ -24,14 +24,23 @@ export class PaymentConfiguration extends BaseEntity {
     @Column("boolean", { name: "is_down_payment_in_percentage", default: () => "true" })
     isDownPaymentInPercentage: boolean;
 
-    @Column("json", { name: "payment_frequency", nullable: true })
-    paymentFrequency: object;
+    // @Column("json", { name: "payment_frequency", nullable: true })
+    // paymentFrequency: object;
 
     @Column("json", { name: "down_payment_option", nullable: true })
     downPaymentOption: object;
 
     @Column("boolean", { name: "is_installment_available", default: () => "true" })
     isInstallmentAvailable: boolean;
+
+    @Column("boolean", { name: "is_weekly_installment_available", default: () => "true" })
+    isWeeklyInstallmentAvailable: boolean;
+
+    @Column("boolean", { name: "is_biweekly_installment_available", default: () => "true" })
+    isBiWeeklyInstallmentAvailable: boolean;
+
+    @Column("boolean", { name: "is_monthly_installment_available", default: () => "true" })
+    isMonthlyInstallmentAvailable: boolean;
 
     @Column("date", { name: "updated_date" , nullable : true})
     updatedDate: Date;
