@@ -4,6 +4,7 @@ import { LaytripCategory } from 'src/entity/laytrip-category.entity';
 import { PaymentConfiguration } from 'src/entity/payment-configuration.entity';
 import { User } from 'src/entity/user.entity';
 import { DownPaymentType } from 'src/enum/down-payment-type.enum';
+import { InstalmentType } from 'src/enum/instalment-type.enum';
 import { PaymentType } from 'src/enum/payment-type.enum';
 import { getConnection } from 'typeorm';
 import { GetPaymentConfigurationDto } from './dto/get-payment-config.dto';
@@ -71,11 +72,14 @@ export class PaymentConfigurationService {
 		}
 
 		config.downPaymentOption = down_payment_option
-		config.paymentFrequency = payment_frequency
+		//config.paymentFrequency = payment_frequency
 		config.isDownPaymentInPercentage =  down_payment_type == DownPaymentType.PERCENTAGE ? true : false
 		config.isInstallmentAvailable = allow_installment
 		config.updatedDate = new Date()
 		config.updateBy = user.userId
+		config.isWeeklyInstallmentAvailable = payment_frequency[InstalmentType.WEEKLY] ? true : false
+		config.isBiWeeklyInstallmentAvailable = payment_frequency[InstalmentType.BIWEEKLY] ? true : false
+		config.isMonthlyInstallmentAvailable = payment_frequency[InstalmentType.MONTHLY] ? true : false
 
 		await config.save()
 

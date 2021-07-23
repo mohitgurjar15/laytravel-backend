@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { query } from 'express';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { Role } from 'src/enum/role.enum';
@@ -10,6 +10,12 @@ import { GetPaymentConfigurationDto } from './dto/get-payment-config.dto';
 import { UpdatePaymentConfigurationDto } from './dto/update-payment-config.dto';
 import { PaymentConfigurationService } from './payment-configuration.service';
 
+@ApiTags("Payment Configuration")
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 @Controller('payment-configuration')
 export class PaymentConfigurationController {
     constructor(private paymentConfigurationService: PaymentConfigurationService) { }

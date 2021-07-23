@@ -7,6 +7,7 @@ import {
     ManyToOne,
     PrimaryGeneratedColumn
 } from "typeorm";
+import { daysConfiguration } from "./days_configuration.entity";
 import { LaytripCategory } from "./laytrip-category.entity";
 import { Module } from "./module.entity";
 
@@ -17,6 +18,9 @@ export class PaymentConfiguration extends BaseEntity {
 
     @Column("integer", { name: "module_id" })
     moduleId: number;
+
+    @Column("integer", { name: "days_config_id" })
+    daysConfigId: number;
 
     @Column("integer", { name: "category_id" })
     categoryId: number;
@@ -61,4 +65,11 @@ export class PaymentConfiguration extends BaseEntity {
     )
     @JoinColumn([{ name: "module_id", referencedColumnName: "id" }])
     module: Module;
+
+    @ManyToOne(
+        () => daysConfiguration,
+        config => config.paymentConfiguration
+    )
+    @JoinColumn([{ name: "days_config_id", referencedColumnName: "id" }])
+    daysConfiguration: daysConfiguration;
 }
