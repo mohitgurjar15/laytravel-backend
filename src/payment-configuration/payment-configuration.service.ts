@@ -14,25 +14,34 @@ import { UpdatePaymentConfigurationDto } from './dto/update-payment-config.dto';
 export class PaymentConfigurationService {
 
 	async getPaymentConfig(getPaymentConfigurationDto: GetPaymentConfigurationDto) {
-		const { module_id, category_name, days_config_id } = getPaymentConfigurationDto
+		const { module_id, category_name } = getPaymentConfigurationDto
 
-		let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id}`
+		let where = `config.module_id = ${module_id}`
+
+		let category
 
 		if (category_name) {
 			where += `AND category.name = '${category_name}'`
+
+			category = await getConnection()
+				.createQueryBuilder(LaytripCategory, "category")
+				.where(`category.name = '${category_name}'`)
+				.getOne();
 		}
 
 		let config = await getConnection()
 			.createQueryBuilder(PaymentConfiguration, "config")
 			.leftJoinAndSelect("config.category", "category")
+			.leftJoinAndSelect("config.daysConfiguration", "daysConfiguration")
 			.where(where)
-			.getOne();
+			.getMany();
+		
 		
 		if (!config) {
 			throw new NotFoundException(`Please enter valid inputs`)
 		}
 
-		return { config }
+		return { config, laytrip_category : category}
 	}
 
 	async getDaysConfig() {
