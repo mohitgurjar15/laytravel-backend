@@ -69,7 +69,15 @@ export class Rooms {
                     rooms.items[i].photos=[];
                 }
             }
-            
+            if (rooms[0]?.discounted_secondary_start_price) {
+                rooms.sort(function (a, b) {
+                    return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
+                });
+            } else {
+                rooms.sort(function (a, b) {
+                    return a.selling.total - b.selling.total;
+                });
+            }
             return { rooms, details };
         }
     }

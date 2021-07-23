@@ -28,6 +28,8 @@ export class LaytripCategory extends BaseEntity {
     @Column("integer", { name: "installment_available_after" , nullable: true })
     installmentAvailableAfter: number;
 
+    @Column("boolean", { name: "is_installment_available", default: () => "true" })
+    isInstallmentAvailable: boolean;
 
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;

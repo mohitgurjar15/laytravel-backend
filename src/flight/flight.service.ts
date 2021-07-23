@@ -103,7 +103,7 @@ export class FlightService {
         private instalmentService: InstalmentService,
 
         private readonly mailerService: MailerService
-    ) {}
+    ) { }
 
     /**
      *
@@ -113,7 +113,7 @@ export class FlightService {
     async searchAirport(name: String, type: string) {
         try {
             let result = await this.airportRepository.find({
-                where: `("code" ILIKE '%${name}%'  or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false`,
+                where: `("code" ILIKE '%${name}%'  or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false and is_blacklisted = false`,
                 order: { parentId: "ASC" },
             });
             if (type == "web") result = this.sortAirport(result);
@@ -185,19 +185,19 @@ export class FlightService {
 
     /* async mapChildParentAirport(name:String){
 
-		for(let airport of allAirpots){
+        for(let airport of allAirpots){
 
-			await getConnection()
-			.createQueryBuilder()
-				.update(Airport)
-				.set({ 
-					parentId : airport.id
-				})
-				.where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
-				.execute();
-		}
-		return true;
-	} */
+            await getConnection()
+            .createQueryBuilder()
+                .update(Airport)
+                .set({ 
+                    parentId : airport.id
+                })
+                .where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
+                .execute();
+        }
+        return true;
+    } */
 
     async getSellingPrice(netRateDto: NetRateDto, user) {
         const { departure_date, net_rate } = netRateDto;
@@ -311,7 +311,7 @@ export class FlightService {
         return result;
     }
 
-    async searchOneWayZipFlight(searchFlightDto, headers, user,referralId='') {
+    async searchOneWayZipFlight(searchFlightDto, headers, user, referralId = '') {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const mystiflyConfig = await new Promise((resolve) =>
@@ -546,7 +546,7 @@ export class FlightService {
                         custom_instalment_no: null,
                         custom_amount: 0,
                     };
-                    
+
                 }
             }
         }
@@ -600,12 +600,12 @@ export class FlightService {
             returnResponce[lowestPriceIndex]["date"] &&
             returnResponce[lowestPriceIndex]["date"] == depature
         ) {
-           
+
             const Installments = await this.instalmentService.calculateInstalemnt(
                 installmentDTO
             );
 
-          
+
             if (Installments.instalment_available == true) {
                 var totalOfInstallment = 0;
                 for (
@@ -712,34 +712,32 @@ export class FlightService {
             predate = predate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
-            if (
-                moment(new Date(predate)).diff(moment(new Date()), "days") >= 30
-            ) {
-                reqDates.push(predate);
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: predate,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.oneWaySearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+
+            reqDates.push(predate);
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: predate,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.oneWaySearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            }
+                )
+            );
+            resultIndex++;
+
             previousWeekDates.setDate(previousWeekDates.getDate() + 1);
         }
 
@@ -748,40 +746,35 @@ export class FlightService {
             nextdate = nextdate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
-            if (
-                moment(new Date(nextdate)).diff(moment(new Date()), "days") >=
-                30
-            ) {
-                reqDates.push(nextdate);
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: nextdate,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.oneWaySearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+            reqDates.push(nextdate);
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: nextdate,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.oneWaySearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            }
+                )
+            );
+            resultIndex++;
+
             nextWeekDates.setDate(nextWeekDates.getDate() + 1);
         }
 
         const response = await Promise.all(result);
-
         let returnResponce = [];
         for await (const data of response) {
             if (!data.message) {
@@ -792,37 +785,75 @@ export class FlightService {
                 var date;
                 var startPrice = 0;
                 var secondaryStartPrice = 0;
+                var isInstallmentAvailable = false
+                var selling_price = 0
                 for await (const flightData of data.items) {
-                    if (key == 0) {
-                        netRate = flightData.net_rate;
-                        lowestprice = flightData.discounted_selling_price;
-                        unique_code = flightData.unique_code;
-                        date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
-                        secondaryStartPrice =
-                            flightData.discounted_secondary_start_price || 0;
-                        console.log(flightData)
-                        console.log('lowestprice', lowestprice)
-                        console.log('flightData.discounted_selling_price', flightData.discounted_selling_price)
-                    }
-                    // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+                    if (flightData?.is_installment_available) {
 
-                    // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
-                    // 	lowestPriceIndex = key
-                    // 	lowestprice = flightData.net_rate;
-                    // 	is_booking_avaible = true
-                    // }
-                    else if (lowestprice > flightData.discounted_selling_price) {
-                        console.log('lowestprice',lowestprice)
-                        console.log('flightData.discounted_selling_price',flightData.discounted_selling_price)
-                        netRate = flightData.net_rate;
-                        lowestprice = flightData.discounted_selling_price;
-                        unique_code = flightData.unique_code;
-                        date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
-                        secondaryStartPrice =
-                            flightData.discounted_secondary_start_price || 0;
+
+                        if (key == 0) {
+                            netRate = flightData.net_rate;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            startPrice = flightData.start_price || 0;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            selling_price = flightData.selling_price
+
+                        }
+                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+                        // 	lowestPriceIndex = key
+                        // 	lowestprice = flightData.net_rate;
+                        // 	is_booking_avaible = true
+                        // }
+                        else if (lowestprice > flightData.discounted_selling_price) {
+                            netRate = flightData.net_rate;
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            startPrice = flightData.start_price || 0;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            selling_price = flightData.selling_price
+                        }
+                    } else {
+                        if (key == 0) {
+                            netRate = flightData.net_rate;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            startPrice = flightData.start_price || 0;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            selling_price = flightData.selling_price
+
+                        }
+                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+                        // 	lowestPriceIndex = key
+                        // 	lowestprice = flightData.net_rate;
+                        // 	is_booking_avaible = true
+                        // }
+                        else if (selling_price > flightData.selling_price) {
+                            netRate = flightData.net_rate;
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            startPrice = flightData.start_price || 0;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            selling_price = flightData.selling_price
+                        }
                     }
+
                     key++;
                 }
 
@@ -834,6 +865,8 @@ export class FlightService {
                         unique_code: unique_code,
                         start_price: startPrice,
                         secondary_start_price: secondaryStartPrice,
+                        is_installment_available: isInstallmentAvailable,
+                        selling_price
                     };
 
                     returnResponce.push(output);
@@ -863,10 +896,10 @@ export class FlightService {
             }
 
             let date1 = date.split("-");
-           
+
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
-           
+
 
             if (obj == 0) {
                 var output = {
@@ -876,6 +909,8 @@ export class FlightService {
                     unique_code: "",
                     start_price: 0,
                     secondary_start_price: 0,
+                    is_installment_available: false,
+                    selling_price: 0
                 };
 
                 returnResponce.push(output);
@@ -990,7 +1025,7 @@ export class FlightService {
             } else {
                 if (
                     moment(new Date(date)).diff(moment(new Date()), "days") >=
-                    30
+                    2
                 ) {
                     let dto = {
                         source_location: source_location,
@@ -1180,20 +1215,20 @@ export class FlightService {
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
         console.log("dayDiff", dayDiff);
-        if (dayDiff == 33) {
+        if (dayDiff == 2) {
             afterDateDiffrence = 4;
         }
-        if (dayDiff == 32) {
+        if (dayDiff == 1) {
             afterDateDiffrence = 5;
         }
 
-        if (dayDiff == 31) {
+        if (dayDiff == 0) {
             afterDateDiffrence = 6;
         }
 
-        if (dayDiff == 30) {
-            afterDateDiffrence = 7;
-        }
+        // if (dayDiff == 30) {
+        //     afterDateDiffrence = 7;
+        // }
 
         console.log(afterDateDiffrence);
         dayDiffrence = 3;
@@ -1207,7 +1242,7 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
-        
+
 
         //var count = 6
 
@@ -1251,52 +1286,49 @@ export class FlightService {
         );
 
         for (let index = 0; index <= count; index++) {
-            if (
-                moment(new Date(depature)).diff(moment(new Date()), "days") >=
-                30
-            ) {
-                var beforeDateString = depature.toISOString().split("T")[0];
-                beforeDateString = beforeDateString
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-                console.log("Dept", depature, beforeDateString);
 
-                const arrival = new Date(depature);
-                arrival.setDate(depature.getDate() + tourDiffrence);
-                var afterDateString = arrival.toISOString().split("T")[0];
-                afterDateString = afterDateString
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-                console.log("seatch dates", beforeDateString, afterDateString);
-                reqDates.push(beforeDateString);
-                secondDate.push(afterDateString);
+            var beforeDateString = depature.toISOString().split("T")[0];
+            beforeDateString = beforeDateString
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            console.log("Dept", depature, beforeDateString);
 
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: beforeDateString,
-                    arrival_date: afterDateString,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
+            const arrival = new Date(depature);
+            arrival.setDate(depature.getDate() + tourDiffrence);
+            var afterDateString = arrival.toISOString().split("T")[0];
+            afterDateString = afterDateString
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            console.log("seatch dates", beforeDateString, afterDateString);
+            reqDates.push(beforeDateString);
+            secondDate.push(afterDateString);
 
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.roundTripSearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: beforeDateString,
+                arrival_date: afterDateString,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.roundTripSearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            }
+                )
+            );
+            resultIndex++;
+
             depature.setDate(depature.getDate() + 1);
         }
 
@@ -1313,33 +1345,74 @@ export class FlightService {
                 var startPrice = 0;
                 var arrivalDate;
                 var secondaryStartPrice = 0;
+                var isInstallmentAvailable = false
+                var selling_price = 0
                 for await (const flightData of data.items) {
-                    if (key == 0) {
-                        netRate = flightData.net_rate;
-                        lowestprice = flightData.discounted_selling_price;
-                        unique_code = flightData.unique_code;
-                        date = flightData.departure_date;
-                        arrivalDate = flightData.arrival_date;
-                        startPrice = flightData.start_price || 0;
-                        secondaryStartPrice =
-                            flightData.discounted_secondary_start_price || 0;
-                    }
-                    // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+                    if (flightData?.is_installment_available) {
 
-                    // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
-                    // 	lowestPriceIndex = key
-                    // 	lowestprice = flightData.net_rate;
-                    // 	is_booking_avaible = true
-                    // }
-                    else if (lowestprice > flightData.discounted_selling_price) {
-                        netRate = flightData.net_rate;
-                        lowestprice = flightData.discounted_selling_price;
-                        unique_code = flightData.unique_code;
-                        date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
-                        arrivalDate = flightData.arrival_date;
-                        secondaryStartPrice =
-                            flightData.discounted_secondary_start_price || 0;
+                        if (key == 0) {
+                            netRate = flightData.net_rate;
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            arrivalDate = flightData.arrival_date;
+                            startPrice = flightData.start_price || 0;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            selling_price = flightData.selling_price
+                        }
+                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+                        // 	lowestPriceIndex = key
+                        // 	lowestprice = flightData.net_rate;
+                        // 	is_booking_avaible = true
+                        // }
+                        else if (lowestprice > flightData.discounted_selling_price) {
+                            netRate = flightData.net_rate;
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            startPrice = flightData.start_price || 0;
+                            arrivalDate = flightData.arrival_date;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            selling_price = flightData.selling_price
+                        }
+                    } else {
+                        if (key == 0) {
+                            netRate = flightData.net_rate;
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            arrivalDate = flightData.arrival_date;
+                            startPrice = flightData.start_price || 0;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            selling_price = flightData.selling_price
+                        }
+                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
+
+                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+                        // 	lowestPriceIndex = key
+                        // 	lowestprice = flightData.net_rate;
+                        // 	is_booking_avaible = true
+                        // }
+                        else if (selling_price > flightData.selling_price) {
+                            netRate = flightData.net_rate;
+                            lowestprice = flightData.discounted_selling_price;
+                            unique_code = flightData.unique_code;
+                            date = flightData.departure_date;
+                            startPrice = flightData.start_price || 0;
+                            arrivalDate = flightData.arrival_date;
+                            secondaryStartPrice =
+                                flightData.discounted_secondary_start_price || 0;
+                            isInstallmentAvailable = flightData?.is_installment_available
+                            selling_price = flightData.selling_price
+                        }
                     }
                     key++;
                 }
@@ -1354,8 +1427,10 @@ export class FlightService {
                         start_price: startPrice,
                         arrival_date: arrivalDate,
                         secondary_start_price: secondaryStartPrice,
+                        is_installment_available: isInstallmentAvailable,
+                        selling_price
                     };
-                    
+
 
                     returnResponce.push(output);
                 }
@@ -1383,10 +1458,10 @@ export class FlightService {
             let date2 = arrivalofDate.split("-");
             date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
 
-         
+
 
             if (obj == 0) {
-                
+
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1395,13 +1470,15 @@ export class FlightService {
                     start_price: 0,
                     secondary_start_price: 0,
                     arrival_date: date2,
+                    is_installment_available: false,
+                    selling_price: 0
                 };
 
                 returnResponce.push(output);
             }
         }
 
-      
+
         returnResponce.sort((a, b) => {
             var dateTime = a.date;
             var d = dateTime.split("/");
@@ -1470,7 +1547,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.airRevalidate(routeIdDto, user,referralId))
+            resolve(mystifly.airRevalidate(routeIdDto, user, referralId))
         );
         return result;
     }
@@ -1530,7 +1607,7 @@ export class FlightService {
             } else {
                 if (
                     typeof airRevalidateResult[0].secondary_selling_price !=
-                        "undefined" &&
+                    "undefined" &&
                     airRevalidateResult[0].secondary_selling_price > 0
                 ) {
                     bookingRequestInfo.selling_price =
@@ -1911,7 +1988,7 @@ export class FlightService {
         booking.id = uuidv4();
         booking.moduleId = moduleDetails.id;
         //booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.laytripBookingId = reservationId 
+        booking.laytripBookingId = reservationId
         booking.bookingType = bookingType;
         booking.currency = currencyId;
         booking.totalAmount = selling_price.toString();
@@ -1965,23 +2042,23 @@ export class FlightService {
 
             booking.bookingStatus =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_booking_id
+                    supplierBookingData.supplier_booking_id
                     ? BookingStatus.CONFIRM
                     : BookingStatus.PENDING;
             booking.paymentStatus = PaymentStatus.PENDING;
             booking.supplierBookingId =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_booking_id
+                    supplierBookingData.supplier_booking_id
                     ? supplierBookingData.supplier_booking_id
                     : "";
             booking.isPredictive =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_booking_id
+                    supplierBookingData.supplier_booking_id
                     ? false
                     : true;
             booking.supplierStatus =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_status == "BOOKINGINPROCESS"
+                    supplierBookingData.supplier_status == "BOOKINGINPROCESS"
                     ? 0
                     : 1;
         } else {
@@ -1989,7 +2066,7 @@ export class FlightService {
             booking.supplierBookingId = supplierBookingData.supplier_booking_id;
             booking.supplierStatus =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_status == "BOOKINGINPROCESS"
+                    supplierBookingData.supplier_status == "BOOKINGINPROCESS"
                     ? 0
                     : 1;
             //booking.supplierBookingId = "";
@@ -2117,7 +2194,7 @@ export class FlightService {
 
         let booking = await this.bookingRepository.getBookingDetails(bookingId);
         booking.bookingStatus = BookingStatus.CONFIRM;
-       
+
 
         booking.netRate = `${net_rate}`;
         booking.usdFactor = `${currencyDetails.liveRate}`;
@@ -2179,7 +2256,7 @@ export class FlightService {
             } else {
                 if (
                     typeof airRevalidateResult[0].secondary_selling_price !=
-                        "undefined" &&
+                    "undefined" &&
                     airRevalidateResult[0].secondary_selling_price > 0
                 ) {
                     bookingRequestInfo.selling_price =
@@ -2241,7 +2318,7 @@ export class FlightService {
         Activity.logActivity(userId, "Booking", `${bookingId} Booked from supplier side by admin`, null, JSON.stringify(bookingResult));
 
         if (bookingResult.booking_status == "success") {
-            
+
             console.log(`step - 3 save Booking`, bookingResult);
 
             let laytripBookingResult = await this.partialyBookingSave(
@@ -2434,9 +2511,9 @@ export class FlightService {
                 );
 
                 /* if (traveler.title == null || traveler.title == "")
-					throw new BadRequestException(
-						`Title is missing for traveler ${traveler.firstName}`
-					); */
+                    throw new BadRequestException(
+                        `Title is missing for traveler ${traveler.firstName}`
+                    ); */
                 if (
                     (traveler.email == null || traveler.email == "") &&
                     ageDiff >= 12
@@ -2535,9 +2612,9 @@ export class FlightService {
                 );
 
                 /* if (traveler.title == null || traveler.title == "")
-					throw new BadRequestException(
-						`Title is missing for traveler ${traveler.firstName}`
-					); */
+                    throw new BadRequestException(
+                        `Title is missing for traveler ${traveler.firstName}`
+                    ); */
                 if (
                     (traveler.email == null || traveler.email == "") &&
                     ageDiff >= 12
@@ -2863,8 +2940,8 @@ export class FlightService {
 
         /* if(tripDetails.booking_status=='Pending'){
 	
-			
-		} */
+        	
+        } */
     }
     async getValueWithPreductionPercentage(netValue) {
         let query = getManager()
@@ -2898,7 +2975,7 @@ export class FlightService {
         var moduleInfo = booking.moduleInfo[0];
         const currencyCode =
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
-                "a:totalfare"
+            "a:totalfare"
             ][0]["a:currencycode"][0];
         let currencyDetails = await getManager()
             .createQueryBuilder(Currency, "currency")
@@ -2909,9 +2986,9 @@ export class FlightService {
 
         moduleInfo["net_rate"] =
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
-                "a:totalfare"
+            "a:totalfare"
             ][0]["a:amount"][0];
-        
+
 
         var depatureIndex = 0;
         var arrivalIndex = 0;
@@ -2925,7 +3002,7 @@ export class FlightService {
             "a:itineraryinfo"
         ][0]["a:reservationitems"][0]["a:reservationitem"]) {
             if (reservation != null) {
-               
+
                 var data = {
                     departure_code:
                         reservation["a:departureairportlocationcode"][0],
@@ -2943,7 +3020,7 @@ export class FlightService {
                     departure_date_time: reservation["a:departuredatetime"][0],
                     departure_info:
                         airports[
-                            reservation["a:departureairportlocationcode"][0]
+                        reservation["a:departureairportlocationcode"][0]
                         ],
                     arrival_code:
                         reservation["a:arrivalairportlocationcode"][0],
@@ -2960,7 +3037,7 @@ export class FlightService {
                     arrival_date_time: reservation["a:arrivaldatetime"][0],
                     arrival_info:
                         airports[
-                            reservation["a:arrivalairportlocationcode"][0]
+                        reservation["a:arrivalairportlocationcode"][0]
                         ],
                     eticket: true,
                     flight_number: reservation["a:flightnumber"][0],
@@ -2978,7 +3055,7 @@ export class FlightService {
                 } else {
                     moduleInfo.routes[0].stops.push(data);
                 }
-               
+
             }
         }
 
@@ -3004,18 +3081,18 @@ export class FlightService {
 
         booking.netRate =
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
-                "a:totalfare"
+            "a:totalfare"
             ][0]["a:amount"][0];
         booking.moduleInfo = [moduleInfo];
         booking.supplierBookingId = supplier_booking_id;
 
         await booking.save();
-       
-            await this.sendFlightUpdateMail(
-                booking.cart.laytripCartId,
-                isNewBooking
-            );
-        
+
+        await this.sendFlightUpdateMail(
+            booking.cart.laytripCartId,
+            isNewBooking
+        );
+
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
@@ -3169,7 +3246,7 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                 };
-                
+
                 flights = await this.searchOneWayZipFlight(
                     dto,
                     Headers,
@@ -3306,7 +3383,7 @@ export class FlightService {
         cartIsPromotional,
         referral_id
     ) {
-         let logData = {}
+        let logData = {}
         try {
             let headerDetails = await this.validateHeaders(headers);
             console.log("header validate");
@@ -3324,7 +3401,7 @@ export class FlightService {
                 cartCount,
                 reservationId,
             } = bookFlightDto;
-           
+
             cartCount = cartCount ? cartCount : 0;
             const mystifly = new Strategy(
                 new Mystifly(headers, this.cacheManager)
@@ -3334,12 +3411,12 @@ export class FlightService {
                 user,
                 cartIsPromotional == true ? referral_id : ''
             );
-            console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
+            console.log("airRevalidateResult[0][log_file", airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])
             logData['revalidation-log'] = airRevalidateResult[0]['log_file']
             logData['markUpDetails'] = airRevalidateResult[0]['markUpDetails']
             console.log(logData);
-            
+
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
             if (airRevalidateResult) {
@@ -3355,14 +3432,14 @@ export class FlightService {
                         : 0;
                 bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
                 bookingRequestInfo.total_price =
-                        airRevalidateResult[0].selling_price;
+                    airRevalidateResult[0].selling_price;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         airRevalidateResult[0].discounted_selling_price
                 } else {
                     if (
                         typeof airRevalidateResult[0].secondary_selling_price !=
-                            "undefined" &&
+                        "undefined" &&
                         airRevalidateResult[0].secondary_selling_price > 0
                     ) {
                         bookingRequestInfo.selling_price =
@@ -3452,34 +3529,34 @@ export class FlightService {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(airRevalidateResult[0].offer_data, 0);
 
-                    if(cartIsPromotional){
+                    if (cartIsPromotional) {
 
-                    instalmentDetails = Instalment.weeklyInstalment(
-                        selling_price,
-                        smallestDipatureDate,
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        0,
-                        cartCount > 1 ? true : false,
-                        weeklyCustomDownPayment
-                    );
-                    console.log(instalmentDetails)
+                        instalmentDetails = Instalment.weeklyInstalment(
+                            selling_price,
+                            smallestDipatureDate,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            cartCount > 1 ? true : false,
+                            weeklyCustomDownPayment
+                        );
+                        console.log(instalmentDetails)
 
-                }else{
-                    instalmentDetails = Instalment.weeklyInstalment(
-                        selling_price,
-                        smallestDipatureDate,
-                        bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false
-                    );
-                }
-                    
+                    } else {
+                        instalmentDetails = Instalment.weeklyInstalment(
+                            selling_price,
+                            smallestDipatureDate,
+                            bookingDate,
+                            totalAdditionalAmount,
+                            custom_instalment_amount,
+                            custom_instalment_no,
+                            selected_down_payment,
+                            cartCount > 1 ? true : false
+                        );
+                    }
+
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
                     instalmentDetails = Instalment.biWeeklyInstalment(
@@ -3549,7 +3626,7 @@ export class FlightService {
                         reservationId,
                         referral_id
                     );
-                    
+
                     //     this.bookingUpdateFromSupplierside(
                     //         laytripBookingResult.laytripBookingId,
                     //         {
@@ -3754,7 +3831,7 @@ export class FlightService {
             //         });
             // } 
             // else
-            if(isNewBooking != 2 && isNewBooking != 3) {
+            if (isNewBooking != 2 && isNewBooking != 3) {
                 this.mailerService
                     .sendMail({
                         to: mailData.email,

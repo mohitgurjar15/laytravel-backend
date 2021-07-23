@@ -4,20 +4,20 @@ import * as moment from 'moment';
 import { flightDataUtility } from "./flight-data.utility";
 import { NotFoundException } from "@nestjs/common";
 
-export class RouteCategory{
+export class RouteCategory {
 
     /**
      * Function to get route category and installment avaiblibity details
      */
-    static async flightRouteAvailability(departureCode:string,arrivalCode:string){
+    static async flightRouteAvailability(departureCode: string, arrivalCode: string) {
 
         let data = await flightDataUtility.getFlightRoutes(departureCode, arrivalCode)
 
         let routeDetails = await getManager()
-                    .createQueryBuilder(FlightRoute, "flight_route")
-            .where("flight_route.from_airport_code In (:...departureCode) and flight_route.to_airport_code In (:...arrivalCode)", { departureCode: data.fromLocations ,arrivalCode:data.toLocations })
-                    .leftJoinAndSelect("flight_route.category", "category")
-                    .getOne();
+            .createQueryBuilder(FlightRoute, "flight_route")
+            .where("flight_route.from_airport_code In (:...departureCode) and flight_route.to_airport_code In (:...arrivalCode)", { departureCode: data.fromLocations, arrivalCode: data.toLocations })
+            .leftJoinAndSelect("flight_route.category", "category")
+            .getOne();
         return routeDetails;
         /* return {
             id: 21,
@@ -48,17 +48,28 @@ export class RouteCategory{
               updateDate: null
             }
           } */
-          
+
     }
 
-    static checkInstalmentEligibility(checkInDate,bookingDate,days){
+    static async checkInstalmentEligibility(searchData: { departure: string, arrival: string, checkInDate: string }
+    ) {
 
-        let dayDiffernce = moment(checkInDate).diff(moment(bookingDate), 'days')
+        let dayDiffernce = moment(searchData.checkInDate).diff(moment().format("YYYY-MM-DD"), 'days')
         //return true;
-        if(days>0 && dayDiffernce>=days){
-            return true;
+        if (dayDiffernce >= 30) {
+
+            let routeDetails = await getManager()
+                .createQueryBuilder(FlightRoute, "flight_route")
+                .where("flight_route.from_airport_code In (:departureCode) and flight_route.to_airport_code In (:arrivalCode)", { departureCode: searchData.departure, arrivalCode: searchData.arrival })
+                .leftJoinAndSelect("flight_route.category", "category")
+                .getOne();
+            if (routeDetails?.category?.isInstallmentAvailable) {
+                return true;
+            } else {
+                return false
+            }
         }
-        else{
+        else {
             return false;
         }
     }

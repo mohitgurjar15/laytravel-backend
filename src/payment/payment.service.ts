@@ -1521,6 +1521,7 @@ export class PaymentService {
         let nonPromotional = 0
         let promotionalItem = []
         let nonPromotionalItem = []
+        let paymentType = 0
         for (let index = 0; index < result.length; index++) {
             const cart = result[index];
 
@@ -1531,6 +1532,12 @@ export class PaymentService {
                 nonPromotional++
                 nonPromotionalItem.push(cart.id)
             }
+
+            // if (paymentType == 0) {
+            //     paymentType = cart.paymentType
+            // } else if (paymentType != cart.paymentType) {
+            //     throw new NotAcceptableException(`In cart Installment and no-installment both inventry found.`)
+            // }
         }
 
         if (promotional > 0 && nonPromotional > 0) {
