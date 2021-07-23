@@ -27,6 +27,10 @@ export class PaymentConfigurationService {
 			.leftJoinAndSelect("config.category", "category")
 			.where(where)
 			.getOne();
+		
+		if (!config) {
+			throw new NotFoundException(`Please enter valid inputs`)
+		}
 
 		return { config }
 	}
