@@ -3831,14 +3831,14 @@ export class FlightService {
 
         opResult = this.groupByKey(opResult, "key");
         console.log(opResult);
-        let airportArray = [];
+        let airportArray = opResult;
 
-        for (const [key, value] of Object.entries(opResult)) {
-            airportArray.push({
-                key: key,
-                value: value,
-            });
-        }
+        // for (const [key, value] of Object.entries(opResult)) {
+        //     airportArray.push({
+        //         key: key,
+        //         value: value,
+        //     });
+        // }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.key.localeCompare(b.key));
