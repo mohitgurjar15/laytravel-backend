@@ -3825,12 +3825,13 @@ export class FlightService {
         for await (const route of result) {
             data = {};
             data = airports[route.code];
+            //console.log(airports[route.code])
             data.key = route.city.charAt(0);
             opResult.push(data);
         }
 
-        opResult = this.groupByKey(opResult, "key");
-        console.log(opResult);
+        // opResult = this.groupByKey(opResult, "key");
+        // console.log(opResult);
         let airportArray = opResult;
 
         // for (const [key, value] of Object.entries(opResult)) {
@@ -3841,7 +3842,7 @@ export class FlightService {
         // }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-        airportArray = airportArray.sort((a, b) => a.key.localeCompare(b.key));
+        airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
         return airportArray;
     }
 
@@ -3918,7 +3919,7 @@ export class FlightService {
                 }
             }
         }
-
+        opResult = opResult.sort((a, b) => a.name.localeCompare(b.name));
         return opResult;
     }
 
