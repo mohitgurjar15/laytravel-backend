@@ -39,6 +39,7 @@ import { FlightRoute } from "src/entity/flight-route.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { LandingPages } from "src/entity/landing-page.entity";
 import { Session } from "inspector";
+import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
 
 export const flightClass = {
     Economy: "Y",
@@ -521,40 +522,79 @@ export class Mystifly implements StrategyAirline {
                     let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
                         searchData
                     );
-                    route.is_installment_available = instalmentEligibility
-                    if (instalmentEligibility) {
+                    route.is_installment_available = instalmentEligibility.available
+
+                    let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
+
+                    let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+
+                    route.payment_config = paymentConfig
+
+                    if (instalmentEligibility.available) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
 
-                        instalmentDetails = Instalment.weeklyInstalment(
-                            route.selling_price,
-                            departure_date,
-                            bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            false,
-                            weeklyCustomDownPayment
-                        );
-                        let instalmentDetails2 = Instalment.biWeeklyInstalment(
-                            route.selling_price,
-                            departure_date,
-                            bookingDate,
-                            0,
-                            null,
-                            null,
-                            0
-                        );
-                        let instalmentDetails3 = Instalment.monthlyInstalment(
-                            route.selling_price,
-                            departure_date,
-                            bookingDate,
-                            0,
-                            null,
-                            null,
-                            0
-                        );
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            instalmentDetails = Instalment.weeklyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                weeklyCustomDownPayment
+                            );
+                            if (instalmentDetails.instalment_available) {
+                                route.start_price =
+                                    instalmentDetails.instalment_date[0].instalment_amount;
+
+                                route.secondary_start_price =
+                                    instalmentDetails.instalment_date[1].instalment_amount;
+                                route.no_of_weekly_installment =
+                                    instalmentDetails.instalment_date.length - 1;
+                            }
+
+                        }
+
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            let instalmentDetails2 = Instalment.biWeeklyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0
+                            );
+
+                            route.second_down_payment =
+                                instalmentDetails2.instalment_date[0].instalment_amount;
+                            route.secondary_start_price_2 =
+                                instalmentDetails2.instalment_date[1].instalment_amount;
+                            route.no_of_weekly_installment_2 =
+                                instalmentDetails2.instalment_date.length - 1;
+                        }
+
+
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            let instalmentDetails3 = Instalment.monthlyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0
+                            );
+                            route.third_down_payment =
+                                instalmentDetails3.instalment_date[0].instalment_amount;
+                            route.secondary_start_price_3 =
+                                instalmentDetails3.instalment_date[1].instalment_amount;
+                            route.no_of_weekly_installment_3 =
+                                instalmentDetails3.instalment_date.length - 1;
+                        }
 
 
                         discountedInstalmentDetails = Instalment.weeklyInstalment(
@@ -569,29 +609,7 @@ export class Mystifly implements StrategyAirline {
                             weeklyCustomDownPayment
                         );
 
-                        if (instalmentDetails.instalment_available) {
-                            route.start_price =
-                                instalmentDetails.instalment_date[0].instalment_amount;
-
-                            route.secondary_start_price =
-                                instalmentDetails.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment =
-                                instalmentDetails.instalment_date.length - 1;
-
-                            route.second_down_payment =
-                                instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_2 =
-                                instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_2 =
-                                instalmentDetails2.instalment_date.length - 1;
-
-                            route.third_down_payment =
-                                instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_3 =
-                                instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_3 =
-                                instalmentDetails3.instalment_date.length - 1;
-
+                        if (discountedInstalmentDetails.instalment_available) {
                             route.discounted_start_price =
                                 discountedInstalmentDetails.instalment_date[0].instalment_amount;
 
@@ -2618,8 +2636,8 @@ export class Mystifly implements StrategyAirline {
                     let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
                         searchData
                     );
-                    route.is_installment_available = instalmentEligibility
-                    if (instalmentEligibility) {
+                    route.is_installment_available = instalmentEligibility.available
+                    if (instalmentEligibility.available) {
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                         instalmentDetails = Instalment.weeklyInstalment(
                             route.selling_price,
@@ -3509,8 +3527,8 @@ export class Mystifly implements StrategyAirline {
                     let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
                         searchData
                     );
-                    route.is_installment_available = instalmentEligibility
-                    if (instalmentEligibility) {
+                    route.is_installment_available = instalmentEligibility.available
+                    if (instalmentEligibility.available) {
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                         // instalmentDetails = Instalment.weeklyInstalment(
                         //     route.selling_price,
@@ -3879,7 +3897,7 @@ export class Mystifly implements StrategyAirline {
             this.headers.currency
         );
 
-        
+
         let airRevalidateResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
             requestBody,
@@ -4196,7 +4214,7 @@ export class Mystifly implements StrategyAirline {
                     module
                 );
                 let markUpDetails = markup.markUpDetails;
-                
+
                 let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
                 if (!markUpDetails) {
                     throw new InternalServerErrorException(
@@ -4248,10 +4266,10 @@ export class Mystifly implements StrategyAirline {
                 let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
                     searchData
                 );
-                route.is_installment_available = instalmentEligibility
+                route.is_installment_available = instalmentEligibility.available
                 let instalmentDetails;
                 let discountedInstalmentDetails;
-                if (instalmentEligibility) {
+                if (instalmentEligibility.available) {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
 

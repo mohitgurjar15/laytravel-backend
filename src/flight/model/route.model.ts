@@ -72,6 +72,7 @@ export class Route {
     discounted_secondary_start_price:number;
     discounted_no_of_weekly_installment?:any
     is_installment_available?: boolean
+    payment_config?:any
 }
 
 export class RouteType {

@@ -64,13 +64,14 @@ export class RouteCategory {
                 .leftJoinAndSelect("flight_route.category", "category")
                 .getOne();
             if (routeDetails?.category?.isInstallmentAvailable) {
-                return true;
+                return { available: true, categoryId: routeDetails?.category?.id };
             } else {
-                return false
+                return { available: false, categoryId: routeDetails?.category?.id }
+
             }
         }
         else {
-            return false;
+            return { available: false };
         }
     }
 }
