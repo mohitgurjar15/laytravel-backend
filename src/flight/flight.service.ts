@@ -86,6 +86,7 @@ import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-r
 import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 import { LandingPage } from "src/utility/landing-page.utility";
+import { Airport } from "src/entity/airport.entity";
 
 @Injectable()
 export class FlightService {
@@ -103,7 +104,7 @@ export class FlightService {
         private instalmentService: InstalmentService,
 
         private readonly mailerService: MailerService
-    ) {}
+    ) { }
 
     /**
      *
@@ -185,19 +186,19 @@ export class FlightService {
 
     /* async mapChildParentAirport(name:String){
 
-		for(let airport of allAirpots){
+        for(let airport of allAirpots){
 
-			await getConnection()
-			.createQueryBuilder()
-				.update(Airport)
-				.set({ 
-					parentId : airport.id
-				})
-				.where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
-				.execute();
-		}
-		return true;
-	} */
+            await getConnection()
+            .createQueryBuilder()
+                .update(Airport)
+                .set({ 
+                    parentId : airport.id
+                })
+                .where(`(country=:country and city=:city and  name!=:name)`, { country:airport.country, city:airport.city, name:airport.name })
+                .execute();
+        }
+        return true;
+    } */
 
     async getSellingPrice(netRateDto: NetRateDto, user) {
         const { departure_date, net_rate } = netRateDto;
@@ -311,7 +312,7 @@ export class FlightService {
         return result;
     }
 
-    async searchOneWayZipFlight(searchFlightDto, headers, user,referralId='') {
+    async searchOneWayZipFlight(searchFlightDto, headers, user, referralId = '') {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const mystiflyConfig = await new Promise((resolve) =>
@@ -546,7 +547,7 @@ export class FlightService {
                         custom_instalment_no: null,
                         custom_amount: 0,
                     };
-                    
+
                 }
             }
         }
@@ -600,12 +601,12 @@ export class FlightService {
             returnResponce[lowestPriceIndex]["date"] &&
             returnResponce[lowestPriceIndex]["date"] == depature
         ) {
-           
+
             const Installments = await this.instalmentService.calculateInstalemnt(
                 installmentDTO
             );
 
-          
+
             if (Installments.instalment_available == true) {
                 var totalOfInstallment = 0;
                 for (
@@ -813,8 +814,8 @@ export class FlightService {
                     // 	is_booking_avaible = true
                     // }
                     else if (lowestprice > flightData.discounted_selling_price) {
-                        console.log('lowestprice',lowestprice)
-                        console.log('flightData.discounted_selling_price',flightData.discounted_selling_price)
+                        console.log('lowestprice', lowestprice)
+                        console.log('flightData.discounted_selling_price', flightData.discounted_selling_price)
                         netRate = flightData.net_rate;
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
@@ -863,10 +864,10 @@ export class FlightService {
             }
 
             let date1 = date.split("-");
-           
+
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
-           
+
 
             if (obj == 0) {
                 var output = {
@@ -1207,7 +1208,7 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
-        
+
 
         //var count = 6
 
@@ -1355,7 +1356,7 @@ export class FlightService {
                         arrival_date: arrivalDate,
                         secondary_start_price: secondaryStartPrice,
                     };
-                    
+
 
                     returnResponce.push(output);
                 }
@@ -1383,10 +1384,10 @@ export class FlightService {
             let date2 = arrivalofDate.split("-");
             date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
 
-         
+
 
             if (obj == 0) {
-                
+
                 var output = {
                     date: date1,
                     net_rate: 0,
@@ -1401,7 +1402,7 @@ export class FlightService {
             }
         }
 
-      
+
         returnResponce.sort((a, b) => {
             var dateTime = a.date;
             var d = dateTime.split("/");
@@ -1470,7 +1471,7 @@ export class FlightService {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         const result = new Promise((resolve) =>
-            resolve(mystifly.airRevalidate(routeIdDto, user,referralId))
+            resolve(mystifly.airRevalidate(routeIdDto, user, referralId))
         );
         return result;
     }
@@ -1530,7 +1531,7 @@ export class FlightService {
             } else {
                 if (
                     typeof airRevalidateResult[0].secondary_selling_price !=
-                        "undefined" &&
+                    "undefined" &&
                     airRevalidateResult[0].secondary_selling_price > 0
                 ) {
                     bookingRequestInfo.selling_price =
@@ -1911,7 +1912,7 @@ export class FlightService {
         booking.id = uuidv4();
         booking.moduleId = moduleDetails.id;
         //booking.laytripBookingId = `LTF${uniqid.time().toUpperCase()}`;
-        booking.laytripBookingId = reservationId 
+        booking.laytripBookingId = reservationId
         booking.bookingType = bookingType;
         booking.currency = currencyId;
         booking.totalAmount = selling_price.toString();
@@ -1965,23 +1966,23 @@ export class FlightService {
 
             booking.bookingStatus =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_booking_id
+                    supplierBookingData.supplier_booking_id
                     ? BookingStatus.CONFIRM
                     : BookingStatus.PENDING;
             booking.paymentStatus = PaymentStatus.PENDING;
             booking.supplierBookingId =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_booking_id
+                    supplierBookingData.supplier_booking_id
                     ? supplierBookingData.supplier_booking_id
                     : "";
             booking.isPredictive =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_booking_id
+                    supplierBookingData.supplier_booking_id
                     ? false
                     : true;
             booking.supplierStatus =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_status == "BOOKINGINPROCESS"
+                    supplierBookingData.supplier_status == "BOOKINGINPROCESS"
                     ? 0
                     : 1;
         } else {
@@ -1989,7 +1990,7 @@ export class FlightService {
             booking.supplierBookingId = supplierBookingData.supplier_booking_id;
             booking.supplierStatus =
                 supplierBookingData != null &&
-                supplierBookingData.supplier_status == "BOOKINGINPROCESS"
+                    supplierBookingData.supplier_status == "BOOKINGINPROCESS"
                     ? 0
                     : 1;
             //booking.supplierBookingId = "";
@@ -2117,7 +2118,7 @@ export class FlightService {
 
         let booking = await this.bookingRepository.getBookingDetails(bookingId);
         booking.bookingStatus = BookingStatus.CONFIRM;
-       
+
 
         booking.netRate = `${net_rate}`;
         booking.usdFactor = `${currencyDetails.liveRate}`;
@@ -2179,7 +2180,7 @@ export class FlightService {
             } else {
                 if (
                     typeof airRevalidateResult[0].secondary_selling_price !=
-                        "undefined" &&
+                    "undefined" &&
                     airRevalidateResult[0].secondary_selling_price > 0
                 ) {
                     bookingRequestInfo.selling_price =
@@ -2241,7 +2242,7 @@ export class FlightService {
         Activity.logActivity(userId, "Booking", `${bookingId} Booked from supplier side by admin`, null, JSON.stringify(bookingResult));
 
         if (bookingResult.booking_status == "success") {
-            
+
             console.log(`step - 3 save Booking`, bookingResult);
 
             let laytripBookingResult = await this.partialyBookingSave(
@@ -2434,9 +2435,9 @@ export class FlightService {
                 );
 
                 /* if (traveler.title == null || traveler.title == "")
-					throw new BadRequestException(
-						`Title is missing for traveler ${traveler.firstName}`
-					); */
+                    throw new BadRequestException(
+                        `Title is missing for traveler ${traveler.firstName}`
+                    ); */
                 if (
                     (traveler.email == null || traveler.email == "") &&
                     ageDiff >= 12
@@ -2535,9 +2536,9 @@ export class FlightService {
                 );
 
                 /* if (traveler.title == null || traveler.title == "")
-					throw new BadRequestException(
-						`Title is missing for traveler ${traveler.firstName}`
-					); */
+                    throw new BadRequestException(
+                        `Title is missing for traveler ${traveler.firstName}`
+                    ); */
                 if (
                     (traveler.email == null || traveler.email == "") &&
                     ageDiff >= 12
@@ -2863,8 +2864,8 @@ export class FlightService {
 
         /* if(tripDetails.booking_status=='Pending'){
 	
-			
-		} */
+        	
+        } */
     }
     async getValueWithPreductionPercentage(netValue) {
         let query = getManager()
@@ -2898,7 +2899,7 @@ export class FlightService {
         var moduleInfo = booking.moduleInfo[0];
         const currencyCode =
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
-                "a:totalfare"
+            "a:totalfare"
             ][0]["a:currencycode"][0];
         let currencyDetails = await getManager()
             .createQueryBuilder(Currency, "currency")
@@ -2909,9 +2910,9 @@ export class FlightService {
 
         moduleInfo["net_rate"] =
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
-                "a:totalfare"
+            "a:totalfare"
             ][0]["a:amount"][0];
-        
+
 
         var depatureIndex = 0;
         var arrivalIndex = 0;
@@ -2925,7 +2926,7 @@ export class FlightService {
             "a:itineraryinfo"
         ][0]["a:reservationitems"][0]["a:reservationitem"]) {
             if (reservation != null) {
-               
+
                 var data = {
                     departure_code:
                         reservation["a:departureairportlocationcode"][0],
@@ -2943,7 +2944,7 @@ export class FlightService {
                     departure_date_time: reservation["a:departuredatetime"][0],
                     departure_info:
                         airports[
-                            reservation["a:departureairportlocationcode"][0]
+                        reservation["a:departureairportlocationcode"][0]
                         ],
                     arrival_code:
                         reservation["a:arrivalairportlocationcode"][0],
@@ -2960,7 +2961,7 @@ export class FlightService {
                     arrival_date_time: reservation["a:arrivaldatetime"][0],
                     arrival_info:
                         airports[
-                            reservation["a:arrivalairportlocationcode"][0]
+                        reservation["a:arrivalairportlocationcode"][0]
                         ],
                     eticket: true,
                     flight_number: reservation["a:flightnumber"][0],
@@ -2978,7 +2979,7 @@ export class FlightService {
                 } else {
                     moduleInfo.routes[0].stops.push(data);
                 }
-               
+
             }
         }
 
@@ -3004,18 +3005,18 @@ export class FlightService {
 
         booking.netRate =
             ticketDetails.data["a:itineraryinfo"][0]["a:itinerarypricing"][0][
-                "a:totalfare"
+            "a:totalfare"
             ][0]["a:amount"][0];
         booking.moduleInfo = [moduleInfo];
         booking.supplierBookingId = supplier_booking_id;
 
         await booking.save();
-       
-            await this.sendFlightUpdateMail(
-                booking.cart.laytripCartId,
-                isNewBooking
-            );
-        
+
+        await this.sendFlightUpdateMail(
+            booking.cart.laytripCartId,
+            isNewBooking
+        );
+
 
         return this.bookingRepository.getBookingDetails(
             booking.laytripBookingId
@@ -3169,7 +3170,7 @@ export class FlightService {
                         ? bookingData.moduleInfo[0].infant_count
                         : 0,
                 };
-                
+
                 flights = await this.searchOneWayZipFlight(
                     dto,
                     Headers,
@@ -3306,7 +3307,7 @@ export class FlightService {
         cartIsPromotional,
         referral_id
     ) {
-         let logData = {}
+        let logData = {}
         try {
             let headerDetails = await this.validateHeaders(headers);
             console.log("header validate");
@@ -3324,7 +3325,7 @@ export class FlightService {
                 cartCount,
                 reservationId,
             } = bookFlightDto;
-           
+
             cartCount = cartCount ? cartCount : 0;
             const mystifly = new Strategy(
                 new Mystifly(headers, this.cacheManager)
@@ -3334,12 +3335,12 @@ export class FlightService {
                 user,
                 cartIsPromotional == true ? referral_id : ''
             );
-            console.log("airRevalidateResult[0][log_file",airRevalidateResult[0]['log_file']);
+            console.log("airRevalidateResult[0][log_file", airRevalidateResult[0]['log_file']);
             console.log("airRevalidateResult[0]", airRevalidateResult[0])
             logData['revalidation-log'] = airRevalidateResult[0]['log_file']
             logData['markUpDetails'] = airRevalidateResult[0]['markUpDetails']
             console.log(logData);
-            
+
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
             if (airRevalidateResult) {
@@ -3355,14 +3356,14 @@ export class FlightService {
                         : 0;
                 bookingRequestInfo.net_rate = airRevalidateResult[0].net_rate;
                 bookingRequestInfo.total_price =
-                        airRevalidateResult[0].selling_price;
+                    airRevalidateResult[0].selling_price;
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         airRevalidateResult[0].discounted_selling_price
                 } else {
                     if (
                         typeof airRevalidateResult[0].secondary_selling_price !=
-                            "undefined" &&
+                        "undefined" &&
                         airRevalidateResult[0].secondary_selling_price > 0
                     ) {
                         bookingRequestInfo.selling_price =
@@ -3452,34 +3453,34 @@ export class FlightService {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(airRevalidateResult[0].offer_data, 0);
 
-                    if(cartIsPromotional){
+                    if (cartIsPromotional) {
 
-                    instalmentDetails = Instalment.weeklyInstalment(
-                        selling_price,
-                        smallestDipatureDate,
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        0,
-                        cartCount > 1 ? true : false,
-                        weeklyCustomDownPayment
-                    );
-                    console.log(instalmentDetails)
+                        instalmentDetails = Instalment.weeklyInstalment(
+                            selling_price,
+                            smallestDipatureDate,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            cartCount > 1 ? true : false,
+                            weeklyCustomDownPayment
+                        );
+                        console.log(instalmentDetails)
 
-                }else{
-                    instalmentDetails = Instalment.weeklyInstalment(
-                        selling_price,
-                        smallestDipatureDate,
-                        bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false
-                    );
-                }
-                    
+                    } else {
+                        instalmentDetails = Instalment.weeklyInstalment(
+                            selling_price,
+                            smallestDipatureDate,
+                            bookingDate,
+                            totalAdditionalAmount,
+                            custom_instalment_amount,
+                            custom_instalment_no,
+                            selected_down_payment,
+                            cartCount > 1 ? true : false
+                        );
+                    }
+
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
                     instalmentDetails = Instalment.biWeeklyInstalment(
@@ -3549,7 +3550,7 @@ export class FlightService {
                         reservationId,
                         referral_id
                     );
-                    
+
                     //     this.bookingUpdateFromSupplierside(
                     //         laytripBookingResult.laytripBookingId,
                     //         {
@@ -3754,7 +3755,7 @@ export class FlightService {
             //         });
             // } 
             // else
-            if(isNewBooking != 2 && isNewBooking != 3) {
+            if (isNewBooking != 2 && isNewBooking != 3) {
                 this.mailerService
                     .sendMail({
                         to: mailData.email,
@@ -3819,27 +3820,119 @@ export class FlightService {
                 `No any route available for given location`
             );
         }
-
-        let opResult = [];
+        let allCode = []
         let data;
+        let condition = ""
         for await (const route of result) {
-            data = {};
-            data = airports[route.code];
-            //console.log(airports[route.code])
-            data.key = route.city.charAt(0);
-            opResult.push(data);
+            if (condition == "") {
+                condition += `'${route.code}'`
+            } else {
+                condition += `,'${route.code}'`
+            }
+            allCode.push(route.code)
         }
+
+        let airports = await getManager()
+            .query(`SELECT
+                        A."id" as id,
+                        A."name" as name,
+                        A."code" as code,
+                        A."latitude" as late,
+                        A."longitude" as long,
+                        A."city" as city,
+                        A."country" as country,
+                        A."icao"as icao,
+                        A."status" as status,
+                        A."is_deleted" as isDeleted,
+                        A."parent_id" as parentId,
+                        B."id" as child_id,
+                        B."name" as child_name,
+                        B."code" as child_code,
+                        B."latitude" as child_late,
+                        B."longitude" as child_long,
+                        B."city" as child_ciry,
+                        B."country" as child_country,
+                        B."icao" as child_icao,
+                        B."status" as child_status,
+                        B."is_deleted" as child_isDeleted,
+                        B."parent_id" as child_parentId
+                    FROM airport A LEFT JOIN airport B
+                    ON A."id" = B."parent_id"
+                    Where A."code" In (${condition})
+                    `)
+
+        let airportObb = {}
+
+        for await (const iterator of airports) {
+
+            if (airportObb[iterator.code]) {
+                let a = {
+                    id: iterator.child_id,
+                    name: iterator.child_name,
+                    code: iterator.child_code,
+                    late: iterator.child_late,
+                    long: iterator.child_long,
+                    city: iterator.child_city,
+                    country: iterator.child_country,
+                    icao: iterator.child_icao,
+                    status: iterator.child_status,
+                    isdeleted: iterator.child_isdeleted,
+                    parentid: iterator.child_parentid
+                }
+                airportObb[iterator.code].child.push(a)
+            } else {
+                airportObb[iterator.code] = {
+                    id : iterator.id,
+                    name:iterator.name,
+                    code:iterator.code,
+                    late:iterator.late,
+                    long: iterator.long,
+                    city: iterator.city,
+                    country: iterator.country,
+                    icao: iterator.icao,
+                    status:iterator.status,
+                    isdeleted: iterator.isdeleted,
+                    parentid: iterator.parentid,
+                    child : []
+                }
+                if (iterator.child_id){
+                    let a = {
+                        id: iterator.child_id,
+                        name: iterator.child_name,
+                        code: iterator.child_code,
+                        late: iterator.child_late,
+                        long: iterator.child_long,
+                        city: iterator.child_city,
+                        country: iterator.child_country,
+                        icao: iterator.child_icao,
+                        status: iterator.child_status,
+                        isdeleted: iterator.child_isdeleted,
+                        parentid: iterator.child_parentid
+                    }
+                    airportObb[iterator.code].child.push(a)
+                }
+            }
+        }
+
+
+
+
+        // let airports = await getManager()
+        //     .createQueryBuilder(Airport, "airport")
+        //     .leftJoinAndSelect("airport.childs", "childs")
+        //     .where(`"code" In (:...allCode)`, { allCode })
+        //     .getMany();
+
+
+
 
         // opResult = this.groupByKey(opResult, "key");
         // console.log(opResult);
-        let airportArray = opResult;
+        let airportArray = [];
 
-        // for (const [key, value] of Object.entries(opResult)) {
-        //     airportArray.push({
-        //         key: key,
-        //         value: value,
-        //     });
-        // }
+        for (const [key, value] of Object.entries(airportObb)) {
+            airportArray.push(value);
+        }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
@@ -3902,25 +3995,134 @@ export class FlightService {
         let availableRoute = [];
         let opResult = [];
         let airport: any = {};
+        let condition = ""
         for await (const route of result) {
             if (is_from_location == "yes") {
                 if (availableRoute.indexOf(route.fromAirportCode) == -1) {
-                    airport = airports[route.fromAirportCode];
-                    airport.key = airport.city.charAt(0);
-                    opResult.push(airport);
-                    availableRoute.push(route.fromAirportCode);
+                    // airport = airports[route.fromAirportCode];
+                    if (condition == "") {
+                        condition += `'${route.fromAirportCode}'`
+                    } else {
+                        condition += `,'${route.fromAirportCode}'`
+                    }
+                    // airport.key = airport.city.charAt(0);
+                    // opResult.push(airport);
+
+                    // availableRoute.push(route.fromAirportCode);
                 }
             } else {
                 if (availableRoute.indexOf(route.toAirportCode) == -1) {
-                    airport = airports[route.toAirportCode];
-                    airport.key = airport.city.charAt(0);
-                    opResult.push(airport);
-                    availableRoute.push(route.toAirportCode);
+                    // airport = airports[route.toAirportCode];
+                    // airport.key = airport.city.charAt(0);
+                    // opResult.push(airport);
+                    // availableRoute.push(route.toAirportCode);
+                    if (condition == "") {
+                        condition += `'${route.toAirportCode}'`
+                    } else {
+                        condition += `,'${route.toAirportCode}'`
+                    }
                 }
             }
         }
-        opResult = opResult.sort((a, b) => a.name.localeCompare(b.name));
-        return opResult;
+        // for await (const route of result) {
+            
+        //     allCode.push(route.code)
+        // }
+
+        let Allairports = await getManager()
+            .query(`SELECT
+                        A."id" as id,
+                        A."name" as name,
+                        A."code" as code,
+                        A."latitude" as late,
+                        A."longitude" as long,
+                        A."city" as city,
+                        A."country" as country,
+                        A."icao"as icao,
+                        A."status" as status,
+                        A."is_deleted" as isDeleted,
+                        A."parent_id" as parentId,
+                        B."id" as child_id,
+                        B."name" as child_name,
+                        B."code" as child_code,
+                        B."latitude" as child_late,
+                        B."longitude" as child_long,
+                        B."city" as child_ciry,
+                        B."country" as child_country,
+                        B."icao" as child_icao,
+                        B."status" as child_status,
+                        B."is_deleted" as child_isDeleted,
+                        B."parent_id" as child_parentId
+                    FROM airport A LEFT JOIN airport B
+                    ON A."id" = B."parent_id"
+                    Where A."code" In (${condition})
+                    `)
+
+        let airportObb = {}
+
+        for await (const iterator of Allairports) {
+
+            if (airportObb[iterator.code]) {
+                let a = {
+                    id: iterator.child_id,
+                    name: iterator.child_name,
+                    code: iterator.child_code,
+                    late: iterator.child_late,
+                    long: iterator.child_long,
+                    city: iterator.child_city,
+                    country: iterator.child_country,
+                    icao: iterator.child_icao,
+                    status: iterator.child_status,
+                    isdeleted: iterator.child_isdeleted,
+                    parentid: iterator.child_parentid
+                }
+                airportObb[iterator.code].child.push(a)
+            } else {
+                airportObb[iterator.code] = {
+                    id: iterator.id,
+                    name: iterator.name,
+                    code: iterator.code,
+                    late: iterator.late,
+                    long: iterator.long,
+                    city: iterator.city,
+                    country: iterator.country,
+                    icao: iterator.icao,
+                    status: iterator.status,
+                    isdeleted: iterator.isdeleted,
+                    parentid: iterator.parentid,
+                    child: []
+                }
+                if (iterator.child_id) {
+                    let a = {
+                        id: iterator.child_id,
+                        name: iterator.child_name,
+                        code: iterator.child_code,
+                        late: iterator.child_late,
+                        long: iterator.child_long,
+                        city: iterator.child_city,
+                        country: iterator.child_country,
+                        icao: iterator.child_icao,
+                        status: iterator.child_status,
+                        isdeleted: iterator.child_isdeleted,
+                        parentid: iterator.child_parentid
+                    }
+                    airportObb[iterator.code].child.push(a)
+                }
+            }
+        }
+
+
+
+        let airportArray = [];
+
+        for (const [key, value] of Object.entries(airportObb)) {
+            airportArray.push(value);
+        }
+
+        //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
+        airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
+        return airportArray;
+       
     }
 
     async importCategory() {

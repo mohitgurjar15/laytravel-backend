@@ -2,6 +2,9 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm";
 
@@ -40,4 +43,11 @@ export class Airport extends BaseEntity {
 
   @Column("integer", { name: "parent_id",default: () => 0 })
   parentId: number;
+
+//   @OneToMany(
+//     () => Airport,
+//     (airport) => airport.parentId
+//   )
+//   @JoinColumn([{ name: "id", referencedColumnName: "parentId" }])
+//   childs: Airport[];
 }
