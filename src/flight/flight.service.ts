@@ -3859,43 +3859,46 @@ export class FlightService {
                     FROM airport A LEFT JOIN airport B
                     ON A."id" = B."parent_id"
                     Where A."code" In (${condition})
-                    `)
+                    group by A."id",B."id"`)
 
         let airportObb = {}
 
         for await (const iterator of airports) {
 
             if (airportObb[iterator.code]) {
-                let a = {
-                    id: iterator.child_id,
-                    name: iterator.child_name,
-                    code: iterator.child_code,
-                    late: iterator.child_late,
-                    long: iterator.child_long,
-                    city: iterator.child_city,
-                    country: iterator.child_country,
-                    icao: iterator.child_icao,
-                    status: iterator.child_status,
-                    isdeleted: iterator.child_isdeleted,
-                    parentid: iterator.child_parentid
+                if (iterator.child_id && airportObb[iterator.code].child.indexOf((a, b) => { a.id - b.id }) == -1) {
+                    console.log("Dome")
+                    let a = {
+                        id: iterator.child_id,
+                        name: iterator.child_name,
+                        code: iterator.child_code,
+                        late: iterator.child_late,
+                        long: iterator.child_long,
+                        city: iterator.child_city,
+                        country: iterator.child_country,
+                        icao: iterator.child_icao,
+                        status: iterator.child_status,
+                        isdeleted: iterator.child_isdeleted,
+                        parentid: iterator.child_parentid
+                    }
+                    airportObb[iterator.code].child.push(a)
                 }
-                airportObb[iterator.code].child.push(a)
             } else {
                 airportObb[iterator.code] = {
-                    id : iterator.id,
-                    name:iterator.name,
-                    code:iterator.code,
-                    late:iterator.late,
+                    id: iterator.id,
+                    name: iterator.name,
+                    code: iterator.code,
+                    late: iterator.late,
                     long: iterator.long,
                     city: iterator.city,
                     country: iterator.country,
                     icao: iterator.icao,
-                    status:iterator.status,
+                    status: iterator.status,
                     isdeleted: iterator.isdeleted,
                     parentid: iterator.parentid,
-                    child : []
+                    child: []
                 }
-                if (iterator.child_id){
+                if (iterator.child_id) {
                     let a = {
                         id: iterator.child_id,
                         name: iterator.child_name,
@@ -3914,20 +3917,6 @@ export class FlightService {
             }
         }
 
-
-
-
-        // let airports = await getManager()
-        //     .createQueryBuilder(Airport, "airport")
-        //     .leftJoinAndSelect("airport.childs", "childs")
-        //     .where(`"code" In (:...allCode)`, { allCode })
-        //     .getMany();
-
-
-
-
-        // opResult = this.groupByKey(opResult, "key");
-        // console.log(opResult);
         let airportArray = [];
 
         for (const [key, value] of Object.entries(airportObb)) {
@@ -3936,6 +3925,19 @@ export class FlightService {
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
+
+        for await (const iterator of airportArray) {
+            if(iterator.child.length){
+                for await (const child of iterator.child) {
+                    let index = airportArray.findIndex(x => x.code == child.code)
+                     
+                    if (index != -1){
+                        airportArray.splice(index, 1);
+                    }
+                }
+                
+            }
+        }
         return airportArray;
     }
 
@@ -4025,7 +4027,7 @@ export class FlightService {
             }
         }
         // for await (const route of result) {
-            
+
         //     allCode.push(route.code)
         // }
 
@@ -4063,20 +4065,23 @@ export class FlightService {
         for await (const iterator of Allairports) {
 
             if (airportObb[iterator.code]) {
-                let a = {
-                    id: iterator.child_id,
-                    name: iterator.child_name,
-                    code: iterator.child_code,
-                    late: iterator.child_late,
-                    long: iterator.child_long,
-                    city: iterator.child_city,
-                    country: iterator.child_country,
-                    icao: iterator.child_icao,
-                    status: iterator.child_status,
-                    isdeleted: iterator.child_isdeleted,
-                    parentid: iterator.child_parentid
+                if (iterator.child_id && airportObb[iterator.code].child.indexOf((a, b) => { a.id - b.id }) == -1) {
+                    console.log("Dome")
+                    let a = {
+                        id: iterator.child_id,
+                        name: iterator.child_name,
+                        code: iterator.child_code,
+                        late: iterator.child_late,
+                        long: iterator.child_long,
+                        city: iterator.child_city,
+                        country: iterator.child_country,
+                        icao: iterator.child_icao,
+                        status: iterator.child_status,
+                        isdeleted: iterator.child_isdeleted,
+                        parentid: iterator.child_parentid
+                    }
+                    airportObb[iterator.code].child.push(a)
                 }
-                airportObb[iterator.code].child.push(a)
             } else {
                 airportObb[iterator.code] = {
                     id: iterator.id,
@@ -4111,8 +4116,6 @@ export class FlightService {
             }
         }
 
-
-
         let airportArray = [];
 
         for (const [key, value] of Object.entries(airportObb)) {
@@ -4121,8 +4124,21 @@ export class FlightService {
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
+
+        for await (const iterator of airportArray) {
+            if (iterator.child.length) {
+                for await (const child of iterator.child) {
+                    let index = airportArray.findIndex(x => x.code == child.code)
+
+                    if (index != -1) {
+                        airportArray.splice(index, 1);
+                    }
+                }
+
+            }
+        }
         return airportArray;
-       
+
     }
 
     async importCategory() {
