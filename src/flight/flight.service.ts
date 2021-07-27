@@ -3926,6 +3926,7 @@ export class FlightService {
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
 
+        
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
@@ -3935,7 +3936,7 @@ export class FlightService {
                     let i = airportArray.findIndex(x => x.code == child.code)
                     console.log()
                     if (i != -1 && i != index) {
-                        airportArray.splice(index, 1);
+                        airportArray.splice(i, 1);
                     }
                 }
             }
@@ -4136,7 +4137,7 @@ export class FlightService {
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
-
+        //return airportArray
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
@@ -4144,9 +4145,8 @@ export class FlightService {
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
-                    console.log()
                     if (i != -1 && i != index) {
-                        airportArray.splice(index, 1);
+                        airportArray.splice(i, 1);
                     }
                 }
             }   
