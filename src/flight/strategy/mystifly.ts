@@ -330,6 +330,7 @@ export class Mystifly implements StrategyAirline {
         );
 
         let paymentConfigCase = {}
+        let instalmentEligibilityCase = {}
         if (
             searchResult["s:envelope"]["s:body"][0].airlowfaresearchresponse[0]
                 .airlowfaresearchresult[0]["a:success"][0] == "true"
@@ -522,9 +523,23 @@ export class Mystifly implements StrategyAirline {
                     //route.instalment_avail_after =routeDetails.category.installmentAvailableAfter;
                     let instalmentDetails;
                     let discountedInstalmentDetails;
-                    let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
-                        searchData
-                    );
+                    let instalmentEligibility: {
+                        available: boolean;
+                        categoryId: number;
+                    } | {
+                        available: boolean;
+                        categoryId?: undefined;
+                    }
+
+                    let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
+                    if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined"){
+                        instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                    }else{
+                        instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                            searchData
+                        );
+                        instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                    }
                     route.is_installment_available = instalmentEligibility.available
 
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
@@ -3238,7 +3253,7 @@ export class Mystifly implements StrategyAirline {
             requestBody,
             "AirLowFareSearch"
         );
-
+        let instalmentEligibilityCase = {}
         if (
             searchResult["s:envelope"]["s:body"][0].airlowfaresearchresponse[0]
                 .airlowfaresearchresult[0]["a:success"][0] == "true"
@@ -3554,9 +3569,23 @@ export class Mystifly implements StrategyAirline {
                     let instalmentDetails2: any = {};
                     let instalmentDetails3: any = {};
                     let discountedInstalmentDetails
-                    let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
-                        searchData
-                    );
+                    let instalmentEligibility: {
+                        available: boolean;
+                        categoryId: number;
+                    } | {
+                        available: boolean;
+                        categoryId?: undefined;
+                    }
+
+                    let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
+                    if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
+                        instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                    } else {
+                        instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                            searchData
+                        );
+                        instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                    }
                     route.is_installment_available = instalmentEligibility.available
                     
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
@@ -3964,6 +3993,8 @@ export class Mystifly implements StrategyAirline {
         );
         const logFile = airRevalidateResult["log_file"]
 
+        let instalmentEligibilityCase = {}
+
         if (
             airRevalidateResult["s:envelope"]["s:body"][0]
                 .airrevalidateresponse[0].airrevalidateresult[0][
@@ -4322,9 +4353,23 @@ export class Mystifly implements StrategyAirline {
                 route.secondary_start_price = 0;
                 route.instalment_avail_after =
                     routeDetails?.category?.installmentAvailableAfter;
-                let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
-                    searchData
-                );
+                let instalmentEligibility: {
+                    available: boolean;
+                    categoryId: number;
+                } | {
+                    available: boolean;
+                    categoryId?: undefined;
+                }
+
+                let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
+                if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
+                    instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                } else {
+                    instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                        searchData
+                    );
+                    instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                }
                 route.is_installment_available = instalmentEligibility.available
                 let instalmentDetails;
                 let discountedInstalmentDetails;
