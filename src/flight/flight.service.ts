@@ -3923,9 +3923,6 @@ export class FlightService {
             airportArray.push(value);
         }
 
-        //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-        airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
-
         
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
@@ -3941,6 +3938,7 @@ export class FlightService {
                 }
             }
         }
+        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));
         return airportArray;
     }
 
@@ -4136,7 +4134,7 @@ export class FlightService {
         }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-        airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
+       
         //return airportArray
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
@@ -4151,7 +4149,7 @@ export class FlightService {
                 }
             }   
         }
-       
+        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));       
         return airportArray;
 
     }
