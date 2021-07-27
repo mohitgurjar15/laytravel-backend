@@ -3857,7 +3857,7 @@ export class FlightService {
                         B."is_deleted" as child_isDeleted,
                         B."parent_id" as child_parentId
                     FROM airport A LEFT JOIN airport B
-                    ON A."id" = B."parent_id"
+                    ON A."id" = B."parent_id" AND B."code" In (${condition})
                     Where A."code" In (${condition})
                     group by A."id",B."id"`)
 
@@ -4068,7 +4068,7 @@ export class FlightService {
                         B."is_deleted" as child_isDeleted,
                         B."parent_id" as child_parentId
                     FROM airport A LEFT JOIN airport B
-                    ON A."id" = B."parent_id"
+                    ON A."id" = B."parent_id" AND B."code" In (${condition})
                     Where A."code" In (${condition})
                     `)
 
