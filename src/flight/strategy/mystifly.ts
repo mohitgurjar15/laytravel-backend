@@ -549,12 +549,12 @@ export class Mystifly implements StrategyAirline {
 
                     if (typeof paymentConfigCase[configCaseIndex] != "undefined"){
                         paymentConfig = paymentConfigCase[configCaseIndex]
-                        console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
+                        //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
                         
                     }else{
                         paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
                         paymentConfigCase[configCaseIndex] = paymentConfig
-                        console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
+                        //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                     }
 
                     route.payment_config = paymentConfig
@@ -3254,6 +3254,7 @@ export class Mystifly implements StrategyAirline {
             "AirLowFareSearch"
         );
         let instalmentEligibilityCase = {}
+        let paymentConfigCase = {}
         if (
             searchResult["s:envelope"]["s:body"][0].airlowfaresearchresponse[0]
                 .airlowfaresearchresult[0]["a:success"][0] == "true"
@@ -3590,7 +3591,18 @@ export class Mystifly implements StrategyAirline {
                     
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
 
-                    let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+                    let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                    let paymentConfig : PaymentConfiguration
+
+                    if (typeof paymentConfigCase[configCaseIndex] != "undefined"){
+                        paymentConfig = paymentConfigCase[configCaseIndex]
+                        //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
+                        
+                    }else{
+                        paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+                        paymentConfigCase[configCaseIndex] = paymentConfig
+                        //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
+                    }
 
                     route.payment_config = paymentConfig
 
@@ -3994,7 +4006,7 @@ export class Mystifly implements StrategyAirline {
         const logFile = airRevalidateResult["log_file"]
 
         let instalmentEligibilityCase = {}
-
+        let paymentConfigCase = {}
         if (
             airRevalidateResult["s:envelope"]["s:body"][0]
                 .airrevalidateresponse[0].airrevalidateresult[0][
@@ -4378,7 +4390,18 @@ export class Mystifly implements StrategyAirline {
                     )
                 let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
 
-                let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+                let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                let paymentConfig: PaymentConfiguration
+
+                if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
+                    paymentConfig = paymentConfigCase[configCaseIndex]
+                    //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
+
+                } else {
+                    paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+                    paymentConfigCase[configCaseIndex] = paymentConfig
+                    //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
+                }
 
                 route.payment_config = paymentConfig
 
