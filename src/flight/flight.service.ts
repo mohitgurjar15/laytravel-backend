@@ -3815,7 +3815,7 @@ export class FlightService {
         }
 
         //console.log("result",result)
-        if (!result) {
+        if (!result.length) {
             throw new NotFoundException(
                 `No any route available for given location`
             );
@@ -3991,7 +3991,7 @@ export class FlightService {
             .orderBy(orderBy, "ASC")
             .getMany();
 
-        if (!result) {
+        if (!result.length) {
             throw new NotFoundException(
                 `No any route available for given location`
             );
@@ -4000,6 +4000,7 @@ export class FlightService {
         let opResult = [];
         let airport: any = {};
         let condition = ""
+
         for await (const route of result) {
             if (is_from_location == "yes") {
                 if (availableRoute.indexOf(route.fromAirportCode) == -1) {
