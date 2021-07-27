@@ -3850,7 +3850,7 @@ export class FlightService {
                         B."code" as child_code,
                         B."latitude" as child_late,
                         B."longitude" as child_long,
-                        B."city" as child_ciry,
+                        B."city" as child_city,
                         B."country" as child_country,
                         B."icao" as child_icao,
                         B."status" as child_status,
@@ -3926,16 +3926,18 @@ export class FlightService {
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
 
-        for await (const iterator of airportArray) {
-            if(iterator.child.length){
-                for await (const child of iterator.child) {
-                    let index = airportArray.findIndex(x => x.code == child.code)
-                     
-                    if (index != -1){
+        for (let index = 0; index < airportArray.length; index++) {
+            const iterator = airportArray[index];
+
+            if (iterator.child.length) {
+                for (let j = 0; j < iterator.child.length; j++) {
+                    const child = iterator.child[j];
+                    let i = airportArray.findIndex(x => x.code == child.code)
+                    console.log()
+                    if (i != -1 && i != index) {
                         airportArray.splice(index, 1);
                     }
                 }
-                
             }
         }
         return airportArray;
@@ -4001,11 +4003,14 @@ export class FlightService {
         for await (const route of result) {
             if (is_from_location == "yes") {
                 if (availableRoute.indexOf(route.fromAirportCode) == -1) {
-                    // airport = airports[route.fromAirportCode];
-                    if (condition == "") {
-                        condition += `'${route.fromAirportCode}'`
-                    } else {
-                        condition += `,'${route.fromAirportCode}'`
+                    if (!opResult.includes(route.fromAirportCode)) {
+                        opResult.push(route.fromAirportCode)
+                        // airport = airports[route.fromAirportCode];
+                        if (condition == "") {
+                            condition += `'${route.fromAirportCode}'`
+                        } else {
+                            condition += `,'${route.fromAirportCode}'`
+                        }
                     }
                     // airport.key = airport.city.charAt(0);
                     // opResult.push(airport);
@@ -4018,11 +4023,16 @@ export class FlightService {
                     // airport.key = airport.city.charAt(0);
                     // opResult.push(airport);
                     // availableRoute.push(route.toAirportCode);
-                    if (condition == "") {
-                        condition += `'${route.toAirportCode}'`
-                    } else {
-                        condition += `,'${route.toAirportCode}'`
+                    if (!opResult.includes(route.toAirportCode)) {
+                        opResult.push(route.toAirportCode)
+                        // airport = airports[route.fromAirportCode];
+                        if (condition == "") {
+                            condition += `'${route.toAirportCode}'`
+                        } else {
+                            condition += `,'${route.toAirportCode}'`
+                        }
                     }
+
                 }
             }
         }
@@ -4049,7 +4059,7 @@ export class FlightService {
                         B."code" as child_code,
                         B."latitude" as child_late,
                         B."longitude" as child_long,
-                        B."city" as child_ciry,
+                        B."city" as child_city,
                         B."country" as child_country,
                         B."icao" as child_icao,
                         B."status" as child_status,
@@ -4062,11 +4072,12 @@ export class FlightService {
 
         let airportObb = {}
 
+        
+
         for await (const iterator of Allairports) {
 
             if (airportObb[iterator.code]) {
                 if (iterator.child_id && airportObb[iterator.code].child.indexOf((a, b) => { a.id - b.id }) == -1) {
-                    console.log("Dome")
                     let a = {
                         id: iterator.child_id,
                         name: iterator.child_name,
@@ -4125,18 +4136,21 @@ export class FlightService {
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
         airportArray = airportArray.sort((a, b) => a.name.localeCompare(b.name));
 
-        for await (const iterator of airportArray) {
-            if (iterator.child.length) {
-                for await (const child of iterator.child) {
-                    let index = airportArray.findIndex(x => x.code == child.code)
+        for (let index = 0; index < airportArray.length; index++) {
+            const iterator = airportArray[index];
 
-                    if (index != -1) {
+            if (iterator.child.length) {
+                for (let j = 0; j < iterator.child.length; j++) {
+                    const child = iterator.child[j];
+                    let i = airportArray.findIndex(x => x.code == child.code)
+                    console.log()
+                    if (i != -1 && i != index) {
                         airportArray.splice(index, 1);
                     }
                 }
-
-            }
+            }   
         }
+       
         return airportArray;
 
     }
