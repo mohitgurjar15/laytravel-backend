@@ -12,7 +12,7 @@ export class InstalmentService {
 
         const { 
             instalment_type, amount,
-            checkin_date, booking_date, additional_amount, down_payment,selected_down_payment,custom_down_payment
+            checkin_date, booking_date, additional_amount, down_payment,selected_down_payment,custom_down_payment,is_down_payment_in_percentage,down_payment_option
         } = instalmentDto;
 
         if(selected_down_payment >= 3){
@@ -20,14 +20,14 @@ export class InstalmentService {
         }
 
         if(instalment_type==InstalmentType.WEEKLY){
-            return Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment,false,custom_down_payment);
+            return Instalment.weeklyInstalment(amount, checkin_date, booking_date, additional_amount, down_payment, null, selected_down_payment, false, custom_down_payment, is_down_payment_in_percentage, down_payment_option);
         }
         
         else if(instalment_type==InstalmentType.BIWEEKLY)
-            return Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment,false,custom_down_payment);
+            return Instalment.biWeeklyInstalment(amount, checkin_date, booking_date, additional_amount, down_payment, null, selected_down_payment, false, custom_down_payment, is_down_payment_in_percentage, down_payment_option);
         
         else if(instalment_type==InstalmentType.MONTHLY)
-            return Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment,false,custom_down_payment);
+            return Instalment.monthlyInstalment(amount, checkin_date, booking_date, additional_amount, down_payment, null, selected_down_payment, false, custom_down_payment, is_down_payment_in_percentage, down_payment_option);
         
     }
 

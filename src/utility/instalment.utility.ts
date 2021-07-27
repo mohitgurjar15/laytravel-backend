@@ -8,7 +8,7 @@ const firstInstalmentPercentage2 = 20;
 export class Instalment {
 
 
-    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption : []) {
+    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption = [40, 50, 60] ) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
 
@@ -67,7 +67,7 @@ export class Instalment {
 
     }
 
-    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false, customDownPayment=null) {
+    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption= [40, 50, 60] ) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -97,12 +97,14 @@ export class Instalment {
             }
 
             let amountPerInstalment = amount / instalmentsDates.length;
-            let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
-            let percentageAmount = (amount * percentage) / 100;
+           
 
-            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount, customDownPayment)
+            instalmentData.down_payment = downPaymentOption
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
+
+            let percentage = downPayment
+            let percentageAmount =  isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment;
 
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
             instalmentData.percentage = percentage;
@@ -127,7 +129,7 @@ export class Instalment {
         return instalmentData;
     }
 
-    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null , ignore5DollerCase : boolean = false, customDownPayment=null) {
+    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption = [40, 50, 60]) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -157,14 +159,15 @@ export class Instalment {
             }
 
             let amountPerInstalment = amount / instalmentsDates.length;
-            let percentage = totalDayDiffernce <= checkInDayDiffernce ? firstInstalmentPercentage1 : firstInstalmentPercentage2;
-            let percentageAmount = (amount * percentage) / 100;
+            
 
-            instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount, customDownPayment)
+            instalmentData.down_payment = downPaymentOption
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
+            let percentage = downPayment;
+            let percentageAmount = isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment;
 
-            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
+            instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo, customDownPayment)
             instalmentData.percentage = percentage;
         }
 
