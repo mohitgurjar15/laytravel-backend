@@ -587,7 +587,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Installment Recevied`,
+                subject: `Booking ID ${partialBooking} Installment Received`,
                 html: await LaytripInstallmentRecevied({
                     userName: "Parth",
                     orderId: partialBooking,

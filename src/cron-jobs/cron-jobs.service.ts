@@ -2111,7 +2111,7 @@ export class CronJobsService {
                                 to: cartBooking.user.email,
                                 from: mailConfig.from,
                                 bcc: mailConfig.BCC,
-                                subject: `Booking ID ${param.bookingId} Installment Recevied`,
+                                subject: `Booking ID ${param.bookingId} Installment Received`,
                                 html: LaytripInstallmentRecevied(
                                     param,
                                     cartBooking?.referral?.name

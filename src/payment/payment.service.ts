@@ -1272,7 +1272,7 @@ export class PaymentService {
                                     to: cart.user.email,
                                     from: mailConfig.from,
                                     bcc: mailConfig.BCC,
-                                    subject: `Booking ID ${param.bookingId} Installment Recevied`,
+                                    subject: `Booking ID ${param.bookingId} Installment Received`,
                                     html: await LaytripInstallmentRecevied(
                                         param
                                     ),
