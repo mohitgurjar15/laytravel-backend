@@ -617,7 +617,7 @@ export class Mystifly implements StrategyAirline {
                         }
 
 
-                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
                             let instalmentDetails3 = Instalment.monthlyInstalment(
                                 route.selling_price,
                                 departure_date,
@@ -3664,7 +3664,7 @@ export class Mystifly implements StrategyAirline {
                         }
 
 
-                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
                             let instalmentDetails3 = Instalment.monthlyInstalment(
                                 route.selling_price,
                                 departure_date,
@@ -4463,7 +4463,7 @@ export class Mystifly implements StrategyAirline {
                     }
 
 
-                    if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                    if (paymentConfig.isMonthlyInstallmentAvailable) {
                         let instalmentDetails3 = Instalment.monthlyInstalment(
                             route.selling_price,
                             departure_date,

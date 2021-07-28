@@ -1,5 +1,6 @@
 import { collect } from "collect.js";
 import * as moment from "moment";
+import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
 import { DateTime } from "src/utility/datetime.utility";
 import { Instalment } from "src/utility/instalment.utility";
 import { LandingPage } from "src/utility/landing-page.utility";
@@ -12,7 +13,7 @@ export class RoomHelper {
         this.rateHelper = new RateHelper();
     }
 
-    processRoom(hotel: any, roomsReqDto: any, inputData = null, offerData) {
+    processRoom(hotel: any, roomsReqDto: any, inputData = null, offerData, paymentConfig: PaymentConfiguration) {
         let roomData = hotel.room_data;
 
         let rooms = collect(roomData).map((rates: any) => {
@@ -90,77 +91,113 @@ export class RoomHelper {
                 //     null,
                 //     0
                 // );
-                let instalmentDetails = Instalment.weeklyInstalment(
-                    selling.total,
-                    inputData.check_in,
-                    bookingDate,
-                    0,
-                    null,
-                    null,
-                    0,
-                    false,
-                    weeklyCustomDownPayment
-                );
-                let instalmentDetails2 = Instalment.biWeeklyInstalment(
-                    selling.total,
-                    inputData.check_in,
-                    bookingDate,
-                    0,
-                    null,
-                    null,
-                    0
-                );
-                let instalmentDetails3 = Instalment.monthlyInstalment(
-                    selling.total,
-                    inputData.check_in,
-                    bookingDate,
-                    0,
-                    null,
-                    null,
-                    0
-                );
+                if (paymentConfig?.isInstallmentAvailable) {
 
-                let discountedInstalmentDetails = Instalment.weeklyInstalment(
-                    selling['discounted_total'],
-                    inputData.check_in,
-                    bookingDate,
-                    0,
-                    null,
-                    null,
-                    0,
-                    false,
-                    weeklyCustomDownPayment
-                );
-                if (instalmentDetails.instalment_available) {
-                    start_price =
-                        instalmentDetails.instalment_date[0].instalment_amount;
+                    let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
+                    let downPaymentOption: any = paymentConfig.downPaymentOption
+                    if (paymentConfig.isWeeklyInstallmentAvailable) {
+                        let instalmentDetails = Instalment.weeklyInstalment(
+                            selling.total,
+                            inputData.check_in,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            false,
+                            weeklyCustomDownPayment,
+                            paymentConfig.isDownPaymentInPercentage,
+                            downPaymentOption
+                        );
+                        if (instalmentDetails.instalment_available) {
+                            start_price =
+                                instalmentDetails.instalment_date[0]
+                                    .instalment_amount;
 
-                    secondary_start_price =
-                        instalmentDetails.instalment_date[1].instalment_amount;
-                    no_of_weekly_installment =
-                        instalmentDetails.instalment_date.length - 1;
+                            secondary_start_price =
+                                instalmentDetails.instalment_date[1]
+                                    .instalment_amount;
+                            no_of_weekly_installment =
+                                instalmentDetails.instalment_date.length - 1;
+                        }
 
-                    second_down_payment =
-                        instalmentDetails2.instalment_date[0].instalment_amount;
-                    secondary_start_price_2 =
-                        instalmentDetails2.instalment_date[1].instalment_amount;
-                    no_of_weekly_installment_2 =
-                        instalmentDetails2.instalment_date.length - 1;
+                    }
 
-                    third_down_payment =
-                        instalmentDetails3.instalment_date[0].instalment_amount;
-                    secondary_start_price_3 =
-                        instalmentDetails3.instalment_date[1].instalment_amount;
-                    no_of_weekly_installment_3 =
-                        instalmentDetails3.instalment_date.length - 1;
-                    discounted_start_price =
-                        discountedInstalmentDetails.instalment_date[0].instalment_amount;
+                    if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        let instalmentDetails2 = Instalment.biWeeklyInstalment(
+                            selling.total,
+                            inputData.check_in,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            false,
+                            null,
+                            paymentConfig.isDownPaymentInPercentage,
+                            downPaymentOption
+                        );
 
-                    discounted_secondary_start_price =
-                        discountedInstalmentDetails.instalment_date[1].instalment_amount;
+                        second_down_payment =
+                            instalmentDetails2.instalment_date[0]
+                                .instalment_amount;
+                        secondary_start_price_2 =
+                            instalmentDetails2.instalment_date[1]
+                                .instalment_amount;
+                        no_of_weekly_installment_2 =
+                            instalmentDetails2.instalment_date.length - 1;
+                    }
 
-                    discounted_no_of_weekly_installment =
-                        discountedInstalmentDetails.instalment_date.length - 1;
+
+                    if (paymentConfig.isMonthlyInstallmentAvailable) {
+                        let instalmentDetails3 = Instalment.monthlyInstalment(
+                            selling.total,
+                            inputData.check_in,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            false,
+                            null,
+                            paymentConfig.isDownPaymentInPercentage,
+                            downPaymentOption
+                        );
+                        third_down_payment =
+                            instalmentDetails3.instalment_date[0]
+                                .instalment_amount;
+                        secondary_start_price_3 =
+                            instalmentDetails3.instalment_date[1]
+                                .instalment_amount;
+                        no_of_weekly_installment_3 =
+                            instalmentDetails3.instalment_date.length - 1;
+                    }
+
+
+                    let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                        selling['discounted_total'],
+                        inputData.check_in,
+                        bookingDate,
+                        0,
+                        null,
+                        null,
+                        0,
+                        false,
+                        weeklyCustomDownPayment,
+                        paymentConfig.isDownPaymentInPercentage,
+                        downPaymentOption
+                    );
+
+                    if (discountedInstalmentDetails.instalment_available) {
+                        discounted_start_price =
+                            discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                        discounted_secondary_start_price =
+                            discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
+                        discounted_no_of_weekly_installment =
+                            discountedInstalmentDetails.instalment_date.length - 1;
+                    }
                 }
 
                 newItem = {
@@ -205,7 +242,8 @@ export class RoomHelper {
                     discounted_secondary_start_price,
                     discounted_no_of_weekly_installment,
                     offer_data: offerData,
-                    is_installment_available: instalmentDetails.instalment_available
+                    is_installment_available: paymentConfig?.isInstallmentAvailable,
+                    paymentConfig
                 };
 
                 return newItem;

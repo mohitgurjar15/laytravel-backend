@@ -9,6 +9,9 @@ import { CommonHelper } from "../helpers/common.helper";
 import { catchError } from "rxjs/operators";
 import { DetailHelper } from "../helpers/detail.helper";
 import { LandingPage } from "src/utility/landing-page.utility";
+import moment = require("moment");
+import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
+import { ModulesName } from "src/enum/module.enum";
 
 export class Rooms {
     private roomHelper: RoomHelper;
@@ -38,11 +41,14 @@ export class Rooms {
                 departure: hotel['address']['city_name'], checkInDate: inputData.check_in, state: hotel['address']['state_name']
             }
             let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
+            let daysUtilDepature = moment(inputData.check_in).diff(moment().format("YYYY-MM-DD"), 'days')
+            let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(ModulesName.HOTEL, 0, daysUtilDepature)
             let rooms: any = this.roomHelper.processRoom(
                 hotel,
                 roomsReqDto,
                 inputData,
-                offerData
+                offerData,
+                paymentConfig
             );
 
             

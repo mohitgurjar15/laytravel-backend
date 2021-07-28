@@ -63,12 +63,14 @@ export class RouteCategory {
                 .where("flight_route.from_airport_code In (:departureCode) and flight_route.to_airport_code In (:arrivalCode)", { departureCode: searchData.departure, arrivalCode: searchData.arrival })
                 .leftJoinAndSelect("flight_route.category", "category")
                 .getOne();
+            
+            console.log('routeDetails', routeDetails)
             if (routeDetails?.category?.isInstallmentAvailable) {
                 return { available: true, categoryId: routeDetails?.category?.id };
             } else {
                 return { available: false, categoryId: routeDetails?.category?.id }
-
             }
+            
         }
         else {
             return { available: false };

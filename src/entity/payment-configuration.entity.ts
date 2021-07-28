@@ -22,7 +22,7 @@ export class PaymentConfiguration extends BaseEntity {
     @Column("integer", { name: "days_config_id" })
     daysConfigId: number;
 
-    @Column("integer", { name: "category_id" })
+    @Column("integer", { name: "category_id", nullable: true })
     categoryId: number;
 
     @Column("boolean", { name: "is_down_payment_in_percentage", default: () => "true" })
@@ -46,7 +46,7 @@ export class PaymentConfiguration extends BaseEntity {
     @Column("boolean", { name: "is_monthly_installment_available", default: () => "true" })
     isMonthlyInstallmentAvailable: boolean;
 
-    @Column("date", { name: "updated_date" , nullable : true})
+    @Column("date", { name: "updated_date", nullable: true })
     updatedDate: Date;
 
     @Column("uuid", { name: "update_by", nullable: true })

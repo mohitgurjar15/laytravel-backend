@@ -48,9 +48,11 @@ export class Instalment {
             downPayment = instalmentData.down_payment[selected_down_payment];
 
             let percentage = downPayment
+            
             let percentageAmount = isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment
-
+            
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
+            //console.log('downPayment', isDownPaymentInPercentage, typeof isDownPaymentInPercentage, percentageAmount, instalmentDatewithAmount)
             instalmentData.percentage = percentage;
         }
 
