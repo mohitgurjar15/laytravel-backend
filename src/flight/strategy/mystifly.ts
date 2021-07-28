@@ -83,11 +83,11 @@ export class Mystifly implements StrategyAirline {
         let mystiflyConfig = JSON.parse(config.testCredential);
 
         mystiflyConfig["zipSearchUrl"] =
-            "http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc";
+            "https://onepointdemo.myfarebox.com/V2/OnePointGZip.svc";
         if (config.mode) {
             mystiflyConfig = JSON.parse(config.liveCredential);
             mystiflyConfig["zipSearchUrl"] =
-                "http://onepoint.myfarebox.com/V2/OnePointGZip.svc";
+                "https://onepoint.myfarebox.com/V2/OnePointGZip.svc";
         }
         //mystiflyConfig = { "account_number": "MCN001714","password": "Lay2020@xml","target": "Test", "user_name": "LayTrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         //mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
@@ -3878,6 +3878,8 @@ export class Mystifly implements StrategyAirline {
         const currencyDetails = await Generic.getAmountTocurrency(
             this.headers.currency
         );
+
+        
         let airRevalidateResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
             requestBody,
@@ -4194,6 +4196,7 @@ export class Mystifly implements StrategyAirline {
                     module
                 );
                 let markUpDetails = markup.markUpDetails;
+                
                 let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
                 if (!markUpDetails) {
                     throw new InternalServerErrorException(
