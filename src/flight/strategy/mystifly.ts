@@ -561,12 +561,12 @@ export class Mystifly implements StrategyAirline {
 
                     //console.log("paymentConfig", paymentConfig)
 
-                    let downPaymentOption :any = paymentConfig.downPaymentOption
+                    
 
                     if (instalmentEligibility.available) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-
+                        let downPaymentOption :any = paymentConfig.downPaymentOption
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
                                 route.selling_price,
@@ -3608,12 +3608,12 @@ export class Mystifly implements StrategyAirline {
 
                     //console.log("paymentConfig", paymentConfig)
 
-                    let downPaymentOption: any = paymentConfig.downPaymentOption
+                   
 
                     if (instalmentEligibility.available) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-
+                         let downPaymentOption: any = paymentConfig.downPaymentOption
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
                                 route.selling_price,
@@ -4407,12 +4407,12 @@ export class Mystifly implements StrategyAirline {
 
                 //console.log("paymentConfig", paymentConfig)
 
-                let downPaymentOption: any = paymentConfig.downPaymentOption
+               
 
                 if (instalmentEligibility.available) {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-
+                     let downPaymentOption: any = paymentConfig.downPaymentOption
                     if (paymentConfig.isWeeklyInstallmentAvailable) {
                         instalmentDetails = Instalment.weeklyInstalment(
                             route.selling_price,
