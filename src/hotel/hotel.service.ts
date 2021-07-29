@@ -1096,7 +1096,7 @@ export class HotelService {
                         name_first: bookDto.primary_guest_detail.firstName,
                         name_last: bookDto.primary_guest_detail.lastName,
                         initials: bookDto.primary_guest_detail?.title || "",
-                        email: bookDto.primary_guest_detail.email,
+                        email: supporterEmail,
                         phone_number: bookDto.primary_guest_detail.phoneNo,
 
                         // guest_name_first: bookDto.guest_detail.firstName,

@@ -146,6 +146,6 @@ console.log(typeOrmConfig);
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
-        consumer.apply(AppLoggerMiddleware).forRoutes("*");
+        // consumer.apply(AppLoggerMiddleware).forRoutes("*");
     }
 }
