@@ -34,20 +34,20 @@ export class Invoice extends BaseEntity {
   @Column("numeric", { name: "amount", precision: 15, scale: 3 })
   amount: string;
 
-  // @Column("date", { name: "start_date" })
-  // startDate: string;
+  @Column("date", { name: "start_date" })
+  startDate: string;
 
-  // @Column("date", { name: "end_date" })
-  // endDate: string;
+  @Column("date", { name: "end_date" })
+  endDate: string;
 
   @Column("text", { name: "instalment_ids" })
   instalmentIds: string;
 
-  // @Column("integer", { name: "is_invoice_paid", default: () => "0" })
-  // isInvoicePaid: number;
+  @Column("integer", { name: "is_invoice_paid", default: () => "0" })
+  isInvoicePaid: number;
 
-  // @Column("date", { name: "created_date" })
-  // createdDate: string;
+  @Column("date", { name: "created_date" })
+  createdDate: string;
 
   @ManyToOne(
     () => Currency,

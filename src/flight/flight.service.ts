@@ -86,7 +86,6 @@ import { TravelProviderReminderMail } from "src/config/new_email_templete/cart-r
 import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 import { LandingPage } from "src/utility/landing-page.utility";
-import { Airport } from "src/entity/airport.entity";
 
 @Injectable()
 export class FlightService {
@@ -3892,130 +3891,34 @@ export class FlightService {
         }
 
         //console.log("result",result)
-        if (!result.length) {
+        if (!result) {
             throw new NotFoundException(
                 `No any route available for given location`
             );
         }
-        let allCode = []
+
+        let opResult = [];
         let data;
-        let condition = ""
         for await (const route of result) {
-            if (condition == "") {
-                condition += `'${route.code}'`
-            } else {
-                condition += `,'${route.code}'`
-            }
-            allCode.push(route.code)
+            data = {};
+            data = airports[route.code];
+            data.key = route.city.charAt(0);
+            opResult.push(data);
         }
 
-        let airports = await getManager()
-            .query(`SELECT
-                        A."id" as id,
-                        A."name" as name,
-                        A."code" as code,
-                        A."latitude" as late,
-                        A."longitude" as long,
-                        A."city" as city,
-                        A."country" as country,
-                        A."icao"as icao,
-                        A."status" as status,
-                        A."is_deleted" as isDeleted,
-                        A."parent_id" as parentId,
-                        B."id" as child_id,
-                        B."name" as child_name,
-                        B."code" as child_code,
-                        B."latitude" as child_late,
-                        B."longitude" as child_long,
-                        B."city" as child_city,
-                        B."country" as child_country,
-                        B."icao" as child_icao,
-                        B."status" as child_status,
-                        B."is_deleted" as child_isDeleted,
-                        B."parent_id" as child_parentId
-                    FROM airport A LEFT JOIN airport B
-                    ON A."id" = B."parent_id" AND B."code" In (${condition})
-                    Where A."code" In (${condition})
-                    group by A."id",B."id"`)
-
-        let airportObb = {}
-
-        for await (const iterator of airports) {
-
-            if (airportObb[iterator.code]) {
-                if (iterator.child_id && airportObb[iterator.code].child.indexOf((a, b) => { a.id - b.id }) == -1) {
-                    console.log("Dome")
-                    let a = {
-                        id: iterator.child_id,
-                        name: iterator.child_name,
-                        code: iterator.child_code,
-                        late: iterator.child_late,
-                        long: iterator.child_long,
-                        city: iterator.child_city,
-                        country: iterator.child_country,
-                        icao: iterator.child_icao,
-                        status: iterator.child_status,
-                        isdeleted: iterator.child_isdeleted,
-                        parentid: iterator.child_parentid
-                    }
-                    airportObb[iterator.code].child.push(a)
-                }
-            } else {
-                airportObb[iterator.code] = {
-                    id: iterator.id,
-                    name: iterator.name,
-                    code: iterator.code,
-                    late: iterator.late,
-                    long: iterator.long,
-                    city: iterator.city,
-                    country: iterator.country,
-                    icao: iterator.icao,
-                    status: iterator.status,
-                    isdeleted: iterator.isdeleted,
-                    parentid: iterator.parentid,
-                    child: []
-                }
-                if (iterator.child_id) {
-                    let a = {
-                        id: iterator.child_id,
-                        name: iterator.child_name,
-                        code: iterator.child_code,
-                        late: iterator.child_late,
-                        long: iterator.child_long,
-                        city: iterator.child_city,
-                        country: iterator.child_country,
-                        icao: iterator.child_icao,
-                        status: iterator.child_status,
-                        isdeleted: iterator.child_isdeleted,
-                        parentid: iterator.child_parentid
-                    }
-                    airportObb[iterator.code].child.push(a)
-                }
-            }
-        }
-
+        opResult = this.groupByKey(opResult, "key");
+        console.log(opResult);
         let airportArray = [];
 
-        for (const [key, value] of Object.entries(airportObb)) {
-            airportArray.push(value);
+        for (const [key, value] of Object.entries(opResult)) {
+            airportArray.push({
+                key: key,
+                value: value,
+            });
         }
 
-        
-        for (let index = 0; index < airportArray.length; index++) {
-            const iterator = airportArray[index];
-
-            if (iterator.child.length) {
-                for (let j = 0; j < iterator.child.length; j++) {
-                    const child = iterator.child[j];
-                    let i = airportArray.findIndex(x => x.code == child.code)
-                    console.log()
-                    if (i != -1 && i != index) {
-                        airportArray.splice(i, 1);
-                    }
-                }
-            }
-        }
-        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));
+        //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
+        airportArray = airportArray.sort((a, b) => a.key.localeCompare(b.key));
         return airportArray;
     }
 
@@ -4067,7 +3970,7 @@ export class FlightService {
             .orderBy(orderBy, "ASC")
             .getMany();
 
-        if (!result.length) {
+        if (!result) {
             throw new NotFoundException(
                 `No any route available for given location`
             );
@@ -4075,160 +3978,25 @@ export class FlightService {
         let availableRoute = [];
         let opResult = [];
         let airport: any = {};
-        let condition = ""
-
         for await (const route of result) {
             if (is_from_location == "yes") {
                 if (availableRoute.indexOf(route.fromAirportCode) == -1) {
-                    if (!opResult.includes(route.fromAirportCode)) {
-                        opResult.push(route.fromAirportCode)
-                        // airport = airports[route.fromAirportCode];
-                        if (condition == "") {
-                            condition += `'${route.fromAirportCode}'`
-                        } else {
-                            condition += `,'${route.fromAirportCode}'`
-                        }
-                    }
-                    // airport.key = airport.city.charAt(0);
-                    // opResult.push(airport);
-
-                    // availableRoute.push(route.fromAirportCode);
+                    airport = airports[route.fromAirportCode];
+                    airport.key = airport.city.charAt(0);
+                    opResult.push(airport);
+                    availableRoute.push(route.fromAirportCode);
                 }
             } else {
                 if (availableRoute.indexOf(route.toAirportCode) == -1) {
-                    // airport = airports[route.toAirportCode];
-                    // airport.key = airport.city.charAt(0);
-                    // opResult.push(airport);
-                    // availableRoute.push(route.toAirportCode);
-                    if (!opResult.includes(route.toAirportCode)) {
-                        opResult.push(route.toAirportCode)
-                        // airport = airports[route.fromAirportCode];
-                        if (condition == "") {
-                            condition += `'${route.toAirportCode}'`
-                        } else {
-                            condition += `,'${route.toAirportCode}'`
-                        }
-                    }
-
-                }
-            }
-        }
-        // for await (const route of result) {
-
-        //     allCode.push(route.code)
-        // }
-
-        let Allairports = await getManager()
-            .query(`SELECT
-                        A."id" as id,
-                        A."name" as name,
-                        A."code" as code,
-                        A."latitude" as late,
-                        A."longitude" as long,
-                        A."city" as city,
-                        A."country" as country,
-                        A."icao"as icao,
-                        A."status" as status,
-                        A."is_deleted" as isDeleted,
-                        A."parent_id" as parentId,
-                        B."id" as child_id,
-                        B."name" as child_name,
-                        B."code" as child_code,
-                        B."latitude" as child_late,
-                        B."longitude" as child_long,
-                        B."city" as child_city,
-                        B."country" as child_country,
-                        B."icao" as child_icao,
-                        B."status" as child_status,
-                        B."is_deleted" as child_isDeleted,
-                        B."parent_id" as child_parentId
-                    FROM airport A LEFT JOIN airport B
-                    ON A."id" = B."parent_id" AND B."code" In (${condition})
-                    Where A."code" In (${condition})
-                    `)
-
-        let airportObb = {}
-
-        
-
-        for await (const iterator of Allairports) {
-
-            if (airportObb[iterator.code]) {
-                if (iterator.child_id && airportObb[iterator.code].child.indexOf((a, b) => { a.id - b.id }) == -1) {
-                    let a = {
-                        id: iterator.child_id,
-                        name: iterator.child_name,
-                        code: iterator.child_code,
-                        late: iterator.child_late,
-                        long: iterator.child_long,
-                        city: iterator.child_city,
-                        country: iterator.child_country,
-                        icao: iterator.child_icao,
-                        status: iterator.child_status,
-                        isdeleted: iterator.child_isdeleted,
-                        parentid: iterator.child_parentid
-                    }
-                    airportObb[iterator.code].child.push(a)
-                }
-            } else {
-                airportObb[iterator.code] = {
-                    id: iterator.id,
-                    name: iterator.name,
-                    code: iterator.code,
-                    late: iterator.late,
-                    long: iterator.long,
-                    city: iterator.city,
-                    country: iterator.country,
-                    icao: iterator.icao,
-                    status: iterator.status,
-                    isdeleted: iterator.isdeleted,
-                    parentid: iterator.parentid,
-                    child: []
-                }
-                if (iterator.child_id) {
-                    let a = {
-                        id: iterator.child_id,
-                        name: iterator.child_name,
-                        code: iterator.child_code,
-                        late: iterator.child_late,
-                        long: iterator.child_long,
-                        city: iterator.child_city,
-                        country: iterator.child_country,
-                        icao: iterator.child_icao,
-                        status: iterator.child_status,
-                        isdeleted: iterator.child_isdeleted,
-                        parentid: iterator.child_parentid
-                    }
-                    airportObb[iterator.code].child.push(a)
+                    airport = airports[route.toAirportCode];
+                    airport.key = airport.city.charAt(0);
+                    opResult.push(airport);
+                    availableRoute.push(route.toAirportCode);
                 }
             }
         }
 
-        let airportArray = [];
-
-        for (const [key, value] of Object.entries(airportObb)) {
-            airportArray.push(value);
-        }
-
-        //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-       
-        //return airportArray
-        for (let index = 0; index < airportArray.length; index++) {
-            const iterator = airportArray[index];
-
-            if (iterator.child.length) {
-                for (let j = 0; j < iterator.child.length; j++) {
-                    const child = iterator.child[j];
-                    let i = airportArray.findIndex(x => x.code == child.code)
-                    if (i != -1 && i != index) {
-                        airportArray.splice(i, 1);
-                    }
-                }
-            }   
-        }
-        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));       
-        return airportArray;
-
+        return opResult;
     }
 
     async importCategory() {

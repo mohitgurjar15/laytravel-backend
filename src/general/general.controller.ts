@@ -326,19 +326,4 @@ export class GeneralController {
     async valuationPercentage(@Param('id') id:string) {
         return await  this.generalService.valuationPercentages(id);
     }
-
-
-    @ApiOperation({ summary: "test/sample/code" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({
-        status: 422,
-        description: "Bad Request or API error message",
-    })
-    @ApiResponse({ status: 404, description: "Not found!" })
-    @ApiResponse({ status: 409, description: "User Already Exist" })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Get("test/sample/code")
-    async testSample() {
-        return await this.generalService.temp();
-    }
 }

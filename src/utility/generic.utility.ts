@@ -22,16 +22,13 @@ export class Generic {
     }
 
     static async getAmountTocurrency(code: string = 'USD') {
-
-        code = typeof code == 'string' ? code : 'USD'
-        
         const currencyDetails = await getConnection()
             .createQueryBuilder()
             .select(["currency.code", "currency.symbol", "currency.liveRate"])
             .from(Currency, "currency")
-            .where("currency.code = :code", { code: code || 'USD' })
+            .where("currency.code = :code", { code })
             .getOne();
-        console.log('currencyDetails',currencyDetails)
+        console.log(currencyDetails)
         return currencyDetails;
     }
 
