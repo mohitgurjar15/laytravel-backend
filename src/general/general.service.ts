@@ -587,7 +587,7 @@ export class GeneralService {
                 to: email,
                 from: mailConfig.from,
                 bcc: mailConfig.BCC,
-                subject: `Booking ID ${partialBooking} Installment Recevied`,
+                subject: `Booking ID ${partialBooking} Installment Received`,
                 html: await LaytripInstallmentRecevied({
                     userName: "Parth",
                     orderId: partialBooking,
@@ -1172,5 +1172,23 @@ export class GeneralService {
 
     async valuationPercentages(cart_id) {
         return await ValuationPercentageUtility.calculations(cart_id);
+    }
+
+    async temp(){
+        let ojj = {}
+        let allAirports = await getManager()
+            .createQueryBuilder(Airport, "airport")
+            .select(["airport.id",
+        "airport.name",
+        "airport.code",
+        "airport.city",
+        "airport.country",
+        "airport.parentId"])
+            .getMany();
+
+        for await (const iterator of allAirports) {
+            ojj[iterator.code] = iterator
+        }
+        return ojj
     }
 }

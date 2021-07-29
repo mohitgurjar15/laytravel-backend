@@ -2,6 +2,9 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm";
 
@@ -43,4 +46,11 @@ export class Airport extends BaseEntity {
 
   @Column("boolean", { name: "is_blacklisted", default: () => "false" })
   isBlackListed: boolean;
+  
+//   @OneToMany(
+//     () => Airport,
+//     (airport) => airport.parentId
+//   )
+//   @JoinColumn([{ name: "id", referencedColumnName: "parentId" }])
+//   childs: Airport[];
 }
