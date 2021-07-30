@@ -3928,6 +3928,8 @@ export class FlightService {
             const iterator = airportArray[index];
 
             if (iterator.child.length) {
+                iterator.child = iterator.child.sort((a, b) => a.city.localeCompare(b.city));
+
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
@@ -4140,6 +4142,7 @@ export class FlightService {
             const iterator = airportArray[index];
 
             if (iterator.child.length) {
+                iterator.child = iterator.child.sort((a, b) => a.city.localeCompare(b.city));
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
