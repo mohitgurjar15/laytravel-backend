@@ -3778,9 +3778,9 @@ export class FlightService {
     }
 
     async flightRoute(type) {
-        let fromAirport  = await getConnection().query(
-                `SELECT distinct from_airport_code FROM flight_route Where is_deleted = false`
-            );
+        let fromAirport = await getConnection().query(
+            `SELECT distinct from_airport_code FROM flight_route Where is_deleted = false`
+        );
         let toAirport = await getConnection().query(
             `SELECT distinct to_airport_code AS from_airport_code FROM flight_route  where is_deleted = false`
         );
@@ -3788,41 +3788,41 @@ export class FlightService {
         // console.log(fromAirport)
         // console.log(toAirport)
 
-        let result : any = _.unionBy(fromAirport, toAirport, 'from_airport_code');
+        let result: any = _.unionBy(fromAirport, toAirport, 'from_airport_code');
         // console.log('result',result)
         // if (type == "from") {
         //     result = await getConnection().query(
         //         `select
-		// 		"route"."from_airport_code" as code,
-		// 		"route"."from_airport_name" as name,
-		// 		"route"."from_airport_city" as city,
-		// 		"route"."from_airport_country" as country
-		// 		from
-		// 			"flight_route" "route"
+        // 		"route"."from_airport_code" as code,
+        // 		"route"."from_airport_name" as name,
+        // 		"route"."from_airport_city" as city,
+        // 		"route"."from_airport_country" as country
+        // 		from
+        // 			"flight_route" "route"
         //         Where "route"."is_deleted" = false
-		// 		group by
-		// 			"route"."from_airport_code",
-		// 			"route"."from_airport_name",
-		// 			"route"."from_airport_city",
-		// 			"route"."from_airport_country"
-		// 		Order by "route"."from_airport_city"	`
+        // 		group by
+        // 			"route"."from_airport_code",
+        // 			"route"."from_airport_name",
+        // 			"route"."from_airport_city",
+        // 			"route"."from_airport_country"
+        // 		Order by "route"."from_airport_city"	`
         //     );
         // } else {
         //     result = await getConnection().query(
         //         `select
-		// 		"route"."to_airport_code" as code,
-		// 		"route"."to_airport_name" as name,
-		// 		"route"."to_airport_city" as city,
-		// 		"route"."to_airport_country" as country
-		// 		from
-		// 			"flight_route" "route"
+        // 		"route"."to_airport_code" as code,
+        // 		"route"."to_airport_name" as name,
+        // 		"route"."to_airport_city" as city,
+        // 		"route"."to_airport_country" as country
+        // 		from
+        // 			"flight_route" "route"
         //         Where "route"."is_deleted" = false
-		// 		group by
-		// 			"route"."to_airport_code",
-		// 			"route"."to_airport_name",
-		// 			"route"."to_airport_city",
-		// 			"route"."to_airport_country"
-		// 		Order by "route"."to_airport_city"`
+        // 		group by
+        // 			"route"."to_airport_code",
+        // 			"route"."to_airport_name",
+        // 			"route"."to_airport_city",
+        // 			"route"."to_airport_country"
+        // 		Order by "route"."to_airport_city"`
         //     );
         // }
 
@@ -3935,7 +3935,7 @@ export class FlightService {
             airportArray.push(value);
         }
 
-        
+
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
@@ -4169,23 +4169,26 @@ export class FlightService {
             const iterator = airportArray[index];
 
 
-            if (iterator.child.length) {
-            
+
+            if (iterator.code == alternet_location) {
+                airportArray.splice(index, 1);
+            }
+            else if (iterator.child.length) {
                 for (let j = 0; j < iterator.child.length; j++) {
-                    
+
                     const child = iterator.child[j];
-                    if(child.code == alternet_location){
+                    if (child.code == alternet_location) {
                         iterator.child.splice(j, 1);
                     }
                     let i = airportArray.findIndex(x => x.code == child.code)
                     if (i != -1 && i != index) {
                         airportArray.splice(i, 1);
                     }
-                    else if (airportArray[i].code == alternet_location){
-                        airportArray.splice(i, 1);
-                    }
                 }
             }
+
+
+
         }
         airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));
         return airportArray;
