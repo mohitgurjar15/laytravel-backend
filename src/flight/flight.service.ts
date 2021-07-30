@@ -4168,11 +4168,20 @@ export class FlightService {
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
+
             if (iterator.child.length) {
+            
                 for (let j = 0; j < iterator.child.length; j++) {
+                    
                     const child = iterator.child[j];
+                    if(child.code == alternet_location){
+                        iterator.child.splice(j, 1);
+                    }
                     let i = airportArray.findIndex(x => x.code == child.code)
                     if (i != -1 && i != index) {
+                        airportArray.splice(i, 1);
+                    }
+                    else if (airportArray[i].code == alternet_location){
                         airportArray.splice(i, 1);
                     }
                 }
