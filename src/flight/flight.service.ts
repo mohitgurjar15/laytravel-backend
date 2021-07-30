@@ -87,6 +87,7 @@ import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { Airport } from "src/entity/airport.entity";
+import _ = require("lodash");
 
 @Injectable()
 export class FlightService {
@@ -3777,42 +3778,53 @@ export class FlightService {
     }
 
     async flightRoute(type) {
-        let result;
-        if (type == "from") {
-            result = await getConnection().query(
-                `select
-				"route"."from_airport_code" as code,
-				"route"."from_airport_name" as name,
-				"route"."from_airport_city" as city,
-				"route"."from_airport_country" as country
-				from
-					"flight_route" "route"
-                Where "route"."is_deleted" = false
-				group by
-					"route"."from_airport_code",
-					"route"."from_airport_name",
-					"route"."from_airport_city",
-					"route"."from_airport_country"
-				Order by "route"."from_airport_city"	`
-            );
-        } else {
-            result = await getConnection().query(
-                `select
-				"route"."to_airport_code" as code,
-				"route"."to_airport_name" as name,
-				"route"."to_airport_city" as city,
-				"route"."to_airport_country" as country
-				from
-					"flight_route" "route"
-                Where "route"."is_deleted" = false
-				group by
-					"route"."to_airport_code",
-					"route"."to_airport_name",
-					"route"."to_airport_city",
-					"route"."to_airport_country"
-				Order by "route"."to_airport_city"`
-            );
-        }
+        let fromAirport = await getConnection().query(
+            `SELECT distinct from_airport_code FROM flight_route Where is_deleted = false`
+        );
+        let toAirport = await getConnection().query(
+            `SELECT distinct to_airport_code AS from_airport_code FROM flight_route  where is_deleted = false`
+        );
+
+        // console.log(fromAirport)
+        // console.log(toAirport)
+
+        let result: any = _.unionBy(fromAirport, toAirport, 'from_airport_code');
+        // console.log('result',result)
+        // if (type == "from") {
+        //     result = await getConnection().query(
+        //         `select
+        // 		"route"."from_airport_code" as code,
+        // 		"route"."from_airport_name" as name,
+        // 		"route"."from_airport_city" as city,
+        // 		"route"."from_airport_country" as country
+        // 		from
+        // 			"flight_route" "route"
+        //         Where "route"."is_deleted" = false
+        // 		group by
+        // 			"route"."from_airport_code",
+        // 			"route"."from_airport_name",
+        // 			"route"."from_airport_city",
+        // 			"route"."from_airport_country"
+        // 		Order by "route"."from_airport_city"	`
+        //     );
+        // } else {
+        //     result = await getConnection().query(
+        //         `select
+        // 		"route"."to_airport_code" as code,
+        // 		"route"."to_airport_name" as name,
+        // 		"route"."to_airport_city" as city,
+        // 		"route"."to_airport_country" as country
+        // 		from
+        // 			"flight_route" "route"
+        //         Where "route"."is_deleted" = false
+        // 		group by
+        // 			"route"."to_airport_code",
+        // 			"route"."to_airport_name",
+        // 			"route"."to_airport_city",
+        // 			"route"."to_airport_country"
+        // 		Order by "route"."to_airport_city"`
+        //     );
+        // }
 
         //console.log("result",result)
         if (!result.length) {
@@ -3825,9 +3837,9 @@ export class FlightService {
         let condition = ""
         for await (const route of result) {
             if (condition == "") {
-                condition += `'${route.code}'`
+                condition += `'${route.from_airport_code}'`
             } else {
-                condition += `,'${route.code}'`
+                condition += `,'${route.from_airport_code}'`
             }
             allCode.push(route.code)
         }
@@ -3923,11 +3935,13 @@ export class FlightService {
             airportArray.push(value);
         }
 
-        
+
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
             if (iterator.child.length) {
+                iterator.child = iterator.child.sort((a, b) => a.name.localeCompare(b.name));
+
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
@@ -3963,31 +3977,34 @@ export class FlightService {
             }
         }
 
+        // if (search) {
+        //     where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%') OR ("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
+        // }
         if (is_from_location == "yes") {
             if (search) {
                 where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`;
             }
-            if (alternet_location) {
-                where += `AND ("to_airport_code" = '${alternet_location}') `;
-            }
+            // if (alternet_location) {
+            //     where += `AND ("to_airport_code" = '${alternet_location}') `;
+            // }
         } else {
             if (search) {
                 where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
             }
-            if (alternet_location) {
-                where += `AND ("from_airport_code" = '${alternet_location}') `;
-            }
+            // if (alternet_location) {
+            //     where += `AND ("from_airport_code" = '${alternet_location}') `;
+            // }
         }
 
-        let orderBy = "from_airport_city";
-        if (is_from_location != "yes") {
-            orderBy = "to_airport_city";
-        }
+        // let orderBy = "from_airport_city";
+        // if (is_from_location != "yes") {
+        //     orderBy = "to_airport_city";
+        // }
 
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
-            .orderBy(orderBy, "ASC")
+            //.orderBy(orderBy, "ASC")
             .getMany();
 
         if (!result.length) {
@@ -3995,6 +4012,7 @@ export class FlightService {
                 `No any route available for given location`
             );
         }
+
         let availableRoute = [];
         let opResult = [];
         let airport: any = {};
@@ -4035,6 +4053,22 @@ export class FlightService {
 
                 }
             }
+            // if (!opResult.includes(route.fromAirportCode)) {
+            //     opResult.push(route.fromAirportCode)
+            //     if (condition == "") {
+            //         condition += `'${route.fromAirportCode}'`
+            //     } else {
+            //         condition += `,'${route.fromAirportCode}'`
+            //     }
+            // }
+            // if (!opResult.includes(route.toAirportCode)) {
+            //     opResult.push(route.toAirportCode)
+            //     if (condition == "") {
+            //         condition += `'${route.toAirportCode}'`
+            //     } else {
+            //         condition += `,'${route.toAirportCode}'`
+            //     }
+            // }
         }
         // for await (const route of result) {
 
@@ -4072,7 +4106,7 @@ export class FlightService {
 
         let airportObb = {}
 
-        
+
 
         for await (const iterator of Allairports) {
 
@@ -4134,22 +4168,34 @@ export class FlightService {
         }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-       
+
         //return airportArray
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
-            if (iterator.child.length) {
+
+
+            if (iterator.code == alternet_location) {
+                airportArray.splice(index, 1);
+            }
+            else if (iterator.child.length) {
                 for (let j = 0; j < iterator.child.length; j++) {
+
                     const child = iterator.child[j];
+                    if (child.code == alternet_location) {
+                        iterator.child.splice(j, 1);
+                    }
                     let i = airportArray.findIndex(x => x.code == child.code)
                     if (i != -1 && i != index) {
                         airportArray.splice(i, 1);
                     }
                 }
-            }   
+            }
+
+
+
         }
-        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));       
+        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));
         return airportArray;
 
     }

@@ -242,7 +242,8 @@ export class Mystifly implements StrategyAirline {
             source_location,
             destination_location
         );
-        if (typeof routeDetails == "undefined") {
+        
+        if(typeof routeDetails == "undefined") {
             throw new NotAcceptableException(
                 `Sorry, location not served, coming soon. Please choose alternative.`
             );
@@ -3089,7 +3090,9 @@ export class Mystifly implements StrategyAirline {
             source_location,
             destination_location
         );
-        if (typeof routeDetails == "undefined") {
+        
+        
+        if(typeof routeDetails == "undefined") {
             throw new NotAcceptableException(
                 `Sorry, location not served, coming soon. Please choose alternative.`
             );
