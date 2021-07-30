@@ -2,53 +2,64 @@ import { LaytripHeader } from "./laytrip_header.html";
 import { LaytripFooter } from "./laytrip_footer.html";
 
 export function EnquiryNotificationHTML(
-           param: { name: string; message: any; id: string }
+           param: { name: string; message: any; id: string , email }
            
        ) {
            const content = `
-<!-- header Text section start -->
-<table width="100%" border="0" cellspacing="0" cellpadding="0"  style="background: #f2f2f2;" class="full-wrap">
-    <tr>
-        <td align="center" valign="top">
-            <table align="center" style="width:600px; max-width:600px; table-layout:fixed;" class="oc_wrapper" width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" valine="top" style="background-color: #707070;">
-                        <table width="600" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 600px;" class="oc_wrapper">
-                            <tbody>
-                                <tr>
-                                    <td align="center" valine="top" style="padding: 10px 15px 30px; background: #ffffff;">
-                                        <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
-                                            <tbody>
-                                                <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 22px; line-height: 24px; color: #444; font-weight:700; padding-top: 15px; text-align: center;">New Enquiry Found</td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: center;">
-                                                        <span style="text-decoration: none; color: #707070;">${param.name}</span> is add new enquiry
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: center;"><b>Enquiry ID: </b>${param.id}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td align="left" valign="top" style="font-family: 'Poppins', sans-serif;font-size: 18px; line-height: 18px; color: #707070;padding-top: 15px; text-align: center;"><b>Message: </b>${param.message}</td>
-                                                </tr>
-
-                                                
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<!-- header text section End -->
+            <tr>
+<td align="center" valine="top" style="padding: 38px 25px 10px; background: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100%">
+        <tbody>
+            <tr>
+                <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #000000; font-weight: 600;; text-align: left; font-weight: 600;">
+                  Hi,
+                </td>
+            </tr>
+            <tr>
+                 <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    New Inquiry Found from Contact-Us form please check below details
+                 </td>
+            </tr>
+            
+             <tr>
+                 <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">
+                        User name:
+                        </span>
+                        <span style="font-size: 18px" >
+                        ${param.name}
+                        </span>
+                 </td>
+            </tr>
+             <tr>
+                 <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                  <span  style="color: #000000; font-weight: 600;">
+                        User email:
+                        </span>
+                        <span style="font-size: 18px" >
+                        ${param.email}
+                        </span>
+                 </td>
+            </tr>
+             <tr>
+                 <td align="left" valign="top"
+                                        style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
+                    <span  style="color: #000000; font-weight: 600;">
+                        Message:
+                        </span>
+                        <span style="font-size: 18px" >
+                        ${param.message}
+                        </span>
+                 </td>
+            </tr>
+        </tbody>
+    </table>
+</td>
+</tr>
 `;
-           return LaytripHeader + content + LaytripFooter;
+           return LaytripHeader + content + LaytripFooter('');
        }
