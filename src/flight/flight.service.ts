@@ -3779,10 +3779,10 @@ export class FlightService {
 
     async flightRoute(type) {
         let fromAirport  = await getConnection().query(
-                `SELECT distinct from_airport_code FROM flight_route`
+                `SELECT distinct from_airport_code FROM flight_route Where is_deleted = false`
             );
         let toAirport = await getConnection().query(
-            `SELECT distinct to_airport_code AS from_airport_code FROM flight_route `
+            `SELECT distinct to_airport_code AS from_airport_code FROM flight_route  where is_deleted = false`
         );
 
         // console.log(fromAirport)
@@ -3940,7 +3940,7 @@ export class FlightService {
             const iterator = airportArray[index];
 
             if (iterator.child.length) {
-                iterator.child = iterator.child.sort((a, b) => a.city.localeCompare(b.city));
+                iterator.child = iterator.child.sort((a, b) => a.name.localeCompare(b.name));
 
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
