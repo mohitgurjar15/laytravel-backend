@@ -87,6 +87,7 @@ import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { Airport } from "src/entity/airport.entity";
+import _ = require("lodash");
 
 @Injectable()
 export class FlightService {
@@ -3777,42 +3778,53 @@ export class FlightService {
     }
 
     async flightRoute(type) {
-        let result;
-        if (type == "from") {
-            result = await getConnection().query(
-                `select
-				"route"."from_airport_code" as code,
-				"route"."from_airport_name" as name,
-				"route"."from_airport_city" as city,
-				"route"."from_airport_country" as country
-				from
-					"flight_route" "route"
-                Where "route"."is_deleted" = false
-				group by
-					"route"."from_airport_code",
-					"route"."from_airport_name",
-					"route"."from_airport_city",
-					"route"."from_airport_country"
-				Order by "route"."from_airport_city"	`
+        let fromAirport  = await getConnection().query(
+                `SELECT distinct from_airport_code FROM flight_route`
             );
-        } else {
-            result = await getConnection().query(
-                `select
-				"route"."to_airport_code" as code,
-				"route"."to_airport_name" as name,
-				"route"."to_airport_city" as city,
-				"route"."to_airport_country" as country
-				from
-					"flight_route" "route"
-                Where "route"."is_deleted" = false
-				group by
-					"route"."to_airport_code",
-					"route"."to_airport_name",
-					"route"."to_airport_city",
-					"route"."to_airport_country"
-				Order by "route"."to_airport_city"`
-            );
-        }
+        let toAirport = await getConnection().query(
+            `SELECT distinct to_airport_code AS from_airport_code FROM flight_route `
+        );
+
+        // console.log(fromAirport)
+        // console.log(toAirport)
+
+        let result : any = _.unionBy(fromAirport, toAirport, 'from_airport_code');
+        // console.log('result',result)
+        // if (type == "from") {
+        //     result = await getConnection().query(
+        //         `select
+		// 		"route"."from_airport_code" as code,
+		// 		"route"."from_airport_name" as name,
+		// 		"route"."from_airport_city" as city,
+		// 		"route"."from_airport_country" as country
+		// 		from
+		// 			"flight_route" "route"
+        //         Where "route"."is_deleted" = false
+		// 		group by
+		// 			"route"."from_airport_code",
+		// 			"route"."from_airport_name",
+		// 			"route"."from_airport_city",
+		// 			"route"."from_airport_country"
+		// 		Order by "route"."from_airport_city"	`
+        //     );
+        // } else {
+        //     result = await getConnection().query(
+        //         `select
+		// 		"route"."to_airport_code" as code,
+		// 		"route"."to_airport_name" as name,
+		// 		"route"."to_airport_city" as city,
+		// 		"route"."to_airport_country" as country
+		// 		from
+		// 			"flight_route" "route"
+        //         Where "route"."is_deleted" = false
+		// 		group by
+		// 			"route"."to_airport_code",
+		// 			"route"."to_airport_name",
+		// 			"route"."to_airport_city",
+		// 			"route"."to_airport_country"
+		// 		Order by "route"."to_airport_city"`
+        //     );
+        // }
 
         //console.log("result",result)
         if (!result.length) {
@@ -3825,9 +3837,9 @@ export class FlightService {
         let condition = ""
         for await (const route of result) {
             if (condition == "") {
-                condition += `'${route.code}'`
+                condition += `'${route.from_airport_code}'`
             } else {
-                condition += `,'${route.code}'`
+                condition += `,'${route.from_airport_code}'`
             }
             allCode.push(route.code)
         }
