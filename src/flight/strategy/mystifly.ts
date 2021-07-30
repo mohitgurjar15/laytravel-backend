@@ -557,7 +557,7 @@ export class Mystifly implements StrategyAirline {
                         //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                     }
 
-                    route.payment_config = paymentConfig
+                    route.payment_config = paymentConfig || {}
 
                     //console.log("paymentConfig", paymentConfig)
 
@@ -3604,7 +3604,7 @@ export class Mystifly implements StrategyAirline {
                         //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                     }
 
-                    route.payment_config = paymentConfig
+                    route.payment_config = paymentConfig || {}
 
                     //console.log("paymentConfig", paymentConfig)
 
@@ -4403,7 +4403,7 @@ export class Mystifly implements StrategyAirline {
                     //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                 }
 
-                route.payment_config = paymentConfig
+                route.payment_config = paymentConfig || {}
 
                 //console.log("paymentConfig", paymentConfig)
 

@@ -243,7 +243,7 @@ export class RoomHelper {
                     discounted_no_of_weekly_installment,
                     offer_data: offerData,
                     is_installment_available: paymentConfig?.isInstallmentAvailable,
-                    paymentConfig
+                    payment_config: paymentConfig || {}
                 };
 
                 return newItem;
