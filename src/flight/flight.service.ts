@@ -4053,16 +4053,21 @@ export class FlightService {
 
             //     }
             // }
-
-            if (condition == "") {
-                condition += `'${route.fromAirportCode}'`
-            } else {
-                condition += `,'${route.fromAirportCode}'`
+            if (!opResult.includes(route.fromAirportCode)) {
+                opResult.push(route.fromAirportCode)
+                if (condition == "") {
+                    condition += `'${route.fromAirportCode}'`
+                } else {
+                    condition += `,'${route.fromAirportCode}'`
+                }
             }
-            if (condition == "") {
-                condition += `'${route.toAirportCode}'`
-            } else {
-                condition += `,'${route.toAirportCode}'`
+            if (!opResult.includes(route.toAirportCode)) {
+                opResult.push(route.toAirportCode)
+                if (condition == "") {
+                    condition += `'${route.toAirportCode}'`
+                } else {
+                    condition += `,'${route.toAirportCode}'`
+                }
             }
         }
         // for await (const route of result) {
