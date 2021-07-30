@@ -3977,31 +3977,34 @@ export class FlightService {
             }
         }
 
-        if (is_from_location == "yes") {
-            if (search) {
-                where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`;
-            }
-            if (alternet_location) {
-                where += `AND ("to_airport_code" = '${alternet_location}') `;
-            }
-        } else {
-            if (search) {
-                where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
-            }
-            if (alternet_location) {
-                where += `AND ("from_airport_code" = '${alternet_location}') `;
-            }
+        if (search) {
+            where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%') OR ("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
         }
+        // if (is_from_location == "yes") {
+        //     if (search) {
+        //         where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`;
+        //     }
+        //     if (alternet_location) {
+        //         where += `AND ("to_airport_code" = '${alternet_location}') `;
+        //     }
+        // } else {
+        //     if (search) {
+        //         where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
+        //     }
+        //     if (alternet_location) {
+        //         where += `AND ("from_airport_code" = '${alternet_location}') `;
+        //     }
+        // }
 
-        let orderBy = "from_airport_city";
-        if (is_from_location != "yes") {
-            orderBy = "to_airport_city";
-        }
+        // let orderBy = "from_airport_city";
+        // if (is_from_location != "yes") {
+        //     orderBy = "to_airport_city";
+        // }
 
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
-            .orderBy(orderBy, "ASC")
+            //.orderBy(orderBy, "ASC")
             .getMany();
 
         if (!result.length) {
@@ -4009,45 +4012,57 @@ export class FlightService {
                 `No any route available for given location`
             );
         }
+
         let availableRoute = [];
         let opResult = [];
         let airport: any = {};
         let condition = ""
 
         for await (const route of result) {
-            if (is_from_location == "yes") {
-                if (availableRoute.indexOf(route.fromAirportCode) == -1) {
-                    if (!opResult.includes(route.fromAirportCode)) {
-                        opResult.push(route.fromAirportCode)
-                        // airport = airports[route.fromAirportCode];
-                        if (condition == "") {
-                            condition += `'${route.fromAirportCode}'`
-                        } else {
-                            condition += `,'${route.fromAirportCode}'`
-                        }
-                    }
-                    // airport.key = airport.city.charAt(0);
-                    // opResult.push(airport);
+            // if (is_from_location == "yes") {
+            //     if (availableRoute.indexOf(route.fromAirportCode) == -1) {
+            //         if (!opResult.includes(route.fromAirportCode)) {
+            //             opResult.push(route.fromAirportCode)
+            //             // airport = airports[route.fromAirportCode];
+            //             if (condition == "") {
+            //                 condition += `'${route.fromAirportCode}'`
+            //             } else {
+            //                 condition += `,'${route.fromAirportCode}'`
+            //             }
+            //         }
+            //         // airport.key = airport.city.charAt(0);
+            //         // opResult.push(airport);
 
-                    // availableRoute.push(route.fromAirportCode);
-                }
+            //         // availableRoute.push(route.fromAirportCode);
+            //     }
+            // } else {
+            //     if (availableRoute.indexOf(route.toAirportCode) == -1) {
+            //         // airport = airports[route.toAirportCode];
+            //         // airport.key = airport.city.charAt(0);
+            //         // opResult.push(airport);
+            //         // availableRoute.push(route.toAirportCode);
+            //         if (!opResult.includes(route.toAirportCode)) {
+            //             opResult.push(route.toAirportCode)
+            //             // airport = airports[route.fromAirportCode];
+            //             if (condition == "") {
+            //                 condition += `'${route.toAirportCode}'`
+            //             } else {
+            //                 condition += `,'${route.toAirportCode}'`
+            //             }
+            //         }
+
+            //     }
+            // }
+
+            if (condition == "") {
+                condition += `'${route.fromAirportCode}'`
             } else {
-                if (availableRoute.indexOf(route.toAirportCode) == -1) {
-                    // airport = airports[route.toAirportCode];
-                    // airport.key = airport.city.charAt(0);
-                    // opResult.push(airport);
-                    // availableRoute.push(route.toAirportCode);
-                    if (!opResult.includes(route.toAirportCode)) {
-                        opResult.push(route.toAirportCode)
-                        // airport = airports[route.fromAirportCode];
-                        if (condition == "") {
-                            condition += `'${route.toAirportCode}'`
-                        } else {
-                            condition += `,'${route.toAirportCode}'`
-                        }
-                    }
-
-                }
+                condition += `,'${route.fromAirportCode}'`
+            }
+            if (condition == "") {
+                condition += `'${route.toAirportCode}'`
+            } else {
+                condition += `,'${route.toAirportCode}'`
             }
         }
         // for await (const route of result) {
@@ -4086,7 +4101,7 @@ export class FlightService {
 
         let airportObb = {}
 
-        
+
 
         for await (const iterator of Allairports) {
 
@@ -4148,13 +4163,12 @@ export class FlightService {
         }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-       
+
         //return airportArray
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
             if (iterator.child.length) {
-                iterator.child = iterator.child.sort((a, b) => a.city.localeCompare(b.city));
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
@@ -4162,9 +4176,9 @@ export class FlightService {
                         airportArray.splice(i, 1);
                     }
                 }
-            }   
+            }
         }
-        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));       
+        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));
         return airportArray;
 
     }
