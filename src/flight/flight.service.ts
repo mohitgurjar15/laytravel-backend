@@ -658,6 +658,7 @@ export class FlightService {
             adult_count,
             child_count,
             infant_count,
+            request_date
         } = serchFlightDto;
 
         const depatureDate = new Date(departure_date);
@@ -675,12 +676,9 @@ export class FlightService {
 
         var result = [];
 
-        var resultIndex = 0;
+        let reqDates = [];
 
-        var count = dayDiffrence <= 3 ? dayDiffrence : 3;
-        var nextCount = dayDiffrence < 3 ? (3 - dayDiffrence) + 3 : 3
-        // var count = 4; 
-        previousWeekDates.setDate(previousWeekDates.getDate() - count);
+        var resultIndex = 0;
 
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
@@ -708,82 +706,143 @@ export class FlightService {
             headers.currency
         );
 
-        let reqDates = [];
 
-        for (let index = 0; index < count; index++) {
-            var predate = previousWeekDates.toISOString().split("T")[0];
-            predate = predate
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
-            if (
-                moment(new Date(predate)).diff(moment(new Date()), "days") >= 3
-            ) {
-                reqDates.push(predate);
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: predate,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.oneWaySearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+        if (request_date) {
+
+            reqDates.push(request_date);
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: request_date,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+            result[resultIndex] = new Promise((resolve) =>
+                resolve(
+                    mystifly.oneWaySearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
-            } else {
-                nextCount++
+                )
+            );
+
+        } else {
+            var count = 0
+            console.log(dayDiffrence)
+            if (dayDiffrence <= 2) {
+                count = 0
             }
-            previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+            else
+                if (dayDiffrence == 3) {
+                    count = 1
+                } else if (dayDiffrence == 4) {
+                    count = 1
+                }
+                else if (dayDiffrence >= 5) {
+                    count = 3
+                }
+            var nextCount = 7
+            console.log('nextCount', nextCount)
+            console.log('count', count)
+            // var count = 4; 
+            previousWeekDates.setDate(previousWeekDates.getDate() - count + 2);
+            nextWeekDates.setDate(nextWeekDates.getDate() - count);
+
+            console.log('previousWeekDates'), previousWeekDates
+
+            
+
+
+            // for (let index = 0; index < count; index++) {
+            //     var predate = previousWeekDates.toISOString().split("T")[0];
+            //     predate = predate
+            //         .replace(/T/, " ") // replace T with a space
+            //         .replace(/\..+/, "");
+
+            //     console.log('predate',predate)
+            //     if (
+            //         moment(new Date(predate)).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >= 2
+            //     ) {
+
+            //         reqDates.push(predate);
+            //         let dto = {
+            //             source_location: source_location,
+            //             destination_location: destination_location,
+            //             departure_date: predate,
+            //             flight_class: flight_class,
+            //             adult_count: adult_count,
+            //             child_count: child_count,
+            //             infant_count: infant_count,
+            //         };
+            //         result[resultIndex] = new Promise((resolve) =>
+            //             resolve(
+            //                 mystifly.oneWaySearchZipWithFilter(
+            //                     dto,
+            //                     user,
+            //                     mystiflyConfig,
+            //                     sessionToken,
+            //                     module,
+            //                     currencyDetails,
+            //                     refferalId
+            //                 )
+            //             )
+            //         );
+            //         resultIndex++;
+            //     } else {
+            //         nextCount++
+            //     }
+            //     previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+            // }
+
+            for (let index = 0; index < nextCount; index++) {
+                var nextdate = nextWeekDates.toISOString().split("T")[0];
+                nextdate = nextdate
+                    .replace(/T/, " ") // replace T with a space
+                    .replace(/\..+/, "");
+                console.log('nextdate', nextdate)
+                console.log("days", new Date(nextdate), moment().format('YYYY-MM-DD'), moment(nextdate).diff(moment().format('YYYY-MM-DD'), "days"))
+                if (
+                    moment(new Date(nextdate)).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
+                    2
+                ) {
+                    reqDates.push(nextdate);
+                    let dto = {
+                        source_location: source_location,
+                        destination_location: destination_location,
+                        departure_date: nextdate,
+                        flight_class: flight_class,
+                        adult_count: adult_count,
+                        child_count: child_count,
+                        infant_count: infant_count,
+                    };
+                    result[resultIndex] = new Promise((resolve) =>
+                        resolve(
+                            mystifly.oneWaySearchZipWithFilter(
+                                dto,
+                                user,
+                                mystiflyConfig,
+                                sessionToken,
+                                module,
+                                currencyDetails,
+                                refferalId
+                            )
+                        )
+                    );
+                    resultIndex++;
+                }
+                nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+            }
+
         }
 
-        for (let index = 0; index <= nextCount; index++) {
-            var nextdate = nextWeekDates.toISOString().split("T")[0];
-            nextdate = nextdate
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
-            if (
-                moment(new Date(nextdate)).diff(moment(new Date()), "days") >=
-                3
-            ) {
-                reqDates.push(nextdate);
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: nextdate,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.oneWaySearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
-                    )
-                );
-                resultIndex++;
-            }
-            nextWeekDates.setDate(nextWeekDates.getDate() + 1);
-        }
+
 
         const response = await Promise.all(result);
 
