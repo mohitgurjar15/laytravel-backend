@@ -757,7 +757,7 @@ export class FlightService {
 
             console.log('previousWeekDates'), previousWeekDates
 
-            
+
 
 
             // for (let index = 0; index < count; index++) {
