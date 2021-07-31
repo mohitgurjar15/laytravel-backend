@@ -742,7 +742,7 @@ export class FlightService {
                     )
                 );
                 resultIndex++;
-            }else{
+            } else {
                 nextCount++
             }
             previousWeekDates.setDate(previousWeekDates.getDate() + 1);
@@ -798,6 +798,7 @@ export class FlightService {
                 var startPrice = 0;
                 var secondaryStartPrice = 0;
                 var isPriceInInstallment = false
+                var selling_price = 0
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -808,6 +809,7 @@ export class FlightService {
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -824,7 +826,8 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                            selling_price = flightData.selling_price
                     }
                     key++;
                 }
@@ -837,7 +840,8 @@ export class FlightService {
                         unique_code: unique_code,
                         start_price: startPrice,
                         secondary_start_price: secondaryStartPrice,
-                        isPriceInInstallment: isPriceInInstallment
+                        isPriceInInstallment: isPriceInInstallment,
+                        selling_price
                     };
 
                     returnResponce.push(output);
@@ -880,7 +884,8 @@ export class FlightService {
                     unique_code: "",
                     start_price: 0,
                     secondary_start_price: 0,
-                    isPriceInInstallment : false
+                    isPriceInInstallment: false,
+                    selling_price: 0
                 };
 
                 returnResponce.push(output);
@@ -1040,6 +1045,7 @@ export class FlightService {
                 var startPrice;
                 var secondaryStartPrice = 0;
                 var isPriceInInstallment = false
+                var selling_price = 0
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -1049,7 +1055,8 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                            selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1067,6 +1074,7 @@ export class FlightService {
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        selling_price = flightData.selling_price
                     }
                     key++;
                 }
@@ -1078,7 +1086,8 @@ export class FlightService {
                     start_price: startPrice,
                     secondary_start_price:
                         secondaryStartPrice >= 5 ? secondaryStartPrice : 5,
-                    isPriceInInstallment: isPriceInInstallment
+                    isPriceInInstallment: isPriceInInstallment,
+                    selling_price
                 };
 
                 returnResponce.push(output);
@@ -1322,6 +1331,8 @@ export class FlightService {
                 var startPrice = 0;
                 var arrivalDate;
                 var secondaryStartPrice = 0;
+                var isPriceInInstallment = false
+                var selling_price = 0
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -1332,6 +1343,8 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                            selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1349,6 +1362,8 @@ export class FlightService {
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                            selling_price = flightData.selling_price
                     }
                     key++;
                 }
@@ -1363,6 +1378,8 @@ export class FlightService {
                         start_price: startPrice,
                         arrival_date: arrivalDate,
                         secondary_start_price: secondaryStartPrice,
+                        isPriceInInstallment,
+                        selling_price
                     };
 
 
@@ -1404,6 +1421,8 @@ export class FlightService {
                     start_price: 0,
                     secondary_start_price: 0,
                     arrival_date: date2,
+                    isPriceInInstallment: false,
+                    selling_price: 0
                 };
 
                 returnResponce.push(output);
