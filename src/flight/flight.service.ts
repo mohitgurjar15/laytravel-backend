@@ -677,8 +677,9 @@ export class FlightService {
 
         var resultIndex = 0;
 
-        //var count = dayDiffrence <= 7 ? dayDiffrence : 7;
-        var count = 7;
+        var count = dayDiffrence <= 3 ? dayDiffrence : 3;
+        var nextCount = dayDiffrence < 3 ? (3 - dayDiffrence) + 3 : 3
+        // var count = 4; 
         previousWeekDates.setDate(previousWeekDates.getDate() - count);
 
         const mystiflyConfig = await new Promise((resolve) =>
@@ -715,7 +716,7 @@ export class FlightService {
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
             if (
-                moment(new Date(predate)).diff(moment(new Date()), "days") >= 30
+                moment(new Date(predate)).diff(moment(new Date()), "days") >= 3
             ) {
                 reqDates.push(predate);
                 let dto = {
@@ -741,18 +742,20 @@ export class FlightService {
                     )
                 );
                 resultIndex++;
+            }else{
+                nextCount++
             }
             previousWeekDates.setDate(previousWeekDates.getDate() + 1);
         }
 
-        for (let index = 0; index <= 7; index++) {
+        for (let index = 0; index <= nextCount; index++) {
             var nextdate = nextWeekDates.toISOString().split("T")[0];
             nextdate = nextdate
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
             if (
                 moment(new Date(nextdate)).diff(moment(new Date()), "days") >=
-                30
+                3
             ) {
                 reqDates.push(nextdate);
                 let dto = {
@@ -794,6 +797,7 @@ export class FlightService {
                 var date;
                 var startPrice = 0;
                 var secondaryStartPrice = 0;
+                var isPriceInInstallment = false
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -803,9 +807,7 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        console.log(flightData)
-                        console.log('lowestprice', lowestprice)
-                        console.log('flightData.discounted_selling_price', flightData.discounted_selling_price)
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -815,8 +817,6 @@ export class FlightService {
                     // 	is_booking_avaible = true
                     // }
                     else if (lowestprice > flightData.discounted_selling_price) {
-                        console.log('lowestprice', lowestprice)
-                        console.log('flightData.discounted_selling_price', flightData.discounted_selling_price)
                         netRate = flightData.net_rate;
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
@@ -824,6 +824,7 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
                     }
                     key++;
                 }
@@ -836,6 +837,7 @@ export class FlightService {
                         unique_code: unique_code,
                         start_price: startPrice,
                         secondary_start_price: secondaryStartPrice,
+                        isPriceInInstallment: isPriceInInstallment
                     };
 
                     returnResponce.push(output);
@@ -878,6 +880,7 @@ export class FlightService {
                     unique_code: "",
                     start_price: 0,
                     secondary_start_price: 0,
+                    isPriceInInstallment : false
                 };
 
                 returnResponce.push(output);
@@ -992,7 +995,7 @@ export class FlightService {
             } else {
                 if (
                     moment(new Date(date)).diff(moment(new Date()), "days") >=
-                    30
+                    2
                 ) {
                     let dto = {
                         source_location: source_location,
@@ -1036,6 +1039,7 @@ export class FlightService {
                 var date = "";
                 var startPrice;
                 var secondaryStartPrice = 0;
+                var isPriceInInstallment = false
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -1045,6 +1049,7 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1061,6 +1066,7 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
                     }
                     key++;
                 }
@@ -1072,6 +1078,7 @@ export class FlightService {
                     start_price: startPrice,
                     secondary_start_price:
                         secondaryStartPrice >= 5 ? secondaryStartPrice : 5,
+                    isPriceInInstallment: isPriceInInstallment
                 };
 
                 returnResponce.push(output);
