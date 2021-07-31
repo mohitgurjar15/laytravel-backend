@@ -13,7 +13,7 @@ export function EnquiryNotificationHTML(
             <tr>
                 <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #000000; font-weight: 600;; text-align: left; font-weight: 600;">
-                  Hi,
+                  Hi There,
                 </td>
             </tr>
             <tr>
