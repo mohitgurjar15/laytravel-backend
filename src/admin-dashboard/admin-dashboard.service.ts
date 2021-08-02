@@ -654,6 +654,110 @@ export class AdminDashboardService {
         }
     }
 
+
+
+    async bookingDetailStatistics() {
+        try {
+            var tDate = new Date();
+            var todayDate = tDate.toISOString();
+            todayDate = todayDate
+                .replace(/T/, " ") // replace T with a space
+                .replace(/\..+/, "");
+            todayDate = todayDate.split(" ")[0];
+
+            var response = {};
+
+            const ToBePaidForHotel = await getConnection().query(
+                `SELECT sum("booking_instalments"."amount") as "total" 
+				FROM booking
+				INNER JOIN booking_instalments
+				ON booking.id = booking_instalments.booking_id WHERE 1=1 AND "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" = 3
+				`
+            );
+            response["to_be_paid_for_hotel"] =
+            ToBePaidForHotel[0].total || 0;
+
+            const ToBePaidForFlight = await getConnection().query(
+                `SELECT sum("booking_instalments"."amount") as "total" 
+				FROM booking
+				INNER JOIN booking_instalments
+				ON booking.id = booking_instalments.booking_id WHERE 1=1 AND "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" = 1
+				`
+            );
+            response["to_be_paid_for_flight"] =
+            ToBePaidForFlight[0].total || 0;
+
+            const ToBePaidForTotal = await getConnection().query(
+                `SELECT sum("booking_instalments"."amount") as "total" 
+				FROM booking
+				INNER JOIN booking_instalments
+				ON booking.id = booking_instalments.booking_id WHERE 1=1 AND "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" IN (1,3)
+				`
+            );
+            response["to_be_paid_for_total"] =
+            ToBePaidForTotal[0].total || 0;
+
+            var totalBookingForFlight = await getConnection().query(`
+                SELECT  count(id) as cnt from booking where 1=1 AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" = 1
+			`);
+            response["flight_booking_count"] = totalBookingForFlight[0].cnt;
+
+            var totalBookingForHotel = await getConnection().query(`
+                SELECT  count(id) as cnt from booking  where 1=1 AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" = 3
+			`);
+            response["hotel_booking_count"] = totalBookingForHotel[0].cnt;
+
+            var totalBooking = await getConnection().query(`
+                SELECT  count(id) as cnt from booking  where 1=1 AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" IN (3,1)
+			`);
+            response["total_booking_count"] = totalBooking[0].cnt;
+
+            var AvgSalePriceForHotel = parseFloat(ToBePaidForHotel[0].total)/parseFloat(totalBookingForHotel[0].cnt)
+            response["avg_sale_price_for_hotel"] = AvgSalePriceForHotel;
+                
+            var AvgSalePriceForFlight = (parseFloat(ToBePaidForFlight[0].total)/parseFloat(totalBookingForFlight[0].cnt))
+            response["avg_sale_price_for_flight"] = AvgSalePriceForFlight;
+        
+            var AvgSalePriceForFlight = (parseFloat(ToBePaidForTotal[0].total)/parseFloat(totalBooking[0].cnt))
+            response["avg_sale_price_for_total"] = AvgSalePriceForFlight;
+
+            return response;
+        } catch (error) {
+            if (typeof error.response !== "undefined") {
+                switch (error.response.statusCode) {
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 409:
+                        throw new ConflictException(error.response.message);
+                    case 422:
+                        throw new BadRequestException(error.response.message);
+
+                    case 403:
+                        throw new ForbiddenException(error.response.message);
+                    case 500:
+                        throw new InternalServerErrorException(
+                            error.response.message
+                        );
+                    case 406:
+                        throw new NotAcceptableException(
+                            error.response.message
+                        );
+                    case 404:
+                        throw new NotFoundException(error.response.message);
+                    case 401:
+                        throw new UnauthorizedException(error.response.message);
+                    default:
+                        throw new InternalServerErrorException(
+                            `${error.message}&&&id&&&${error.Message}`
+                        );
+                }
+            }
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
+            );
+        }
+    }
+
     async customerStatistics(filterOption: DashboardFilterDto) {
         var response = {};
         const userConditon = `role_id In (${Role.FREE_USER},${Role.PAID_USER}) AND is_deleted = false `;

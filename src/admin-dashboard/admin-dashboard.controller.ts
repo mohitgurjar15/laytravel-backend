@@ -145,6 +145,22 @@ export class AdminDashboardController {
 		return await this.adminDashboardService.customerStatistics(filterOption);
 	}
 
+	@Get("booking-statistics-detail")
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({
+		summary: "get booking detail statistics",
+	})
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async bookingDetailStatistics() {
+		return await this.adminDashboardService.bookingDetailStatistics();
+	}
 
 
 	@Get("booking-statistics-graph")
