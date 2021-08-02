@@ -8,6 +8,7 @@ import { InstalmentType } from 'src/enum/instalment-type.enum';
 import { PaymentType } from 'src/enum/payment-type.enum';
 import { getConnection } from 'typeorm';
 import { GetPaymentConfigurationDto } from './dto/get-payment-config.dto';
+import { UpdateInstallmentAvailblityDto } from './dto/update-installment-avaliblity.dto';
 import { UpdatePaymentConfigurationDto } from './dto/update-payment-config.dto';
 
 @Injectable()
@@ -94,6 +95,40 @@ export class PaymentConfigurationService {
 		config.isBiWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.BIWEEKLY) ? true : false
 		config.isMonthlyInstallmentAvailable = payment_frequency.includes(InstalmentType.MONTHLY) ? true : false
 
+		const newConfig = await config.save()
+
+		return {
+			message : `Payment configuration updated successfully.`,
+			data: newConfig
+		}
+
+
+	}
+
+
+	async updateInstallmentAvailability(updateInstallmentAvailblityDto: UpdateInstallmentAvailblityDto,user:User) {
+		const { module_id, category_name, allow_installment } = updateInstallmentAvailblityDto
+
+		let where = `config.module_id = ${module_id}`
+		
+		if (category_name) {
+			where += `AND category.name = '${category_name}'`
+		}
+
+		let config = await getConnection()
+			.createQueryBuilder(PaymentConfiguration, "config")
+			.leftJoinAndSelect("config.category", "category")
+			.where(where)
+			.getOne();
+
+		if (!config) {
+			throw new NotFoundException(`Please enter valid inputs`)
+		}
+
+		//config.paymentFrequency = payment_frequency
+		config.isInstallmentAvailable = allow_installment
+		config.updatedDate = new Date()
+		config.updateBy = user.userId
 		const newConfig = await config.save()
 
 		return {
