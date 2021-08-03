@@ -1271,7 +1271,7 @@ export class FlightService {
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
         console.log("dayDiff", dayDiff);
-        if (dayDiff == 2) {
+        if (dayDiff <= 2) {
             afterDateDiffrence = 6;
         }
         if (dayDiff == 3) {
@@ -1345,7 +1345,7 @@ export class FlightService {
 
         for (let index = 0; index <= count; index++) {
             if (
-                moment(new Date(depature)).diff(moment(new Date()), "days") >=
+                moment(depature).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
                 2
             ) {
                 var beforeDateString = depature.toISOString().split("T")[0];
