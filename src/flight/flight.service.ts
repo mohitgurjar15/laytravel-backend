@@ -1058,7 +1058,7 @@ export class FlightService {
                 );
             } else {
                 if (
-                    moment(new Date(date)).diff(moment(new Date()), "days") >=
+                    moment(date).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
                     2
                 ) {
                     let dto = {
