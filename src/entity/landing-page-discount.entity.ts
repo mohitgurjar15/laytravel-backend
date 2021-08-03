@@ -13,7 +13,7 @@ import { LandingPages } from "./landing-page.entity";
 import { LaytripCategory } from "./laytrip-category.entity";
 import { Module } from "./module.entity";
 
-@Entity("landing_page_down_payment_config")
+@Entity("landing_page_discount_config")
 export class LandingPageDiscountConfig extends BaseEntity {
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
