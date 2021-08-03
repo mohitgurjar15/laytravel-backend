@@ -743,7 +743,7 @@ export class FlightService {
                 if (dayDiffrence == 3) {
                     count = 1
                 } else if (dayDiffrence == 4) {
-                    count = 1
+                    count = 2
                 }
                 else if (dayDiffrence >= 5) {
                     count = 3
@@ -1242,8 +1242,22 @@ export class FlightService {
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
         // dayDiffrence = 3
+
+        if (dayDiff <= 2) {
+            count = 0
+        }
+        else
+            if (dayDiff == 3) {
+                count = 1
+            } else if (dayDiff == 4) {
+                count = 2
+            }
+            else if (dayDiff >= 5) {
+                count = 3
+            }
+
         var startDate = new Date(departure_date);
-        startDate.setDate(startDate.getDate() - dayDiffrence);
+        startDate.setDate(startDate.getDate() - count);
 
         console.log(startDate);
 
@@ -1257,21 +1271,23 @@ export class FlightService {
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
         console.log("dayDiff", dayDiff);
-        if (dayDiff == 33) {
-            afterDateDiffrence = 4;
+        if (dayDiff == 2) {
+            afterDateDiffrence = 6;
         }
-        if (dayDiff == 32) {
+        if (dayDiff == 3) {
             afterDateDiffrence = 5;
         }
 
-        if (dayDiff == 31) {
-            afterDateDiffrence = 6;
+        if (dayDiff == 4) {
+            afterDateDiffrence = 4;
         }
 
-        if (dayDiff == 30) {
-            afterDateDiffrence = 7;
+        if (dayDiff >= 5) {
+            afterDateDiffrence = 3;
         }
 
+
+        
         console.log(afterDateDiffrence);
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
@@ -1330,7 +1346,7 @@ export class FlightService {
         for (let index = 0; index <= count; index++) {
             if (
                 moment(new Date(depature)).diff(moment(new Date()), "days") >=
-                30
+                2
             ) {
                 var beforeDateString = depature.toISOString().split("T")[0];
                 beforeDateString = beforeDateString
