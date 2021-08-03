@@ -33,7 +33,7 @@ export class LandingPageDiscountConfig extends BaseEntity {
     offerCriteria: string
 
     @Column("character varying", {
-        name: "offer_criteria",
+        name: "offer_variable",
     })
     offerVariable: string
 
