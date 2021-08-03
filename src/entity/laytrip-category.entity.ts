@@ -9,6 +9,8 @@ import {
     PrimaryGeneratedColumn
 } from "typeorm";
 import { FlightRoute } from "./flight-route.entity";
+import { LandingPageDiscountConfig } from "./landing-page-discount.entity";
+import { LandingPageDownPaymentConfig } from "./landing-page-downPayment.entity";
 import { PaymentConfiguration } from "./payment-configuration.entity";
 import { User } from "./user.entity";
 
@@ -68,4 +70,16 @@ export class LaytripCategory extends BaseEntity {
         flightRoute => flightRoute.category
     )
     paymentConfiguration: PaymentConfiguration[];
+
+    @OneToMany(
+        () => LandingPageDownPaymentConfig,
+        config => config.category
+    )
+    landingPageDownPaymentConfig: LandingPageDownPaymentConfig[];
+
+    @OneToMany(
+        () => LandingPageDiscountConfig,
+        config => config.category
+    )
+    landingPageDiscountConfig: LandingPageDiscountConfig[];
 }

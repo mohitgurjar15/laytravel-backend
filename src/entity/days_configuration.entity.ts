@@ -6,6 +6,8 @@ import {
     OneToMany,
     PrimaryGeneratedColumn
 } from "typeorm";
+import { LandingPageDiscountConfig } from "./landing-page-discount.entity";
+import { LandingPageDownPaymentConfig } from "./landing-page-downPayment.entity";
 import { PaymentConfiguration } from "./payment-configuration.entity";
 
 @Entity("days_configuration")
@@ -27,4 +29,16 @@ export class daysConfiguration extends BaseEntity {
         config => config.daysConfiguration
     )
     paymentConfiguration: PaymentConfiguration[];
+
+    @OneToMany(
+        () => LandingPageDownPaymentConfig,
+        config => config.daysConfiguration
+    )
+    landingPageDownPaymentConfig: LandingPageDownPaymentConfig[];
+
+    @OneToMany(
+        () => LandingPageDiscountConfig,
+        config => config.daysConfiguration
+    )
+    landingPageDiscountConfig: LandingPageDiscountConfig[];
 }
