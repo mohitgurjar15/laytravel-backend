@@ -48,7 +48,7 @@ export class NewLandingPageDownPaymentConfigDto {
     })
     @ApiProperty({
         description: `Enter offer criteria type`,
-        example: 1,
+        example: "arrival",
     })
     offer_criteria_type: DownPaymentType;
 
@@ -64,11 +64,19 @@ export class NewLandingPageDownPaymentConfigDto {
     })
     @ApiProperty({
         description: `Enter offer criteria variable`,
-        example: 1,
+        example: "airport_code",
     })
     offer_criteria_variable: OfferCriteriaVariables;
 
-
+    @IsArray()
+    @IsNotEmpty({
+        message: `Please enter offer criteria value.`,
+    })
+    @ApiProperty({
+        description: `Enter offer criteria value.`,
+        example: [{from:"ABQ",To:"LAS"}],
+    })
+    offer_criteria_value: number[];
     
     @IsArray()
     @ValidateNested({ each: true })

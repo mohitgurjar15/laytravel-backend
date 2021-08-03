@@ -2,6 +2,7 @@ import {
     Injectable,
     NotFoundException,
     ConflictException,
+    BadRequestException,
 } from "@nestjs/common";
 import { User } from "src/entity/user.entity";
 import { CreateLandingPageDto } from "./dto/new-landing-page.dto";
@@ -17,6 +18,10 @@ import { Role } from "src/enum/role.enum";
 import * as uuidValidator from "uuid-validate";
 import { ExportReferralDto } from "./dto/export-referrals.dto";
 import { LANDING_PAGE } from "src/config/landing-page.config";
+import { NewLandingPageDownPaymentConfigDto } from "./dto/down-payment-config.dto";
+import { InstalmentType } from "src/enum/instalment-type.enum";
+import { DownPaymentType } from "src/enum/down-payment-type.enum";
+import { LandingPageDownPaymentConfig } from "src/entity/landing-page-downPayment.entity";
 
 @Injectable()
 export class LandingPageService {
@@ -216,6 +221,54 @@ export class LandingPageService {
             throw new NotFoundException(`No data found.`);
         }
         return { data: users, count };
+    }
+
+    async addLandingPageDownPayment(newLandingPageDownPaymentConfigDto:NewLandingPageDownPaymentConfigDto,user: User){
+        const {landing_page_id, module_id, days_config_id, down_payment_option, down_payment_type,offer_criteria_variable,offer_criteria_type,offer_criteria_value, payment_frequency } = newLandingPageDownPaymentConfigDto
+
+		let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id${landing_page_id}`
+		if (down_payment_option.length){
+			for await (const iterator of down_payment_option) {
+				if (typeof iterator != 'number') {
+					throw new BadRequestException(`${iterator} not valid in down payment option`)
+				}
+			}
+		}
+
+		if (payment_frequency.length){
+			for await (const iterator of payment_frequency) {
+				if (!Object.values(InstalmentType).includes(iterator)) {
+					throw new BadRequestException(`${iterator} not valid payment type`)
+				}
+			}
+		}
+		
+		let config = await getConnection()
+			.createQueryBuilder(LandingPageDownPaymentConfig, "config")
+			.where(where)
+			.getOne();
+
+		if (!config) {
+			throw new NotFoundException(`Please enter valid inputs`)
+		}
+
+		config.downPaymentOption = down_payment_option
+		config.isDownPaymentInPercentage =  down_payment_type == DownPaymentType.PERCENTAGE ? true : false
+		config.updatedDate = new Date()
+		config.updateBy = user.userId
+		config.isWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.WEEKLY) ? true : false
+		config.isBiWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.BIWEEKLY) ? true : false
+		config.isMonthlyInstallmentAvailable = payment_frequency.includes(InstalmentType.MONTHLY) ? true : false
+        config.offerCriteria = offer_criteria_type
+        config.offerVariable = offer_criteria_variable
+        config.offerCriteriaValues = offer_criteria_value
+
+		const newConfig = await config.save()
+
+		return {
+			message : `Payment configuration updated successfully.`,
+			data: newConfig
+		}
     }
 
     async getLandingPageName(name: string) {
