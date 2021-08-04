@@ -74,7 +74,7 @@ export class NewLandingPageDownPaymentConfigDto {
     })
     @ApiProperty({
         description: `Enter offer criteria value.`,
-        example: [{from:"ABQ",To:"LAS"}],
+        example: [{from:"ABQ",to:"LAS"}],
     })
     offer_criteria_value: any;
     

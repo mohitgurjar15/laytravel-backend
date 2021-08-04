@@ -74,7 +74,7 @@ export class NewLandingPageDiscountConfigDto {
     })
     @ApiProperty({
         description: `Enter offer criteria value.`,
-        example: [{"from":"LAS"}],
+        example: ["LAS"],
     })
     offer_criteria_value: any;
     
@@ -85,17 +85,26 @@ export class NewLandingPageDiscountConfigDto {
         description: `Enter days down payment option`,
         example: 5,
     })
-    discount: number[];
+    discount: number;
 
-    @IsArray()
     @IsNotEmpty({
-        message: `Please enter payment frequency.`,
+        message: `Please enter minimum amount.`,
     })
     @ApiProperty({
-        description: `Enter  payment frequency`,
-        example: [InstalmentType.MONTHLY, InstalmentType.WEEKLY, InstalmentType.BIWEEKLY],
+        description: `Enter minimum amount`,
+        example: 40,
     })
-    payment_frequency: InstalmentType[];
+    minimum_amount: number;
+
+    // @IsArray()
+    // @IsNotEmpty({
+    //     message: `Please enter payment frequency.`,
+    // })
+    // @ApiProperty({
+    //     description: `Enter  payment frequency`,
+    //     example: [InstalmentType.MONTHLY, InstalmentType.WEEKLY, InstalmentType.BIWEEKLY],
+    // })
+    // payment_frequency: InstalmentType[];
 
     @IsEnum([DownPaymentType.PERCENTAGE, DownPaymentType.FLAT], {
         message: (args: ValidationArguments) => {
@@ -108,7 +117,7 @@ export class NewLandingPageDiscountConfigDto {
     })
     @ApiProperty({
         description: `Enter down payment type`,
-        example: 1,
+        example: "percentage",
     })
     down_payment_type: DownPaymentType;
 
