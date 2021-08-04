@@ -50,7 +50,7 @@ export class NewLandingPageDiscountConfigDto {
         description: `Enter offer criteria type`,
         example: "arrival",
     })
-    offer_criteria_type: DownPaymentType;
+    offer_criteria_type: OfferCriterias;
 
     @ValidateIf((o) => typeof o.offer_criteria_variable != "undefined")
     @IsEnum([OfferCriteriaVariables.AIRPORT_CODE, OfferCriteriaVariables.CITY, OfferCriteriaVariables.COUNTRY,OfferCriteriaVariables.ROUTE], {
@@ -76,7 +76,7 @@ export class NewLandingPageDiscountConfigDto {
         description: `Enter offer criteria value.`,
         example: [{"from":"LAS"}],
     })
-    offer_criteria_value: number[];
+    offer_criteria_value: any;
     
     @IsNotEmpty({
         message: `Please enter days down payment option.`,
@@ -85,7 +85,7 @@ export class NewLandingPageDiscountConfigDto {
         description: `Enter days down payment option`,
         example: 5,
     })
-    down_payment_option: number[];
+    discount: number[];
 
     @IsArray()
     @IsNotEmpty({
@@ -112,12 +112,28 @@ export class NewLandingPageDiscountConfigDto {
     })
     down_payment_type: DownPaymentType;
 
-    // @IsNotEmpty({
-    //     message: `Please enter value of allow installment.`,
-    // })
-    // @ApiProperty({
-    //     description: `Enter days allow installment`,
-    //     example: true,
-    // })
-    // allow_installment: boolean;
+    @ApiPropertyOptional({
+        description: 'Enter checkin date',
+        example: ""
+    })
+    start_date: Date;
+
+    @ApiPropertyOptional({
+        description: 'Enter checkout date',
+        example: ""
+    })
+    end_date: Date;
+
+    @ApiPropertyOptional({
+        description: 'Enter from booking date',
+        example: ""
+    })
+    from_booking_date: Date;
+
+    @ApiPropertyOptional({
+        description: 'Enter to booking date',
+        example: ""
+    })
+    to_booking_date: Date;
+
 }
