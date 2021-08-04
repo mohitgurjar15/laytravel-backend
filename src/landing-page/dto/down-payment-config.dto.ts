@@ -50,15 +50,15 @@ export class NewLandingPageDownPaymentConfigDto {
         description: `Enter offer criteria type`,
         example: "arrival",
     })
-    offer_criteria_type: DownPaymentType;
+    offer_criteria_type: OfferCriterias;
 
     @ValidateIf((o) => typeof o.offer_criteria_variable != "undefined")
-    @IsEnum([OfferCriteriaVariables.AIRPORT_CODE, OfferCriteriaVariables.CITY, OfferCriteriaVariables.COUNTRY], {
+    @IsEnum([OfferCriteriaVariables.AIRPORT_CODE, OfferCriteriaVariables.CITY, OfferCriteriaVariables.COUNTRY,OfferCriteriaVariables.ROUTE], {
         message: (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "") {
                 return `Please select offer criteria type`;
             } else {
-                return `Please select valid offer criteria type('${OfferCriteriaVariables.AIRPORT_CODE}','${OfferCriteriaVariables.CITY}','${OfferCriteriaVariables.COUNTRY}')`;
+                return `Please select valid offer criteria type('${OfferCriteriaVariables.AIRPORT_CODE}','${OfferCriteriaVariables.CITY}','${OfferCriteriaVariables.ROUTE}','${OfferCriteriaVariables.COUNTRY}')`;
             }
         },
     })
@@ -76,10 +76,9 @@ export class NewLandingPageDownPaymentConfigDto {
         description: `Enter offer criteria value.`,
         example: [{from:"ABQ",To:"LAS"}],
     })
-    offer_criteria_value: number[];
+    offer_criteria_value: any;
     
     @IsArray()
-    @ValidateNested({ each: true })
     @IsNotEmpty({
         message: `Please enter days down payment option.`,
     })
@@ -90,7 +89,6 @@ export class NewLandingPageDownPaymentConfigDto {
     down_payment_option: number[];
 
     @IsArray()
-    @ValidateNested({ each: true })
     @IsNotEmpty({
         message: `Please enter payment frequency.`,
     })
@@ -111,7 +109,7 @@ export class NewLandingPageDownPaymentConfigDto {
     })
     @ApiProperty({
         description: `Enter down payment type`,
-        example: 1,
+        example: "percentage",
     })
     down_payment_type: DownPaymentType;
 

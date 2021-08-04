@@ -1,5 +1,6 @@
 export enum OfferCriteriaVariables {
     CITY = 'city',
     COUNTRY = 'country',
-    AIRPORT_CODE = 'airport_code'
+    AIRPORT_CODE = 'airport_code',
+    ROUTE = 'route'
 }

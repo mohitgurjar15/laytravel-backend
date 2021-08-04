@@ -4,6 +4,7 @@ import {
     Get,
     HttpCode,
     Param,
+    Patch,
     Post,
     Query,
     UseGuards,
@@ -22,6 +23,7 @@ import { Roles } from "src/guards/role.decorator";
 import { RolesGuard } from "src/guards/role.guard";
 import { NewLandingPageDownPaymentConfigDto } from "./dto/down-payment-config.dto";
 import { ExportReferralDto } from "./dto/export-referrals.dto";
+import { ListDownPaymentDto } from "./dto/list-down-payment.dto";
 import { ListLandingPageDto } from "./dto/list-landing-pages.dto";
 import { ListReferralDto } from "./dto/list-refferals.dto";
 import { CreateLandingPageDto } from "./dto/new-landing-page.dto";
@@ -246,5 +248,54 @@ export class LandingPageController {
             newLandingPageDownPaymentConfigDto,
             user
         );
+    }
+
+    @Patch('update-down-payment')
+    @Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "Update down payment in landing page from admin panel" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Admin not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async updateLandingPageDownPayment(
+        @Body() newLandingPageDownPaymentConfigDto: NewLandingPageDownPaymentConfigDto,
+        @GetUser() user: User
+    ) {
+        return await this.landingPageService.updateLandingPageDownPayment(
+            newLandingPageDownPaymentConfigDto,
+            user
+        );
+    }
+
+    @Get(`landing-page/down-payent`)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
+    @ApiOperation({ summary: "Get detail of landing page down payment" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @ApiResponse({ status: 404, description: "Admin not found!" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async getLandingPageDownPayment(@Query() listDownPaymentDto:ListDownPaymentDto) {
+        console.log('DTO-------------',listDownPaymentDto)
+        return await this.landingPageService.getLandingPageDownPayment(listDownPaymentDto);
     }
 }
