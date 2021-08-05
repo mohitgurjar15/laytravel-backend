@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser, LogInUser } from 'src/auth/get-user.dacorator';
@@ -7,6 +7,7 @@ import { User } from 'src/entity/user.entity';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
+import { SentryInterceptor } from 'src/sentry/sentry';
 import { CartService } from './cart.service';
 import { AddInCartDto } from './dto/add-in-cart.dto';
 import { CartBookDto } from './dto/book-cart.dto';
@@ -21,6 +22,7 @@ import { UpdateCartDto } from './dto/update-cart.dto';
     description: "landing page id",
     example: "",
 })
+@UseInterceptors(SentryInterceptor)
 @Controller("cart")
 export class CartController {
     constructor(private cartService: CartService) { }

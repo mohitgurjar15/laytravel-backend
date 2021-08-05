@@ -100,8 +100,8 @@ async function bootstrap() {
 	let aa:any = await app.init();
 	//const router = express.Router();
 	Sentry.init({
-		dsn: "https://47ecfff0023b486a8d48526ba6dd7b31@o571486.ingest.sentry.io/5872477", //Add your DSN
-		environment: "Dev",
+		dsn: process.env.DSN || sentryConfig.DSN, //Add your DSN
+		environment: sentryConfig.envirement || "PROD",
 		integrations: [
 			// enable HTTP calls tracing
 			new Sentry.Integrations.Http({ tracing: true }),
@@ -116,6 +116,7 @@ async function bootstrap() {
 		],
 		tracesSampleRate: 1.0,
 	});
+	
 	// Sentry.init({
 	//     dsn: process.env.DSN || sentryConfig.DSN,
 	//     integrations: [

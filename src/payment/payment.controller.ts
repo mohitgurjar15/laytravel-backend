@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query, Req } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Put, HttpCode, Delete, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { SaveCardDto } from './dto/save-card.dto';
@@ -14,6 +14,7 @@ import { ManullyTakePaymentDto } from './dto/manully-take-payment.dto';
 import { AuthoriseCartDto } from './dto/authorise-card-for-booking.dto';
 import { ListPaymentUserDto } from './dto/list-payment-user.dto';
 import { GetReferralId } from 'src/decorator/referral.decorator';
+import { SentryInterceptor } from 'src/sentry/sentry';
 
 
 @ApiTags("Payment")
@@ -23,6 +24,7 @@ import { GetReferralId } from 'src/decorator/referral.decorator';
     description: "landing page id",
     example: "",
 })
+@UseInterceptors(SentryInterceptor)
 export class PaymentController {
     constructor(private paymentService: PaymentService) {}
 

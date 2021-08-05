@@ -40,6 +40,8 @@ import { query } from "express";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
 import { UserIpAddress } from "src/decorator/ip-address.decorator";
 import { GetReferralId } from "src/decorator/referral.decorator";
+import { UseInterceptors } from "@nestjs/common/decorators/core/use-interceptors.decorator";
+import { SentryInterceptor } from "src/sentry/sentry";
 
 @ApiTags("Flight")
 @Controller("flight")
@@ -50,6 +52,7 @@ import { GetReferralId } from "src/decorator/referral.decorator";
       
   })
 @ApiBearerAuth()
+@UseInterceptors(SentryInterceptor)
 export class FlightController {
   constructor(private flightService: FlightService) {}
 

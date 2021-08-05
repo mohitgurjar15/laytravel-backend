@@ -15,6 +15,7 @@ import { LogInUser } from 'src/auth/get-user.dacorator';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { BookDto } from './dto/book-req.dto';
 import { GetReferralId } from 'src/decorator/referral.decorator';
+import { SentryInterceptor } from 'src/sentry/sentry';
 
 
 @ApiTags("Hotel")
@@ -30,6 +31,7 @@ import { GetReferralId } from 'src/decorator/referral.decorator';
     example: ""
 
 })
+@UseInterceptors(SentryInterceptor)
 export class HotelController {
     constructor(private readonly hotelService: HotelService) { }
 
