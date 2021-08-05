@@ -372,6 +372,16 @@ export class LandingPageService {
                     offerCriteriaValues.push(obj)
                 }
                 iterator.offerCriteriaValues = offerCriteriaValues
+            }else if(iterator.offerVariable == OfferCriteriaVariables.AIRPORT_CODE){
+                let offerCriteriaValues = [] 
+                const values:any = iterator.offerCriteriaValues
+                for await (const val of values) {                    
+                    let obj = {
+                        airport_code : airports[val],
+                    }
+                    offerCriteriaValues.push(obj)
+                }
+                iterator.offerCriteriaValues = offerCriteriaValues
             }
 
         }
@@ -516,6 +526,16 @@ export class LandingPageService {
                     let obj = {
                         from : airports[spl[0]],
                         to : airports[spl[1]]
+                    }
+                    offerCriteriaValues.push(obj)
+                }
+                iterator.offerCriteriaValues = offerCriteriaValues
+            }else if(iterator.offerVariable == OfferCriteriaVariables.AIRPORT_CODE){
+                let offerCriteriaValues = [] 
+                const values:any = iterator.offerCriteriaValues
+                for await (const val of values) {                    
+                    let obj = {
+                        airport_code : airports[val],
                     }
                     offerCriteriaValues.push(obj)
                 }
