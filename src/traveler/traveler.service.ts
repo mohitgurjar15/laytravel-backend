@@ -34,7 +34,7 @@ export class TravelerService {
         private jwtService: JwtService
     ) { }
 
-    async multipleTravelerAdd(
+    /* async multipleTravelerAdd(
         TravelerDto: MultipleTravelersDto,
         parent_user_id: string,
         guest_id: string
@@ -158,7 +158,7 @@ export class TravelerService {
                 `${error.message}&&&id&&&${errorMessage}`
             );
         }
-    }
+    } */
     async createNewtraveller(
         saveTravelerDto: SaveTravelerDto,
         parent_user_id: string,
