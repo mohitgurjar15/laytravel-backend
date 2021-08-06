@@ -713,13 +713,13 @@ export class AdminDashboardService {
             response["total_booking_count"] = totalBooking[0].cnt;
 
             var AvgSalePriceForHotel = parseFloat(ToBePaidForHotel[0].total)/parseFloat(totalBookingForHotel[0].cnt)
-            response["avg_sale_price_for_hotel"] = AvgSalePriceForHotel;
+            response["avg_sale_price_for_hotel"] = AvgSalePriceForHotel || 0;
                 
             var AvgSalePriceForFlight = (parseFloat(ToBePaidForFlight[0].total)/parseFloat(totalBookingForFlight[0].cnt))
-            response["avg_sale_price_for_flight"] = AvgSalePriceForFlight;
+            response["avg_sale_price_for_flight"] = AvgSalePriceForFlight || 0;
         
             var AvgSalePriceForFlight = (parseFloat(ToBePaidForTotal[0].total)/parseFloat(totalBooking[0].cnt))
-            response["avg_sale_price_for_total"] = AvgSalePriceForFlight;
+            response["avg_sale_price_for_total"] = AvgSalePriceForFlight || 0;
 
             return response;
         } catch (error) {
