@@ -119,21 +119,37 @@ export class PaymentConfigurationService {
 			.createQueryBuilder(PaymentConfiguration, "config")
 			.leftJoinAndSelect("config.category", "category")
 			.where(where)
-			.getOne();
+			.getMany();
 
 		if (!config) {
 			throw new NotFoundException(`Please enter valid inputs`)
 		}
+		console.log(config)
+		let Data = [];
+		if(module_id == 1){
+			for await (const iterator of config) {
+				iterator.isInstallmentAvailable = allow_installment
+				iterator.category.isInstallmentAvailable = allow_installment
+				iterator.updatedDate = new Date()
+				iterator.updateBy = user.userId
+				Data.push(iterator)
+				const newConfig = await iterator.save();
+			}
+		}if(module_id == 3){
+			for await (const iterator of config) {
+				iterator.isInstallmentAvailable = allow_installment
+				iterator.updatedDate = new Date()
+				iterator.updateBy = user.userId
+				Data.push(iterator)
+				const newConfig = await iterator.save();
+			}
 
-		//config.paymentFrequency = payment_frequency
-		config.isInstallmentAvailable = allow_installment
-		config.updatedDate = new Date()
-		config.updateBy = user.userId
-		const newConfig = await config.save()
+		}
+		
 
 		return {
 			message : `Payment configuration updated successfully.`,
-			data: newConfig
+			data: Data
 		}
 
 
