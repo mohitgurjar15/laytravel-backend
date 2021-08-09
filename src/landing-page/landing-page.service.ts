@@ -88,7 +88,6 @@ export class LandingPageService {
             .where(where)
             .take(take)
             .skip(skip);
-        console.log(query);
 
         const [result, total] = await query.getManyAndCount();
         if (!result.length) {
@@ -188,7 +187,6 @@ export class LandingPageService {
 
     async listReferralUser(paginationOption: ListReferralDto) {
         const { limit, page_no, referral_id, search } = paginationOption;
-        console.log(paginationOption);
 
         if (!uuidValidator(referral_id)) {
             throw new NotFoundException("Given id not avilable");
@@ -322,7 +320,6 @@ export class LandingPageService {
         config.offerVariable = offer_criteria_variable
 
 
-        console.log("conditon",offer_criteria_type,offer_criteria_type == OfferCriterias.ROUTE,offer_criteria_variable,offer_criteria_variable == OfferCriteriaVariables.ROUTE)
         if(offer_criteria_type == OfferCriterias.ROUTE &&  offer_criteria_variable == OfferCriteriaVariables.ROUTE ){
             let value = []
             for await (const iterator of offer_criteria_value) {
@@ -344,7 +341,6 @@ export class LandingPageService {
 
     async getLandingPageDownPayment(listDownPaymentDto: ListDownPaymentDto) {
         const { module_id, landing_page_id } = listDownPaymentDto
-        console.log('===================',module_id)
         let where = `config.module_id = ${module_id}`
 
         let landingPageId
@@ -378,6 +374,16 @@ export class LandingPageService {
                 for await (const val of values) {                    
                     let obj = {
                         airport_code : airports[val],
+                    }
+                    offerCriteriaValues.push(obj)
+                }
+                iterator.offerCriteriaValues = offerCriteriaValues
+            }else if(iterator.offerVariable == OfferCriteriaVariables.COUNTRY){
+                let offerCriteriaValues = []
+                const values:any = iterator.offerCriteriaValues
+                for await (const val of values) {                    
+                    let obj = {
+                        country : val,
                     }
                     offerCriteriaValues.push(obj)
                 }
@@ -423,19 +429,19 @@ export class LandingPageService {
         config.offerVariable = offer_criteria_variable
         config.minimumAmount = minimum_amount
         config.discount = discount
-        config.checkInDate = start_date
-        config.checkoutDate = end_date
-        config.startDate = from_booking_date
-        config.endDate = to_booking_date
+        config.checkInDate = start_date || null
+        config.checkoutDate = end_date || null
+        config.startDate = from_booking_date || null
+        config.endDate = to_booking_date || null
         config.createBy = user.userId
         if(offer_criteria_type == OfferCriterias.ROUTE &&  offer_criteria_variable == OfferCriteriaVariables.ROUTE ){
             let value = []
             for await (const iterator of offer_criteria_value) {
                 value.push(`${iterator.from}-${iterator.to}`)
             }
-            config.offerCriteriaValues = value
+            config.offerCriteriaValues = value || null
         }else{
-            config.offerCriteriaValues = offer_criteria_value
+            config.offerCriteriaValues = offer_criteria_value || null
         }
         const newConfig = await config.save()
 
@@ -485,7 +491,6 @@ export class LandingPageService {
         config.minimumAmount = minimum_amount
 
 
-        console.log("conditon",offer_criteria_type,offer_criteria_type == OfferCriterias.ROUTE,offer_criteria_variable,offer_criteria_variable == OfferCriteriaVariables.ROUTE)
         if(offer_criteria_type == OfferCriterias.ROUTE &&  offer_criteria_variable == OfferCriteriaVariables.ROUTE ){
             let value = []
             for await (const iterator of offer_criteria_value) {
@@ -507,7 +512,6 @@ export class LandingPageService {
 
     async getLandingPageDiscount(listDiscountDto: ListDiscountDto) {
         const { module_id, landing_page_id } = listDiscountDto
-        console.log('===================',module_id)
         let where = `config.module_id = ${module_id}`
 
         let landingPageId
@@ -623,7 +627,6 @@ export class LandingPageService {
 
     async exportReferralUser(paginationOption: ExportReferralDto) {
         const { referral_id, search } = paginationOption;
-        console.log(paginationOption);
 
         if (!uuidValidator(referral_id)) {
             throw new NotFoundException("Given id not avilable");
