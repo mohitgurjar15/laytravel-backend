@@ -28,7 +28,7 @@ export class LandingPageDownPaymentConfig extends BaseEntity {
     landingPageId: string | null;
 
     @Column("character varying", {
-        name: "offer_criteria",
+        name: "offer_criteria",nullable:true
     })
     offerCriteria : string
 

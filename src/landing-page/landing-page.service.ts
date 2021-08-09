@@ -274,7 +274,7 @@ export class LandingPageService {
         const newConfig = await config.save()
 
         return {
-            message: `Payment configuration updated successfully.`,
+            message: `Payment configuration added successfully.`,
             data: newConfig
         }
     }
@@ -334,11 +334,11 @@ export class LandingPageService {
         }
         
 
-        const newConfig = await config.save()
+        await config.save()
 
         return {
             message: `Payment configuration updated successfully.`,
-            data: newConfig
+            data: config
         }
     }
 
@@ -394,7 +394,7 @@ export class LandingPageService {
     }
 
     async addLandingPageDiscount(newLandingPageDiscountConfigDto: NewLandingPageDiscountConfigDto, user: User) {
-        const { landing_page_id, module_id, days_config_id, down_payment_type, offer_criteria_variable, offer_criteria_type, offer_criteria_value,minimum_amount } = newLandingPageDiscountConfigDto
+        const { landing_page_id, module_id, days_config_id, down_payment_type, offer_criteria_variable, offer_criteria_type, offer_criteria_value,minimum_amount,discount,start_date,end_date, from_booking_date,to_booking_date} = newLandingPageDiscountConfigDto
 
         let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id ='${landing_page_id}'`
         // if (down_payment_option.length) {
@@ -422,6 +422,11 @@ export class LandingPageService {
         config.offerCriteria = offer_criteria_type
         config.offerVariable = offer_criteria_variable
         config.minimumAmount = minimum_amount
+        config.discount = discount
+        config.checkInDate = start_date
+        config.checkoutDate = end_date
+        config.startDate = from_booking_date
+        config.endDate = to_booking_date
         config.createBy = user.userId
         if(offer_criteria_type == OfferCriterias.ROUTE &&  offer_criteria_variable == OfferCriteriaVariables.ROUTE ){
             let value = []
@@ -492,11 +497,11 @@ export class LandingPageService {
         }
         
 
-        const newConfig = await config.save()
+        await config.save()
 
         return {
             message: `Discount configuration updated successfully.`,
-            data: newConfig
+            data: config
         }
     }
 
