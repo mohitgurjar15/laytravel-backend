@@ -163,4 +163,21 @@ export class HotelController {
     ) {
         return this.hotelService.partialBook(booking_id, hotelHeaderDto);
     }
+
+    @Get('filter-options/hotel-city')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all country of FlightRoute" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "country not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFlightCountry() {
+		return await this.hotelService.getHotelCity();
+	}
 }

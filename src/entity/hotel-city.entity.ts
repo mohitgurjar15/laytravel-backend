@@ -6,6 +6,9 @@ import {
     PrimaryGeneratedColumn,
   } from 'typeorm';
 
+  @Index('hotel_cities_city',["city"],{})
+  @Index('hotel_cities_state',["state"],{})
+  @Index('hotel_cities_country',["country"],{})
   @Entity('hotel_cities')
   export class HotelCity extends BaseEntity {
     @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
