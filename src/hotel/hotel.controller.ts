@@ -1,4 +1,4 @@
-import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Put, Res, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Put, Query, Res, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/guards/role.decorator';
@@ -15,6 +15,7 @@ import { LogInUser } from 'src/auth/get-user.dacorator';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { BookDto } from './dto/book-req.dto';
 import { GetReferralId } from 'src/decorator/referral.decorator';
+import { HotelCityDto } from './dto/hote-city.dto';
 
 
 @ApiTags("Hotel")
@@ -177,7 +178,10 @@ export class HotelController {
 	})
 	@ApiResponse({ status: 404, description: "country not found!" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
-	async getFlightCountry() {
-		return await this.hotelService.getHotelCity();
+	async getFlightCountry(
+        @Query() hotelCityDto:HotelCityDto
+
+    ) {
+		return await this.hotelService.getHotelCity(hotelCityDto);
 	}
 }

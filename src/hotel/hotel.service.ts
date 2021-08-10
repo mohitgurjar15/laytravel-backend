@@ -54,10 +54,11 @@ import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import * as config from "config";
 const card = config.get("card");
 //const supporterEmail = config.get("supporterEmail");
-const supporterEmail   = 'customerservice@laytrip.com'
+const supporterEmail = 'customerservice@laytrip.com'
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { HotelCity } from "src/entity/hotel-city.entity";
+import { HotelCityDto } from "./dto/hote-city.dto";
 
 @Injectable()
 export class HotelService {
@@ -83,7 +84,7 @@ export class HotelService {
         let locations = await this.hotel.autoComplete(searchLocationDto.term);
 
         // locations = plainToClass(Location, locations, );
-       
+
         console.log("totalCount", locations.length);
 
 
@@ -93,32 +94,31 @@ export class HotelService {
         let hotels = []
 
         for await (const obj of locations) {
-            if(obj.type == 'city'){
-                
+            if (obj.type == 'city') {
+
                 cites.push(obj)
             }
 
-            if(obj.type == 'hotel'){
+            if (obj.type == 'hotel') {
                 hotels.push(obj);
-            } 
+            }
 
         }
         console.log("city totalCount", cites.length);
         console.log("hotel totalCount", hotels.length);
-        if(cites.length >= 8)
-        {
+        if (cites.length >= 8) {
             for (let index = 0; index < 8; index++) {
                 const element = cites[index];
                 filteredLocations.push(element)
             }
-        }else{
+        } else {
             filteredLocations = cites
 
             let count = 8 - cites.length
 
-            console.log('count',count)
+            console.log('count', count)
 
-            for (let index = 0; index < count ; index++) {
+            for (let index = 0; index < count; index++) {
                 const element = hotels[index];
                 console.log("element", element);
                 filteredLocations.push(element)
@@ -188,7 +188,7 @@ export class HotelService {
         };
     }
 
-    async rooms(roomsReqDto: RoomsReqDto, user_id,referralId) {
+    async rooms(roomsReqDto: RoomsReqDto, user_id, referralId) {
         /*let cached = await this.cacheManager.get(roomsReqDto.token);
 
         if (!cached) {
@@ -261,7 +261,7 @@ export class HotelService {
         };
     }
 
-    async availability(availabilityDto: AvailabilityDto, user_id,referralId: string) {
+    async availability(availabilityDto: AvailabilityDto, user_id, referralId: string) {
         let availability = await this.hotel.availability(
             availabilityDto,
             user_id,
@@ -547,7 +547,7 @@ export class HotelService {
             searchReqDto.hotel_id = info.hotel.id;
 
             /* Search for Hotel */
-            let searchReq: any = await this.search(searchReqDto,"");
+            let searchReq: any = await this.search(searchReqDto, "");
             let hotel: any = collect(searchReq.data.hotels).first();
 
             /* Set Room DTO for finding latest rooms rates */
@@ -583,7 +583,7 @@ export class HotelService {
             } else {
                 throw new NotFoundException(
                     "No rate found for this booking &&&booking&&&" +
-                        errorMessage
+                    errorMessage
                 );
             }
         } catch (err) {
@@ -671,8 +671,8 @@ export class HotelService {
             } catch (err) {
                 throw new NotFoundException(
                     err +
-                        ", No rate found for this booking &&&booking&&&" +
-                        errorMessage
+                    ", No rate found for this booking &&&booking&&&" +
+                    errorMessage
                 );
             }
         }
@@ -775,7 +775,7 @@ export class HotelService {
                     availability[0].input_data.num_adults;
                 bookingRequestInfo.child_count =
                     typeof availability[0].input_data.num_children !=
-                    "undefined"
+                        "undefined"
                         ? availability[0].input_data.num_children
                         : 0;
                 bookingRequestInfo.infant_count = 0;
@@ -880,16 +880,16 @@ export class HotelService {
                         console.log(instalmentDetails)
 
                     } else {
-                    instalmentDetails = Instalment.weeklyInstalment(
-                        selling_price,
-                        smallestDipatureDate,
-                        bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false
-                    );
+                        instalmentDetails = Instalment.weeklyInstalment(
+                            selling_price,
+                            smallestDipatureDate,
+                            bookingDate,
+                            totalAdditionalAmount,
+                            custom_instalment_amount,
+                            custom_instalment_no,
+                            selected_down_payment,
+                            cartCount > 1 ? true : false
+                        );
                     }
                 }
                 //console.log("test3");
@@ -1261,9 +1261,9 @@ export class HotelService {
         if (travelersResult.length > 0) {
             for (let traveler of travelersResult) {
                 /* if (traveler.title == null || traveler.title == "")
-					throw new BadRequestException(
-						`Title is missing for traveler ${traveler.firstName}`
-					); */
+                    throw new BadRequestException(
+                        `Title is missing for traveler ${traveler.firstName}`
+                    ); */
                 // if (
                 //     (traveler.email == null || traveler.email == "") &&
                 //     ageDiff >= 12
@@ -1423,7 +1423,7 @@ export class HotelService {
         travelers,
         cartId = null,
         reservationId = null,
-        referral_id=null
+        referral_id = null
     ) {
         const {
             selling_price,
@@ -1463,7 +1463,7 @@ export class HotelService {
         booking.moduleId = moduleDetails?.id;
         //console.log("moduleDetails", moduleDetails);
 
-       // booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
+        // booking.laytripBookingId = `LTH${uniqid.time().toUpperCase()}`;
 
         booking.laytripBookingId = reservationId
         //console.log(1);
@@ -1534,7 +1534,7 @@ export class HotelService {
             //console.log("status", supplierBookingData?.status);
             booking.bookingStatus =
                 supplierBookingData != null &&
-                supplierBookingData?.status == "success"
+                    supplierBookingData?.status == "success"
                     ? BookingStatus.CONFIRM
                     : BookingStatus.FAILED;
             booking.paymentStatus = PaymentStatus.PENDING;
@@ -1542,7 +1542,7 @@ export class HotelService {
 
             booking.supplierBookingId =
                 supplierBookingData != null &&
-                supplierBookingData.details.booking_id
+                    supplierBookingData.details.booking_id
                     ? supplierBookingData?.details?.booking_id
                     : "";
             booking.isPredictive = false;
@@ -1553,7 +1553,7 @@ export class HotelService {
             booking.supplierBookingId = supplierBookingData.details.booking_id;
             booking.supplierStatus =
                 supplierBookingData != null &&
-                supplierBookingData.status != "success"
+                    supplierBookingData.status != "success"
                     ? 0
                     : 1;
             //booking.supplierBookingId = "";
@@ -1633,12 +1633,16 @@ export class HotelService {
         }
     }
 
-    async getHotelCity() {
+    async getHotelCity(hotelCityDto: HotelCityDto) {
+        const { city } = hotelCityDto
+      let  where = `"city"."city" ILIKE '%${city}%'`
         let results = await getManager()
             .createQueryBuilder(HotelCity, "city")
             .select([
                 "city.city"
             ])
+            .distinctOn(["city.city"])
+            .where(where)
             .getMany()
 
         if (!results.length) {
