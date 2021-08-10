@@ -34,7 +34,7 @@ export class Search {
         this.httpsService = new HttpService();
     }
 
-    async processSearchResult(res, parameters, referralId: string, paymentConfig:PaymentConfiguration) {
+    async processSearchResult(res, parameters, referralId: string, paymentConfig: PaymentConfiguration) {
         let results = res.data["getHotelExpress.Results"];
         //console.log(parameters,"---")
         if (results.error) {
@@ -54,18 +54,19 @@ export class Search {
                 if (
                     (hotel["room_data"][0]["rate_data"][0].payment_type ==
                         "PREPAID" &&
-                    hotel["room_data"][0]["rate_data"][0].is_cancellable ==
-                        "true") || 1==1
+                        hotel["room_data"][0]["rate_data"][0].is_cancellable ==
+                        "true") || 1 == 1
                 ) {
                     this.item = hotel;
                     this.rate = hotel["room_data"][0]["rate_data"][0];
                     let searchData = {
-                        departure: hotel['address']['city_name'],checkInDate: parameters.check_in, state: hotel['address']['state_name']}
+                        departure: hotel['address']['city_name'], checkInDate: parameters.check_in, state: hotel['address']['state_name']
+                    }
                     let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
                     let {
                         retail,
                         selling,
-                        saving_percent,net_rate,
+                        saving_percent, net_rate,
                         discounted_selling_price
                     } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
                     if (selling['discounted_total'] > 25) {
@@ -84,7 +85,7 @@ export class Search {
                         let third_down_payment = 0;
                         let secondary_start_price_3 = 0;
                         let no_of_weekly_installment_3 = 0;
-                        let discounted_start_price = 0; 
+                        let discounted_start_price = 0;
                         let discounted_secondary_start_price = 0;
                         let discounted_no_of_weekly_installment = 0;
                         // let instalmentDetails = Instalment.weeklyInstalment(
@@ -96,17 +97,17 @@ export class Search {
                         //     null,
                         //     0
                         // );
-                        
-                        
-                       
 
-                        
+
+
+
+
                         //const is_installment_available = instalmentDetails.instalment_available
-                        
+
                         if (paymentConfig?.isInstallmentAvailable) {
 
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                            let downPaymentOption : any = paymentConfig.downPaymentOption
+                            let downPaymentOption: any = paymentConfig.downPaymentOption
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
                                 let instalmentDetails = Instalment.weeklyInstalment(
                                     selling.total,
@@ -226,32 +227,42 @@ export class Search {
                                 }
                             }
                         } else if (paymentConfig?.isInstallmentAvailable) {
+                            payment_object = {}
                             let t
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
                                 t = InstalmentType.WEEKLY
+
                             } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
                                 t = InstalmentType.BIWEEKLY
+
                             } else if (paymentConfig.isMonthlyInstallmentAvailable) {
                                 t = InstalmentType.MONTHLY
                             }
-                            payment_object = {
-                                installment_type: t,
-                                weekly: {
+                            if (paymentConfig.isWeeklyInstallmentAvailable) {
+                                payment_object[InstalmentType.WEEKLY] = {
                                     down_payment: discounted_start_price,
                                     installment: discounted_secondary_start_price,
                                     installment_count: discounted_no_of_weekly_installment
-                                },
-                                biweekly: {
+                                }
+                            }
+                            if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                               
+                                payment_object[InstalmentType.BIWEEKLY] = {
                                     down_payment: second_down_payment,
                                     installment: secondary_start_price_2,
                                     installment_count: no_of_weekly_installment_2
-                                },
-                                monthly: {
+                                }
+                            }
+                            if (paymentConfig.isMonthlyInstallmentAvailable) {
+                               
+                                payment_object[InstalmentType.MONTHLY] = {
                                     down_payment: third_down_payment,
                                     installment: secondary_start_price_3,
                                     installment_count: no_of_weekly_installment_3
                                 }
                             }
+                            payment_object['installment_type'] = t
+
                         } else {
                             payment_object = {
                                 selling_price: selling['discounted_total']
@@ -283,7 +294,7 @@ export class Search {
                             discounted_start_price,
                             discounted_secondary_start_price,
                             discounted_no_of_weekly_installment,
-                            offer_data:offerData,
+                            offer_data: offerData,
                             is_installment_available: paymentConfig?.isInstallmentAvailable || false,
                             payment_config: paymentConfig || {},
                             payment_object
@@ -328,19 +339,19 @@ export class Search {
                     ).photo_data;
                 }
 
-                
+
             }
             let hotelsList
-            if (hotels[0]?.discounted_secondary_start_price){
+            if (hotels[0]?.discounted_secondary_start_price) {
                 hotelsList = hotels.sort(function (a, b) {
                     return a.discounted_secondary_start_price - b.discounted_secondary_start_price;
                 });
-            }else{
+            } else {
                 hotelsList = hotels.sort(function (a, b) {
                     return a.selling.total - b.selling.total;
                 });
             }
-            
+
             //console.log("hotelsList",hotelsList)
             return hotelsList;
             //return hotels;

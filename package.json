@@ -13,6 +13,7 @@
         "start:dev": "NODE_ENV=dev nest start --watch ",
         "start:development": "nest start --watch ",
         "start:temp": "NODE_ENV=temp nest start --watch ",
+        "start:uat": "NODE_ENV=uat nest start --watch ",
         "start:debug": "nest start --debug --watch",
         "start:prod": "NODE_ENV=prod nest start --debug --watch",
         "start:withdev": "NODE_ENV=dev Typeorm_Sync=true nest start --debug --watch",

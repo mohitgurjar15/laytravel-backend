@@ -679,32 +679,42 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                     } else if (instalmentEligibility.available) {
+                        route.payment_object = {}
                         let t
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             t = InstalmentType.WEEKLY
+
                         } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
                             t = InstalmentType.BIWEEKLY
+
                         } else if (paymentConfig.isMonthlyInstallmentAvailable) {
                             t = InstalmentType.MONTHLY
                         }
-                        route.payment_object = {
-                            installment_type: t,
-                            weekly: {
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            route.payment_object[InstalmentType.WEEKLY] = {
                                 down_payment: route.discounted_start_price,
                                 installment: route.discounted_secondary_start_price,
                                 installment_count: route.discounted_no_of_weekly_installment
-                            },
-                            biweekly: {
+                            }
+                        }
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            t = InstalmentType.BIWEEKLY
+                            route.payment_object[InstalmentType.BIWEEKLY] = {
                                 down_payment: route.second_down_payment,
                                 installment: route.secondary_start_price_2,
                                 installment_count: route.no_of_weekly_installment_2
-                            },
-                            monthly: {
+                            }
+                        }
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            t = InstalmentType.MONTHLY
+                            route.payment_object[InstalmentType.MONTHLY] = {
                                 down_payment: route.third_down_payment,
                                 installment: route.secondary_start_price_3,
                                 installment_count: route.no_of_weekly_installment_3
                             }
                         }
+                        route.payment_object['installment_type'] = t
+
                     } else {
                         route.payment_object = {
                             selling_price: route.discounted_selling_price
@@ -3771,32 +3781,42 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                     } else if (instalmentEligibility.available) {
+                        route.payment_object = {}
                         let t
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             t = InstalmentType.WEEKLY
+
                         } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
                             t = InstalmentType.BIWEEKLY
+
                         } else if (paymentConfig.isMonthlyInstallmentAvailable) {
                             t = InstalmentType.MONTHLY
                         }
-                        route.payment_object = {
-                            installment_type: t,
-                            weekly: {
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            route.payment_object[InstalmentType.WEEKLY] = {
                                 down_payment: route.discounted_start_price,
                                 installment: route.discounted_secondary_start_price,
                                 installment_count: route.discounted_no_of_weekly_installment
-                            },
-                            biweekly: {
+                            }
+                        }
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            t = InstalmentType.BIWEEKLY
+                            route.payment_object[InstalmentType.BIWEEKLY] = {
                                 down_payment: route.second_down_payment,
                                 installment: route.secondary_start_price_2,
                                 installment_count: route.no_of_weekly_installment_2
-                            },
-                            monthly: {
+                            }
+                        }
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            t = InstalmentType.MONTHLY
+                            route.payment_object[InstalmentType.MONTHLY] = {
                                 down_payment: route.third_down_payment,
                                 installment: route.secondary_start_price_3,
                                 installment_count: route.no_of_weekly_installment_3
                             }
                         }
+                        route.payment_object['installment_type'] = t
+
                     } else {
                         route.payment_object = {
                             selling_price: route.discounted_selling_price
@@ -4614,32 +4634,42 @@ export class Mystifly implements StrategyAirline {
                         }
                     }
                 } else if (instalmentEligibility.available) {
+                    route.payment_object = {}
                     let t
                     if (paymentConfig.isWeeklyInstallmentAvailable) {
                         t = InstalmentType.WEEKLY
+
                     } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
                         t = InstalmentType.BIWEEKLY
+
                     } else if (paymentConfig.isMonthlyInstallmentAvailable) {
                         t = InstalmentType.MONTHLY
                     }
-                    route.payment_object = {
-                        installment_type: t,
-                        weekly: {
+                    if (paymentConfig.isWeeklyInstallmentAvailable) {
+                        route.payment_object[InstalmentType.WEEKLY] = {
                             down_payment: route.discounted_start_price,
                             installment: route.discounted_secondary_start_price,
                             installment_count: route.discounted_no_of_weekly_installment
-                        },
-                        biweekly: {
+                        }
+                    }
+                    if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                       
+                        route.payment_object[InstalmentType.BIWEEKLY] = {
                             down_payment: route.second_down_payment,
                             installment: route.secondary_start_price_2,
                             installment_count: route.no_of_weekly_installment_2
-                        },
-                        monthly: {
+                        }
+                    }
+                    if (paymentConfig.isMonthlyInstallmentAvailable) {
+                       
+                        route.payment_object[InstalmentType.MONTHLY] = {
                             down_payment: route.third_down_payment,
                             installment: route.secondary_start_price_3,
                             installment_count: route.no_of_weekly_installment_3
                         }
                     }
+                    route.payment_object['installment_type'] = t
+
                 } else {
                     route.payment_object = {
                         selling_price: route.discounted_selling_price

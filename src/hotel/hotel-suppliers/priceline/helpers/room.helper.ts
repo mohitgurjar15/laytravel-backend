@@ -215,32 +215,42 @@ export class RoomHelper {
                         }
                     }
                 } else if (paymentConfig?.isInstallmentAvailable) {
+                    payment_object = {}
                     let t
                     if (paymentConfig.isWeeklyInstallmentAvailable) {
                         t = InstalmentType.WEEKLY
+
                     } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
                         t = InstalmentType.BIWEEKLY
+
                     } else if (paymentConfig.isMonthlyInstallmentAvailable) {
                         t = InstalmentType.MONTHLY
                     }
-                    payment_object = {
-                        installment_type: t,
-                        weekly: {
+                    if (paymentConfig.isWeeklyInstallmentAvailable) {
+                        payment_object[InstalmentType.WEEKLY] = {
                             down_payment: discounted_start_price,
                             installment: discounted_secondary_start_price,
                             installment_count: discounted_no_of_weekly_installment
-                        },
-                        biweekly: {
+                        }
+                    }
+                    if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        
+                        payment_object[InstalmentType.BIWEEKLY] = {
                             down_payment: second_down_payment,
                             installment: secondary_start_price_2,
                             installment_count: no_of_weekly_installment_2
-                        },
-                        monthly: {
+                        }
+                    }
+                    if (paymentConfig.isMonthlyInstallmentAvailable) {
+                       
+                        payment_object[InstalmentType.MONTHLY] = {
                             down_payment: third_down_payment,
                             installment: secondary_start_price_3,
                             installment_count: no_of_weekly_installment_3
                         }
                     }
+                    payment_object['installment_type'] = t
+
                 } else {
                     payment_object = {
                         selling_price: selling['discounted_total']
@@ -301,7 +311,7 @@ export class RoomHelper {
             return el != null;
         });
         let data
-        let a:any = filtered
+        let a: any = filtered
 
         if (a[0]?.discounted_secondary_start_price) {
             data = filtered.sort(function (a, b) {
