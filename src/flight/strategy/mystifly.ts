@@ -41,6 +41,8 @@ import { LandingPages } from "src/entity/landing-page.entity";
 import { Session } from "inspector";
 import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
 import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
+import { PaymentType } from "src/enum/payment-type.enum";
+import { InstalmentType } from "src/enum/instalment-type.enum";
 
 export const flightClass = {
     Economy: "Y",
@@ -532,9 +534,9 @@ export class Mystifly implements StrategyAirline {
                     }
 
                     let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
-                    if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined"){
+                    if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
                         instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
-                    }else{
+                    } else {
                         instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
                             searchData
                         );
@@ -543,15 +545,15 @@ export class Mystifly implements StrategyAirline {
                     route.is_installment_available = instalmentEligibility.available
 
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
-                    
-                    let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
-                    let paymentConfig : PaymentConfiguration
 
-                    if (typeof paymentConfigCase[configCaseIndex] != "undefined"){
+                    let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                    let paymentConfig: PaymentConfiguration
+
+                    if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
                         paymentConfig = paymentConfigCase[configCaseIndex]
                         //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
-                        
-                    }else{
+
+                    } else {
                         paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
                         paymentConfigCase[configCaseIndex] = paymentConfig
                         //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
@@ -561,12 +563,10 @@ export class Mystifly implements StrategyAirline {
 
                     //console.log("paymentConfig", paymentConfig)
 
-                    
-
                     if (instalmentEligibility.available) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                        let downPaymentOption :any = paymentConfig.downPaymentOption
+                        let downPaymentOption: any = paymentConfig.downPaymentOption
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
                                 route.selling_price,
@@ -663,6 +663,51 @@ export class Mystifly implements StrategyAirline {
 
                             route.discounted_no_of_weekly_installment =
                                 discountedInstalmentDetails.instalment_date.length - 1;
+                        }
+                    }
+
+
+                    if (offerData.applicable) {
+                        instalmentEligibility.available = true
+                        route.payment_object = {
+                            installment_type: InstalmentType.WEEKLY,
+                            weekly: {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment,
+                                actual_installment: route.secondary_start_price
+                            }
+                        }
+                    } else if (instalmentEligibility.available) {
+                        let t
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            t = InstalmentType.WEEKLY
+                        } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            t = InstalmentType.BIWEEKLY
+                        } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            t = InstalmentType.MONTHLY
+                        }
+                        route.payment_object = {
+                            installment_type: t,
+                            weekly: {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment
+                            },
+                            biweekly: {
+                                down_payment: route.second_down_payment,
+                                installment: route.secondary_start_price_2,
+                                installment_count: route.no_of_weekly_installment_2
+                            },
+                            monthly: {
+                                down_payment: route.third_down_payment,
+                                installment: route.secondary_start_price_3,
+                                installment_count: route.no_of_weekly_installment_3
+                            }
+                        }
+                    } else {
+                        route.payment_object = {
+                            selling_price: route.discounted_selling_price
                         }
                     }
 
@@ -3588,17 +3633,17 @@ export class Mystifly implements StrategyAirline {
                         instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
                     }
                     route.is_installment_available = instalmentEligibility.available
-                    
+
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
 
                     let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
-                    let paymentConfig : PaymentConfiguration
+                    let paymentConfig: PaymentConfiguration
 
-                    if (typeof paymentConfigCase[configCaseIndex] != "undefined"){
+                    if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
                         paymentConfig = paymentConfigCase[configCaseIndex]
                         //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
-                        
-                    }else{
+
+                    } else {
                         paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
                         paymentConfigCase[configCaseIndex] = paymentConfig
                         //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
@@ -3608,12 +3653,12 @@ export class Mystifly implements StrategyAirline {
 
                     //console.log("paymentConfig", paymentConfig)
 
-                   
+
 
                     if (instalmentEligibility.available) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                         let downPaymentOption: any = paymentConfig.downPaymentOption
+                        let downPaymentOption: any = paymentConfig.downPaymentOption
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
                                 route.selling_price,
@@ -3710,6 +3755,51 @@ export class Mystifly implements StrategyAirline {
 
                             route.discounted_no_of_weekly_installment =
                                 discountedInstalmentDetails.instalment_date.length - 1;
+                        }
+                    }
+
+
+                    if (offerData.applicable) {
+                        instalmentEligibility.available = true
+                        route.payment_object = {
+                            installment_type: InstalmentType.WEEKLY,
+                            weekly: {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment,
+                                actual_installment: route.secondary_start_price
+                            }
+                        }
+                    } else if (instalmentEligibility.available) {
+                        let t
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            t = InstalmentType.WEEKLY
+                        } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            t = InstalmentType.BIWEEKLY
+                        } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            t = InstalmentType.MONTHLY
+                        }
+                        route.payment_object = {
+                            installment_type: t,
+                            weekly: {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment
+                            },
+                            biweekly: {
+                                down_payment: route.second_down_payment,
+                                installment: route.secondary_start_price_2,
+                                installment_count: route.no_of_weekly_installment_2
+                            },
+                            monthly: {
+                                down_payment: route.third_down_payment,
+                                installment: route.secondary_start_price_3,
+                                installment_count: route.no_of_weekly_installment_3
+                            }
+                        }
+                    } else {
+                        route.payment_object = {
+                            selling_price: route.discounted_selling_price
                         }
                     }
 
@@ -4385,9 +4475,9 @@ export class Mystifly implements StrategyAirline {
                 route.is_installment_available = instalmentEligibility.available
                 let instalmentDetails;
                 let discountedInstalmentDetails;
-                let  departure_date = moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                        "YYYY-MM-DD"
-                    )
+                let departure_date = moment(stops[0].departure_date, "DD/MM/YYYY").format(
+                    "YYYY-MM-DD"
+                )
                 let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
 
                 let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
@@ -4407,12 +4497,12 @@ export class Mystifly implements StrategyAirline {
 
                 //console.log("paymentConfig", paymentConfig)
 
-               
+
 
                 if (instalmentEligibility.available) {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                     let downPaymentOption: any = paymentConfig.downPaymentOption
+                    let downPaymentOption: any = paymentConfig.downPaymentOption
                     if (paymentConfig.isWeeklyInstallmentAvailable) {
                         instalmentDetails = Instalment.weeklyInstalment(
                             route.selling_price,
@@ -4509,6 +4599,50 @@ export class Mystifly implements StrategyAirline {
 
                         route.discounted_no_of_weekly_installment =
                             discountedInstalmentDetails.instalment_date.length - 1;
+                    }
+                }
+
+                if (offerData.applicable) {
+                    instalmentEligibility.available = true
+                    route.payment_object = {
+                        installment_type: InstalmentType.WEEKLY,
+                        weekly: {
+                            down_payment: route.discounted_start_price,
+                            installment: route.discounted_secondary_start_price,
+                            installment_count: route.discounted_no_of_weekly_installment,
+                            actual_installment: route.secondary_start_price
+                        }
+                    }
+                } else if (instalmentEligibility.available) {
+                    let t
+                    if (paymentConfig.isWeeklyInstallmentAvailable) {
+                        t = InstalmentType.WEEKLY
+                    } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        t = InstalmentType.BIWEEKLY
+                    } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                        t = InstalmentType.MONTHLY
+                    }
+                    route.payment_object = {
+                        installment_type: t,
+                        weekly: {
+                            down_payment: route.discounted_start_price,
+                            installment: route.discounted_secondary_start_price,
+                            installment_count: route.discounted_no_of_weekly_installment
+                        },
+                        biweekly: {
+                            down_payment: route.second_down_payment,
+                            installment: route.secondary_start_price_2,
+                            installment_count: route.no_of_weekly_installment_2
+                        },
+                        monthly: {
+                            down_payment: route.third_down_payment,
+                            installment: route.secondary_start_price_3,
+                            installment_count: route.no_of_weekly_installment_3
+                        }
+                    }
+                } else {
+                    route.payment_object = {
+                        selling_price: route.discounted_selling_price
                     }
                 }
 

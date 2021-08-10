@@ -1,6 +1,7 @@
 import { collect } from "collect.js";
 import * as moment from "moment";
 import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
+import { InstalmentType } from "src/enum/instalment-type.enum";
 import { DateTime } from "src/utility/datetime.utility";
 import { Instalment } from "src/utility/instalment.utility";
 import { LandingPage } from "src/utility/landing-page.utility";
@@ -200,6 +201,52 @@ export class RoomHelper {
                     }
                 }
 
+                let payment_object
+
+                if (offerData.applicable) {
+                    paymentConfig.isInstallmentAvailable = true
+                    payment_object = {
+                        installment_type: InstalmentType.WEEKLY,
+                        weekly: {
+                            down_payment: discounted_start_price,
+                            installment: discounted_secondary_start_price,
+                            installment_count: discounted_no_of_weekly_installment,
+                            actual_installment: secondary_start_price
+                        }
+                    }
+                } else if (paymentConfig?.isInstallmentAvailable) {
+                    let t
+                    if (paymentConfig.isWeeklyInstallmentAvailable) {
+                        t = InstalmentType.WEEKLY
+                    } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        t = InstalmentType.BIWEEKLY
+                    } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                        t = InstalmentType.MONTHLY
+                    }
+                    payment_object = {
+                        installment_type: t,
+                        weekly: {
+                            down_payment: discounted_start_price,
+                            installment: discounted_secondary_start_price,
+                            installment_count: discounted_no_of_weekly_installment
+                        },
+                        biweekly: {
+                            down_payment: second_down_payment,
+                            installment: secondary_start_price_2,
+                            installment_count: no_of_weekly_installment_2
+                        },
+                        monthly: {
+                            down_payment: third_down_payment,
+                            installment: secondary_start_price_3,
+                            installment_count: no_of_weekly_installment_3
+                        }
+                    }
+                } else {
+                    payment_object = {
+                        selling_price: selling['discounted_total']
+                    }
+                }
+
                 newItem = {
                     hotel_id: hotel.id,
                     hotel_name: hotel.name,
@@ -243,7 +290,8 @@ export class RoomHelper {
                     discounted_no_of_weekly_installment,
                     offer_data: offerData,
                     is_installment_available: paymentConfig?.isInstallmentAvailable,
-                    payment_config: paymentConfig || {}
+                    payment_config: paymentConfig || {},
+                    payment_object
                 };
 
                 return newItem;
