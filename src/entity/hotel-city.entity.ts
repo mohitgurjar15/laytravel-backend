@@ -6,6 +6,7 @@ import {
     PrimaryGeneratedColumn,
   } from 'typeorm';
 
+  @Entity('hotel_cities')
   export class HotelCity extends BaseEntity {
     @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
     id: number;
