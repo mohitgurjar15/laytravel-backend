@@ -410,6 +410,7 @@ export class LandingPageService {
         //         }
         //     }
         // }
+        console.log(module_id)
 
         // if (payment_frequency.length) {
         //     for await (const iterator of payment_frequency) {
@@ -443,7 +444,7 @@ export class LandingPageService {
         }else{
             config.offerCriteriaValues = offer_criteria_value || null
         }
-        await config.save()
+        // await config.save()
 
         return {
             message: `Discount configuration added successfully.`,

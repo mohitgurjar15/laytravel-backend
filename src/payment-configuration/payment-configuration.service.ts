@@ -36,13 +36,13 @@ export class PaymentConfigurationService {
 			.leftJoinAndSelect("config.daysConfiguration", "daysConfiguration")
 			.where(where)
 			.getMany();
-		
-		
+
+
 		if (!config) {
 			throw new NotFoundException(`Please enter valid inputs`)
 		}
 
-		return { config, laytrip_category : category}
+		return { config, laytrip_category: category }
 	}
 
 	async getDaysConfig() {
@@ -51,11 +51,11 @@ export class PaymentConfigurationService {
 			.getMany();
 	}
 
-	async updatePaymentConfig(updatePaymentConfigurationDto: UpdatePaymentConfigurationDto,user:User) {
+	async updatePaymentConfig(updatePaymentConfigurationDto: UpdatePaymentConfigurationDto, user: User) {
 		const { module_id, category_name, days_config_id, down_payment_option, down_payment_type, payment_frequency, allow_installment } = updatePaymentConfigurationDto
 
 		let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id}`
-		if (down_payment_option.length){
+		if (down_payment_option.length) {
 			for await (const iterator of down_payment_option) {
 				if (typeof iterator != 'number') {
 					throw new BadRequestException(`${iterator} not valid in down payment option`)
@@ -63,14 +63,14 @@ export class PaymentConfigurationService {
 			}
 		}
 
-		if (payment_frequency.length){
+		if (payment_frequency.length) {
 			for await (const iterator of payment_frequency) {
 				if (!Object.values(InstalmentType).includes(iterator)) {
 					throw new BadRequestException(`${iterator} not valid payment type`)
 				}
 			}
 		}
-		
+
 		if (category_name) {
 			where += `AND category.name = '${category_name}'`
 		}
@@ -87,7 +87,7 @@ export class PaymentConfigurationService {
 
 		config.downPaymentOption = down_payment_option
 		//config.paymentFrequency = payment_frequency
-		config.isDownPaymentInPercentage =  down_payment_type == DownPaymentType.PERCENTAGE ? true : false
+		config.isDownPaymentInPercentage = down_payment_type == DownPaymentType.PERCENTAGE ? true : false
 		config.isInstallmentAvailable = allow_installment
 		config.updatedDate = new Date()
 		config.updateBy = user.userId
@@ -95,22 +95,22 @@ export class PaymentConfigurationService {
 		config.isBiWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.BIWEEKLY) ? true : false
 		config.isMonthlyInstallmentAvailable = payment_frequency.includes(InstalmentType.MONTHLY) ? true : false
 
-		const newConfig = await config.save()
+		await config.save()
 
 		return {
-			message : `Payment configuration updated successfully.`,
-			data: newConfig
+			message: `Payment configuration updated successfully.`,
+			data: config
 		}
 
 
 	}
 
 
-	async updateInstallmentAvailability(updateInstallmentAvailblityDto: UpdateInstallmentAvailblityDto,user:User) {
+	async updateInstallmentAvailability(updateInstallmentAvailblityDto: UpdateInstallmentAvailblityDto, user: User) {
 		const { module_id, category_name, allow_installment } = updateInstallmentAvailblityDto
 
 		let where = `config.module_id = ${module_id}`
-		
+
 		if (category_name) {
 			where += `AND category.name = '${category_name}'`
 		}
@@ -126,29 +126,32 @@ export class PaymentConfigurationService {
 		}
 		console.log(config)
 		let Data = [];
-		if(module_id == 1){
+		if (module_id == 1) {
 			for await (const iterator of config) {
 				iterator.isInstallmentAvailable = allow_installment
 				iterator.category.isInstallmentAvailable = allow_installment
 				iterator.updatedDate = new Date()
 				iterator.updateBy = user.userId
 				Data.push(iterator)
-				const newConfig = await iterator.save();
+				await iterator.save();
 			}
-		}if(module_id == 3){
+		} if (module_id == 3) {
+			console.log(config)
 			for await (const iterator of config) {
-				iterator.isInstallmentAvailable = allow_installment
-				iterator.updatedDate = new Date()
-				iterator.updateBy = user.userId
-				Data.push(iterator)
-				const newConfig = await iterator.save();
+				if (iterator.daysConfigId == 2 || iterator.daysConfigId == 3) {
+					iterator.isInstallmentAvailable = allow_installment
+					iterator.updatedDate = new Date()
+					iterator.updateBy = user.userId
+					Data.push(iterator)
+					await iterator.save();
+				}
 			}
 
 		}
-		
+
 
 		return {
-			message : `Payment configuration updated successfully.`,
+			message: `Payment configuration updated successfully.`,
 			data: Data
 		}
 
