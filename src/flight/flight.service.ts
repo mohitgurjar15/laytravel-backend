@@ -140,6 +140,35 @@ export class FlightService {
         }
     }
 
+    async searchAirportWithCode(name: String, type: string) {
+        try {
+            let result = await this.airportRepository.find({
+                where: `("code" ILIKE '%${name}%') and status=true and is_deleted=false`,
+                order: { parentId: "ASC" },
+            });
+            if (type == "web") result = this.sortAirport(result);
+            else result = this.getNestedChildren(result, 0, true);
+
+            if (!result.length)
+                throw new NotFoundException(`No Airport Found.&&&name`);
+            let airports = [];
+            for await (const flight of result) {
+                let airport: any = flight;
+                airport.key = flight.city.charAt(0);
+                airports.push(airport);
+            }
+            return airports;
+        } catch (error) {
+            if (
+                typeof error.response !== "undefined" &&
+                error.response.statusCode == 404
+            ) {
+                throw new NotFoundException(`No Airport Found.&&&name`);
+            }
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
     sortAirport(airports) {
         let result = [];
         for (let airport of airports) {

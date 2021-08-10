@@ -37,6 +37,7 @@ export class NewLandingPageDownPaymentConfigDto {
     })
     landing_page_id: string;
 
+    @ValidateIf((o) => o.module_id === 1)
     @IsEnum([OfferCriterias.DEPARTURE, OfferCriterias.ARRIVAL, OfferCriterias.ROUTE], {
         message: (args: ValidationArguments) => {
             if (typeof args.value == "undefined" || args.value == "") {
