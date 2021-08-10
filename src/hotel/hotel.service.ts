@@ -57,6 +57,7 @@ const card = config.get("card");
 const supporterEmail   = 'customerservice@laytrip.com'
 import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity";
 import { LandingPage } from "src/utility/landing-page.utility";
+import { HotelCity } from "src/entity/hotel-city.entity";
 
 @Injectable()
 export class HotelService {
@@ -1629,6 +1630,31 @@ export class HotelService {
             );
         } catch (error) {
             //console.log(error);
+        }
+    }
+
+    async getHotelCity() {
+        let results = await getManager()
+            .createQueryBuilder(HotelCity, "city")
+            .select([
+                "city.city"
+            ])
+            .getMany()
+
+        if (!results.length) {
+            throw new NotFoundException('no data found')
+        }
+        let responce = [];
+        // for await (const item of results) {
+        //     if (item.city) {
+        //         let filteredStrings = responce.filter((str) => str.toLowerCase().includes(item.country.toLowerCase()))
+        //         if (!filteredStrings[0]) {
+        //             responce.push(item.city)
+        //         }
+        //     }
+        // }
+        return {
+            data: results
         }
     }
 }

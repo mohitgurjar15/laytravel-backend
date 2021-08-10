@@ -108,51 +108,60 @@ export class PaymentConfigurationService {
 
 	async updateInstallmentAvailability(updateInstallmentAvailblityDto: UpdateInstallmentAvailblityDto, user: User) {
 		const { module_id, category_name, allow_installment } = updateInstallmentAvailblityDto
-
-		let where = `config.module_id = ${module_id}`
-
+		let where = `module_id = ${module_id} and days_config_id in (2,3)`
 		if (category_name) {
 			where += `AND category.name = '${category_name}'`
 		}
+		await getConnection()
+		.createQueryBuilder()
+		.update(PaymentConfiguration)
+		.set({ isInstallmentAvailable: allow_installment })
+		.where(where)
+		.execute();
 
-		let config = await getConnection()
-			.createQueryBuilder(PaymentConfiguration, "config")
-			.leftJoinAndSelect("config.category", "category")
-			.where(where)
-			.getMany();
+		// let where = `config.module_id = ${module_id}`
 
-		if (!config) {
-			throw new NotFoundException(`Please enter valid inputs`)
-		}
-		console.log(config)
-		let Data = [];
-		if (module_id == 1) {
-			for await (const iterator of config) {
-				iterator.isInstallmentAvailable = allow_installment
-				iterator.category.isInstallmentAvailable = allow_installment
-				iterator.updatedDate = new Date()
-				iterator.updateBy = user.userId
-				Data.push(iterator)
-				await iterator.save();
-			}
-		} if (module_id == 3) {
-			console.log(config)
-			for await (const iterator of config) {
-				if (iterator.daysConfigId == 2 || iterator.daysConfigId == 3) {
-					iterator.isInstallmentAvailable = allow_installment
-					iterator.updatedDate = new Date()
-					iterator.updateBy = user.userId
-					Data.push(iterator)
-					await iterator.save();
-				}
-			}
+		// if (category_name) {
+		// 	where += `AND category.name = '${category_name}'`
+		// }
 
-		}
+		// let config = await getConnection()
+		// 	.createQueryBuilder(PaymentConfiguration, "config")
+		// 	.leftJoinAndSelect("config.category", "category")
+		// 	.where(`config.module_id ${module_id} AND config.days_config_id in (2,3)`)
+		// 	.update();
+
+		// if (!config) {
+		// 	throw new NotFoundException(`Please enter valid inputs`)
+		// }
+		// console.log(config)
+		// let Data = [];
+		// if (module_id == 1) {
+		// 	for await (const iterator of config) {
+		// 		iterator.isInstallmentAvailable = allow_installment
+		// 		iterator.category.isInstallmentAvailable = allow_installment
+		// 		iterator.updatedDate = new Date()
+		// 		iterator.updateBy = user.userId
+		// 		Data.push(iterator)
+		// 		await iterator.save();
+		// 	}
+		// } if (module_id == 3) {
+		// 	console.log(config)
+		// 	for await (const iterator of config) {
+		// 		if (iterator.daysConfigId == 2 || iterator.daysConfigId == 3) {
+		// 			iterator.isInstallmentAvailable = allow_installment
+		// 			iterator.updatedDate = new Date()
+		// 			iterator.updateBy = user.userId
+		// 			Data.push(iterator)
+		// 			await iterator.save();
+		// 		}
+		// 	}
+
+		// }
 
 
 		return {
 			message: `Payment configuration updated successfully.`,
-			data: Data
 		}
 
 
