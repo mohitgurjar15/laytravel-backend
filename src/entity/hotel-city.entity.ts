@@ -11,16 +11,16 @@ import {
     id: number;
   
     @Column('character varying', { name: 'cityid_ppn', length: 100 })
-    cityid_ppn: string;
+    cityidPpn: string;
   
     @Column('character varying', { name: 'cityid_a', length: 100, nullable: true })
-    cityid_a: string;
+    cityIdA: string;
   
     @Column('character varying', { name: 'cityid_b', length: 100, nullable: true  })
-    cityid_b: string;
+    cityIdB: string;
 
     @Column('character varying', { name: 'cityid_t', length: 100 })
-    cityid_t: string;
+    cityIdT: string;
 
     @Column('character varying', { name: 'city', length: 100 })
     city: string;
@@ -32,10 +32,10 @@ import {
     country: string;
 
     @Column('character varying', { name: 'state_code', length: 100 })
-    state_code: string;
+    stateCode: string;
 
     @Column('character varying', { name: 'country_code', length: 100 })
-    country_code: string;
+    countryCode: string;
 
     @Column('character varying', { name: 'latitude', length: 100 })
     latitude: string;
@@ -44,6 +44,6 @@ import {
     longitude: string;
 
     @Column('character varying', { name: 'timezone', length: 100 })
-    timezone: string;
+    timeZone: string;
   }
   
