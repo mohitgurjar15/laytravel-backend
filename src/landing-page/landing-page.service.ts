@@ -443,11 +443,11 @@ export class LandingPageService {
         }else{
             config.offerCriteriaValues = offer_criteria_value || null
         }
-        const newConfig = await config.save()
+        await config.save()
 
         return {
             message: `Discount configuration added successfully.`,
-            data: newConfig
+            data: config
         }
     }
 
