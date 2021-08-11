@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsNotEmpty, ValidateIf, ValidateNested, ValidationArguments } from "class-validator";
+import { isArray, IsArray, IsEnum, IsNotEmpty, ValidateIf, ValidateNested, ValidationArguments } from "class-validator";
+import { daysConfiguration } from "src/entity/days_configuration.entity";
 import { DownPaymentType } from "src/enum/down-payment-type.enum";
 import { InstalmentType } from "src/enum/instalment-type.enum";
 import { ModulesName } from "src/enum/module.enum";
@@ -19,18 +20,17 @@ export class NewLandingPageDownPaymentConfigDto {
     module_id: ModulesName[];
 
 
+    @IsArray()
     @IsNotEmpty({
         message: `Please enter days config id.`,
     })
     @ApiProperty({
         description: `Enter days config id`,
-        example: 2,
+        example: [2,3],
     })
-    days_config_id: number;
+    days_config_id: number[];
 
-    @IsNotEmpty({
-        message: `Please enter landing page id.`,
-    })
+   
     @ApiProperty({
         description: `Enter days landing page id.`,
         example: 'dww1131qqd-13weweqwe21-21312eqeqwe2q22',
