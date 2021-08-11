@@ -252,32 +252,32 @@ export class LandingPageController {
         );
     }
 
-    @Patch('update-down-payment')
-    @Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @ApiOperation({ summary: "Update down payment in landing page from admin panel" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({
-        status: 422,
-        description: "Bad Request or API error message",
-    })
-    @ApiResponse({
-        status: 403,
-        description: "You are not allowed to access this resource.",
-    })
-    @ApiResponse({ status: 404, description: "Admin not found!" })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async updateLandingPageDownPayment(
-        @Body() newLandingPageDownPaymentConfigDto: NewLandingPageDownPaymentConfigDto,
-        @GetUser() user: User
-    ) {
-        return await this.landingPageService.updateLandingPageDownPayment(
-            newLandingPageDownPaymentConfigDto,
-            user
-        );
-    }
+    // @Patch('update-down-payment')
+    // @Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
+    // @ApiBearerAuth()
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @ApiOperation({ summary: "Update down payment in landing page from admin panel" })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({
+    //     status: 422,
+    //     description: "Bad Request or API error message",
+    // })
+    // @ApiResponse({
+    //     status: 403,
+    //     description: "You are not allowed to access this resource.",
+    // })
+    // @ApiResponse({ status: 404, description: "Admin not found!" })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @HttpCode(200)
+    // async updateLandingPageDownPayment(
+    //     @Body() newLandingPageDownPaymentConfigDto: NewLandingPageDownPaymentConfigDto,
+    //     @GetUser() user: User
+    // ) {
+    //     return await this.landingPageService.updateLandingPageDownPayment(
+    //         newLandingPageDownPaymentConfigDto,
+    //         user
+    //     );
+    // }
 
     @Get(`landing-page/down-payent`)
     @ApiBearerAuth()
@@ -328,32 +328,32 @@ export class LandingPageController {
         );
     }
 
-    @Patch('update-discount')
-    @Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard(), RolesGuard)
-    @ApiOperation({ summary: "Update discount in landing page from admin panel" })
-    @ApiResponse({ status: 200, description: "Api success" })
-    @ApiResponse({
-        status: 422,
-        description: "Bad Request or API error message",
-    })
-    @ApiResponse({
-        status: 403,
-        description: "You are not allowed to access this resource.",
-    })
-    @ApiResponse({ status: 404, description: "Admin not found!" })
-    @ApiResponse({ status: 500, description: "Internal server error!" })
-    @HttpCode(200)
-    async updateLandingPageDiscount(
-        @Body() newLandingPageDiscountConfigDto: NewLandingPageDiscountConfigDto,
-        @GetUser() user: User
-    ) {
-        return await this.landingPageService.updateLandingPageDiscount(
-            newLandingPageDiscountConfigDto,
-            user
-        );
-    }
+    // @Patch('update-discount')
+    // @Roles(Role.SUPER_ADMIN, Role.SUPPORT, Role.ADMIN)
+    // @ApiBearerAuth()
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @ApiOperation({ summary: "Update discount in landing page from admin panel" })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({
+    //     status: 422,
+    //     description: "Bad Request or API error message",
+    // })
+    // @ApiResponse({
+    //     status: 403,
+    //     description: "You are not allowed to access this resource.",
+    // })
+    // @ApiResponse({ status: 404, description: "Admin not found!" })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // @HttpCode(200)
+    // async updateLandingPageDiscount(
+    //     @Body() newLandingPageDiscountConfigDto: NewLandingPageDiscountConfigDto,
+    //     @GetUser() user: User
+    // ) {
+    //     return await this.landingPageService.updateLandingPageDiscount(
+    //         newLandingPageDiscountConfigDto,
+    //         user
+    //     );
+    // }
 
     @Get(`landing-page/discount`)
     @ApiBearerAuth()

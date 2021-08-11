@@ -110,14 +110,31 @@ export class PaymentConfigurationService {
 		const { module_id, category_name, allow_installment } = updateInstallmentAvailblityDto
 		let where = `module_id = ${module_id} and days_config_id in (2,3)`
 		if (category_name) {
-			where += `AND category.name = '${category_name}'`
+			let category = await getConnection()
+			.createQueryBuilder(LaytripCategory, "category")
+			.where(`name = '${category_name}'`)
+			.getOne();
+			category.isInstallmentAvailable = allow_installment
+			category.save();
+			where += `AND category_id = ${category.id}`
 		}
 		await getConnection()
-		.createQueryBuilder()
-		.update(PaymentConfiguration)
-		.set({ isInstallmentAvailable: allow_installment })
-		.where(where)
-		.execute();
+			.createQueryBuilder()
+			.update(PaymentConfiguration)
+			.set({ isInstallmentAvailable: allow_installment })
+			.where(where)
+			.execute();
+
+		// if (module_id == 1) {
+		// 	await getConnection()
+		// 		.createQueryBuilder()
+		// 		.update(LaytripCategory)
+		// 		.set({ isInstallmentAvailable: allow_installment })
+		// 		.where(`category.name = '${category_name}'`)
+		// 		.execute();
+		// }
+
+
 
 		// let where = `config.module_id = ${module_id}`
 
