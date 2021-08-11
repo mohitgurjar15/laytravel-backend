@@ -62,7 +62,7 @@ export class LandingPageService {
 
 
 
-        if (default_setting_applied) {
+        if (!default_setting_applied) {
             config.landing_page_id = landingPage.id
             await this.addLandingPageDownPayment(config, user)
         }
