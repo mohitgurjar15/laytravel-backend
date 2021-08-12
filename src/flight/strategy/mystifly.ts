@@ -698,7 +698,7 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                         if (paymentConfig.isBiWeeklyInstallmentAvailable) {
-                            t = InstalmentType.BIWEEKLY
+                            
                             route.payment_object[InstalmentType.BIWEEKLY] = {
                                 down_payment: route.second_down_payment,
                                 installment: route.secondary_start_price_2,
@@ -706,7 +706,6 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                         if (paymentConfig.isMonthlyInstallmentAvailable) {
-                            t = InstalmentType.MONTHLY
                             route.payment_object[InstalmentType.MONTHLY] = {
                                 down_payment: route.third_down_payment,
                                 installment: route.secondary_start_price_3,
@@ -3800,7 +3799,7 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                         if (paymentConfig.isBiWeeklyInstallmentAvailable) {
-                            t = InstalmentType.BIWEEKLY
+                          
                             route.payment_object[InstalmentType.BIWEEKLY] = {
                                 down_payment: route.second_down_payment,
                                 installment: route.secondary_start_price_2,
@@ -3808,7 +3807,7 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                         if (paymentConfig.isMonthlyInstallmentAvailable) {
-                            t = InstalmentType.MONTHLY
+                            
                             route.payment_object[InstalmentType.MONTHLY] = {
                                 down_payment: route.third_down_payment,
                                 installment: route.secondary_start_price_3,
