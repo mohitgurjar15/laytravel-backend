@@ -64,7 +64,7 @@ export class RouteCategory {
                 .leftJoinAndSelect("flight_route.category", "category")
                 .getOne();
             
-            console.log('routeDetails', routeDetails)
+            
             if (routeDetails?.category?.isInstallmentAvailable) {
                 return { available: true, categoryId: routeDetails?.category?.id };
             } else {

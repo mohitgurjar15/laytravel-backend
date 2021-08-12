@@ -892,7 +892,9 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
+                        if (flightData?.is_installment_available){
+                            startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
+                        }                        
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
@@ -910,7 +912,9 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
+                        if (flightData?.is_installment_available) {
+                            startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
+                        }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
@@ -1140,7 +1144,9 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
+                        if (flightData?.is_installment_available) {
+                            startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
+                        }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
@@ -1158,7 +1164,9 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
+                        if (flightData?.is_installment_available){
+                            startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
+                        }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
@@ -1424,6 +1432,7 @@ export class FlightService {
         }
 
         const response = await Promise.all(result);
+
         // return response;
         let returnResponce = [];
         for await (const data of response) {
@@ -1445,7 +1454,9 @@ export class FlightService {
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
-                        startPrice = flightData.start_price || 0;
+                        if (flightData?.is_installment_available){
+                            startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
+                        }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
@@ -1463,7 +1474,9 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        startPrice = flightData.start_price || 0;
+                        if (flightData?.is_installment_available){
+                            startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
+                        }
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;

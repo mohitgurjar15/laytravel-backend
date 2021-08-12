@@ -542,7 +542,7 @@ export class Mystifly implements StrategyAirline {
                         );
                         instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
                     }
-                    route.is_installment_available = instalmentEligibility.available
+                    
 
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
 
@@ -719,6 +719,8 @@ export class Mystifly implements StrategyAirline {
                             selling_price: route.discounted_selling_price
                         }
                     }
+                    route.is_installment_available = instalmentEligibility.available
+
 
                     if (
                         typeof secondaryMarkUpDetails != "undefined" &&
@@ -1968,6 +1970,8 @@ export class Mystifly implements StrategyAirline {
         let jsonData: any = await Generic.xmlToJson(unCompressedData);
 
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
+            let paymentConfigCase = {}
+            let instalmentEligibilityCase = {}
             let filteredListes = await this.getRoutes(
                 source_location,
                 destination_location,
@@ -2140,48 +2144,208 @@ export class Mystifly implements StrategyAirline {
                     route.selling_price = Generic.formatPriceDecimal(
                         PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                     );
+
                     let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
                     let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
                     route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                    let instalmentDetails = Instalment.weeklyInstalment(
-                        route.selling_price,
-                        moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                            "YYYY-MM-DD"
-                        ),
-                        bookingDate,
-                        0,
-                        weeklyCustomDownPayment
-                    );
-                    let discountedInstalmentDetails = Instalment.weeklyInstalment(
-                        route.discounted_selling_price,
-                        departure_date,
-                        bookingDate,
-                        0,
-                        null,
-                        null,
-                        0,
-                        false,
-                        weeklyCustomDownPayment
-                    );
-                    if (instalmentDetails.instalment_available) {
-                        route.start_price =
-                            instalmentDetails.instalment_date[0].instalment_amount;
-                        route.secondary_start_price =
-                            instalmentDetails.instalment_date[1].instalment_amount;
-                        route.discounted_start_price =
-                            discountedInstalmentDetails.instalment_date[0].instalment_amount;
-
-                        route.discounted_secondary_start_price =
-                            discountedInstalmentDetails.instalment_date[1].instalment_amount;
-
-                        route.discounted_no_of_weekly_installment =
-                            discountedInstalmentDetails.instalment_date.length - 1;
-                    } else {
-                        route.start_price = 0;
-                        route.secondary_start_price = 0;
+                    let instalmentEligibility: {
+                        available: boolean;
+                        categoryId: number;
+                    } | {
+                        available: boolean;
+                        categoryId?: undefined;
                     }
+
+                    let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
+                    if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
+                        instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                    } else {
+                        instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                            searchData
+                        );
+                        instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                    }
+                    route.is_installment_available = instalmentEligibility.available
+
+                    let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
+
+                    let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                    let paymentConfig: PaymentConfiguration
+
+                    if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
+                        paymentConfig = paymentConfigCase[configCaseIndex]
+                        //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
+
+                    } else {
+                        paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+                        paymentConfigCase[configCaseIndex] = paymentConfig
+                        //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
+                    }
+
+                    route.payment_config = paymentConfig || {}
+
+                    //console.log("paymentConfig", paymentConfig)
+                    let instalmentDetails;
+                    let discountedInstalmentDetails;
+                    if (instalmentEligibility.available) {
+
+                        let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
+                        let downPaymentOption: any = paymentConfig.downPaymentOption
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            instalmentDetails = Instalment.weeklyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                weeklyCustomDownPayment,
+                                paymentConfig.isDownPaymentInPercentage,
+                                downPaymentOption
+                            );
+                            if (instalmentDetails.instalment_available) {
+                                route.start_price =
+                                    instalmentDetails.instalment_date[0].instalment_amount;
+
+                                route.secondary_start_price =
+                                    instalmentDetails.instalment_date[1].instalment_amount;
+                                route.no_of_weekly_installment =
+                                    instalmentDetails.instalment_date.length - 1;
+                            }
+
+                        }
+
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            let instalmentDetails2 = Instalment.biWeeklyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                0,
+                                paymentConfig.isDownPaymentInPercentage,
+                                downPaymentOption
+                            );
+
+                            route.second_down_payment =
+                                instalmentDetails2.instalment_date[0].instalment_amount;
+                            route.secondary_start_price_2 =
+                                instalmentDetails2.instalment_date[1].instalment_amount;
+                            route.no_of_weekly_installment_2 =
+                                instalmentDetails2.instalment_date.length - 1;
+                        }
+
+
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            let instalmentDetails3 = Instalment.monthlyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                0,
+                                paymentConfig.isDownPaymentInPercentage,
+                                downPaymentOption
+                            );
+                            route.third_down_payment =
+                                instalmentDetails3.instalment_date[0].instalment_amount;
+                            route.secondary_start_price_3 =
+                                instalmentDetails3.instalment_date[1].instalment_amount;
+                            route.no_of_weekly_installment_3 =
+                                instalmentDetails3.instalment_date.length - 1;
+                        }
+
+
+                        discountedInstalmentDetails = Instalment.weeklyInstalment(
+                            route.discounted_selling_price,
+                            departure_date,
+                            bookingDate,
+                            0,
+                            null,
+                            null,
+                            0,
+                            false,
+                            weeklyCustomDownPayment,
+                            paymentConfig.isDownPaymentInPercentage,
+                            downPaymentOption
+                        );
+
+                        if (discountedInstalmentDetails.instalment_available) {
+                            route.discounted_start_price =
+                                discountedInstalmentDetails.instalment_date[0].instalment_amount;
+
+                            route.discounted_secondary_start_price =
+                                discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
+                            route.discounted_no_of_weekly_installment =
+                                discountedInstalmentDetails.instalment_date.length - 1;
+                        }
+                    }
+
+
+                    if (offerData.applicable) {
+                        instalmentEligibility.available = true
+                        route.payment_object = {
+                            installment_type: InstalmentType.WEEKLY,
+                            weekly: {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment,
+                                actual_installment: route.secondary_start_price
+                            }
+                        }
+                    } else if (instalmentEligibility.available) {
+                        route.payment_object = {}
+                        let t
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            t = InstalmentType.WEEKLY
+
+                        } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            t = InstalmentType.BIWEEKLY
+
+                        } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            t = InstalmentType.MONTHLY
+                        }
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            route.payment_object[InstalmentType.WEEKLY] = {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment
+                            }
+                        }
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+
+                            route.payment_object[InstalmentType.BIWEEKLY] = {
+                                down_payment: route.second_down_payment,
+                                installment: route.secondary_start_price_2,
+                                installment_count: route.no_of_weekly_installment_2
+                            }
+                        }
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            route.payment_object[InstalmentType.MONTHLY] = {
+                                down_payment: route.third_down_payment,
+                                installment: route.secondary_start_price_3,
+                                installment_count: route.no_of_weekly_installment_3
+                            }
+                        }
+                        route.payment_object['installment_type'] = t
+
+                    } else {
+                        route.payment_object = {
+                            selling_price: route.discounted_selling_price
+                        }
+                    }
+                    route.is_installment_available = instalmentEligibility.available
                     route.stop_count = stops.length - 1;
                     route.is_passport_required =
                         flightRoutes[i]["ispassportmandatory"][0] == "true"
@@ -2433,6 +2597,8 @@ export class Mystifly implements StrategyAirline {
         let jsonData: any = await Generic.xmlToJson(unCompressedData);
 
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
+            let paymentConfigCase = {}
+            let instalmentEligibilityCase = {}
             let filteredListes = await this.getRoutes(source_location, destination_location, true)
             let flightRoutes =
                 jsonData.airlowfaresearchgziprs.priceditineraries[0]
@@ -2728,47 +2894,123 @@ export class Mystifly implements StrategyAirline {
                     let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
 
                     route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
-                    let instalmentDetails: any = {};
-                    let instalmentDetails2: any = {};
-                    let instalmentDetails3: any = {};
+                    let instalmentEligibility: {
+                        available: boolean;
+                        categoryId: number;
+                    } | {
+                        available: boolean;
+                        categoryId?: undefined;
+                    }
 
-                    let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
-                        searchData
-                    );
+                    let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
+                    if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
+                        instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                    } else {
+                        instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                            searchData
+                        );
+                        instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                    }
                     route.is_installment_available = instalmentEligibility.available
+
+                    let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
+
+                    let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                    let paymentConfig: PaymentConfiguration
+
+                    if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
+                        paymentConfig = paymentConfigCase[configCaseIndex]
+                        //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
+
+                    } else {
+                        paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
+                        paymentConfigCase[configCaseIndex] = paymentConfig
+                        //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
+                    }
+
+                    route.payment_config = paymentConfig || {}
+
+                    //console.log("paymentConfig", paymentConfig)
+                    let instalmentDetails;
+                    let discountedInstalmentDetails;
                     if (instalmentEligibility.available) {
+
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                        instalmentDetails = Instalment.weeklyInstalment(
-                            route.selling_price,
-                            departure_date,
-                            bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            weeklyCustomDownPayment
-                        );
+                        let downPaymentOption: any = paymentConfig.downPaymentOption
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            instalmentDetails = Instalment.weeklyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                weeklyCustomDownPayment,
+                                paymentConfig.isDownPaymentInPercentage,
+                                downPaymentOption
+                            );
+                            if (instalmentDetails.instalment_available) {
+                                route.start_price =
+                                    instalmentDetails.instalment_date[0].instalment_amount;
 
-                        instalmentDetails2 = Instalment.biWeeklyInstalment(
-                            route.selling_price,
-                            departure_date,
-                            bookingDate,
-                            0,
-                            null,
-                            null,
-                            0
-                        );
-                        instalmentDetails3 = Instalment.monthlyInstalment(
-                            route.selling_price,
-                            departure_date,
-                            bookingDate,
-                            0,
-                            null,
-                            null,
-                            0
-                        );
+                                route.secondary_start_price =
+                                    instalmentDetails.instalment_date[1].instalment_amount;
+                                route.no_of_weekly_installment =
+                                    instalmentDetails.instalment_date.length - 1;
+                            }
 
-                        let discountedInstalmentDetails = Instalment.weeklyInstalment(
+                        }
+
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            let instalmentDetails2 = Instalment.biWeeklyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                0,
+                                paymentConfig.isDownPaymentInPercentage,
+                                downPaymentOption
+                            );
+
+                            route.second_down_payment =
+                                instalmentDetails2.instalment_date[0].instalment_amount;
+                            route.secondary_start_price_2 =
+                                instalmentDetails2.instalment_date[1].instalment_amount;
+                            route.no_of_weekly_installment_2 =
+                                instalmentDetails2.instalment_date.length - 1;
+                        }
+
+
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            let instalmentDetails3 = Instalment.monthlyInstalment(
+                                route.selling_price,
+                                departure_date,
+                                bookingDate,
+                                0,
+                                null,
+                                null,
+                                0,
+                                false,
+                                0,
+                                paymentConfig.isDownPaymentInPercentage,
+                                downPaymentOption
+                            );
+                            route.third_down_payment =
+                                instalmentDetails3.instalment_date[0].instalment_amount;
+                            route.secondary_start_price_3 =
+                                instalmentDetails3.instalment_date[1].instalment_amount;
+                            route.no_of_weekly_installment_3 =
+                                instalmentDetails3.instalment_date.length - 1;
+                        }
+
+
+                        discountedInstalmentDetails = Instalment.weeklyInstalment(
                             route.discounted_selling_price,
                             departure_date,
                             bookingDate,
@@ -2777,36 +3019,74 @@ export class Mystifly implements StrategyAirline {
                             null,
                             0,
                             false,
-                            weeklyCustomDownPayment
+                            weeklyCustomDownPayment,
+                            paymentConfig.isDownPaymentInPercentage,
+                            downPaymentOption
                         );
-                        if (instalmentDetails.instalment_available) {
-                            route.start_price =
-                                instalmentDetails.instalment_date[0].instalment_amount;
-                            route.secondary_start_price =
-                                instalmentDetails.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment =
-                                instalmentDetails.instalment_date.length - 1;
 
-                            route.secondary_start_price_2 =
-                                instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.second_down_payment =
-                                instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.no_of_weekly_installment_2 =
-                                instalmentDetails2.instalment_date.length - 1;
-
-                            route.secondary_start_price_3 =
-                                instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.third_down_payment =
-                                instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.no_of_weekly_installment_3 =
-                                instalmentDetails3.instalment_date.length - 1;
+                        if (discountedInstalmentDetails.instalment_available) {
                             route.discounted_start_price =
                                 discountedInstalmentDetails.instalment_date[0].instalment_amount;
 
                             route.discounted_secondary_start_price =
                                 discountedInstalmentDetails.instalment_date[1].instalment_amount;
+
                             route.discounted_no_of_weekly_installment =
                                 discountedInstalmentDetails.instalment_date.length - 1;
+                        }
+                    }
+
+
+                    if (offerData.applicable) {
+                        instalmentEligibility.available = true
+                        route.payment_object = {
+                            installment_type: InstalmentType.WEEKLY,
+                            weekly: {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment,
+                                actual_installment: route.secondary_start_price
+                            }
+                        }
+                    } else if (instalmentEligibility.available) {
+                        route.payment_object = {}
+                        let t
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            t = InstalmentType.WEEKLY
+
+                        } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                            t = InstalmentType.BIWEEKLY
+
+                        } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            t = InstalmentType.MONTHLY
+                        }
+                        if (paymentConfig.isWeeklyInstallmentAvailable) {
+                            route.payment_object[InstalmentType.WEEKLY] = {
+                                down_payment: route.discounted_start_price,
+                                installment: route.discounted_secondary_start_price,
+                                installment_count: route.discounted_no_of_weekly_installment
+                            }
+                        }
+                        if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+
+                            route.payment_object[InstalmentType.BIWEEKLY] = {
+                                down_payment: route.second_down_payment,
+                                installment: route.secondary_start_price_2,
+                                installment_count: route.no_of_weekly_installment_2
+                            }
+                        }
+                        if (paymentConfig.isMonthlyInstallmentAvailable) {
+                            route.payment_object[InstalmentType.MONTHLY] = {
+                                down_payment: route.third_down_payment,
+                                installment: route.secondary_start_price_3,
+                                installment_count: route.no_of_weekly_installment_3
+                            }
+                        }
+                        route.payment_object['installment_type'] = t
+
+                    } else {
+                        route.payment_object = {
+                            selling_price: route.discounted_selling_price
                         }
                     }
                     if (
@@ -2822,6 +3102,7 @@ export class Mystifly implements StrategyAirline {
                     } else {
                         route.secondary_selling_price = 0;
                     }
+                    route.is_installment_available = instalmentEligibility.available
                     route.instalment_details = instalmentDetails;
                     route.inbound_stop_count = stops.length - 1;
                     let depatureCodeOfInbound = stops[0].departure_code;
@@ -3314,7 +3595,7 @@ export class Mystifly implements StrategyAirline {
                 .airlowfaresearchresult[0]["a:success"][0] == "true"
         ) {
             let filteredListes = await this.getRoutes(source_location, destination_location, true)
-            console.log('filteredListes', filteredListes)
+            
             let flightRoutes =
                 searchResult["s:envelope"]["s:body"][0]
                     .airlowfaresearchresponse[0].airlowfaresearchresult[0][
@@ -3836,6 +4117,7 @@ export class Mystifly implements StrategyAirline {
                         route.secondary_selling_price = 0;
                     }
                     route.instalment_details = instalmentDetails;
+                    route.is_installment_available = instalmentEligibility.available
 
                     /* if(instalmentEligibility){
     
@@ -4674,6 +4956,7 @@ export class Mystifly implements StrategyAirline {
                         selling_price: route.discounted_selling_price
                     }
                 }
+                route.is_installment_available = instalmentEligibility.available
 
                 if (
                     typeof secondaryMarkUpDetails != "undefined" &&
@@ -4810,7 +5093,7 @@ export class Mystifly implements StrategyAirline {
                     outbound: outBoundExtraService,
                     inbound: inBoundExtraService,
                 };
-                console.log('logFile', logFile);
+                
 
                 route.log_file = logFile
                 route.markUpDetails = JSON.stringify(markUpDetails)
