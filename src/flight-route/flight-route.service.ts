@@ -793,9 +793,9 @@ export class FlightRouteService {
         for await (const item of results) {
             if (item.country) {
                 let filteredStrings = responce.filter((str) => str.toLowerCase().includes(item.country.toLowerCase()))
-                if (!filteredStrings[0]) {
-                    responce.push(item.country)
-                }
+                // if (!filteredStrings[0]) {
+                //     responce.push(item.country)
+                // }
             }
         }
         return {

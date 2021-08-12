@@ -70,7 +70,7 @@ export class LandingPageService {
         }
 
         return {
-            message: `Landing page created successfully.`,
+            message: `Landing page created successfully`,
         };
     }
 
@@ -244,7 +244,7 @@ export class LandingPageService {
         if (!landing_page_id) {
             throw new BadRequestException(`Please enter landing page id.`)
         }
-        let message = `Downpayment configuration added successfully.`
+        let message = `Downpayment configuration added successfully`
         for await (const iterator of module_id) {
             for await (const configId of days_config_id) {
 
@@ -257,7 +257,7 @@ export class LandingPageService {
                 if (!config) {
                     config = new LandingPageDownPaymentConfig
                     config.createDate = new Date()
-                    message = `Downpayment configuration updated successfully.`
+                    message = `Downpayment configuration updated successfully`
                 } else {
                     config.updatedDate = new Date()
                 }
@@ -469,7 +469,7 @@ export class LandingPageService {
 
 
 
-        let message = `Discount configuration added successfully.`
+        let message = `Discount configuration added successfully`
         for await (const iterator of module_id) {
             let where = `config.module_id = ${iterator} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id ='${landing_page_id}'`
             let config = await getConnection()
@@ -479,7 +479,7 @@ export class LandingPageService {
             if (!config) {
                 config = new LandingPageDiscountConfig
                 config.createDate = new Date()
-                message = `Discount configuration updated successfully.`
+                message = `Discount configuration updated successfully`
             } else {
                 config.updatedDate = new Date()
             }

@@ -51,8 +51,8 @@ export class LandingPages extends BaseEntity {
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;
 
-    @Column("boolean",{name:"is_default_setting_applied"})
-    isDefaultSettingApplied : boolean
+    // @Column("boolean",{name:"is_default_setting_applied"})
+    // isDefaultSettingApplied : boolean
 
     @ManyToOne(
         () => User,
