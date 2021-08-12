@@ -897,7 +897,7 @@ export class FlightService {
                         }                        
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        isPriceInInstallment = flightData?.is_installment_available ? true : false
                         selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -917,7 +917,7 @@ export class FlightService {
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
                             selling_price = flightData.selling_price
                     }
 
@@ -1149,7 +1149,7 @@ export class FlightService {
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
                             selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -1169,7 +1169,7 @@ export class FlightService {
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        isPriceInInstallment = flightData?.is_installment_available ? true : false
                         selling_price = flightData.selling_price
                     }
                     key++;
@@ -1459,7 +1459,7 @@ export class FlightService {
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
                             selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -1480,7 +1480,7 @@ export class FlightService {
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
                             selling_price = flightData.selling_price
                     }
                     key++;
