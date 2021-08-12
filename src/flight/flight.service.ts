@@ -87,6 +87,7 @@ import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { AdminNewBookingMail } from "src/config/admin-email-notification-templetes/new-booking.html";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { Airport } from "src/entity/airport.entity";
+import _ = require("lodash");
 
 @Injectable()
 export class FlightService {
@@ -686,6 +687,7 @@ export class FlightService {
             adult_count,
             child_count,
             infant_count,
+            request_date
         } = serchFlightDto;
 
         const depatureDate = new Date(departure_date);
@@ -703,11 +705,9 @@ export class FlightService {
 
         var result = [];
 
-        var resultIndex = 0;
+        let reqDates = [];
 
-        //var count = dayDiffrence <= 7 ? dayDiffrence : 7;
-        var count = 7;
-        previousWeekDates.setDate(previousWeekDates.getDate() - count);
+        var resultIndex = 0;
 
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
@@ -735,19 +735,14 @@ export class FlightService {
             headers.currency
         );
 
-        let reqDates = [];
 
-        for (let index = 0; index < count; index++) {
-            var predate = previousWeekDates.toISOString().split("T")[0];
-            predate = predate
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
+        if (request_date) {
 
-            reqDates.push(predate);
+            reqDates.push(request_date);
             let dto = {
                 source_location: source_location,
                 destination_location: destination_location,
-                departure_date: predate,
+                departure_date: request_date,
                 flight_class: flight_class,
                 adult_count: adult_count,
                 child_count: child_count,
@@ -766,43 +761,117 @@ export class FlightService {
                     )
                 )
             );
-            resultIndex++;
 
-            previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+        } else {
+            var count = 0
+            console.log(dayDiffrence)
+            if (dayDiffrence <= 2) {
+                count = 0
+            }
+            else
+                if (dayDiffrence == 3) {
+                    count = 1
+                } else if (dayDiffrence == 4) {
+                    count = 2
+                }
+                else if (dayDiffrence >= 5) {
+                    count = 3
+                }
+            var nextCount = 7
+            console.log('nextCount', nextCount)
+            console.log('count', count)
+            // var count = 4; 
+            previousWeekDates.setDate(previousWeekDates.getDate() - count + 2);
+            nextWeekDates.setDate(nextWeekDates.getDate() - count);
+
+            console.log('previousWeekDates'), previousWeekDates
+
+
+
+
+            // for (let index = 0; index < count; index++) {
+            //     var predate = previousWeekDates.toISOString().split("T")[0];
+            //     predate = predate
+            //         .replace(/T/, " ") // replace T with a space
+            //         .replace(/\..+/, "");
+
+            //     console.log('predate',predate)
+            //     if (
+            //         moment(new Date(predate)).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >= 2
+            //     ) {
+
+            //         reqDates.push(predate);
+            //         let dto = {
+            //             source_location: source_location,
+            //             destination_location: destination_location,
+            //             departure_date: predate,
+            //             flight_class: flight_class,
+            //             adult_count: adult_count,
+            //             child_count: child_count,
+            //             infant_count: infant_count,
+            //         };
+            //         result[resultIndex] = new Promise((resolve) =>
+            //             resolve(
+            //                 mystifly.oneWaySearchZipWithFilter(
+            //                     dto,
+            //                     user,
+            //                     mystiflyConfig,
+            //                     sessionToken,
+            //                     module,
+            //                     currencyDetails,
+            //                     refferalId
+            //                 )
+            //             )
+            //         );
+            //         resultIndex++;
+            //     } else {
+            //         nextCount++
+            //     }
+            //     previousWeekDates.setDate(previousWeekDates.getDate() + 1);
+            // }
+
+            for (let index = 0; index < nextCount; index++) {
+                var nextdate = nextWeekDates.toISOString().split("T")[0];
+                nextdate = nextdate
+                    .replace(/T/, " ") // replace T with a space
+                    .replace(/\..+/, "");
+                console.log('nextdate', nextdate)
+                console.log("days", new Date(nextdate), moment().format('YYYY-MM-DD'), moment(nextdate).diff(moment().format('YYYY-MM-DD'), "days"))
+                if (
+                    moment(new Date(nextdate)).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
+                    2
+                ) {
+                    reqDates.push(nextdate);
+                    let dto = {
+                        source_location: source_location,
+                        destination_location: destination_location,
+                        departure_date: nextdate,
+                        flight_class: flight_class,
+                        adult_count: adult_count,
+                        child_count: child_count,
+                        infant_count: infant_count,
+                    };
+                    result[resultIndex] = new Promise((resolve) =>
+                        resolve(
+                            mystifly.oneWaySearchZipWithFilter(
+                                dto,
+                                user,
+                                mystiflyConfig,
+                                sessionToken,
+                                module,
+                                currencyDetails,
+                                refferalId
+                            )
+                        )
+                    );
+                    resultIndex++;
+                }
+                nextWeekDates.setDate(nextWeekDates.getDate() + 1);
+            }
+
         }
 
-        for (let index = 0; index <= 7; index++) {
-            var nextdate = nextWeekDates.toISOString().split("T")[0];
-            nextdate = nextdate
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
-            reqDates.push(nextdate);
-            let dto = {
-                source_location: source_location,
-                destination_location: destination_location,
-                departure_date: nextdate,
-                flight_class: flight_class,
-                adult_count: adult_count,
-                child_count: child_count,
-                infant_count: infant_count,
-            };
-            result[resultIndex] = new Promise((resolve) =>
-                resolve(
-                    mystifly.oneWaySearchZipWithFilter(
-                        dto,
-                        user,
-                        mystiflyConfig,
-                        sessionToken,
-                        module,
-                        currencyDetails,
-                        refferalId
-                    )
-                )
-            );
-            resultIndex++;
 
-            nextWeekDates.setDate(nextWeekDates.getDate() + 1);
-        }
 
         const response = await Promise.all(result);
         let returnResponce = [];
@@ -815,73 +884,37 @@ export class FlightService {
                 var date;
                 var startPrice = 0;
                 var secondaryStartPrice = 0;
-                var isInstallmentAvailable = false
+                var isPriceInInstallment = false
                 var selling_price = 0
                 for await (const flightData of data.items) {
-                    if (flightData?.is_installment_available) {
+                    if (key == 0) {
+                        netRate = flightData.net_rate;
+                        lowestprice = flightData.discounted_selling_price;
+                        unique_code = flightData.unique_code;
+                        date = flightData.departure_date;
+                        startPrice = flightData.start_price || 0;
+                        secondaryStartPrice =
+                            flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        selling_price = flightData.selling_price
+                    }
+                    // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
-
-                        if (key == 0) {
-                            netRate = flightData.net_rate;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            startPrice = flightData.start_price || 0;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
+                    // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+                    // 	lowestPriceIndex = key
+                    // 	lowestprice = flightData.net_rate;
+                    // 	is_booking_avaible = true
+                    // }
+                    else if (lowestprice > flightData.discounted_selling_price) {
+                        netRate = flightData.net_rate;
+                        lowestprice = flightData.discounted_selling_price;
+                        unique_code = flightData.unique_code;
+                        date = flightData.departure_date;
+                        startPrice = flightData.start_price || 0;
+                        secondaryStartPrice =
+                            flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
                             selling_price = flightData.selling_price
-
-                        }
-                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
-
-                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
-                        // 	lowestPriceIndex = key
-                        // 	lowestprice = flightData.net_rate;
-                        // 	is_booking_avaible = true
-                        // }
-                        else if (lowestprice > flightData.discounted_selling_price) {
-                            netRate = flightData.net_rate;
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            startPrice = flightData.start_price || 0;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            selling_price = flightData.selling_price
-                        }
-                    } else {
-                        if (key == 0) {
-                            netRate = flightData.net_rate;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            startPrice = flightData.start_price || 0;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            selling_price = flightData.selling_price
-
-                        }
-                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
-
-                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
-                        // 	lowestPriceIndex = key
-                        // 	lowestprice = flightData.net_rate;
-                        // 	is_booking_avaible = true
-                        // }
-                        else if (selling_price > flightData.selling_price) {
-                            netRate = flightData.net_rate;
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            startPrice = flightData.start_price || 0;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            selling_price = flightData.selling_price
-                        }
                     }
 
                     key++;
@@ -895,7 +928,7 @@ export class FlightService {
                         unique_code: unique_code,
                         start_price: startPrice,
                         secondary_start_price: secondaryStartPrice,
-                        is_installment_available: isInstallmentAvailable,
+                        isPriceInInstallment: isPriceInInstallment,
                         selling_price
                     };
 
@@ -939,7 +972,7 @@ export class FlightService {
                     unique_code: "",
                     start_price: 0,
                     secondary_start_price: 0,
-                    is_installment_available: false,
+                    isPriceInInstallment: false,
                     selling_price: 0
                 };
 
@@ -1054,7 +1087,7 @@ export class FlightService {
                 );
             } else {
                 if (
-                    moment(new Date(date)).diff(moment(new Date()), "days") >=
+                    moment(date).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
                     2
                 ) {
                     let dto = {
@@ -1099,6 +1132,8 @@ export class FlightService {
                 var date = "";
                 var startPrice;
                 var secondaryStartPrice = 0;
+                var isPriceInInstallment = false
+                var selling_price = 0
                 for await (const flightData of data.items) {
                     if (key == 0) {
                         netRate = flightData.net_rate;
@@ -1108,6 +1143,8 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                            selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
@@ -1124,6 +1161,8 @@ export class FlightService {
                         startPrice = flightData.start_price || 0;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false
+                        selling_price = flightData.selling_price
                     }
                     key++;
                 }
@@ -1135,6 +1174,8 @@ export class FlightService {
                     start_price: startPrice,
                     secondary_start_price:
                         secondaryStartPrice >= 5 ? secondaryStartPrice : 5,
+                    isPriceInInstallment: isPriceInInstallment,
+                    selling_price
                 };
 
                 returnResponce.push(output);
@@ -1230,8 +1271,22 @@ export class FlightService {
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
         // dayDiffrence = 3
+
+        if (dayDiff <= 2) {
+            count = 0
+        }
+        else
+            if (dayDiff == 3) {
+                count = 1
+            } else if (dayDiff == 4) {
+                count = 2
+            }
+            else if (dayDiff >= 5) {
+                count = 3
+            }
+
         var startDate = new Date(departure_date);
-        startDate.setDate(startDate.getDate() - dayDiffrence);
+        startDate.setDate(startDate.getDate() - count);
 
         console.log(startDate);
 
@@ -1245,21 +1300,23 @@ export class FlightService {
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
         console.log("dayDiff", dayDiff);
-        if (dayDiff == 2) {
-            afterDateDiffrence = 4;
+        if (dayDiff <= 2) {
+            afterDateDiffrence = 6;
         }
-        if (dayDiff == 1) {
+        if (dayDiff == 3) {
             afterDateDiffrence = 5;
         }
 
-        if (dayDiff == 0) {
-            afterDateDiffrence = 6;
+        if (dayDiff == 4) {
+            afterDateDiffrence = 4;
         }
 
-        // if (dayDiff == 30) {
-        //     afterDateDiffrence = 7;
-        // }
+        if (dayDiff >= 5) {
+            afterDateDiffrence = 3;
+        }
 
+
+        
         console.log(afterDateDiffrence);
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
@@ -1316,23 +1373,27 @@ export class FlightService {
         );
 
         for (let index = 0; index <= count; index++) {
+            if (
+                moment(depature).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
+                2
+            ) {
+                var beforeDateString = depature.toISOString().split("T")[0];
+                beforeDateString = beforeDateString
+                    .replace(/T/, " ") // replace T with a space
+                    .replace(/\..+/, "");
+                console.log("Dept", depature, beforeDateString);
 
-            var beforeDateString = depature.toISOString().split("T")[0];
-            beforeDateString = beforeDateString
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
-            console.log("Dept", depature, beforeDateString);
+                const arrival = new Date(depature);
+                arrival.setDate(depature.getDate() + tourDiffrence);
+                var afterDateString = arrival.toISOString().split("T")[0];
+                afterDateString = afterDateString
+                    .replace(/T/, " ") // replace T with a space
+                    .replace(/\..+/, "");
+                console.log("seatch dates", beforeDateString, afterDateString);
+                reqDates.push(beforeDateString);
+                secondDate.push(afterDateString);
 
-            const arrival = new Date(depature);
-            arrival.setDate(depature.getDate() + tourDiffrence);
-            var afterDateString = arrival.toISOString().split("T")[0];
-            afterDateString = afterDateString
-                .replace(/T/, " ") // replace T with a space
-                .replace(/\..+/, "");
-            console.log("seatch dates", beforeDateString, afterDateString);
-            reqDates.push(beforeDateString);
-            secondDate.push(afterDateString);
-
+            
             let dto = {
                 source_location: source_location,
                 destination_location: destination_location,
@@ -1358,7 +1419,7 @@ export class FlightService {
                 )
             );
             resultIndex++;
-
+            }
             depature.setDate(depature.getDate() + 1);
         }
 
@@ -1375,74 +1436,39 @@ export class FlightService {
                 var startPrice = 0;
                 var arrivalDate;
                 var secondaryStartPrice = 0;
-                var isInstallmentAvailable = false
+                var isPriceInInstallment = false
                 var selling_price = 0
                 for await (const flightData of data.items) {
-                    if (flightData?.is_installment_available) {
+                    if (key == 0) {
+                        netRate = flightData.net_rate;
+                        lowestprice = flightData.discounted_selling_price;
+                        unique_code = flightData.unique_code;
+                        date = flightData.departure_date;
+                        arrivalDate = flightData.arrival_date;
+                        startPrice = flightData.start_price || 0;
+                        secondaryStartPrice =
+                            flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
+                            selling_price = flightData.selling_price
+                    }
+                    // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
 
-                        if (key == 0) {
-                            netRate = flightData.net_rate;
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            arrivalDate = flightData.arrival_date;
-                            startPrice = flightData.start_price || 0;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            isInstallmentAvailable = flightData?.is_installment_available
+                    // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
+                    // 	lowestPriceIndex = key
+                    // 	lowestprice = flightData.net_rate;
+                    // 	is_booking_avaible = true
+                    // }
+                    else if (lowestprice > flightData.discounted_selling_price) {
+                        netRate = flightData.net_rate;
+                        lowestprice = flightData.discounted_selling_price;
+                        unique_code = flightData.unique_code;
+                        date = flightData.departure_date;
+                        startPrice = flightData.start_price || 0;
+                        arrivalDate = flightData.arrival_date;
+                        secondaryStartPrice =
+                            flightData.discounted_secondary_start_price || 0;
+                        isPriceInInstallment = parseFloat(flightData.start_price) > 0 ? true : false,
                             selling_price = flightData.selling_price
-                        }
-                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
-
-                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
-                        // 	lowestPriceIndex = key
-                        // 	lowestprice = flightData.net_rate;
-                        // 	is_booking_avaible = true
-                        // }
-                        else if (lowestprice > flightData.discounted_selling_price) {
-                            netRate = flightData.net_rate;
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            startPrice = flightData.start_price || 0;
-                            arrivalDate = flightData.arrival_date;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            selling_price = flightData.selling_price
-                        }
-                    } else {
-                        if (key == 0) {
-                            netRate = flightData.net_rate;
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            arrivalDate = flightData.arrival_date;
-                            startPrice = flightData.start_price || 0;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            selling_price = flightData.selling_price
-                        }
-                        // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
-
-                        // 	returnResponce[lowestPriceIndex].is_booking_avaible = false
-                        // 	lowestPriceIndex = key
-                        // 	lowestprice = flightData.net_rate;
-                        // 	is_booking_avaible = true
-                        // }
-                        else if (selling_price > flightData.selling_price) {
-                            netRate = flightData.net_rate;
-                            lowestprice = flightData.discounted_selling_price;
-                            unique_code = flightData.unique_code;
-                            date = flightData.departure_date;
-                            startPrice = flightData.start_price || 0;
-                            arrivalDate = flightData.arrival_date;
-                            secondaryStartPrice =
-                                flightData.discounted_secondary_start_price || 0;
-                            isInstallmentAvailable = flightData?.is_installment_available
-                            selling_price = flightData.selling_price
-                        }
                     }
                     key++;
                 }
@@ -1457,7 +1483,7 @@ export class FlightService {
                         start_price: startPrice,
                         arrival_date: arrivalDate,
                         secondary_start_price: secondaryStartPrice,
-                        is_installment_available: isInstallmentAvailable,
+                        isPriceInInstallment,
                         selling_price
                     };
 
@@ -1500,7 +1526,7 @@ export class FlightService {
                     start_price: 0,
                     secondary_start_price: 0,
                     arrival_date: date2,
-                    is_installment_available: false,
+                    isPriceInInstallment: false,
                     selling_price: 0
                 };
 
@@ -3883,42 +3909,53 @@ export class FlightService {
     }
 
     async flightRoute(type) {
-        let result;
-        if (type == "from") {
-            result = await getConnection().query(
-                `select
-				"route"."from_airport_code" as code,
-				"route"."from_airport_name" as name,
-				"route"."from_airport_city" as city,
-				"route"."from_airport_country" as country
-				from
-					"flight_route" "route"
-                Where "route"."is_deleted" = false
-				group by
-					"route"."from_airport_code",
-					"route"."from_airport_name",
-					"route"."from_airport_city",
-					"route"."from_airport_country"
-				Order by "route"."from_airport_city"	`
-            );
-        } else {
-            result = await getConnection().query(
-                `select
-				"route"."to_airport_code" as code,
-				"route"."to_airport_name" as name,
-				"route"."to_airport_city" as city,
-				"route"."to_airport_country" as country
-				from
-					"flight_route" "route"
-                Where "route"."is_deleted" = false
-				group by
-					"route"."to_airport_code",
-					"route"."to_airport_name",
-					"route"."to_airport_city",
-					"route"."to_airport_country"
-				Order by "route"."to_airport_city"`
-            );
-        }
+        let fromAirport = await getConnection().query(
+            `SELECT distinct from_airport_code FROM flight_route Where is_deleted = false`
+        );
+        let toAirport = await getConnection().query(
+            `SELECT distinct to_airport_code AS from_airport_code FROM flight_route  where is_deleted = false`
+        );
+
+        // console.log(fromAirport)
+        // console.log(toAirport)
+
+        let result: any = _.unionBy(fromAirport, toAirport, 'from_airport_code');
+        // console.log('result',result)
+        // if (type == "from") {
+        //     result = await getConnection().query(
+        //         `select
+        // 		"route"."from_airport_code" as code,
+        // 		"route"."from_airport_name" as name,
+        // 		"route"."from_airport_city" as city,
+        // 		"route"."from_airport_country" as country
+        // 		from
+        // 			"flight_route" "route"
+        //         Where "route"."is_deleted" = false
+        // 		group by
+        // 			"route"."from_airport_code",
+        // 			"route"."from_airport_name",
+        // 			"route"."from_airport_city",
+        // 			"route"."from_airport_country"
+        // 		Order by "route"."from_airport_city"	`
+        //     );
+        // } else {
+        //     result = await getConnection().query(
+        //         `select
+        // 		"route"."to_airport_code" as code,
+        // 		"route"."to_airport_name" as name,
+        // 		"route"."to_airport_city" as city,
+        // 		"route"."to_airport_country" as country
+        // 		from
+        // 			"flight_route" "route"
+        //         Where "route"."is_deleted" = false
+        // 		group by
+        // 			"route"."to_airport_code",
+        // 			"route"."to_airport_name",
+        // 			"route"."to_airport_city",
+        // 			"route"."to_airport_country"
+        // 		Order by "route"."to_airport_city"`
+        //     );
+        // }
 
         //console.log("result",result)
         if (!result.length) {
@@ -3931,9 +3968,9 @@ export class FlightService {
         let condition = ""
         for await (const route of result) {
             if (condition == "") {
-                condition += `'${route.code}'`
+                condition += `'${route.from_airport_code}'`
             } else {
-                condition += `,'${route.code}'`
+                condition += `,'${route.from_airport_code}'`
             }
             allCode.push(route.code)
         }
@@ -4029,11 +4066,13 @@ export class FlightService {
             airportArray.push(value);
         }
 
-        
+
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
             if (iterator.child.length) {
+                iterator.child = iterator.child.sort((a, b) => a.name.localeCompare(b.name));
+
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
@@ -4069,31 +4108,34 @@ export class FlightService {
             }
         }
 
+        // if (search) {
+        //     where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%') OR ("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
+        // }
         if (is_from_location == "yes") {
             if (search) {
                 where += `AND (("from_airport_city" ILIKE '%${search}%')or("from_airport_code" ILIKE '%${search}%')or("from_airport_country" ILIKE '%${search}%') or ("from_airport_name" ILIKE '%${search}%'))`;
             }
-            if (alternet_location) {
-                where += `AND ("to_airport_code" = '${alternet_location}') `;
-            }
+            // if (alternet_location) {
+            //     where += `AND ("to_airport_code" = '${alternet_location}') `;
+            // }
         } else {
             if (search) {
                 where += `AND (("to_airport_city" ILIKE '%${search}%')or("to_airport_code" ILIKE '%${search}%')or("to_airport_country" ILIKE '%${search}%') or ("to_airport_name" ILIKE '%${search}%'))`;
             }
-            if (alternet_location) {
-                where += `AND ("from_airport_code" = '${alternet_location}') `;
-            }
+            // if (alternet_location) {
+            //     where += `AND ("from_airport_code" = '${alternet_location}') `;
+            // }
         }
 
-        let orderBy = "from_airport_city";
-        if (is_from_location != "yes") {
-            orderBy = "to_airport_city";
-        }
+        // let orderBy = "from_airport_city";
+        // if (is_from_location != "yes") {
+        //     orderBy = "to_airport_city";
+        // }
 
         let result = await getManager()
             .createQueryBuilder(FlightRoute, "route")
             .where(where)
-            .orderBy(orderBy, "ASC")
+            //.orderBy(orderBy, "ASC")
             .getMany();
 
         if (!result.length) {
@@ -4101,6 +4143,7 @@ export class FlightService {
                 `No any route available for given location`
             );
         }
+
         let availableRoute = [];
         let opResult = [];
         let airport: any = {};
@@ -4141,6 +4184,22 @@ export class FlightService {
 
                 }
             }
+            // if (!opResult.includes(route.fromAirportCode)) {
+            //     opResult.push(route.fromAirportCode)
+            //     if (condition == "") {
+            //         condition += `'${route.fromAirportCode}'`
+            //     } else {
+            //         condition += `,'${route.fromAirportCode}'`
+            //     }
+            // }
+            // if (!opResult.includes(route.toAirportCode)) {
+            //     opResult.push(route.toAirportCode)
+            //     if (condition == "") {
+            //         condition += `'${route.toAirportCode}'`
+            //     } else {
+            //         condition += `,'${route.toAirportCode}'`
+            //     }
+            // }
         }
         // for await (const route of result) {
 
@@ -4178,7 +4237,7 @@ export class FlightService {
 
         let airportObb = {}
 
-        
+
 
         for await (const iterator of Allairports) {
 
@@ -4240,22 +4299,34 @@ export class FlightService {
         }
 
         //opResult = opResult.sort((a,b) => a.updated_at - b.updated_at);
-       
+
         //return airportArray
         for (let index = 0; index < airportArray.length; index++) {
             const iterator = airportArray[index];
 
-            if (iterator.child.length) {
+
+
+            if (iterator.code == alternet_location) {
+                airportArray.splice(index, 1);
+            }
+            else if (iterator.child.length) {
                 for (let j = 0; j < iterator.child.length; j++) {
+
                     const child = iterator.child[j];
+                    if (child.code == alternet_location) {
+                        iterator.child.splice(j, 1);
+                    }
                     let i = airportArray.findIndex(x => x.code == child.code)
                     if (i != -1 && i != index) {
                         airportArray.splice(i, 1);
                     }
                 }
-            }   
+            }
+
+
+
         }
-        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));       
+        airportArray = airportArray.sort((a, b) => a.city.localeCompare(b.city));
         return airportArray;
 
     }

@@ -118,12 +118,14 @@ export class EnqiryService {
                 .sendMail({
                     to: mailConfig.admin,
                     from: mailConfig.from,
+                    bcc: mailConfig.BCC,
                     subject: `New Enquiry`,
 					attachments: attachments,
                     html: EnquiryNotificationHTML({
                         name: name,
                         message: message,
                         id: enquiry.id,
+                        email
                     }),
                 })
                 .then((res) => {
