@@ -285,15 +285,15 @@ export class Instalment {
             let remainingInstalmentAmount = amount - firstInstalment;
             remainingPerInstalmentAmount = remainingInstalmentAmount / (instalmentsDates.length - 1);
         }
-        else if (downPayment) {
-                //firstInstalment=customAmount+additionalAmount;
-            firstInstalment = downPayment + additionalAmount;
-            if (firstInstalment < firstInstalmentTemp) {
-                firstInstalment = firstInstalmentTemp;
-            }
-            let remainingInstalmentAmount = amount - firstInstalment;
-            remainingPerInstalmentAmount = remainingInstalmentAmount / (instalmentsDates.length - 1);
-        }
+        // else if (downPayment) {
+        //         //firstInstalment=customAmount+additionalAmount;
+        //     firstInstalment = downPayment + additionalAmount;
+        //     if (firstInstalment < firstInstalmentTemp) {
+        //         firstInstalment = firstInstalmentTemp;
+        //     }
+        //     let remainingInstalmentAmount = amount - firstInstalment;
+        //     remainingPerInstalmentAmount = remainingInstalmentAmount / (instalmentsDates.length - 1);
+        // }
         else if (customInstalmentNo && customInstalmentNo < instalmentsDates.length) {
             instalmentsDates = instalmentsDates.slice(0, -(instalmentsDates.length - customInstalmentNo));
             //firstInstalment = (amount / instalmentsDates.length)+additionalAmount;
