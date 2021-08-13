@@ -32,7 +32,7 @@ export class SaveTravelerDto {
         description: `Cart id`,
         example: 1,
     })
-    card_id: number;
+    cart_id: number;
 
     @ApiPropertyOptional({
         description: `Enter module id`,

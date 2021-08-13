@@ -25,6 +25,7 @@ import { Gender } from "src/enum/gender.enum";
 import * as uuidValidator from "uuid-validate";
 import { MultipleTravelersDto } from "./dto/multiple-add-traveler.dto";
 import { ModulesName } from "src/enum/module.enum";
+import { CartTravelers } from "src/entity/cart-traveler.entity";
 
 @Injectable()
 export class TravelerService {
@@ -175,6 +176,7 @@ export class TravelerService {
             email,
             phone_no,
             country_id,
+            cart_id
         } = saveTravelerDto;
         try {
             if (country_id) {
@@ -234,46 +236,19 @@ export class TravelerService {
             user.isDeleted = false;
             user.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
 
-            return this.userRepository.createtraveler(user);
-            // if (parent_user_id != undefined && parent_user_id != "") {
-            // 	// const userData = await this.userRepository.getUserData(parent_user_id);
-            // 	// if (userData.email == user.email) {
-            // 	// 	throw new ConflictException(
-            // 	// 		`You have already added your email.`
-            // 	// 	);
-            // 	// }
-            // 	return this.userRepository.createtraveler(user);
-            // } else if (guest_id) {
-
-            // }
-            // else {
-            // 	user.roleId = Role.GUEST_USER;
-            // 	if (user.email == "") {
-            // 		throw new NotFoundException(
-            // 			`Please enter your email id &&&email&&&Please enter your email id`
-            // 		);
-            // 	}
-            // 	const roles = [Role.TRAVELER_USER]
-            // 	const data = await this.userRepository.createUser(user, roles);
-            // 	const payload: JwtPayload = {
-            // 		user_id: data.userId,
-            // 		email: data.email,
-            // 		username: data.firstName + " " + data.lastName,
-            // 		firstName: data.firstName,
-            // 		phone: data.phoneNo,
-            // 		middleName: data.middleName,
-            // 		lastName: data.lastName,
-            // 		salt: "",
-
-            // 		profilePic: "",
-            // 		roleId: data.roleId,
-            // 	};
-            // 	var userdata: any = {};
-            // 	userdata = data;
-            // 	userdata.token = this.jwtService.sign(payload);
-
-            // 	return userdata;
-            // }
+            let CartTraveler = new CartTravelers();
+            CartTraveler.cartId = cart_id;
+            CartTraveler.travelerId = user.userId;
+            CartTraveler.traveler = user;
+            //return this.userRepository.createtraveler(user);
+           /*  return getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(CartTravelers)
+            .values(CartTraveler)
+            .execute(); */
+            return await CartTraveler.save()
+            
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 console.log("m");
@@ -498,12 +473,6 @@ export class TravelerService {
                 throw new NotFoundException("Given id not avilable");
             }
             //const traveler = await this.userRepository.getTravelData(userId);
-            const traveler = await this.userRepository.findOne(userId);
-            if (!traveler) {
-                throw new NotFoundException(
-                    `Traveler not found &&&id&&&Traveler not found`
-                );
-            }
             const {
                 first_name,
                 last_name,
@@ -515,8 +484,20 @@ export class TravelerService {
                 passport_number,
                 phone_no,
                 country_id,
-                module_id
+                module_id,
+                cart_id,
+                traveler_id
             } = updateTravelerDto;
+            const traveler:any = await getManager()
+            .createQueryBuilder(CartTravelers, "traveler")
+            .where(`traveler_id=:traveler_id`, { traveler_id })
+            .getOne();
+            if (!traveler) {
+                throw new NotFoundException(
+                    `Traveler not found &&&id&&&Traveler not found`
+                );
+            }
+            
             if (country_id) {
                 let countryDetails = await getManager()
                     .createQueryBuilder(Countries, "country")
@@ -557,6 +538,8 @@ export class TravelerService {
 
             traveler.status = 1;
             //console.log("countryDetails.id",traveler)
+            traveler.traveler = traveler;
+
             await traveler.save();
 
             return await this.userRepository.getTravelData(userId);

@@ -24,6 +24,9 @@ export class CartTravelers extends BaseEntity {
     @Column("uuid", { name: "user_id", nullable:true })
     userId: string;
 
+    @Column("uuid", { name: "traveler_id", nullable:true })
+    travelerId: string;
+
     @Column("character varying", {
         name: "baggage_service_code",
         nullable: true,

@@ -29,6 +29,19 @@ export class UpdateTravelerDto {
            //     example: `mr`
            // })
            // title : string;
+
+            @ApiPropertyOptional({
+            description: `Cart id`,
+            example: 1,
+            })
+            cart_id: number;
+
+            @ApiPropertyOptional({
+            description: `traveler id`,
+            example: 1,
+            })
+            traveler_id: number;
+
            @ApiPropertyOptional({
                description: `Enter module id`,
                example: 1,
