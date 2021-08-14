@@ -214,9 +214,9 @@ export class TravelerService {
             user.gender = gender || null;
             user.countryId = country_id || null;
             user.passportExpiry =
-                passport_expiry == "" ? null : passport_expiry;
+                passport_expiry == "" ? "" : passport_expiry;
             user.passportNumber =
-                passport_number == "" ? null : passport_number;
+                passport_number == "" ? "" : passport_number;
             user.roleId = Role.TRAVELER_USER;
             user.email = email;
             user.firstName = first_name;
@@ -235,6 +235,16 @@ export class TravelerService {
             user.updatedDate = new Date();
             user.isDeleted = false;
             user.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
+            var birthDate = new Date(user.dob);
+
+            var age = moment(new Date()).diff(moment(birthDate), "years");
+            if (age < 2) {
+                user.user_type = "infant";
+            } else if (age < 12) {
+                user.user_type = "child";
+            } else {
+                user.user_type = "adult";
+            }
 
             let CartTraveler = new CartTravelers();
             CartTraveler.cartId = cart_id;
@@ -485,13 +495,15 @@ export class TravelerService {
                 phone_no,
                 country_id,
                 module_id,
-                cart_id,
-                traveler_id
+                cart_id
             } = updateTravelerDto;
-            const traveler:any = await getManager()
+            const traveler = await getManager()
             .createQueryBuilder(CartTravelers, "traveler")
-            .where(`traveler_id=:traveler_id`, { traveler_id })
+            .where(`traveler_id=:userId`, { userId })
             .getOne();
+            console.log("usreid",userId,traveler)
+
+            let user= new User;
             if (!traveler) {
                 throw new NotFoundException(
                     `Traveler not found &&&id&&&Traveler not found`
@@ -510,39 +522,49 @@ export class TravelerService {
                     );
             }
 
-            traveler.countryCode = country_code;
+            user.countryCode = country_code;
 
-            traveler.firstName = first_name;
-            traveler.lastName = last_name;
-            traveler.isVerified = true;
-            if (email && traveler.roleId == Role.TRAVELER_USER) {
-                traveler.email = email;
+            user.firstName = first_name;
+            user.lastName = last_name;
+            user.isVerified = true;
+            user.userId = userId;
+            if (email) {
+                user.email = email;
             }
             if (gender) {
-                traveler.title = gender == Gender.M ? "mr" : "ms";
+                user.title = gender == Gender.M ? "mr" : "ms";
             }
             if (module_id == ModulesName.FLIGHT) {
-                traveler.dob = dob || null;
-                traveler.gender = gender || null;
-                traveler.countryId = country_id || null;
-                traveler.passportExpiry =
-                    passport_expiry == "" ? null : passport_expiry;
-                traveler.passportNumber =
-                    passport_number == "" ? null : passport_number;
+                user.dob = dob || null;
+                user.gender = gender || null;
+                user.countryId = country_id || null;
+                user.passportExpiry =
+                    passport_expiry == "" ? "" : passport_expiry;
+                user.passportNumber =
+                    passport_number == "" ? "" : passport_number;
             }
 
-            traveler.updatedBy = updateBy ? updateBy : guest_id;
-            traveler.phoneNo =
+            user.updatedBy = updateBy ? updateBy : guest_id;
+            user.phoneNo =
                 phone_no == "" || phone_no == null ? "" : phone_no;
-            traveler.updatedDate = new Date();
+            user.updatedDate = new Date();
 
-            traveler.status = 1;
+            user.status = 1;
+            var birthDate = new Date(user.dob);
+            var age = moment(new Date()).diff(moment(birthDate), "years");
+            if (age < 2) {
+                user.user_type = "infant";
+            } else if (age < 12) {
+                user.user_type = "child";
+            } else {
+                user.user_type = "adult";
+            }
             //console.log("countryDetails.id",traveler)
-            traveler.traveler = traveler;
+            traveler.traveler = user;
 
-            await traveler.save();
+            return await traveler.save();
 
-            return await this.userRepository.getTravelData(userId);
+            //return await this.userRepository.getTravelData(userId);
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 switch (error.response.statusCode) {

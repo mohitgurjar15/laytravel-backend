@@ -131,7 +131,7 @@ export class TravelerController {
 		@Param("id") userId: string,
 		@Body() updateTravelerDto: UpdateTravelerDto,
 		@LogInUser() user,
-	): Promise<User> {
+	){
 		const parent_user_id = user.roleId != Role.GUEST_USER ? user.user_id: '';
 		const guest_id = user.roleId == Role.GUEST_USER ? user.user_id: '';
 		return await this.travelerService.updateTraveler(updateTravelerDto, userId, parent_user_id, guest_id);

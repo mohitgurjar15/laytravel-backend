@@ -36,12 +36,6 @@ export class UpdateTravelerDto {
             })
             cart_id: number;
 
-            @ApiPropertyOptional({
-            description: `traveler id`,
-            example: 1,
-            })
-            traveler_id: number;
-
            @ApiPropertyOptional({
                description: `Enter module id`,
                example: 1,
