@@ -2495,33 +2495,33 @@ export class FlightService {
     }
 
     async getTravelersInfo(travelers, isPassportRequired = null) {
-        let travelerIds = travelers.map((traveler) => {
-            return traveler.traveler_id;
-        });
+        // let travelerIds = travelers.map((traveler) => {
+        //     return traveler.traveler_id;
+        // });
 
-        let travelersResult = await getManager()
-            .createQueryBuilder(User, "user")
-            .leftJoinAndSelect("user.country", "countries")
-            .select([
-                "user.userId",
-                "user.title",
-                "user.firstName",
-                "user.lastName",
-                "user.email",
-                "user.countryCode",
-                "user.phoneNo",
-                "user.zipCode",
-                "user.gender",
-                "user.dob",
-                "user.passportNumber",
-                "user.passportExpiry",
-                "countries.name",
-                "countries.iso2",
-                "countries.iso3",
-                "countries.id",
-            ])
-            .where('"user"."user_id" IN (:...travelerIds)', { travelerIds })
-            .getMany();
+        // let travelersResult = await getManager()
+        //     .createQueryBuilder(User, "user")
+        //     .leftJoinAndSelect("user.country", "countries")
+        //     .select([
+        //         "user.userId",
+        //         "user.title",
+        //         "user.firstName",
+        //         "user.lastName",
+        //         "user.email",
+        //         "user.countryCode",
+        //         "user.phoneNo",
+        //         "user.zipCode",
+        //         "user.gender",
+        //         "user.dob",
+        //         "user.passportNumber",
+        //         "user.passportExpiry",
+        //         "countries.name",
+        //         "countries.iso2",
+        //         "countries.iso3",
+        //         "countries.id",
+        //     ])
+        //     .where('"user"."user_id" IN (:...travelerIds)', { travelerIds })
+        //     .getMany();
 
         let traveleDetails = {
             adults: [],
@@ -2529,8 +2529,8 @@ export class FlightService {
             infants: [],
         };
 
-        if (travelersResult.length > 0) {
-            for (let traveler of travelersResult) {
+        if (travelers.traveler.length > 0) {
+            for (let traveler of travelers.traveler) {
                 let ageDiff = moment(new Date()).diff(
                     moment(traveler.dob),
                     "years"

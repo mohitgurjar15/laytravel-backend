@@ -2223,7 +2223,8 @@ more than 10.`
                 for await (const traveler of cart.travelers) {
                     //console.log(traveler);
                     let travelerUser = {
-                        traveler_id: traveler.userId,
+                        traveler_id: traveler,
+                        traveler: traveler.traveler,
                         is_primary_traveler: traveler.isPrimary,
                     };
                     travelers.push(travelerUser);
@@ -2241,6 +2242,7 @@ more than 10.`
                     booking_through,
                     cartCount,
                     reservationId,
+                    
                 };
 
                 console.log("cartBook request");
@@ -2398,6 +2400,7 @@ more than 10.`
                     //console.log(traveler);
                     let travelerUser = {
                         traveler_id: traveler.userId,
+                        traveler: traveler.traveler,
                         is_primary_traveler: traveler.isPrimary,
                     };
                     travelers.push(travelerUser);
