@@ -149,7 +149,7 @@ more than 10.`
                     paymentType = cart.paymentType
                 } else if (paymentType != cart.paymentType) {
                     // throw new NotAcceptableException(`In cart Installment and no-installment both inventry found.`)
-                
+
                 }
             }
 
@@ -838,7 +838,7 @@ more than 10.`
                 if (paymentType == 0) {
                     paymentType = cart.paymentType
                 } else if (paymentType != cart.paymentType) {
-                    if(cart.paymentType == BookingType.NOINSTALMENT){
+                    if (cart.paymentType == BookingType.NOINSTALMENT) {
                         paymentType = BookingType.NOINSTALMENT
                     }
                     //is_payment_plan_conflict = true
@@ -1182,7 +1182,7 @@ more than 10.`
                             // newCart["is_available"] = false;
                         }
 
-                        
+
                     }
                     if (cart.moduleId == ModulesName.HOTEL) {
                         newCart["is_available"] = true;
@@ -1231,7 +1231,7 @@ more than 10.`
                 cartIsPromotional,
                 error,
                 is_payment_plan_conflict,
-                cart_payment_type:paymentType
+                cart_payment_type: paymentType
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -1851,6 +1851,13 @@ more than 10.`
         if (payment_type == PaymentType.INSTALMENT) {
             let instalmentDetails;
 
+            let downPayments = [40, 50, 60]
+            if (moment(smallestDate).diff(
+                moment().format("YYYY-MM-DD"),
+                "days"
+            ) > 90) {
+                downPayments = [20, 30, 40]
+            }
             if (instalment_type == InstalmentType.WEEKLY) {
                 instalmentDetails = Instalment.weeklyInstalment(
                     totalAmount,
@@ -1859,7 +1866,11 @@ more than 10.`
                     0,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    true,
+                    null,
+                    true,
+                    downPayments
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1870,7 +1881,11 @@ more than 10.`
                     0,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    true,
+                    null,
+                    true,
+                    downPayments
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1881,7 +1896,11 @@ more than 10.`
                     0,
                     0,
                     0,
-                    selected_down_payment
+                    selected_down_payment,
+                    true,
+                    null,
+                    true,
+                    downPayments
                 );
             }
 
@@ -2011,6 +2030,13 @@ more than 10.`
                 let instalmentDetails;
                 const date = new Date();
                 var date1 = date.toISOString();
+                let downPayments = [40, 50, 60]
+                if (moment(smallestDate).diff(
+                    moment().format("YYYY-MM-DD"),
+                    "days"
+                ) > 90) {
+                    downPayments = [20, 30, 40]
+                }
                 //console.log("instalment_type", instalment_type, typeof instalment_type, InstalmentType.WEEKLY, typeof InstalmentType.WEEKLY, InstalmentType.WEEKLY == instalment_type)
                 if (instalment_type == InstalmentType.WEEKLY) {
                     console.log('Weekly')
@@ -2023,7 +2049,9 @@ more than 10.`
                         0,
                         selected_down_payment,
                         false,
-                        downPayment
+                        downPayment,
+                        true,
+                        downPayments
                     );
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -2036,7 +2064,9 @@ more than 10.`
                         0,
                         selected_down_payment,
                         false,
-                        downPayment
+                        downPayment,
+                        true,
+                        downPayments
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -2049,7 +2079,9 @@ more than 10.`
                         0,
                         selected_down_payment,
                         false,
-                        downPayment
+                        downPayment,
+                        true,
+                        downPayments
                     );
                 }
                 //console.log("instalmentDetails", instalmentDetails)
@@ -3032,9 +3064,9 @@ more than 10.`
         cart.offerFrom = referralId
         cart.oldModuleInfo = roomDetails.data;
         cart.paymentType = roomDetails.data["items"][0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
-        
+
         let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
-       
+
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
         cart.createdDate = new Date();

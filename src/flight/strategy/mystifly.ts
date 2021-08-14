@@ -1156,6 +1156,16 @@ export class Mystifly implements StrategyAirline {
                 route.selling_price = Generic.formatPriceDecimal(
                     PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                 );
+                    let d = moment(stops[0].departure_date, "DD/MM/YYYY").format(
+                        "YYYY-MM-DD"
+                    )
+                    let downPayments = [40, 50, 60]
+                    if (moment(d).diff(
+                        moment().format("YYYY-MM-DD"),
+                        "days"
+                    ) > 90) {
+                        downPayments = [20, 30, 40]
+                    }
 
                 let instalmentDetails = Instalment.weeklyInstalment(
                     route.selling_price,
@@ -1163,7 +1173,12 @@ export class Mystifly implements StrategyAirline {
                         "YYYY-MM-DD"
                     ),
                     bookingDate,
-                    0
+                    0,
+                    null,
+                    null,
+                    0,
+                    false,
+                    null, true, downPayments
                 );
                 if (instalmentDetails.instalment_available) {
                     route.start_price =
@@ -1688,13 +1703,24 @@ export class Mystifly implements StrategyAirline {
                     );
                 }
 
+                let d = moment(stops[0].departure_date, "DD/MM/YYYY").format(
+                        "YYYY-MM-DD"
+                    )
+                let downPayments = [40, 50, 60]
+                if (moment(d).diff(
+                    moment().format("YYYY-MM-DD"),
+                    "days"
+                ) > 90) {
+                    downPayments = [20, 30, 40]
+                }
+
                 let instalmentDetails = Instalment.weeklyInstalment(
                     route.selling_price,
                     moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
                     ),
                     bookingDate,
-                    0
+                    0, null, 0, 0, false, null, true, downPayments
                 );
                 if (instalmentDetails.instalment_available) {
                     route.start_price =

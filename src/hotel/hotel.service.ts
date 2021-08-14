@@ -862,10 +862,17 @@ export class HotelService {
                 }
                 //console.log("test2");
                 //save entry for future booking
+                let downPayments = [40, 50, 60]
+                if (moment(smallestDipatureDate).diff(
+                    moment().format("YYYY-MM-DD"),
+                    "days"
+                ) > 90) {
+                    downPayments = [20, 30, 40]
+                }
                 if (instalment_type == InstalmentType.WEEKLY) {
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(availability[0].offer_data, 0);
                     if (cartIsPromotional) {
-
+                        
                         instalmentDetails = Instalment.weeklyInstalment(
                             selling_price,
                             smallestDipatureDate,
@@ -875,7 +882,8 @@ export class HotelService {
                             null,
                             0,
                             cartCount > 1 ? true : false,
-                            weeklyCustomDownPayment
+                            weeklyCustomDownPayment,
+                            true, downPayments
                         );
                         console.log(instalmentDetails)
 
@@ -888,7 +896,8 @@ export class HotelService {
                             custom_instalment_amount,
                             custom_instalment_no,
                             selected_down_payment,
-                            cartCount > 1 ? true : false
+                            cartCount > 1 ? true : false,
+                            null, true, downPayments
                         );
                     }
                 }
@@ -902,7 +911,8 @@ export class HotelService {
                         custom_instalment_amount,
                         custom_instalment_no,
                         selected_down_payment,
-                        cartCount > 1 ? true : false
+                        cartCount > 1 ? true : false,
+                        null, true, downPayments
                     );
                 }
                 //console.log("test4");
@@ -915,7 +925,8 @@ export class HotelService {
                         custom_instalment_amount,
                         custom_instalment_no,
                         selected_down_payment,
-                        cartCount > 1 ? true : false
+                        cartCount > 1 ? true : false,
+                        null, true, downPayments
                     );
                 }
                 //console.log(instalmentDetails);

@@ -55,6 +55,7 @@ import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
 import { Role } from "src/enum/role.enum";
 import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
+import moment = require("moment");
 
 @Injectable()
 export class PaymentService {
@@ -1604,6 +1605,13 @@ export class PaymentService {
                 totalAdditionalAmount =
                     totalAdditionalAmount + laycredit_points;
             }
+            let downPayments = [40, 50, 60]
+            if (moment(smallestDate).diff(
+                moment().format("YYYY-MM-DD"),
+                "days"
+            ) > 90) {
+                downPayments = [20, 30, 40]
+            }
             //save entry for future booking
             if (instalment_type == InstalmentType.WEEKLY) {
                 if(cartIsPromotional){
@@ -1617,7 +1625,7 @@ export class PaymentService {
                         null,
                         0,
                         false,
-                        offerDownPayment
+                        offerDownPayment, true, downPayments
                     );
                     console.log("offerDownPayment", offerDownPayment)
                     console.log(instalmentDetails)
@@ -1631,7 +1639,8 @@ export class PaymentService {
                     0,
                     0,
                     selected_down_payment,
-                    false
+                    false,
+                        null, true, downPayments
                 );
                 }
                 
@@ -1645,7 +1654,8 @@ export class PaymentService {
                     0,
                     0,
                     selected_down_payment,
-                    false
+                    false,
+                    null, true, downPayments
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1657,7 +1667,8 @@ export class PaymentService {
                     0,
                     0,
                     selected_down_payment,
-                    false
+                    false,
+                    null, true, downPayments
                 );
             }
 

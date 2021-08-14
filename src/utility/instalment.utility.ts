@@ -8,7 +8,7 @@ const firstInstalmentPercentage2 = 20;
 export class Instalment {
 
 
-    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption = [40, 50, 60] ) {
+    static weeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage, downPaymentOption) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
 
@@ -69,7 +69,7 @@ export class Instalment {
 
     }
 
-    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption= [40, 50, 60] ) {
+    static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage , downPaymentOption) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)
@@ -131,7 +131,7 @@ export class Instalment {
         return instalmentData;
     }
 
-    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage = true, downPaymentOption = [40, 50, 60]) {
+    static monthlyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage , downPaymentOption ) {
         let instalmentData = { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
         let isAvailable = this.instalmentAvailbility(ckeckInDate, bookingDate);
         if (!isAvailable)

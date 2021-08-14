@@ -1754,6 +1754,13 @@ export class FlightService {
                 totalAdditionalAmount =
                     totalAdditionalAmount + laycredit_points;
             }
+            let downPayments = [40, 50, 60]
+            if (moment(departure_date).diff(
+                moment().format("YYYY-MM-DD"),
+                "days"
+            ) > 90) {
+                downPayments = [20, 30, 40]
+            }
             //save entry for future booking
             if (instalment_type == InstalmentType.WEEKLY) {
                 instalmentDetails = Instalment.weeklyInstalment(
@@ -1762,7 +1769,7 @@ export class FlightService {
                     bookingDate,
                     totalAdditionalAmount,
                     custom_instalment_amount,
-                    custom_instalment_no
+                    custom_instalment_no, 0, false, null, true, downPayments
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1772,7 +1779,7 @@ export class FlightService {
                     bookingDate,
                     totalAdditionalAmount,
                     custom_instalment_amount,
-                    custom_instalment_no
+                    custom_instalment_no, 0, false, null, true, downPayments
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1782,7 +1789,7 @@ export class FlightService {
                     bookingDate,
                     totalAdditionalAmount,
                     custom_instalment_amount,
-                    custom_instalment_no
+                    custom_instalment_no, 0, false, null, true, downPayments
                 );
             }
 
@@ -3593,8 +3600,17 @@ export class FlightService {
                     totalAdditionalAmount =
                         totalAdditionalAmount + laycredit_points;
                 }
+
+                let downPayments = [40, 50, 60]
+                if (moment(departure_date).diff(
+                    moment().format("YYYY-MM-DD"),
+                    "days"
+                ) > 90) {
+                    downPayments = [20, 30, 40]
+                }
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
+
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(airRevalidateResult[0].offer_data, 0);
 
@@ -3609,7 +3625,7 @@ export class FlightService {
                             null,
                             0,
                             cartCount > 1 ? true : false,
-                            weeklyCustomDownPayment
+                            weeklyCustomDownPayment,true,downPayments
                         );
                         console.log(instalmentDetails)
 
@@ -3622,7 +3638,7 @@ export class FlightService {
                             custom_instalment_amount,
                             custom_instalment_no,
                             selected_down_payment,
-                            cartCount > 1 ? true : false
+                            cartCount > 1 ? true : false, null,true, downPayments
                         );
                     }
 
@@ -3636,7 +3652,7 @@ export class FlightService {
                         custom_instalment_amount,
                         custom_instalment_no,
                         selected_down_payment,
-                        cartCount > 1 ? true : false
+                        cartCount > 1 ? true : false, null,true, downPayments
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3648,7 +3664,7 @@ export class FlightService {
                         custom_instalment_amount,
                         custom_instalment_no,
                         selected_down_payment,
-                        cartCount > 1 ? true : false
+                        cartCount > 1 ? true : false, null, true, downPayments
                     );
                 }
 

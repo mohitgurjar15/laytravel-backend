@@ -4,6 +4,7 @@ import { InstalmentType } from 'src/enum/instalment-type.enum';
 import { Instalment } from 'src/utility/instalment.utility';
 import { InstalmentAvailabilityDto } from './dto/instalment-availability.dto';
 import { AllInstalmentDto } from './dto/all-instalment.dto';
+import moment = require('moment');
 
 @Injectable()
 export class InstalmentService {
@@ -41,12 +42,18 @@ export class InstalmentService {
         if(selected_down_payment >= 3){
             throw new NotAcceptableException(`selected down payment option must be 2 or below`)
         }
-        
-        let weeklyInstalments = Instalment.weeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment,false,custom_down_payment);
+        let downPayments = [40, 50, 60]
+        if (moment(checkin_date).diff(
+            moment().format("YYYY-MM-DD"),
+            "days"
+        ) > 90) {
+            downPayments = [20, 30, 40]
+        }
+        let weeklyInstalments = Instalment.weeklyInstalment(amount, checkin_date, booking_date, additional_amount, down_payment, null, selected_down_payment, false, custom_down_payment, true, downPayments);
         if(weeklyInstalments.instalment_available==true){
 
-            let biWeeklyInstalments = Instalment.biWeeklyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment,false,custom_down_payment);
-            let monthlyInstalments = Instalment.monthlyInstalment(amount,checkin_date,booking_date,additional_amount,down_payment,null,selected_down_payment,false,custom_down_payment);
+            let biWeeklyInstalments = Instalment.biWeeklyInstalment(amount, checkin_date, booking_date, additional_amount, down_payment, null, selected_down_payment, false, custom_down_payment,true, downPayments);
+            let monthlyInstalments = Instalment.monthlyInstalment(amount, checkin_date, booking_date, additional_amount, down_payment, null, selected_down_payment, false, custom_down_payment, true, downPayments);
 
             return {
                 instalment_available : true,
