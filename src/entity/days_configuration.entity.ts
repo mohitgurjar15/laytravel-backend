@@ -3,8 +3,12 @@ import {
     Column,
     Entity,
     Index,
+    OneToMany,
     PrimaryGeneratedColumn
 } from "typeorm";
+import { LandingPageDiscountConfig } from "./landing-page-discount.entity";
+import { LandingPageDownPaymentConfig } from "./landing-page-downPayment.entity";
+import { PaymentConfiguration } from "./payment-configuration.entity";
 
 @Entity("days_configuration")
 export class daysConfiguration extends BaseEntity {
@@ -19,4 +23,22 @@ export class daysConfiguration extends BaseEntity {
 
     @Column("boolean", { name: "is_installment_available", default: () => "true" })
     isInstallmentAvailable: boolean;
+
+    @OneToMany(
+        () => PaymentConfiguration,
+        config => config.daysConfiguration
+    )
+    paymentConfiguration: PaymentConfiguration[];
+
+    @OneToMany(
+        () => LandingPageDownPaymentConfig,
+        config => config.daysConfiguration
+    )
+    landingPageDownPaymentConfig: LandingPageDownPaymentConfig[];
+
+    @OneToMany(
+        () => LandingPageDiscountConfig,
+        config => config.daysConfiguration
+    )
+    landingPageDiscountConfig: LandingPageDiscountConfig[];
 }

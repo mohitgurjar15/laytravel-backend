@@ -20,17 +20,17 @@ export class GetPaymentConfigurationDto {
     })
     @ApiPropertyOptional({
         description: 'category id',
-        example: 1
+        example: 'Gold'
     })
     category_name: string;
 
-    @IsNotEmpty({
-        message: `Please enter days config id.`,
-    })
-    @ApiProperty({
-        description: `Enter days config id`,
-        example: 1,
-    })
-    days_config_id?: number;
+    // @IsNotEmpty({
+    //     message: `Please enter days config id.`,
+    // })
+    // @ApiProperty({
+    //     description: `Enter days config id`,
+    //     example: 1,
+    // })
+    // days_config_id?: number;
     
 }

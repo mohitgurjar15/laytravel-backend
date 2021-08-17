@@ -1,15 +1,22 @@
-import { Body, Controller, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { query } from 'express';
 import { GetUser } from 'src/auth/get-user.dacorator';
 import { Role } from 'src/enum/role.enum';
 import { Roles } from 'src/guards/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { GetPaymentConfigurationDto } from './dto/get-payment-config.dto';
+import { UpdateInstallmentAvailblityDto } from './dto/update-installment-avaliblity.dto';
 import { UpdatePaymentConfigurationDto } from './dto/update-payment-config.dto';
 import { PaymentConfigurationService } from './payment-configuration.service';
 
+@ApiTags("Payment Configuration")
+@ApiHeader({
+    name: "referral_id",
+    description: "landing page id",
+    example: "",
+})
 @Controller('payment-configuration')
 export class PaymentConfigurationController {
     constructor(private paymentConfigurationService: PaymentConfigurationService) { }
@@ -37,6 +44,32 @@ export class PaymentConfigurationController {
     ) {
         return await this.paymentConfigurationService.updatePaymentConfig(
             updatePaymentConfigurationDto, user
+        );
+    }
+
+    @Patch()
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiOperation({ summary: "Update payment config" })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({ status: 401, description: "Unauthorized access" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({
+        status: 403,
+        description: "You are not allowed to access this resource.",
+    })
+    @HttpCode(200)
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    async updateInstallmentAvailability(
+        @Body() updateInstallmentAvailblityDto: UpdateInstallmentAvailblityDto,
+        @GetUser() user,
+    ) {
+        return await this.paymentConfigurationService.updateInstallmentAvailability(
+            updateInstallmentAvailblityDto, user
         );
     }
 

@@ -1,4 +1,4 @@
-import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Put, Res, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, CacheModule, CACHE_MANAGER, Controller, Get, Headers, HttpCode, Inject, Param, Post, Put, Query, Res, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/guards/role.decorator';
@@ -15,6 +15,7 @@ import { LogInUser } from 'src/auth/get-user.dacorator';
 import { AvailabilityDto } from './dto/availability-req.dto';
 import { BookDto } from './dto/book-req.dto';
 import { GetReferralId } from 'src/decorator/referral.decorator';
+import { HotelCityDto } from './dto/hote-city.dto';
 
 
 @ApiTags("Hotel")
@@ -163,4 +164,24 @@ export class HotelController {
     ) {
         return this.hotelService.partialBook(booking_id, hotelHeaderDto);
     }
+
+    @Get('filter-options/hotel-city')
+	@ApiBearerAuth()
+	@UseGuards(AuthGuard(), RolesGuard)
+	@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+	@ApiOperation({ summary: "list all country of FlightRoute" })
+	@ApiResponse({ status: 200, description: "Api success" })
+	@ApiResponse({ status: 422, description: "Bad Request or API error message" })
+	@ApiResponse({
+		status: 403,
+		description: "You are not allowed to access this resource.",
+	})
+	@ApiResponse({ status: 404, description: "country not found!" })
+	@ApiResponse({ status: 500, description: "Internal server error!" })
+	async getFlightCountry(
+        @Query() hotelCityDto:HotelCityDto
+
+    ) {
+		return await this.hotelService.getHotelCity(hotelCityDto);
+	}
 }

@@ -84,4 +84,23 @@ export class InstalmentDto{
         example:3
     })
     custom_down_payment : number;
+
+    @IsNotEmpty({
+        message: `Please confirm is down payment in percentage`
+    })
+    @ApiProperty({
+        description: `is down payment in percentage`,
+        example: true
+    })
+    is_down_payment_in_percentage: boolean;
+
+    @IsNotEmpty({
+        message: `Please enter down payment option`
+    })
+    @ApiProperty({
+        description: `enter down payment option`,
+        example: [30,40,50]
+    })
+    down_payment_option : number[]
+    
 }
