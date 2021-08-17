@@ -218,7 +218,7 @@ export class Mystifly implements StrategyAirline {
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
-        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
+        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}' and is_deleted=false`);
 
         let categoryName = caegory?.categoryname;
 
