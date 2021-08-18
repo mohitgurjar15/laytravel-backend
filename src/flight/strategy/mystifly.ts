@@ -228,7 +228,6 @@ export class Mystifly implements StrategyAirline {
         (select name from laytrip_category where id = flight_route.category_id)as categoryname 
         from flight_route 
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}' and is_deleted=false`);
-
         let categoryName = caegory?.categoryname;
         let blacklistedAirports = await this.getBlacklistedAirports()
 
@@ -542,6 +541,8 @@ export class Mystifly implements StrategyAirline {
                         );
                         instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
                     }
+
+                   
                     
 
                     let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
