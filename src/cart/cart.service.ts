@@ -101,7 +101,7 @@ export class CartService {
                 number_and_children_ages = [],
                 payment_frequency,
                 downpayment,
-                payment_type
+                payment_method
             } = addInCartDto;
 
             var tDate = new Date();
@@ -186,7 +186,7 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, payment_type, payment_frequency, downpayment);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment);
                     break;
 
                 case ModulesName.FLIGHT:
@@ -199,7 +199,7 @@ more than 10.`
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header, referralId, cartIsPromotional, payment_type, payment_frequency, downpayment
+                        Header, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:

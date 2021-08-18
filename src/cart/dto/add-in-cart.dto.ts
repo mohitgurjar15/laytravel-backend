@@ -119,13 +119,13 @@ export class AddInCartDto {
 
 	@IsNotEmpty()
 	@ApiProperty({
-		description: "Enter payment type",
-		example: "1-installment/2-no-installment"
+		description: "Enter payment method",
+		example: "installment/no-installment"
 	})
-	payment_type: number;
+	payment_method: string;
 	
 	@IsOptional()
-	@ValidateIf((o) => o.payment_type === 1)
+	@ValidateIf((o) => o.payment_method === "installment")
 	@ApiProperty({
 		description: "Enter payment frequency",
 		example: "weekly/biweekly/monthly"
@@ -133,7 +133,7 @@ export class AddInCartDto {
 	payment_frequency: string;
 
 	@IsOptional()
-	@ValidateIf((o) => o.payment_type === 1)
+	@ValidateIf((o) => o.payment_method === "installment")
 	@ApiProperty({
 		description: "Enter downpayment",
 		example: "20"
