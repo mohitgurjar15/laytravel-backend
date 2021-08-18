@@ -117,5 +117,26 @@ export class AddInCartDto {
 	})
 	number_and_children_ages: Array<Number>;
 
+	@IsNotEmpty()
+	@ApiProperty({
+		description: "Enter payment type",
+		example: "1-installment/2-no-installment"
+	})
+	payment_type: number;
 	
+	@IsOptional()
+	@ValidateIf((o) => o.payment_type === 1)
+	@ApiProperty({
+		description: "Enter payment frequency",
+		example: "weekly/biweekly/monthly"
+	})
+	payment_frequency: string;
+
+	@IsOptional()
+	@ValidateIf((o) => o.payment_type === 1)
+	@ApiProperty({
+		description: "Enter downpayment",
+		example: "20"
+	})
+	downpayment: number;
 }
