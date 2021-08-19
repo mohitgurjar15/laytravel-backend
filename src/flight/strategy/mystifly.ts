@@ -95,7 +95,6 @@ export class Mystifly implements StrategyAirline {
         }
         //mystiflyConfig = { "account_number": "MCN001714","password": "Lay2020@xml","target": "Test", "user_name": "LayTrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         //mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
-        console.log(mystiflyConfig);
 
         return mystiflyConfig;
     }
@@ -145,8 +144,6 @@ export class Mystifly implements StrategyAirline {
             if (config.mode) {
                 mystiflyConfig = JSON.parse(config.liveCredential);
             }
-            console.log('mystiflyConfig', mystiflyConfig)
-            console.log('mystiflyConfig.sessionId', mystiflyConfig.sessionId)
             return mystiflyConfig.sessionId
         } catch (e) {
             return await this.createSession();
@@ -212,7 +209,6 @@ export class Mystifly implements StrategyAirline {
         referralId
     ) {
         const mystiflyConfig = await this.getMystiflyCredential();
-        console.log(mystiflyConfig);
         const sessionToken = await this.startSession();
         const {
             source_location,
@@ -2947,23 +2943,18 @@ export class Mystifly implements StrategyAirline {
 
                     if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
                         paymentConfig = paymentConfigCase[configCaseIndex]
-                        //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
 
                     } else {
                         paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(module.id, instalmentEligibility.categoryId, daysUtilDepature)
                         paymentConfigCase[configCaseIndex] = paymentConfig
-                        //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                     }
-
                     route.payment_config = paymentConfig || {}
-
-                    //console.log("paymentConfig", paymentConfig)
                     let instalmentDetails;
                     let discountedInstalmentDetails;
-                    if (instalmentEligibility.available) {
+                    if (instalmentEligibility.available && typeof paymentConfig!='undefined') {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                        let downPaymentOption: any = paymentConfig.downPaymentOption
+                        let downPaymentOption = paymentConfig.downPaymentOption
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
                                 route.selling_price,
@@ -3075,7 +3066,7 @@ export class Mystifly implements StrategyAirline {
                                 actual_installment: route.secondary_start_price
                             }
                         }
-                    } else if (instalmentEligibility.available) {
+                    } else if (instalmentEligibility.available && typeof paymentConfig!='undefined') {
                         route.payment_object = {}
                         let t
                         if (paymentConfig.isWeeklyInstallmentAvailable) {

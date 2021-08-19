@@ -3,11 +3,10 @@ import { getConnection } from "typeorm";
 
 export class PaymentConfigurationUtility {
 
-    static async getPaymentConfig(module_id: number, category_id: number, daysUtilDepature : number) {
+    static async getPaymentConfig(module_id: number, category_id: number, daysUtilDepature: number) {
 
 
         let where = `config.module_id = ${module_id} AND daysConfiguration.minDays <= ${daysUtilDepature} AND daysConfiguration.maxDays >= ${daysUtilDepature}`
-
         if (category_id > 0) {
             where += `AND category.id = ${category_id}`
         }
@@ -19,7 +18,6 @@ export class PaymentConfigurationUtility {
             .where(where)
             .getOne();
 
-        //console.log("config",config)
 
         return config
     }
