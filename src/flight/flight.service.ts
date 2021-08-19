@@ -892,7 +892,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available) {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -912,7 +912,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available) {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1371,7 +1371,6 @@ export class FlightService {
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: "flight" })
             .getOne();
-        console.log('=======================this is my module==========================', module)
         if (!module) {
             throw new InternalServerErrorException(
                 `Flight module is not configured in database&&&module&&&${errorMessage}`
@@ -1457,7 +1456,7 @@ export class FlightService {
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
-                        if (flightData?.is_installment_available && typeof flightData.payment_object[flightData.payment_object.installment_type].installment!='undefined') {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1477,7 +1476,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available) {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         arrivalDate = flightData.arrival_date;

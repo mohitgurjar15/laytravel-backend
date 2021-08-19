@@ -2212,7 +2212,7 @@ export class Mystifly implements StrategyAirline {
                     //console.log("paymentConfig", paymentConfig)
                     let instalmentDetails;
                     let discountedInstalmentDetails;
-                    if (instalmentEligibility.available) {
+                    if (instalmentEligibility.available && typeof paymentConfig!='undefined' ) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                         let downPaymentOption: any = paymentConfig.downPaymentOption
@@ -2316,7 +2316,7 @@ export class Mystifly implements StrategyAirline {
                     }
 
 
-                    if (offerData.applicable) {
+                    if (offerData.applicable && typeof paymentConfig!='undefined') {
                         instalmentEligibility.available = true
                         route.payment_object = {
                             installment_type: InstalmentType.WEEKLY,
@@ -2327,7 +2327,7 @@ export class Mystifly implements StrategyAirline {
                                 actual_installment: route.secondary_start_price
                             }
                         }
-                    } else if (instalmentEligibility.available) {
+                    } else if (instalmentEligibility.available && typeof paymentConfig!='undefined') {
                         route.payment_object = {}
                         let t
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
