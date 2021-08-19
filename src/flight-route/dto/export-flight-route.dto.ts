@@ -19,4 +19,16 @@ export class ExportFlightRouteDto {
         example: 1,
     })
     category_id: number;
+
+    @ApiPropertyOptional({
+        description:'From airport code',
+        example:'ABQ'
+    })
+    from_airport_code: string;
+
+    @ApiPropertyOptional({
+        description:'To airport code',
+        example:'LAS'
+    })
+    to_airport_code: string;
 }
