@@ -923,9 +923,9 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available){
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
-                        }                        
+                        }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
                         isPriceInInstallment = flightData?.is_installment_available ? true : false
@@ -943,7 +943,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available) {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1195,7 +1195,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available){
+                        if (flightData?.is_installment_available) {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1283,7 +1283,7 @@ export class FlightService {
         await this.validateHeaders(headers);
 
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-
+        console.log('**--mystifly--**',mystifly)
         const {
             source_location,
             destination_location,
@@ -1294,7 +1294,7 @@ export class FlightService {
             infant_count,
             arrival_date,
         } = serchFlightDto;
-
+        console.log('====this is my dto====', serchFlightDto)
         const depatureDate = new Date(departure_date);
         const arivalDate = new Date(arrival_date);
 
@@ -1306,6 +1306,7 @@ export class FlightService {
             moment().format("YYYY-MM-DD"),
             "days"
         );
+        console.log('-=-=-=dayDiffrence=-=-=-', dayDiffrence)
         const dayDiff = dayDiffrence;
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
 
@@ -1327,7 +1328,7 @@ export class FlightService {
         var startDate = new Date(departure_date);
         startDate.setDate(startDate.getDate() - count);
 
-        console.log(startDate);
+        console.log('---===startDate===---', startDate);
 
         var tourDiffrence = await this.getDifferenceInDays(
             depatureDate,
@@ -1338,7 +1339,7 @@ export class FlightService {
         let afterDateDiffrence = 3;
 
         //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
-        console.log("dayDiff", dayDiff);
+        console.log("---dayDiff---", dayDiff);
         if (dayDiff <= 2) {
             afterDateDiffrence = 6;
         }
@@ -1355,10 +1356,11 @@ export class FlightService {
         }
 
 
-        
-        console.log(afterDateDiffrence);
+
+        console.log('---afterDateDiffrence---', afterDateDiffrence);
         dayDiffrence = 3;
         var endDate = new Date(departure_date);
+        console.log('-=-endDate-=-', endDate)
         endDate.setDate(endDate.getDate() + afterDateDiffrence);
         console.log(endDate);
         var result = [];
@@ -1368,6 +1370,7 @@ export class FlightService {
         const depature = startDate;
 
         var count = await this.getDifferenceInDays(startDate, endDate);
+        console.log('---count---', count)
 
 
         //var count = 6
@@ -1387,19 +1390,18 @@ export class FlightService {
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
         );
-        //console.log(mystiflyConfig);
+        console.log('---mystiflyConfig---', mystiflyConfig);
 
         const sessionToken = await new Promise((resolve) =>
             resolve(mystifly.startSession())
         );
 
-        //console.log(sessionToken);
+        console.log('---sessionToken---', sessionToken);
 
         let module = await getManager()
             .createQueryBuilder(Module, "module")
             .where("module.name = :name", { name: "flight" })
             .getOne();
-
         if (!module) {
             throw new InternalServerErrorException(
                 `Flight module is not configured in database&&&module&&&${errorMessage}`
@@ -1432,32 +1434,32 @@ export class FlightService {
                 reqDates.push(beforeDateString);
                 secondDate.push(afterDateString);
 
-            
-            let dto = {
-                source_location: source_location,
-                destination_location: destination_location,
-                departure_date: beforeDateString,
-                arrival_date: afterDateString,
-                flight_class: flight_class,
-                adult_count: adult_count,
-                child_count: child_count,
-                infant_count: infant_count,
-            };
 
-            result[resultIndex] = new Promise((resolve) =>
-                resolve(
-                    mystifly.roundTripSearchZipWithFilter(
-                        dto,
-                        user,
-                        mystiflyConfig,
-                        sessionToken,
-                        module,
-                        currencyDetails,
-                        refferalId
+                let dto = {
+                    source_location: source_location,
+                    destination_location: destination_location,
+                    departure_date: beforeDateString,
+                    arrival_date: afterDateString,
+                    flight_class: flight_class,
+                    adult_count: adult_count,
+                    child_count: child_count,
+                    infant_count: infant_count,
+                };
+
+                result[resultIndex] = new Promise((resolve) =>
+                    resolve(
+                        mystifly.roundTripSearchZipWithFilter(
+                            dto,
+                            user,
+                            mystiflyConfig,
+                            sessionToken,
+                            module,
+                            currencyDetails,
+                            refferalId
+                        )
                     )
-                )
-            );
-            resultIndex++;
+                );
+                resultIndex++;
             }
             depature.setDate(depature.getDate() + 1);
         }
@@ -1485,7 +1487,7 @@ export class FlightService {
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
-                        if (flightData?.is_installment_available){
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1505,7 +1507,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available){
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         arrivalDate = flightData.arrival_date;
@@ -1537,7 +1539,6 @@ export class FlightService {
             }
         }
 
-        console.log(reqDates);
 
         for await (const date of reqDates) {
             let obj = 0;
@@ -1573,7 +1574,6 @@ export class FlightService {
                     isPriceInInstallment: false,
                     selling_price: 0
                 };
-
                 returnResponce.push(output);
             }
         }
@@ -2194,7 +2194,6 @@ export class FlightService {
 
         try {
             let bookingDetails = await booking.save();
-            console.log(" save booking");
             await this.saveTravelers(booking.id, userId, travelers);
             if (instalmentDetails) {
                 let bookingInstalments: BookingInstalments[] = [];
@@ -2247,7 +2246,6 @@ export class FlightService {
             predictiveBooking.remainSeat =
                 booking.moduleInfo[0].routes[0].stops[0].remaining_seat;
             await predictiveBooking.save();
-            console.log("get booking");
             const data = await NotificationAlertUtility.notificationModelCreater(
                 booking.laytripBookingId
             );
@@ -3656,7 +3654,7 @@ export class FlightService {
                             null,
                             0,
                             cartCount > 1 ? true : false,
-                            weeklyCustomDownPayment,true,downPayments
+                            weeklyCustomDownPayment, true, downPayments
                         );
                         console.log(instalmentDetails)
 
@@ -3669,7 +3667,7 @@ export class FlightService {
                             custom_instalment_amount,
                             custom_instalment_no,
                             selected_down_payment,
-                            cartCount > 1 ? true : false, null,true, downPayments
+                            cartCount > 1 ? true : false, null, true, downPayments
                         );
                     }
 
@@ -3683,7 +3681,7 @@ export class FlightService {
                         custom_instalment_amount,
                         custom_instalment_no,
                         selected_down_payment,
-                        cartCount > 1 ? true : false, null,true, downPayments
+                        cartCount > 1 ? true : false, null, true, downPayments
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3712,7 +3710,6 @@ export class FlightService {
                         "days"
                     );
                     let bookingResult;
-                    console.log("dayDiff", dayDiff);
                     // if (dayDiff <= 90) {
                     //     const mystifly = new Strategy(
                     //         new Mystifly(headers, this.cacheManager)

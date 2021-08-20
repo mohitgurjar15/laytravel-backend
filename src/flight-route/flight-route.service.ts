@@ -37,21 +37,23 @@ export class FlightRouteService {
                 search,
                 status,
                 category_id,
-                type
+                type,
+                from_airport_code,
+                to_airport_code
             } = listFlightRouteDto;
             let where = `("route"."is_deleted" = false)`;
 
             const take = limit || 10;
             const skip = (page_no - 1) * limit || 0;
 
-            if (search) {
-                where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
-            or("route"."to_airport_code" ILIKE '%${search}%')
-            or("route"."to_airport_country" ILIKE '%${search}%') 
-            or ("route"."from_airport_city" ILIKE '%${search}%')
-            or("route"."from_airport_code" ILIKE '%${search}%')
-            or("route"."from_airport_country" ILIKE '%${search}%'))`;
-            }
+            // if (search) {
+            //     where += `AND (("route"."to_airport_city" ILIKE '%${search}%')
+            // or("route"."to_airport_code" ILIKE '%${search}%')
+            // or("route"."to_airport_country" ILIKE '%${search}%') 
+            // or ("route"."from_airport_city" ILIKE '%${search}%')
+            // or("route"."from_airport_code" ILIKE '%${search}%')
+            // or("route"."from_airport_country" ILIKE '%${search}%'))`;
+            // }
 
             if (type) {
                 where += `AND ("route"."type" = '${type}' )`;
@@ -63,7 +65,12 @@ export class FlightRouteService {
             if (category_id) {
                 where += `AND ("route"."category_id" = ${category_id} )`;
             }
-
+            if(from_airport_code){
+                where += `AND ("route"."from_airport_code" ILIKE '${from_airport_code}' )`;
+            }
+            if(to_airport_code){
+                where += `AND ("route"."to_airport_code" ILIKE '${to_airport_code}' )`;
+            }
             let [result, count] = await getConnection()
                 .createQueryBuilder(FlightRoute, "route")
                 .leftJoinAndSelect("route.category", "category")
@@ -120,7 +127,7 @@ export class FlightRouteService {
         user: User
     ) {
         try {
-            const { search, status, category_id } = listFlightRouteDto;
+            const { search, status, category_id ,from_airport_code, to_airport_code} = listFlightRouteDto;
             let where = `("route"."is_deleted" = false)`;
 
             if (search) {
@@ -137,6 +144,12 @@ export class FlightRouteService {
             }
             if (category_id) {
                 where += `AND ("route"."category_id" = ${category_id} )`;
+            }
+            if(from_airport_code){
+                where += `AND ("route"."from_airport_code" ILIKE '${from_airport_code}' )`;
+            }
+            if(to_airport_code){
+                where += `AND ("route"."to_airport_code" ILIKE '${to_airport_code}' )`;
             }
 
             let [result, count] = await getConnection()
@@ -793,9 +806,9 @@ export class FlightRouteService {
         for await (const item of results) {
             if (item.country) {
                 let filteredStrings = responce.filter((str) => str.toLowerCase().includes(item.country.toLowerCase()))
-                if (!filteredStrings[0]) {
-                    responce.push(item.country)
-                }
+                // if (!filteredStrings[0]) {
+                //     responce.push(item.country)
+                // }
             }
         }
         return {
