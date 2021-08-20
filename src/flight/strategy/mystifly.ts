@@ -2327,7 +2327,7 @@ export class Mystifly implements StrategyAirline {
                                 actual_installment: route.secondary_start_price
                             }
                         }
-                    } else if (instalmentEligibility.available && typeof paymentConfig!='undefined') {
+                    } else if (instalmentEligibility.available) {
                         route.payment_object = {}
                         let t
                         if (paymentConfig.isWeeklyInstallmentAvailable) {

@@ -88,6 +88,7 @@ import { AdminNewBookingMail } from "src/config/admin-email-notification-templet
 import { LandingPage } from "src/utility/landing-page.utility";
 import { Airport } from "src/entity/airport.entity";
 import _ = require("lodash");
+import console = require("console");
 
 @Injectable()
 export class FlightService {
@@ -1294,7 +1295,6 @@ export class FlightService {
             infant_count,
             arrival_date,
         } = serchFlightDto;
-        console.log('====this is my dto====', serchFlightDto)
         const depatureDate = new Date(departure_date);
         const arivalDate = new Date(arrival_date);
 
@@ -1492,7 +1492,7 @@ export class FlightService {
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined' ? true : false,
                             selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -1513,7 +1513,7 @@ export class FlightService {
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined' ? true : false,
                             selling_price = flightData.selling_price
                     }
                     key++;
