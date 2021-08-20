@@ -929,7 +929,7 @@ export class FlightService {
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = flightData?.is_installment_available ? true : false
+                        isPriceInInstallment = flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined' ? true : false
                         selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
