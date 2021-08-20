@@ -2955,15 +2955,17 @@ export class Mystifly implements StrategyAirline {
                         //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                     }
 
+                    // console.log("----PaymentConfig------", +paymentConfig);
                     route.payment_config = paymentConfig || {}
 
-                    //console.log("paymentConfig", paymentConfig)
+                    console.log("paymentConfig", paymentConfig)
                     let instalmentDetails;
                     let discountedInstalmentDetails;
                     if (instalmentEligibility.available) {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                         let downPaymentOption: any = paymentConfig.downPaymentOption
+                        console.log("---DownPaymentOption----", +downPaymentOption);
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
                                 route.selling_price,

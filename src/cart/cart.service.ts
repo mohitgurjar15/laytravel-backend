@@ -186,7 +186,7 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method);
                     break;
 
                 case ModulesName.FLIGHT:
@@ -199,7 +199,7 @@ more than 10.`
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment
+                        Header, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:
@@ -257,7 +257,7 @@ more than 10.`
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment) {
+    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
         //console.log('validate');
         console.log("cartIsPromotional", cartIsPromotional)
         const flightInfo: any = await this.flightService.airRevalidate(
@@ -326,8 +326,9 @@ more than 10.`
             cart.paymentType = flightInfo[0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
             // cart.instalmentType = instalment_type;
             // cart.paymentType = payment_type
-            cart.paymentFrequency = paymentFrequency;
-            cart.downpayment = downpayment;
+            cart.paymentMethod = paymentMethod;
+            cart.paymentFrequency = paymentFrequency || "";
+            cart.downpayment = downpayment || 0;
 
             let savedCart = await cart.save();
 
@@ -1229,6 +1230,9 @@ more than 10.`
                 newCart["createdDate"] = cart.createdDate;
                 newCart["type"] = cart.module.name;
                 newCart["travelers"] = cart.travelers;
+                newCart["paymentMethod"] = cart.paymentMethod;
+                newCart["downpayment"] = cart.downpayment;
+                newCart["paymentFrequency"] = cart.paymentFrequency;
                 responce.push(newCart);
             }
             return {
@@ -3032,7 +3036,7 @@ more than 10.`
     //     );
     // }
 
-    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment) {
+    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
 
         console.log(cartIsPromotional)
         let roomDetails = await this.hotelService.availability(
@@ -3072,8 +3076,9 @@ more than 10.`
         cart.paymentType = roomDetails.data["items"][0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
 
         let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
-        cart.paymentFrequency = paymentFrequency;
-        cart.downpayment = downpayment;
+        cart.paymentMethod = paymentMethod;
+        cart.paymentFrequency = paymentFrequency || "";
+        cart.downpayment = downpayment || 0;
 
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
