@@ -38,19 +38,20 @@ export class Instalment {
             }
 
             let amountPerInstalment = amount / instalmentsDates.length;
-           
 
             //let amountPerInstalmentPercentage = amountPerInstalment/amount*100;
 
             //instalmentData.down_payment = this.calculateDownPayment(amountPerInstalment, percentageAmount, amount, additionalAmount,customDownPayment)
-            instalmentData.down_payment = downPaymentOption
+            //instalmentData.down_payment = downPaymentOption
+            instalmentData.down_payment = this.calculateDps(amount,downPaymentOption,isDownPaymentInPercentage,customDownPayment)
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
 
             let percentage = downPayment
             
-            let percentageAmount = isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment
-            
+            //let percentageAmount = isDownPaymentInPercentage ? (downPaymentOption * percentage) / 100 : downPayment
+            let percentageAmount = downPayment;
+
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
             //console.log('downPayment', isDownPaymentInPercentage, typeof isDownPaymentInPercentage, percentageAmount, instalmentDatewithAmount)
             instalmentData.percentage = percentage;
@@ -67,6 +68,28 @@ export class Instalment {
 
         return instalmentData;
 
+    }
+
+    static calculateDps(netAmount,downPaymentOption,isDownPaymentInPercentage,customDownPayment){
+
+        let downPayments=[]
+        if(customDownPayment){
+            downPayments.push(customDownPayment)
+        }
+        else if(isDownPaymentInPercentage){
+            let instalment = Number((netAmount * downPaymentOption[0] / 100).toFixed(2))
+            downPayments.push(instalment);
+
+            instalment = Number((netAmount * (downPaymentOption[1]) / 100).toFixed(2))
+            downPayments.push(instalment);
+            
+            instalment = Number((netAmount * (downPaymentOption[2]) / 100).toFixed(2))
+            downPayments.push(instalment);
+        }
+        else{
+            downPayments =downPaymentOption;
+        }
+        return downPayments;
     }
 
     static biWeeklyInstalment(amount, ckeckInDate, bookingDate, additionalAmount = null, downPayment = null, customInstalmentNo = null, selected_down_payment = null, ignore5DollerCase: boolean = false, customDownPayment = null, isDownPaymentInPercentage , downPaymentOption) {
@@ -101,13 +124,14 @@ export class Instalment {
             let amountPerInstalment = amount / instalmentsDates.length;
            
 
-            instalmentData.down_payment = downPaymentOption
+            //instalmentData.down_payment = downPaymentOption
+            instalmentData.down_payment = this.calculateDps(amount,downPaymentOption,isDownPaymentInPercentage,customDownPayment)
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
 
             let percentage = downPayment
-            let percentageAmount =  isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment;
-
+            //let percentageAmount =  isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment;
+            let percentageAmount = downPayment;
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo,customDownPayment)
             instalmentData.percentage = percentage;
         }
@@ -163,12 +187,14 @@ export class Instalment {
             let amountPerInstalment = amount / instalmentsDates.length;
             
 
-            instalmentData.down_payment = downPaymentOption
+            //instalmentData.down_payment = downPaymentOption
+            instalmentData.down_payment = this.calculateDps(amount,downPaymentOption,isDownPaymentInPercentage,customDownPayment)
             selected_down_payment = selected_down_payment || 0;
             downPayment = instalmentData.down_payment[selected_down_payment];
             let percentage = downPayment;
-            let percentageAmount = isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment;
-
+            //let percentageAmount = isDownPaymentInPercentage ? (amount * percentage) / 100 : downPayment;
+            let percentageAmount = downPayment;
+            
             instalmentDatewithAmount = this.calculateInstalment(amountPerInstalment, percentageAmount, instalmentsDates, amount, additionalAmount, downPayment, customInstalmentNo, customDownPayment)
             instalmentData.percentage = percentage;
         }
@@ -274,7 +300,7 @@ export class Instalment {
                 firstInstalment = percentageAmount + additionalAmount;
             }
         } */
-
+        console.log("percentageAmount",percentageAmount)
         firstInstalment = firstInstalmentTemp = percentageAmount;
         if (additionalAmount) {
             firstInstalment = percentageAmount + additionalAmount;
