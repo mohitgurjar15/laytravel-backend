@@ -14,7 +14,7 @@ import {
     @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
     id: number;
   
-    @Column('character varying', { name: 'cityid_ppn', length: 100 })
+    @Column('character varying', { name: 'cityid_ppn', length: 100, nullable: true })
     cityidPpn: string;
   
     @Column('character varying', { name: 'cityid_a', length: 100, nullable: true })

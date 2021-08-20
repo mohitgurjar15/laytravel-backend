@@ -72,7 +72,7 @@ export class Cart extends BaseEntity {
     @Column("numeric", { name: "downpayment", precision: 10, scale: 2, nullable: true })
     downpayment: number;
 
-    @Column("character varying", { name: "payment_method", nullable: false })
+    @Column("character varying", { name: "payment_method", nullable: true })
     paymentMethod: string;
 
     @ManyToOne(
