@@ -71,7 +71,6 @@ export class HttpRequest {
             logData["responce"] = error.response.data;
             const fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
             Activity.createlogFile(fileName, logData, "Mustifly_errors");
-
             throw new RequestTimeoutException(`Connection time out`);
         }
     }

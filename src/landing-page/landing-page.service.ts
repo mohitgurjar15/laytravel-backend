@@ -38,7 +38,7 @@ export class LandingPageService {
         createLandingPageDto: CreateLandingPageDto,
         user: User
     ) {
-        const { name, templet, default_setting_applied, config } = createLandingPageDto;
+        const { name, templet, default_setting_applied } = createLandingPageDto;
 
         let where = `"landingPages"."is_deleted" = false AND "landingPages"."name" like '${name}'`;
 
@@ -60,15 +60,20 @@ export class LandingPageService {
 
         await landingPage.save();
 
-
-
-        if (!default_setting_applied) {
-            config.landing_page_id = landingPage.id
-            await this.addLandingPageDownPayment(config, user)
+        if(default_setting_applied){
+            
         }
 
+        // if (!default_setting_applied) {
+        //     config.landing_page_id = landingPage.id
+        //     await this.addLandingPageDownPayment(config, user)
+        // }else{
+            
+        // }
+
         return {
-            message: `Landing page created successfully.`,
+            message: `Landing page created successfully`,
+            data : landingPage
         };
     }
 
@@ -242,7 +247,7 @@ export class LandingPageService {
         if (!landing_page_id) {
             throw new BadRequestException(`Please enter landing page id.`)
         }
-        let message = `Downpayment configuration added successfully.`
+        let message = `Down payment configuration added successfully`
         for await (const iterator of module_id) {
             for await (const configId of days_config_id) {
 
@@ -255,7 +260,7 @@ export class LandingPageService {
                 if (!config) {
                     config = new LandingPageDownPaymentConfig
                     config.createDate = new Date()
-                    message = `Downpayment configuration updated successfully.`
+                    message = `Down payment configuration updated successfully`
                 } else {
                     config.updatedDate = new Date()
                 }
@@ -282,113 +287,11 @@ export class LandingPageService {
                 await config.save()
             }
         }
-        // let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id ='${landing_page_id}'`
-        // if (down_payment_option.length) {
-        //     for await (const iterator of down_payment_option) {
-        //         if (typeof iterator != 'number') {
-        //             throw new BadRequestException(`${iterator} not valid in down payment option`)
-        //         }
-        //     }
-        // }
-
-        // if (payment_frequency.length) {
-        //     for await (const iterator of payment_frequency) {
-        //         if (!Object.values(InstalmentType).includes(iterator)) {
-        //             throw new BadRequestException(`${iterator} not valid payment type`)
-        //         }
-        //     }
-        // }
-        // let config = new LandingPageDownPaymentConfig
-        // config.moduleId = module_id
-        // config.daysConfigId = days_config_id
-        // config.landingPageId = landing_page_id
-        // config.downPaymentOption = down_payment_option
-        // config.isDownPaymentInPercentage = down_payment_type == DownPaymentType.PERCENTAGE ? true : false
-        // config.createDate = new Date()
-        // config.isWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.WEEKLY) ? true : false
-        // config.isBiWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.BIWEEKLY) ? true : false
-        // config.isMonthlyInstallmentAvailable = payment_frequency.includes(InstalmentType.MONTHLY) ? true : false
-        // config.offerCriteria = offer_criteria_type
-        // config.offerVariable = offer_criteria_variable
-        // config.createBy = user.userId
-        // if (offer_criteria_type == OfferCriterias.ROUTE && offer_criteria_variable == OfferCriteriaVariables.ROUTE) {
-        //     let value = []
-        //     for await (const iterator of offer_criteria_value) {
-        //         value.push(`${iterator.from}-${iterator.to}`)
-        //     }
-        //     config.offerCriteriaValues = value
-        // } else {
-        //     config.offerCriteriaValues = offer_criteria_value
-        // }
-        // const newConfig = await config.save()
-
         return {
             message: message,
             // data: newConfig
         }
     }
-
-    // async updateLandingPageDownPayment(newLandingPageDownPaymentConfigDto: NewLandingPageDownPaymentConfigDto, user: User) {
-    //     const { landing_page_id, module_id, days_config_id, down_payment_option, down_payment_type, offer_criteria_variable, offer_criteria_type, offer_criteria_value, payment_frequency } = newLandingPageDownPaymentConfigDto
-
-    //     let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id ='${landing_page_id}'`
-    //     if (down_payment_option.length) {
-    //         for await (const iterator of down_payment_option) {
-    //             if (typeof iterator != 'number') {
-    //                 throw new BadRequestException(`${iterator} not valid in down payment option`)
-    //             }
-    //         }
-    //     }
-
-    //     if (payment_frequency.length) {
-    //         for await (const iterator of payment_frequency) {
-    //             if (!Object.values(InstalmentType).includes(iterator)) {
-    //                 throw new BadRequestException(`${iterator} not valid payment type`)
-    //             }
-    //         }
-    //     }
-
-    //     let config = await getConnection()
-    //         .createQueryBuilder(LandingPageDownPaymentConfig, "config")
-    //         .where(where)
-    //         .getOne();
-
-    //     if (!config) {
-    //         throw new NotFoundException(`Please enter valid inputs`)
-    //     }
-    //     // let config = new LandingPageDownPaymentConfig
-    //     config.moduleId = module_id
-    //     config.daysConfigId = days_config_id
-    //     config.landingPageId = landing_page_id
-    //     config.downPaymentOption = down_payment_option
-    //     config.isDownPaymentInPercentage = down_payment_type == DownPaymentType.PERCENTAGE ? true : false
-    //     config.updatedDate = new Date()
-    //     config.updateBy = user.userId
-    //     config.isWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.WEEKLY) ? true : false
-    //     config.isBiWeeklyInstallmentAvailable = payment_frequency.includes(InstalmentType.BIWEEKLY) ? true : false
-    //     config.isMonthlyInstallmentAvailable = payment_frequency.includes(InstalmentType.MONTHLY) ? true : false
-    //     config.offerCriteria = offer_criteria_type
-    //     config.offerVariable = offer_criteria_variable
-
-
-    //     if (offer_criteria_type == OfferCriterias.ROUTE && offer_criteria_variable == OfferCriteriaVariables.ROUTE) {
-    //         let value = []
-    //         for await (const iterator of offer_criteria_value) {
-    //             value.push(`${iterator.from}-${iterator.to}`)
-    //         }
-    //         config.offerCriteriaValues = value
-    //     } else {
-    //         config.offerCriteriaValues = offer_criteria_value
-    //     }
-
-
-    //     await config.save()
-
-    //     return {
-    //         message: `Payment configuration updated successfully.`,
-    //         data: config
-    //     }
-    // }
 
     async getLandingPageDownPayment(listDownPaymentDto: ListDownPaymentDto) {
         const { module_id, landing_page_id } = listDownPaymentDto
@@ -467,7 +370,7 @@ export class LandingPageService {
 
 
 
-        let message = `Discount configuration added successfully.`
+        let message = `Discount configuration added successfully`
         for await (const iterator of module_id) {
             let where = `config.module_id = ${iterator} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id ='${landing_page_id}'`
             let config = await getConnection()
@@ -477,7 +380,7 @@ export class LandingPageService {
             if (!config) {
                 config = new LandingPageDiscountConfig
                 config.createDate = new Date()
-                message = `Discount configuration updated successfully.`
+                message = `Discount configuration updated successfully`
             } else {
                 config.updatedDate = new Date()
             }
@@ -512,65 +415,6 @@ export class LandingPageService {
             data: config
         }
     }
-
-    // async updateLandingPageDiscount(newLandingPageDiscountConfigDto: NewLandingPageDiscountConfigDto, user: User) {
-    //     const { landing_page_id, module_id, days_config_id, down_payment_type, offer_criteria_variable, offer_criteria_type, offer_criteria_value,minimum_amount } = newLandingPageDiscountConfigDto
-
-    //     let where = `config.module_id = ${module_id} AND config.days_config_id = ${days_config_id} AND  config.landing_page_id ='${landing_page_id}'`
-    //     // if (down_payment_option.length) {
-    //     //     for await (const iterator of down_payment_option) {
-    //     //         if (typeof iterator != 'number') {
-    //     //             throw new BadRequestException(`${iterator} not valid in down payment option`)
-    //     //         }
-    //     //     }
-    //     // }
-
-    //     // if (payment_frequency.length) {
-    //     //     for await (const iterator of payment_frequency) {
-    //     //         if (!Object.values(InstalmentType).includes(iterator)) {
-    //     //             throw new BadRequestException(`${iterator} not valid payment type`)
-    //     //         }
-    //     //     }
-    //     // }
-
-    //     let config = await getConnection()
-    //     	.createQueryBuilder(LandingPageDiscountConfig, "config")
-    //     	.where(where)
-    //     	.getOne();
-
-    //     if (!config) {
-    //     	throw new NotFoundException(`Please enter valid inputs`)
-    //     }
-    //     // let config = new LandingPageDownPaymentConfig
-    //     config.moduleId = module_id
-    //     config.daysConfigId = days_config_id
-    //     config.landingPageId = landing_page_id
-    //     // config.downPaymentOption = down_payment_option
-    //     config.isDiscountInPercentage = down_payment_type == DownPaymentType.PERCENTAGE ? true : false
-    //     config.createDate = new Date()
-    //     config.offerCriteria = offer_criteria_type
-    //     config.offerVariable = offer_criteria_variable
-    //     config.minimumAmount = minimum_amount
-
-
-    //     if(offer_criteria_type == OfferCriterias.ROUTE &&  offer_criteria_variable == OfferCriteriaVariables.ROUTE ){
-    //         let value = []
-    //         for await (const iterator of offer_criteria_value) {
-    //             value.push(`${iterator.from}-${iterator.to}`)
-    //         }
-    //         config.offerCriteriaValues = value
-    //     }else{
-    //         config.offerCriteriaValues = offer_criteria_value
-    //     }
-
-
-    //     await config.save()
-
-    //     return {
-    //         message: `Discount configuration updated successfully.`,
-    //         data: config
-    //     }
-    // }
 
     async getLandingPageDiscount(listDiscountDto: ListDiscountDto) {
         const { module_id, landing_page_id } = listDiscountDto

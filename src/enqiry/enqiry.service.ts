@@ -119,7 +119,7 @@ export class EnqiryService {
                     to: mailConfig.admin,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
-                    subject: `New Enquiry`,
+                    subject: `New Inquiry`,
 					attachments: attachments,
                     html: EnquiryNotificationHTML({
                         name: name,

@@ -45,4 +45,16 @@ export class ListFlightRouteDto {
     })
     type: string;
 
+    @ApiPropertyOptional({
+        description:'From airport code',
+        example:'ABQ'
+    })
+    from_airport_code: string;
+
+    @ApiPropertyOptional({
+        description:'To airport code',
+        example:'LAS'
+    })
+    to_airport_code: string;
+
 }

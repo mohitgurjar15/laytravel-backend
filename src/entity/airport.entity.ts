@@ -48,9 +48,9 @@ export class Airport extends BaseEntity {
   isBlackListed: boolean;
   
   @Column("uuid", { name: "update_by", nullable: true })
-    updateBy: string;
+  updateBy: string;
 
-    @Column("timestamp without time zone", {
+  @Column("timestamp without time zone", {
       name: "update_date",
       nullable: true,
   })
