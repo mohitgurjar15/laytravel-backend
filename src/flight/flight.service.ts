@@ -118,8 +118,17 @@ export class FlightService {
                 where: `("code" ILIKE '%${name}%'  or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false and is_blacklisted = false`,
                 order: { parentId: "ASC" },
             });
-            if (type == "web") result = this.sortAirport(result);
-            else result = this.getNestedChildren(result, 0, true);
+            if (type == "web"){
+                result = this.sortAirport(result);
+            }
+            else{
+                let result1;
+                result1 = this.getNestedChildren(result, 0, true);
+                if(result.length){
+                    result = this.pushOrphanAirport(result,result1);
+                }
+                result.sort((a, b) => a.city.localeCompare(b.city));
+            } 
 
             if (!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`);
@@ -185,33 +194,55 @@ export class FlightService {
         return result;
     }
     getNestedChildren(arr, parent, param) {
+        
         let out = [];
         for (let i in arr) {
-            arr[
-                i
-            ].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
+            arr[i].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
             if (arr[i].parentId == parent) {
                 let children = this.getNestedChildren(arr, arr[i].id, false);
 
                 if (children.length) {
+                    children.sort((a, b) => a.name.localeCompare(b.name));
                     arr[i].sub_airport = children;
+
                 } else {
                     arr[i].sub_airport = [];
                 }
-                arr[
-                    i
-                ].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
+                arr[i].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
                 out.push(arr[i]);
             }
         }
 
         if (param === true && arr.length == 1 && arr[0].parentId != 0) {
-            arr[
-                "display_name"
-            ] = `${arr.city},${arr.country},(${arr.code}),${arr.name}`;
+            arr["display_name"] = `${arr.city},${arr.country},(${arr.code}),${arr.name}`;
             out.push(arr[0]);
         }
         return out;
+    }
+
+    pushOrphanAirport(airport,output){
+        for(let item of airport){
+   
+            let find = output.findIndex(ot=>ot.code==item.code);
+            if(find!=-1){
+               continue;
+            }
+            let childIndex=[];
+              for(let out of output){
+             
+             if(typeof out.sub_airport!='undefined' && out.sub_airport.length){
+                 let findInChild = out.sub_airport.findIndex(o=>o.code==item.code);
+               childIndex.push(findInChild);
+             }
+            }
+            
+            let x= childIndex.find(x=>x>-1);
+            if(x==undefined ||  x==-1){
+               output.push(item)
+            }
+             
+         }
+         return output;
     }
 
     /* async mapChildParentAirport(name:String){
