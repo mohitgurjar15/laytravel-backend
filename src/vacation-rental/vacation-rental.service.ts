@@ -299,7 +299,7 @@ export class VacationRentalService {
 					bookingDate,
 					totalAdditionalAmount,
 					custom_instalment_amount,
-					custom_instalment_no
+					custom_instalment_no,0,false,0,true,[]
 				);
 			}
 			if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -309,7 +309,7 @@ export class VacationRentalService {
 					bookingDate,
 					totalAdditionalAmount,
 					custom_instalment_amount,
-					custom_instalment_no
+					custom_instalment_no, 0, false, 0, true, []
 				);
 			}
 			if (instalment_type == InstalmentType.MONTHLY) {
@@ -319,7 +319,7 @@ export class VacationRentalService {
 					bookingDate,
 					totalAdditionalAmount,
 					custom_instalment_amount,
-					custom_instalment_no
+					custom_instalment_no, 0, false, 0, true, []
 				);
 			}
 

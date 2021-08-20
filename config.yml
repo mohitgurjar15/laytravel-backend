@@ -3,3 +3,4 @@ environments:
         - dev : ${config/dev.yml}
         - prod : ${config/prod.yml}
         - temp : ${config/temp.yml}
+        - uat : ${config/uat.yml}

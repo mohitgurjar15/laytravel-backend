@@ -41,13 +41,18 @@ export class Airport extends BaseEntity {
   @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
 
-  @Column("integer", { name: "parent_id",default: () => 0 })
+  @Column("integer", { name: "parent_id", default: () => 0 })
   parentId: number;
 
-//   @OneToMany(
-//     () => Airport,
-//     (airport) => airport.parentId
-//   )
-//   @JoinColumn([{ name: "id", referencedColumnName: "parentId" }])
-//   childs: Airport[];
+  @Column("boolean", { name: "is_blacklisted", default: () => "false" })
+  isBlackListed: boolean;
+  
+  @Column("uuid", { name: "update_by", nullable: true })
+    updateBy: string;
+
+    @Column("timestamp without time zone", {
+      name: "update_date",
+      nullable: true,
+  })
+  updateDate: Date;
 }

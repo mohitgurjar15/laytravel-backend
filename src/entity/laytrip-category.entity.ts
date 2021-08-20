@@ -9,6 +9,9 @@ import {
     PrimaryGeneratedColumn
 } from "typeorm";
 import { FlightRoute } from "./flight-route.entity";
+import { LandingPageDiscountConfig } from "./landing-page-discount.entity";
+import { LandingPageDownPaymentConfig } from "./landing-page-downPayment.entity";
+import { PaymentConfiguration } from "./payment-configuration.entity";
 import { User } from "./user.entity";
 
 //@Index("login_log_pk", ["id"], { unique: true })
@@ -26,6 +29,9 @@ export class LaytripCategory extends BaseEntity {
 
     @Column("integer", { name: "installment_available_after" , nullable: true })
     installmentAvailableAfter: number;
+
+    @Column("boolean", { name: "is_installment_available", default: () => "true" })
+    isInstallmentAvailable: boolean;
 
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;
@@ -58,4 +64,22 @@ export class LaytripCategory extends BaseEntity {
         flightRoute => flightRoute.category
     )
     flightRoutes: FlightRoute[];
+
+    @OneToMany(
+        () => PaymentConfiguration,
+        flightRoute => flightRoute.category
+    )
+    paymentConfiguration: PaymentConfiguration[];
+
+    @OneToMany(
+        () => LandingPageDownPaymentConfig,
+        config => config.category
+    )
+    landingPageDownPaymentConfig: LandingPageDownPaymentConfig[];
+
+    @OneToMany(
+        () => LandingPageDiscountConfig,
+        config => config.category
+    )
+    landingPageDiscountConfig: LandingPageDiscountConfig[];
 }

@@ -55,6 +55,7 @@ import { User } from "src/entity/user.entity";
 import { LaytripPaymentMethodChangeMail } from "src/config/new_email_templete/laytrip_payment-method-change-mail.html";
 import { Role } from "src/enum/role.enum";
 import { ListPaymentUserDto } from "./dto/list-payment-user.dto";
+import moment = require("moment");
 
 @Injectable()
 export class PaymentService {
@@ -1521,6 +1522,7 @@ export class PaymentService {
         let nonPromotional = 0
         let promotionalItem = []
         let nonPromotionalItem = []
+        let paymentType = 0
         for (let index = 0; index < result.length; index++) {
             const cart = result[index];
 
@@ -1531,6 +1533,12 @@ export class PaymentService {
                 nonPromotional++
                 nonPromotionalItem.push(cart.id)
             }
+
+            // if (paymentType == 0) {
+            //     paymentType = cart.paymentType
+            // } else if (paymentType != cart.paymentType) {
+            //     throw new NotAcceptableException(`In cart Installment and no-installment both inventry found.`)
+            // }
         }
 
         if (promotional > 0 && nonPromotional > 0) {
@@ -1597,6 +1605,13 @@ export class PaymentService {
                 totalAdditionalAmount =
                     totalAdditionalAmount + laycredit_points;
             }
+            let downPayments = [40, 50, 60]
+            if (moment(smallestDate).diff(
+                moment().format("YYYY-MM-DD"),
+                "days"
+            ) > 90) {
+                downPayments = [20, 30, 40]
+            }
             //save entry for future booking
             if (instalment_type == InstalmentType.WEEKLY) {
                 if(cartIsPromotional){
@@ -1610,7 +1625,7 @@ export class PaymentService {
                         null,
                         0,
                         false,
-                        offerDownPayment
+                        offerDownPayment, true, downPayments
                     );
                     console.log("offerDownPayment", offerDownPayment)
                     console.log(instalmentDetails)
@@ -1624,7 +1639,8 @@ export class PaymentService {
                     0,
                     0,
                     selected_down_payment,
-                    false
+                    false,
+                        null, true, downPayments
                 );
                 }
                 
@@ -1638,7 +1654,8 @@ export class PaymentService {
                     0,
                     0,
                     selected_down_payment,
-                    false
+                    false,
+                    null, true, downPayments
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1650,7 +1667,8 @@ export class PaymentService {
                     0,
                     0,
                     selected_down_payment,
-                    false
+                    false,
+                    null, true, downPayments
                 );
             }
 

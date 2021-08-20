@@ -24,6 +24,10 @@ import { Rooms } from "./modules/rooms";
 import { Search } from "./modules/search";
 import { HttpRequest } from "src/utility/http.utility";
 import { Activity } from "src/utility/activity.utility";
+import { RouteCategory } from "src/utility/route-category.utility";
+import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
+import { ModulesName } from "src/enum/module.enum";
+import moment = require("moment");
 
 export class Priceline implements HotelInterface {
     private httpsService: HttpService;
@@ -134,15 +138,16 @@ export class Priceline implements HotelInterface {
             "getExpress.Results",
             parameters
         );
+        let daysUtilDepature = moment(check_in).diff(moment().format("YYYY-MM-DD"), 'days')
+        let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(ModulesName.HOTEL, 0, daysUtilDepature)
         let responce: any = {};
         let res = await this.httpsService
             .get(url)
             .pipe(
                 map((res) => {
                     responce = res?.data;
-                    // console.log(responce);
-
-                    return new Search().processSearchResult(res, parameters, referralId);
+                    // console.log(responce);   
+                    return new Search().processSearchResult(res, parameters, referralId, paymentConfig);
                 }),
                 catchError((err) => {
                     //console.log("Error", err);

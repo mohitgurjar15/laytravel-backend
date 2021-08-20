@@ -17,6 +17,9 @@ import { Notification } from "./notification.entity";
 import { Cart } from "./cart.entity";
 import { SearchLog } from "./search-log.entity";
 import { BookingLog } from "./booking-log.entity";
+import { PaymentConfiguration } from "./payment-configuration.entity";
+import { LandingPageDownPaymentConfig } from "./landing-page-downPayment.entity";
+import { LandingPageDiscountConfig } from "./landing-page-discount.entity";
 //@Index("module_pk", ["id"], { unique: true })
 @Entity("module")
 export class Module extends BaseEntity {
@@ -107,4 +110,22 @@ export class Module extends BaseEntity {
     searchLog => searchLog.module
   )
   searchLog: SearchLog[];
+
+  @OneToMany(
+    () => PaymentConfiguration,
+    markup => markup.module
+  )
+  paymentConfiguration: PaymentConfiguration[];
+
+  @OneToMany(
+    () => LandingPageDownPaymentConfig,
+    config => config.module
+  )
+  landingPageDownPaymentConfig: LandingPageDownPaymentConfig[];
+
+  @OneToMany(
+    () => LandingPageDiscountConfig,
+    config => config.module
+  )
+  landingPageDiscountConfig: LandingPageDiscountConfig[];
 }

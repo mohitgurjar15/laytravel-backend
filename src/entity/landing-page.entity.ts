@@ -11,6 +11,8 @@ import {
 import { User } from "./user.entity";
 import { Module } from "./module.entity";
 import { CartBooking } from "./cart-booking.entity";
+import { LandingPageDownPaymentConfig } from "./landing-page-downPayment.entity";
+import { LandingPageDiscountConfig } from "./landing-page-discount.entity";
 
 @Index("landing_pages_name", ["name"], { unique: true })
 @Entity("landing_pages")
@@ -49,6 +51,9 @@ export class LandingPages extends BaseEntity {
     @Column("uuid", { name: "update_by", nullable: true })
     updateBy: string;
 
+    // @Column("boolean",{name:"is_default_setting_applied"})
+    // isDefaultSettingApplied : boolean
+
     @ManyToOne(
         () => User,
         (user) => user.updateLandingPage
@@ -74,4 +79,16 @@ export class LandingPages extends BaseEntity {
         (cartBooking) => cartBooking.referral
     )
     refferalBookings: CartBooking[];
+
+    @OneToMany(
+        () => LandingPageDownPaymentConfig,
+        config => config.category
+    )
+    landingPageDownPaymentConfig: LandingPageDownPaymentConfig[];
+
+    @OneToMany(
+        () => LandingPageDiscountConfig,
+        config => config.category
+    )
+    landingPageDiscountConfig: LandingPageDiscountConfig[];
 }
