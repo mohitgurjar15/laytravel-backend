@@ -2316,7 +2316,7 @@ export class Mystifly implements StrategyAirline {
                     }
 
 
-                    if (offerData.applicable && typeof paymentConfig!='undefined') {
+                    if (offerData.applicable) {
                         instalmentEligibility.available = true
                         route.payment_object = {
                             installment_type: InstalmentType.WEEKLY,

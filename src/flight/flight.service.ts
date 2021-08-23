@@ -88,6 +88,7 @@ import { AdminNewBookingMail } from "src/config/admin-email-notification-templet
 import { LandingPage } from "src/utility/landing-page.utility";
 import { Airport } from "src/entity/airport.entity";
 import _ = require("lodash");
+import console = require("console");
 
 @Injectable()
 export class FlightService {
@@ -118,17 +119,17 @@ export class FlightService {
                 where: `("code" ILIKE '%${name}%'  or "city" ILIKE '%${name}%' or "country" ILIKE '%${name}%') and status=true and is_deleted=false and is_blacklisted = false`,
                 order: { parentId: "ASC" },
             });
-            if (type == "web"){
+            if (type == "web") {
                 result = this.sortAirport(result);
             }
-            else{
+            else {
                 let result1;
                 result1 = this.getNestedChildren(result, 0, true);
-                if(result.length){
-                    result = this.pushOrphanAirport(result,result1);
+                if (result.length) {
+                    result = this.pushOrphanAirport(result, result1);
                 }
                 result.sort((a, b) => a.city.localeCompare(b.city));
-            } 
+            }
 
             if (!result.length)
                 throw new NotFoundException(`No Airport Found.&&&name`);
@@ -194,7 +195,7 @@ export class FlightService {
         return result;
     }
     getNestedChildren(arr, parent, param) {
-        
+
         let out = [];
         for (let i in arr) {
             arr[i].display_name = `${arr[i].city},${arr[i].country},(${arr[i].code}),${arr[i].name}`;
@@ -220,29 +221,29 @@ export class FlightService {
         return out;
     }
 
-    pushOrphanAirport(airport,output){
-        for(let item of airport){
-   
-            let find = output.findIndex(ot=>ot.code==item.code);
-            if(find!=-1){
-               continue;
+    pushOrphanAirport(airport, output) {
+        for (let item of airport) {
+
+            let find = output.findIndex(ot => ot.code == item.code);
+            if (find != -1) {
+                continue;
             }
-            let childIndex=[];
-              for(let out of output){
-             
-             if(typeof out.sub_airport!='undefined' && out.sub_airport.length){
-                 let findInChild = out.sub_airport.findIndex(o=>o.code==item.code);
-               childIndex.push(findInChild);
-             }
+            let childIndex = [];
+            for (let out of output) {
+
+                if (typeof out.sub_airport != 'undefined' && out.sub_airport.length) {
+                    let findInChild = out.sub_airport.findIndex(o => o.code == item.code);
+                    childIndex.push(findInChild);
+                }
             }
-            
-            let x= childIndex.find(x=>x>-1);
-            if(x==undefined ||  x==-1){
-               output.push(item)
+
+            let x = childIndex.find(x => x > -1);
+            if (x == undefined || x == -1) {
+                output.push(item)
             }
-             
-         }
-         return output;
+
+        }
+        return output;
     }
 
     /* async mapChildParentAirport(name:String){
@@ -923,12 +924,12 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = flightData?.is_installment_available ? true : false
+                        isPriceInInstallment = flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined' ? true : false
                         selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -943,7 +944,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1175,7 +1176,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available) {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1195,7 +1196,7 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available) {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
@@ -1283,7 +1284,6 @@ export class FlightService {
         await this.validateHeaders(headers);
 
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-        console.log('**--mystifly--**',mystifly)
         const {
             source_location,
             destination_location,
@@ -1294,7 +1294,6 @@ export class FlightService {
             infant_count,
             arrival_date,
         } = serchFlightDto;
-        console.log('====this is my dto====', serchFlightDto)
         const depatureDate = new Date(departure_date);
         const arivalDate = new Date(arrival_date);
 
@@ -1487,12 +1486,12 @@ export class FlightService {
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
                         arrivalDate = flightData.arrival_date;
-                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined' ? true : false,
                             selling_price = flightData.selling_price
                     }
                     // else if (lowestprice == flightData.net_rate && returnResponce[lowestPriceIndex].date > flightData.departure_date) {
@@ -1507,13 +1506,13 @@ export class FlightService {
                         lowestprice = flightData.discounted_selling_price;
                         unique_code = flightData.unique_code;
                         date = flightData.departure_date;
-                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment!='undefined') {
+                        if (flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined') {
                             startPrice = flightData.payment_object[flightData.payment_object.installment_type].installment;
                         }
                         arrivalDate = flightData.arrival_date;
                         secondaryStartPrice =
                             flightData.discounted_secondary_start_price || 0;
-                        isPriceInInstallment = flightData?.is_installment_available ? true : false,
+                        isPriceInInstallment = flightData?.is_installment_available && typeof flightData?.payment_object[flightData.payment_object.installment_type]?.installment != 'undefined' ? true : false,
                             selling_price = flightData.selling_price
                     }
                     key++;
