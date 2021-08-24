@@ -1258,7 +1258,7 @@ more than 10.`
             let totalprice = 0;
             let downpayment = 0;
             console.log(responce)
-            this.calculatePriceSummary(responce);
+            let priceSummary = this.calculatePriceSummary(responce);
             // for(let i=0; i < responce.length; i++) {
             //     totalprice += responce.moduleInfo[0].net_rate
             //      downpayment += re
@@ -1269,7 +1269,8 @@ more than 10.`
                 cartIsPromotional,
                 error,
                 is_payment_plan_conflict,
-                cart_payment_type: paymentType
+                cart_payment_type: paymentType,
+                price_summaty :priceSummary
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -3131,16 +3132,80 @@ more than 10.`
         return result;
     }
 
-    async calculatePriceSummary(responce) {
-        let downpayment = 0;
-
-        for(let i=0; i < responce.length; i++) {
-            let amount = 0;
-            let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-            if(responce[i].type == "flight") {
-
+    async calculatePriceSummary(items) {
+        
+        let checkInDates=[];
+        let allItemResult=[];
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+        for(let i=0; i < items.length; i++) {
+            if(items[i].payment_method=='installment'){
+                if(items[i].type == "flight") {
+                    checkInDates.push(moment(items[i].moduleInfo[0].departure_date,"MM/DD/YYYY","YYYY-MM-DD"));
+                }
+                if(items[i].type=='hotel'){
+                    checkInDates.push(moment(items[i].moduleInfo[0].departure_date,"MM/DD/YYYY","YYYY-MM-DD"));
+                }
             }
-            // Instalment.weeklyInstalment()
+        }
+        let checkInDate;
+        //let checkIndate = //find Minimim date from checkinDates;
+        //let paymentFrequency='';
+        let downPayment=0;
+        let totalAmount =0;
+        let totalDownPayment=0;
+        for(let i=0; i < items.length; i++) {
+            if(items[i].type=='flight'){
+                totalAmount = items[i].selling_price;
+            }
+            if(items[i].type=='hotel'){
+                totalAmount = items[i].selling.total;
+            }
+            if(items[i].payment_method=='installment'){
+                //paymentFrequency = items[i].payment_frequency;
+                downPayment = items[i].downpayment;
+                let result;
+                if(items[i].payment_frequency=='weekly'){
+                    result=await Instalment.weeklyInstalment(
+                        totalAmount,
+                        checkInDate,
+                        bookingDate,
+                        0,0,0,null,false,
+                        downPayment,
+                        true,
+                        [40,50,60])
+                }
+                if(items[i].payment_frequency=='biweekly'){
+                    result=await Instalment.biWeeklyInstalment(
+                        totalAmount,
+                        checkInDate,
+                        bookingDate,
+                        0,0,0,null,false,
+                        downPayment,
+                        true,
+                        [40,50,60])
+                }
+                if(items[i].payment_frequency=='biweekly'){
+                    result=await Instalment.monthlyInstalment(
+                        totalAmount,
+                        checkInDate,
+                        bookingDate,
+                        0,0,0,null,false,
+                        downPayment,
+                        true,
+                        [40,50,60])
+                }
+                allItemResult.push(result);
+            }
+            else{
+                totalDownPayment+=totalAmount;
+            }
+
+        }
+
+        for(let i=0; i < allItemResult.length; i++){
+
         }
     }
 }
+
+
