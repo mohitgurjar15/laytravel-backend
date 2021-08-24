@@ -1027,6 +1027,16 @@ more than 10.`
 
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
+                            let updatedDownpayment = 0;
+                            if(cart.paymentMethod === "installment") {
+                                if(cart.paymentFrequency === "weekly") {
+                                    updatedDownpayment = newCart["moduleInfo"][0].payment_object.weekly.down_payment;
+                                } else if(cart.paymentFrequency === "biweekly") {
+                                    updatedDownpayment = newCart["moduleInfo"][0].payment_object.biweekly.down_payment;
+                                } else if(cart.paymentFrequency === "monthly") {
+                                    updatedDownpayment = newCart["moduleInfo"][0].payment_object.monthly.down_payment;
+                                }
+                            }
                             newCart["is_available"] = true;
                             newCart["isPromotional"] = value?.offer_data?.applicable
                             newCart["is_conflict"] = false;
@@ -1064,7 +1074,7 @@ more than 10.`
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
+                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId, downpayment: updatedDownpayment })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
 
@@ -1110,6 +1120,16 @@ more than 10.`
 
                             if (roomDetails?.data) {
                                 newCart["moduleInfo"] = roomDetails.data;
+                                let updatedDownpayment = 0;
+                                if(cart.paymentMethod === "installment") {
+                                    if(cart.paymentFrequency === "weekly") {
+                                        updatedDownpayment = newCart["moduleInfo"][0].payment_object.weekly.down_payment;
+                                    } else if(cart.paymentFrequency === "biweekly") {
+                                        updatedDownpayment = newCart["moduleInfo"][0].payment_object.biweekly.down_payment;
+                                    } else if(cart.paymentFrequency === "monthly") {
+                                        updatedDownpayment = newCart["moduleInfo"][0].payment_object.monthly.down_payment;
+                                    }
+                                }
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
                                 newCart["is_conflict"] = false;
@@ -1149,7 +1169,7 @@ more than 10.`
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
+                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId, downpayment: updatedDownpayment })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
@@ -1164,7 +1184,7 @@ more than 10.`
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
                     if ((paymentType == BookingType.INSTALMENT && cart.moduleInfo[0]?.is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && cart.moduleInfo[0]?.is_installment_available == true)) {
-                        newCart["is_payment_type_conflicted"] = true;
+                        newCart["/"] = true;
                     }
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         newCart["is_available"] = true;
@@ -1235,6 +1255,14 @@ more than 10.`
                 newCart["paymentFrequency"] = cart.paymentFrequency;
                 responce.push(newCart);
             }
+            let totalprice = 0;
+            let downpayment = 0;
+            console.log(responce)
+            this.calculatePriceSummary(responce);
+            // for(let i=0; i < responce.length; i++) {
+            //     totalprice += responce.moduleInfo[0].net_rate
+            //      downpayment += re
+            // }
             return {
                 data: responce,
                 count: count,
@@ -3101,5 +3129,18 @@ more than 10.`
 
         const result = await query.getOne();
         return result;
+    }
+
+    async calculatePriceSummary(responce) {
+        let downpayment = 0;
+
+        for(let i=0; i < responce.length; i++) {
+            let amount = 0;
+            let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+            if(responce[i].type == "flight") {
+
+            }
+            // Instalment.weeklyInstalment()
+        }
     }
 }
