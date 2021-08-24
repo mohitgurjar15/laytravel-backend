@@ -8,7 +8,7 @@ import { ExpressAdapter } from "@nestjs/platform-express";
 import { AppModule } from "./app.module";
 import * as config from "config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import { RedocModule, RedocOptions } from "nestjs-redoc";
+//import { RedocModule, RedocOptions } from "nestjs-redoc";
 import { BadRequestExceptionFilter } from "./bad-request-exception.filter";
 import { NotFoundExceptionFilter } from "./not-found-exception.filter";
 import { UnauthorizedExceptionFilter } from "./unauthorized-exception.filter";
@@ -75,7 +75,7 @@ async function bootstrap() {
   SwaggerModule.setup("api-docs", app, document);
 
   /* Added by Chirag Khatri (just to check other theme for OpenApi )*/
-  const redocOptions: RedocOptions = {
+  /* const redocOptions: RedocOptions = {
     title: "Laytrip API Doc",
     logo: {
       // url: 'https://redocly.github.io/redoc/petstore-logo.png',
@@ -86,10 +86,10 @@ async function bootstrap() {
     hideDownloadButton: false,
     hideHostname: false,
     hideLoading: false,
-  };
+  }; */
 
   // Instead of using SwaggerModule.setup() you call this module
-  await RedocModule.setup("/docs", app, document, redocOptions);
+  //await RedocModule.setup("/docs", app, document, redocOptions);
 
   app.enableCors();
 
