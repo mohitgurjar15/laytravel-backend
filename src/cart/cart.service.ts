@@ -99,7 +99,11 @@ export class CartService {
                 check_out_date,
                 adult_count,
                 number_and_children_ages = [],
+                payment_frequency,
+                downpayment,
+                payment_method
             } = addInCartDto;
+
             var tDate = new Date();
 
             var todayDate = tDate.toISOString().split(" ")[0];
@@ -182,7 +186,7 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method);
                     break;
 
                 case ModulesName.FLIGHT:
@@ -195,7 +199,7 @@ more than 10.`
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header, referralId, cartIsPromotional, paymentType
+                        Header, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:
@@ -253,7 +257,7 @@ more than 10.`
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType) {
+    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
         //console.log('validate');
         console.log("cartIsPromotional", cartIsPromotional)
         const flightInfo: any = await this.flightService.airRevalidate(
@@ -322,6 +326,9 @@ more than 10.`
             cart.paymentType = flightInfo[0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
             // cart.instalmentType = instalment_type;
             // cart.paymentType = payment_type
+            cart.paymentMethod = paymentMethod;
+            cart.paymentFrequency = paymentFrequency || "";
+            cart.downpayment = downpayment || 0;
 
             let savedCart = await cart.save();
 
@@ -1020,6 +1027,16 @@ more than 10.`
 
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
+                            let updatedDownpayment = 0;
+                            if(cart.paymentMethod === "installment") {
+                                if(cart.paymentFrequency === "weekly") {
+                                    updatedDownpayment = newCart["moduleInfo"][0].payment_object.weekly.down_payment;
+                                } else if(cart.paymentFrequency === "biweekly") {
+                                    updatedDownpayment = newCart["moduleInfo"][0].payment_object.biweekly.down_payment;
+                                } else if(cart.paymentFrequency === "monthly") {
+                                    updatedDownpayment = newCart["moduleInfo"][0].payment_object.monthly.down_payment;
+                                }
+                            }
                             newCart["is_available"] = true;
                             newCart["isPromotional"] = value?.offer_data?.applicable
                             newCart["is_conflict"] = false;
@@ -1057,7 +1074,7 @@ more than 10.`
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
+                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId, downpayment: updatedDownpayment })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
 
@@ -1103,6 +1120,16 @@ more than 10.`
 
                             if (roomDetails?.data) {
                                 newCart["moduleInfo"] = roomDetails.data;
+                                let updatedDownpayment = 0;
+                                if(cart.paymentMethod === "installment") {
+                                    if(cart.paymentFrequency === "weekly") {
+                                        updatedDownpayment = newCart["moduleInfo"][0].payment_object.weekly.down_payment;
+                                    } else if(cart.paymentFrequency === "biweekly") {
+                                        updatedDownpayment = newCart["moduleInfo"][0].payment_object.biweekly.down_payment;
+                                    } else if(cart.paymentFrequency === "monthly") {
+                                        updatedDownpayment = newCart["moduleInfo"][0].payment_object.monthly.down_payment;
+                                    }
+                                }
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
                                 newCart["is_conflict"] = false;
@@ -1142,7 +1169,7 @@ more than 10.`
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
+                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId, downpayment: updatedDownpayment })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
@@ -1157,7 +1184,7 @@ more than 10.`
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
                     if ((paymentType == BookingType.INSTALMENT && cart.moduleInfo[0]?.is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && cart.moduleInfo[0]?.is_installment_available == true)) {
-                        newCart["is_payment_type_conflicted"] = true;
+                        newCart["/"] = true;
                     }
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         newCart["is_available"] = true;
@@ -1223,15 +1250,27 @@ more than 10.`
                 newCart["createdDate"] = cart.createdDate;
                 newCart["type"] = cart.module.name;
                 newCart["travelers"] = cart.travelers;
+                newCart["paymentMethod"] = cart.paymentMethod;
+                newCart["downpayment"] = cart.downpayment;
+                newCart["paymentFrequency"] = cart.paymentFrequency;
                 responce.push(newCart);
             }
+            let totalprice = 0;
+            let downpayment = 0;
+            console.log(responce)
+            let priceSummary = this.calculatePriceSummary(responce);
+            // for(let i=0; i < responce.length; i++) {
+            //     totalprice += responce.moduleInfo[0].net_rate
+            //      downpayment += re
+            // }
             return {
                 data: responce,
                 count: count,
                 cartIsPromotional,
                 error,
                 is_payment_plan_conflict,
-                cart_payment_type: paymentType
+                cart_payment_type: paymentType,
+                price_summaty :priceSummary
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -3030,7 +3069,7 @@ more than 10.`
     //     );
     // }
 
-    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType) {
+    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
 
         console.log(cartIsPromotional)
         let roomDetails = await this.hotelService.availability(
@@ -3070,6 +3109,9 @@ more than 10.`
         cart.paymentType = roomDetails.data["items"][0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
 
         let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
+        cart.paymentMethod = paymentMethod;
+        cart.paymentFrequency = paymentFrequency || "";
+        cart.downpayment = downpayment || 0;
 
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
@@ -3093,4 +3135,81 @@ more than 10.`
         const result = await query.getOne();
         return result;
     }
+
+    async calculatePriceSummary(items) {
+        
+        let checkInDates=[];
+        let allItemResult=[];
+        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+        for(let i=0; i < items.length; i++) {
+            if(items[i].payment_method=='installment'){
+                if(items[i].type == "flight") {
+                    checkInDates.push(moment(items[i].moduleInfo[0].departure_date,"MM/DD/YYYY","YYYY-MM-DD"));
+                }
+                if(items[i].type=='hotel'){
+                    checkInDates.push(moment(items[i].moduleInfo[0].departure_date,"MM/DD/YYYY","YYYY-MM-DD"));
+                }
+            }
+        }
+        let checkInDate;
+        //let checkIndate = //find Minimim date from checkinDates;
+        //let paymentFrequency='';
+        let downPayment=0;
+        let totalAmount =0;
+        let totalDownPayment=0;
+        for(let i=0; i < items.length; i++) {
+            if(items[i].type=='flight'){
+                totalAmount = items[i].selling_price;
+            }
+            if(items[i].type=='hotel'){
+                totalAmount = items[i].selling.total;
+            }
+            if(items[i].payment_method=='installment'){
+                //paymentFrequency = items[i].payment_frequency;
+                downPayment = items[i].downpayment;
+                let result;
+                if(items[i].payment_frequency=='weekly'){
+                    result=await Instalment.weeklyInstalment(
+                        totalAmount,
+                        checkInDate,
+                        bookingDate,
+                        0,0,0,null,false,
+                        downPayment,
+                        true,
+                        [40,50,60])
+                }
+                if(items[i].payment_frequency=='biweekly'){
+                    result=await Instalment.biWeeklyInstalment(
+                        totalAmount,
+                        checkInDate,
+                        bookingDate,
+                        0,0,0,null,false,
+                        downPayment,
+                        true,
+                        [40,50,60])
+                }
+                if(items[i].payment_frequency=='biweekly'){
+                    result=await Instalment.monthlyInstalment(
+                        totalAmount,
+                        checkInDate,
+                        bookingDate,
+                        0,0,0,null,false,
+                        downPayment,
+                        true,
+                        [40,50,60])
+                }
+                allItemResult.push(result);
+            }
+            else{
+                totalDownPayment+=totalAmount;
+            }
+
+        }
+
+        for(let i=0; i < allItemResult.length; i++){
+
+        }
+    }
 }
+
+
