@@ -3267,7 +3267,6 @@ more than 10.`
                     newArray.push(newRes);
                 }
             }
-            newArray.reduce((x, y) => x + y, 0);
             // for(let i = 0; i < newArray.length; i++) {
             //     let min = i;
 
