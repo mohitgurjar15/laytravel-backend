@@ -24,10 +24,10 @@ export class TravelerInfo extends BaseEntity {
     @Column("uuid", { name: "booking_id" })
     bookingId: string;
 
-    @Column("uuid", { name: "user_id" })
+    @Column("uuid", { name: "user_id",nullable: true  })
     userId: string;
 
-    @Column("character varying", { name: "role_id" })
+    @Column("character varying", { name: "role_id",nullable: true  })
     roleId: number;
 
     @Column("json", { name: "traveler_info", nullable: true })
