@@ -158,5 +158,11 @@ class Traveler {
     })
     is_primary_traveler?: boolean;
 
+    @ApiPropertyOptional({
+        description: "user obj",
+        example: false,
+    })
+    traveler?: any;
+
     
 }

@@ -2527,13 +2527,10 @@ export class FlightService {
 
         // primaryTraveler.save();
 
-        for await (var traveler of travelers) {
-            if (typeof traveler.traveler_id) {
-                var travelerId = traveler.traveler_id;
-                const userData = await getConnection()
-                    .createQueryBuilder(User, "user")
-                    .where(`"user_id" =:user_id`, { user_id: travelerId })
-                    .getOne();
+
+        for await (var item of travelers) {
+                let userData = item.traveler;
+                
                 var birthDate = new Date(userData.dob);
                 var age = moment(new Date()).diff(moment(birthDate), "years");
 
@@ -2561,54 +2558,53 @@ export class FlightService {
                 };
                 var travelerUser = new TravelerInfo();
                 travelerUser.bookingId = bookingId;
-                travelerUser.userId = travelerId;
-                travelerUser.isPrimary = traveler?.is_primary_traveler
-                    ? true
-                    : false;
+                //travelerUser.userId = travelerId;
+                travelerUser.isPrimary = true;
                 travelerUser.roleId = Role.TRAVELER_USER;
                 travelerUser.travelerInfo = travelerInfo;
                 await travelerUser.save();
-            }
         }
     }
 
     async getTravelersInfo(travelers, isPassportRequired = null) {
-        let travelerIds = travelers.map((traveler) => {
-            return traveler.traveler_id;
-        });
+        // let travelerIds = travelers.map((traveler) => {
+        //     return traveler.traveler_id;
+        // });
 
-        let travelersResult = await getManager()
-            .createQueryBuilder(User, "user")
-            .leftJoinAndSelect("user.country", "countries")
-            .select([
-                "user.userId",
-                "user.title",
-                "user.firstName",
-                "user.lastName",
-                "user.email",
-                "user.countryCode",
-                "user.phoneNo",
-                "user.zipCode",
-                "user.gender",
-                "user.dob",
-                "user.passportNumber",
-                "user.passportExpiry",
-                "countries.name",
-                "countries.iso2",
-                "countries.iso3",
-                "countries.id",
-            ])
-            .where('"user"."user_id" IN (:...travelerIds)', { travelerIds })
-            .getMany();
+        // let travelersResult = await getManager()
+        //     .createQueryBuilder(User, "user")
+        //     .leftJoinAndSelect("user.country", "countries")
+        //     .select([
+        //         "user.userId",
+        //         "user.title",
+        //         "user.firstName",
+        //         "user.lastName",
+        //         "user.email",
+        //         "user.countryCode",
+        //         "user.phoneNo",
+        //         "user.zipCode",
+        //         "user.gender",
+        //         "user.dob",
+        //         "user.passportNumber",
+        //         "user.passportExpiry",
+        //         "countries.name",
+        //         "countries.iso2",
+        //         "countries.iso3",
+        //         "countries.id",
+        //     ])
+        //     .where('"user"."user_id" IN (:...travelerIds)', { travelerIds })
+        //     .getMany();
 
         let traveleDetails = {
             adults: [],
             children: [],
             infants: [],
         };
-
-        if (travelersResult.length > 0) {
-            for (let traveler of travelersResult) {
+        
+        if (travelers.length > 0) {
+            for (let item of travelers) {
+                let traveler=item.traveler;
+                console.log("travelers===>",traveler)
                 let ageDiff = moment(new Date()).diff(
                     moment(traveler.dob),
                     "years"
@@ -2676,9 +2672,8 @@ export class FlightService {
                         `Passport Expiry date is expired for traveler ${traveler.firstName}`
                     );
                 if (
-                    traveler.country == null ||
-                    (typeof traveler.country.iso2 !== "undefined" &&
-                        traveler.country.iso2 == "")
+                    (typeof traveler.countryCode !== "undefined" &&
+                        traveler.countryCode == "")
                 )
                     throw new BadRequestException(
                         `Country code is missing for traveler ${traveler.firstName}`
