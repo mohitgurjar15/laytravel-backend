@@ -2528,7 +2528,8 @@ export class FlightService {
             children: [],
             infants: [],
         };
-
+        
+        console.log("travelers===>",travelers)
         if (travelers.traveler.length > 0) {
             for (let traveler of travelers.traveler) {
                 let ageDiff = moment(new Date()).diff(

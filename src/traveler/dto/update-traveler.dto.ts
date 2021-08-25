@@ -184,6 +184,11 @@ export class UpdateTravelerDto {
                type: "string",
                description: "Traveler email id",
            })
+           @ValidateIf(
+            (o) =>
+                moment(new Date()).diff(moment(o.dob), "years") >= 12 &&
+                o.module_id != ModulesName.HOTEL
+            )
            @IsEmail(
                {},
                {

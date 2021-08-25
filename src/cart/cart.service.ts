@@ -1478,6 +1478,7 @@ more than 10.`
                     "travelers.baggageServiceCode",
                     "travelers.userId",
                     "travelers.isPrimary",
+                    "travelers.traveler",
                     "userData.roleId",
                     "userData.email",
                     "userData.firstName",
