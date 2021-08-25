@@ -3168,6 +3168,7 @@ more than 10.`
             // let netTotalAmount = 0;
             let totalDownPayment=0;
             // let newResponse = {};
+            let instalments;
             for(let i=0; i < items.length; i++) {
                 if(items[i].type=='flight'){
                     totalAmount = items[i].moduleInfo[0].selling_price;
@@ -3190,7 +3191,7 @@ more than 10.`
                     // let result;
                     
                     if(items[i].paymentFrequency =='weekly'){
-                        result["installment_details"]=await Instalment.weeklyInstalment(
+                        instalments=await Instalment.weeklyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
@@ -3200,7 +3201,7 @@ more than 10.`
                             [40,50,60])
                     }
                     if(items[i].paymentFrequency=='biweekly'){
-                        result["installment_details"] = await Instalment.biWeeklyInstalment(
+                        instalments = await Instalment.biWeeklyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
@@ -3210,7 +3211,7 @@ more than 10.`
                             [40,50,60])
                     }
                     if(items[i].paymentFrequency=='monthly'){
-                        result["installment_details"] = await Instalment.monthlyInstalment(
+                        instalments = await Instalment.monthlyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
@@ -3219,7 +3220,12 @@ more than 10.`
                             true,
                             [40,50,60])
                     }
-                    allItemResult.push(result);
+                    for(let x=0; x<instalments.instalment_date.length; x++){
+                        instalments.instalment_date[x].type=result["type"];
+                        instalments.instalment_date[x].name=result["name"];
+
+                    }
+                    allItemResult = [...allItemResult,...instalments.instalment_date];
                 }
                 else{
                     totalDownPayment+=totalAmount;
