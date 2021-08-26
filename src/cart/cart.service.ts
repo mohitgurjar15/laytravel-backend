@@ -1127,7 +1127,6 @@ more than 10.`
                                 let updatedDownpayment = 0;
                                 console.log("================================================")
                                 // console.log(roomDetails.datapayment_object)
-                                console.log(JSON.stringify(newCart))
                                 console.log("*****************************");
                                 console.log(JSON.stringify(roomDetails.data))
                                 console.log("******************************")
