@@ -259,7 +259,6 @@ more than 10.`
 
     async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
         //console.log('validate');
-        console.log("cartIsPromotional", cartIsPromotional)
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
@@ -269,7 +268,6 @@ more than 10.`
 
         if (flightInfo) {
 
-            console.log("applicable", flightInfo[0]?.offer_data?.applicable)
             if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
                 throw new ConflictException(`In cart not-promotional item found`)
             }
@@ -910,7 +908,6 @@ more than 10.`
                         var difference = unixTimestamp - (cart.timeStamp || 0);
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
-                        console.log('minuteDifference', minuteDifference)
                         if (minuteDifference > 5 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
                             const bookingType =
                                 cart.moduleInfo[0].routes.length > 1
@@ -1010,10 +1007,9 @@ more than 10.`
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes" && minuteDifference > 1) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
+                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
-                        console.log("I am in 1")
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
@@ -1023,7 +1019,6 @@ more than 10.`
                         // console.log(value)
                         //return value
                         if (typeof value.message == "undefined") {
-                            
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
                             // console.log("===============Flight=================================")
@@ -1242,12 +1237,8 @@ more than 10.`
                 newCart["paymentFrequency"] = cart.paymentFrequency;
                 responce.push(newCart);
             }
-            let totalprice = 0;
-            let downpayment = 0;
-            // console.log("RESPONCE----------->");
-            // console.log(responce)
             let priceSummary = await this.calculatePriceSummary(responce);
-            // console.log(priceSummary)
+            
             return {
                 data: responce,
                 count: count,
@@ -3154,7 +3145,7 @@ more than 10.`
                     type = items[i].type;
                     name = items[i].moduleInfo[0].airline_name;
                 } else if(items[i].type=='hotel'){
-                    let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo[0].items:items[i].moduleInfo;
+                    let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
                     totalAmount = hotelModuleInfo[0].selling.total;
                     type = items[i].type;
                     name = hotelModuleInfo[0].hotel_name;
@@ -3240,6 +3231,7 @@ more than 10.`
                 installment_dates : priceSummary
             } 
         } catch(e) {
+            console.log("Errror=======",e)
         } 
     }
 }
