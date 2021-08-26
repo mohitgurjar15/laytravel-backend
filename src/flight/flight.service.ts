@@ -2449,7 +2449,7 @@ export class FlightService {
 
         // primaryTraveler.save();
 
-
+        let i=0;
         for await (var item of travelers) {
                 let userData = item.traveler;
                 
@@ -2481,10 +2481,11 @@ export class FlightService {
                 var travelerUser = new TravelerInfo();
                 travelerUser.bookingId = bookingId;
                 //travelerUser.userId = travelerId;
-                travelerUser.isPrimary = true;
+                travelerUser.isPrimary = i==0?true:false;
                 travelerUser.roleId = Role.TRAVELER_USER;
                 travelerUser.travelerInfo = travelerInfo;
                 await travelerUser.save();
+                i++;
         }
     }
 
