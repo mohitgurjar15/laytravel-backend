@@ -1020,21 +1020,23 @@ more than 10.`
                             user, headers,
                             cartIsPromotional ? referralId : ''
                         );
-                        
+                        // console.log(value)
                         //return value
                         if (typeof value.message == "undefined") {
+                            
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
-                            console.log("===============Flight=================================")
-                            console.log(JSON.stringify(value))
-                            console.log("================================================")
+                            // console.log("===============Flight=================================")
+                            // // console.log(JSON.stringify(value))
+                            // console.log(value.payment_object)
+                            // console.log("================================================")
                             if(cart.paymentMethod === "installment") {
                                 if(cart.paymentFrequency === "weekly") {
-                                    updatedDownpayment = value[0].payment_object.weekly.down_payment;
+                                    updatedDownpayment = value.payment_object.weekly.down_payment;
                                 } else if(cart.paymentFrequency === "biweekly") {
-                                    updatedDownpayment = value[0].payment_object.biweekly.down_payment;
+                                    updatedDownpayment = value.payment_object.biweekly.down_payment;
                                 } else if(cart.paymentFrequency === "monthly") {
-                                    updatedDownpayment = value[0].payment_object.monthly.down_payment;
+                                    updatedDownpayment = value.payment_object.monthly.down_payment;
                                 }
                             }
                             newCart["is_available"] = true;
@@ -1253,7 +1255,7 @@ more than 10.`
                 error,
                 is_payment_plan_conflict,
                 cart_payment_type: paymentType,
-                price_summaty : priceSummary
+                price_summary : priceSummary
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -3152,9 +3154,9 @@ more than 10.`
                     type = items[i].type;
                     name = items[i].moduleInfo[0].airline_name;
                 } else if(items[i].type=='hotel'){
-                    let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
+                    let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo[0].items:items[i].moduleInfo;
                     totalAmount = hotelModuleInfo[0].selling.total;
-                    type = hotelModuleInfo[0].type;
+                    type = items[i].type;
                     name = hotelModuleInfo[0].hotel_name;
                 }
                 netTotalAmount += totalAmount;
@@ -3230,8 +3232,10 @@ more than 10.`
                 }
             }
             priceSummary.shift();
+            let remainingAmount = netTotalAmount - totalDownPayment;
             return {
                 total_price : Generic.formatPriceDecimal(netTotalAmount),
+                remaining_amount : Generic.formatPriceDecimal(remainingAmount),
                 total_downpayment : Generic.formatPriceDecimal(totalDownPayment),
                 installment_dates : priceSummary
             } 
