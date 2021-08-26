@@ -300,7 +300,6 @@ export class Instalment {
                 firstInstalment = percentageAmount + additionalAmount;
             }
         } */
-        console.log("percentageAmount",percentageAmount)
         firstInstalment = firstInstalmentTemp = percentageAmount;
         if (additionalAmount) {
             firstInstalment = percentageAmount + additionalAmount;

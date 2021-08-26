@@ -1007,39 +1007,36 @@ more than 10.`
 
                 var difference = unixTimestamp - (cart.timeStamp || 0);
                 var minuteDifference = Math.floor(difference / 60) % 60;
-                console.log('minuteDifference2', minuteDifference)
-                console.log('cart.timeStamp', cart.timeStamp)
-                console.log('unixTimestamp', unixTimestamp)
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
+                        live_availiblity == "yes" && minuteDifference > 1) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
+                        console.log("I am in 1")
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
                             user, headers,
                             cartIsPromotional ? referralId : ''
                         );
+                        
                         //return value
-
-
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
+                            console.log("===============Flight=================================")
+                            console.log(JSON.stringify(value))
                             console.log("================================================")
-                            console.log(value)
-                            console.log("================================================")
-                            // if(cart.paymentMethod === "installment") {
-                            //     if(cart.paymentFrequency === "weekly") {
-                            //         updatedDownpayment = value.payment_object.weekly.down_payment;
-                            //     } else if(cart.paymentFrequency === "biweekly") {
-                            //         updatedDownpayment = value.payment_object.biweekly.down_payment;
-                            //     } else if(cart.paymentFrequency === "monthly") {
-                            //         updatedDownpayment = value.payment_object.monthly.down_payment;
-                            //     }
-                            // }
+                            if(cart.paymentMethod === "installment") {
+                                if(cart.paymentFrequency === "weekly") {
+                                    updatedDownpayment = value[0].payment_object.weekly.down_payment;
+                                } else if(cart.paymentFrequency === "biweekly") {
+                                    updatedDownpayment = value[0].payment_object.biweekly.down_payment;
+                                } else if(cart.paymentFrequency === "monthly") {
+                                    updatedDownpayment = value[0].payment_object.monthly.down_payment;
+                                }
+                            }
                             newCart["is_available"] = true;
                             newCart["isPromotional"] = value?.offer_data?.applicable
                             newCart["is_conflict"] = false;
@@ -1085,22 +1082,6 @@ more than 10.`
                         } else {
                             newCart["is_available"] = false;
                             newCart["moduleInfo"] = cart.moduleInfo;
-                            // await getConnection()
-                            //     .createQueryBuilder()
-                            //     .delete()
-                            //     .from(CartTravelers)
-                            //     .where(
-                            //         `"cart_id" = '${cart.id}'`
-                            //     )
-                            //     .execute()
-                            // await getConnection()
-                            //     .createQueryBuilder()
-                            //     .delete()
-                            //     .from(Cart)
-                            //     .where(
-                            //         `"id" = '${cart.id}'`
-                            //     )
-                            //     .execute()
                         }
                     } else if (cart.moduleId == ModulesName.HOTEL) {
                         const moduleInfo: any = cart.moduleInfo;
@@ -1122,25 +1103,18 @@ more than 10.`
                             }
 
                             if (roomDetails?.data) {
-                                console.log("Tick")
+                                
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
-                                console.log("================================================")
-                                // console.log(roomDetails.datapayment_object)
-                                console.log("*****************************");
-                                console.log(JSON.stringify(roomDetails.data))
-                                console.log("******************************")
-                                // console.log(newCart["moduleInfo"])
-                                console.log("================================================")
-                                // if(cart.paymentMethod === "installment") {
-                                //     if(cart.paymentFrequency === "weekly") {
-                                //         updatedDownpayment = roomDetails.data.payment_object.weekly.down_payment;
-                                //     } else if(cart.paymentFrequency === "biweekly") {
-                                //         updatedDownpayment = roomDetails.data.payment_object.biweekly.down_payment;
-                                //     } else if(cart.paymentFrequency === "monthly") {
-                                //         updatedDownpayment = roomDetails.data.payment_object.monthly.down_payment;
-                                //     }
-                                // }
+                                if(cart.paymentMethod === "installment") {
+                                    if(cart.paymentFrequency === "weekly") {
+                                        updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
+                                    } else if(cart.paymentFrequency === "biweekly") {
+                                        updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
+                                    } else if(cart.paymentFrequency === "monthly") {
+                                        updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
+                                    }
+                                }
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
                                 newCart["is_conflict"] = false;
@@ -3143,9 +3117,6 @@ more than 10.`
 
     async calculatePriceSummary(items) {
         try {
-            // console.log("ITEMS---------------->")
-            // console.log(JSON.stringify(items))
-            // console.log("[][][][][][][][][][][][][")
             let checkInDates=[];
             let allItemResult=[];
             let type;
@@ -3157,23 +3128,23 @@ more than 10.`
                         checkInDates.push(moment(items[i].moduleInfo[0].departure_date, "DD/MM/YYYY").format("YYYY-MM-DD"));
                     }
                     if(items[i].type=='hotel'){
+                        if(typeof items[i].moduleInfo.items!='undefined')
+                            checkInDates.push(items[i].moduleInfo.items[0].input_data.check_in);
+                        else
                         checkInDates.push(items[i].moduleInfo[0].input_data.check_in);
+
                     }
                 }
             }
-            // console.log("-----------------------------------------------------")
-            // console.log(checkInDates)
+            
             let checkInDate;
             checkInDate = checkInDates.reduce(function (a, b) { return a < b ? a : b; });
-            // console.log("CHECK_IN_DATE :", checkInDate)
-            //find Minimim date from checkinDates;
-            //let paymentFrequency='';
+            
             let downPayment=0;
             let totalAmount =0;
             let netTotalAmount = 0;
             let totalDownPayment=0;
-            let netTotalDownpayment = 0
-            // let newResponse = {};
+           
             let instalments;
             for(let i=0; i < items.length; i++) {
                 if(items[i].type=='flight'){
@@ -3181,18 +3152,16 @@ more than 10.`
                     type = items[i].type;
                     name = items[i].moduleInfo[0].airline_name;
                 } else if(items[i].type=='hotel'){
-                    totalAmount = items[i].moduleInfo[0].selling.total;
-                    type = items[i].type;
-                    name = items[i].moduleInfo[0].hotel_name;
+                    let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
+                    totalAmount = hotelModuleInfo[0].selling.total;
+                    type = hotelModuleInfo[0].type;
+                    name = hotelModuleInfo[0].hotel_name;
                 }
                 netTotalAmount += totalAmount;
-                // console.log("-----TYPE AND NAME----", type, name)
                 if(items[i].paymentMethod == 'installment'){
-                    // console.log("tick")
                     downPayment = items[i].downpayment;
-                    netTotalDownpayment +=  items[i].downpayment
-                    console.log("DownPayment", items[i].downpayment)
-                    console.log("NetDownPayment", netTotalDownpayment)
+                    totalDownPayment+=Number(downPayment);
+                    
                     if(items[i].paymentFrequency =='weekly'){
                         instalments=await Instalment.weeklyInstalment(
                             totalAmount,
@@ -3234,8 +3203,6 @@ more than 10.`
                     totalDownPayment+=totalAmount;
                 }
             }
-
-            // console.log(allItemResult)
             
             let priceSummary=[];
             for(let i=0; i < allItemResult.length; i++){
@@ -3244,34 +3211,31 @@ more than 10.`
                 if(find!=-1){
                     priceSummary[find].breakdown.push({
                         type : allItemResult[i].type,
-                        amount :  allItemResult[i].instalment_amount,
+                        amount : Generic.formatPriceDecimal(allItemResult[i].instalment_amount),
                         name :  allItemResult[i].name
                     })
-                    priceSummary[find].amount+=allItemResult[i].instalment_amount
+                    priceSummary[find].amount+=Generic.formatPriceDecimal(allItemResult[i].instalment_amount)
                 }
                 else{
                     let breakDown = [{
                         type : allItemResult[i].type,
-                        amount :  allItemResult[i].instalment_amount,
+                        amount :  Generic.formatPriceDecimal(allItemResult[i].instalment_amount),
                         name :  allItemResult[i].name
                     }]
                     priceSummary.push({
                         date : allItemResult[i].instalment_date,
-                        amount : allItemResult[i].instalment_amount,
+                        amount : Generic.formatPriceDecimal(allItemResult[i].instalment_amount),
                         breakdown : breakDown
                     })
                 }
             }
             priceSummary.shift();
-            
-            
             return {
-                total_price : netTotalAmount,
-                total_downpayment : netTotalDownpayment,
+                total_price : Generic.formatPriceDecimal(netTotalAmount),
+                total_downpayment : Generic.formatPriceDecimal(totalDownPayment),
                 installment_dates : priceSummary
             } 
         } catch(e) {
-            console.log("ERROR----",e);
         } 
     }
 }
