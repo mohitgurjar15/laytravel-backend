@@ -186,6 +186,7 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
+                    console.log("I am in 1")
                     return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method);
                     break;
 
@@ -3042,8 +3043,7 @@ more than 10.`
     // }
 
     async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
-
-        console.log(cartIsPromotional)
+        console.log("I am in 2")
         let roomDetails = await this.hotelService.availability(
             {
                 room_ppn: ppnBundle,
@@ -3051,15 +3051,15 @@ more than 10.`
             user.userId || null,
             referralId
         );
-        console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
+        // console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
         if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
             throw new ConflictException(`In cart not-promotional item found`)
         }
-
+        console.log("I am in 3")
         if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
             throw new ConflictException(`In cart promotional item found`)
         }
-
+        console.log("I am in 4")
         if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0].is_installment_available == true)) {
             throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
         }
@@ -3110,8 +3110,10 @@ more than 10.`
 
     async calculatePriceSummary(items) {
         try {
+            // console.log(items)
             let checkInDates=[];
             let allItemResult=[];
+            let res = [];
             let type;
             let name;
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
@@ -3139,22 +3141,38 @@ more than 10.`
             let totalDownPayment=0;
            
             let instalments;
+            let totalCount = 0;
+            let flightCount = 0;
+            let hotelCount = 0;
+            let installmentCount = 0;
+            let childrenResult = [];
+            // console.log("---------------------ITEM LENGTH---------------------", items.length);
             for(let i=0; i < items.length; i++) {
+
                 if(items[i].type=='flight'){
+                    flightCount++;
                     totalAmount = items[i].moduleInfo[0].selling_price;
                     type = items[i].type;
                     name = items[i].moduleInfo[0].airline_name;
+                    console.log("Inside flight type v")
                 } else if(items[i].type=='hotel'){
+                    hotelCount++;
                     let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
                     totalAmount = hotelModuleInfo[0].selling.total;
                     type = items[i].type;
                     name = hotelModuleInfo[0].hotel_name;
+                    console.log("Inside hotel type v")
                 }
+                // console.log("------------------FLIGHT & HOTEL COUNT-------------------------");
+                // console.log(flightCount, hotelCount);
                 netTotalAmount += totalAmount;
+                console.log("}{}{}}{}{}{}{}{}{}}{}{}{}{}{}{}{}}{}{}")
+                console.log(type)
+                console.log("{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}")
                 if(items[i].paymentMethod == 'installment'){
                     downPayment = items[i].downpayment;
                     totalDownPayment+=Number(downPayment);
-                    
+                    installmentCount++;
                     if(items[i].paymentFrequency =='weekly'){
                         instalments=await Instalment.weeklyInstalment(
                             totalAmount,
@@ -3185,22 +3203,40 @@ more than 10.`
                             true,
                             [40,50,60])
                     }
+                    console.log("--------------------ITEM INSTALLMENT COUNT--------------------",instalments.instalment_date.length)
                     for(let x=0; x<instalments.instalment_date.length; x++){
                         instalments.instalment_date[x].type=type;
                         instalments.instalment_date[x].name=name;
-
+                        // console.log("------------TYPE---------------", type)
+                        // childrenResult.push(instalments.instalment_date[x])
                     }
+
+                    // console.log("-------------------INSTALLMENT TYPE-----------------",instalments.instalment_date[0].type)
                     allItemResult = [...allItemResult,...instalments.instalment_date];
-                }
-                else{
+                    res = [...res,...allItemResult];
+                    // instalments.instalment_date = [...instalments.instalment_date,...instalments.instalment_date]
+                    // childrenResult = allItemResult.concat(instalments.instalment_date)
+                    console.log("--------------------------------------------------------------------------")
+                    console.log(allItemResult)
+                    console.log("--------------------------------------------------------------------------")
+                    console.log(instalments.instalment_date)
+                    console.log("------------------------------------------------------------------------------");
+                } else{
+                    // console.log("__________________-------------ELSE PART-------------________________", allItemResult)
                     totalDownPayment+=totalAmount;
                 }
             }
-            
+            // console.log("------------------------ALL ITEM RESULT----------------------------------/n", JSON.stringify(allItemResult))
+            // console.log("--------------------INSTALLMENT ITEM----------------------")
+            // console.log(installmentCount)
+            console.log("------------------------ALL ITEM RESULT----------------------------------/n", res)
             let priceSummary=[];
             for(let i=0; i < allItemResult.length; i++){
                 
                 let find= await priceSummary.findIndex(price=>price.date==allItemResult[i].instalment_date);
+                // console.log("==================================================================================================")
+                // console.log(find)
+                // console.log("==================================================================================================")
                 if(find!=-1){
                     priceSummary[find].breakdown.push({
                         type : allItemResult[i].type,
@@ -3223,6 +3259,7 @@ more than 10.`
                 }
             }
             priceSummary.shift();
+            // console.log("--------------------PRICE SUMMARY--------------------/n", JSON.stringify(priceSummary));
             let remainingAmount = netTotalAmount - totalDownPayment;
             return {
                 total_price : Generic.formatPriceDecimal(netTotalAmount),
