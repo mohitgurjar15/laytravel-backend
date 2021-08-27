@@ -813,7 +813,6 @@ export class HotelService {
             } = bookingRequestInfo;
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
             //console.log("validate Traveler");
-
             let travelersDetails = await this.getTravelersInfo(
                 travelers,
                 isPassportRequired
@@ -824,32 +823,7 @@ export class HotelService {
             //console.log(travelersDetails?.adults?.length);
             let currencyId = headerDetails.currency.id;
             const userId = user.userId;
-            //console.log("userId", userId);
-            // if (adult_count != travelersDetails?.adults?.length) {
-            //     //console.log("adult_count", adult_count);
-
-            //     //console.log("adult return");
-            //     return {
-            //         statusCode: 422,
-            //         message: `Adults count is not match with search request!`,
-            //     };
-            // }
-
-            // if (child_count != travelersDetails?.children?.length) {
-            //     //console.log("children return ");
-
-            //     return {
-            //         statusCode: 422,
-            //         message: `Children count is not match with search request`,
-            //     };
-            // }
-            //console.log("userId", userId);
-            // if (infant_count != travelersDetails.infants.length) {
-            //     return {
-            //         statusCode: 422,
-            //         message: `Infants count is not match with search request`,
-            //     };
-            // }
+            
             if (payment_type == PaymentType.INSTALMENT) {
                 let instalmentDetails;
 
@@ -931,25 +905,23 @@ export class HotelService {
 
                     bookDto.bundle = availability[0].bundle;
                     let guest_detail = [];
-                    for await (const traveler of travelers) {
+                    let k=0;
+                    for await (const item of travelers) {
                         //console.log(traveler.is_primary_traveler);
 
-                        if (traveler.is_primary_traveler == true) {
+                        if (k == 0) {
                             //console.log(
                             //     traveler.is_primary_traveler,
                             //     "primary"
                             // );
-                            bookDto.primary_guest_detail = await this.user.getUser(
-                                traveler.traveler_id
-                            );
+                            bookDto.primary_guest_detail =  item.traveler;
                         } else {
                             //console.log(traveler.is_primary_traveler, "guest");
-                            let detail = await this.user.getUser(
-                                traveler.traveler_id
-                            );
+                            let detail = item.traveler;
 
                             guest_detail.push(detail);
                         }
+                        k++;
                     }
                     // let bookData = new PPNBookDto(bookDto);
                     let bookData = {
@@ -1220,114 +1192,15 @@ export class HotelService {
     }
 
     async getTravelersInfo(travelers, isPassportRequired = null) {
-        // let travelerIds = travelers.map((traveler) => {
-        //     return traveler.traveler_id;
-        // });
+       
         let travelerIds = [];
-        // for await (const traveler of travelers) {
-        //     travelerIds.push(traveler.traveler_id);
-        // }
-
-        // let travelersResult = await getManager()
-        //     .createQueryBuilder(User, "user")
-        //     .leftJoinAndSelect("user.country", "countries")
-        //     .select([
-        //         "user.userId",
-        //         "user.title",
-        //         "user.firstName",
-        //         "user.lastName",
-        //         "user.email",
-        //         "user.countryCode",
-        //         "user.phoneNo",
-        //         "user.zipCode",
-        //         "user.gender",
-        //         "user.dob",
-        //         "user.passportNumber",
-        //         "user.passportExpiry",
-        //         "countries.name",
-        //         "countries.iso2",
-        //         "countries.iso3",
-        //         "countries.id",
-        //     ])
-        //     .where('"user"."user_id" IN (:...travelerIds)', { travelerIds })
-        //     .getMany();
-
         let traveleDetails = {
             adults: [],
             children: [],
         };
-
-        if (travelers.traveler.length > 0) {
-            for (let traveler of travelers.traveler) {
-                /* if (traveler.title == null || traveler.title == "")
-					throw new BadRequestException(
-						`Title is missing for traveler ${traveler.firstName}`
-					); */
-                // if (
-                //     (traveler.email == null || traveler.email == "") &&
-                //     ageDiff >= 12
-                // )
-                //     throw new BadRequestException(
-                //         `Email is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (
-                //     (traveler.countryCode == null ||
-                //         traveler.countryCode == "") &&
-                //     ageDiff >= 12
-                // )
-                //     throw new BadRequestException(
-                //         `Country code is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (
-                //     (traveler.phoneNo == null || traveler.phoneNo == "") &&
-                //     ageDiff >= 12
-                // )
-                //     throw new BadRequestException(
-                //         `Phone number is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (traveler.gender == null || traveler.gender == "")
-                //     throw new BadRequestException(
-                //         `Gender is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (traveler.dob == null || traveler.dob == "")
-                //     throw new BadRequestException(
-                //         `Dob is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (
-                //     ageDiff > 2 &&
-                //     isPassportRequired &&
-                //     (traveler.passportNumber == null ||
-                //         traveler.passportNumber == "")
-                // )
-                //     throw new BadRequestException(
-                //         `Passport Number is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (
-                //     ageDiff > 2 &&
-                //     isPassportRequired &&
-                //     (traveler.passportExpiry == null ||
-                //         traveler.passportExpiry == "")
-                // )
-                //     throw new BadRequestException(
-                //         `Passport Expiry is missing for traveler ${traveler.firstName}`
-                //     );
-                // if (
-                //     ageDiff > 2 &&
-                //     isPassportRequired &&
-                //     traveler.passportExpiry &&
-                //     moment(moment()).isAfter(traveler.passportExpiry)
-                // )
-                //     throw new BadRequestException(
-                //         `Passport Expiry date is expired for traveler ${traveler.firstName}`
-                //     );
-                // if (
-                //     traveler.country == null ||
-                //     (typeof traveler.country.iso2 !== "undefined" &&
-                //         traveler.country.iso2 == "")
-                // )
-                //     throw new BadRequestException(
-                //         `Country code is missing for traveler ${traveler.firstName}`
-                //     );
+        if (travelers.length > 0) {
+            for (let item of travelers) {
+                let traveler= item.traveler;
                 if (traveler.dob) {
                     let ageDiff = moment(new Date()).diff(
                         moment(traveler.dob),
@@ -1362,50 +1235,44 @@ export class HotelService {
         // primaryTraveler.roleId = userData.roleId;
 
         // primaryTraveler.save();
+        console.log("I am traveler",travelers)
+        let i=0;
+        for await (var item of travelers) {
+            let userData = item.traveler;
+            var birthDate = new Date(userData.dob);
+            var age = moment(new Date()).diff(moment(birthDate), "years");
 
-        for await (var traveler of travelers) {
-            if (typeof traveler.traveler_id) {
-                var travelerId = traveler.traveler_id;
-                const userData = await getConnection()
-                    .createQueryBuilder(User, "user")
-                    .where(`"user_id" =:user_id`, { user_id: travelerId })
-                    .getOne();
-                var birthDate = new Date(userData.dob);
-                var age = moment(new Date()).diff(moment(birthDate), "years");
-
-                var user_type = "";
-                // if (age < 2) {
-                //     user_type = "infant";
-                // } else
-                if (age < 12) {
-                    user_type = "child";
-                } else {
-                    user_type = "adult";
-                }
-                const travelerInfo: TravelerInfoModel = {
-                    firstName: userData.firstName,
-                    passportExpiry: userData.passportExpiry || "",
-                    passportNumber: userData.passportNumber || "",
-                    lastName: userData.lastName || "",
-                    email: userData.email || "",
-                    phoneNo: userData.phoneNo || "",
-                    countryCode: userData.countryCode || "",
-                    dob: userData.dob,
-                    countryId: userData.countryId,
-                    gender: userData.gender,
-                    age: age,
-                    user_type: user_type,
-                };
-                var travelerUser = new TravelerInfo();
-                travelerUser.bookingId = bookingId;
-                travelerUser.userId = travelerId;
-                travelerUser.isPrimary = traveler?.is_primary_traveler
-                    ? true
-                    : false;
-                travelerUser.roleId = Role.TRAVELER_USER;
-                travelerUser.travelerInfo = travelerInfo;
-                await travelerUser.save();
+            var user_type = "";
+            // if (age < 2) {
+            //     user_type = "infant";
+            // } else
+            if (age < 12) {
+                user_type = "child";
+            } else {
+                user_type = "adult";
             }
+            const travelerInfo: TravelerInfoModel = {
+                firstName: userData.firstName,
+                passportExpiry: userData.passportExpiry || "",
+                passportNumber: userData.passportNumber || "",
+                lastName: userData.lastName || "",
+                email: userData.email || "",
+                phoneNo: userData.phoneNo || "",
+                countryCode: userData.countryCode || "",
+                dob: userData.dob,
+                countryId: userData.countryId,
+                gender: userData.gender,
+                age: age,
+                user_type: user_type,
+            };
+            var travelerUser = new TravelerInfo();
+            travelerUser.bookingId = bookingId;
+            //travelerUser.userId = travelerId;
+            travelerUser.isPrimary = i==0?true:false;
+            travelerUser.roleId = Role.TRAVELER_USER;
+            travelerUser.travelerInfo = travelerInfo;
+            await travelerUser.save();
+            i++;
         }
     }
 
