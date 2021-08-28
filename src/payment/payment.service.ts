@@ -1502,7 +1502,7 @@ export class PaymentService {
         for await (const i of cart) {
             cartIds.push(i.cart_id);
         }
-
+        
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
             .leftJoinAndSelect("cart.module", "module")
@@ -1513,7 +1513,6 @@ export class PaymentService {
             .orderBy(`cart.id`, "DESC")
             .limit(10);
         let [result,count]  = await query.getManyAndCount();
-        let items:any = result;
 
         if (!result.length) {
             throw new BadRequestException(
@@ -1731,8 +1730,8 @@ export class PaymentService {
             // }
         } */
         
-        for(let i=0; i < items.length; i++){
-            items[i].type = items[i].module.name;
+        for(let i=0; i < result.length; i++){
+            result[i]['type'] = result[i].module.name;
         }
 
         //console.log("authoriseAmount", authoriseAmount)
