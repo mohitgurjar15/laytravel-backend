@@ -1022,10 +1022,7 @@ more than 10.`
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
-                            // console.log("===============Flight=================================")
-                            // // console.log(JSON.stringify(value))
-                            // console.log(value.payment_object)
-                            // console.log("================================================")
+
                             if(cart.paymentMethod === "installment") {
                                 if(cart.paymentFrequency === "weekly") {
                                     updatedDownpayment = value.payment_object.weekly.down_payment;
@@ -1104,13 +1101,19 @@ more than 10.`
                                 
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
+                                // console.log("----------<<<<<<<<<<TRUE>>>>>>>------------------1212")
+                                console.log(roomDetails.data.items[0].offer_data.applicable)
                                 if(cart.paymentMethod === "installment") {
-                                    if(cart.paymentFrequency === "weekly") {
-                                        updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
-                                    } else if(cart.paymentFrequency === "biweekly") {
-                                        updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
-                                    } else if(cart.paymentFrequency === "monthly") {
-                                        updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
+                                    if(roomDetails.data["items"][0]?.offer_data?.applicable){
+                                        console.log("----------<<<<<<<<<<TRUE>>>>>>>------------------")
+                                    } else {
+                                        if(cart.paymentFrequency === "weekly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
+                                        } else if(cart.paymentFrequency === "biweekly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
+                                        } else if(cart.paymentFrequency === "monthly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
+                                        }
                                     }
                                 }
                                 newCart["is_available"] = true;
@@ -1148,6 +1151,7 @@ more than 10.`
                                 if (cart.isPromotional == true && referralId) {
                                     inventryIsPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
                                     newCart["isPromotional"] == inventryIsPromotional
+                                    console.log("-=-=-=-=-=-=-=-=-IS PROMOTIONAL-=-=-=-=-=-=-=-=-=-=-", inventryIsPromotional)
                                 }
                                 await getConnection()
                                     .createQueryBuilder()
@@ -3110,15 +3114,14 @@ more than 10.`
 
     async calculatePriceSummary(items) {
         try {
-            // console.log(items)
             let checkInDates=[];
             let allItemResult=[];
-            let res = [];
             let type;
             let name;
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+            
             for(let i=0; i < items.length; i++) {
-                if(items[i].paymentMethod=='installment'){
+                // if(items[i].paymentMethod=='installment'){
                     if(items[i].type == "flight") {
                         checkInDates.push(moment(items[i].moduleInfo[0].departure_date, "DD/MM/YYYY").format("YYYY-MM-DD"));
                     }
@@ -3129,7 +3132,7 @@ more than 10.`
                         checkInDates.push(items[i].moduleInfo[0].input_data.check_in);
 
                     }
-                }
+                // }
             }
             
             let checkInDate;
@@ -3141,38 +3144,23 @@ more than 10.`
             let totalDownPayment=0;
            
             let instalments;
-            let totalCount = 0;
-            let flightCount = 0;
-            let hotelCount = 0;
-            let installmentCount = 0;
-            let childrenResult = [];
-            // console.log("---------------------ITEM LENGTH---------------------", items.length);
             for(let i=0; i < items.length; i++) {
 
                 if(items[i].type=='flight'){
-                    flightCount++;
                     totalAmount = items[i].moduleInfo[0].selling_price;
                     type = items[i].type;
                     name = items[i].moduleInfo[0].airline_name;
-                    console.log("Inside flight type v")
                 } else if(items[i].type=='hotel'){
-                    hotelCount++;
                     let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
                     totalAmount = hotelModuleInfo[0].selling.total;
                     type = items[i].type;
                     name = hotelModuleInfo[0].hotel_name;
-                    console.log("Inside hotel type v")
                 }
-                // console.log("------------------FLIGHT & HOTEL COUNT-------------------------");
-                // console.log(flightCount, hotelCount);
-                netTotalAmount += totalAmount;
-                console.log("}{}{}}{}{}{}{}{}{}}{}{}{}{}{}{}{}}{}{}")
-                console.log(type)
-                console.log("{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}")
+                netTotalAmount += totalAmount
+
                 if(items[i].paymentMethod == 'installment'){
                     downPayment = items[i].downpayment;
                     totalDownPayment+=Number(downPayment);
-                    installmentCount++;
                     if(items[i].paymentFrequency =='weekly'){
                         instalments=await Instalment.weeklyInstalment(
                             totalAmount,
@@ -3203,40 +3191,22 @@ more than 10.`
                             true,
                             [40,50,60])
                     }
-                    console.log("--------------------ITEM INSTALLMENT COUNT--------------------",instalments.instalment_date.length)
+                    
                     for(let x=0; x<instalments.instalment_date.length; x++){
                         instalments.instalment_date[x].type=type;
                         instalments.instalment_date[x].name=name;
-                        // console.log("------------TYPE---------------", type)
-                        // childrenResult.push(instalments.instalment_date[x])
                     }
 
-                    // console.log("-------------------INSTALLMENT TYPE-----------------",instalments.instalment_date[0].type)
                     allItemResult = [...allItemResult,...instalments.instalment_date];
-                    res = [...res,...allItemResult];
-                    // instalments.instalment_date = [...instalments.instalment_date,...instalments.instalment_date]
-                    // childrenResult = allItemResult.concat(instalments.instalment_date)
-                    console.log("--------------------------------------------------------------------------")
-                    console.log(allItemResult)
-                    console.log("--------------------------------------------------------------------------")
-                    console.log(instalments.instalment_date)
-                    console.log("------------------------------------------------------------------------------");
                 } else{
-                    // console.log("__________________-------------ELSE PART-------------________________", allItemResult)
                     totalDownPayment+=totalAmount;
                 }
             }
-            // console.log("------------------------ALL ITEM RESULT----------------------------------/n", JSON.stringify(allItemResult))
-            // console.log("--------------------INSTALLMENT ITEM----------------------")
-            // console.log(installmentCount)
-            console.log("------------------------ALL ITEM RESULT----------------------------------/n", res)
             let priceSummary=[];
             for(let i=0; i < allItemResult.length; i++){
                 
                 let find= await priceSummary.findIndex(price=>price.date==allItemResult[i].instalment_date);
-                // console.log("==================================================================================================")
-                // console.log(find)
-                // console.log("==================================================================================================")
+                
                 if(find!=-1){
                     priceSummary[find].breakdown.push({
                         type : allItemResult[i].type,
@@ -3259,7 +3229,6 @@ more than 10.`
                 }
             }
             priceSummary.shift();
-            // console.log("--------------------PRICE SUMMARY--------------------/n", JSON.stringify(priceSummary));
             let remainingAmount = netTotalAmount - totalDownPayment;
             return {
                 total_price : Generic.formatPriceDecimal(netTotalAmount),
