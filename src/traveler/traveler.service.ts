@@ -176,7 +176,8 @@ export class TravelerService {
             email,
             phone_no,
             country_id,
-            cart_id
+            cart_id,
+            is_primary_traveler
         } = saveTravelerDto;
         try {
             if (country_id) {
@@ -198,8 +199,10 @@ export class TravelerService {
                     );
                 }
             }
-            const user = new User();
+            console.log("user.userId",uuidv4())
+            let user:any={};
             user.userId = uuidv4();
+            
             user.accountType = 1;
             user.socialAccountId = "";
             user.phoneNo = "";
@@ -221,6 +224,7 @@ export class TravelerService {
             user.email = email;
             user.firstName = first_name;
             user.middleName = "";
+            user.is_primary_traveler=is_primary_traveler?is_primary_traveler:false;
             user.zipCode = "";
             user.lastName = last_name;
             if (parent_user_id) {
@@ -245,6 +249,7 @@ export class TravelerService {
             } else {
                 user.user_type = "adult";
             }
+            console.log("User::::",user)
 
             let CartTraveler = new CartTravelers();
             CartTraveler.cartId = cart_id;
@@ -495,7 +500,8 @@ export class TravelerService {
                 phone_no,
                 country_id,
                 module_id,
-                cart_id
+                cart_id,
+                is_primary_traveler
             } = updateTravelerDto;
             const traveler = await getManager()
             .createQueryBuilder(CartTravelers, "traveler")
@@ -503,7 +509,7 @@ export class TravelerService {
             .getOne();
             console.log("usreid",userId,traveler)
 
-            let user= new User;
+            let user:any={};
             if (!traveler) {
                 throw new NotFoundException(
                     `Traveler not found &&&id&&&Traveler not found`
@@ -528,6 +534,7 @@ export class TravelerService {
             user.lastName = last_name;
             user.isVerified = true;
             user.userId = userId;
+            user.is_primary_traveler=is_primary_traveler?is_primary_traveler:false;
             if (email) {
                 user.email = email;
             }
