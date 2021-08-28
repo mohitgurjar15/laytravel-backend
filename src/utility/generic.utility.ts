@@ -119,7 +119,6 @@ export class Generic {
             }
             
             let checkInDate;
-            console.log("checkInDates",checkInDates,items.length)
             checkInDate = checkInDates.reduce(function (a, b) { return a < b ? a : b; });
             
             let downPayment=0;
@@ -157,7 +156,6 @@ export class Generic {
                 if(items[i].paymentMethod == 'installment'){
                     downPayment = items[i].downpayment;
                     totalDownPayment+=Number(downPayment);
-                    console.log(items[i].downpayment)
                     if(items[i].paymentFrequency =='weekly'){
                         instalments=await Instalment.weeklyInstalment(
                             totalAmount,
