@@ -1059,7 +1059,6 @@ more than 10.`
                                 }
                                 // newCart["is_available"] = false;
                             }
-                            console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
                             let inventryIsPromotional = false
                             if (cart.isPromotional == true && referralId) {
@@ -1101,11 +1100,8 @@ more than 10.`
                                 
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
-                                // console.log("----------<<<<<<<<<<TRUE>>>>>>>------------------1212")
-                                console.log(roomDetails.data.items[0].offer_data.applicable)
                                 if(cart.paymentMethod === "installment") {
                                     if(roomDetails.data["items"][0]?.offer_data?.applicable){
-                                        console.log("----------<<<<<<<<<<TRUE>>>>>>>------------------")
                                     } else {
                                         if(cart.paymentFrequency === "weekly") {
                                             updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
@@ -1145,13 +1141,11 @@ more than 10.`
                                 }
 
 
-                                console.log(Math.round(new Date().getTime() / 1000))
                                 cart.moduleInfo = roomDetails;
                                 let inventryIsPromotional = false
                                 if (cart.isPromotional == true && referralId) {
                                     inventryIsPromotional = roomDetails.data["items"][0]?.offer_data?.applicable == true ? true : false
                                     newCart["isPromotional"] == inventryIsPromotional
-                                    console.log("-=-=-=-=-=-=-=-=-IS PROMOTIONAL-=-=-=-=-=-=-=-=-=-=-", inventryIsPromotional)
                                 }
                                 await getConnection()
                                     .createQueryBuilder()
@@ -3147,12 +3141,24 @@ more than 10.`
             for(let i=0; i < items.length; i++) {
 
                 if(items[i].type=='flight'){
-                    totalAmount = items[i].moduleInfo[0].selling_price;
+                    if(items[i].moduleInfo[0].offer_data.applicable){
+                        totalAmount = items[i].moduleInfo[0].discounted_selling_price;
+                    }
+                    else{
+
+                        totalAmount = items[i].moduleInfo[0].selling_price;
+                    }
                     type = items[i].type;
                     name = items[i].moduleInfo[0].airline_name;
                 } else if(items[i].type=='hotel'){
                     let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
-                    totalAmount = hotelModuleInfo[0].selling.total;
+                    if(hotelModuleInfo[0].offer_data.applicable){
+                        totalAmount = hotelModuleInfo[0].selling.discounted_total;
+                    }   
+                    else{
+
+                        totalAmount = hotelModuleInfo[0].selling.total;
+                    }
                     type = items[i].type;
                     name = hotelModuleInfo[0].hotel_name;
                 }
