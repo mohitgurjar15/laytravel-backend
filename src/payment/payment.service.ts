@@ -60,7 +60,7 @@ import moment = require("moment");
 @Injectable()
 export class PaymentService {
     constructor(
-        private readonly mailerService: MailerService //@Inject(CACHE_MANAGER) private readonly cacheManager: Cache, // @InjectRepository(BookingRepository) // private bookingRepository: BookingRepository,
+        private readonly mailerService: MailerService
     ) { }
     async defaultCard(cardId: string, userId: string, guest_id, referralId) {
         try {
@@ -1505,13 +1505,15 @@ export class PaymentService {
 
         let query = getConnection()
             .createQueryBuilder(Cart, "cart")
+            .leftJoinAndSelect("cart.module", "module")
             //.select(["cart.moduleInfo", "cart.moduleId"])
             .where(
                 `("cart"."is_deleted" = false) AND ("cart"."user_id" = '${user.userId}') AND ("cart"."module_id" In (${ModulesName.FLIGHT},${ModulesName.HOTEL})) AND ("cart"."id" IN (${cartIds}))`
             )
             .orderBy(`cart.id`, "DESC")
             .limit(10);
-        const [result, count] = await query.getManyAndCount();
+        let [result,count]  = await query.getManyAndCount();
+        let items:any = result;
 
         if (!result.length) {
             throw new BadRequestException(
@@ -1533,19 +1535,13 @@ export class PaymentService {
                 nonPromotional++
                 nonPromotionalItem.push(cart.id)
             }
-
-            // if (paymentType == 0) {
-            //     paymentType = cart.paymentType
-            // } else if (paymentType != cart.paymentType) {
-            //     throw new NotAcceptableException(`In cart Installment and no-installment both inventry found.`)
-            // }
         }
 
         if (promotional > 0 && nonPromotional > 0) {
             throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
         }
 
-        console.log("promotional", promotional, "nonPromotional", nonPromotional)
+        //console.log("promotional", promotional, "nonPromotional", nonPromotional)
 
         let cartIsPromotional
         if (promotional > 0) {
@@ -1555,29 +1551,25 @@ export class PaymentService {
             cartIsPromotional = false
         }
 
-        console.log("cartIsPromotional", cartIsPromotional)
+        //console.log("cartIsPromotional", cartIsPromotional)
+        //console.log("result",JSON.stringify(result))
 
 
-
-        let smallestDate = "";
+        /* let smallestDate = "";
         let totalAmount: number = 0;
         let offerDownPayment:number=0
 
         for await (const item of result) {
            
             if (item.moduleId == ModulesName.FLIGHT) {
-                // console.log("1");
-                // console.log(result[0].moduleInfo[0].departure_date);
                 const dipatureDate = await this.changeDateFormat(
                     item.moduleInfo[0].departure_date
                 );
-                //console.log("2");
                 if (smallestDate == "") {
                     smallestDate = dipatureDate;
                 } else if (new Date(smallestDate) > new Date(dipatureDate)) {
                     smallestDate = dipatureDate;
                 }
-                // console.log("smallestDate", smallestDate);
                 console.log(item.moduleInfo[0].selling_price);
                 console.log(item.moduleInfo[0].discounted_selling_price);
 
@@ -1737,9 +1729,16 @@ export class PaymentService {
             // 			}
             // 	}
             // }
+        } */
+        
+        for(let i=0; i < items.length; i++){
+            items[i].type = items[i].module.name;
         }
 
-        console.log("authoriseAmount", authoriseAmount)
+        //console.log("authoriseAmount", authoriseAmount)
+        //console.log("result",JSON.stringify(result))
+        let priceSummary = await Generic.calculatePriceSummary(result);
+        console.log("PriceSumarry",priceSummary)
 
         let authCardResult = await this.authorizeCard(
             card_token,

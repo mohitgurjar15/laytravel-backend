@@ -4,6 +4,8 @@ import { Currency } from "src/entity/currency.entity";
 import * as xml2js from "xml2js";
 import { PaymentGateway } from "src/entity/payment-gateway.entity";
 import { PricelineHotelIds } from "src/entity/hotel_ids.entity";
+import moment = require("moment");
+import { Instalment } from "./instalment.utility";
 
 export class Generic {
     static async getCredential(module_name: string) {
@@ -91,5 +93,148 @@ export class Generic {
         
         return hotel?.refId2;
         //return '9033'
+    }
+
+    static async calculatePriceSummary(items) {
+        try {
+            let checkInDates=[];
+            let allItemResult=[];
+            let type;
+            let name;
+            let bookingDate = moment(new Date()).format("YYYY-MM-DD");
+            
+            for(let i=0; i < items.length; i++) {
+                // if(items[i].paymentMethod=='installment'){
+                    if(items[i].type == "flight") {
+                        checkInDates.push(moment(items[i].moduleInfo[0].departure_date, "DD/MM/YYYY").format("YYYY-MM-DD"));
+                    }
+                    if(items[i].type=='hotel'){
+                        if(typeof items[i].moduleInfo.items!='undefined')
+                            checkInDates.push(items[i].moduleInfo.items[0].input_data.check_in);
+                        else
+                        checkInDates.push(items[i].moduleInfo[0].input_data.check_in);
+
+                    }
+                // }
+            }
+            
+            let checkInDate;
+            console.log("checkInDates",checkInDates,items.length)
+            checkInDate = checkInDates.reduce(function (a, b) { return a < b ? a : b; });
+            
+            let downPayment=0;
+            let totalAmount =0;
+            let netTotalAmount = 0;
+            let totalDownPayment=0;
+           
+            let instalments;
+            for(let i=0; i < items.length; i++) {
+
+                if(items[i].type=='flight'){
+                    if(items[i].moduleInfo[0].offer_data.applicable){
+                        totalAmount = items[i].moduleInfo[0].discounted_selling_price;
+                    }
+                    else{
+
+                        totalAmount = items[i].moduleInfo[0].selling_price;
+                    }
+                    type = items[i].type;
+                    name = items[i].moduleInfo[0].airline_name;
+                } else if(items[i].type=='hotel'){
+                    let hotelModuleInfo = typeof items[i].moduleInfo.items!='undefined'?items[i].moduleInfo.items:items[i].moduleInfo;
+                    if(hotelModuleInfo[0].offer_data.applicable){
+                        totalAmount = hotelModuleInfo[0].selling.discounted_total;
+                    }   
+                    else{
+
+                        totalAmount = hotelModuleInfo[0].selling.total;
+                    }
+                    type = items[i].type;
+                    name = hotelModuleInfo[0].hotel_name;
+                }
+                netTotalAmount += totalAmount
+
+                if(items[i].paymentMethod == 'installment'){
+                    downPayment = items[i].downpayment;
+                    totalDownPayment+=Number(downPayment);
+                    console.log(items[i].downpayment)
+                    if(items[i].paymentFrequency =='weekly'){
+                        instalments=await Instalment.weeklyInstalment(
+                            totalAmount,
+                            checkInDate,
+                            bookingDate,
+                            0,0,0,null,false,
+                            downPayment,
+                            true,
+                            [40,50,60])
+                    }
+                    if(items[i].paymentFrequency=='biweekly'){
+                        instalments = await Instalment.biWeeklyInstalment(
+                            totalAmount,
+                            checkInDate,
+                            bookingDate,
+                            0,0,0,null,false,
+                            downPayment,
+                            true,
+                            [40,50,60])
+                    }
+                    if(items[i].paymentFrequency=='monthly'){
+                        instalments = await Instalment.monthlyInstalment(
+                            totalAmount,
+                            checkInDate,
+                            bookingDate,
+                            0,0,0,null,false,
+                            downPayment,
+                            true,
+                            [40,50,60])
+                    }
+                    
+                    for(let x=0; x<instalments.instalment_date.length; x++){
+                        instalments.instalment_date[x].type=type;
+                        instalments.instalment_date[x].name=name;
+                    }
+
+                    allItemResult = [...allItemResult,...instalments.instalment_date];
+                } else{
+                    totalDownPayment+=totalAmount;
+                }
+            }
+            let priceSummary=[];
+            for(let i=0; i < allItemResult.length; i++){
+                
+                let find= await priceSummary.findIndex(price=>price.date==allItemResult[i].instalment_date);
+                
+                if(find!=-1){
+                    priceSummary[find].breakdown.push({
+                        type : allItemResult[i].type,
+                        amount : Generic.formatPriceDecimal(allItemResult[i].instalment_amount),
+                        name :  allItemResult[i].name
+                    })
+                    priceSummary[find].amount+=Generic.formatPriceDecimal(allItemResult[i].instalment_amount)
+                }
+                else{
+                    let breakDown = [{
+                        type : allItemResult[i].type,
+                        amount :  Generic.formatPriceDecimal(allItemResult[i].instalment_amount),
+                        name :  allItemResult[i].name
+                    }]
+                    priceSummary.push({
+                        date : allItemResult[i].instalment_date,
+                        amount : Generic.formatPriceDecimal(allItemResult[i].instalment_amount),
+                        breakdown : breakDown
+                    })
+                }
+            }
+            priceSummary.shift();
+            let remainingAmount = netTotalAmount - totalDownPayment;
+            return {
+                total_price : Generic.formatPriceDecimal(netTotalAmount),
+                remaining_amount : Generic.formatPriceDecimal(remainingAmount),
+                total_downpayment : Generic.formatPriceDecimal(totalDownPayment),
+                installment_dates : priceSummary
+            } 
+        } catch(e) {
+            console.log("Errror=======",e)
+        } 
     }
 }
