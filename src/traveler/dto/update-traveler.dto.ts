@@ -29,6 +29,13 @@ export class UpdateTravelerDto {
            //     example: `mr`
            // })
            // title : string;
+
+            @ApiPropertyOptional({
+            description: `Cart id`,
+            example: 1,
+            })
+            cart_id: number;
+
            @ApiPropertyOptional({
                description: `Enter module id`,
                example: 1,
@@ -177,6 +184,11 @@ export class UpdateTravelerDto {
                type: "string",
                description: "Traveler email id",
            })
+           @ValidateIf(
+            (o) =>
+                moment(new Date()).diff(moment(o.dob), "years") >= 12 &&
+                o.module_id != ModulesName.HOTEL
+            )
            @IsEmail(
                {},
                {

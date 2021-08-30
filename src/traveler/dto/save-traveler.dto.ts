@@ -28,6 +28,11 @@ export class SaveTravelerDto {
     // 	example: `mr`,
     // })
     // title: string;
+    @ApiPropertyOptional({
+        description: `Cart id`,
+        example: 1,
+    })
+    cart_id: number;
 
     @ApiPropertyOptional({
         description: `Enter module id`,

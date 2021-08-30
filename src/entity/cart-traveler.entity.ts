@@ -21,8 +21,11 @@ export class CartTravelers extends BaseEntity {
     @Column("integer", { name: "cart_id" })
     cartId: number;
 
-    @Column("uuid", { name: "user_id" })
+    @Column("uuid", { name: "user_id", nullable:true })
     userId: string;
+
+    @Column("uuid", { name: "traveler_id", nullable:true })
+    travelerId: string;
 
     @Column("character varying", {
         name: "baggage_service_code",
@@ -39,7 +42,10 @@ export class CartTravelers extends BaseEntity {
         (User) => User.traveler
     )
     @JoinColumn([{ name: "user_id", referencedColumnName: "userId" }])
-    userData: User;
+    userData: User; 
+
+    @Column("json", { name: "traveler", nullable:true })
+    traveler: object;
 
     @ManyToOne(
         () => Cart,

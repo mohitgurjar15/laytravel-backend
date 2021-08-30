@@ -119,7 +119,6 @@ export class BookHotelCartDto {
 
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => Traveler)
     @ApiProperty({
         description: `Traveler ids`,
         example: [
@@ -133,7 +132,7 @@ export class BookHotelCartDto {
             },
         ],
     })
-    travelers: Traveler[];
+    travelers;
 
     @ApiPropertyOptional({
         description: "total cart count",

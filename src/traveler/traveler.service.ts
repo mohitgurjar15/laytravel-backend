@@ -25,6 +25,7 @@ import { Gender } from "src/enum/gender.enum";
 import * as uuidValidator from "uuid-validate";
 import { MultipleTravelersDto } from "./dto/multiple-add-traveler.dto";
 import { ModulesName } from "src/enum/module.enum";
+import { CartTravelers } from "src/entity/cart-traveler.entity";
 
 @Injectable()
 export class TravelerService {
@@ -34,7 +35,7 @@ export class TravelerService {
         private jwtService: JwtService
     ) { }
 
-    async multipleTravelerAdd(
+    /* async multipleTravelerAdd(
         TravelerDto: MultipleTravelersDto,
         parent_user_id: string,
         guest_id: string
@@ -158,7 +159,7 @@ export class TravelerService {
                 `${error.message}&&&id&&&${errorMessage}`
             );
         }
-    }
+    } */
     async createNewtraveller(
         saveTravelerDto: SaveTravelerDto,
         parent_user_id: string,
@@ -175,6 +176,8 @@ export class TravelerService {
             email,
             phone_no,
             country_id,
+            cart_id,
+            is_primary_traveler
         } = saveTravelerDto;
         try {
             if (country_id) {
@@ -196,8 +199,10 @@ export class TravelerService {
                     );
                 }
             }
-            const user = new User();
+            console.log("user.userId",uuidv4())
+            let user:any={};
             user.userId = uuidv4();
+            
             user.accountType = 1;
             user.socialAccountId = "";
             user.phoneNo = "";
@@ -212,13 +217,14 @@ export class TravelerService {
             user.gender = gender || null;
             user.countryId = country_id || null;
             user.passportExpiry =
-                passport_expiry == "" ? null : passport_expiry;
+                passport_expiry == "" ? "" : passport_expiry;
             user.passportNumber =
-                passport_number == "" ? null : passport_number;
+                passport_number == "" ? "" : passport_number;
             user.roleId = Role.TRAVELER_USER;
             user.email = email;
             user.firstName = first_name;
             user.middleName = "";
+            user.is_primary_traveler=is_primary_traveler?is_primary_traveler:false;
             user.zipCode = "";
             user.lastName = last_name;
             if (parent_user_id) {
@@ -233,47 +239,31 @@ export class TravelerService {
             user.updatedDate = new Date();
             user.isDeleted = false;
             user.phoneNo = phone_no == "" || phone_no == null ? "" : phone_no;
+            var birthDate = new Date(user.dob);
 
-            return this.userRepository.createtraveler(user);
-            // if (parent_user_id != undefined && parent_user_id != "") {
-            // 	// const userData = await this.userRepository.getUserData(parent_user_id);
-            // 	// if (userData.email == user.email) {
-            // 	// 	throw new ConflictException(
-            // 	// 		`You have already added your email.`
-            // 	// 	);
-            // 	// }
-            // 	return this.userRepository.createtraveler(user);
-            // } else if (guest_id) {
+            var age = moment(new Date()).diff(moment(birthDate), "years");
+            if (age < 2) {
+                user.user_type = "infant";
+            } else if (age < 12) {
+                user.user_type = "child";
+            } else {
+                user.user_type = "adult";
+            }
+            console.log("User::::",user)
 
-            // }
-            // else {
-            // 	user.roleId = Role.GUEST_USER;
-            // 	if (user.email == "") {
-            // 		throw new NotFoundException(
-            // 			`Please enter your email id &&&email&&&Please enter your email id`
-            // 		);
-            // 	}
-            // 	const roles = [Role.TRAVELER_USER]
-            // 	const data = await this.userRepository.createUser(user, roles);
-            // 	const payload: JwtPayload = {
-            // 		user_id: data.userId,
-            // 		email: data.email,
-            // 		username: data.firstName + " " + data.lastName,
-            // 		firstName: data.firstName,
-            // 		phone: data.phoneNo,
-            // 		middleName: data.middleName,
-            // 		lastName: data.lastName,
-            // 		salt: "",
-
-            // 		profilePic: "",
-            // 		roleId: data.roleId,
-            // 	};
-            // 	var userdata: any = {};
-            // 	userdata = data;
-            // 	userdata.token = this.jwtService.sign(payload);
-
-            // 	return userdata;
-            // }
+            let CartTraveler = new CartTravelers();
+            CartTraveler.cartId = cart_id;
+            CartTraveler.travelerId = user.userId;
+            CartTraveler.traveler = user;
+            //return this.userRepository.createtraveler(user);
+           /*  return getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(CartTravelers)
+            .values(CartTraveler)
+            .execute(); */
+            return await CartTraveler.save()
+            
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 console.log("m");
@@ -498,12 +488,6 @@ export class TravelerService {
                 throw new NotFoundException("Given id not avilable");
             }
             //const traveler = await this.userRepository.getTravelData(userId);
-            const traveler = await this.userRepository.findOne(userId);
-            if (!traveler) {
-                throw new NotFoundException(
-                    `Traveler not found &&&id&&&Traveler not found`
-                );
-            }
             const {
                 first_name,
                 last_name,
@@ -515,8 +499,23 @@ export class TravelerService {
                 passport_number,
                 phone_no,
                 country_id,
-                module_id
+                module_id,
+                cart_id,
+                is_primary_traveler
             } = updateTravelerDto;
+            const traveler = await getManager()
+            .createQueryBuilder(CartTravelers, "traveler")
+            .where(`traveler_id=:userId`, { userId })
+            .getOne();
+            console.log("usreid",userId,traveler)
+
+            let user:any={};
+            if (!traveler) {
+                throw new NotFoundException(
+                    `Traveler not found &&&id&&&Traveler not found`
+                );
+            }
+            
             if (country_id) {
                 let countryDetails = await getManager()
                     .createQueryBuilder(Countries, "country")
@@ -529,37 +528,50 @@ export class TravelerService {
                     );
             }
 
-            traveler.countryCode = country_code;
+            user.countryCode = country_code;
 
-            traveler.firstName = first_name;
-            traveler.lastName = last_name;
-            traveler.isVerified = true;
-            if (email && traveler.roleId == Role.TRAVELER_USER) {
-                traveler.email = email;
+            user.firstName = first_name;
+            user.lastName = last_name;
+            user.isVerified = true;
+            user.userId = userId;
+            user.is_primary_traveler=is_primary_traveler?is_primary_traveler:false;
+            if (email) {
+                user.email = email;
             }
             if (gender) {
-                traveler.title = gender == Gender.M ? "mr" : "ms";
+                user.title = gender == Gender.M ? "mr" : "ms";
             }
             if (module_id == ModulesName.FLIGHT) {
-                traveler.dob = dob || null;
-                traveler.gender = gender || null;
-                traveler.countryId = country_id || null;
-                traveler.passportExpiry =
-                    passport_expiry == "" ? null : passport_expiry;
-                traveler.passportNumber =
-                    passport_number == "" ? null : passport_number;
+                user.dob = dob || null;
+                user.gender = gender || null;
+                user.countryId = country_id || null;
+                user.passportExpiry =
+                    passport_expiry == "" ? "" : passport_expiry;
+                user.passportNumber =
+                    passport_number == "" ? "" : passport_number;
             }
 
-            traveler.updatedBy = updateBy ? updateBy : guest_id;
-            traveler.phoneNo =
+            user.updatedBy = updateBy ? updateBy : guest_id;
+            user.phoneNo =
                 phone_no == "" || phone_no == null ? "" : phone_no;
-            traveler.updatedDate = new Date();
+            user.updatedDate = new Date();
 
-            traveler.status = 1;
+            user.status = 1;
+            var birthDate = new Date(user.dob);
+            var age = moment(new Date()).diff(moment(birthDate), "years");
+            if (age < 2) {
+                user.user_type = "infant";
+            } else if (age < 12) {
+                user.user_type = "child";
+            } else {
+                user.user_type = "adult";
+            }
             //console.log("countryDetails.id",traveler)
-            await traveler.save();
+            traveler.traveler = user;
 
-            return await this.userRepository.getTravelData(userId);
+            return await traveler.save();
+
+            //return await this.userRepository.getTravelData(userId);
         } catch (error) {
             if (typeof error.response !== "undefined") {
                 switch (error.response.statusCode) {
