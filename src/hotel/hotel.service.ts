@@ -909,7 +909,7 @@ export class HotelService {
                     for await (const item of travelers) {
                         //console.log(traveler.is_primary_traveler);
 
-                        if (k == 0) {
+                        if (item.traveler.is_primary_traveler) {
                             //console.log(
                             //     traveler.is_primary_traveler,
                             //     "primary"
@@ -1235,7 +1235,6 @@ export class HotelService {
         // primaryTraveler.roleId = userData.roleId;
 
         // primaryTraveler.save();
-        console.log("I am traveler",travelers)
         let i=0;
         for await (var item of travelers) {
             let userData = item.traveler;
@@ -1268,7 +1267,7 @@ export class HotelService {
             var travelerUser = new TravelerInfo();
             travelerUser.bookingId = bookingId;
             //travelerUser.userId = travelerId;
-            travelerUser.isPrimary = i==0?true:false;
+            travelerUser.isPrimary = userData.is_primary_traveler;
             travelerUser.roleId = Role.TRAVELER_USER;
             travelerUser.travelerInfo = travelerInfo;
             await travelerUser.save();
