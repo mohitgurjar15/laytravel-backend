@@ -32,6 +32,7 @@ import { ListDiscountDto } from "./dto/list-dicount-config.dto";
 import { ModulesName } from "src/enum/module.enum";
 import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
 
+
 @Injectable()
 export class LandingPageService {
     async createNewLandingPage(
@@ -494,7 +495,7 @@ export class LandingPageService {
         if (!result) {
             throw new NotFoundException(`Id not found.`);
         }
-        return { data: result, config: LANDING_PAGE[result.name] };
+        return { data: result };
     }
 
     async exportReferralBooking(paginationOption: ExportReferralDto) {

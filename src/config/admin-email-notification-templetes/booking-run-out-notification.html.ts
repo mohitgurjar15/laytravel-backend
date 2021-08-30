@@ -91,6 +91,7 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
                    ${param.currencySymbol}${param.totalRecivedFromCustomer} (${
                 param.totalRecivedFromCustomerPercentage
             }%)</td>
+
             </tr>
         </tbody>
     </table>
