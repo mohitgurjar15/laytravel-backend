@@ -37,7 +37,7 @@ export class UpdateFaqDto {
     @Type()
     @ApiProperty({
         description: `faq`,
-        example: [
+        example: [ 
             {
                 question:"What is laytrip",
                 answer : "Laytrip is travel agency.",
