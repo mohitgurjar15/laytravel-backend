@@ -17,12 +17,6 @@ export class Faq extends BaseEntity {
   @Column("character varying", { name: "category_id"})
   categoryId: number;
 
-  @Column("text", { name: "question" })
-  question: string;
-
-  @Column("text", { name: "answer" })
-  answer: string;
-
   @Column("date", { name: "created_date" })
   createdDate: Date;
 

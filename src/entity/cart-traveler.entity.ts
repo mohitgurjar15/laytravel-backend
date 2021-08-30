@@ -21,7 +21,7 @@ export class CartTravelers extends BaseEntity {
     @Column("integer", { name: "cart_id" })
     cartId: number;
 
-    @Column("uuid", { name: "user_id" })
+    @Column("uuid", { name: "user_id"})
     userId: string;
 
     @Column("character varying", {

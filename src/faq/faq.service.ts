@@ -99,25 +99,25 @@ export class FaqService {
 	): Promise<{ message: string }> {
 		const { categoryId, question, answer } = InsertFaqDto;
 
-		const adminId = user.id;
-		const checkfaq = await this.FaqRepository.count({
-			categoryId: categoryId,
-			question: question,
-		});
-		if (checkfaq) {
-			throw new BadRequestException(`given quetion is alredy available.`);
-		}
+		// const adminId = user.id;
+		// const checkfaq = await this.FaqRepository.count({
+		// 	categoryId: categoryId,
+		// 	question: question,
+		// });
+		// if (checkfaq) {
+		// 	throw new BadRequestException(`given quetion is alredy available.`);
+		// }
 
 		const faq = new Faq();
 
-		faq.categoryId = categoryId;
-		faq.question = question;
-		faq.answer = answer;
+		// faq.categoryId = categoryId;
+		// faq.question = question;
+		// faq.answer = answer;
 		faq.createdDate = new Date();
 		faq.updatedDate = new Date();
 		try {
 			await faq.save();
-			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
+			// Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
 			return { message: "Faq created successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -164,8 +164,8 @@ export class FaqService {
 		}
 		const previousData = JSON.stringify(faq)
 		faq.categoryId = categoryId;
-		faq.question = question;
-		faq.answer = answer;
+		// faq.question = question;
+		// faq.answer = answer;
 		faq.updatedDate = new Date();
 		try {
 			await faq.save();
