@@ -13,32 +13,24 @@ import { FaqMeta } from "./faq-meta.entity";
 //@Index("faq_pk", ["id"], { unique: true })
 @Entity("faq")
 export class Faq extends BaseEntity {
-  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column("character varying", { name: "category_id"})
-  categoryId: number;
+  @Column("date", { name: "created_date", nullable: true })
+  createdDate: Date | null;
 
-  @Column("date", { name: "created_date",nullable : true })
-  createdDate: Date;
+  @Column("date", { name: "updated_date", nullable: true })
+  updatedDate: Date | null;
 
-  @Column("date", { name: "updated_date",nullable : true })
-  updatedDate: Date;
-
-  @Column("boolean", { name: "is_deleted" , default : false})
+  @Column("boolean", { name: "is_deleted", default: () => "false" })
   isDeleted: boolean;
 
-  @Column("boolean", { name: "status" , default : true})
+  @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
 
-
-  @OneToMany(()=>FaqMeta,(fm)=>fm.faq_id)
-  faq_meta : FaqMeta
-
-  @ManyToOne(
-    () => FaqCategory,
-    faq_category => faq_category.id
-  )
+  @ManyToOne(() => FaqCategory, (faqCategory) => faqCategory.faqs)
   @JoinColumn([{ name: "category_id", referencedColumnName: "id" }])
-  category_id: FaqCategory;
+  category: FaqCategory;
+
+  @OneToMany(() => FaqMeta, (faqMeta) => faqMeta.faq)
+  faqMetas: FaqMeta[];
 }

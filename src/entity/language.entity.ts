@@ -7,6 +7,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm";
+import { FaqMeta } from "./faq-meta.entity";
 import { User } from "./user.entity";
 
 //@Index("language_pk", ["id"], { unique: true })
@@ -45,4 +46,7 @@ export class Language extends BaseEntity {
     user => user.preferredLanguage2
   )
   users: User[];
+
+  @OneToMany(() => FaqMeta, (faqMeta) => faqMeta.language)
+  faqMetas: FaqMeta[];
 }

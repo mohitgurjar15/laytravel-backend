@@ -12,15 +12,9 @@ import { Language } from "./language.entity";
 
 @Entity("faq_meta")
 export class FaqMeta extends BaseEntity {
+
     @PrimaryGeneratedColumn({ type: "integer", name: "id" })
     id: number;
-
-    @ManyToOne(
-        () => Faq,
-        Faq => Faq.id
-    )
-    @JoinColumn([{ name: "faq_id", referencedColumnName: "id" }])
-    faq_id: Faq;
 
     @Column("text", { name: "question" })
     question: string;
@@ -28,11 +22,12 @@ export class FaqMeta extends BaseEntity {
     @Column("text", { name: "answer" })
     answer: string;
 
-    @ManyToOne(
-        () => Language,
-        Language => Language.id
-    )
+    @ManyToOne(() => Faq, (faq) => faq.faqMetas)
+    @JoinColumn([{ name: "faq_id", referencedColumnName: "id" }])
+    faq: Faq;
+
+    @ManyToOne(() => Language, (language) => language.faqMetas)
     @JoinColumn([{ name: "language_id", referencedColumnName: "id" }])
-    language_id: Language;
+    language: Language;
 
 }

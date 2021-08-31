@@ -138,7 +138,7 @@ export class FaqController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
-	async getFaqDetail(@Param("id") id: number): Promise<Faq> {
+	async getFaqDetail(@Param("id") id: number) {
 		return await this.faqService.getFaq(id);
 	}
 }

@@ -17,15 +17,16 @@ export class FaqRepository extends Repository<Faq> {
 
         let where;
         if (keyword) {
-            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false`
+            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false AND "faq_meta"."language_id" = 1 
+            AND(("category"."name" ILIKE '%${keyword}%') or ("faq_meta"."question" ILIKE '%${keyword}%') or ("faq_meta"."answer" ILIKE '%${keyword}%'))`
         }
         else {
-            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false`
+            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false AND "faq_meta"."language_id" = 1`
         }
         const query = getManager()
             .createQueryBuilder(Faq, "faq")
             .leftJoinAndSelect("faq.category_id", "category")
-            .leftJoinAndSelect(FaqMeta,"faq_meta",'faq.id = faq_meta.faq_id' )
+            .leftJoinAndSelect("faq.faq_meta","faq_meta")
             .where(where)
             .take(take)
             .skip(skip)

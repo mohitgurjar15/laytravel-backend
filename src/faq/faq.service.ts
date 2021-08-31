@@ -104,32 +104,32 @@ export class FaqService {
 		const adminId = user.userId;
 		const faq = new Faq();
 		faq.createdDate = new Date();
-		faq.categoryId = categoryId
+		faq.category = categoryId
 		faq.updatedDate = new Date();
 		let faqRes: any = await faq.save();
 		activityLog.push(faqRes)
-		
+
 		const faq_meta = [];
 		for await (const iterator of faqs) {
-			
+
 			faq_meta.push({
-				language_id : iterator.language_id,
-				question : iterator.question,
-				answer : iterator.answer,
-				faq_id : faqRes.id
+				language_id: iterator.language_id,
+				question: iterator.question,
+				answer: iterator.answer,
+				faq_id: faqRes.id
 			})
 			activityLog.push(iterator)
-			
+
 			//let newMeta = faq_meta.save();
 		}
 
 		try {
 			getConnection()
-			.createQueryBuilder()
-			.insert()
-			.into(FaqMeta)
-			.values(faq_meta)
-			.execute();
+				.createQueryBuilder()
+				.insert()
+				.into(FaqMeta)
+				.values(faq_meta)
+				.execute();
 			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`, null, JSON.stringify(faq_meta));
 			return { message: "Faq created successfully." };
 		} catch (error) {
@@ -188,7 +188,7 @@ export class FaqService {
 				.createQueryBuilder(FaqMeta, "faq")
 				.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
 			const response = await query.getOne();
-			console.log('response**',response)
+			console.log('response**', response)
 			previousData.push(response)
 			response.question = iterator.question
 			response.answer = iterator.answer
@@ -323,16 +323,29 @@ export class FaqService {
 		}
 	}
 
-	async getFaq(id: number): Promise<Faq> {
+	async getFaq(id: number) {
 		try {
-			const faq = await this.FaqRepository.findOne({ id });
-			if (!faq) {
+			// const faq = await this.FaqRepository.findOne({ id });
+			let where: any = `"faq"."id" = '${id}' AND "faq"."is_deleted" = false AND "category"."is_deleted" = false`
+			const query = await getManager()
+				.createQueryBuilder(Faq, "faq")
+				.leftJoinAndSelect("faq.category_id", "category")
+				.leftJoinAndSelect("faq.faq_meta", "faq_meta")
+				.select([
+					'faq.id',
+					'category.id','category.name',
+					'faq_meta.id','faq_meta.answer','faq_meta.question','faq_meta.language_id','faq_meta.faq_id'
+					
+					
+				])
+				.where(where)
+			let result = await query.getMany()
+			console.log(JSON.stringify(result))
+			if (!result) {
 				throw new NotFoundException(`Faq Id Not Found`);
 			}
-			if (faq.isDeleted == true) {
-				throw new NotFoundException(`Given Faq is Deleted`);
-			}
-			return faq;
+
+			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {
