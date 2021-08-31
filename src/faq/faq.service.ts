@@ -15,6 +15,8 @@ import { Activity } from "src/utility/activity.utility";
 import { UpdateFaqDto } from "./dto/update-faq.dto";
 import { ActiveDeactiveFaq } from "./dto/active-deactive-faq.dto";
 import { FaqCategory } from "src/entity/faq-category.entity";
+import { FaqMeta } from "src/entity/faq-meta.entity";
+import { getConnection, getManager } from "typeorm";
 
 @Injectable()
 export class FaqService {
@@ -96,28 +98,27 @@ export class FaqService {
 	async createFaq(
 		InsertFaqDto: InsertFaqDto,
 		user: User
-	): Promise<{ message: string }> {
-		const { categoryId, question, answer } = InsertFaqDto;
-
-		// const adminId = user.id;
-		// const checkfaq = await this.FaqRepository.count({
-		// 	categoryId: categoryId,
-		// 	question: question,
-		// });
-		// if (checkfaq) {
-		// 	throw new BadRequestException(`given quetion is alredy available.`);
-		// }
-
+	) {
+		const { categoryId, faqs } = InsertFaqDto;
+		console.log('this is the real user', user)
+		const adminId = user.userId;
 		const faq = new Faq();
-
-		// faq.categoryId = categoryId;
-		// faq.question = question;
-		// faq.answer = answer;
 		faq.createdDate = new Date();
+		faq.categoryId = categoryId
 		faq.updatedDate = new Date();
+		let faqRes: any = await faq.save();
+		let meta_faq = [];
+		for await (const iterator of faqs) {
+			const faq_meta = new FaqMeta();
+			faq_meta.language_id = iterator.language_id
+			faq_meta.question = iterator.question;
+			faq_meta.answer = iterator.answer;
+			faq_meta.faq_id = faqRes.id
+			let newMeta = faq_meta.save();
+			meta_faq.push(faq_meta)
+			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`, null, JSON.stringify(faq_meta));
+		}
 		try {
-			await faq.save();
-			// Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
 			return { message: "Faq created successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -148,6 +149,7 @@ export class FaqService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+
 	}
 
 	async updateFaq(
@@ -155,8 +157,8 @@ export class FaqService {
 		updateFaqDto: UpdateFaqDto,
 		user: User
 	): Promise<{ message: string }> {
-		const { categoryId, question, answer } = updateFaqDto;
-		const adminId = user.id;
+		const { categoryId, faqs } = updateFaqDto;
+		const adminId = user.userId;
 
 		const faq = await this.FaqRepository.findOne({ id });
 		if (!faq) {
@@ -164,13 +166,21 @@ export class FaqService {
 		}
 		const previousData = JSON.stringify(faq)
 		faq.categoryId = categoryId;
-		// faq.question = question;
-		// faq.answer = answer;
 		faq.updatedDate = new Date();
+		await faq.save();
+		for await (const iterator of faqs) {
+			const query = getManager()
+				.createQueryBuilder(FaqMeta, "faq")
+				.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
+			const response = await query.getOne();
+			response.question = iterator.question
+			response.answer = iterator.answer
+			response.save();
+			const currentData = JSON.stringify(response)
+			Activity.logActivity(adminId, "faq", `Faq updated by the admin`, previousData, currentData);
+		}
+		// return false
 		try {
-			await faq.save();
-			const currentData = JSON.stringify(faq)
-			Activity.logActivity(adminId, "faq", `Faq updated by the admin`,previousData,currentData);
 			return { message: "Faq updated successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -214,7 +224,7 @@ export class FaqService {
 			faq.isDeleted = true;
 			faq.save();
 			const currentData = JSON.stringify(faq)
-			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`,previousData,currentData);
+			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`, previousData, currentData);
 			return { message: "Faq deleted successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -263,7 +273,7 @@ export class FaqService {
 			faq.status = status;
 			faq.save();
 			const currentData = JSON.stringify(faq)
-			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`,previousData,currentData);
+			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`, previousData, currentData);
 			return { message: "Faq status changed." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {

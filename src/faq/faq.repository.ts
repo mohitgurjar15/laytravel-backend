@@ -3,6 +3,7 @@ import { EntityRepository, getConnection, getManager, Repository } from "typeorm
 import { ListFaqDto } from "./dto/list-faq.dto";
 import { NotFoundException } from "@nestjs/common";
 import { FaqCategory } from "src/entity/faq-category.entity";
+import { FaqMeta } from "src/entity/faq-meta.entity";
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
@@ -16,7 +17,7 @@ export class FaqRepository extends Repository<Faq> {
 
         let where;
         if (keyword) {
-            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false AND(("category"."name" ILIKE '%${keyword}%') or ("faq"."question" ILIKE '%${keyword}%') or ("faq"."answer" ILIKE '%${keyword}%'))`
+            where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false`
         }
         else {
             where = `"faq"."is_deleted" = false AND "category"."is_deleted" = false`
@@ -24,11 +25,21 @@ export class FaqRepository extends Repository<Faq> {
         const query = getManager()
             .createQueryBuilder(Faq, "faq")
             .leftJoinAndSelect("faq.category_id", "category")
+            .leftJoinAndSelect(FaqMeta,"faq_meta",'faq.id = faq_meta.faq_id' )
             .where(where)
             .take(take)
             .skip(skip)
             .orderBy(`faq.id`)
+        // var res = await query.getOne();
+        // console.log(' my res', res)
+        // const faq = getManager()
+            // .createQueryBuilder(FaqMeta, "faq_meta")
+            // AND "faq"."question" ILIKE '%${keyword}%') or ("faq"."answer" ILIKE '%${keyword}%'))
+            // .where(`(("faq_meta"."faq_id"= '${res.id}'))`)
+        // var response = await faq.getMany();
+        // console.log('response', response)
         const [result, total] = await query.getManyAndCount();
+        console.log('result**', result)
         if (!result.length) {
             throw new NotFoundException(`No faq found.`)
         }

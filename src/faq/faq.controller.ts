@@ -75,7 +75,7 @@ export class FaqController {
 	async insertFaq(
 		@Body() InsertFaqDto: InsertFaqDto,
 		@GetUser() user: User
-	): Promise<{ message: string }> {
+	) {
 		return await this.faqService.createFaq(InsertFaqDto, user);
 	}
 

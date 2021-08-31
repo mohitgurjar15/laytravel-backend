@@ -4,9 +4,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm";
 import { FaqCategory } from "./faq-category.entity";
+import { FaqMeta } from "./faq-meta.entity";
 
 //@Index("faq_pk", ["id"], { unique: true })
 @Entity("faq")
@@ -17,10 +19,10 @@ export class Faq extends BaseEntity {
   @Column("character varying", { name: "category_id"})
   categoryId: number;
 
-  @Column("date", { name: "created_date" })
+  @Column("date", { name: "created_date",nullable : true })
   createdDate: Date;
 
-  @Column("date", { name: "updated_date" })
+  @Column("date", { name: "updated_date",nullable : true })
   updatedDate: Date;
 
   @Column("boolean", { name: "is_deleted" , default : false})
@@ -29,6 +31,9 @@ export class Faq extends BaseEntity {
   @Column("boolean", { name: "status" , default : true})
   status: boolean;
 
+
+  @OneToMany(()=>FaqMeta,(fm)=>fm.faq_id)
+  faq_meta : FaqMeta
 
   @ManyToOne(
     () => FaqCategory,
