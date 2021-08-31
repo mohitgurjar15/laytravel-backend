@@ -100,25 +100,37 @@ export class FaqService {
 		user: User
 	) {
 		const { categoryId, faqs } = InsertFaqDto;
-		console.log('this is the real user', user)
+		let activityLog = []
 		const adminId = user.userId;
 		const faq = new Faq();
 		faq.createdDate = new Date();
 		faq.categoryId = categoryId
 		faq.updatedDate = new Date();
 		let faqRes: any = await faq.save();
-		let meta_faq = [];
+		activityLog.push(faqRes)
+		
+		const faq_meta = [];
 		for await (const iterator of faqs) {
-			const faq_meta = new FaqMeta();
-			faq_meta.language_id = iterator.language_id
-			faq_meta.question = iterator.question;
-			faq_meta.answer = iterator.answer;
-			faq_meta.faq_id = faqRes.id
-			let newMeta = faq_meta.save();
-			meta_faq.push(faq_meta)
-			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`, null, JSON.stringify(faq_meta));
+			
+			faq_meta.push({
+				language_id : iterator.language_id,
+				question : iterator.question,
+				answer : iterator.answer,
+				faq_id : faqRes.id
+			})
+			activityLog.push(iterator)
+			
+			//let newMeta = faq_meta.save();
 		}
+
 		try {
+			getConnection()
+			.createQueryBuilder()
+			.insert()
+			.into(FaqMeta)
+			.values(faq_meta)
+			.execute();
+			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`, null, JSON.stringify(faq_meta));
 			return { message: "Faq created successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -164,23 +176,28 @@ export class FaqService {
 		if (!faq) {
 			throw new NotFoundException(`Faq Id Not Found.`);
 		}
-		const previousData = JSON.stringify(faq)
+		let previousData = []
+		let currentData = []
+		previousData.push(faq)
 		faq.categoryId = categoryId;
 		faq.updatedDate = new Date();
-		await faq.save();
+		let faqRes: any = await faq.save();
+		currentData.push(faqRes)
 		for await (const iterator of faqs) {
 			const query = getManager()
 				.createQueryBuilder(FaqMeta, "faq")
 				.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
 			const response = await query.getOne();
+			console.log('response**',response)
+			previousData.push(response)
 			response.question = iterator.question
 			response.answer = iterator.answer
 			response.save();
-			const currentData = JSON.stringify(response)
-			Activity.logActivity(adminId, "faq", `Faq updated by the admin`, previousData, currentData);
+			currentData.push(iterator)
 		}
 		// return false
 		try {
+			Activity.logActivity(adminId, "faq", `Faq updated by the admin`, previousData, currentData);
 			return { message: "Faq updated successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
