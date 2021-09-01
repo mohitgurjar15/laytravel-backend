@@ -210,9 +210,7 @@ export class FaqService {
 				.execute();
 				currentData.push(iterator)
 			}
-
 		}
-		// return false
 		try {
 			Activity.logActivity(adminId, "faq", `Faq updated by the admin`, previousData, currentData);
 			return { message: "Faq updated successfully." };

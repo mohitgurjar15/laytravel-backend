@@ -13,6 +13,7 @@ import { FaqMeta } from "./faq-meta.entity";
 //@Index("faq_pk", ["id"], { unique: true })
 @Entity("faq")
 export class Faq extends BaseEntity {
+  @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
   @Column("date", { name: "created_date", nullable: true })
