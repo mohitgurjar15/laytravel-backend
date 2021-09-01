@@ -1024,12 +1024,16 @@ more than 10.`
                             let updatedDownpayment = 0;
 
                             if(cart.paymentMethod === "installment") {
-                                if(cart.paymentFrequency === "weekly") {
-                                    updatedDownpayment = value.payment_object.weekly.down_payment;
-                                } else if(cart.paymentFrequency === "biweekly") {
-                                    updatedDownpayment = value.payment_object.biweekly.down_payment;
-                                } else if(cart.paymentFrequency === "monthly") {
-                                    updatedDownpayment = value.payment_object.monthly.down_payment;
+                                if(value.offer_data.applicable) {
+                                    updatedDownpayment = cart.downpayment;
+                                } else {
+                                    if(cart.paymentFrequency === "weekly") {
+                                        updatedDownpayment = value.payment_object.weekly.down_payment;
+                                    } else if(cart.paymentFrequency === "biweekly") {
+                                        updatedDownpayment = value.payment_object.biweekly.down_payment;
+                                    } else if(cart.paymentFrequency === "monthly") {
+                                        updatedDownpayment = value.payment_object.monthly.down_payment;
+                                    }
                                 }
                             }
                             newCart["is_available"] = true;
@@ -1102,6 +1106,7 @@ more than 10.`
                                 let updatedDownpayment = 0;
                                 if(cart.paymentMethod === "installment") {
                                     if(roomDetails.data["items"][0]?.offer_data?.applicable){
+                                        updatedDownpayment = cart.downpayment;
                                     } else {
                                         if(cart.paymentFrequency === "weekly") {
                                             updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
