@@ -1613,44 +1613,47 @@ more than 10.`
             //let ToatalAmount = ''
             console.log("-----------RESULT JSON---------", JSON.stringify(result))
             for await (const item of result) {
-                if (item.moduleId == ModulesName.FLIGHT) {
-                    const dipatureDate = await this.flightService.changeDateFormat(
-                        item.moduleInfo[0].departure_date
-                    );
-                    if (smallestDate == "") {
-                        smallestDate = dipatureDate;
-                    } else if (
-                        new Date(smallestDate) > new Date(dipatureDate)
-                    ) {
-                        smallestDate = dipatureDate;
-                    }
-                    //console.log(item.moduleInfo[0]);
 
-                    const arrivalDate = await this.flightService.changeDateFormat(
-                        item.moduleInfo[0].arrival_date
-                    );
-                    if (largestDate == "") {
-                        largestDate = arrivalDate;
-                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                        largestDate = arrivalDate;
-                    }
-                } else if (item.moduleId == ModulesName.HOTEL) {
-                    const dipatureDate = item.moduleInfo[0].input_data.check_in;
+                if(item.paymentMethod=='instalment'){
+                    if (item.moduleId == ModulesName.FLIGHT) {
+                        const dipatureDate = await this.flightService.changeDateFormat(
+                            item.moduleInfo[0].departure_date
+                        );
+                        if (smallestDate == "") {
+                            smallestDate = dipatureDate;
+                        } else if (
+                            new Date(smallestDate) > new Date(dipatureDate)
+                        ) {
+                            smallestDate = dipatureDate;
+                        }
+                        //console.log(item.moduleInfo[0]);
 
-                    if (smallestDate == "") {
-                        smallestDate = dipatureDate;
-                    } else if (
-                        new Date(smallestDate) > new Date(dipatureDate)
-                    ) {
-                        smallestDate = dipatureDate;
-                    }
-                    //console.log(item.moduleInfo[0]);
+                        const arrivalDate = await this.flightService.changeDateFormat(
+                            item.moduleInfo[0].arrival_date
+                        );
+                        if (largestDate == "") {
+                            largestDate = arrivalDate;
+                        } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                            largestDate = arrivalDate;
+                        }
+                    } else if (item.moduleId == ModulesName.HOTEL) {
+                        const dipatureDate = item.moduleInfo[0].input_data.check_in;
 
-                    const arrivalDate = item.moduleInfo[0].input_data.check_out;
-                    if (largestDate == "") {
-                        largestDate = arrivalDate;
-                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                        largestDate = arrivalDate;
+                        if (smallestDate == "") {
+                            smallestDate = dipatureDate;
+                        } else if (
+                            new Date(smallestDate) > new Date(dipatureDate)
+                        ) {
+                            smallestDate = dipatureDate;
+                        }
+                        //console.log(item.moduleInfo[0]);
+
+                        const arrivalDate = item.moduleInfo[0].input_data.check_out;
+                        if (largestDate == "") {
+                            largestDate = arrivalDate;
+                        } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                            largestDate = arrivalDate;
+                        }
                     }
                 }
             }
@@ -1684,6 +1687,7 @@ more than 10.`
             let successedResult = 0;
             let failedResult = 0;
             let BookingIds = [];
+            let amountToBeCharged=0;
             let flightCount = 0;
             let hotelCount = 0;
             //let mailResponce = []
@@ -1695,6 +1699,7 @@ more than 10.`
                     case ModulesName.FLIGHT:
                         flightCount++;
                         bookCart.payment_type = item.paymentMethod;
+                        bookCart.instalment_type = item.paymentFrequency;
                         
                         let flightResponce = await this.bookFlight(
                             item,
@@ -1712,7 +1717,7 @@ more than 10.`
                         inventryLogs.push(flightResponce["logFile"])
                         if (flightResponce["status"] == 1) {
                             successedResult++;
-
+                            amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling_price);
                             BookingIds.push(
                                 flightResponce["detail"]["laytrip_booking_id"]
                             );
@@ -1724,6 +1729,7 @@ more than 10.`
                     case ModulesName.HOTEL:
                         hotelCount++;
                         bookCart.payment_type = item.paymentMethod;
+                        bookCart.instalment_type = item.paymentFrequency;
                         console.log("------ITEM PAYMENT METHOD---------", item.paymentMethod)
                         let hotelResponce = await this.bookHotel(
                             item,
@@ -1742,7 +1748,7 @@ more than 10.`
                         inventryLogs.push(hotelResponce["logFile"])
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
-
+                            amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling.total);
                             BookingIds.push(
                                 hotelResponce["detail"]["laytrip_booking_id"]
                             );
@@ -1770,20 +1776,20 @@ more than 10.`
                     await this.sattelInstalment(cartData.id,
                         instalment_type, smallestDate, selected_down_payment)
                 }
-                if (failedResult > 0) {
+                /* if (failedResult > 0) {
                     partialAmount = await this.calculatePartialAmountAndSattelAmount(
                         cartData.id,
                         payment_type
                     );
-
-
-                }
+                } */
+                console.log("partialAmount 1",amountToBeCharged)
+                
                 const payment = await this.capturePayment(
                     BookingIds,
                     transaction_token,
                     paymentType,
                     user.userId,
-                    partialAmount
+                    amountToBeCharged
                 );
 
                 let metaData = payment.meta_data
@@ -1797,21 +1803,7 @@ more than 10.`
                     failedResult
                 );
 
-                // if (failedResult > 0 && payment.status == true) {
-                //     let refaund = await this.refundCart(
-                //         cartData.id,
-                //         Headers,
-                //         payment_type,
-                //         instalment_type,
-                //         smallestDate,
-                //         selected_down_payment,
-                //         payment.reference_token,
-                //         user.userId
-                //     );
-
-                //     bookingLog.paymentRefundLog = refaund
-                //     await bookingLog.save()
-                // }
+                
             } else {
                 cartData.status == BookingStatus.FAILED;
                 await cartData.save();
@@ -2174,7 +2166,7 @@ more than 10.`
             userId,
             Math.ceil(partialAmount * 100)
         );
-        console.log("captureCardresult", captureCardresult);
+        console.log("captureCardresult", captureCardresult,partialAmount);
 
         if (captureCardresult.status == true) {
             if (payment_type == BookingType.INSTALMENT) {
