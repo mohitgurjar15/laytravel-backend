@@ -184,16 +184,33 @@ export class FaqService {
 		let faqRes: any = await faq.save();
 		currentData.push(faqRes)
 		for await (const iterator of faqs) {
-			const query = getManager()
-				.createQueryBuilder(FaqMeta, "faq")
-				.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
-			const response = await query.getOne();
-			console.log('response**', response)
-			previousData.push(response)
-			response.question = iterator.question
-			response.answer = iterator.answer
-			response.save();
-			currentData.push(iterator)
+			if (iterator.language_id) {
+				const query = getManager()
+					.createQueryBuilder(FaqMeta, "faq")
+					.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
+				const response = await query.getOne();
+				console.log('response**', response)
+				previousData.push(response)
+				response.question = iterator.question
+				response.answer = iterator.answer
+				response.save();
+				currentData.push(iterator)
+			} else {
+				let data = [{
+					question:iterator.question,
+					answer: iterator.answer,
+					language_id:iterator.language_id,
+					faq_id:faq.id
+				}]
+				getConnection()
+				.createQueryBuilder()
+				.insert()
+				.into(FaqMeta)
+				.values(data)
+				.execute();
+				currentData.push(iterator)
+			}
+
 		}
 		// return false
 		try {
@@ -333,10 +350,10 @@ export class FaqService {
 				.leftJoinAndSelect("faq.faq_meta", "faq_meta")
 				.select([
 					'faq.id',
-					'category.id','category.name',
-					'faq_meta.id','faq_meta.answer','faq_meta.question','faq_meta.language_id','faq_meta.faq_id'
-					
-					
+					'category.id', 'category.name',
+					'faq_meta.id', 'faq_meta.answer', 'faq_meta.question', 'faq_meta.language_id', 'faq_meta.faq_id'
+
+
 				])
 				.where(where)
 			let result = await query.getMany()
