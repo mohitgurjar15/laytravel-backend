@@ -1238,6 +1238,7 @@ more than 10.`
             }
             let priceSummary = await Generic.calculatePriceSummary(responce);
             
+            
             return {
                 data: responce,
                 count: count,
