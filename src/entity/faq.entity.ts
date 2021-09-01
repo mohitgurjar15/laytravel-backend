@@ -27,9 +27,9 @@ export class Faq extends BaseEntity {
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
 
-  @ManyToOne(() => FaqCategory, (faqCategory) => faqCategory.faqs)
+  @ManyToOne(() => FaqCategory, (faqCategory) => faqCategory.id)
   @JoinColumn([{ name: "category_id", referencedColumnName: "id" }])
-  category: FaqCategory;
+  category_id: FaqCategory;
 
   @OneToMany(() => FaqMeta, (faqMeta) => faqMeta.faq)
   faqMetas: FaqMeta[];

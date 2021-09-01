@@ -14,7 +14,7 @@ export class FaqCategory extends BaseEntity {
 
     @OneToMany(
         () => Faq,
-        Faq => Faq.category
+        Faq => Faq.category_id
       )
       faqs: Faq[];
 }

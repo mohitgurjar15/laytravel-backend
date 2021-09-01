@@ -104,7 +104,7 @@ export class FaqService {
 		const adminId = user.userId;
 		const faq = new Faq();
 		faq.createdDate = new Date();
-		faq.category = categoryId
+		faq.category_id = categoryId
 		faq.updatedDate = new Date();
 		let faqRes: any = await faq.save();
 		activityLog.push(faqRes)
@@ -179,7 +179,7 @@ export class FaqService {
 		let previousData = []
 		let currentData = []
 		previousData.push(faq)
-		faq.categoryId = categoryId;
+		faq.category_id = categoryId;
 		faq.updatedDate = new Date();
 		let faqRes: any = await faq.save();
 		currentData.push(faqRes)

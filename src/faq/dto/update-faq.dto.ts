@@ -2,6 +2,7 @@ import { IsArray, IsNotEmpty, ValidateNested } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { Language } from 'src/entity/language.entity';
+import { FaqCategory } from 'src/entity/faq-category.entity';
 
 export class UpdateFaqDto {
 
@@ -12,7 +13,7 @@ export class UpdateFaqDto {
         description: `Enter category id`,
         example: `1`
     })
-    categoryId: number;
+    categoryId: FaqCategory;
 
     @IsArray()
     @ValidateNested({ each: true })
