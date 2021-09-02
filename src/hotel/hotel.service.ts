@@ -884,13 +884,8 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            cartCount > 1 ? true : false,
-                            weeklyCustomDownPayment,
-                            true, downPayments
+                            downPayments[0],
+                            cartCount > 1 ? true : false
                         );
                         console.log(instalmentDetails)
 
@@ -899,12 +894,9 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            totalAdditionalAmount,
-                            custom_instalment_amount,
-                            custom_instalment_no,
-                            selected_down_payment,
+                            downPayments[0],
                             cartCount > 1 ? true : false,
-                            null, true, downPayments
+                            
                         );
                     }
                 }
@@ -914,12 +906,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false,
-                        null, true, downPayments
+                        downPayments[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test4");
@@ -928,12 +916,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false,
-                        null, true, downPayments
+                        downPayments[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log(instalmentDetails);

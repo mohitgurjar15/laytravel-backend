@@ -101,14 +101,8 @@ export class RoomHelper {
                             selling.total,
                             inputData.check_in,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            false,
-                            weeklyCustomDownPayment,
+                            downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage,
-                            downPaymentOption
                         );
                         if (instalmentDetails.instalment_available) {
                             start_price =
@@ -129,14 +123,8 @@ export class RoomHelper {
                             selling.total,
                             inputData.check_in,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            false,
-                            null,
-                            paymentConfig.isDownPaymentInPercentage,
-                            downPaymentOption
+                            downPaymentOption[0],
+                            paymentConfig.isDownPaymentInPercentage
                         );
 
                         second_down_payment =
@@ -155,14 +143,8 @@ export class RoomHelper {
                             selling.total,
                             inputData.check_in,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            false,
-                            null,
-                            paymentConfig.isDownPaymentInPercentage,
-                            downPaymentOption
+                            downPaymentOption[0],
+                            paymentConfig.isDownPaymentInPercentage
                         );
                         third_down_payment =
                             instalmentDetails3.instalment_date[0]
@@ -179,14 +161,7 @@ export class RoomHelper {
                         selling['discounted_total'],
                         inputData.check_in,
                         bookingDate,
-                        0,
-                        null,
-                        null,
-                        0,
-                        false,
-                        weeklyCustomDownPayment,
-                        paymentConfig.isDownPaymentInPercentage,
-                        downPaymentOption
+                        downPaymentOption[0]
                     );
 
                     if (discountedInstalmentDetails.instalment_available) {

@@ -192,7 +192,7 @@ export class Monaker implements StrategyVacationRental {
                         hotelDetail.amenities = element["propertyAmenities"];
                         hotelDetail.net_price = element["totalPrice"];
                         hotelDetail.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(hotelDetail.net_price, markUpDetails));
-                        let instalmentDetails = Instalment.weeklyInstalment(hotelDetail.selling_price, check_in_date, bookingDate, 0,0,0,0,false,0,true,[]);
+                        let instalmentDetails = Instalment.weeklyInstalment(hotelDetail.selling_price, check_in_date, bookingDate, 9.99);
                         if (instalmentDetails.instalment_available) {
                             hotelDetail.start_price = instalmentDetails.instalment_date[0].instalment_amount;
                             hotelDetail.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
@@ -260,7 +260,7 @@ export class Monaker implements StrategyVacationRental {
                         hotelDetail.amenities = element["propertyAmenities"];
                         hotelDetail.net_price = element["totalPrice"];
                         hotelDetail.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(hotelDetail.net_price, markUpDetails));
-                        let instalmentDetails = Instalment.weeklyInstalment(hotelDetail.selling_price, check_in_date, bookingDate, 0, 0, 0, 0, false, 0, true, []);
+                        let instalmentDetails = Instalment.weeklyInstalment(hotelDetail.selling_price, check_in_date, bookingDate, 9.99);
                         if (instalmentDetails.instalment_available) {
                             hotelDetail.start_price = instalmentDetails.instalment_date[0].instalment_amount;
                             hotelDetail.secondary_start_price = instalmentDetails.instalment_date[1].instalment_amount;
@@ -661,7 +661,7 @@ export class Monaker implements StrategyVacationRental {
             room.rate_plan_code = unitTypeResult[i]["prices"][0]["ratePlanCode"];
             room.net_price = unitTypeResult[i]["prices"][0]["amountAfterTax"];
             room.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(room.net_price, markUpDetails));
-            let instalmentDetails = Instalment.weeklyInstalment(room.selling_price, check_in_date, bookingDate, 0, 0, 0, 0, false, 0, true, []);
+            let instalmentDetails = Instalment.weeklyInstalment(room.selling_price, check_in_date, bookingDate, 9.99);
 
             if (instalmentDetails.instalment_available) {
                 room.start_price = instalmentDetails.instalment_date[0].instalment_amount;
@@ -933,7 +933,7 @@ export class Monaker implements StrategyVacationRental {
         verifyAvailability.net_price = response["totalPrice"]["amountAfterTax"];
 
         verifyAvailability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(verifyAvailability.net_price, markUpDetails));
-        let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 0, 0, 0, 0, false, 0, true, []);
+        let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 9.99);
 
         if (instalmentDetails.instalment_available) {
             verifyAvailability.start_price = instalmentDetails.instalment_date[0].instalment_amount;
@@ -1154,7 +1154,7 @@ export class Monaker implements StrategyVacationRental {
         verifyAvailability.check_in_date = check_in_date;
         verifyAvailability.check_out_date = check_out_date;
         verifyAvailability.selling_price = Generic.formatPriceDecimal(PriceMarkup.applyMarkup(verifyAvailability.net_price, markUpDetails));
-        let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 0, 0, 0, 0, false, 0, true, []);
+        let instalmentDetails = Instalment.weeklyInstalment(verifyAvailability.selling_price, check_in_date, bookingDate, 9.99);
 
         if (instalmentDetails.instalment_available) {
             verifyAvailability.start_price = instalmentDetails.instalment_date[0].instalment_amount;

@@ -161,30 +161,21 @@ export class Generic {
                             totalAmount,
                             checkInDate,
                             bookingDate,
-                            0,0,0,null,false,
-                            downPayment,
-                            true,
-                            [40,50,60])
+                            downPayment)
                     }
                     if(items[i].paymentFrequency=='biweekly'){
                         instalments = await Instalment.biWeeklyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
-                            0,0,0,null,false,
-                            downPayment,
-                            true,
-                            [40,50,60])
+                            downPayment)
                     }
                     if(items[i].paymentFrequency=='monthly'){
                         instalments = await Instalment.monthlyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
-                            0,0,0,null,false,
-                            downPayment,
-                            true,
-                            [40,50,60])
+                            downPayment)
                     }
                     
                     for(let x=0; x<instalments.instalment_date.length; x++){

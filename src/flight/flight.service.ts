@@ -1798,9 +1798,7 @@ export class FlightService {
                     selling_price,
                     departure_date,
                     bookingDate,
-                    totalAdditionalAmount,
-                    custom_instalment_amount,
-                    custom_instalment_no, 0, false, null, true, downPayments
+                    downPayments[0]
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1808,9 +1806,7 @@ export class FlightService {
                     selling_price,
                     departure_date,
                     bookingDate,
-                    totalAdditionalAmount,
-                    custom_instalment_amount,
-                    custom_instalment_no, 0, false, null, true, downPayments
+                    downPayments[0]
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1818,9 +1814,7 @@ export class FlightService {
                     selling_price,
                     departure_date,
                     bookingDate,
-                    totalAdditionalAmount,
-                    custom_instalment_amount,
-                    custom_instalment_no, 0, false, null, true, downPayments
+                    downPayments[0]
                 );
             }
 
@@ -3649,12 +3643,8 @@ export class FlightService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
+                            downPayments[0],
                             cartCount > 1 ? true : false,
-                            weeklyCustomDownPayment, true, downPayments
                         );
                         console.log(instalmentDetails)
 
@@ -3663,11 +3653,8 @@ export class FlightService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            totalAdditionalAmount,
-                            custom_instalment_amount,
-                            custom_instalment_no,
-                            selected_down_payment,
-                            cartCount > 1 ? true : false, null, true, downPayments
+                            downPayments[0],
+                            cartCount > 1 ? true : false
                         );
                     }
 
@@ -3677,11 +3664,8 @@ export class FlightService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false, null, true, downPayments
+                        downPayments[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3689,11 +3673,8 @@ export class FlightService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false, null, true, downPayments
+                        downPayments[0],
+                        cartCount > 1 ? true : false
                     );
                 }
 
