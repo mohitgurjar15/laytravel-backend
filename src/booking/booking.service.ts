@@ -1100,7 +1100,6 @@ export class BookingService {
                 .where(where);
             //.orderBy(`cartBooking.bookingDate`, "DESC");
             const cart = await query.getOne();
-
             if (!cart) {
                 throw new NotFoundException(
                     `Booking ID not found.&&&id&&&Booking ID not found.`
@@ -1110,65 +1109,75 @@ export class BookingService {
             let remainAmount = 0;
             let pandinginstallment = 0;
             let totalAmount = 0;
-             let actualAmount = 0;
-            const currency = cart.bookings[0]?.currency2;
-            let baseBooking = cart.bookings[0]?.bookingInstalments;
-            const installmentType =
-                cart.bookings[0]?.bookingInstalments[0]?.instalmentType;
             let cartInstallments = [];
-
-            let bookingIndex = 0 
-            while (cart.bookings[bookingIndex] && baseBooking?.length == 0) {
-                bookingIndex++
-                baseBooking = cart.bookings[bookingIndex]?.bookingInstalments;
-            }
-            if (
-                baseBooking?.length &&
-                cart.bookings[0].bookingType == BookingType.INSTALMENT
-            ) {
-                for await (const baseInstallments of baseBooking) {
-                    let amount = 0;
-                    if (
-                        cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM
-                    ) {
-                        amount += parseFloat(baseInstallments.amount);
+            let actualAmount = 0;
+            let currency;
+            let installmentType;
+            for await (const booking of cart.bookings) {
+                if(booking.bookingInstalments.length > 0) {
+                    // const currency = cart.bookings[i]?.currency2;
+                    currency = booking.currency2;
+                    let baseBooking = booking.bookingInstalments;
+                    // let baseBooking = cart.bookings[i]?.bookingInstalments;
+                    // const installmentType =
+                    //     cart.bookings[i]?.bookingInstalments[0]?.instalmentType;
+                    installmentType =
+                        booking.bookingInstalments[0]?.instalmentType;
+                    let bookingIndex = 0 
+                    while (booking[bookingIndex] && baseBooking?.length == 0) {
+                        bookingIndex++
+                        baseBooking = booking[bookingIndex]?.bookingInstalments;
                     }
-
-                    if (cart.bookings.length > 1) {
-                        for (
-                            let index = 1;
-                            index < cart.bookings.length;
-                            index++
-                        ) {
+                    if (
+                        baseBooking?.length &&
+                        booking.bookingType == BookingType.INSTALMENT
+                    ) {
+                        for await (const baseInstallments of baseBooking) {
+                            let amount = 0;
                             if (
-                                cart.bookings[index].bookingStatus <=
-                                BookingStatus.CONFIRM
+                                booking.bookingStatus <= BookingStatus.CONFIRM
                             ) {
-                                for await (const installment of cart.bookings[
-                                    index
-                                ].bookingInstalments) {
+                                amount += parseFloat(baseInstallments.amount);
+                            }
+
+                            if (cart.bookings.length > 1) {
+                                for (
+                                    let index = 1;
+                                    index < cart.bookings.length;
+                                    index++
+                                ) {
                                     if (
-                                        baseInstallments.instalmentDate ==
-                                        installment.instalmentDate
+                                        cart.bookings[index].bookingStatus <=
+                                        BookingStatus.CONFIRM
                                     ) {
-                                        amount += parseFloat(
-                                            installment.amount
-                                        );
+                                        for await (const installment of cart.bookings[
+                                            index
+                                        ].bookingInstalments) {
+                                            if (
+                                                baseInstallments.instalmentDate ==
+                                                installment.instalmentDate
+                                            ) {
+                                                amount += parseFloat(
+                                                    installment.amount
+                                                );
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            const installment = {
+                                instalmentDate: baseInstallments.instalmentDate,
+                                instalmentStatus: baseInstallments?.paymentStatus,
+                                attempt: baseInstallments.attempt,
+                                amount: Generic.formatPriceDecimal(amount),
+                            };
+                            cartInstallments.push(installment);
                         }
                     }
-                    const installment = {
-                        instalmentDate: baseInstallments.instalmentDate,
-                        instalmentStatus: baseInstallments?.paymentStatus,
-                        attempt: baseInstallments.attempt,
-                        amount: Generic.formatPriceDecimal(amount),
-                    };
-                    cartInstallments.push(installment);
+                    break;
                 }
             }
-
+            
             for await (const booking of cart.bookings) {
                 if (booking.bookingInstalments.length > 0) {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id);
@@ -1190,7 +1199,6 @@ export class BookingService {
 
                     totalAmount += parseFloat(booking.totalAmount);
                     actualAmount += parseFloat(booking.actualSellingPrice || '0');
-                    //console.log(totalAmount, 'totalAmount');
                 }
 
                 delete booking?.currency2;
@@ -1215,13 +1223,12 @@ export class BookingService {
                 });
                 //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
             }
-            console.log("cartResponce");
 
             let cartResponce = {};
             cartResponce["id"] = cart?.id;
 
             const trackReport = await this.paidAmountByUser(
-                cart.bookings[0]?.id
+                cart.bookings[1]?.id
             );
             cartResponce["is_installation_on_track"] =
                 trackReport?.attempt != 1 &&
@@ -1247,13 +1254,13 @@ export class BookingService {
             cartResponce["actualAmount"] = Generic.formatPriceDecimal(
                 actualAmount
             );
-            if (cart.bookings[0]?.nextInstalmentDate) {
+            if (cart.bookings[1]?.nextInstalmentDate) {
                 cartResponce["nextInstalmentDate"] =
-                    cart.bookings[0].nextInstalmentDate;
+                    cart.bookings[1].nextInstalmentDate;
             }
 
             cartResponce["cardDetail"] = await this.cardDetail(
-                cart.bookings[0]?.cardToken
+                cart.bookings[1]?.cardToken
             );
             if (installmentType) {
                 cartResponce["installmentType"] = installmentType;
@@ -1298,7 +1305,6 @@ export class BookingService {
             .createQueryBuilder(UserCard, "cartBooking")
             .where(`"card_token" = '${transactionTotal}'`)
             .getOne();
-        //console.log(query.cardToken);
 
         return query;
     }
