@@ -1778,6 +1778,10 @@ more than 10.`
                 //     await bookingLog.save()
                 // }
             } else {
+                const payment = await this.paymentService.voidCard(
+                    transaction_token,
+                    user.userId
+                );
                 cartData.status == BookingStatus.FAILED;
                 await cartData.save();
             }
