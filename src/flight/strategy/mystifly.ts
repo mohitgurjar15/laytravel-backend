@@ -569,7 +569,7 @@ export class Mystifly implements StrategyAirline {
                                 route.selling_price,
                                 departure_date,
                                 bookingDate,
-                                downPaymentOption[0],
+                                weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
                             if (instalmentDetails.instalment_available) {
@@ -3892,7 +3892,7 @@ export class Mystifly implements StrategyAirline {
                                 route.selling_price,
                                 departure_date,
                                 bookingDate,
-                                downPaymentOption[0],
+                                weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
                             if (instalmentDetails.instalment_available) {
@@ -4722,7 +4722,7 @@ export class Mystifly implements StrategyAirline {
                             route.selling_price,
                             departure_date,
                             bookingDate,
-                            downPaymentOption[0],
+                            weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage
                         );
                         if (instalmentDetails.instalment_available) {
