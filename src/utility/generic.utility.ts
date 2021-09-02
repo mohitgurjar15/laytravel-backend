@@ -6,6 +6,7 @@ import { PaymentGateway } from "src/entity/payment-gateway.entity";
 import { PricelineHotelIds } from "src/entity/hotel_ids.entity";
 import moment = require("moment");
 import { Instalment } from "./instalment.utility";
+import { PaymentType } from "src/enum/payment-type.enum";
 
 export class Generic {
     static async getCredential(module_name: string) {
@@ -104,7 +105,7 @@ export class Generic {
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
             
             for(let i=0; i < items.length; i++) {
-                // if(items[i].paymentMethod=='installment'){
+                if(items[i].paymentMethod == PaymentType.INSTALMENT){
                     if(items[i].type == "flight") {
                         checkInDates.push(moment(items[i].moduleInfo[0].departure_date, "DD/MM/YYYY").format("YYYY-MM-DD"));
                     }
@@ -115,12 +116,18 @@ export class Generic {
                         checkInDates.push(items[i].moduleInfo[0].input_data.check_in);
 
                     }
+                }
+                // if(checkInDate == "" || checkInDate  departureDate) {
+                //     checkInDate = departureDate
                 // }
             }
             
             let checkInDate;
-            checkInDate = checkInDates.reduce(function (a, b) { return a < b ? a : b; });
+            if(checkInDates.length > 0) {
+                checkInDate = checkInDates.reduce(function (a, b) { return a < b ? a : b; });   
+            }
             
+            // delete checkInDates;
             let downPayment=0;
             let totalAmount =0;
             let netTotalAmount = 0;
@@ -153,7 +160,7 @@ export class Generic {
                 }
                 netTotalAmount += totalAmount
 
-                if(items[i].paymentMethod == 'installment'){
+                if(items[i].paymentMethod == PaymentType.INSTALMENT){
                     downPayment = items[i].downpayment;
                     totalDownPayment+=Number(downPayment);
                     if(items[i].paymentFrequency =='weekly'){
@@ -163,14 +170,14 @@ export class Generic {
                             bookingDate,
                             downPayment)
                     }
-                    if(items[i].paymentFrequency=='biweekly'){
+                    if(items[i].paymentFrequency == 'biweekly'){
                         instalments = await Instalment.biWeeklyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
                             downPayment)
                     }
-                    if(items[i].paymentFrequency=='monthly'){
+                    if(items[i].paymentFrequency == 'monthly'){
                         instalments = await Instalment.monthlyInstalment(
                             totalAmount,
                             checkInDate,
@@ -223,7 +230,7 @@ export class Generic {
                 installment_dates : priceSummary
             } 
         } catch(e) {
-            console.log("Errror=======",e)
+            console.log("Error---->>>",e)
         } 
     }
 }

@@ -120,7 +120,7 @@ export class AddInCartDto {
 	@IsNotEmpty()
 	@ApiProperty({
 		description: "Enter payment method",
-		example: "installment/no-installment"
+		example: "instalment/no-instalment"
 	})
 	payment_method: string;
 	

@@ -161,22 +161,12 @@ more than 10.`
                 throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
             }
 
-            console.log("promotional", promotional, "nonPromotional", nonPromotional)
-
-
-
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-                //console.log("cartIsPromotional", cartIsPromotional)
             } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
-
-
-
-            //console.log("cartIsPromotional", cartIsPromotional)
-
 
             userData = await getConnection()
                 .createQueryBuilder(User, "user")
@@ -186,7 +176,6 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    console.log("I am in 1")
                     return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method);
                     break;
 
@@ -224,7 +213,6 @@ more than 10.`
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -259,7 +247,6 @@ more than 10.`
     }
 
     async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
-        //console.log('validate');
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
@@ -299,11 +286,8 @@ more than 10.`
             const cart = new Cart();
 
             if (user.roleId != Role.GUEST_USER) {
-                //console.log(user);
-
                 cart.userId = user.userId;
             } else {
-                //console.log(guestId);
                 cart.guestUserId = user.userId;
             }
 
@@ -1017,13 +1001,13 @@ more than 10.`
                             user, headers,
                             cartIsPromotional ? referralId : ''
                         );
-                        // console.log(value)
-                        //return value
+
+
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
 
-                            if(cart.paymentMethod === "installment") {
+                            if(cart.paymentMethod === PaymentType.INSTALMENT) {
                                 if(value.offer_data.applicable) {
                                     updatedDownpayment = cart.downpayment;
                                 } else {
@@ -1104,7 +1088,7 @@ more than 10.`
                                 
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
-                                if(cart.paymentMethod === "installment") {
+                                if(cart.paymentMethod === PaymentType.INSTALMENT) {
                                     if(roomDetails.data["items"][0]?.offer_data?.applicable){
                                         updatedDownpayment = cart.downpayment;
                                     } else {
@@ -1290,19 +1274,14 @@ more than 10.`
     }
 
     async flightAvailiblity(cart, flights, user, headers, referralId) {
-        ////console.log('match');
 
         var match = 0;
-        //console.log(flights);
 
         if (flights?.items) {
-            //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
             for await (const flight of flights.items) {
-                //console.log("flight?.unique_code", flight.unique_code);
 
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
-                    ////console.log('match found');
                     match = match + 1;
                     let revalidateFlight: any
                     try {
@@ -1312,7 +1291,6 @@ more than 10.`
                         let data = await this.flightService.airRevalidate(routeIdDto, headers, user, referralId)
                         revalidateFlight = data[0]
                     } catch (e) {
-                        //console.log(e);
 
                         revalidateFlight = {
                             message: `Flight not air-revalidate`
@@ -1671,7 +1649,7 @@ more than 10.`
                 }
             }
 
-            let payMode = result.findIndex(res=>res.paymentMethod == 'installment');
+            let payMode = result.findIndex(res=>res.paymentMethod == PaymentType.INSTALMENT);
 
             cartBook.bookingType =
                 payMode != 1
@@ -2127,7 +2105,6 @@ more than 10.`
             userId,
             Math.ceil(partialAmount * 100)
         );
-        console.log("captureCardresult", captureCardresult,partialAmount);
 
         if (captureCardresult.status == true) {
             if (payment_type == BookingType.INSTALMENT) {
@@ -2314,9 +2291,6 @@ more than 10.`
                     reservationId,
                 };
 
-                console.log("cartBook request");
-
-                //console.log(bookingdto);
                 newCart["detail"] = await this.flightService.cartBook(
                     bookingdto,
                     Headers,
@@ -2329,13 +2303,8 @@ more than 10.`
                     referral_id
                 );
 
-                console.log(" newCart[detail]", newCart["detail"])
-
                 logFile[reservationId] = newCart["detail"]['logData']
-                console.log('logFile', logFile)
                 newCart["logFile"] = logFile
-                console.log('logFile', logFile)
-                //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
             newCart["detail"] = {
@@ -2422,24 +2391,18 @@ more than 10.`
         let flightRequest;
 
         const value = cart.oldModuleInfo;
-        console.log("hhhhh", cart.travelers.length);
 
         let newCart = {};
         newCart["id"] = cart.id;
-        console.log("hhhhh", "a");
         newCart["userId"] = cart.userId;
-        console.log("hhhhh", "b");
         newCart["moduleId"] = cart.moduleId;
         newCart["isDeleted"] = cart.isDeleted;
-        console.log("hhhhh", "3");
         newCart["createdDate"] = cart.createdDate;
         newCart["status"] = BookingStatus.FAILED;
         newCart["type"] = cart.module.name;
-        console.log("hhhhh", "c");
         if (value) {
             let travelers = [];
             if (!cart.travelers?.length) {
-                console.log("undefinde traveler");
                 newCart["status"] = BookingStatus.FAILED;
                 newCart["detail"] = {
                     statusCode: 422,
@@ -2464,16 +2427,13 @@ more than 10.`
                     reservationId
                 );
             } else {
-                console.log("hhhhh", "1");
                 for await (const traveler of cart.travelers) {
-                    //console.log(traveler);
                     let travelerUser = {
                         traveler_id: traveler.userId,
                         is_primary_traveler: traveler.isPrimary,
                     };
                     travelers.push(travelerUser);
                 }
-                console.log("hhhhh", "2");
 
                 const bookingdto: BookHotelCartDto = {
                     travelers,
@@ -2491,9 +2451,6 @@ more than 10.`
                     reservationId
                 };
 
-                console.log("cartBook request");
-
-                console.log(bookingdto);
                 newCart["detail"] = await this.hotelService.cartBook(
                     bookingdto,
                     Headers,
@@ -2505,14 +2462,10 @@ more than 10.`
                     referral_id,
                     cartIsPromotional
                 );
-                console.log("newCart[detail]", newCart["detail"])
                 logFile[reservationId] = newCart["detail"]['logData']
                 newCart["logFile"] = logFile
-                //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
-            console.log(value);
-
             newCart["detail"] = {
                 message: "Module info not found .",
             };
@@ -2532,9 +2485,6 @@ more than 10.`
             );
             return newCart;
         }
-        console.log(newCart["detail"]);
-        console.log(newCart["detail"]["statusCode"]);
-        console.log(newCart["detail"]["error"]);
 
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
@@ -2552,7 +2502,6 @@ more than 10.`
                 .where(`"id" = '${cart.id}'`)
                 .execute();
         } else {
-            console.log("failed booking");
             await this.saveFailedBooking(
                 cartData.id,
                 cart.moduleInfo,
@@ -3015,7 +2964,6 @@ more than 10.`
     // }
 
     async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
-        console.log("I am in 2")
         let roomDetails = await this.hotelService.availability(
             {
                 room_ppn: ppnBundle,
@@ -3027,7 +2975,6 @@ more than 10.`
         if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
             throw new ConflictException(`In cart not-promotional item found`)
         }
-        console.log("I am in 3")
         if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
             throw new ConflictException(`In cart promotional item found`)
         }
