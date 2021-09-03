@@ -59,7 +59,7 @@ export class FaqController {
 	@ApiResponse({ status: 404, description: "Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getFaqforUser(
-	): Promise<{ data: FaqCategory[]; TotalReseult: number }> {
+	) {
 		return await this.faqService.listFaqForUser();
 	}
 

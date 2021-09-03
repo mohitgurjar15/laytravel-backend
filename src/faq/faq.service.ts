@@ -61,7 +61,7 @@ export class FaqService {
 		}
 	}
 
-	async listFaqForUser(): Promise<{ data: FaqCategory[]; TotalReseult: number }> {
+	async listFaqForUser() {
 		try {
 			return await this.FaqRepository.listFaqforUser();
 		} catch (error) {
@@ -176,6 +176,7 @@ export class FaqService {
 		if (!faq) {
 			throw new NotFoundException(`Faq Id Not Found.`);
 		}
+		console.log('this is my faq id', faq.id)
 		let previousData = []
 		let currentData = []
 		previousData.push(faq)
@@ -183,33 +184,37 @@ export class FaqService {
 		faq.updatedDate = new Date();
 		let faqRes: any = await faq.save();
 		currentData.push(faqRes)
+		let faq_data = [];
 		for await (const iterator of faqs) {
-			if (iterator.language_id) {
-				const query = getManager()
-					.createQueryBuilder(FaqMeta, "faq")
-					.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
-				const response = await query.getOne();
-				console.log('response**', response)
-				previousData.push(response)
+			const query = getManager()
+				.createQueryBuilder(FaqMeta, "faq")
+				.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
+			const response = await query.getOne();
+			console.log('response**', response)
+			previousData.push(response)
+			if (typeof response != 'undefined') {
 				response.question = iterator.question
 				response.answer = iterator.answer
 				response.save();
 				currentData.push(iterator)
 			} else {
-				let data = [{
-					question:iterator.question,
+				faq_data.push({
+					language_id: iterator.language_id,
+					question: iterator.question,
 					answer: iterator.answer,
-					language_id:iterator.language_id,
-					faq_id:faq.id
-				}]
+					faq_id: faq.id
+				})
+				console.log('this is my data', JSON.stringify(faq_data))
 				getConnection()
-				.createQueryBuilder()
-				.insert()
-				.into(FaqMeta)
-				.values(data)
-				.execute();
+					.createQueryBuilder()
+					.insert()
+					.into(FaqMeta)
+					.values(faq_data)
+					.execute();
 				currentData.push(iterator)
+				faq_data = []
 			}
+
 		}
 		try {
 			Activity.logActivity(adminId, "faq", `Faq updated by the admin`, previousData, currentData);
@@ -345,14 +350,7 @@ export class FaqService {
 			const query = await getManager()
 				.createQueryBuilder(Faq, "faq")
 				.leftJoinAndSelect("faq.category_id", "category")
-				.leftJoinAndSelect("faq.faq_meta", "faq_meta")
-				.select([
-					'faq.id',
-					'category.id', 'category.name',
-					'faq_meta.id', 'faq_meta.answer', 'faq_meta.question', 'faq_meta.language_id', 'faq_meta.faq_id'
-
-
-				])
+				.leftJoinAndSelect("faq.faqMetas", "faqMetas")
 				.where(where)
 			let result = await query.getMany()
 			console.log(JSON.stringify(result))

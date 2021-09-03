@@ -22,6 +22,13 @@ export class FaqMeta extends BaseEntity {
     @Column("text", { name: "answer" })
     answer: string;
 
+     
+    @Column("number",{name:"language_id",nullable: true})
+    language_id : number;
+
+    @Column("number",{name:"faq_id",nullable: true})
+    faq_id : number;
+
     @ManyToOne(() => Faq, (faq) => faq.faqMetas)
     @JoinColumn([{ name: "faq_id", referencedColumnName: "id" }])
     faq: Faq;

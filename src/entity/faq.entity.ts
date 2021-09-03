@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { FaqCategory } from "./faq-category.entity";
 import { FaqMeta } from "./faq-meta.entity";
+import { Language } from "./language.entity";
 
 //@Index("faq_pk", ["id"], { unique: true })
 @Entity("faq")
@@ -34,4 +35,7 @@ export class Faq extends BaseEntity {
 
   @OneToMany(() => FaqMeta, (faqMeta) => faqMeta.faq)
   faqMetas: FaqMeta[];
+
+  // @ManyToOne(() => Language, (Language) => Language.id)
+  // language: Language;
 }
