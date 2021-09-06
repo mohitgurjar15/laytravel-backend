@@ -1472,9 +1472,7 @@ more than 10.`
         logData.id = uuidv4()
         logData.paymentAuthorizeLog = bookCart.auth_url
         logData.timeStamp = Math.round(new Date().getTime() / 1000)
-        console.log("-------1-------")
         const bookingLog = await logData.save()
-        console.log("-------2-------")
         try {
             const {
                 payment_type,
@@ -1544,14 +1542,12 @@ more than 10.`
                 .limit(10);
             const [result, count] = await query.getManyAndCount();
             
-            console.log("-----------RESULT JSON---------", JSON.stringify(result))
             if (!result.length) {
                 throw new BadRequestException(
                     `Cart is empty.&&&cart&&&${errorMessage}`
                 );
             }
             bookingLog.cartInfo = result
-            console.log("------3-----")
             let smallestDate = "";
             let largestDate = "";
 
@@ -1575,21 +1571,14 @@ more than 10.`
                 throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
             }
 
-            console.log("promotional", promotional, "nonPromotional", nonPromotional)
-
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-                console.log("cartIsPromotional", cartIsPromotional)
             } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
 
-            console.log("cartIsPromotional", cartIsPromotional)
-
-
             //let ToatalAmount = ''
-            console.log("-----------RESULT JSON---------", JSON.stringify(result))
             for await (const item of result) {
 
                 if(item.paymentMethod=='instalment'){
@@ -1635,6 +1624,7 @@ more than 10.`
                     }
                 }
             }
+            console.log("1")
             const cartBook = new CartBooking();
             cartBook.id = uuidv4();
             cartBook.laytripCartId = `LTC${uniqid.time().toUpperCase()}`;
@@ -1648,9 +1638,10 @@ more than 10.`
                     cartBook.referralId = ref?.id || null;
                 }
             }
-
+            console.log("2")
+            console.log("--------->BookCart Sample", JSON.stringify(cartBook))
             let payMode = result.findIndex(res=>res.paymentMethod == PaymentType.INSTALMENT);
-
+            console.log("-----------PAYMODE--------->>>>", payMode)
             cartBook.bookingType =
                 payMode != 1
                     ? BookingType.INSTALMENT
@@ -1658,9 +1649,9 @@ more than 10.`
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
             bookingLog.cartBookingId = cartData.id
-            console.log("------------------CARTDATA ID--------------", cartData.id)
+            console.log("3")
             await bookingLog.save()
-            // console.log('------BOOKING LOG-------->>>>>',bookingLog)
+
             let responce = [];
             let successedResult = 0;
             let failedResult = 0;
@@ -1695,7 +1686,15 @@ more than 10.`
                         inventryLogs.push(flightResponce["logFile"])
                         if (flightResponce["status"] == 1) {
                             successedResult++;
-                            amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling_price);
+                            if(item.moduleInfo[0].offer_data.applicable) {
+                                console.log("YES")
+                                amountToBeCharged += bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].discounted_selling_price)
+                                console.log("INSIDE BOOKCART->FLIGHT-<OFFER DATA APPLICABLE->AMOUNT TO BE CHARGE")
+                            } else {
+                                amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling_price);
+                                console.log("INSIDE BOOKCART->FLIGHT-<OFFER DATA NOT APPLICABLE->AMOUNT TO BE CHARGE")
+                            }
+                            
                             BookingIds.push(
                                 flightResponce["detail"]["laytrip_booking_id"]
                             );
@@ -1708,7 +1707,6 @@ more than 10.`
                         hotelCount++;
                         bookCart.payment_type = item.paymentMethod;
                         bookCart.instalment_type = item.paymentFrequency;
-                        console.log("------ITEM PAYMENT METHOD---------", item.paymentMethod)
                         let hotelResponce = await this.bookHotel(
                             item,
                             user,
@@ -1726,7 +1724,14 @@ more than 10.`
                         inventryLogs.push(hotelResponce["logFile"])
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
-                            amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling.total);
+                            if(item.moduleInfo[0].offer_data.applicable) {
+                                amountToBeCharged += bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].discounted_total);
+                                console.log("INSIDE BOOKCART->HOTEL-<OFFER DATA APPLICABLE->AMOUNT TO BE CHARGE")
+                            } else {
+                                amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling.total);
+                                console.log("INSIDE BOOKCART->-<OFFER DATA NOT APPLICABLE->AMOUNT TO BE CHARGE")
+                            }
+                            
                             BookingIds.push(
                                 hotelResponce["detail"]["laytrip_booking_id"]
                             );
@@ -1739,11 +1744,8 @@ more than 10.`
                         break;
                 }
             }
-            console.log("---------BOOKING ID--------->>>>>",BookingIds);
             bookingLog.cartBookLog = inventryLogs
-            console.log("---------INVENTORY LOG-------->>>>>>>", inventryLogs)
             await bookingLog.save()
-            console.log("---------BOOKING LOG 2--------->>>>>>>", bookingLog)
             if (successedResult) {
                 let paymentType =
                     bookCart.payment_type == PaymentType.INSTALMENT

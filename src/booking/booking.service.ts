@@ -685,8 +685,13 @@ export class BookingService {
             }
             let responce = [];
             console.log("getData");
-
+            let i = 0;
+            let bookings;
+            
             for await (const cart of CartList) {
+                
+                let type = 0;
+                let typeArr = [];
                 let paidAmount = 0;
                 let remainAmount = 0;
                 let pandinginstallment = 0;
@@ -697,12 +702,19 @@ export class BookingService {
                 const installmentType =
                     cart.bookings[0]?.bookingInstalments[0]?.instalmentType;
                 let cartInstallments = [];
+                // console.log("BookingTYPE", bookings.moduleId);
                 if (
                     baseBooking &&
                     cart.bookings[0].bookingType == BookingType.INSTALMENT
                 ) {
-                    console.log("baseBooking");
+                    // console.log("----------CART ITEM--------->>>>>", JSON.stringify(cart))
+                    // console.log("-----------------MODULE ID-------------------", cart.bookings[0].moduleId)
+                    // let type = "";
+                    
+                    
+                    // console.log("----------------BASE BOOKING--------------", JSON.stringify(baseBooking));
                     for await (const baseInstallments of baseBooking) {
+                        // console.log("----------------BASE INSTALLMENT-------------", JSON.stringify(baseBooking))
                         let amount = parseFloat(baseInstallments.amount);
 
                         if (cart.bookings.length > 1) {
@@ -717,28 +729,43 @@ export class BookingService {
                                     if (
                                         baseInstallments.instalmentDate ==
                                         installment.instalmentDate
-                                    ) {
+                                    ) { 
                                         amount += parseFloat(
                                             installment.amount
                                         );
+                                        // console.log("-------------BASE INSTALLMENT--------------", baseInstallments)
                                     }
+                                    console.log("=====CART BOOKING LENGTH=======", cart.bookings[index].moduleId)
                                 }
+                                type = Number(cart.bookings[index].moduleId)
+                                typeArr.push(type);
+                                // console.log("----------------------", cart.bookings[index].moduleId)
                             }
                         } else {
                             amount = parseFloat(baseInstallments.amount);
+                            
                         }
+                        console.log("TYPEARRAY LENGTH", typeArr.length)
+                        console.log("-----------TYPE--------------", typeArr)
+                        // console.log("Booking",cart.bookings.length)
                         const installment = {
                             instalmentDate: baseInstallments.instalmentDate,
                             instalmentStatus: baseInstallments?.paymentStatus,
                             attempt: baseInstallments.attempt,
                             amount: Generic.formatPriceDecimal(amount),
+                            type: type,
                         };
+                        // console.log("------------------------------------------------------")
+                        // console.log(installment)
+                        // console.log("---------------------------------------------------")
                         cartInstallments.push(installment);
                     }
                 }
-
+                // console.log("---------------BASE INSTALLMENT-------->>>>>", JSON.stringify(cartInstallments))
+                // console.log("---------------CART BOOK------------------->>>>", JSON.stringify(cart.bookings))
                 for await (const booking of cart.bookings) {
-                    console.log("booking");
+                    // console.log("booking",booking.moduleId);
+
                     if (booking.bookingInstalments.length) {
                         for await (const installment of booking.bookingInstalments) {
                             if (
@@ -791,6 +818,7 @@ export class BookingService {
                     remainAmount
                 );
                 cartResponce["pendinginstallment"] = pandinginstallment;
+                cartResponce["installmentCount"] = cartInstallments.length;
                 cartResponce["totalAmount"] = Generic.formatPriceDecimal(
                     totalAmount
                 );
