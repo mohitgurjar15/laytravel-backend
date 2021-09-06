@@ -59,6 +59,8 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { LandingPage } from "src/utility/landing-page.utility";
 import { HotelCity } from "src/entity/hotel-city.entity";
 import { HotelCityDto } from "./dto/hote-city.dto";
+import { ModulesName } from "src/enum/module.enum";
+import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
 
 @Injectable()
 export class HotelService {
@@ -876,6 +878,9 @@ export class HotelService {
                 ) > 90) {
                     downPayments = [20, 30, 40]
                 }
+                let daysUtilDepature = moment(availability[0].input_data.check_in).diff(moment().format("YYYY-MM-DD"), 'days')
+                let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(ModulesName.HOTEL, 0, daysUtilDepature)
+                let downPaymentOption: any = paymentConfig.downPaymentOption
                 if (instalment_type == InstalmentType.WEEKLY) {
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(availability[0].offer_data, 0);
                     if (cartIsPromotional) {
@@ -884,13 +889,8 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            cartCount > 1 ? true : false,
                             weeklyCustomDownPayment,
-                            true, downPayments
+                            cartCount > 1 ? true : false
                         );
                         console.log(instalmentDetails)
 
@@ -899,12 +899,9 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            totalAdditionalAmount,
-                            custom_instalment_amount,
-                            custom_instalment_no,
-                            selected_down_payment,
+                            downPaymentOption[0],
                             cartCount > 1 ? true : false,
-                            null, true, downPayments
+                            
                         );
                     }
                 }
@@ -914,12 +911,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false,
-                        null, true, downPayments
+                        downPaymentOption[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test4");
@@ -928,12 +921,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false,
-                        null, true, downPayments
+                        downPaymentOption[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log(instalmentDetails);

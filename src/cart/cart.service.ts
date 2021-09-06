@@ -1870,14 +1870,8 @@ more than 10.`
                     totalAmount,
                     smallestDate,
                     date1,
-                    0,
-                    0,
-                    0,
-                    selected_down_payment,
-                    true,
-                    null,
-                    true,
-                    downPayments
+                    downPayments[0],
+                    true
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1885,14 +1879,8 @@ more than 10.`
                     totalAmount,
                     smallestDate,
                     date1,
-                    0,
-                    0,
-                    0,
-                    selected_down_payment,
-                    true,
-                    null,
-                    true,
-                    downPayments
+                    downPayments[0],
+                    true
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1900,14 +1888,8 @@ more than 10.`
                     totalAmount,
                     smallestDate,
                     date1,
-                    0,
-                    0,
-                    0,
-                    selected_down_payment,
-                    true,
-                    null,
-                    true,
-                    downPayments
+                    downPayments[0],
+                    true
                 );
             }
 
@@ -2051,14 +2033,7 @@ more than 10.`
                         totalAmount,
                         smallestDate,
                         date1,
-                        0,
-                        0,
-                        0,
-                        selected_down_payment,
-                        false,
-                        downPayment,
-                        true,
-                        downPayments
+                        downPayments[0]
                     );
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -2066,14 +2041,7 @@ more than 10.`
                         totalAmount,
                         smallestDate,
                         date1,
-                        0,
-                        0,
-                        0,
-                        selected_down_payment,
-                        false,
-                        downPayment,
-                        true,
-                        downPayments
+                        downPayments[0]
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -2081,14 +2049,7 @@ more than 10.`
                         totalAmount,
                         smallestDate,
                         date1,
-                        0,
-                        0,
-                        0,
-                        selected_down_payment,
-                        false,
-                        downPayment,
-                        true,
-                        downPayments
+                        downPayments[0]
                     );
                 }
                 //console.log("instalmentDetails", instalmentDetails)

@@ -53,10 +53,7 @@ export class Search {
             for (let hotel of results.results.hotel_data) {
                 /// for alpha server condition bypass by parth virani
                 if (
-                    (hotel["room_data"][0]["rate_data"][0].payment_type ==
-                        "PREPAID" &&
-                        hotel["room_data"][0]["rate_data"][0].is_cancellable ==
-                        "true") || 1 == 1
+                    (hotel["room_data"][0]["rate_data"][0].payment_type =="PREPAID")
                 ) {
                     this.item = hotel;
                     this.rate = hotel["room_data"][0]["rate_data"][0];
@@ -93,21 +90,6 @@ export class Search {
                         let discounted_start_price = 0;
                         let discounted_secondary_start_price = 0;
                         let discounted_no_of_weekly_installment = 0;
-                        // let instalmentDetails = Instalment.weeklyInstalment(
-                        //     selling.total,
-                        //     parameters.check_in,
-                        //     bookingDate,
-                        //     0,
-                        //     null,
-                        //     null,
-                        //     0
-                        // );
-
-
-
-
-
-                        //const is_installment_available = instalmentDetails.instalment_available
 
                         if (paymentConfig?.isInstallmentAvailable) {
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
@@ -121,14 +103,8 @@ export class Search {
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    0,
-                                    null,
-                                    null,
-                                    0,
-                                    false,
-                                    weeklyCustomDownPayment,
-                                    paymentConfig.isDownPaymentInPercentage,
-                                    downPaymentOption
+                                    downPaymentOption[0],
+                                    paymentConfig.isDownPaymentInPercentage
                                 );
                                 if (instalmentDetails.instalment_available) {
                                     start_price =
@@ -150,14 +126,8 @@ export class Search {
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    0,
-                                    null,
-                                    null,
-                                    0,
-                                    false,
-                                    null,
-                                    paymentConfig.isDownPaymentInPercentage,
-                                    downPaymentOption
+                                    downPaymentOption[0],
+                                    paymentConfig.isDownPaymentInPercentage
                                 );
 
                                 second_down_payment =
@@ -176,14 +146,8 @@ export class Search {
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    0,
-                                    null,
-                                    null,
-                                    0,
-                                    false,
-                                    null,
-                                    paymentConfig.isDownPaymentInPercentage,
-                                    downPaymentOption
+                                    downPaymentOption[0],
+                                    paymentConfig.isDownPaymentInPercentage
                                 );
                                 third_down_payment =
                                     instalmentDetails3.instalment_date[0]
@@ -200,14 +164,7 @@ export class Search {
                                 selling['discounted_total'],
                                 parameters.check_in,
                                 bookingDate,
-                                0,
-                                null,
-                                null,
-                                0,
-                                false,
-                                weeklyCustomDownPayment,
-                                paymentConfig.isDownPaymentInPercentage,
-                                downPaymentOption
+                                downPaymentOption[0]
                             );
 
                             if (discountedInstalmentDetails.instalment_available) {
