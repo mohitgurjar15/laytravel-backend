@@ -95,9 +95,7 @@ export class Search {
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                             let downPaymentOption: any;
                             downPaymentOption = paymentConfig.downPaymentOption
-                            
-                            // console.log("-----------------WEEKLY CUSTOM---------------------", weeklyCustomDownPayment);
-                            // console.log("------------------DOWNPAYMENT OPTION--------------------", downPaymentOption)
+
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
                                 let instalmentDetails = Instalment.weeklyInstalment(
                                     selling.total,
@@ -265,15 +263,8 @@ export class Search {
                             payment_config: paymentConfig || {},
                             payment_object
                         };
-                        
-                        if(parameters.is_refundable == "no" && this.rate.is_cancellable == "false") {
-                            hotels.push(newItem)
-                        } else if (parameters.is_refundable == "yes" && parameters.is_reffundable != "") {
-                            hotels.push(newItem)
-                        }
-                        
-                        
-                        
+
+                        hotels.push(newItem)
                     }
                 }
             }
