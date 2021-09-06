@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsNotEmpty, isNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class SearchReqDto {
            @ApiProperty({
@@ -87,4 +87,14 @@ export class SearchReqDto {
                required: true,
            })
            city_id: number;
+
+           @ApiProperty({
+                description:
+                    "is_refundable",
+                example: "yes/no",
+                required: true
+            })
+            @IsString()
+            @IsNotEmpty()
+            is_refundable: string;
        }

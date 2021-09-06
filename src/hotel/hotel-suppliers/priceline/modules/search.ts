@@ -14,6 +14,7 @@ import { catchError, map } from "rxjs/operators";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
 import { InstalmentType } from "src/enum/instalment-type.enum";
+import { CostExplorer } from "aws-sdk";
 
 export class Search {
     private item: any;
@@ -69,6 +70,10 @@ export class Search {
                         saving_percent, net_rate,
                         discounted_selling_price
                     } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
+
+                    if(parameters.is_refundable == "no" && this.rate.is_cancellable == "true") {
+                        continue
+                    }
                     if (selling['discounted_total'] > 25) {
                         let details = this.detailHelper.getHotelDetails(
                             hotel,
@@ -105,9 +110,12 @@ export class Search {
                         //const is_installment_available = instalmentDetails.instalment_available
 
                         if (paymentConfig?.isInstallmentAvailable) {
-
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                            let downPaymentOption: any = paymentConfig.downPaymentOption
+                            let downPaymentOption: any;
+                            downPaymentOption = paymentConfig.downPaymentOption
+                            
+                            // console.log("-----------------WEEKLY CUSTOM---------------------", weeklyCustomDownPayment);
+                            // console.log("------------------DOWNPAYMENT OPTION--------------------", downPaymentOption)
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
                                 let instalmentDetails = Instalment.weeklyInstalment(
                                     selling.total,
@@ -132,6 +140,7 @@ export class Search {
                                             .instalment_amount;
                                     no_of_weekly_installment =
                                         instalmentDetails.instalment_date.length - 1;
+                                    console.log(instalmentDetails)
                                 }
 
                             }
@@ -299,8 +308,15 @@ export class Search {
                             payment_config: paymentConfig || {},
                             payment_object
                         };
-
-                        hotels.push(newItem);
+                        
+                        if(parameters.is_refundable == "no" && this.rate.is_cancellable == "false") {
+                            hotels.push(newItem)
+                        } else if (parameters.is_refundable == "yes" && parameters.is_reffundable != "") {
+                            hotels.push(newItem)
+                        }
+                        
+                        
+                        
                     }
                 }
             }
