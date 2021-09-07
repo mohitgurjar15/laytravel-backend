@@ -15,6 +15,8 @@ import { Activity } from "src/utility/activity.utility";
 import { UpdateFaqDto } from "./dto/update-faq.dto";
 import { ActiveDeactiveFaq } from "./dto/active-deactive-faq.dto";
 import { FaqCategory } from "src/entity/faq-category.entity";
+import { FaqMeta } from "src/entity/faq-meta.entity";
+import { getConnection, getManager } from "typeorm";
 
 @Injectable()
 export class FaqService {
@@ -59,7 +61,7 @@ export class FaqService {
 		}
 	}
 
-	async listFaqForUser(): Promise<{ data: FaqCategory[]; TotalReseult: number }> {
+	async listFaqForUser() {
 		try {
 			return await this.FaqRepository.listFaqforUser();
 		} catch (error) {
@@ -96,28 +98,39 @@ export class FaqService {
 	async createFaq(
 		InsertFaqDto: InsertFaqDto,
 		user: User
-	): Promise<{ message: string }> {
-		const { categoryId, question, answer } = InsertFaqDto;
+	) {
+		const { categoryId, faqs } = InsertFaqDto;
+		let activityLog = []
+		const adminId = user.userId;
+		const faq = new Faq();
+		faq.createdDate = new Date();
+		faq.category_id = categoryId
+		faq.updatedDate = new Date();
+		let faqRes: any = await faq.save();
+		activityLog.push(faqRes)
 
-		const adminId = user.id;
-		const checkfaq = await this.FaqRepository.count({
-			categoryId: categoryId,
-			question: question,
-		});
-		if (checkfaq) {
-			throw new BadRequestException(`given quetion is alredy available.`);
+		const faq_meta = [];
+		for await (const iterator of faqs) {
+
+			faq_meta.push({
+				language_id: iterator.language_id,
+				question: iterator.question,
+				answer: iterator.answer,
+				faq_id: faqRes.id
+			})
+			activityLog.push(iterator)
+
+			//let newMeta = faq_meta.save();
 		}
 
-		const faq = new Faq();
-
-		faq.categoryId = categoryId;
-		faq.question = question;
-		faq.answer = answer;
-		faq.createdDate = new Date();
-		faq.updatedDate = new Date();
 		try {
-			await faq.save();
-			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`,null,JSON.stringify(faq));
+			getConnection()
+				.createQueryBuilder()
+				.insert()
+				.into(FaqMeta)
+				.values(faq_meta)
+				.execute();
+			Activity.logActivity(adminId, "faq", ` New Faq Created By The Admin`, null, JSON.stringify(faq_meta));
 			return { message: "Faq created successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -148,6 +161,7 @@ export class FaqService {
 				`${error.message}&&&id&&&${errorMessage}`
 			);
 		}
+
 	}
 
 	async updateFaq(
@@ -155,22 +169,55 @@ export class FaqService {
 		updateFaqDto: UpdateFaqDto,
 		user: User
 	): Promise<{ message: string }> {
-		const { categoryId, question, answer } = updateFaqDto;
-		const adminId = user.id;
+		const { categoryId, faqs } = updateFaqDto;
+		const adminId = user.userId;
 
 		const faq = await this.FaqRepository.findOne({ id });
 		if (!faq) {
 			throw new NotFoundException(`Faq Id Not Found.`);
 		}
-		const previousData = JSON.stringify(faq)
-		faq.categoryId = categoryId;
-		faq.question = question;
-		faq.answer = answer;
+		console.log('this is my faq id', faq.id)
+		let previousData = []
+		let currentData = []
+		previousData.push(faq)
+		faq.category_id = categoryId;
 		faq.updatedDate = new Date();
+		let faqRes: any = await faq.save();
+		currentData.push(faqRes)
+		let faq_data = [];
+		for await (const iterator of faqs) {
+			const query = getManager()
+				.createQueryBuilder(FaqMeta, "faq")
+				.where(`"faq"."faq_id" = '${id}' AND "faq"."language_id" = '${iterator.language_id}'`)
+			const response = await query.getOne();
+			console.log('response**', response)
+			previousData.push(response)
+			if (typeof response != 'undefined') {
+				response.question = iterator.question
+				response.answer = iterator.answer
+				response.save();
+				currentData.push(iterator)
+			} else {
+				faq_data.push({
+					language_id: iterator.language_id,
+					question: iterator.question,
+					answer: iterator.answer,
+					faq_id: faq.id
+				})
+				console.log('this is my data', JSON.stringify(faq_data))
+				getConnection()
+					.createQueryBuilder()
+					.insert()
+					.into(FaqMeta)
+					.values(faq_data)
+					.execute();
+				currentData.push(iterator)
+				faq_data = []
+			}
+
+		}
 		try {
-			await faq.save();
-			const currentData = JSON.stringify(faq)
-			Activity.logActivity(adminId, "faq", `Faq updated by the admin`,previousData,currentData);
+			Activity.logActivity(adminId, "faq", `Faq updated by the admin`, previousData, currentData);
 			return { message: "Faq updated successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -214,7 +261,7 @@ export class FaqService {
 			faq.isDeleted = true;
 			faq.save();
 			const currentData = JSON.stringify(faq)
-			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`,previousData,currentData);
+			Activity.logActivity(adminId, "faq", `Faq Deleted by the admin`, previousData, currentData);
 			return { message: "Faq deleted successfully." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -263,7 +310,7 @@ export class FaqService {
 			faq.status = status;
 			faq.save();
 			const currentData = JSON.stringify(faq)
-			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`,previousData,currentData);
+			Activity.logActivity(adminId, "faq", `Faq status changed by the admin`, previousData, currentData);
 			return { message: "Faq status changed." };
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
@@ -296,16 +343,22 @@ export class FaqService {
 		}
 	}
 
-	async getFaq(id: number): Promise<Faq> {
+	async getFaq(id: number) {
 		try {
-			const faq = await this.FaqRepository.findOne({ id });
-			if (!faq) {
+			// const faq = await this.FaqRepository.findOne({ id });
+			let where: any = `"faq"."id" = '${id}' AND "faq"."is_deleted" = false AND "category"."is_deleted" = false`
+			const query = await getManager()
+				.createQueryBuilder(Faq, "faq")
+				.leftJoinAndSelect("faq.category_id", "category")
+				.leftJoinAndSelect("faq.faqMetas", "faqMetas")
+				.where(where)
+			let result = await query.getMany()
+			console.log(JSON.stringify(result))
+			if (!result) {
 				throw new NotFoundException(`Faq Id Not Found`);
 			}
-			if (faq.isDeleted == true) {
-				throw new NotFoundException(`Given Faq is Deleted`);
-			}
-			return faq;
+
+			return result;
 		} catch (error) {
 			if (typeof error.response !== "undefined") {
 				switch (error.response.statusCode) {

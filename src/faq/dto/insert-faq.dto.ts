@@ -1,5 +1,8 @@
-import { IsNotEmpty } from 'class-validator'
+import { IsArray, IsNotEmpty, ValidateNested } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { Language } from 'src/entity/language.entity';
+import { FaqCategory } from 'src/entity/faq-category.entity';
 
 export class InsertFaqDto {
 
@@ -10,8 +13,25 @@ export class InsertFaqDto {
         description: `Enter category id`,
         example: `1`
     })
-    categoryId: number;
+    categoryId: FaqCategory;
 
+    @IsArray()
+    @ValidateNested({ each: true })
+    @ApiProperty({
+        description: `faq`,
+        example: [
+            {
+                question:"What is laytrip",
+                answer : "Laytrip is travel agency.",
+                language_id : 1
+            }
+        ]
+    })
+    faqs: Faq[]
+
+}
+
+class Faq {
     @IsNotEmpty({
         message : `Please enter question.&&&question`
     })
@@ -30,4 +50,9 @@ export class InsertFaqDto {
         example: `In Evening 5:00 am`
     })
     answer: string;
+    @ApiProperty({
+        description: `Enter lanfuage_id`,
+        example: `1`
+    })
+    language_id : Language;
 }
