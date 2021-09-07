@@ -1624,7 +1624,6 @@ more than 10.`
                     }
                 }
             }
-            console.log("1")
             const cartBook = new CartBooking();
             cartBook.id = uuidv4();
             cartBook.laytripCartId = `LTC${uniqid.time().toUpperCase()}`;
@@ -1638,10 +1637,8 @@ more than 10.`
                     cartBook.referralId = ref?.id || null;
                 }
             }
-            console.log("2")
-            console.log("--------->BookCart Sample", JSON.stringify(cartBook))
+
             let payMode = result.findIndex(res=>res.paymentMethod == PaymentType.INSTALMENT);
-            console.log("-----------PAYMODE--------->>>>", payMode)
             cartBook.bookingType =
                 payMode != 1
                     ? BookingType.INSTALMENT
@@ -1649,7 +1646,6 @@ more than 10.`
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
             bookingLog.cartBookingId = cartData.id
-            console.log("3")
             await bookingLog.save()
 
             let responce = [];
@@ -1687,12 +1683,9 @@ more than 10.`
                         if (flightResponce["status"] == 1) {
                             successedResult++;
                             if(item.moduleInfo[0].offer_data.applicable) {
-                                console.log("YES")
                                 amountToBeCharged += bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].discounted_selling_price)
-                                console.log("INSIDE BOOKCART->FLIGHT-<OFFER DATA APPLICABLE->AMOUNT TO BE CHARGE")
                             } else {
                                 amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling_price);
-                                console.log("INSIDE BOOKCART->FLIGHT-<OFFER DATA NOT APPLICABLE->AMOUNT TO BE CHARGE")
                             }
                             
                             BookingIds.push(
@@ -1720,16 +1713,13 @@ more than 10.`
                             cartIsPromotional
                         );
                         responce.push(hotelResponce);
-                        console.log(hotelResponce);
                         inventryLogs.push(hotelResponce["logFile"])
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
                             if(item.moduleInfo[0].offer_data.applicable) {
                                 amountToBeCharged += bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].discounted_total);
-                                console.log("INSIDE BOOKCART->HOTEL-<OFFER DATA APPLICABLE->AMOUNT TO BE CHARGE")
                             } else {
                                 amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling.total);
-                                console.log("INSIDE BOOKCART->-<OFFER DATA NOT APPLICABLE->AMOUNT TO BE CHARGE")
                             }
                             
                             BookingIds.push(
@@ -1762,7 +1752,6 @@ more than 10.`
                         payment_type
                     );
                 } */
-                console.log("partialAmount 1",amountToBeCharged)
                 
                 const payment = await this.capturePayment(
                     BookingIds,
