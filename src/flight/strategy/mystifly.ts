@@ -512,6 +512,9 @@ export class Mystifly implements StrategyAirline {
                     let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
                     let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
                     route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price)
+                    if(offerData.applicable==true && route.discounted_selling_price<25){
+                        continue;
+                    }
                     route.start_price = 0;
                     route.secondary_start_price = 0;
                     route.discounted_start_price = 0;

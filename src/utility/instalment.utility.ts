@@ -62,6 +62,9 @@ export class Instalment {
 
         if (instalmentData.instalment_date[1].instalment_amount < 5 && additionalAmount == 0 && ignore5DollerCase != true) {
             instalmentData.instalment_date = this.adjustInstalment(amount, instalmentDatewithAmount);
+            if(instalmentData.instalment_date[0].instalment_amount==0){
+                return { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
+            }
         }
 
         instalmentData.instalment_date = this.adjustFractionAmount(amount, instalmentData.instalment_date);
@@ -148,6 +151,9 @@ export class Instalment {
                 amount,
                 instalmentDatewithAmount
             );
+            if(instalmentData.instalment_date[0].instalment_amount==0){
+                return { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
+            }
         }
 
         instalmentData.instalment_date = this.adjustFractionAmount(amount, instalmentData.instalment_date);
@@ -211,6 +217,9 @@ export class Instalment {
                 amount,
                 instalmentDatewithAmount
             );
+            if(instalmentData.instalment_date[0].instalment_amount==0){
+                return { 'instalment_available': false, 'instalment_date': [], 'percentage': 0, 'down_payment': [] }
+            }
         }
 
         instalmentData.instalment_date = this.adjustFractionAmount(amount, instalmentData.instalment_date);
@@ -221,6 +230,12 @@ export class Instalment {
 
     static adjustInstalment(amount, instalment_date) {
         amount = amount.toFixed(2)
+        if(instalment_date[1].instalment_amount<0){
+            return [{
+                instalment_date: '',
+                instalment_amount: 0
+            }]
+        }
         let downPayment = instalment_date[0].instalment_amount;
         let remaingAmount = amount - downPayment;
         let totalInstalmentDates = instalment_date.length - 1;
