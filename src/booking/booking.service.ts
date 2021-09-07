@@ -869,10 +869,10 @@ export class BookingService {
                         priceSummary.push({
                             instalmentDate : cartInstallments[k].instalmentDate,
                             amount : Generic.formatPriceDecimal(cartInstallments[k].amount),
-                            breakdown : breakDown,
                             attempt: cartInstallments[k].attempt,
                             instalmentNo: cartInstallments[k].instalmentNo,
-                            paymentStatus: cartInstallments[k].paymentStatus
+                            paymentStatus: cartInstallments[k].paymentStatus,
+                            breakdown : breakDown
                         })
                     }
                 }
@@ -925,6 +925,7 @@ export class BookingService {
                 cartResponce["totalAmount"] = Generic.formatPriceDecimal(
                     totalAmount
                 );
+                cartResponce["totalDownpayment"] = Generic.formatPriceDecimal(downPayment);
                 cartResponce["nextInstallmentDate"] = nextInstallmentDate;
                 cartResponce["currency"] = currency;
                 if (installmentType) {
