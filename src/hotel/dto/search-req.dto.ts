@@ -94,5 +94,6 @@ export class SearchReqDto {
                 example: "yes/no"
             })
             @IsString()
-            is_refundable: string='no';
+            @IsOptional()
+            is_refundable: string = "no";
        }

@@ -25,8 +25,6 @@ export class LandingPage {
 			return { applicable: false }
 		}
 
-		console.log("lpNumber", lpNumber)
-
 		if (!lpNumber) {
 			return { applicable: false }
 		}

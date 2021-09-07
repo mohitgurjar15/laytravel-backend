@@ -59,7 +59,7 @@ export class FaqController {
 	@ApiResponse({ status: 404, description: "Faq Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	async getFaqforUser(
-	): Promise<{ data: FaqCategory[]; TotalReseult: number }> {
+	) {
 		return await this.faqService.listFaqForUser();
 	}
 
@@ -75,7 +75,7 @@ export class FaqController {
 	async insertFaq(
 		@Body() InsertFaqDto: InsertFaqDto,
 		@GetUser() user: User
-	): Promise<{ message: string }> {
+	) {
 		return await this.faqService.createFaq(InsertFaqDto, user);
 	}
 
@@ -138,7 +138,7 @@ export class FaqController {
 	@ApiResponse({ status: 404, description: "Not Found" })
 	@ApiResponse({ status: 500, description: "Internal server error!" })
 	@HttpCode(200)
-	async getFaqDetail(@Param("id") id: number): Promise<Faq> {
+	async getFaqDetail(@Param("id") id: number) {
 		return await this.faqService.getFaq(id);
 	}
 }
