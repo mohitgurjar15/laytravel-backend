@@ -61,6 +61,9 @@ export class Search {
                         departure: hotel['address']['city_name'], checkInDate: parameters.check_in, state: hotel['address']['state_name']
                     }
                     let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
+                    if(this.rate.is_cancellable=='false'){
+                        offerData.applicable=false;
+                    }
                     let {
                         retail,
                         selling,
@@ -68,7 +71,7 @@ export class Search {
                         discounted_selling_price
                     } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
 
-                    if(parameters.is_refundable == "no" && this.rate.is_cancellable == "true") {
+                    if(parameters.is_refundable == "yes" && this.rate.is_cancellable == "false") {
                         continue
                     }
                     if (selling['discounted_total'] > 25) {
@@ -107,6 +110,7 @@ export class Search {
                                 if(this.rate.is_cancellable=='false'){
                                     downpayment=60;
                                     isPerenctageDownpayment=true;
+                                    offerData.applicable=false;
                                 }
                                 else if(weeklyCustomDownPayment!=null){
                                     downpayment=weeklyCustomDownPayment;
@@ -197,6 +201,7 @@ export class Search {
                             if(this.rate.is_cancellable=='false'){
                                 downpayment=60;
                                 isPerenctageDownpayment=true;
+                                offerData.applicable=false;
                             }
                             else if(weeklyCustomDownPayment!=null){
                                 downpayment=weeklyCustomDownPayment;

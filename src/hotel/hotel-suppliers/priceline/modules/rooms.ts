@@ -51,8 +51,6 @@ export class Rooms {
                 paymentConfig
             );
 
-            
-
             if (!rooms.items.length) {
                 throw new NotFoundException(
                     "No result found &&&rooms&&&" + errorMessage

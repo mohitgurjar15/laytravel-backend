@@ -59,6 +59,11 @@ export class RoomHelper {
                 }
             }
 
+            //console.log("rate.is_cancellable",rate.is_cancellable,offerData)
+            offerData = Object.assign({},offerData)
+            if(rate.is_cancellable=='false'){
+                offerData.applicable=false;
+            }
             let { retail, selling, saving_percent, net_rate } = this.rateHelper.getRates(
                 rate,
                 roomsReqDto,
@@ -83,26 +88,32 @@ export class RoomHelper {
                 let discounted_start_price = 0;
                 let discounted_secondary_start_price = 0;
                 let discounted_no_of_weekly_installment = 0
-                // let instalmentDetails = Instalment.weeklyInstalment(
-                //     selling.total,
-                //     inputData.check_in,
-                //     bookingDate,
-                //     0,
-                //     null,
-                //     null,
-                //     0
-                // );
+                let downpayment=0;
+                let isPerenctageDownpayment=true;
                 if (paymentConfig?.isInstallmentAvailable) {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                     let downPaymentOption: any = paymentConfig.downPaymentOption
                     if (paymentConfig.isWeeklyInstallmentAvailable) {
+                        if(rate.is_cancellable=='false'){
+                            downpayment=60;
+                            isPerenctageDownpayment=true;
+                            offerData.applicable=false;
+                        }
+                        else if(weeklyCustomDownPayment!=null){
+                            downpayment=weeklyCustomDownPayment;
+                            isPerenctageDownpayment=false;
+                        }
+                        else{
+                            downpayment=downPaymentOption[0];
+                            isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                        }
                         let instalmentDetails = Instalment.weeklyInstalment(
                             selling.total,
                             inputData.check_in,
                             bookingDate,
-                            downPaymentOption[0],
-                            paymentConfig.isDownPaymentInPercentage,
+                            downpayment,
+                            isPerenctageDownpayment
                         );
                         if (instalmentDetails.instalment_available) {
                             start_price =
@@ -119,12 +130,20 @@ export class RoomHelper {
                     }
 
                     if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                        if(rate.is_cancellable=='false'){
+                            downpayment=60;
+                            isPerenctageDownpayment=true;
+                        }
+                        else{
+                            downpayment=downPaymentOption[0];
+                            isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                        }
                         let instalmentDetails2 = Instalment.biWeeklyInstalment(
                             selling.total,
                             inputData.check_in,
                             bookingDate,
-                            downPaymentOption[0],
-                            paymentConfig.isDownPaymentInPercentage
+                            downpayment,
+                            isPerenctageDownpayment
                         );
 
                         second_down_payment =
@@ -139,12 +158,20 @@ export class RoomHelper {
 
 
                     if (paymentConfig.isMonthlyInstallmentAvailable) {
+                        if(rate.is_cancellable=='false'){
+                            downpayment=60;
+                            isPerenctageDownpayment=true;
+                        }
+                        else{
+                            downpayment=downPaymentOption[0];
+                            isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                        }
                         let instalmentDetails3 = Instalment.monthlyInstalment(
                             selling.total,
                             inputData.check_in,
                             bookingDate,
-                            downPaymentOption[0],
-                            paymentConfig.isDownPaymentInPercentage
+                            downpayment,
+                            isPerenctageDownpayment
                         );
                         third_down_payment =
                             instalmentDetails3.instalment_date[0]
@@ -156,12 +183,25 @@ export class RoomHelper {
                             instalmentDetails3.instalment_date.length - 1;
                     }
 
-
+                    if(rate.is_cancellable=='false'){
+                        downpayment=60;
+                        isPerenctageDownpayment=true;
+                        offerData.applicable=false;
+                    }
+                    else if(weeklyCustomDownPayment!=null){
+                        downpayment=weeklyCustomDownPayment;
+                        isPerenctageDownpayment=false;
+                    }
+                    else{
+                        downpayment=downPaymentOption[0];
+                        isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                    }
                     let discountedInstalmentDetails = Instalment.weeklyInstalment(
                         selling['discounted_total'],
                         inputData.check_in,
                         bookingDate,
-                        downPaymentOption[0]
+                        downpayment,
+                        isPerenctageDownpayment
                     );
 
                     if (discountedInstalmentDetails.instalment_available) {
@@ -231,7 +271,7 @@ export class RoomHelper {
                         selling_price: selling['discounted_total']
                     }
                 }
-
+                
                 newItem = {
                     hotel_id: hotel.id,
                     hotel_name: hotel.name,
