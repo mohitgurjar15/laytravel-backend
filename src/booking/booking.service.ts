@@ -66,6 +66,7 @@ import { NotificationAlertUtility } from "src/utility/notification.utility";
 import { BookingCancellationNotificationMail } from "src/config/admin-email-notification-templetes/booking-cancellation-notification.dto";
 import { CancellationReason } from "src/enum/cancellation-reason.enum";
 import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
+import { K } from "handlebars/runtime";
 
 @Injectable()
 export class BookingService {
@@ -685,8 +686,13 @@ export class BookingService {
             }
             let responce = [];
             console.log("getData");
-
-            for await (const cart of CartList) {
+            let i = 0;
+            let bookings;
+            
+            /* for await (const cart of CartList) {
+                
+                let type = 0;
+                let typeArr = [];
                 let paidAmount = 0;
                 let remainAmount = 0;
                 let pandinginstallment = 0;
@@ -701,7 +707,7 @@ export class BookingService {
                     baseBooking &&
                     cart.bookings[0].bookingType == BookingType.INSTALMENT
                 ) {
-                    console.log("baseBooking");
+                   
                     for await (const baseInstallments of baseBooking) {
                         let amount = parseFloat(baseInstallments.amount);
 
@@ -717,28 +723,31 @@ export class BookingService {
                                     if (
                                         baseInstallments.instalmentDate ==
                                         installment.instalmentDate
-                                    ) {
+                                    ) { 
                                         amount += parseFloat(
                                             installment.amount
                                         );
                                     }
                                 }
+                                type = Number(cart.bookings[index].moduleId)
+                                typeArr.push(type);
                             }
                         } else {
                             amount = parseFloat(baseInstallments.amount);
+                            
                         }
                         const installment = {
                             instalmentDate: baseInstallments.instalmentDate,
                             instalmentStatus: baseInstallments?.paymentStatus,
                             attempt: baseInstallments.attempt,
                             amount: Generic.formatPriceDecimal(amount),
+                            type: type,
                         };
                         cartInstallments.push(installment);
                     }
                 }
-
                 for await (const booking of cart.bookings) {
-                    console.log("booking");
+
                     if (booking.bookingInstalments.length) {
                         for await (const installment of booking.bookingInstalments) {
                             if (
@@ -759,13 +768,11 @@ export class BookingService {
                 }
 
                 if (cartInstallments.length > 0) {
-                    //cartInstallments.sort((o) => new Date( o.instalmentDate ) );
                     cartInstallments.sort((a, b) => {
                         var c = new Date(a.instalmentDate);
                         var d = new Date(b.instalmentDate);
                         return c > d ? 1 : -1;
                     });
-                    //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
                 }
 
                 let cartResponce = {};
@@ -791,9 +798,134 @@ export class BookingService {
                     remainAmount
                 );
                 cartResponce["pendinginstallment"] = pandinginstallment;
+                cartResponce["installmentCount"] = cartInstallments.length;
                 cartResponce["totalAmount"] = Generic.formatPriceDecimal(
                     totalAmount
                 );
+                cartResponce["nextInstallmentDate"] = nextInstallmentDate;
+                cartResponce["currency"] = currency;
+                if (installmentType) {
+                    cartResponce["installmentType"] = installmentType;
+                }
+                responce.push(cartResponce);
+            } */
+
+            for await (const cart of CartList) {
+                
+                let paidAmount = 0;
+                let remainAmount = 0;
+                let pandinginstallment = 0;
+                let downPayment=0;
+                let totalAmount = 0;
+                let nextInstallmentDate = cart.bookings[0].nextInstalmentDate;
+                const currency = cart.bookings[0].currency2;
+                
+                let cartInstallments = [];
+                
+                for(let i=0; i < cart.bookings.length; i++){
+
+                    if(cart.bookings[i].bookingType == BookingType.INSTALMENT){
+                        downPayment +=parseFloat(cart.bookings[i].bookingInstalments[0].amount)
+
+                        for(let x=0; x<cart.bookings[i].bookingInstalments.length; x++){
+
+                            if(cart.bookings[i].moduleId==1){
+                                cart.bookings[i].bookingInstalments[x]['type']='flight';
+                                cart.bookings[i].bookingInstalments[x]['name']=`${cart.bookings[i].moduleInfo[0].departure_code}-${cart.bookings[i].moduleInfo[0].arrival_code}`;
+                            }
+                            else if(cart.bookings[i].moduleId==3){
+                                cart.bookings[i].bookingInstalments[x]['type']='hotel';
+                                cart.bookings[i].bookingInstalments[x]['name']=cart.bookings[i].moduleInfo[0].hotel_name;
+                            }
+                        }
+                        cartInstallments = [...cartInstallments,...cart.bookings[i].bookingInstalments];
+                        totalAmount += parseFloat(cart.bookings[i].totalAmount);
+                        //priceSummary.shift();
+                    }
+                    else{
+                        downPayment +=parseFloat(cart.bookings[i].totalAmount)
+                    }
+                }
+                
+                let priceSummary=[];
+                for(let k=0; k < cartInstallments.length; k++){
+                    
+                    let find= await priceSummary.findIndex(price=>price.instalmentDate==cartInstallments[k].instalmentDate);
+                    
+                    if(find!=-1){
+                        priceSummary[find].breakdown.push({
+                            type : cartInstallments[k].type,
+                            amount : Generic.formatPriceDecimal(cartInstallments[k].amount),
+                            name :  cartInstallments[k].name
+                        })
+                        priceSummary[find].amount+=Generic.formatPriceDecimal(cartInstallments[k].amount)
+                    }
+                    else{
+                        let breakDown = [{
+                            type : cartInstallments[k].type,
+                            amount :  Generic.formatPriceDecimal(cartInstallments[k].amount),
+                            name :  cartInstallments[k].name
+                        }]
+                        priceSummary.push({
+                            instalmentDate : cartInstallments[k].instalmentDate,
+                            amount : Generic.formatPriceDecimal(cartInstallments[k].amount),
+                            attempt: cartInstallments[k].attempt,
+                            instalmentNo: cartInstallments[k].instalmentNo,
+                            paymentStatus: cartInstallments[k].paymentStatus,
+                            breakdown : breakDown
+                        })
+                    }
+                }
+
+                priceSummary.sort((a, b) => {
+                    var c = new Date(a.instalmentDate);
+                    var d = new Date(b.instalmentDate);
+                    return c > d ? 1 : -1;
+                });
+                        
+                for(let m=0;m<priceSummary.length;m++){
+                    if (
+                        priceSummary[m].paymentStatus ==
+                        PaymentStatus.CONFIRM
+                    ) {
+                        paidAmount += parseFloat(priceSummary[m].amount);
+                    } else {
+                        remainAmount += parseFloat(priceSummary[m].amount);
+                        pandinginstallment = pandinginstallment + 1;
+                    }
+                }
+
+                const installmentType = '';
+                
+
+                let cartResponce = {};
+                cartResponce["id"] = cart.id;
+                const trackReport = await this.paidAmountByUser(
+                    cart.bookings[0].id
+                );
+                cartResponce["is_installation_on_track"] =
+                    trackReport?.attempt != 1 &&
+                    trackReport?.paymentStatus != PaymentStatus.CONFIRM
+                        ? false
+                        : true;
+                cartResponce["checkInDate"] = cart.checkInDate;
+                cartResponce["checkOutDate"] = cart.checkOutDate;
+                cartResponce["laytripCartId"] = cart.laytripCartId;
+                cartResponce["bookingDate"] = cart.bookingDate;
+                cartResponce["booking"] = cart.bookings;
+                cartResponce["cartInstallments"] = priceSummary;
+                cartResponce["paidAmount"] = Generic.formatPriceDecimal(
+                    paidAmount
+                );
+                cartResponce["remainAmount"] = Generic.formatPriceDecimal(
+                    remainAmount
+                );
+                cartResponce["pendinginstallment"] = pandinginstallment;
+                cartResponce["installmentCount"] = cartInstallments.length;
+                cartResponce["totalAmount"] = Generic.formatPriceDecimal(
+                    totalAmount
+                );
+                cartResponce["totalDownpayment"] = Generic.formatPriceDecimal(downPayment);
                 cartResponce["nextInstallmentDate"] = nextInstallmentDate;
                 cartResponce["currency"] = currency;
                 if (installmentType) {
@@ -1100,7 +1232,6 @@ export class BookingService {
                 .where(where);
             //.orderBy(`cartBooking.bookingDate`, "DESC");
             const cart = await query.getOne();
-
             if (!cart) {
                 throw new NotFoundException(
                     `Booking ID not found.&&&id&&&Booking ID not found.`
@@ -1110,65 +1241,75 @@ export class BookingService {
             let remainAmount = 0;
             let pandinginstallment = 0;
             let totalAmount = 0;
-             let actualAmount = 0;
-            const currency = cart.bookings[0]?.currency2;
-            let baseBooking = cart.bookings[0]?.bookingInstalments;
-            const installmentType =
-                cart.bookings[0]?.bookingInstalments[0]?.instalmentType;
             let cartInstallments = [];
-
-            let bookingIndex = 0 
-            while (cart.bookings[bookingIndex] && baseBooking?.length == 0) {
-                bookingIndex++
-                baseBooking = cart.bookings[bookingIndex]?.bookingInstalments;
-            }
-            if (
-                baseBooking?.length &&
-                cart.bookings[0].bookingType == BookingType.INSTALMENT
-            ) {
-                for await (const baseInstallments of baseBooking) {
-                    let amount = 0;
-                    if (
-                        cart.bookings[0].bookingStatus <= BookingStatus.CONFIRM
-                    ) {
-                        amount += parseFloat(baseInstallments.amount);
+            let actualAmount = 0;
+            let currency;
+            let installmentType;
+            for await (const booking of cart.bookings) {
+                if(booking.bookingInstalments.length > 0) {
+                    // const currency = cart.bookings[i]?.currency2;
+                    currency = booking.currency2;
+                    let baseBooking = booking.bookingInstalments;
+                    // let baseBooking = cart.bookings[i]?.bookingInstalments;
+                    // const installmentType =
+                    //     cart.bookings[i]?.bookingInstalments[0]?.instalmentType;
+                    installmentType =
+                        booking.bookingInstalments[0]?.instalmentType;
+                    let bookingIndex = 0 
+                    while (booking[bookingIndex] && baseBooking?.length == 0) {
+                        bookingIndex++
+                        baseBooking = booking[bookingIndex]?.bookingInstalments;
                     }
-
-                    if (cart.bookings.length > 1) {
-                        for (
-                            let index = 1;
-                            index < cart.bookings.length;
-                            index++
-                        ) {
+                    if (
+                        baseBooking?.length &&
+                        booking.bookingType == BookingType.INSTALMENT
+                    ) {
+                        for await (const baseInstallments of baseBooking) {
+                            let amount = 0;
                             if (
-                                cart.bookings[index].bookingStatus <=
-                                BookingStatus.CONFIRM
+                                booking.bookingStatus <= BookingStatus.CONFIRM
                             ) {
-                                for await (const installment of cart.bookings[
-                                    index
-                                ].bookingInstalments) {
+                                amount += parseFloat(baseInstallments.amount);
+                            }
+
+                            if (cart.bookings.length > 1) {
+                                for (
+                                    let index = 1;
+                                    index < cart.bookings.length;
+                                    index++
+                                ) {
                                     if (
-                                        baseInstallments.instalmentDate ==
-                                        installment.instalmentDate
+                                        cart.bookings[index].bookingStatus <=
+                                        BookingStatus.CONFIRM
                                     ) {
-                                        amount += parseFloat(
-                                            installment.amount
-                                        );
+                                        for await (const installment of cart.bookings[
+                                            index
+                                        ].bookingInstalments) {
+                                            if (
+                                                baseInstallments.instalmentDate ==
+                                                installment.instalmentDate
+                                            ) {
+                                                amount += parseFloat(
+                                                    installment.amount
+                                                );
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            const installment = {
+                                instalmentDate: baseInstallments.instalmentDate,
+                                instalmentStatus: baseInstallments?.paymentStatus,
+                                attempt: baseInstallments.attempt,
+                                amount: Generic.formatPriceDecimal(amount),
+                            };
+                            cartInstallments.push(installment);
                         }
                     }
-                    const installment = {
-                        instalmentDate: baseInstallments.instalmentDate,
-                        instalmentStatus: baseInstallments?.paymentStatus,
-                        attempt: baseInstallments.attempt,
-                        amount: Generic.formatPriceDecimal(amount),
-                    };
-                    cartInstallments.push(installment);
+                    break;
                 }
             }
-
+            
             for await (const booking of cart.bookings) {
                 if (booking.bookingInstalments.length > 0) {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id);
@@ -1190,7 +1331,6 @@ export class BookingService {
 
                     totalAmount += parseFloat(booking.totalAmount);
                     actualAmount += parseFloat(booking.actualSellingPrice || '0');
-                    //console.log(totalAmount, 'totalAmount');
                 }
 
                 delete booking?.currency2;
@@ -1215,13 +1355,12 @@ export class BookingService {
                 });
                 //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
             }
-            console.log("cartResponce");
 
             let cartResponce = {};
             cartResponce["id"] = cart?.id;
 
             const trackReport = await this.paidAmountByUser(
-                cart.bookings[0]?.id
+                cart.bookings[1]?.id
             );
             cartResponce["is_installation_on_track"] =
                 trackReport?.attempt != 1 &&
@@ -1247,13 +1386,13 @@ export class BookingService {
             cartResponce["actualAmount"] = Generic.formatPriceDecimal(
                 actualAmount
             );
-            if (cart.bookings[0]?.nextInstalmentDate) {
+            if (cart.bookings[1]?.nextInstalmentDate) {
                 cartResponce["nextInstalmentDate"] =
-                    cart.bookings[0].nextInstalmentDate;
+                    cart.bookings[1].nextInstalmentDate;
             }
 
             cartResponce["cardDetail"] = await this.cardDetail(
-                cart.bookings[0]?.cardToken
+                cart.bookings[1]?.cardToken
             );
             if (installmentType) {
                 cartResponce["installmentType"] = installmentType;
@@ -1298,7 +1437,6 @@ export class BookingService {
             .createQueryBuilder(UserCard, "cartBooking")
             .where(`"card_token" = '${transactionTotal}'`)
             .getOne();
-        //console.log(query.cardToken);
 
         return query;
     }

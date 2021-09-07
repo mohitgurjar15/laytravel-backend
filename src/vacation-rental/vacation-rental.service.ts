@@ -297,9 +297,7 @@ export class VacationRentalService {
 					selling_price,
 					check_in_date,
 					bookingDate,
-					totalAdditionalAmount,
-					custom_instalment_amount,
-					custom_instalment_no,0,false,0,true,[]
+					9.99
 				);
 			}
 			if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -307,9 +305,7 @@ export class VacationRentalService {
 					selling_price,
 					check_in_date,
 					bookingDate,
-					totalAdditionalAmount,
-					custom_instalment_amount,
-					custom_instalment_no, 0, false, 0, true, []
+					9.99
 				);
 			}
 			if (instalment_type == InstalmentType.MONTHLY) {
@@ -317,9 +313,7 @@ export class VacationRentalService {
 					selling_price,
 					check_in_date,
 					bookingDate,
-					totalAdditionalAmount,
-					custom_instalment_amount,
-					custom_instalment_no, 0, false, 0, true, []
+					9.99
 				);
 			}
 

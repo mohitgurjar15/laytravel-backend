@@ -61,23 +61,6 @@ export class InstalmentDto{
     })
     amount : number;
 
-    @ApiPropertyOptional({
-        description:`Additonal Amount`,
-        example:10
-    })
-    additional_amount : number;
-
-    @ApiPropertyOptional({
-        description:`Down Amount`,
-        example:3
-    })
-    down_payment : number;
-
-    @ApiPropertyOptional({
-        description:`Selected Down Amount`,
-        example:3
-    })
-    selected_down_payment : number;
 
     @ApiPropertyOptional({
         description:`Custom Down Amount`,
@@ -93,14 +76,4 @@ export class InstalmentDto{
         example: true
     })
     is_down_payment_in_percentage: boolean;
-
-    @IsNotEmpty({
-        message: `Please enter down payment option`
-    })
-    @ApiProperty({
-        description: `enter down payment option`,
-        example: [30,40,50]
-    })
-    down_payment_option : number[]
-    
 }

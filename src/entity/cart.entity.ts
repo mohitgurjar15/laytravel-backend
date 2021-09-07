@@ -1,3 +1,4 @@
+import { float } from "aws-sdk/clients/lightsail";
 import {
     BaseEntity,
     Column,
@@ -64,6 +65,15 @@ export class Cart extends BaseEntity {
 
     @Column("uuid", { name: "guest_user_id", nullable: true })
     guestUserId: string;
+
+    @Column("character varying", { name: "payment_frequency", nullable: true })
+    paymentFrequency: string;
+
+    @Column("numeric", { name: "downpayment", precision: 10, scale: 2, nullable: true })
+    downpayment: number;
+
+    @Column("character varying", { name: "payment_method", nullable: true })
+    paymentMethod: string;
 
     @ManyToOne(
         () => User,
