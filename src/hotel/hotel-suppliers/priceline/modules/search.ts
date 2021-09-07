@@ -95,14 +95,14 @@ export class Search {
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                             let downPaymentOption: any;
                             downPaymentOption = paymentConfig.downPaymentOption
-
+                            //console.log("weeklyCustomDownPayment",weeklyCustomDownPayment,offerData)
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
                                 let instalmentDetails = Instalment.weeklyInstalment(
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    downPaymentOption[0],
-                                    paymentConfig.isDownPaymentInPercentage
+                                    weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                                    weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                                 );
                                 if (instalmentDetails.instalment_available) {
                                     start_price =
@@ -162,7 +162,8 @@ export class Search {
                                 selling['discounted_total'],
                                 parameters.check_in,
                                 bookingDate,
-                                downPaymentOption[0]
+                                weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                                weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                             );
 
                             if (discountedInstalmentDetails.instalment_available) {
@@ -180,6 +181,7 @@ export class Search {
                         let payment_object
 
                         if (offerData.applicable) {
+                            //console.log("discounted_start_price",discounted_start_price)
                             paymentConfig.isInstallmentAvailable = true
                             payment_object = {
                                 installment_type: InstalmentType.WEEKLY,

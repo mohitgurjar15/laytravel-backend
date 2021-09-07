@@ -91,10 +91,8 @@ export class SearchReqDto {
            @ApiProperty({
                 description:
                     "is_refundable",
-                example: "yes/no",
-                required: true
+                example: "yes/no"
             })
             @IsString()
-            @IsNotEmpty()
-            is_refundable: string;
+            is_refundable: string='no';
        }
