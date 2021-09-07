@@ -89,6 +89,9 @@ import { LandingPage } from "src/utility/landing-page.utility";
 import { Airport } from "src/entity/airport.entity";
 import _ = require("lodash");
 import console = require("console");
+import { RouteCategory } from "src/utility/route-category.utility";
+import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
+import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
 
 @Injectable()
 export class FlightService {
@@ -1797,9 +1800,7 @@ export class FlightService {
                     selling_price,
                     departure_date,
                     bookingDate,
-                    totalAdditionalAmount,
-                    custom_instalment_amount,
-                    custom_instalment_no, 0, false, null, true, downPayments
+                    downPayments[0]
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1807,9 +1808,7 @@ export class FlightService {
                     selling_price,
                     departure_date,
                     bookingDate,
-                    totalAdditionalAmount,
-                    custom_instalment_amount,
-                    custom_instalment_no, 0, false, null, true, downPayments
+                    downPayments[0]
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1817,9 +1816,7 @@ export class FlightService {
                     selling_price,
                     departure_date,
                     bookingDate,
-                    totalAdditionalAmount,
-                    custom_instalment_amount,
-                    custom_instalment_no, 0, false, null, true, downPayments
+                    downPayments[0]
                 );
             }
 
@@ -3511,10 +3508,7 @@ export class FlightService {
                 user,
                 cartIsPromotional == true ? referral_id : ''
             );
-            console.log("airRevalidateResult[0][log_file", airRevalidateResult[0]['log_file']);
-            console.log("airRevalidateResult[0]", airRevalidateResult[0])
-            logData['revalidation-log'] = airRevalidateResult[0]['log_file']
-            logData['markUpDetails'] = airRevalidateResult[0]['markUpDetails']
+            
             console.log(logData);
 
             let isPassportRequired = false;
@@ -3625,13 +3619,49 @@ export class FlightService {
                         totalAdditionalAmount + laycredit_points;
                 }
 
-                let downPayments = [40, 50, 60]
+                /* let downPayments = [40, 50, 60]
                 if (moment(departure_date).diff(
                     moment().format("YYYY-MM-DD"),
                     "days"
                 ) > 90) {
                     downPayments = [20, 30, 40]
+                } */
+                let instalmentEligibility: {
+                    available: boolean;
+                    categoryId: number;
+                } | {
+                    available: boolean;
+                    categoryId?: undefined;
                 }
+
+                let instalmentEligibilityCase = {}
+                let paymentConfigCase = {}
+                let searchData = { departure: airRevalidateResult[0].departure_code, arrival: airRevalidateResult[0].arrival_code, checkInDate: departure_date }
+                let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
+                if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
+                    instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                } else {
+                    instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                        searchData
+                    );
+                    instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                }
+
+
+                let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
+
+                let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                let paymentConfig: PaymentConfiguration
+
+                if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
+                    paymentConfig = paymentConfigCase[configCaseIndex]
+
+                } else {
+                    paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(1, instalmentEligibility.categoryId, daysUtilDepature)
+                    paymentConfigCase[configCaseIndex] = paymentConfig
+                }
+                let downPaymentOption: any = paymentConfig.downPaymentOption
+
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
 
@@ -3644,12 +3674,8 @@ export class FlightService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
+                            weeklyCustomDownPayment,
                             cartCount > 1 ? true : false,
-                            weeklyCustomDownPayment, true, downPayments
                         );
                         console.log(instalmentDetails)
 
@@ -3658,11 +3684,8 @@ export class FlightService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            totalAdditionalAmount,
-                            custom_instalment_amount,
-                            custom_instalment_no,
-                            selected_down_payment,
-                            cartCount > 1 ? true : false, null, true, downPayments
+                            downPaymentOption[0],
+                            cartCount > 1 ? true : false
                         );
                     }
 
@@ -3672,11 +3695,8 @@ export class FlightService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false, null, true, downPayments
+                        downPaymentOption[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3684,11 +3704,8 @@ export class FlightService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false, null, true, downPayments
+                        downPaymentOption[0],
+                        cartCount > 1 ? true : false
                     );
                 }
 

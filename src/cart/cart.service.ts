@@ -17,7 +17,7 @@ import { DateTime } from "src/utility/datetime.utility";
 import { AddInCartDto } from "./dto/add-in-cart.dto";
 import * as moment from "moment";
 import { Cart } from "src/entity/cart.entity";
-import { getConnection } from "typeorm";
+import { getConnection, SimpleConsoleLogger } from "typeorm";
 import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Role } from "src/enum/role.enum";
 import * as uuidValidator from "uuid-validate";
@@ -99,7 +99,11 @@ export class CartService {
                 check_out_date,
                 adult_count,
                 number_and_children_ages = [],
+                payment_frequency,
+                downpayment,
+                payment_method
             } = addInCartDto;
+
             var tDate = new Date();
 
             var todayDate = tDate.toISOString().split(" ")[0];
@@ -157,22 +161,12 @@ more than 10.`
                 throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
             }
 
-            console.log("promotional", promotional, "nonPromotional", nonPromotional)
-
-
-
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-                //console.log("cartIsPromotional", cartIsPromotional)
             } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
-
-
-
-            //console.log("cartIsPromotional", cartIsPromotional)
-
 
             userData = await getConnection()
                 .createQueryBuilder(User, "user")
@@ -182,7 +176,7 @@ more than 10.`
 
             switch (module_id) {
                 case ModulesName.HOTEL:
-                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType);
+                    return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method);
                     break;
 
                 case ModulesName.FLIGHT:
@@ -195,7 +189,7 @@ more than 10.`
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
-                        Header, referralId, cartIsPromotional, paymentType
+                        Header, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method
                     );
                     break;
                 case ModulesName.VACATION_RENTEL:
@@ -219,7 +213,6 @@ more than 10.`
             }
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -253,9 +246,7 @@ more than 10.`
         }
     }
 
-    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType) {
-        //console.log('validate');
-        console.log("cartIsPromotional", cartIsPromotional)
+    async addFlightDataInCart(route_code: string, user: User, Header, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
         const flightInfo: any = await this.flightService.airRevalidate(
             { route_code: route_code },
             Header,
@@ -265,7 +256,6 @@ more than 10.`
 
         if (flightInfo) {
 
-            console.log("applicable", flightInfo[0]?.offer_data?.applicable)
             if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
                 throw new ConflictException(`In cart not-promotional item found`)
             }
@@ -274,9 +264,9 @@ more than 10.`
                 throw new ConflictException(`In cart promotional item found`)
             }
 
-            if ((paymentType == BookingType.INSTALMENT && flightInfo[0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && flightInfo[0].is_installment_available == true)) {
+            /* if ((paymentType == BookingType.INSTALMENT && flightInfo[0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && flightInfo[0].is_installment_available == true)) {
                 throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
-            }
+            } */
             const depatureDate = flightInfo[0].departure_date;
 
             const formatedDepatureDate = DateTime.convertDateFormat(
@@ -296,11 +286,8 @@ more than 10.`
             const cart = new Cart();
 
             if (user.roleId != Role.GUEST_USER) {
-                //console.log(user);
-
                 cart.userId = user.userId;
             } else {
-                //console.log(guestId);
                 cart.guestUserId = user.userId;
             }
 
@@ -322,6 +309,9 @@ more than 10.`
             cart.paymentType = flightInfo[0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
             // cart.instalmentType = instalment_type;
             // cart.paymentType = payment_type
+            cart.paymentMethod = paymentMethod;
+            cart.paymentFrequency = paymentFrequency || "";
+            cart.downpayment = downpayment || 0;
 
             let savedCart = await cart.save();
 
@@ -903,7 +893,6 @@ more than 10.`
                         var difference = unixTimestamp - (cart.timeStamp || 0);
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
-                        console.log('minuteDifference', minuteDifference)
                         if (minuteDifference > 5 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
                             const bookingType =
                                 cart.moduleInfo[0].routes.length > 1
@@ -1000,9 +989,6 @@ more than 10.`
 
                 var difference = unixTimestamp - (cart.timeStamp || 0);
                 var minuteDifference = Math.floor(difference / 60) % 60;
-                console.log('minuteDifference2', minuteDifference)
-                console.log('cart.timeStamp', cart.timeStamp)
-                console.log('unixTimestamp', unixTimestamp)
 
                 if (
                     (typeof live_availiblity != "undefined" &&
@@ -1015,11 +1001,25 @@ more than 10.`
                             user, headers,
                             cartIsPromotional ? referralId : ''
                         );
-                        //return value
 
 
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
+                            let updatedDownpayment = 0;
+
+                            if(cart.paymentMethod === PaymentType.INSTALMENT) {
+                                if(value.offer_data.applicable) {
+                                    updatedDownpayment = cart.downpayment;
+                                } else {
+                                    if(cart.paymentFrequency === "weekly") {
+                                        updatedDownpayment = value.payment_object.weekly.down_payment;
+                                    } else if(cart.paymentFrequency === "biweekly") {
+                                        updatedDownpayment = value.payment_object.biweekly.down_payment;
+                                    } else if(cart.paymentFrequency === "monthly") {
+                                        updatedDownpayment = value.payment_object.monthly.down_payment;
+                                    }
+                                }
+                            }
                             newCart["is_available"] = true;
                             newCart["isPromotional"] = value?.offer_data?.applicable
                             newCart["is_conflict"] = false;
@@ -1047,7 +1047,6 @@ more than 10.`
                                 }
                                 // newCart["is_available"] = false;
                             }
-                            console.log(Math.round(new Date().getTime() / 1000))
                             cart.moduleInfo = [value];
                             let inventryIsPromotional = false
                             if (cart.isPromotional == true && referralId) {
@@ -1057,7 +1056,7 @@ more than 10.`
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(Cart)
-                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
+                                .set({ moduleInfo: [value], timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId, downpayment: updatedDownpayment })
                                 .where("id = :id", { id: cart.id })
                                 .execute();
 
@@ -1065,22 +1064,6 @@ more than 10.`
                         } else {
                             newCart["is_available"] = false;
                             newCart["moduleInfo"] = cart.moduleInfo;
-                            // await getConnection()
-                            //     .createQueryBuilder()
-                            //     .delete()
-                            //     .from(CartTravelers)
-                            //     .where(
-                            //         `"cart_id" = '${cart.id}'`
-                            //     )
-                            //     .execute()
-                            // await getConnection()
-                            //     .createQueryBuilder()
-                            //     .delete()
-                            //     .from(Cart)
-                            //     .where(
-                            //         `"id" = '${cart.id}'`
-                            //     )
-                            //     .execute()
                         }
                     } else if (cart.moduleId == ModulesName.HOTEL) {
                         const moduleInfo: any = cart.moduleInfo;
@@ -1102,7 +1085,22 @@ more than 10.`
                             }
 
                             if (roomDetails?.data) {
+                                
                                 newCart["moduleInfo"] = roomDetails.data;
+                                let updatedDownpayment = 0;
+                                if(cart.paymentMethod === PaymentType.INSTALMENT) {
+                                    if(roomDetails.data["items"][0]?.offer_data?.applicable){
+                                        updatedDownpayment = cart.downpayment;
+                                    } else {
+                                        if(cart.paymentFrequency === "weekly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
+                                        } else if(cart.paymentFrequency === "biweekly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
+                                        } else if(cart.paymentFrequency === "monthly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
+                                        }
+                                    }
+                                }
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
                                 newCart["is_conflict"] = false;
@@ -1132,7 +1130,6 @@ more than 10.`
                                 }
 
 
-                                console.log(Math.round(new Date().getTime() / 1000))
                                 cart.moduleInfo = roomDetails;
                                 let inventryIsPromotional = false
                                 if (cart.isPromotional == true && referralId) {
@@ -1142,7 +1139,7 @@ more than 10.`
                                 await getConnection()
                                     .createQueryBuilder()
                                     .update(Cart)
-                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId })
+                                    .set({ moduleInfo: roomDetails.data, timeStamp: Math.round(new Date().getTime() / 1000), isPromotional: inventryIsPromotional, offerFrom: referralId, downpayment: updatedDownpayment })
                                     .where("id = :id", { id: cart.id })
                                     .execute();
                             } else {
@@ -1157,7 +1154,7 @@ more than 10.`
                 } else {
                     newCart["moduleInfo"] = cart.moduleInfo;
                     if ((paymentType == BookingType.INSTALMENT && cart.moduleInfo[0]?.is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && cart.moduleInfo[0]?.is_installment_available == true)) {
-                        newCart["is_payment_type_conflicted"] = true;
+                        newCart["/"] = true;
                     }
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         newCart["is_available"] = true;
@@ -1223,15 +1220,22 @@ more than 10.`
                 newCart["createdDate"] = cart.createdDate;
                 newCart["type"] = cart.module.name;
                 newCart["travelers"] = cart.travelers;
+                newCart["paymentMethod"] = cart.paymentMethod;
+                newCart["downpayment"] = cart.downpayment;
+                newCart["paymentFrequency"] = cart.paymentFrequency;
                 responce.push(newCart);
             }
+            let priceSummary = await Generic.calculatePriceSummary(responce);
+            
+            
             return {
                 data: responce,
                 count: count,
                 cartIsPromotional,
                 error,
                 is_payment_plan_conflict,
-                cart_payment_type: paymentType
+                cart_payment_type: paymentType,
+                price_summary : priceSummary
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
@@ -1270,19 +1274,14 @@ more than 10.`
     }
 
     async flightAvailiblity(cart, flights, user, headers, referralId) {
-        ////console.log('match');
 
         var match = 0;
-        //console.log(flights);
 
         if (flights?.items) {
-            //console.log('cart.moduleInfo[0].unique_code', cart.moduleInfo[0].unique_code);
 
             for await (const flight of flights.items) {
-                //console.log("flight?.unique_code", flight.unique_code);
 
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
-                    ////console.log('match found');
                     match = match + 1;
                     let revalidateFlight: any
                     try {
@@ -1292,7 +1291,6 @@ more than 10.`
                         let data = await this.flightService.airRevalidate(routeIdDto, headers, user, referralId)
                         revalidateFlight = data[0]
                     } catch (e) {
-                        //console.log(e);
 
                         revalidateFlight = {
                             message: `Flight not air-revalidate`
@@ -1474,7 +1472,6 @@ more than 10.`
         logData.id = uuidv4()
         logData.paymentAuthorizeLog = bookCart.auth_url
         logData.timeStamp = Math.round(new Date().getTime() / 1000)
-
         const bookingLog = await logData.save()
         try {
             const {
@@ -1545,7 +1542,7 @@ more than 10.`
                 .orderBy(`cart.id`, "DESC")
                 .limit(10);
             const [result, count] = await query.getManyAndCount();
-
+            
             if (!result.length) {
                 throw new BadRequestException(
                     `Cart is empty.&&&cart&&&${errorMessage}`
@@ -1575,62 +1572,60 @@ more than 10.`
                 throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
             }
 
-            console.log("promotional", promotional, "nonPromotional", nonPromotional)
-
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
-                console.log("cartIsPromotional", cartIsPromotional)
             } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
 
-            console.log("cartIsPromotional", cartIsPromotional)
-
-
             //let ToatalAmount = ''
             for await (const item of result) {
-                if (item.moduleId == ModulesName.FLIGHT) {
-                    const dipatureDate = await this.flightService.changeDateFormat(
-                        item.moduleInfo[0].departure_date
-                    );
-                    if (smallestDate == "") {
-                        smallestDate = dipatureDate;
-                    } else if (
-                        new Date(smallestDate) > new Date(dipatureDate)
-                    ) {
-                        smallestDate = dipatureDate;
-                    }
-                    //console.log(item.moduleInfo[0]);
 
-                    const arrivalDate = await this.flightService.changeDateFormat(
-                        item.moduleInfo[0].arrival_date
-                    );
-                    if (largestDate == "") {
-                        largestDate = arrivalDate;
-                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                        largestDate = arrivalDate;
-                    }
-                } else if (item.moduleId == ModulesName.HOTEL) {
-                    const dipatureDate = item.moduleInfo[0].input_data.check_in;
+                if(item.paymentMethod=='instalment'){
+                    if (item.moduleId == ModulesName.FLIGHT) {
+                        const dipatureDate = await this.flightService.changeDateFormat(
+                            item.moduleInfo[0].departure_date
+                        );
+                        if (smallestDate == "") {
+                            smallestDate = dipatureDate;
+                        } else if (
+                            new Date(smallestDate) > new Date(dipatureDate)
+                        ) {
+                            smallestDate = dipatureDate;
+                        }
+                        //console.log(item.moduleInfo[0]);
 
-                    if (smallestDate == "") {
-                        smallestDate = dipatureDate;
-                    } else if (
-                        new Date(smallestDate) > new Date(dipatureDate)
-                    ) {
-                        smallestDate = dipatureDate;
-                    }
-                    //console.log(item.moduleInfo[0]);
+                        const arrivalDate = await this.flightService.changeDateFormat(
+                            item.moduleInfo[0].arrival_date
+                        );
+                        if (largestDate == "") {
+                            largestDate = arrivalDate;
+                        } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                            largestDate = arrivalDate;
+                        }
+                    } else if (item.moduleId == ModulesName.HOTEL) {
+                        const dipatureDate = item.moduleInfo[0].input_data.check_in;
 
-                    const arrivalDate = item.moduleInfo[0].input_data.check_out;
-                    if (largestDate == "") {
-                        largestDate = arrivalDate;
-                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                        largestDate = arrivalDate;
+                        if (smallestDate == "") {
+                            smallestDate = dipatureDate;
+                        } else if (
+                            new Date(smallestDate) > new Date(dipatureDate)
+                        ) {
+                            smallestDate = dipatureDate;
+                        }
+                        //console.log(item.moduleInfo[0]);
+
+                        const arrivalDate = item.moduleInfo[0].input_data.check_out;
+                        if (largestDate == "") {
+                            largestDate = arrivalDate;
+                        } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                            largestDate = arrivalDate;
+                        }
                     }
                 }
             }
+            console.log("1")
             const cartBook = new CartBooking();
             cartBook.id = uuidv4();
             cartBook.laytripCartId = `LTC${uniqid.time().toUpperCase()}`;
@@ -1644,18 +1639,25 @@ more than 10.`
                     cartBook.referralId = ref?.id || null;
                 }
             }
+            console.log("2")
+            console.log("--------->BookCart Sample", JSON.stringify(cartBook))
+            let payMode = result.findIndex(res=>res.paymentMethod == PaymentType.INSTALMENT);
+            console.log("-----------PAYMODE--------->>>>", payMode)
             cartBook.bookingType =
-                payment_type == "instalment"
+                payMode != 1
                     ? BookingType.INSTALMENT
                     : BookingType.NOINSTALMENT;
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
             bookingLog.cartBookingId = cartData.id
+            console.log("3")
             await bookingLog.save()
+
             let responce = [];
             let successedResult = 0;
             let failedResult = 0;
             let BookingIds = [];
+            let amountToBeCharged=0;
             let flightCount = 0;
             let hotelCount = 0;
             //let mailResponce = []
@@ -1666,6 +1668,9 @@ more than 10.`
                 switch (item.moduleId) {
                     case ModulesName.FLIGHT:
                         flightCount++;
+                        bookCart.payment_type = item.paymentMethod;
+                        bookCart.instalment_type = item.paymentFrequency;
+                        
                         let flightResponce = await this.bookFlight(
                             item,
                             user,
@@ -1682,7 +1687,15 @@ more than 10.`
                         inventryLogs.push(flightResponce["logFile"])
                         if (flightResponce["status"] == 1) {
                             successedResult++;
-
+                            if(item.moduleInfo[0].offer_data.applicable) {
+                                console.log("YES")
+                                amountToBeCharged += bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].discounted_selling_price)
+                                console.log("INSIDE BOOKCART->FLIGHT-<OFFER DATA APPLICABLE->AMOUNT TO BE CHARGE")
+                            } else {
+                                amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling_price);
+                                console.log("INSIDE BOOKCART->FLIGHT-<OFFER DATA NOT APPLICABLE->AMOUNT TO BE CHARGE")
+                            }
+                            
                             BookingIds.push(
                                 flightResponce["detail"]["laytrip_booking_id"]
                             );
@@ -1693,6 +1706,8 @@ more than 10.`
 
                     case ModulesName.HOTEL:
                         hotelCount++;
+                        bookCart.payment_type = item.paymentMethod;
+                        bookCart.instalment_type = item.paymentFrequency;
                         let hotelResponce = await this.bookHotel(
                             item,
                             user,
@@ -1710,7 +1725,14 @@ more than 10.`
                         inventryLogs.push(hotelResponce["logFile"])
                         if (hotelResponce["status"] == 1) {
                             successedResult++;
-
+                            if(item.moduleInfo[0].offer_data.applicable) {
+                                amountToBeCharged += bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].discounted_total);
+                                console.log("INSIDE BOOKCART->HOTEL-<OFFER DATA APPLICABLE->AMOUNT TO BE CHARGE")
+                            } else {
+                                amountToBeCharged+=bookCart.payment_type=='instalment'?Number(item.downpayment):Number(item.moduleInfo[0].selling.total);
+                                console.log("INSIDE BOOKCART->-<OFFER DATA NOT APPLICABLE->AMOUNT TO BE CHARGE")
+                            }
+                            
                             BookingIds.push(
                                 hotelResponce["detail"]["laytrip_booking_id"]
                             );
@@ -1723,7 +1745,6 @@ more than 10.`
                         break;
                 }
             }
-            console.log(BookingIds);
             bookingLog.cartBookLog = inventryLogs
             await bookingLog.save()
             if (successedResult) {
@@ -1736,20 +1757,20 @@ more than 10.`
                     await this.sattelInstalment(cartData.id,
                         instalment_type, smallestDate, selected_down_payment)
                 }
-                if (failedResult > 0) {
+                /* if (failedResult > 0) {
                     partialAmount = await this.calculatePartialAmountAndSattelAmount(
                         cartData.id,
                         payment_type
                     );
-
-
-                }
+                } */
+                console.log("partialAmount 1",amountToBeCharged)
+                
                 const payment = await this.capturePayment(
                     BookingIds,
                     transaction_token,
                     paymentType,
                     user.userId,
-                    partialAmount
+                    amountToBeCharged
                 );
 
                 let metaData = payment.meta_data
@@ -1763,21 +1784,7 @@ more than 10.`
                     failedResult
                 );
 
-                // if (failedResult > 0 && payment.status == true) {
-                //     let refaund = await this.refundCart(
-                //         cartData.id,
-                //         Headers,
-                //         payment_type,
-                //         instalment_type,
-                //         smallestDate,
-                //         selected_down_payment,
-                //         payment.reference_token,
-                //         user.userId
-                //     );
-
-                //     bookingLog.paymentRefundLog = refaund
-                //     await bookingLog.save()
-                // }
+                
             } else {
                 const payment = await this.paymentService.voidCard(
                     transaction_token,
@@ -1868,14 +1875,8 @@ more than 10.`
                     totalAmount,
                     smallestDate,
                     date1,
-                    0,
-                    0,
-                    0,
-                    selected_down_payment,
-                    true,
-                    null,
-                    true,
-                    downPayments
+                    downPayments[0],
+                    true
                 );
             }
             if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -1883,14 +1884,8 @@ more than 10.`
                     totalAmount,
                     smallestDate,
                     date1,
-                    0,
-                    0,
-                    0,
-                    selected_down_payment,
-                    true,
-                    null,
-                    true,
-                    downPayments
+                    downPayments[0],
+                    true
                 );
             }
             if (instalment_type == InstalmentType.MONTHLY) {
@@ -1898,14 +1893,8 @@ more than 10.`
                     totalAmount,
                     smallestDate,
                     date1,
-                    0,
-                    0,
-                    0,
-                    selected_down_payment,
-                    true,
-                    null,
-                    true,
-                    downPayments
+                    downPayments[0],
+                    true
                 );
             }
 
@@ -2049,14 +2038,7 @@ more than 10.`
                         totalAmount,
                         smallestDate,
                         date1,
-                        0,
-                        0,
-                        0,
-                        selected_down_payment,
-                        false,
-                        downPayment,
-                        true,
-                        downPayments
+                        downPayments[0]
                     );
                 }
                 if (instalment_type == InstalmentType.BIWEEKLY) {
@@ -2064,14 +2046,7 @@ more than 10.`
                         totalAmount,
                         smallestDate,
                         date1,
-                        0,
-                        0,
-                        0,
-                        selected_down_payment,
-                        false,
-                        downPayment,
-                        true,
-                        downPayments
+                        downPayments[0]
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -2079,14 +2054,7 @@ more than 10.`
                         totalAmount,
                         smallestDate,
                         date1,
-                        0,
-                        0,
-                        0,
-                        selected_down_payment,
-                        false,
-                        downPayment,
-                        true,
-                        downPayments
+                        downPayments[0]
                     );
                 }
                 //console.log("instalmentDetails", instalmentDetails)
@@ -2144,7 +2112,6 @@ more than 10.`
             userId,
             Math.ceil(partialAmount * 100)
         );
-        console.log("captureCardresult", captureCardresult);
 
         if (captureCardresult.status == true) {
             if (payment_type == BookingType.INSTALMENT) {
@@ -2333,9 +2300,6 @@ more than 10.`
                     
                 };
 
-                console.log("cartBook request");
-
-                //console.log(bookingdto);
                 newCart["detail"] = await this.flightService.cartBook(
                     bookingdto,
                     Headers,
@@ -2348,13 +2312,8 @@ more than 10.`
                     referral_id
                 );
 
-                console.log(" newCart[detail]", newCart["detail"])
-
                 logFile[reservationId] = newCart["detail"]['logData']
-                console.log('logFile', logFile)
                 newCart["logFile"] = logFile
-                console.log('logFile', logFile)
-                //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
             newCart["detail"] = {
@@ -2441,24 +2400,18 @@ more than 10.`
         let flightRequest;
 
         const value = cart.oldModuleInfo;
-        console.log("hhhhh", cart.travelers.length);
 
         let newCart = {};
         newCart["id"] = cart.id;
-        console.log("hhhhh", "a");
         newCart["userId"] = cart.userId;
-        console.log("hhhhh", "b");
         newCart["moduleId"] = cart.moduleId;
         newCart["isDeleted"] = cart.isDeleted;
-        console.log("hhhhh", "3");
         newCart["createdDate"] = cart.createdDate;
         newCart["status"] = BookingStatus.FAILED;
         newCart["type"] = cart.module.name;
-        console.log("hhhhh", "c");
         if (value) {
             let travelers = [];
             if (!cart.travelers?.length) {
-                console.log("undefinde traveler");
                 newCart["status"] = BookingStatus.FAILED;
                 newCart["detail"] = {
                     statusCode: 422,
@@ -2483,9 +2436,7 @@ more than 10.`
                     reservationId
                 );
             } else {
-                console.log("hhhhh", "1");
                 for await (const traveler of cart.travelers) {
-                    //console.log(traveler);
                     let travelerUser = {
                         traveler_id: traveler.userId,
                         traveler: traveler.traveler,
@@ -2493,7 +2444,6 @@ more than 10.`
                     };
                     travelers.push(travelerUser);
                 }
-                console.log("hhhhh", "2");
 
                 const bookingdto: BookHotelCartDto = {
                     travelers,
@@ -2511,9 +2461,6 @@ more than 10.`
                     reservationId
                 };
 
-                console.log("cartBook request");
-
-                console.log(bookingdto);
                 newCart["detail"] = await this.hotelService.cartBook(
                     bookingdto,
                     Headers,
@@ -2525,14 +2472,10 @@ more than 10.`
                     referral_id,
                     cartIsPromotional
                 );
-                console.log("newCart[detail]", newCart["detail"])
                 logFile[reservationId] = newCart["detail"]['logData']
                 newCart["logFile"] = logFile
-                //console.log(JSON.stringify(newCart['detail']));
             }
         } else {
-            console.log(value);
-
             newCart["detail"] = {
                 message: "Module info not found .",
             };
@@ -2552,9 +2495,6 @@ more than 10.`
             );
             return newCart;
         }
-        console.log(newCart["detail"]);
-        console.log(newCart["detail"]["statusCode"]);
-        console.log(newCart["detail"]["error"]);
 
         if (!newCart["detail"]["statusCode"] && !newCart["detail"]["error"]) {
             newCart["status"] = BookingStatus.CONFIRM;
@@ -2572,7 +2512,6 @@ more than 10.`
                 .where(`"id" = '${cart.id}'`)
                 .execute();
         } else {
-            console.log("failed booking");
             await this.saveFailedBooking(
                 cartData.id,
                 cart.moduleInfo,
@@ -3034,9 +2973,7 @@ more than 10.`
     //     );
     // }
 
-    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType) {
-
-        console.log(cartIsPromotional)
+    async addHotelIntoCart(ppnBundle: string, user, referralId, cartIsPromotional, paymentType, paymentFrequency, downpayment, paymentMethod) {
         let roomDetails = await this.hotelService.availability(
             {
                 room_ppn: ppnBundle,
@@ -3044,18 +2981,17 @@ more than 10.`
             user.userId || null,
             referralId
         );
-        console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
+        // console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
         if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
             throw new ConflictException(`In cart not-promotional item found`)
         }
-
         if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
             throw new ConflictException(`In cart promotional item found`)
         }
 
-        if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0].is_installment_available == true)) {
+        /* if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0].is_installment_available == true)) {
             throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
-        }
+        } */
 
 
         const cart = new Cart();
@@ -3074,6 +3010,9 @@ more than 10.`
         cart.paymentType = roomDetails.data["items"][0].is_installment_available ? BookingType.INSTALMENT : BookingType.NOINSTALMENT
 
         let depatureDate = cart.moduleInfo["items"][0]?.input_data?.check_in;
+        cart.paymentMethod = paymentMethod;
+        cart.paymentFrequency = paymentFrequency || "";
+        cart.downpayment = downpayment || 0;
 
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
@@ -3097,4 +3036,6 @@ more than 10.`
         const result = await query.getOne();
         return result;
     }
+
+    
 }

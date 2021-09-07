@@ -14,6 +14,7 @@ import { catchError, map } from "rxjs/operators";
 import { LandingPage } from "src/utility/landing-page.utility";
 import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
 import { InstalmentType } from "src/enum/instalment-type.enum";
+import { CostExplorer } from "aws-sdk";
 
 export class Search {
     private item: any;
@@ -52,10 +53,7 @@ export class Search {
             for (let hotel of results.results.hotel_data) {
                 /// for alpha server condition bypass by parth virani
                 if (
-                    (hotel["room_data"][0]["rate_data"][0].payment_type ==
-                        "PREPAID" &&
-                        hotel["room_data"][0]["rate_data"][0].is_cancellable ==
-                        "true") || 1 == 1
+                    (hotel["room_data"][0]["rate_data"][0].payment_type =="PREPAID")
                 ) {
                     this.item = hotel;
                     this.rate = hotel["room_data"][0]["rate_data"][0];
@@ -69,6 +67,10 @@ export class Search {
                         saving_percent, net_rate,
                         discounted_selling_price
                     } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
+
+                    if(parameters.is_refundable == "no" && this.rate.is_cancellable == "true") {
+                        continue
+                    }
                     if (selling['discounted_total'] > 25) {
                         let details = this.detailHelper.getHotelDetails(
                             hotel,
@@ -88,39 +90,19 @@ export class Search {
                         let discounted_start_price = 0;
                         let discounted_secondary_start_price = 0;
                         let discounted_no_of_weekly_installment = 0;
-                        // let instalmentDetails = Instalment.weeklyInstalment(
-                        //     selling.total,
-                        //     parameters.check_in,
-                        //     bookingDate,
-                        //     0,
-                        //     null,
-                        //     null,
-                        //     0
-                        // );
-
-
-
-
-
-                        //const is_installment_available = instalmentDetails.instalment_available
 
                         if (paymentConfig?.isInstallmentAvailable) {
-
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
-                            let downPaymentOption: any = paymentConfig.downPaymentOption
+                            let downPaymentOption: any;
+                            downPaymentOption = paymentConfig.downPaymentOption
+                            //console.log("weeklyCustomDownPayment",weeklyCustomDownPayment,offerData)
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
                                 let instalmentDetails = Instalment.weeklyInstalment(
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    0,
-                                    null,
-                                    null,
-                                    0,
-                                    false,
-                                    weeklyCustomDownPayment,
-                                    paymentConfig.isDownPaymentInPercentage,
-                                    downPaymentOption
+                                    weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                                    weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                                 );
                                 if (instalmentDetails.instalment_available) {
                                     start_price =
@@ -132,6 +114,7 @@ export class Search {
                                             .instalment_amount;
                                     no_of_weekly_installment =
                                         instalmentDetails.instalment_date.length - 1;
+                                    console.log(instalmentDetails)
                                 }
 
                             }
@@ -141,14 +124,8 @@ export class Search {
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    0,
-                                    null,
-                                    null,
-                                    0,
-                                    false,
-                                    null,
-                                    paymentConfig.isDownPaymentInPercentage,
-                                    downPaymentOption
+                                    downPaymentOption[0],
+                                    paymentConfig.isDownPaymentInPercentage
                                 );
 
                                 second_down_payment =
@@ -167,14 +144,8 @@ export class Search {
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    0,
-                                    null,
-                                    null,
-                                    0,
-                                    false,
-                                    null,
-                                    paymentConfig.isDownPaymentInPercentage,
-                                    downPaymentOption
+                                    downPaymentOption[0],
+                                    paymentConfig.isDownPaymentInPercentage
                                 );
                                 third_down_payment =
                                     instalmentDetails3.instalment_date[0]
@@ -191,14 +162,8 @@ export class Search {
                                 selling['discounted_total'],
                                 parameters.check_in,
                                 bookingDate,
-                                0,
-                                null,
-                                null,
-                                0,
-                                false,
-                                weeklyCustomDownPayment,
-                                paymentConfig.isDownPaymentInPercentage,
-                                downPaymentOption
+                                weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                                weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                             );
 
                             if (discountedInstalmentDetails.instalment_available) {
@@ -216,6 +181,7 @@ export class Search {
                         let payment_object
 
                         if (offerData.applicable) {
+                            //console.log("discounted_start_price",discounted_start_price)
                             paymentConfig.isInstallmentAvailable = true
                             payment_object = {
                                 installment_type: InstalmentType.WEEKLY,
@@ -300,7 +266,7 @@ export class Search {
                             payment_object
                         };
 
-                        hotels.push(newItem);
+                        hotels.push(newItem)
                     }
                 }
             }

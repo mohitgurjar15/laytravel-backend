@@ -59,6 +59,8 @@ import { PredictiveBookingData } from "src/entity/predictive-booking-data.entity
 import { LandingPage } from "src/utility/landing-page.utility";
 import { HotelCity } from "src/entity/hotel-city.entity";
 import { HotelCityDto } from "./dto/hote-city.dto";
+import { ModulesName } from "src/enum/module.enum";
+import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
 
 @Injectable()
 export class HotelService {
@@ -748,6 +750,7 @@ export class HotelService {
                 cartCount,
                 reservationId
             } = bookHotelCartDto;
+            console.log("--------BOOK HOTEL CART DTO-------->>>>>", bookHotelCartDto)
             const availabilityDto: AvailabilityDto = {
                 room_ppn: bundle,
             };
@@ -760,16 +763,18 @@ export class HotelService {
                 user.userId,
                 cartIsPromotional ? referral_id : ''
             );
+            console.log("------>>>>INSIDE HOTEL SERVICE 1<<<<<--------")
             logData['revalidation-log'] = hotelAvailability.data["fileName"]
+            console.log("------>>>>INSIDE HOTEL SERVICE 2<<<<<--------")
             let availability = hotelAvailability.data.items;
             //console.log("Availability", availability);
 
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
             //console.log(availability[0].input_data.num_adults);
-
+            // console.log("--------AVAILABILITY----------",availability)
             if (availability) {
-                //console.log("1");
+                console.log("1");
 
                 bookingRequestInfo.adult_count =
                     availability[0].input_data.num_adults;
@@ -786,9 +791,11 @@ export class HotelService {
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         availability[0].selling['discounted_total'];
+                    console.log("%%%%INSTALLMENT%%%%%%")
                 } else {
                     bookingRequestInfo.selling_price =
                         availability[0].selling['discounted_total'];
+                        console.log("%%%%NO INSTALLMENT%%%%%%")
                 }
 
                 bookingRequestInfo.departure_date =
@@ -827,7 +834,7 @@ export class HotelService {
             
             if (payment_type == PaymentType.INSTALMENT) {
                 let instalmentDetails;
-
+                console.log("+++++++==+++++++++++++++")
                 let totalAdditionalAmount = additional_amount || 0;
                 //console.log("test1");
                 if (laycredit_points > 0) {
@@ -843,6 +850,9 @@ export class HotelService {
                 ) > 90) {
                     downPayments = [20, 30, 40]
                 }
+                let daysUtilDepature = moment(availability[0].input_data.check_in).diff(moment().format("YYYY-MM-DD"), 'days')
+                let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(ModulesName.HOTEL, 0, daysUtilDepature)
+                let downPaymentOption: any = paymentConfig.downPaymentOption
                 if (instalment_type == InstalmentType.WEEKLY) {
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(availability[0].offer_data, 0);
                     if (cartIsPromotional) {
@@ -851,13 +861,8 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            0,
-                            null,
-                            null,
-                            0,
-                            cartCount > 1 ? true : false,
                             weeklyCustomDownPayment,
-                            true, downPayments
+                            cartCount > 1 ? true : false
                         );
                         console.log(instalmentDetails)
 
@@ -866,12 +871,9 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            totalAdditionalAmount,
-                            custom_instalment_amount,
-                            custom_instalment_no,
-                            selected_down_payment,
+                            downPaymentOption[0],
                             cartCount > 1 ? true : false,
-                            null, true, downPayments
+                            
                         );
                     }
                 }
@@ -881,12 +883,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false,
-                        null, true, downPayments
+                        downPaymentOption[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log("test4");
@@ -895,12 +893,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        totalAdditionalAmount,
-                        custom_instalment_amount,
-                        custom_instalment_no,
-                        selected_down_payment,
-                        cartCount > 1 ? true : false,
-                        null, true, downPayments
+                        downPaymentOption[0],
+                        cartCount > 1 ? true : false
                     );
                 }
                 //console.log(instalmentDetails);
@@ -972,12 +966,12 @@ export class HotelService {
                         }
                     }
                     //console.log("bookData DTO", bookData);
-
+                    console.log("******************************************************")
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
                     );
-
+                    console.log("******************************************************++++")
                     logData['supplier_side_booking_log'] = bookingResult["fileName"]
 
                     console.log("bookingResult?.status", bookingResult?.status);
@@ -1045,6 +1039,7 @@ export class HotelService {
 
                 }
             } else if (payment_type == PaymentType.NOINSTALMENT) {
+                console.log("INSIDE ELSE IF------->NO_INSTALLMENT")
                 let sellingPrice = selling_price;
                 if (laycredit_points > 0) {
                     sellingPrice = selling_price - laycredit_points;
@@ -1117,8 +1112,9 @@ export class HotelService {
                         bookData,
                         user.userId
                     );
+                    console.log("--------BOOKING RESULT------->>>>>", bookingResult)
                     logData['supplier_side_booking_log'] = bookingResult["fileName"]
-                    console.log("bookingResult?.status", bookingResult?.status);
+                    console.log("bookingResult?.status", bookingResult.status);
 
                     if (bookingResult?.status != "success") {
                         return {
