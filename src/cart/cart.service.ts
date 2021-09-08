@@ -984,7 +984,7 @@ more than 10.`
 
             for (let index = 0; index < result.length; index++) {
                 const cart = result[index];
-
+                
                 let newCart = {};
 
                 var difference = unixTimestamp - (cart.timeStamp || 0);
@@ -992,9 +992,10 @@ more than 10.`
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
+                        live_availiblity == "yes" && minuteDifference > 1) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
+                        
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
@@ -1007,7 +1008,7 @@ more than 10.`
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
 
-                            if(cart.paymentMethod === PaymentType.INSTALMENT) {
+                            if(cart.paymentMethod === PaymentType.INSTALMENT) { 
                                 if(value.offer_data.applicable) {
                                     updatedDownpayment = cart.downpayment;
                                 } else {
@@ -1083,21 +1084,21 @@ more than 10.`
                                 newCart["moduleInfo"] = cart.moduleInfo;
                                 newCart["error"] = error?.message;
                             }
-
                             if (roomDetails?.data) {
-                                
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
-                                if(cart.paymentMethod === PaymentType.INSTALMENT) {
-                                    if(roomDetails.data["items"][0]?.offer_data?.applicable){
-                                        updatedDownpayment = cart.downpayment;
-                                    } else {
-                                        if(cart.paymentFrequency === "weekly") {
-                                            updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
-                                        } else if(cart.paymentFrequency === "biweekly") {
-                                            updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
-                                        } else if(cart.paymentFrequency === "monthly") {
-                                            updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
+                                if(cart.paymentMethod == PaymentType.INSTALMENT) {
+                                    if(cart.paymentFrequency != "") {
+                                        if(roomDetails.data["items"][0]?.offer_data?.applicable){
+                                            updatedDownpayment = cart.downpayment;
+                                        } else {
+                                            if(cart.paymentFrequency == "weekly") {
+                                                updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
+                                            } else if(cart.paymentFrequency == "biweekly") {
+                                                updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
+                                            } else if(cart.paymentFrequency == "monthly") {
+                                                updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
+                                            }
                                         }
                                     }
                                 }
