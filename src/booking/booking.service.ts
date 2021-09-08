@@ -810,6 +810,7 @@ export class BookingService {
                 responce.push(cartResponce);
             } */
 
+            let totalInstallmentAmount;
             for await (const cart of CartList) {
                 
                 let paidAmount = 0;
@@ -819,11 +820,11 @@ export class BookingService {
                 let totalAmount = 0;
                 let nextInstallmentDate = cart.bookings[0].nextInstalmentDate;
                 const currency = cart.bookings[0].currency2;
+                totalInstallmentAmount = 0;
                 
                 let cartInstallments = [];
                 
                 for(let i=0; i < cart.bookings.length; i++){
-
                     if(cart.bookings[i].bookingType == BookingType.INSTALMENT){
                         downPayment +=parseFloat(cart.bookings[i].bookingInstalments[0].amount)
 
@@ -840,13 +841,14 @@ export class BookingService {
                         }
                         cartInstallments = [...cartInstallments,...cart.bookings[i].bookingInstalments];
                         totalAmount += parseFloat(cart.bookings[i].totalAmount);
+                        totalInstallmentAmount += parseFloat(cart.bookings[i].totalAmount);
                         //priceSummary.shift();
                     }
                     else{
                         downPayment +=parseFloat(cart.bookings[i].totalAmount)
                     }
                 }
-                
+                console.log("-----------------CART INSTALLMENT------------------", JSON.stringify(cartInstallments))
                 let priceSummary=[];
                 for(let k=0; k < cartInstallments.length; k++){
                     
@@ -928,6 +930,7 @@ export class BookingService {
                 cartResponce["totalDownpayment"] = Generic.formatPriceDecimal(downPayment);
                 cartResponce["nextInstallmentDate"] = nextInstallmentDate;
                 cartResponce["currency"] = currency;
+                cartResponce["totalInstallment"] = Generic.formatPriceDecimal(totalInstallmentAmount);
                 if (installmentType) {
                     cartResponce["installmentType"] = installmentType;
                 }
