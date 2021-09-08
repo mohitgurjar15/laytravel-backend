@@ -3496,7 +3496,6 @@ export class FlightService {
                 route_code,
                 additional_amount,
                 custom_instalment_amount,
-                custom_instalment_no,
                 laycredit_points,
                 card_token,
                 booking_through,
@@ -3514,7 +3513,6 @@ export class FlightService {
                 cartIsPromotional == true ? referral_id : ''
             );
             
-            console.log(logData);
 
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
@@ -3591,10 +3589,9 @@ export class FlightService {
                 travelers,
                 isPassportRequired
             );
-            console.log("travelersDetails", travelersDetails);
+            
             let currencyId = headerDetails.currency.id;
             const userId = user.userId;
-            console.log("userId", userId);
             if (adult_count != travelersDetails.adults.length) {
                 return {
                     statusCode: 422,
@@ -3631,7 +3628,7 @@ export class FlightService {
                 ) > 90) {
                     downPayments = [20, 30, 40]
                 } */
-                let instalmentEligibility: {
+                /* let instalmentEligibility: {
                     available: boolean;
                     categoryId: number;
                 } | {
@@ -3665,7 +3662,7 @@ export class FlightService {
                     paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(1, instalmentEligibility.categoryId, daysUtilDepature)
                     paymentConfigCase[configCaseIndex] = paymentConfig
                 }
-                let downPaymentOption: any = paymentConfig.downPaymentOption
+                let downPaymentOption: any = paymentConfig.downPaymentOption */
 
                 //save entry for future booking
                 if (instalment_type == InstalmentType.WEEKLY) {
@@ -3679,8 +3676,8 @@ export class FlightService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            weeklyCustomDownPayment,
-                            cartCount > 1 ? true : false,
+                            custom_instalment_amount,
+                            false,
                         );
                         console.log(instalmentDetails)
 
@@ -3689,8 +3686,8 @@ export class FlightService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            downPaymentOption[0],
-                            cartCount > 1 ? true : false
+                            custom_instalment_amount,
+                            false
                         );
                     }
 
@@ -3700,8 +3697,8 @@ export class FlightService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        downPaymentOption[0],
-                        cartCount > 1 ? true : false
+                        custom_instalment_amount,
+                        false
                     );
                 }
                 if (instalment_type == InstalmentType.MONTHLY) {
@@ -3709,8 +3706,8 @@ export class FlightService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        downPaymentOption[0],
-                        cartCount > 1 ? true : false
+                        custom_instalment_amount,
+                        false
                     );
                 }
 
@@ -3721,11 +3718,6 @@ export class FlightService {
                         firstInstalemntAmount =
                             firstInstalemntAmount - laycredit_points;
                     }
-                    /* Call mystifly booking API if checkin date is less 3 months */
-                    let dayDiff = moment(departure_date).diff(
-                        bookingDate,
-                        "days"
-                    );
                     let bookingResult;
                     // if (dayDiff <= 90) {
                     //     const mystifly = new Strategy(
@@ -3737,8 +3729,6 @@ export class FlightService {
                     //         isPassportRequired
                     //     );
                     // }
-
-                    let authCardToken = transaction_token;
 
                     console.log("req for save booking");
                     let laytripBookingResult = await this.saveBooking(
@@ -3756,16 +3746,7 @@ export class FlightService {
                         reservationId,
                         referral_id
                     );
-
-                    //     this.bookingUpdateFromSupplierside(
-                    //         laytripBookingResult.laytripBookingId,
-                    //         {
-                    //             supplier_booking_id:
-                    //                 laytripBookingResult.supplierBookingId,
-                    //         },
-                    //         1
-                    //     );
-                    // }
+                    
                     return {
                         laytrip_booking_id: laytripBookingResult.id,
                         booking_status: "pending",
@@ -3800,10 +3781,7 @@ export class FlightService {
                         isPassportRequired
                     );
                     logData['supplier_side_booking_log'] = bookingResult['log_file']
-                    // let bookingResult: any = {
-                    // 	booking_status: "success"
-                    // }
-                    let authCardToken = transaction_token;
+                    
                     if (bookingResult.booking_status == "success") {
                         let laytripBookingResult = await this.saveBooking(
                             bookingRequestInfo,
@@ -3854,45 +3832,6 @@ export class FlightService {
                         };
                     }
                 }
-                // else {
-                // 	//for full laycredit rdeem
-                // 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-                // 	const bookingResult = await mystifly.bookFlight(
-                // 		bookFlightDto,
-                // 		travelersDetails,
-                // 		isPassportRequired
-                // 	);
-                // 	if (bookingResult.booking_status == "success") {
-
-                // 		let laytripBookingResult = await this.saveBooking(
-                // 			bookingRequestInfo,
-                // 			currencyId,
-                // 			bookingDate,
-                // 			BookingType.NOINSTALMENT,
-                // 			userId,
-                // 			airRevalidateResult,
-                // 			null,
-                // 			null,
-                // 			bookingResult,
-                // 			travelers,
-                //			cartId
-                // 		);
-                // 		//send email here
-                // 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
-                // 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
-
-                // 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-                // 			laytripBookingResult.laytripBookingId
-                // 		);
-                // 		return bookingResult;
-                // 	} else {
-
-                // 			return {
-                // 				status: 424,
-                // 				message: bookingResult.error_message,
-                // 			}
-                // 	}
-                // }
             }
         } catch (error) {
             return {
