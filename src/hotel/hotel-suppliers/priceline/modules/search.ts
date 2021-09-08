@@ -61,6 +61,9 @@ export class Search {
                         departure: hotel['address']['city_name'], checkInDate: parameters.check_in, state: hotel['address']['state_name']
                     }
                     let offerData = LandingPage.getOfferData(referralId, 'hotel', searchData)
+                    if(this.rate.is_cancellable=='false'){
+                        offerData.applicable=false;
+                    }
                     let {
                         retail,
                         selling,
@@ -68,7 +71,7 @@ export class Search {
                         discounted_selling_price
                     } = this.rateHelper.getRates(this.rate, parameters, null, [], offerData);
 
-                    if(parameters.is_refundable == "no" && this.rate.is_cancellable == "true") {
+                    if(parameters.is_refundable == "yes" && this.rate.is_cancellable == "false") {
                         continue
                     }
                     if (selling['discounted_total'] > 25) {
@@ -91,18 +94,39 @@ export class Search {
                         let discounted_secondary_start_price = 0;
                         let discounted_no_of_weekly_installment = 0;
 
+                        let downpayment=0;
+                        let isPerenctageDownpayment=true;
+                        
+
                         if (paymentConfig?.isInstallmentAvailable) {
                             let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                             let downPaymentOption: any;
                             downPaymentOption = paymentConfig.downPaymentOption
+                            
+                            
                             //console.log("weeklyCustomDownPayment",weeklyCustomDownPayment,offerData)
                             if (paymentConfig.isWeeklyInstallmentAvailable) {
+
+                                if(this.rate.is_cancellable=='false'){
+                                    downpayment=60;
+                                    isPerenctageDownpayment=true;
+                                    offerData.applicable=false;
+                                }
+                                else if(weeklyCustomDownPayment!=null){
+                                    downpayment=weeklyCustomDownPayment;
+                                    isPerenctageDownpayment=false;
+                                }
+                                else{
+                                    downpayment=downPaymentOption[0];
+                                    isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                                }
+
                                 let instalmentDetails = Instalment.weeklyInstalment(
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
-                                    weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
+                                    downpayment,
+                                    isPerenctageDownpayment
                                 );
                                 if (instalmentDetails.instalment_available) {
                                     start_price =
@@ -120,12 +144,20 @@ export class Search {
                             }
 
                             if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                                if(this.rate.is_cancellable=='false'){
+                                    downpayment=60;
+                                    isPerenctageDownpayment=true;
+                                }
+                                else{
+                                    downpayment=downPaymentOption[0];
+                                    isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                                }
                                 let instalmentDetails2 = Instalment.biWeeklyInstalment(
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    downPaymentOption[0],
-                                    paymentConfig.isDownPaymentInPercentage
+                                    downpayment,
+                                    isPerenctageDownpayment
                                 );
 
                                 second_down_payment =
@@ -140,12 +172,21 @@ export class Search {
 
 
                             if (paymentConfig.isMonthlyInstallmentAvailable) {
+                                if(this.rate.is_cancellable=='false'){
+                                    downpayment=60;
+                                    isPerenctageDownpayment=true;
+                                }
+                                else{
+                                    downpayment=downPaymentOption[0];
+                                    isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                                }
+
                                 let instalmentDetails3 = Instalment.monthlyInstalment(
                                     selling.total,
                                     parameters.check_in,
                                     bookingDate,
-                                    downPaymentOption[0],
-                                    paymentConfig.isDownPaymentInPercentage
+                                    downpayment,
+                                    isPerenctageDownpayment
                                 );
                                 third_down_payment =
                                     instalmentDetails3.instalment_date[0]
@@ -157,13 +198,25 @@ export class Search {
                                     instalmentDetails3.instalment_date.length - 1;
                             }
 
-
+                            if(this.rate.is_cancellable=='false'){
+                                downpayment=60;
+                                isPerenctageDownpayment=true;
+                                offerData.applicable=false;
+                            }
+                            else if(weeklyCustomDownPayment!=null){
+                                downpayment=weeklyCustomDownPayment;
+                                isPerenctageDownpayment=false;
+                            }
+                            else{
+                                downpayment=downPaymentOption[0];
+                                isPerenctageDownpayment=paymentConfig.isDownPaymentInPercentage;
+                            }
                             let discountedInstalmentDetails = Instalment.weeklyInstalment(
                                 selling['discounted_total'],
                                 parameters.check_in,
                                 bookingDate,
-                                weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
-                                weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
+                                downpayment,
+                                isPerenctageDownpayment
                             );
 
                             if (discountedInstalmentDetails.instalment_available) {
