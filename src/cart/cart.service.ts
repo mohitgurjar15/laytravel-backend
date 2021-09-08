@@ -965,7 +965,7 @@ more than 10.`
 
             for (let index = 0; index < result.length; index++) {
                 const cart = result[index];
-
+                
                 let newCart = {};
 
                 var difference = unixTimestamp - (cart.timeStamp || 0);
@@ -976,6 +976,7 @@ more than 10.`
                         live_availiblity == "yes" && minuteDifference > 1) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
+                        
                         const value = await this.flightAvailiblity(
                             cart,
                             flightResponse[cart.id],
@@ -1065,9 +1066,7 @@ more than 10.`
                                 newCart["moduleInfo"] = cart.moduleInfo;
                                 newCart["error"] = error?.message;
                             }
-
                             if (roomDetails?.data) {
-                                
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
                                 if(cart.paymentMethod === PaymentType.INSTALMENT) {
