@@ -1008,7 +1008,11 @@ more than 10.`
                             let updatedDownpayment = 0;
 
                             if(cart.paymentMethod === PaymentType.INSTALMENT) {
-                                if(value.offer_data.applicable) {
+                                console.log("I am in 1",JSON.stringify(value))
+                                if(value.refundable=='false'){
+                                    updatedDownpayment = (value.moduleInfo[0].selling.total*60)/100;
+                                }
+                                else if(value.offer_data.applicable) {
                                     updatedDownpayment = cart.downpayment;
                                 } else {
                                     if(cart.paymentFrequency === "weekly") {

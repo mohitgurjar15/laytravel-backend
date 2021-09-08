@@ -3,6 +3,7 @@ import { getManager } from "typeorm";
 import * as moment from 'moment';
 import { flightDataUtility } from "./flight-data.utility";
 import { NotFoundException } from "@nestjs/common";
+import { LaytripCategory } from "src/entity/laytrip-category.entity";
 
 export class RouteCategory {
 
@@ -63,11 +64,15 @@ export class RouteCategory {
                 .where("flight_route.from_airport_code In (:departureCode) and flight_route.to_airport_code In (:arrivalCode) and is_deleted=false", { departureCode: searchData.departure, arrivalCode: searchData.arrival })
                 .leftJoinAndSelect("flight_route.category", "category")
                 .getOne();
-            
-            if (routeDetails?.category?.isInstallmentAvailable) {
-                return { available: true, categoryId: routeDetails?.category?.id };
-            } else {
-                return { available: false, categoryId: routeDetails?.category?.id }
+                if (routeDetails?.category?.isInstallmentAvailable) {
+                    return { available: true, categoryId: routeDetails?.category?.id };
+                } else {
+                let categoryDetails = await getManager()
+                .createQueryBuilder(LaytripCategory, "laytrip_category")
+                .where("laytrip_category.name = :name ", { name:'Unclear' })
+                .getOne();
+                console.log("categoryDetails",categoryDetails)
+                return { available: categoryDetails.isInstallmentAvailable, categoryId: categoryDetails.id }
             }
             
         }

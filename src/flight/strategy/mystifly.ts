@@ -557,9 +557,7 @@ export class Mystifly implements StrategyAirline {
                     }
 
                     route.payment_config = paymentConfig || {}
-
-                    //console.log("paymentConfig", paymentConfig)
-                    console.log("I am in 1")
+                    
                     if (instalmentEligibility.available && typeof paymentConfig != 'undefined') {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
@@ -629,7 +627,6 @@ export class Mystifly implements StrategyAirline {
                             weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                             weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                         );
-                        console.log("I am in 1.4",discountedInstalmentDetails)
 
                         if (discountedInstalmentDetails.instalment_available) {
                             route.discounted_start_price =
@@ -643,7 +640,6 @@ export class Mystifly implements StrategyAirline {
                         }
                     }
 
-                    console.log("I am in 2")
                     if (offerData.applicable && typeof paymentConfig != 'undefined') {
                         instalmentEligibility.available = true
                         route.payment_object = {
