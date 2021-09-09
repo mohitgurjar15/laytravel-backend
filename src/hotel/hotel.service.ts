@@ -843,7 +843,7 @@ export class HotelService {
                 }
                 //console.log("test2");
                 //save entry for future booking
-                let downPayments = [40, 50, 60]
+                /* let downPayments = [40, 50, 60]
                 if (moment(smallestDipatureDate).diff(
                     moment().format("YYYY-MM-DD"),
                     "days"
@@ -852,7 +852,7 @@ export class HotelService {
                 }
                 let daysUtilDepature = moment(availability[0].input_data.check_in).diff(moment().format("YYYY-MM-DD"), 'days')
                 let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(ModulesName.HOTEL, 0, daysUtilDepature)
-                let downPaymentOption: any = paymentConfig.downPaymentOption
+                let downPaymentOption: any = paymentConfig.downPaymentOption */
                 if (instalment_type == InstalmentType.WEEKLY) {
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(availability[0].offer_data, 0);
                     if (cartIsPromotional) {
@@ -861,8 +861,8 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            weeklyCustomDownPayment,
-                            cartCount > 1 ? true : false
+                            custom_instalment_amount,
+                            false
                         );
                         console.log(instalmentDetails)
 
@@ -871,8 +871,8 @@ export class HotelService {
                             selling_price,
                             smallestDipatureDate,
                             bookingDate,
-                            downPaymentOption[0],
-                            cartCount > 1 ? true : false,
+                            custom_instalment_amount,
+                            false,
                             
                         );
                     }
@@ -883,8 +883,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        downPaymentOption[0],
-                        cartCount > 1 ? true : false
+                        custom_instalment_amount,
+                        false
                     );
                 }
                 //console.log("test4");
@@ -893,8 +893,8 @@ export class HotelService {
                         selling_price,
                         smallestDipatureDate,
                         bookingDate,
-                        downPaymentOption[0],
-                        cartCount > 1 ? true : false
+                        custom_instalment_amount,
+                        false
                     );
                 }
                 //console.log(instalmentDetails);

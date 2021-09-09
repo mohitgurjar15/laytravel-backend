@@ -495,7 +495,7 @@ export class LandingPageService {
         if (!result) {
             throw new NotFoundException(`Id not found.`);
         }
-        return { data: result };
+        return { data: result, config: LANDING_PAGE[result.name] };
     }
 
     async exportReferralBooking(paginationOption: ExportReferralDto) {
