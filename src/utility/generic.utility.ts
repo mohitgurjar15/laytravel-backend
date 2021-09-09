@@ -158,7 +158,7 @@ export class Generic {
                     name = hotelModuleInfo[0].hotel_name;
                 }
                 netTotalAmount += totalAmount
-
+                
                 if(items[i].paymentMethod == PaymentType.INSTALMENT){
                     downPayment = items[i].downpayment;
                     totalDownPayment+=Number(downPayment);
@@ -187,7 +187,7 @@ export class Generic {
                             downPayment,
                             false)
                     }
-                    
+
                     for(let x=0; x<instalments.instalment_date.length; x++){
                         instalments.instalment_date[x].type=type;
                         instalments.instalment_date[x].name=name;
