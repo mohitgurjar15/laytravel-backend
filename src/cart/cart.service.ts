@@ -17,7 +17,7 @@ import { DateTime } from "src/utility/datetime.utility";
 import { AddInCartDto } from "./dto/add-in-cart.dto";
 import * as moment from "moment";
 import { Cart } from "src/entity/cart.entity";
-import { getConnection, SimpleConsoleLogger } from "typeorm";
+import { getConnection, getManager, SimpleConsoleLogger } from "typeorm";
 import { VacationRentalService } from "src/vacation-rental/vacation-rental.service";
 import { Role } from "src/enum/role.enum";
 import * as uuidValidator from "uuid-validate";
@@ -67,6 +67,7 @@ import { CartLessChargeMail } from "src/config/new_email_templete/cart-lessCharg
 import { CartFailedInventryMail } from "src/config/new_email_templete/cart-failed-inventry.html";
 import { InstalmentStatus } from "src/enum/instalment-status.enum";
 import { RouteCategory } from "src/utility/route-category.utility";
+import { Countries } from "src/entity/countries.entity";
 
 
 
@@ -2189,15 +2190,25 @@ more than 10.`
                 );
             } else {
                 for await (const traveler of cart.travelers) {
-                    console.log("traveler",traveler);
+
+                    let countryId = traveler.traveler['countryId'];
+                    if(countryId){
+                        let countryDetails = await getManager()
+                            .createQueryBuilder(Countries, "country")
+                            .where(`id=:country_id`, { country_id:countryId })
+                            .getOne();
+                        traveler.traveler['country']=countryDetails;
+                    }
                     let travelerUser = {
-                        traveler_id: traveler,
+                        traveler_id: traveler.traveler['userId'],
                         traveler: traveler.traveler,
-                        is_primary_traveler: traveler.isPrimary,
+                        is_primary_traveler: traveler.traveler['is_primary_traveler'],
                     };
+                    
+                    //console.log("traveler",traveler,countryId);
                     travelers.push(travelerUser);
                 }
-                return false;
+                //return false;
                 const bookingdto: BookFlightDto = {
                     travelers,
                     payment_type,

@@ -2602,7 +2602,6 @@ export class FlightService {
         if (travelers.length > 0) {
             for (let item of travelers) {
                 let traveler=item.traveler;
-                console.log("travelers===>",traveler)
                 let ageDiff = moment(new Date()).diff(
                     moment(traveler.dob),
                     "years"

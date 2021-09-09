@@ -685,130 +685,9 @@ export class BookingService {
                 );
             }
             let responce = [];
-            console.log("getData");
             let i = 0;
             let bookings;
             
-            /* for await (const cart of CartList) {
-                
-                let type = 0;
-                let typeArr = [];
-                let paidAmount = 0;
-                let remainAmount = 0;
-                let pandinginstallment = 0;
-                let totalAmount = 0;
-                let nextInstallmentDate = cart.bookings[0].nextInstalmentDate;
-                const currency = cart.bookings[0].currency2;
-                const baseBooking = cart.bookings[0].bookingInstalments;
-                const installmentType =
-                    cart.bookings[0]?.bookingInstalments[0]?.instalmentType;
-                let cartInstallments = [];
-                if (
-                    baseBooking &&
-                    cart.bookings[0].bookingType == BookingType.INSTALMENT
-                ) {
-                   
-                    for await (const baseInstallments of baseBooking) {
-                        let amount = parseFloat(baseInstallments.amount);
-
-                        if (cart.bookings.length > 1) {
-                            for (
-                                let index = 1;
-                                index < cart.bookings.length;
-                                index++
-                            ) {
-                                for await (const installment of cart.bookings[
-                                    index
-                                ].bookingInstalments) {
-                                    if (
-                                        baseInstallments.instalmentDate ==
-                                        installment.instalmentDate
-                                    ) { 
-                                        amount += parseFloat(
-                                            installment.amount
-                                        );
-                                    }
-                                }
-                                type = Number(cart.bookings[index].moduleId)
-                                typeArr.push(type);
-                            }
-                        } else {
-                            amount = parseFloat(baseInstallments.amount);
-                            
-                        }
-                        const installment = {
-                            instalmentDate: baseInstallments.instalmentDate,
-                            instalmentStatus: baseInstallments?.paymentStatus,
-                            attempt: baseInstallments.attempt,
-                            amount: Generic.formatPriceDecimal(amount),
-                            type: type,
-                        };
-                        cartInstallments.push(installment);
-                    }
-                }
-                for await (const booking of cart.bookings) {
-
-                    if (booking.bookingInstalments.length) {
-                        for await (const installment of booking.bookingInstalments) {
-                            if (
-                                installment.paymentStatus ==
-                                PaymentStatus.CONFIRM
-                            ) {
-                                paidAmount += parseFloat(installment.amount);
-                            } else {
-                                remainAmount += parseFloat(installment.amount);
-                                pandinginstallment = pandinginstallment + 1;
-                            }
-                        }
-                    }
-
-                    totalAmount += parseFloat(booking.totalAmount);
-                    delete booking.currency2;
-                    delete booking.bookingInstalments;
-                }
-
-                if (cartInstallments.length > 0) {
-                    cartInstallments.sort((a, b) => {
-                        var c = new Date(a.instalmentDate);
-                        var d = new Date(b.instalmentDate);
-                        return c > d ? 1 : -1;
-                    });
-                }
-
-                let cartResponce = {};
-                cartResponce["id"] = cart.id;
-                const trackReport = await this.paidAmountByUser(
-                    cart.bookings[0].id
-                );
-                cartResponce["is_installation_on_track"] =
-                    trackReport?.attempt != 1 &&
-                    trackReport?.paymentStatus != PaymentStatus.CONFIRM
-                        ? false
-                        : true;
-                cartResponce["checkInDate"] = cart.checkInDate;
-                cartResponce["checkOutDate"] = cart.checkOutDate;
-                cartResponce["laytripCartId"] = cart.laytripCartId;
-                cartResponce["bookingDate"] = cart.bookingDate;
-                cartResponce["booking"] = cart.bookings;
-                cartResponce["cartInstallments"] = cartInstallments;
-                cartResponce["paidAmount"] = Generic.formatPriceDecimal(
-                    paidAmount
-                );
-                cartResponce["remainAmount"] = Generic.formatPriceDecimal(
-                    remainAmount
-                );
-                cartResponce["pendinginstallment"] = pandinginstallment;
-                cartResponce["installmentCount"] = cartInstallments.length;
-                cartResponce["totalAmount"] = Generic.formatPriceDecimal(
-                    totalAmount
-                );
-                cartResponce["nextInstallmentDate"] = nextInstallmentDate;
-                cartResponce["currency"] = currency;
-                if (installmentType) {
-                    cartResponce["installmentType"] = installmentType;
-                }
-                responce.push(cartResponce);
-            } */
 
             let totalInstallmentAmount;
             for await (const cart of CartList) {
@@ -826,6 +705,12 @@ export class BookingService {
                 
                 for(let i=0; i < cart.bookings.length; i++){
                     if(cart.bookings[i].bookingType == BookingType.INSTALMENT){
+                        cart.bookings[i].bookingInstalments = cart.bookings[i].bookingInstalments.sort((a, b) => {
+                            var c = a.id;
+                            var d = b.id;
+                            return c > d ? 1 : -1;
+                        });
+                       
                         downPayment +=parseFloat(cart.bookings[i].bookingInstalments[0].amount)
 
                         for(let x=0; x<cart.bookings[i].bookingInstalments.length; x++){
@@ -848,7 +733,7 @@ export class BookingService {
                         downPayment +=parseFloat(cart.bookings[i].totalAmount)
                     }
                 }
-                console.log("-----------------CART INSTALLMENT------------------", JSON.stringify(cartInstallments))
+                //console.log("-----------------CART INSTALLMENT------------------", JSON.stringify(cartInstallments))
                 let priceSummary=[];
                 for(let k=0; k < cartInstallments.length; k++){
                     
