@@ -34,7 +34,6 @@ export class Generic {
             .from(Currency, "currency")
             .where("currency.code = :code", { code: code || 'USD' })
             .getOne();
-        console.log('currencyDetails',currencyDetails)
         return currencyDetails;
     }
 
@@ -168,21 +167,25 @@ export class Generic {
                             totalAmount,
                             checkInDate,
                             bookingDate,
-                            downPayment)
+                            downPayment,
+                            false
+                        )
                     }
                     if(items[i].paymentFrequency == 'biweekly'){
                         instalments = await Instalment.biWeeklyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
-                            downPayment)
+                            downPayment,
+                            false)
                     }
                     if(items[i].paymentFrequency == 'monthly'){
                         instalments = await Instalment.monthlyInstalment(
                             totalAmount,
                             checkInDate,
                             bookingDate,
-                            downPayment)
+                            downPayment,
+                            false)
                     }
 
                     for(let x=0; x<instalments.instalment_date.length; x++){
@@ -190,11 +193,13 @@ export class Generic {
                         instalments.instalment_date[x].name=name;
                     }
 
+                    //console.log("instalments.instalment_date",totalAmount,checkInDate,bookingDate,downPayment)
                     allItemResult = [...allItemResult,...instalments.instalment_date];
                 } else{
                     totalDownPayment+=totalAmount;
                 }
             }
+            //console.log("allItemResult",allItemResult)
             let priceSummary=[];
             for(let i=0; i < allItemResult.length; i++){
                 

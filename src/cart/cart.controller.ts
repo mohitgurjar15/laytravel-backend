@@ -95,10 +95,6 @@ export class CartController {
         description: "Enter language code(ex. en)",
     })
     async listCart(@LogInUser() user, @Req() req, @Query() dto: ListCartDto, @GetReferralId() referralId: string) {
-        console.log("user");
-
-        console.log(user);
-
         return await this.cartService.listCart(dto, user, req.headers, referralId);
     }
 

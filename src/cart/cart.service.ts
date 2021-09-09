@@ -151,21 +151,21 @@ more than 10.`
 
                 if (paymentType == 0) {
                     paymentType = cart.paymentType
-                } else if (paymentType != cart.paymentType) {
-                    // throw new NotAcceptableException(`In cart Installment and no-installment both inventry found.`)
-
                 }
             }
 
-            if (promotional > 0 && nonPromotional > 0) {
+            /* if (promotional > 0 && nonPromotional > 0) {
                 throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
-            }
+            } */
 
-            let cartIsPromotional
-            if (promotional > 0) {
+            let cartIsPromotional=false;
+            /* if (promotional > 0) {
                 cartIsPromotional = true
             } else if (nonPromotional > 0) {
                 cartIsPromotional = false
+            } */
+            if(referralId!=''){
+                cartIsPromotional=true;
             }
 
             userData = await getConnection()
@@ -177,21 +177,13 @@ more than 10.`
             switch (module_id) {
                 case ModulesName.HOTEL:
                     return await this.addHotelIntoCart(route_code, userData, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method);
-                    break;
-
+                   
                 case ModulesName.FLIGHT:
-                    // let instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
-                    //     search
-                    // );
-                    // if ((paymentType == BookingType.INSTALMENT && instalmentEligibility == false) || (paymentType == BookingType.NOINSTALMENT && instalmentEligibility == true)) {
-                    //     throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
-                    // }
                     return await this.addFlightDataInCart(
                         route_code,
                         userData,
                         Header, referralId, cartIsPromotional, paymentType, payment_frequency, downpayment, payment_method
                     );
-                    break;
                 case ModulesName.VACATION_RENTEL:
                     const dto = {
                         property_id: property_id,
@@ -207,7 +199,6 @@ more than 10.`
                         userData,
                         Header
                     );
-                    break;
                 default:
                     break;
             }
@@ -787,16 +778,6 @@ more than 10.`
                 .createQueryBuilder(Cart, "cart")
                 .leftJoinAndSelect("cart.module", "module")
                 .leftJoinAndSelect("cart.travelers", "travelers")
-                //.leftJoinAndSelect("travelers.userData", "userData")
-                // .select([
-                //     "cart",
-                //     "module.id",
-                //     "module.name",
-                //     "travelers.id",
-                //     "travelers.userId",
-                //     "travelers.baggageServiceCode",
-                // ])
-
                 .where(where)
                 .orderBy(`cart.id`, "ASC")
                 .limit(10);
@@ -837,7 +818,7 @@ more than 10.`
 
             if (promotional > 0 && nonPromotional > 0) {
                 error = `In cart promotional and not promotional both inventry found.`
-                cartIsConflicted = true
+                //cartIsConflicted = true
             }
 
             let cartIsPromotional
@@ -992,7 +973,7 @@ more than 10.`
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes" && minuteDifference > 1) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
+                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         
@@ -1007,7 +988,8 @@ more than 10.`
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
 
-                            if(cart.paymentMethod === PaymentType.INSTALMENT) { 
+                            if(cart.paymentMethod === PaymentType.INSTALMENT) {
+                                
                                 if(value.offer_data.applicable) {
                                     updatedDownpayment = cart.downpayment;
                                 } else {
@@ -1086,20 +1068,24 @@ more than 10.`
                             if (roomDetails?.data) {
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
-                                if(cart.paymentMethod == PaymentType.INSTALMENT) {
-                                    if(cart.paymentFrequency != "") {
-                                        if(roomDetails.data["items"][0]?.offer_data?.applicable){
-                                            updatedDownpayment = cart.downpayment;
-                                        } else {
-                                            if(cart.paymentFrequency == "weekly") {
-                                                updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
-                                            } else if(cart.paymentFrequency == "biweekly") {
-                                                updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
-                                            } else if(cart.paymentFrequency == "monthly") {
-                                                updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
-                                            }
+                                if(cart.paymentMethod === PaymentType.INSTALMENT) {
+                                    console.log("roomDetails.data[][0]",roomDetails.data["items"][0])
+                                    if(roomDetails.data["items"][0].is_refundable=='false'){
+                                        updatedDownpayment = (roomDetails.data["items"][0].selling.total*60)/100;
+                                        
+                                    }
+                                    else if(roomDetails.data["items"][0]?.offer_data?.applicable){
+                                        updatedDownpayment = cart.downpayment;
+                                    } else {
+                                        if(cart.paymentFrequency === "weekly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.weekly.down_payment;
+                                        } else if(cart.paymentFrequency === "biweekly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.biweekly.down_payment;
+                                        } else if(cart.paymentFrequency === "monthly") {
+                                            updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
                                         }
                                     }
+                                    console.log("===updatedDownpayment====",updatedDownpayment)
                                 }
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
@@ -1115,9 +1101,7 @@ more than 10.`
 
                                 }
 
-                                // if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0]?.is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0]?.is_installment_available == true)) {
-                                //     newCart["is_payment_type_conflicted"] = true;
-                                // }
+                                
 
                                 if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true) {
                                     error = `In cart promotional item found`
@@ -1488,17 +1472,6 @@ more than 10.`
                 auth_url
             } = bookCart;
             let referral_id = referralId
-            // let logData =  await getConnection()
-            //         .createQueryBuilder()
-            //         .insert()
-            //         .into(BookingLog)
-            //         .values({ id: uuidv4()})
-            //         .returning("id")
-            //         .execute(); 
-            // let logId = logData.raw[0].id;
-
-
-            //console.log("log data",logData.raw[0].id)
             if (cart.length > 10) {
                 throw new BadRequestException(
                     `10 item cart maximum, please Checkout and start another Cart if you require
@@ -1676,7 +1649,8 @@ more than 10.`
                             cartCount,
                             flightCount,
                             cartIsPromotional,
-                            referral_id
+                            referral_id,
+                            item.downpayment
                         );
                         responce.push(flightResponce);
                         inventryLogs.push(flightResponce["logFile"])
@@ -1710,7 +1684,8 @@ more than 10.`
                             cartCount,
                             hotelCount,
                             referral_id,
-                            cartIsPromotional
+                            cartIsPromotional,
+                            item.downpayment
                         );
                         responce.push(hotelResponce);
                         inventryLogs.push(hotelResponce["logFile"])
@@ -2147,7 +2122,8 @@ more than 10.`
         cartCount: number,
         flightCount: number,
         cartIsPromotional,
-        referral_id
+        referral_id,
+        downpayment
     ) {
         let logFile = {}
         let reservationId = `${cartData.laytripCartId}-F${flightCount}`
@@ -2159,7 +2135,7 @@ more than 10.`
             additional_amount,
             booking_through,
             selected_down_payment,
-            transaction_token,
+            transaction_token
         } = bookCart;
         const bookingType =
             cart.moduleInfo[0].routes.length > 1 ? "RoundTrip" : "oneway";
@@ -2171,59 +2147,6 @@ more than 10.`
 
         //let flightRequest;
         let value: any = cart.moduleInfo[0]
-        // if (bookingType == "oneway") {
-        //     let dto = {
-        //         source_location: cart.moduleInfo[0].departure_code,
-        //         destination_location: cart.moduleInfo[0].arrival_code,
-        //         departure_date: await this.flightService.changeDateFormat(
-        //             cart.moduleInfo[0].departure_date
-        //         ),
-        //         flight_class: cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-        //         adult_count: cart.moduleInfo[0].adult_count
-        //             ? cart.moduleInfo[0].adult_count
-        //             : 0,
-        //         child_count: cart.moduleInfo[0].child_count
-        //             ? cart.moduleInfo[0].child_count
-        //             : 0,
-        //         infant_count: cart.moduleInfo[0].infant_count
-        //             ? cart.moduleInfo[0].infant_count
-        //             : 0,
-        //     };
-        //     //console.log(dto);
-
-        //     flightRequest = await this.flightService.searchOneWayZipFlight(
-        //         dto,
-        //         Headers,
-        //         user
-        //     );
-        // } else {
-        //     let dto = {
-        //         source_location: cart.moduleInfo[0].departure_code,
-        //         destination_location: cart.moduleInfo[0].arrival_code,
-        //         departure_date: await this.flightService.changeDateFormat(
-        //             cart.moduleInfo[0].departure_date
-        //         ),
-        //         flight_class: cart.moduleInfo[0].routes[0].stops[0].cabin_class,
-        //         adult_count: cart.moduleInfo[0].adult_count
-        //             ? cart.moduleInfo[0].adult_count
-        //             : 0,
-        //         child_count: cart.moduleInfo[0].child_count
-        //             ? cart.moduleInfo[0].child_count
-        //             : 0,
-        //         infant_count: cart.moduleInfo[0].infant_count
-        //             ? cart.moduleInfo[0].infant_count
-        //             : 0,
-        //         arrival_date: await this.flightService.changeDateFormat(
-        //             cart.moduleInfo[0].routes[1].stops[0].departure_date
-        //         ),
-        //     };
-        //     flightRequest = await this.flightService.searchRoundTripZipFlight(
-        //         dto,
-        //         Headers,
-        //         user
-        //     );
-        // }
-        //const value = await this.flightAvailiblity(cart, flightRequest);
         let newCart = {};
         newCart["id"] = cart.id;
         newCart["userId"] = cart.userId;
@@ -2274,7 +2197,7 @@ more than 10.`
                     route_code: value.route_code,
                     additional_amount,
                     laycredit_points,
-                    custom_instalment_amount: 0,
+                    custom_instalment_amount: downpayment,
                     custom_instalment_no: 0,
                     card_token,
                     booking_through,
@@ -2359,7 +2282,8 @@ more than 10.`
         cartCount: number,
         hotelCount,
         referral_id,
-        cartIsPromotional
+        cartIsPromotional,
+        downpayment
     ) {
         let logFile = {}
         let reservationId = `${cartData.laytripCartId}-H${hotelCount}`
@@ -2433,7 +2357,7 @@ more than 10.`
                     ppn: value[0].bundle,
                     additional_amount,
                     laycredit_points,
-                    custom_instalment_amount: 0,
+                    custom_instalment_amount: downpayment,
                     custom_instalment_no: 0,
                     card_token,
                     booking_through,
