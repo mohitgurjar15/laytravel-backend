@@ -1737,6 +1737,7 @@ export class PaymentService {
         //console.log("authoriseAmount", authoriseAmount)
         //console.log("result",JSON.stringify(result))
         let priceSummary = await Generic.calculatePriceSummary(result);
+        authoriseAmount = priceSummary.total_downpayment;
         console.log("PriceSumarry",priceSummary)
 
         let authCardResult = await this.authorizeCard(

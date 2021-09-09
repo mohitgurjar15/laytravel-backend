@@ -53,8 +53,8 @@ export class RouteCategory {
     }
 
     static async checkInstalmentEligibility(searchData: { departure: string, arrival: string, checkInDate: string }
-    ) {
-
+        ) {
+    
         let dayDiffernce = moment(searchData.checkInDate).diff(moment().format("YYYY-MM-DD"), 'days')
         //return true;
         if (dayDiffernce >= 30) {
@@ -71,7 +71,10 @@ export class RouteCategory {
                 .createQueryBuilder(LaytripCategory, "laytrip_category")
                 .where("laytrip_category.name = :name ", { name:'Unclear' })
                 .getOne();
+<<<<<<< HEAD
                 console.log("categoryDetails",categoryDetails)
+=======
+>>>>>>> 7171040321fa277fa5964de654420a769e28fb9a
                 return { available: categoryDetails.isInstallmentAvailable, categoryId: categoryDetails.id }
             }
             
