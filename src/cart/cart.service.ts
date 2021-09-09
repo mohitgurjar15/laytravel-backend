@@ -248,13 +248,13 @@ more than 10.`
 
         if (flightInfo) {
 
-            if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
+            /* if (flightInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
                 throw new ConflictException(`In cart not-promotional item found`)
             }
 
             if (flightInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
                 throw new ConflictException(`In cart promotional item found`)
-            }
+            } */
 
             /* if ((paymentType == BookingType.INSTALMENT && flightInfo[0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && flightInfo[0].is_installment_available == true)) {
                 throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
@@ -1071,7 +1071,7 @@ more than 10.`
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
                                 if(cart.paymentMethod === PaymentType.INSTALMENT) {
-                                    console.log("roomDetails.data[][0]",roomDetails.data["items"][0])
+                                    //console.log("roomDetails.data[][0]",roomDetails.data["items"][0])
                                     if(roomDetails.data["items"][0].is_refundable=='false'){
                                         updatedDownpayment = (roomDetails.data["items"][0].selling.total*60)/100;
                                         
@@ -2908,12 +2908,12 @@ more than 10.`
             referralId
         );
         // console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
-        if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
+        /* if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
             throw new ConflictException(`In cart not-promotional item found`)
         }
         if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
             throw new ConflictException(`In cart promotional item found`)
-        }
+        } */
 
         /* if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0].is_installment_available == true)) {
             throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)

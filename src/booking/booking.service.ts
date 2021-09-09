@@ -1133,14 +1133,13 @@ export class BookingService {
             let actualAmount = 0;
             let currency;
             let installmentType;
+            //let downPayment=0;
             for await (const booking of cart.bookings) {
+                
                 if(booking.bookingInstalments.length > 0) {
                     // const currency = cart.bookings[i]?.currency2;
                     currency = booking.currency2;
                     let baseBooking = booking.bookingInstalments;
-                    // let baseBooking = cart.bookings[i]?.bookingInstalments;
-                    // const installmentType =
-                    //     cart.bookings[i]?.bookingInstalments[0]?.instalmentType;
                     installmentType =
                         booking.bookingInstalments[0]?.instalmentType;
                     let bookingIndex = 0 
@@ -1170,9 +1169,8 @@ export class BookingService {
                                         cart.bookings[index].bookingStatus <=
                                         BookingStatus.CONFIRM
                                     ) {
-                                        for await (const installment of cart.bookings[
-                                            index
-                                        ].bookingInstalments) {
+                                        for await (const installment of cart.bookings[index].bookingInstalments) {
+                                            //console.log("cart.bookings[index].bookingInstalments",JSON.stringify(cart.bookings[index].bookingInstalments))
                                             if (
                                                 baseInstallments.instalmentDate ==
                                                 installment.instalmentDate

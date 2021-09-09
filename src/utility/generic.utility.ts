@@ -192,14 +192,12 @@ export class Generic {
                         instalments.instalment_date[x].type=type;
                         instalments.instalment_date[x].name=name;
                     }
-
-                    //console.log("instalments.instalment_date",totalAmount,checkInDate,bookingDate,downPayment)
+                    
                     allItemResult = [...allItemResult,...instalments.instalment_date];
                 } else{
                     totalDownPayment+=totalAmount;
                 }
             }
-            //console.log("allItemResult",allItemResult)
             let priceSummary=[];
             for(let i=0; i < allItemResult.length; i++){
                 
@@ -227,6 +225,11 @@ export class Generic {
                 }
             }
             priceSummary.shift();
+            priceSummary.sort((a, b) => {
+                var c = new Date(a.date);
+                var d = new Date(b.date);
+                return c > d ? 1 : -1;
+            });
             let remainingAmount = netTotalAmount - totalDownPayment;
             return {
                 total_price : Generic.formatPriceDecimal(netTotalAmount),
