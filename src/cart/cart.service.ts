@@ -1003,7 +1003,6 @@ more than 10.`
                             cartIsPromotional ? referralId : ''
                         );
 
-
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
