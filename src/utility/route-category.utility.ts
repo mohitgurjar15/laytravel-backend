@@ -20,36 +20,6 @@ export class RouteCategory {
             .leftJoinAndSelect("flight_route.category", "category")
             .getOne();
         return routeDetails;
-        /* return {
-            id: 21,
-            parentBy: null,
-            categoryId: 2,
-            fromAirportCode: 'BOS',
-            fromAirportName: 'Logan Intl.',
-            fromAirportCity: 'Boston',
-            fromAirportCountry: 'USA',
-            toAirportCode: 'LAX',
-            toAirportName: 'All Airports',
-            toAirportCity: 'Los Angeles',
-            toAirportCountry: 'USA',
-            createBy: 'df1c38f6-954b-4947-b202-d50c2fece143',
-            updateBy: null,
-            createDate: '2021-03-03T07:06:53.011Z',
-            status: true,
-            isDeleted: false,
-            updateDate: null,
-            category : {
-              id: 2,
-              name: 'Gold',
-              createBy: 'df1c38f6-954b-4947-b202-d50c2fece143',
-              installmentAvailableAfter: 30,
-              updateBy: null,
-              createDate: '2021-03-02T07:00:33.637Z',
-              status: true,
-              updateDate: null
-            }
-          } */
-
     }
 
     static async checkInstalmentEligibility(searchData: { departure: string, arrival: string, checkInDate: string }
@@ -65,15 +35,15 @@ export class RouteCategory {
                 .leftJoinAndSelect("flight_route.category", "category")
                 .getOne();
                 if (routeDetails?.category?.isInstallmentAvailable) {
-                    return { available: true, categoryId: routeDetails?.category?.id };
-                } else {
-                let categoryDetails = await getManager()
-                .createQueryBuilder(LaytripCategory, "laytrip_category")
-                .where("laytrip_category.name = :name ", { name:'Unclear' })
-                .getOne();
-                return { available: categoryDetails.isInstallmentAvailable, categoryId: categoryDetails.id }
-            }
-            
+                    return { available: true, categoryId: routeDetails?.category?.id, categoryName : routeDetails?.category?.name };
+                } 
+                else {
+                    let categoryDetails = await getManager()
+                    .createQueryBuilder(LaytripCategory, "laytrip_category")
+                    .where("laytrip_category.name = :name ", { name:'Unclear' })
+                    .getOne();
+                    return { available: categoryDetails.isInstallmentAvailable, categoryId: categoryDetails.id, categoryName : categoryDetails.name }
+                }
         }
         else {
             return { available: false };

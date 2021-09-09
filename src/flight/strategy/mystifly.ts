@@ -95,7 +95,7 @@ export class Mystifly implements StrategyAirline {
         }
         //mystiflyConfig = { "account_number": "MCN001714","password": "Lay2020@xml","target": "Test", "user_name": "LayTrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         //mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
-
+        console.log("mystiflyConfig",mystiflyConfig)
         return mystiflyConfig;
     }
     async createSession() {
@@ -559,7 +559,6 @@ export class Mystifly implements StrategyAirline {
                     route.payment_config = paymentConfig || {}
 
                     //console.log("paymentConfig", paymentConfig)
-                    console.log("I am in 1")
                     if (instalmentEligibility.available && typeof paymentConfig != 'undefined') {
 
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
@@ -629,7 +628,6 @@ export class Mystifly implements StrategyAirline {
                             weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                             weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                         );
-                        console.log("I am in 1.4",discountedInstalmentDetails)
 
                         if (discountedInstalmentDetails.instalment_available) {
                             route.discounted_start_price =
@@ -643,7 +641,6 @@ export class Mystifly implements StrategyAirline {
                         }
                     }
 
-                    console.log("I am in 2")
                     if (offerData.applicable && typeof paymentConfig != 'undefined') {
                         instalmentEligibility.available = true
                         route.payment_object = {
@@ -1303,7 +1300,6 @@ export class Mystifly implements StrategyAirline {
                     }
                 }
 
-                console.log("I am in 2")
                 if (offerData.applicable && typeof paymentConfig != 'undefined') {
                     instalmentEligibility.available = true
                     route.payment_object = {
@@ -4504,7 +4500,6 @@ export class Mystifly implements StrategyAirline {
         }
 
         const mystiflyConfig = await this.getMystiflyCredential();
-
         const sessionToken = await this.startSession();
 
         const requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
