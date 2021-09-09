@@ -942,6 +942,7 @@ export class BookingService {
             }
 
             let responce = [];
+            let totalInstallmentAmount;
             for await (const cart of CartList) {
                 const installmentType =
                     cart.bookings[0]?.bookingInstalments[0]?.instalmentType;
@@ -952,6 +953,7 @@ export class BookingService {
                 const currency = cart.bookings[0].currency2;
                 const baseBooking = cart.bookings[0].bookingInstalments;
                 let cartInstallments = [];
+                totalInstallmentAmount = 0;
                 if (
                     baseBooking.length &&
                     cart.bookings[0].bookingType == BookingType.INSTALMENT
@@ -1003,6 +1005,7 @@ export class BookingService {
                             } else {
                                 remainAmount += parseFloat(installment.amount);
                                 pandinginstallment = pandinginstallment + 1;
+                                totalInstallmentAmount += parseFloat(installment.amount);
                             }
                         }
                     }
@@ -1047,6 +1050,7 @@ export class BookingService {
                 cartResponce["totalAmount"] = Generic.formatPriceDecimal(
                     totalAmount
                 );
+                cartResponce["totalInstallment"] = Generic.formatPriceDecimal(totalInstallmentAmount);
                 cartResponce["nextInstallmentDate"] =
                     cart.bookings[0].nextInstalmentDate;
                 if (installmentType) {
