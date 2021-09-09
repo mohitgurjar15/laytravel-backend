@@ -494,6 +494,9 @@ export class LandingPageService {
         if (!result) {
             throw new NotFoundException(`Id not found.`);
         }
+        console.log(LANDING_PAGE)
+        console.log("-------------------------")
+        console.log(LANDING_PAGE[result.name])
         return { data: result, config: LANDING_PAGE[result.name] };
     }
 
