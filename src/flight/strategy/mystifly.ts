@@ -95,7 +95,7 @@ export class Mystifly implements StrategyAirline {
         }
         //mystiflyConfig = { "account_number": "MCN001714","password": "Lay2020@xml","target": "Test", "user_name": "LayTrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         //mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
-
+        console.log("mystiflyConfig",mystiflyConfig)
         return mystiflyConfig;
     }
     async createSession() {
@@ -1299,7 +1299,6 @@ export class Mystifly implements StrategyAirline {
                     }
                 }
 
-                console.log("I am in 2")
                 if (offerData.applicable && typeof paymentConfig != 'undefined') {
                     instalmentEligibility.available = true
                     route.payment_object = {
@@ -4500,7 +4499,6 @@ export class Mystifly implements StrategyAirline {
         }
 
         const mystiflyConfig = await this.getMystiflyCredential();
-
         const sessionToken = await this.startSession();
 
         const requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint"><soapenv:Header/>
@@ -5267,7 +5265,7 @@ export class Mystifly implements StrategyAirline {
         const { route_code } = bookFlightDto;
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-
+        console.log("I am in 1")
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:mys2="Mystifly.OnePoint.OnePointEntities">`;
         requestBody += `<soapenv:Header/>`;
         requestBody += `<soapenv:Body>`;
@@ -5278,11 +5276,12 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`;
         requestBody += `<mys1:TravelerInfo>`;
         requestBody += `<mys1:AirTravelers>`;
-
+        console.log("I am in 1.1",traveles.adults)
         let title;
         if (traveles.adults.length) {
             for (let i = 0; i < traveles.adults.length; i++) {
                 title = "";
+                console.log("I am in 1.1.1")
                 requestBody += `<mys1:AirTraveler>`;
                 requestBody += `<mys1:DateOfBirth>${traveles.adults[i].dob}T00:00:00</mys1:DateOfBirth>`;
                 requestBody += `<mys1:Gender>${traveles.adults[i].gender}</mys1:Gender>`;
@@ -5292,8 +5291,10 @@ export class Mystifly implements StrategyAirline {
                 title = traveles.adults[i].gender == "M" ? "MR" : "MS";
                 requestBody += `<mys1:PassengerTitle>${title}</mys1:PassengerTitle>`;
                 requestBody += `</mys1:PassengerName>`;
+                console.log("I am in 1.1.2",traveles.adults[i].country)
                 requestBody += `<mys1:PassengerNationality>${traveles.adults[i].country.iso2}</mys1:PassengerNationality>`;
                 requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`;
+                console.log("I am in 1.2")
                 if (isPassportRequired) {
                     requestBody += `<mys1:Passport>`;
                     requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`;
@@ -5302,9 +5303,10 @@ export class Mystifly implements StrategyAirline {
                     requestBody += `</mys1:Passport>`;
                 }
                 requestBody += `</mys1:AirTraveler>`;
+                console.log("I am in 1.3")
             }
         }
-
+        console.log("I am in 2")
         if (traveles.children.length) {
             for (let i = 0; i < traveles.children.length; i++) {
                 title = "";
@@ -5330,7 +5332,7 @@ export class Mystifly implements StrategyAirline {
                 requestBody += `</mys1:AirTraveler>`;
             }
         }
-
+        console.log("I am in 3")
         if (traveles.infants.length) {
             for (let i = 0; i < traveles.infants.length; i++) {
                 title = "";
@@ -5369,7 +5371,8 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
 
-        let bookResult = await HttpRequest.mystiflyRequest(
+        /* Temp comment */
+        /* let bookResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
             requestBody,
             "BookFlight"
@@ -5381,7 +5384,7 @@ export class Mystifly implements StrategyAirline {
             bookResult["s:envelope"]["s:body"][0]["bookflightresponse"][0][
             "bookflightresult"
             ][0];
-        let bookingResponse;
+        let bookingResponse; 
         if (bookResultSegment["a:success"][0] == "true") {
             bookingResponse = {
                 booking_status: "success",
@@ -5400,7 +5403,20 @@ export class Mystifly implements StrategyAirline {
                 logFile
             };
         }
+        return bookingResponse;*/
+        /* Temp comment */
+        console.log("I am in 4")
+        let bookingResponse= {
+            booking_status: "success",
+            supplier_status: 'CONFIRM',
+            supplier_booking_id: 'XYZ',
+            success_message: `Booking is successfully done!`,
+            error_message: "",
+            logFile : ''
+        };
+        console.log(bookingResponse);
         return bookingResponse;
+
     }
 
     async tripDetails(tripId) {

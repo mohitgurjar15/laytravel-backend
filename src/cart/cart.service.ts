@@ -874,7 +874,7 @@ more than 10.`
                         var difference = unixTimestamp - (cart.timeStamp || 0);
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
-                        if (minuteDifference > 1 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
+                        if (minuteDifference > 5 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
                             const bookingType =
                                 cart.moduleInfo[0].routes.length > 1
                                     ? "RoundTrip"
@@ -973,7 +973,7 @@ more than 10.`
 
                 if (
                     (typeof live_availiblity != "undefined" &&
-                        live_availiblity == "yes" && minuteDifference > 1) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
+                        live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
                 ) {
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         
@@ -2189,7 +2189,7 @@ more than 10.`
                 );
             } else {
                 for await (const traveler of cart.travelers) {
-                    //console.log(traveler);
+                    console.log("traveler",traveler);
                     let travelerUser = {
                         traveler_id: traveler,
                         traveler: traveler.traveler,
@@ -2197,6 +2197,7 @@ more than 10.`
                     };
                     travelers.push(travelerUser);
                 }
+                return false;
                 const bookingdto: BookFlightDto = {
                     travelers,
                     payment_type,

@@ -3660,6 +3660,12 @@ export class FlightService {
                 let downPaymentOption: any = paymentConfig.downPaymentOption */
 
                 //save entry for future booking
+
+                let searchData = { departure: airRevalidateResult[0].departure_code, arrival: airRevalidateResult[0].arrival_code, checkInDate: departure_date }
+                let categoryData= await RouteCategory.checkInstalmentEligibility(
+                    searchData
+                );
+
                 if (instalment_type == InstalmentType.WEEKLY) {
 
 
@@ -3714,16 +3720,19 @@ export class FlightService {
                             firstInstalemntAmount - laycredit_points;
                     }
                     let bookingResult;
-                    // if (dayDiff <= 90) {
-                    //     const mystifly = new Strategy(
-                    //         new Mystifly(headers, this.cacheManager)
-                    //     );
-                    //     bookingResult = await mystifly.bookFlight(
-                    //         bookFlightDto,
-                    //         travelersDetails,
-                    //         isPassportRequired
-                    //     );
-                    // }
+                    console.log("====categoryData=====",categoryData)
+                    if (categoryData.categoryName == 'Unclear') {
+                        console.log("I am in FS 1")
+                        const mystifly = new Strategy(
+                            new Mystifly(headers, this.cacheManager)
+                        );
+                        bookingResult = await mystifly.bookFlight(
+                            bookFlightDto,
+                            travelersDetails,
+                            isPassportRequired
+                        );
+                        console.log("I am in FS 2")
+                    }
 
                     console.log("req for save booking");
                     let laytripBookingResult = await this.saveBooking(
