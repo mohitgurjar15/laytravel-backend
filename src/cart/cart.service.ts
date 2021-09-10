@@ -1632,10 +1632,7 @@ more than 10.`
             }
 
             let payMode = result.findIndex(res=>res.paymentMethod == PaymentType.INSTALMENT);
-            cartBook.bookingType =
-                payMode != 1
-                    ? BookingType.INSTALMENT
-                    : BookingType.NOINSTALMENT;
+            cartBook.bookingType = payMode != -1 ? BookingType.INSTALMENT : BookingType.NOINSTALMENT;
             cartBook.status == BookingStatus.PENDING;
             let cartData = await cartBook.save();
             bookingLog.cartBookingId = cartData.id

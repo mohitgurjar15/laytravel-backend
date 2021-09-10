@@ -134,8 +134,38 @@ export class CartDataUtility {
             let cartInstallments = [];
             let bookingsData = [];
             //console.log('1');
+            let allItemResult=[]
+            for(let cartItem of cart.bookings){
+                if(cartItem.bookingInstalments.length){
+                    allItemResult = [...allItemResult,...cartItem.bookingInstalments];
+                }
+            }
+            //let priceSummary=[];
+            let paymentStatus = [];
+                paymentStatus[0] = "Due";
+                paymentStatus[1] = "Paid";
+                paymentStatus[2] = "FAILED";
+                paymentStatus[3] = "CANCELLED";
+                paymentStatus[4] = "REFUNDED";
+            for(let i=0; i < allItemResult.length; i++){
+                
+                let find= await cartInstallments.findIndex(price=>price.date==allItemResult[i].instalmentDate);
+                
+                if(find!=-1){
+                    cartInstallments[find].amount+=Generic.formatPriceDecimal(allItemResult[i].amount)
+                }
+                else{
+                    cartInstallments.push({
+                        date : allItemResult[i].instalmentDate,
+                        amount : Generic.formatPriceDecimal(allItemResult[i].amount),
+                        status : paymentStatus[allItemResult[i].instalmentStatus]
+                    })
+                }
+            }
+            console.log("allItemResult",allItemResult)
+            console.log("cartInstallments",cartInstallments)
 
-            if (baseBooking.length) {
+            /* if (baseBooking.length) {
                 for await (const baseInstallments of baseBooking) {
                     let amount = parseFloat(baseInstallments.amount);
 
@@ -174,7 +204,7 @@ export class CartDataUtility {
                     };
                     cartInstallments.push(installment);
                 }
-            }
+            } */
             
 
             let travelers = [];
@@ -184,14 +214,20 @@ export class CartDataUtility {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id);
                 }
                 //console.log('21');
-                for await (const installment of booking.bookingInstalments) {
+                /* for await (const installment of booking.bookingInstalments) {
                     if (installment.paymentStatus == PaymentStatus.CONFIRM) {
                         paidAmount += parseFloat(installment.amount);
                     } else {
                         remainAmount += parseFloat(installment.amount);
                         pandinginstallment = pandinginstallment + 1;
                     }
+                } */
+
+                if(booking.bookingType==2){
+                    paidAmount+=parseFloat(booking.totalAmount)
                 }
+
+
                 //console.log('22');
                 totalAmount += parseFloat(booking.totalAmount);
                 let flightData = [];
@@ -288,17 +324,7 @@ export class CartDataUtility {
 
                 //console.log('8');
                 for await (const traveler of booking.travelers) {
-                    // var birthDate = new Date(traveler.travelerInfo.dob);
-                    // var age = moment(new Date()).diff(moment(birthDate), "years");
-
-                    // var user_type = "";
-                    // if (age < 2) {
-                    //   user_type = "Infant";
-                    // } else if (age < 12) {
-                    //   user_type = "Child";
-                    // } else {
-                    //   user_type = "Adult";
-                    // }
+                    
                     if (
                         !travelersName.includes(traveler.travelerInfo.firstName)
                     ) {
@@ -326,7 +352,10 @@ export class CartDataUtility {
                     var d = new Date(b.date);
                     return c > d ? 1 : -1;
                 });
+                paidAmount += parseFloat(cartInstallments[0].amount)
             }
+            remainAmount = totalAmount-paidAmount;
+            
             param.orderId = cart.laytripCartId;
             param.bookingType = cart.bookingType;
             param.travelers = travelers;

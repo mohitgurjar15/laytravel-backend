@@ -1140,7 +1140,7 @@ export class BookingService {
             let currency;
             let installmentType;
             //let downPayment=0;
-            for await (const booking of cart.bookings) {
+            /* for await (const booking of cart.bookings) {
                 
                 if(booking.bookingInstalments.length > 0) {
                     // const currency = cart.bookings[i]?.currency2;
@@ -1200,13 +1200,53 @@ export class BookingService {
                     }
                     break;
                 }
+            } */
+            console.log("cart.bookings",cart.bookings.length)
+            let allItemResult=[]
+            for await (const booking of cart.bookings) {
+                
+                if(booking.bookingStatus!=2 && booking.bookingInstalments.length > 0) {
+                    allItemResult = [...allItemResult,...booking.bookingInstalments]
+                }
             }
+            //console.log("allItemResult",JSON.stringify(allItemResult))
+            for(let i=0; i < allItemResult.length; i++){
+                
+                let find= cartInstallments.findIndex(price=>price.instalmentDate==allItemResult[i].instalmentDate);
+                
+                if(find!=-1){
+                    cartInstallments[find].amount += Generic.formatPriceDecimal(allItemResult[i].amount)
+                }
+                else{
+                    cartInstallments.push(
+                        {
+                            instalmentDate: allItemResult[i].instalmentDate, 
+                            instalmentStatus: allItemResult[i].instalmentStatus, 
+                            attempt: allItemResult[i].attempt, 
+                            amount: Generic.formatPriceDecimal(allItemResult[i].amount)
+                        }
+                    )
+                    if(allItemResult[i].instalmentStatus){
+                        paidAmount += parseFloat(allItemResult[i].amount);
+                    }
+                }
+            }
+            
             
             for await (const booking of cart.bookings) {
                 if (booking.bookingInstalments.length > 0) {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id);
                 }
-                if (booking.bookingStatus <= BookingStatus.CONFIRM) {
+
+                if(booking.bookingStatus <= BookingStatus.CONFIRM){
+
+                    if(booking.bookingType==2){
+                        paidAmount +=parseFloat(booking.totalAmount)
+                    }
+                    totalAmount += parseFloat(booking.totalAmount);
+                    actualAmount += parseFloat(booking.actualSellingPrice || '0');
+                }
+                /* if (booking.bookingStatus <= BookingStatus.CONFIRM) {
                     if (booking?.bookingInstalments?.length) {
                         for await (const installment of booking.bookingInstalments) {
                             if (
@@ -1223,7 +1263,7 @@ export class BookingService {
 
                     totalAmount += parseFloat(booking.totalAmount);
                     actualAmount += parseFloat(booking.actualSellingPrice || '0');
-                }
+                } */
 
                 delete booking?.currency2;
                 delete booking?.bookingInstalments;
@@ -1246,8 +1286,10 @@ export class BookingService {
                     return c > d ? 1 : -1;
                 });
                 //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
+                
             }
-
+            console.log("paidAmount",paidAmount,totalAmount,remainAmount)
+            remainAmount = totalAmount-paidAmount;
             let cartResponce = {};
             cartResponce["id"] = cart?.id;
 
@@ -1324,6 +1366,7 @@ export class BookingService {
             );
         }
     }
+
     async cardDetail(transactionTotal) {
         const query = await getConnection()
             .createQueryBuilder(UserCard, "cartBooking")
@@ -1364,8 +1407,6 @@ export class BookingService {
                     downPayment = parseFloat(install.amount);
                 }
             }
-
-            console.log(downPayment);
 
             for (let instalment of result.bookingInstalments) {
                 if (instalment.paymentStatus == PaymentStatus.CONFIRM) {
