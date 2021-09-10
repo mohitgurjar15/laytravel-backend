@@ -1216,7 +1216,7 @@ export class Mystifly implements StrategyAirline {
                 route.payment_config = paymentConfig || {}
 
                 //console.log("paymentConfig", paymentConfig)
-                console.log("I am in 1")
+                
                 if (instalmentEligibility.available && typeof paymentConfig != 'undefined') {
 
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
@@ -2608,9 +2608,10 @@ export class Mystifly implements StrategyAirline {
                     let instalmentDetails;
                     let discountedInstalmentDetails;
                     if (instalmentEligibility.available && typeof paymentConfig!='undefined' ) {
-
+                        
                         let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
                         let downPaymentOption: any = paymentConfig.downPaymentOption
+                        //console.log("downPaymentOption",downPaymentOption)
                         
                         if (paymentConfig.isWeeklyInstallmentAvailable) {
                             instalmentDetails = Instalment.weeklyInstalment(
@@ -2620,6 +2621,7 @@ export class Mystifly implements StrategyAirline {
                                 weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                                 weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage,
                             );
+                            //console.log("instalmentDetails",instalmentDetails)
                             if (instalmentDetails.instalment_available) {
                                 route.start_price =
                                     instalmentDetails.instalment_date[0].instalment_amount;
@@ -2671,7 +2673,8 @@ export class Mystifly implements StrategyAirline {
                             route.discounted_selling_price,
                             departure_date,
                             bookingDate,
-                            downPaymentOption[0]
+                            weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                            weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                         );
 
                         if (discountedInstalmentDetails.instalment_available) {
@@ -5488,7 +5491,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `<mys1:Target>${mystiflyConfig.target}</mys1:Target>`;
         requestBody += `<mys1:TravelerInfo>`;
         requestBody += `<mys1:AirTravelers>`;
-        console.log("I am in 1.1",traveles.adults)
+        //console.log("I am in 1.1",traveles.adults)
         let title;
         if (traveles.adults.length) {
             for (let i = 0; i < traveles.adults.length; i++) {
@@ -5578,7 +5581,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</soapenv:Envelope>`;
 
         /* Temp comment */
-        /* let bookResult = await HttpRequest.mystiflyRequest(
+        let bookResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
             requestBody,
             "BookFlight"
@@ -5609,9 +5612,9 @@ export class Mystifly implements StrategyAirline {
                 logFile
             };
         }
-        return bookingResponse;*/
+        return bookingResponse;
         /* Temp comment */
-        let bookingResponse= {
+        /* let bookingResponse= {
             booking_status: "success",
             supplier_status: 'CONFIRM',
             supplier_booking_id: 'XYZ',
@@ -5619,7 +5622,7 @@ export class Mystifly implements StrategyAirline {
             error_message: "",
             logFile : ''
         };
-        console.log(bookingResponse);
+        console.log(bookingResponse); */
         return bookingResponse;
 
     }
