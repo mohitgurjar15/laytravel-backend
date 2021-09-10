@@ -1480,7 +1480,6 @@ more than 10.`
                 );
             }
 
-
             let cartIds: number[] = [];
             for await (const i of cart) {
                 cartIds.push(i.cart_id);
@@ -1516,7 +1515,6 @@ more than 10.`
                 .orderBy(`cart.id`, "DESC")
                 .limit(10);
             const [result, count] = await query.getManyAndCount();
-            
             if (!result.length) {
                 throw new BadRequestException(
                     `Cart is empty.&&&cart&&&${errorMessage}`
@@ -1525,7 +1523,7 @@ more than 10.`
             bookingLog.cartInfo = result
             let smallestDate = "";
             let largestDate = "";
-
+            let smallestCheckinDate="";
             let promotional = 0
             let nonPromotional = 0
             let promotionalItem = []
@@ -1552,52 +1550,63 @@ more than 10.`
             } else if (nonPromotional > 0) {
                 cartIsPromotional = false
             }
-
+            
             //let ToatalAmount = ''
             for await (const item of result) {
 
-                if(item.paymentMethod=='instalment'){
-                    if (item.moduleId == ModulesName.FLIGHT) {
-                        const dipatureDate = await this.flightService.changeDateFormat(
-                            item.moduleInfo[0].departure_date
-                        );
-                        if (smallestDate == "") {
-                            smallestDate = dipatureDate;
+                
+                if (item.moduleId == ModulesName.FLIGHT) {
+                    const dipatureDate = await this.flightService.changeDateFormat(
+                        item.moduleInfo[0].departure_date
+                    );
+                    if (smallestDate == "") {
+                        smallestDate = dipatureDate;
+                    } else if (
+                        new Date(smallestDate) > new Date(dipatureDate)
+                    ) {
+                        smallestDate = dipatureDate;
+                    }
+
+                    if(item.paymentMethod=='instalment'){
+                        if (smallestCheckinDate == "") {
+                            smallestCheckinDate = dipatureDate;
                         } else if (
-                            new Date(smallestDate) > new Date(dipatureDate)
+                            new Date(smallestCheckinDate) > new Date(dipatureDate)
                         ) {
-                            smallestDate = dipatureDate;
-                        }
-                        //console.log(item.moduleInfo[0]);
-
-                        const arrivalDate = await this.flightService.changeDateFormat(
-                            item.moduleInfo[0].arrival_date
-                        );
-                        if (largestDate == "") {
-                            largestDate = arrivalDate;
-                        } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                            largestDate = arrivalDate;
-                        }
-                    } else if (item.moduleId == ModulesName.HOTEL) {
-                        const dipatureDate = item.moduleInfo[0].input_data.check_in;
-
-                        if (smallestDate == "") {
-                            smallestDate = dipatureDate;
-                        } else if (
-                            new Date(smallestDate) > new Date(dipatureDate)
-                        ) {
-                            smallestDate = dipatureDate;
-                        }
-                        //console.log(item.moduleInfo[0]);
-
-                        const arrivalDate = item.moduleInfo[0].input_data.check_out;
-                        if (largestDate == "") {
-                            largestDate = arrivalDate;
-                        } else if (new Date(largestDate) > new Date(arrivalDate)) {
-                            largestDate = arrivalDate;
+                            smallestCheckinDate = dipatureDate;
                         }
                     }
+                    
+                    //console.log(item.moduleInfo[0]);
+
+                    const arrivalDate = await this.flightService.changeDateFormat(
+                        item.moduleInfo[0].arrival_date
+                    );
+                    if (largestDate == "") {
+                        largestDate = arrivalDate;
+                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                        largestDate = arrivalDate;
+                    }
+                } else if (item.moduleId == ModulesName.HOTEL) {
+                    const dipatureDate = item.moduleInfo[0].input_data.check_in;
+
+                    if (smallestDate == "") {
+                        smallestDate = dipatureDate;
+                    } else if (
+                        new Date(smallestDate) > new Date(dipatureDate)
+                    ) {
+                        smallestDate = dipatureDate;
+                    }
+                    //console.log(item.moduleInfo[0]);
+
+                    const arrivalDate = item.moduleInfo[0].input_data.check_out;
+                    if (largestDate == "") {
+                        largestDate = arrivalDate;
+                    } else if (new Date(largestDate) > new Date(arrivalDate)) {
+                        largestDate = arrivalDate;
+                    }
                 }
+                
             }
             const cartBook = new CartBooking();
             cartBook.id = uuidv4();
@@ -1622,7 +1631,6 @@ more than 10.`
             let cartData = await cartBook.save();
             bookingLog.cartBookingId = cartData.id
             await bookingLog.save()
-
             let responce = [];
             let successedResult = 0;
             let failedResult = 0;
@@ -1630,8 +1638,6 @@ more than 10.`
             let amountToBeCharged=0;
             let flightCount = 0;
             let hotelCount = 0;
-            //let mailResponce = []
-
             const cartCount = result.length;
             let inventryLogs = []
             for await (const item of result) {
@@ -1646,7 +1652,7 @@ more than 10.`
                             user,
                             Headers,
                             bookCart,
-                            smallestDate,
+                            smallestCheckinDate,
                             cartData,
                             cartCount,
                             flightCount,
@@ -1681,7 +1687,7 @@ more than 10.`
                             user,
                             Headers,
                             bookCart,
-                            smallestDate,
+                            smallestCheckinDate,
                             cartData,
                             cartCount,
                             hotelCount,
@@ -2325,7 +2331,7 @@ more than 10.`
         let flightRequest;
 
         const value = cart.oldModuleInfo;
-
+        
         let newCart = {};
         newCart["id"] = cart.id;
         newCart["userId"] = cart.userId;
@@ -2363,9 +2369,9 @@ more than 10.`
             } else {
                 for await (const traveler of cart.travelers) {
                     let travelerUser = {
-                        traveler_id: traveler.userId,
+                        traveler_id: traveler.traveler['userId'],
                         traveler: traveler.traveler,
-                        is_primary_traveler: traveler.isPrimary,
+                        is_primary_traveler: traveler.traveler['is_primary_traveler'],
                     };
                     travelers.push(travelerUser);
                 }

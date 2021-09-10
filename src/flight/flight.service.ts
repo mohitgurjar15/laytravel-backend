@@ -3721,7 +3721,6 @@ export class FlightService {
                     let bookingResult;
                     console.log("====categoryData=====",categoryData)
                     if (categoryData.categoryName == 'Unclear') {
-                        console.log("I am in FS 1")
                         const mystifly = new Strategy(
                             new Mystifly(headers, this.cacheManager)
                         );
@@ -3730,7 +3729,6 @@ export class FlightService {
                             travelersDetails,
                             isPassportRequired
                         );
-                        console.log("I am in FS 2")
                     }
 
                     console.log("req for save booking");

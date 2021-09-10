@@ -647,7 +647,6 @@ export class PaymentService {
             "verify-auth",
             userId
         );
-        console.log("verifyAuthRes", verifyAuthRes)
         if (
             typeof verifyAuthRes != "undefined" &&
             verifyAuthRes.transaction.succeeded
@@ -1738,7 +1737,6 @@ export class PaymentService {
         //console.log("result",JSON.stringify(result))
         let priceSummary = await Generic.calculatePriceSummary(result);
         authoriseAmount = priceSummary.total_downpayment;
-        console.log("PriceSumarry",priceSummary)
 
         let authCardResult = await this.authorizeCard(
             card_token,

@@ -70,7 +70,7 @@ const mealCodes = {
     G: "Food And Beverage For Purchase",
 };
 
-const blacklistedAirlines = ["DL"]
+const blacklistedAirlines = [""]
 export class Mystifly implements StrategyAirline {
     private headers;
     private cacheManager;
@@ -5475,7 +5475,6 @@ export class Mystifly implements StrategyAirline {
         const { route_code } = bookFlightDto;
         const mystiflyConfig = await this.getMystiflyCredential();
         const sessionToken = await this.startSession();
-        console.log("I am in 1")
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:mys="Mystifly.OnePoint" xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:mys2="Mystifly.OnePoint.OnePointEntities">`;
         requestBody += `<soapenv:Header/>`;
         requestBody += `<soapenv:Body>`;
@@ -5491,7 +5490,6 @@ export class Mystifly implements StrategyAirline {
         if (traveles.adults.length) {
             for (let i = 0; i < traveles.adults.length; i++) {
                 title = "";
-                console.log("I am in 1.1.1")
                 requestBody += `<mys1:AirTraveler>`;
                 requestBody += `<mys1:DateOfBirth>${traveles.adults[i].dob}T00:00:00</mys1:DateOfBirth>`;
                 requestBody += `<mys1:Gender>${traveles.adults[i].gender}</mys1:Gender>`;
@@ -5501,10 +5499,8 @@ export class Mystifly implements StrategyAirline {
                 title = traveles.adults[i].gender == "M" ? "MR" : "MS";
                 requestBody += `<mys1:PassengerTitle>${title}</mys1:PassengerTitle>`;
                 requestBody += `</mys1:PassengerName>`;
-                console.log("I am in 1.1.2",traveles.adults[i].country)
                 requestBody += `<mys1:PassengerNationality>${traveles.adults[i].country.iso2}</mys1:PassengerNationality>`;
                 requestBody += `<mys1:PassengerType>ADT</mys1:PassengerType>`;
-                console.log("I am in 1.2")
                 if (isPassportRequired) {
                     requestBody += `<mys1:Passport>`;
                     requestBody += `<mys1:Country>${traveles.adults[i].country.iso2}</mys1:Country>`;
@@ -5513,10 +5509,8 @@ export class Mystifly implements StrategyAirline {
                     requestBody += `</mys1:Passport>`;
                 }
                 requestBody += `</mys1:AirTraveler>`;
-                console.log("I am in 1.3")
             }
         }
-        console.log("I am in 2")
         if (traveles.children.length) {
             for (let i = 0; i < traveles.children.length; i++) {
                 title = "";
@@ -5542,7 +5536,6 @@ export class Mystifly implements StrategyAirline {
                 requestBody += `</mys1:AirTraveler>`;
             }
         }
-        console.log("I am in 3")
         if (traveles.infants.length) {
             for (let i = 0; i < traveles.infants.length; i++) {
                 title = "";
@@ -5615,7 +5608,6 @@ export class Mystifly implements StrategyAirline {
         }
         return bookingResponse;*/
         /* Temp comment */
-        console.log("I am in 4")
         let bookingResponse= {
             booking_status: "success",
             supplier_status: 'CONFIRM',

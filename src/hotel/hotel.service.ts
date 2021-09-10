@@ -916,13 +916,9 @@ export class HotelService {
                         //console.log(traveler.is_primary_traveler);
 
                         if (item.traveler.is_primary_traveler) {
-                            //console.log(
-                            //     traveler.is_primary_traveler,
-                            //     "primary"
-                            // );
+                            
                             bookDto.primary_guest_detail =  item.traveler;
                         } else {
-                            //console.log(traveler.is_primary_traveler, "guest");
                             let detail = item.traveler;
 
                             guest_detail.push(detail);
@@ -987,12 +983,6 @@ export class HotelService {
                         };
                     }
 
-                    let authCardToken = transaction_token;
-
-                    // //console.log(
-                    //     "req for save booking",
-                    //     JSON.stringify(bookingResult)
-                    // );
                     let laytripBookingResult = await this.saveBooking(
                         bookingRequestInfo,
                         currencyId,
@@ -1008,17 +998,6 @@ export class HotelService {
                         reservationId,
                         referral_id
                     );
-
-                    // if (dayDiff <= 90) {
-                    //     this.bookingUpdateFromSupplierside(
-                    //         laytripBookingResult.laytripBookingId,
-                    //         {
-                    //             supplier_booking_id:
-                    //                 laytripBookingResult.supplierBookingId,
-                    //         },
-                    //         1
-                    //     );
-                    // }
                     return {
                         laytrip_booking_id: laytripBookingResult.id,
                         booking_status: "pending",
@@ -1044,32 +1023,24 @@ export class HotelService {
                 if (laycredit_points > 0) {
                     sellingPrice = selling_price - laycredit_points;
                 }
-
+                console.log("I am in 1")
                 if (sellingPrice > 0) {
+                    console.log("I am in 2",travelers)
                     let bookDto = new BookDto();
 
                     bookDto.bundle = availability[0].bundle;
                     let guest_detail = [];
-                    for await (const traveler of travelers) {
-                        //console.log(traveler.is_primary_traveler);
-
-                        if (traveler.is_primary_traveler == true) {
-                            //console.log(
-                            //     traveler.is_primary_traveler,
-                            //     "primary"
-                            // );
-                            bookDto.primary_guest_detail = await this.user.getUser(
-                                traveler.traveler_id
-                            );
+                    for await (const item of travelers) {
+                        if (item.traveler.is_primary_traveler) {
+                            
+                            bookDto.primary_guest_detail =  item.traveler;
                         } else {
-                            //console.log(traveler.is_primary_traveler, "guest");
-                            let detail = await this.user.getUser(
-                                traveler.traveler_id
-                            );
-
+                            let detail = item.traveler;
+                    
                             guest_detail.push(detail);
                         }
                     }
+                    console.log("I am in 3",bookDto)
                     // let bookData = new PPNBookDto(bookDto);
                     let bookData = {
                         name_first: bookDto.primary_guest_detail.firstName,
@@ -1077,9 +1048,6 @@ export class HotelService {
                         initials: bookDto.primary_guest_detail?.title || "",
                         email: supporterEmail,
                         phone_number: bookDto.primary_guest_detail.phoneNo,
-
-                        // guest_name_first: bookDto.guest_detail.firstName,
-                        // guest_name_last: bookDto.guest_detail.lastName,
                         card_type: card.type,
                         card_number: card.number,
                         expires: card.exp_month + "" + card.exp_year,
@@ -1093,6 +1061,7 @@ export class HotelService {
 
                         ppn_bundle: bookDto.bundle,
                     };
+                    console.log("I am in 4")
                     if (guest_detail?.length) {
                         for (
                             let index = 0;
@@ -1106,12 +1075,14 @@ export class HotelService {
                                 element.lastName || "";
                         }
                     }
+                    console.log("I am in 5")
                     //console.log("bookData DTO", bookData);
 
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
                     );
+                    console.log("I am in 6")
                     console.log("--------BOOKING RESULT------->>>>>", bookingResult)
                     logData['supplier_side_booking_log'] = bookingResult["fileName"]
                     console.log("bookingResult?.status", bookingResult.status);
@@ -1150,45 +1121,6 @@ export class HotelService {
                     bookingResult['logData'] = logData
                     return bookingResult;
                 }
-                // else {
-                // 	//for full laycredit rdeem
-                // 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-                // 	const bookingResult = await mystifly.bookFlight(
-                // 		bookFlightDto,
-                // 		travelersDetails,
-                // 		isPassportRequired
-                // 	);
-                // 	if (bookingResult.booking_status == "success") {
-
-                // 		let laytripBookingResult = await this.saveBooking(
-                // 			bookingRequestInfo,
-                // 			currencyId,
-                // 			bookingDate,
-                // 			BookingType.NOINSTALMENT,
-                // 			userId,
-                // 			airRevalidateResult,
-                // 			null,
-                // 			null,
-                // 			bookingResult,
-                // 			travelers,
-                //			cartId
-                // 		);
-                // 		//send email here
-                // 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
-                // 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
-
-                // 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-                // 			laytripBookingResult.laytripBookingId
-                // 		);
-                // 		return bookingResult;
-                // 	} else {
-
-                // 			return {
-                // 				status: 424,
-                // 				message: bookingResult.error_message,
-                // 			}
-                // 	}
-                // }
             }
         } catch (error) {
             return {
