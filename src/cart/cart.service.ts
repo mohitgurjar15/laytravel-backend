@@ -1597,6 +1597,15 @@ more than 10.`
                     ) {
                         smallestDate = dipatureDate;
                     }
+                    if(item.paymentMethod=='instalment'){
+                        if (smallestCheckinDate == "") {
+                            smallestCheckinDate = dipatureDate;
+                        } else if (
+                            new Date(smallestCheckinDate) > new Date(dipatureDate)
+                        ) {
+                            smallestCheckinDate = dipatureDate;
+                        }
+                    }
                     //console.log(item.moduleInfo[0]);
 
                     const arrivalDate = item.moduleInfo[0].input_data.check_out;
@@ -2924,7 +2933,7 @@ more than 10.`
             throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
         } */
 
-
+        console.log("I am in 1")
         const cart = new Cart();
 
         if (user.roleId != Role.GUEST_USER) {
@@ -2948,7 +2957,7 @@ more than 10.`
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
         cart.createdDate = new Date();
-
+        console.log("I am in 2")
         let savedCart = await cart.save();
 
         return {

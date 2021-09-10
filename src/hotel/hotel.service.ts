@@ -750,7 +750,6 @@ export class HotelService {
                 cartCount,
                 reservationId
             } = bookHotelCartDto;
-            console.log("--------BOOK HOTEL CART DTO-------->>>>>", bookHotelCartDto)
             const availabilityDto: AvailabilityDto = {
                 room_ppn: bundle,
             };
@@ -763,18 +762,14 @@ export class HotelService {
                 user.userId,
                 cartIsPromotional ? referral_id : ''
             );
-            console.log("------>>>>INSIDE HOTEL SERVICE 1<<<<<--------")
             logData['revalidation-log'] = hotelAvailability.data["fileName"]
-            console.log("------>>>>INSIDE HOTEL SERVICE 2<<<<<--------")
             let availability = hotelAvailability.data.items;
             //console.log("Availability", availability);
 
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
-            //console.log(availability[0].input_data.num_adults);
-            // console.log("--------AVAILABILITY----------",availability)
+           
             if (availability) {
-                console.log("1");
 
                 bookingRequestInfo.adult_count =
                     availability[0].input_data.num_adults;
@@ -791,11 +786,9 @@ export class HotelService {
                 if (payment_type == PaymentType.INSTALMENT) {
                     bookingRequestInfo.selling_price =
                         availability[0].selling['discounted_total'];
-                    console.log("%%%%INSTALLMENT%%%%%%")
                 } else {
                     bookingRequestInfo.selling_price =
                         availability[0].selling['discounted_total'];
-                        console.log("%%%%NO INSTALLMENT%%%%%%")
                 }
 
                 bookingRequestInfo.departure_date =
@@ -825,34 +818,18 @@ export class HotelService {
                 travelers,
                 isPassportRequired
             );
-            //console.log("travelersDetails", travelersDetails);
-            //console.log("length");
-            //console.log(travelersDetails?.adults?.length);
-            //console.log(travelersDetails?.adults?.length);
+            
             let currencyId = headerDetails.currency.id;
             const userId = user.userId;
             
             if (payment_type == PaymentType.INSTALMENT) {
                 let instalmentDetails;
-                console.log("+++++++==+++++++++++++++")
                 let totalAdditionalAmount = additional_amount || 0;
-                //console.log("test1");
+                
                 if (laycredit_points > 0) {
                     totalAdditionalAmount =
                         totalAdditionalAmount + laycredit_points;
                 }
-                //console.log("test2");
-                //save entry for future booking
-                /* let downPayments = [40, 50, 60]
-                if (moment(smallestDipatureDate).diff(
-                    moment().format("YYYY-MM-DD"),
-                    "days"
-                ) > 90) {
-                    downPayments = [20, 30, 40]
-                }
-                let daysUtilDepature = moment(availability[0].input_data.check_in).diff(moment().format("YYYY-MM-DD"), 'days')
-                let paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(ModulesName.HOTEL, 0, daysUtilDepature)
-                let downPaymentOption: any = paymentConfig.downPaymentOption */
                 if (instalment_type == InstalmentType.WEEKLY) {
                     let weeklyCustomDownPayment = LandingPage.getDownPayment(availability[0].offer_data, 0);
                     if (cartIsPromotional) {
@@ -877,7 +854,6 @@ export class HotelService {
                         );
                     }
                 }
-                //console.log("test3");
                 if (instalment_type == InstalmentType.BIWEEKLY) {
                     instalmentDetails = Instalment.biWeeklyInstalment(
                         selling_price,
@@ -887,7 +863,6 @@ export class HotelService {
                         false
                     );
                 }
-                //console.log("test4");
                 if (instalment_type == InstalmentType.MONTHLY) {
                     instalmentDetails = Instalment.monthlyInstalment(
                         selling_price,
@@ -898,7 +873,6 @@ export class HotelService {
                     );
                 }
                 //console.log(instalmentDetails);
-
                 if (instalmentDetails.instalment_available) {
                     let firstInstalemntAmount =
                         instalmentDetails.instalment_date[0].instalment_amount;
@@ -1023,9 +997,7 @@ export class HotelService {
                 if (laycredit_points > 0) {
                     sellingPrice = selling_price - laycredit_points;
                 }
-                console.log("I am in 1")
                 if (sellingPrice > 0) {
-                    console.log("I am in 2",travelers)
                     let bookDto = new BookDto();
 
                     bookDto.bundle = availability[0].bundle;
@@ -1040,7 +1012,6 @@ export class HotelService {
                             guest_detail.push(detail);
                         }
                     }
-                    console.log("I am in 3",bookDto)
                     // let bookData = new PPNBookDto(bookDto);
                     let bookData = {
                         name_first: bookDto.primary_guest_detail.firstName,
@@ -1061,7 +1032,6 @@ export class HotelService {
 
                         ppn_bundle: bookDto.bundle,
                     };
-                    console.log("I am in 4")
                     if (guest_detail?.length) {
                         for (
                             let index = 0;
@@ -1075,17 +1045,13 @@ export class HotelService {
                                 element.lastName || "";
                         }
                     }
-                    console.log("I am in 5")
-                    //console.log("bookData DTO", bookData);
 
                     let bookingResult = await this.hotel.book(
                         bookData,
                         user.userId
                     );
-                    console.log("I am in 6")
-                    console.log("--------BOOKING RESULT------->>>>>", bookingResult)
+                    
                     logData['supplier_side_booking_log'] = bookingResult["fileName"]
-                    console.log("bookingResult?.status", bookingResult.status);
 
                     if (bookingResult?.status != "success") {
                         return {
