@@ -712,9 +712,9 @@ export class BookingService {
                         });
                        
                         downPayment +=parseFloat(cart.bookings[i].bookingInstalments[0].amount)
-
+                        
                         for(let x=0; x<cart.bookings[i].bookingInstalments.length; x++){
-
+                            // console.log("-----PAYMENT STATUS------", JSON.stringify(cart.bookings[i].bookingInstalments))
                             if(cart.bookings[i].moduleId==1){
                                 cart.bookings[i].bookingInstalments[x]['type']='flight';
                                 cart.bookings[i].bookingInstalments[x]['name']=`${cart.bookings[i].moduleInfo[0].departure_code}-${cart.bookings[i].moduleInfo[0].arrival_code}`;
@@ -723,6 +723,7 @@ export class BookingService {
                                 cart.bookings[i].bookingInstalments[x]['type']='hotel';
                                 cart.bookings[i].bookingInstalments[x]['name']=cart.bookings[i].moduleInfo[0].hotel_name;
                             }
+                                cart.bookings[i].bookingInstalments[x]['instalmentStatus']=cart.bookings[i].bookingInstalments[x].instalmentStatus;
                         }
                         cartInstallments = [...cartInstallments,...cart.bookings[i].bookingInstalments];
                         totalAmount += parseFloat(cart.bookings[i].totalAmount);
@@ -754,6 +755,7 @@ export class BookingService {
                             name :  cartInstallments[k].name
                         }]
                         priceSummary.push({
+                            instalmentStatus : cartInstallments[k].instalmentStatus,
                             instalmentDate : cartInstallments[k].instalmentDate,
                             amount : Generic.formatPriceDecimal(cartInstallments[k].amount),
                             attempt: cartInstallments[k].attempt,
@@ -1138,7 +1140,7 @@ export class BookingService {
             let currency;
             let installmentType;
             //let downPayment=0;
-            /* for await (const booking of cart.bookings) {
+            for await (const booking of cart.bookings) {
                 
                 if(booking.bookingInstalments.length > 0) {
                     // const currency = cart.bookings[i]?.currency2;
@@ -1198,35 +1200,7 @@ export class BookingService {
                     }
                     break;
                 }
-            } */
-            console.log("cart.bookings",cart.bookings.length)
-            let allItemResult=[]
-            for await (const booking of cart.bookings) {
-                
-                if(booking.bookingStatus!=2 && booking.bookingInstalments.length > 0) {
-                    allItemResult = [...allItemResult,...booking.bookingInstalments]
-                }
             }
-            //console.log("allItemResult",JSON.stringify(allItemResult))
-            for(let i=0; i < allItemResult.length; i++){
-                
-                let find= cartInstallments.findIndex(price=>price.instalmentDate==allItemResult[i].instalmentDate);
-                
-                if(find!=-1){
-                    cartInstallments[find].amount += Generic.formatPriceDecimal(allItemResult[i].amount)
-                }
-                else{
-                    cartInstallments.push(
-                        {
-                            instalmentDate: allItemResult[i].instalmentDate, 
-                            instalmentStatus: allItemResult[i].instalmentStatus, 
-                            attempt: allItemResult[i].attempt, 
-                            amount: Generic.formatPriceDecimal(allItemResult[i].amount)
-                        }
-                    )
-                }
-            }
-            
             
             for await (const booking of cart.bookings) {
                 if (booking.bookingInstalments.length > 0) {
