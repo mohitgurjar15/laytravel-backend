@@ -175,7 +175,7 @@ export class CartDataUtility {
                     cartInstallments.push(installment);
                 }
             }
-            //console.log('2');
+            
 
             let travelers = [];
             let travelersName = [];

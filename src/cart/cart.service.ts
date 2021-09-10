@@ -1734,10 +1734,10 @@ more than 10.`
                         ? BookingType.INSTALMENT
                         : BookingType.NOINSTALMENT;
                 let partialAmount = 0
-                if (payment_type == PaymentType.INSTALMENT) {
+                /* if (payment_type == PaymentType.INSTALMENT) {
                     await this.sattelInstalment(cartData.id,
                         instalment_type, smallestDate, selected_down_payment)
-                }
+                } */
                 /* if (failedResult > 0) {
                     partialAmount = await this.calculatePartialAmountAndSattelAmount(
                         cartData.id,
@@ -2643,7 +2643,8 @@ more than 10.`
                 //console.log('cartAmount', cartAmount)
                 let priceDiff = capturedAmount - cartAmount
                 //console.log('cartAmount', priceDiff)
-                if (priceDiff > 1) {
+                //Commented from here
+                /* if (priceDiff > 1) {
                     let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`
                     this.mailerService
                         .sendMail({
@@ -2690,7 +2691,7 @@ more than 10.`
                         .catch((err) => {
                             //console.log("err", err);
                         });
-                }
+                } */
             }
         } else {
             const user = await CartDataUtility.userData(userId);
@@ -2933,7 +2934,6 @@ more than 10.`
             throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
         } */
 
-        console.log("I am in 1")
         const cart = new Cart();
 
         if (user.roleId != Role.GUEST_USER) {
