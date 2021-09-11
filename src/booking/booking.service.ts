@@ -727,11 +727,13 @@ export class BookingService {
                         }
                         cartInstallments = [...cartInstallments,...cart.bookings[i].bookingInstalments];
                         totalAmount += parseFloat(cart.bookings[i].totalAmount);
-                        totalInstallmentAmount += parseFloat(cart.bookings[i].totalAmount);
+                        //totalInstallmentAmount += parseFloat(cart.bookings[i].totalAmount);
                         //priceSummary.shift();
                     }
                     else{
                         downPayment +=parseFloat(cart.bookings[i].totalAmount)
+                        paidAmount +=parseFloat(cart.bookings[i].totalAmount)
+                        totalAmount += parseFloat(cart.bookings[i].totalAmount);
                     }
                 }
                 //console.log("-----------------CART INSTALLMENT------------------", JSON.stringify(cartInstallments))
@@ -763,6 +765,7 @@ export class BookingService {
                             paymentStatus: cartInstallments[k].paymentStatus,
                             breakdown : breakDown
                         })
+                        
                     }
                 }
 
@@ -771,7 +774,7 @@ export class BookingService {
                     var d = new Date(b.instalmentDate);
                     return c > d ? 1 : -1;
                 });
-                        
+                
                 for(let m=0;m<priceSummary.length;m++){
                     if (
                         priceSummary[m].paymentStatus ==
@@ -781,6 +784,9 @@ export class BookingService {
                     } else {
                         remainAmount += parseFloat(priceSummary[m].amount);
                         pandinginstallment = pandinginstallment + 1;
+                    }
+                    if(m>0){
+                        totalInstallmentAmount += parseFloat(priceSummary[m].amount)
                     }
                 }
 

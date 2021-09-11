@@ -3389,7 +3389,8 @@ export class Mystifly implements StrategyAirline {
                             route.discounted_selling_price,
                             departure_date,
                             bookingDate,
-                            downPaymentOption[0]
+                            weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                            weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage,
                         );
 
                         if (discountedInstalmentDetails.instalment_available) {
