@@ -1,10 +1,6 @@
 import * as moment from 'moment';
 import TrustedComms = require('twilio/lib/rest/preview/TrustedComms');
 import { Generic } from './generic.utility';
-
-const checkInDayDiffernce = 90;
-const firstInstalmentPercentage1 = 40;
-const firstInstalmentPercentage2 = 20;
 export class Instalment {
 
 
@@ -16,7 +12,6 @@ export class Instalment {
             return instalmentData;
 
         let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
-        let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
         let nextInstalmentsDate;
@@ -24,19 +19,15 @@ export class Instalment {
         if (dayDiffernce > 0) {
 
             nextInstalmentsDate = bookingDate;
-            while (dayDiffernce > 0) {
-
+            instalmentsDates.push(nextInstalmentsDate);
+            while (dayDiffernce > 7) {
+                
                 dayDiffernce = dayDiffernce - 7;
+                nextInstalmentsDate = moment(nextInstalmentsDate).add(7, 'days').format('YYYY-MM-DD')
                 instalmentsDates.push(nextInstalmentsDate);
 
-                nextInstalmentsDate = moment(nextInstalmentsDate).add(7, 'days').format('YYYY-MM-DD')
-
-                /* else{
-                    // here last instalment date will be added
-                    nextInstalmentsDate = moment(nextInstalmentsDate).add(7+dayDiffernce,'days').format('YYYY-MM-DD')
-                } */
             }
-            
+
             instalmentData.down_payment = this.calculateDps(amount,isDownPaymentInPercentage,customDownPayment)
             customDownPayment=instalmentData.down_payment[0];
             instalmentDatewithAmount = this.calculateInstalment(instalmentsDates, amount,customDownPayment)
@@ -92,27 +83,17 @@ export class Instalment {
         if (dayDiffernce > 0) {
 
             nextInstalmentsDate = bookingDate;
-            while (dayDiffernce > -14) {
-
+            instalmentsDates.push(nextInstalmentsDate);
+            while (dayDiffernce >14) {
                 dayDiffernce = dayDiffernce - 14;
+                nextInstalmentsDate = moment(nextInstalmentsDate).add(14, 'days').format('YYYY-MM-DD')
                 instalmentsDates.push(nextInstalmentsDate);
-
-                if (dayDiffernce > 1) {
-                    nextInstalmentsDate = moment(nextInstalmentsDate).add(14, 'days').format('YYYY-MM-DD')
-                }
-                else {
-                    // here last instalment date will be added
-                    nextInstalmentsDate = moment(nextInstalmentsDate).add(14 + dayDiffernce, 'days').format('YYYY-MM-DD')
-                }
+            
             }
-
-            //let downPayment = customDownPayment;
-            //let percentage = downPayment
             instalmentData.down_payment = this.calculateDps(amount,isDownPaymentInPercentage,customDownPayment)
             customDownPayment=instalmentData.down_payment[0];
 
             instalmentDatewithAmount = this.calculateInstalment(instalmentsDates, amount,customDownPayment)
-            //instalmentData.percentage = percentage;
         }
 
         instalmentData.instalment_available = (instalmentsDates.length) ? true : false;
@@ -147,33 +128,30 @@ export class Instalment {
 
         let lastInstalmentDate = moment(ckeckInDate).subtract(14, 'days').format('YYYY-MM-DD');
         let dayDiffernce = moment(lastInstalmentDate).diff(moment(bookingDate), 'days')
-        let totalDayDiffernce = moment(ckeckInDate).diff(moment(bookingDate), 'days')
         let instalmentsDates = [];
         let nextInstalmentsDate;
         let instalmentDatewithAmount = [];
         if (dayDiffernce > 0) {
 
             nextInstalmentsDate = bookingDate;
-            while (dayDiffernce > -30) {
+            instalmentsDates.push(nextInstalmentsDate);
+            while (dayDiffernce >30) {
 
                 dayDiffernce = dayDiffernce - 30;
+                nextInstalmentsDate = moment(nextInstalmentsDate).add(30, 'days').format('YYYY-MM-DD')
                 instalmentsDates.push(nextInstalmentsDate);
-
-                if (dayDiffernce > 1) {
-                    nextInstalmentsDate = moment(nextInstalmentsDate).add(30, 'days').format('YYYY-MM-DD')
-                }
-                else {
-                    // here last instalment date will be added
-                    nextInstalmentsDate = moment(nextInstalmentsDate).add(30 + dayDiffernce, 'days').format('YYYY-MM-DD')
-                }
             }
 
+            if(instalmentsDates.length==1){
+                return instalmentData;
+            }
             instalmentData.down_payment = this.calculateDps(amount,isDownPaymentInPercentage,customDownPayment)
             customDownPayment=instalmentData.down_payment[0];
             instalmentDatewithAmount = this.calculateInstalment(instalmentsDates, amount,customDownPayment)
-            //instalmentData.percentage = percentage;
+        
         }
 
+        
         instalmentData.instalment_available = (instalmentsDates.length) ? true : false;
         instalmentData.instalment_date = instalmentDatewithAmount;
         if(instalmentData.instalment_date[0].instalment_amount < 5){
@@ -272,20 +250,6 @@ export class Instalment {
         let firstInstalment;
         let firstInstalmentTemp;
         let remainingPerInstalmentAmount
-        /* if (amountPerInstalment > percentageAmount) {
-            firstInstalment = amountPerInstalment;
-            firstInstalmentTemp = amountPerInstalment;
-            if (additionalAmount) {
-                firstInstalment = amountPerInstalment + additionalAmount;
-            }
-        }
-        else {
-            firstInstalment = firstInstalmentTemp = percentageAmount;
-            if (additionalAmount) {
-                firstInstalment = percentageAmount + additionalAmount;
-            }
-        } */
-        //firstInstalment = firstInstalmentTemp = percentageAmount;
         
 
         if(customDownPayment){

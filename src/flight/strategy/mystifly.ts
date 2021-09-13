@@ -594,13 +594,14 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
-                            //console.log("I am in 1.2",instalmentDetails)
-                            route.second_down_payment =
-                                instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_2 =
-                                instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_2 =
-                                instalmentDetails2.instalment_date.length - 1;
+                            if (instalmentDetails2.instalment_available) {
+                                route.second_down_payment =
+                                    instalmentDetails2.instalment_date[0].instalment_amount;
+                                route.secondary_start_price_2 =
+                                    instalmentDetails2.instalment_date[1].instalment_amount;
+                                route.no_of_weekly_installment_2 =
+                                    instalmentDetails2.instalment_date.length - 1;
+                            }
                         }
 
 
@@ -613,12 +614,18 @@ export class Mystifly implements StrategyAirline {
                                 paymentConfig.isDownPaymentInPercentage
                             );
                             //console.log("I am in 1.3",instalmentDetails)
-                            route.third_down_payment =
+                            if (instalmentDetails3.instalment_available) {
+
+                                route.third_down_payment =
                                 instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_3 =
+                                route.secondary_start_price_3 =
                                 instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_3 =
+                                route.no_of_weekly_installment_3 =
                                 instalmentDetails3.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isMonthlyInstallmentAvailable=false;
+                            }
                         }
 
                         
