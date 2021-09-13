@@ -67,6 +67,7 @@ import { BookingCancellationNotificationMail } from "src/config/admin-email-noti
 import { CancellationReason } from "src/enum/cancellation-reason.enum";
 import { ValuationPercentageUtility } from "src/utility/valuation-per.utility";
 import { K } from "handlebars/runtime";
+import { response } from "express";
 
 @Injectable()
 export class BookingService {
@@ -83,36 +84,37 @@ export class BookingService {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
-        if (responce?.param) {
-            let subject =
-                responce.param.bookingType == BookingType.INSTALMENT
-                    ? `Booking ID ${responce.param.orderId} Confirmation`
-                    : `Booking ID ${responce.param.orderId} Confirmation`;
-            this.mailerService
-                .sendMail({
-                    to: responce.email,
-                    from: mailConfig.from,
-                    bcc: mailConfig.BCC,
-                    subject: subject,
-                    html: await LaytripCartBookingConfirmtionMail(
-                        responce.param,
-                        responce.referralId
-                    ),
-                })
-                .then((res) => {
-                    //console.log("res", res);
-                })
-                .catch((err) => {
-                    //console.log("err", err);
-                });
-            return {
-                message: `Cart booking email send succeessfully`,
-            };
-        } else {
-            return {
-                message: `Booking ID not found.`,
-            };
-        }
+        console.log('this is my response**********',response)
+        // if (responce?.param) {
+        //     let subject =
+        //         responce.param.bookingType == BookingType.INSTALMENT
+        //             ? `Booking ID ${responce.param.orderId} Confirmation`
+        //             : `Booking ID ${responce.param.orderId} Confirmation`;
+        //     this.mailerService
+        //         .sendMail({
+        //             to: responce.email,
+        //             from: mailConfig.from,
+        //             bcc: mailConfig.BCC,
+        //             subject: subject,
+        //             html: await LaytripCartBookingConfirmtionMail(
+        //                 responce.param,
+        //                 responce.referralId
+        //             ),
+        //         })
+        //         .then((res) => {
+        //             //console.log("res", res);
+        //         })
+        //         .catch((err) => {
+        //             //console.log("err", err);
+        //         });
+        //     return {
+        //         message: `Cart booking email send succeessfully`,
+        //     };
+        // } else {
+        //     return {
+        //         message: `Booking ID not found.`,
+        //     };
+        // }
     }
     async resendBookingEmail(
         bookingDetail: getBookingDetailsDto
@@ -2839,7 +2841,6 @@ export class BookingService {
             this.mailerService
                 .sendMail({
                     to: emailId,
-                    cc: responce.email,
                     from: mailConfig.from,
                     bcc: mailConfig.BCC,
                     subject: subject,
