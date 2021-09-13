@@ -697,7 +697,6 @@ export class BookingService {
                 let pandinginstallment = 0;
                 let downPayment=0;
                 let totalAmount = 0;
-                let nextInstallmentDate = cart.bookings[0].nextInstalmentDate;
                 const currency = cart.bookings[0].currency2;
                 totalInstallmentAmount = 0;
                 
@@ -769,11 +768,19 @@ export class BookingService {
                     }
                 }
 
-                priceSummary.sort((a, b) => {
-                    var c = new Date(a.instalmentDate);
-                    var d = new Date(b.instalmentDate);
-                    return c > d ? 1 : -1;
-                });
+                let nextInstallmentDate="";
+                if(priceSummary.length){
+                    
+                    priceSummary.sort((a, b) => {
+                        var c = new Date(a.instalmentDate);
+                        var d = new Date(b.instalmentDate);
+                        return c > d ? 1 : -1;
+                    });
+                    let nextInstallmentIndex=priceSummary.findIndex(price=>price.paymentStatus==0);
+
+                    nextInstallmentDate = priceSummary[nextInstallmentIndex].instalmentDate;
+                }
+                
                 
                 for(let m=0;m<priceSummary.length;m++){
                     if (
@@ -789,6 +796,7 @@ export class BookingService {
                         totalInstallmentAmount += parseFloat(priceSummary[m].amount)
                     }
                 }
+                
 
                 const installmentType = '';
                 

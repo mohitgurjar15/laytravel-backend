@@ -5623,8 +5623,8 @@ export class Mystifly implements StrategyAirline {
             error_message: "",
             logFile : ''
         };
-        console.log(bookingResponse); */
-        return bookingResponse;
+        console.log(bookingResponse);
+        return bookingResponse; */
 
     }
 
