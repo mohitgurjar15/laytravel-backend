@@ -769,6 +769,8 @@ export class BookingService {
                 }
 
                 let nextInstallmentDate="";
+                let currentDate = moment().format("YYYY-MM-DD");
+                let isInstallmentOnTrack =false;
                 if(priceSummary.length){
                     
                     priceSummary.sort((a, b) => {
@@ -779,6 +781,13 @@ export class BookingService {
                     let nextInstallmentIndex=priceSummary.findIndex(price=>price.paymentStatus==0);
 
                     nextInstallmentDate = priceSummary[nextInstallmentIndex].instalmentDate;
+                    
+                    let find=priceSummary.find(price=> {
+                        if(price.paymentStatus!=1 && moment(price.instalmentDate).isBefore(currentDate)){
+                            return true;
+                        }
+                    })
+                    isInstallmentOnTrack =find ?false:true;
                 }
                 
                 
@@ -801,16 +810,13 @@ export class BookingService {
                 const installmentType = '';
                 
 
+
                 let cartResponce = {};
                 cartResponce["id"] = cart.id;
                 const trackReport = await this.paidAmountByUser(
                     cart.bookings[0].id
                 );
-                cartResponce["is_installation_on_track"] =
-                    trackReport?.attempt != 1 &&
-                    trackReport?.paymentStatus != PaymentStatus.CONFIRM
-                        ? false
-                        : true;
+                cartResponce["is_installation_on_track"] =isInstallmentOnTrack;
                 cartResponce["checkInDate"] = cart.checkInDate;
                 cartResponce["checkOutDate"] = cart.checkOutDate;
                 cartResponce["laytripCartId"] = cart.laytripCartId;
