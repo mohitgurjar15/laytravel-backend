@@ -949,12 +949,7 @@ export class BookingService {
                 .leftJoinAndSelect("cartBooking.bookings", "booking")
                 .leftJoinAndSelect("booking.bookingInstalments", "instalments")
                 .leftJoinAndSelect("booking.currency2", "currency")
-                //.leftJoinAndSelect("cartBooking.user", "User")
                 .leftJoinAndSelect("booking.travelers", "traveler")
-                //.leftJoinAndSelect("traveler.userData", "userData")
-                // .leftJoinAndSelect("User.state", "state")
-                // .leftJoinAndSelect("User.country", "countries")
-
                 .where(where)
                 .orderBy(`cartBooking.bookingDate`, "DESC");
             const CartList = await query.getMany();
@@ -978,7 +973,7 @@ export class BookingService {
                 const baseBooking = cart.bookings[0].bookingInstalments;
                 let cartInstallments = [];
                 totalInstallmentAmount = 0;
-                if (
+                /* if (
                     baseBooking.length &&
                     cart.bookings[0].bookingType == BookingType.INSTALMENT
                 ) {
@@ -1047,6 +1042,106 @@ export class BookingService {
                         return c > d ? 1 : -1;
                     });
                     //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
+                } */
+                let downPayment=0;
+                for(let i=0; i < cart.bookings.length; i++){
+                    if(cart.bookings[i].bookingType == BookingType.INSTALMENT){
+                        cart.bookings[i].bookingInstalments = cart.bookings[i].bookingInstalments.sort((a, b) => {
+                            var c = a.id;
+                            var d = b.id;
+                            return c > d ? 1 : -1;
+                        });
+                       
+                        downPayment +=parseFloat(cart.bookings[i].bookingInstalments[0].amount)
+                        
+                        for(let x=0; x<cart.bookings[i].bookingInstalments.length; x++){
+                            if(cart.bookings[i].moduleId==1){
+                                cart.bookings[i].bookingInstalments[x]['type']='flight';
+                                cart.bookings[i].bookingInstalments[x]['name']=`${cart.bookings[i].moduleInfo[0].departure_code}-${cart.bookings[i].moduleInfo[0].arrival_code}`;
+                            }
+                            else if(cart.bookings[i].moduleId==3){
+                                cart.bookings[i].bookingInstalments[x]['type']='hotel';
+                                cart.bookings[i].bookingInstalments[x]['name']=cart.bookings[i].moduleInfo[0].hotel_name;
+                            }
+                                cart.bookings[i].bookingInstalments[x]['instalmentStatus']=cart.bookings[i].bookingInstalments[x].instalmentStatus;
+                        }
+                        cartInstallments = [...cartInstallments,...cart.bookings[i].bookingInstalments];
+                        totalAmount += parseFloat(cart.bookings[i].totalAmount);
+                    }
+                    else{
+                        downPayment +=parseFloat(cart.bookings[i].totalAmount)
+                        paidAmount +=parseFloat(cart.bookings[i].totalAmount)
+                        totalAmount += parseFloat(cart.bookings[i].totalAmount);
+                    }
+                }
+                //console.log("-----------------CART INSTALLMENT------------------", JSON.stringify(cartInstallments))
+                let priceSummary=[];
+                for(let k=0; k < cartInstallments.length; k++){
+                    
+                    let find= await priceSummary.findIndex(price=>price.instalmentDate==cartInstallments[k].instalmentDate);
+                    
+                    if(find!=-1){
+                        priceSummary[find].breakdown.push({
+                            type : cartInstallments[k].type,
+                            amount : Generic.formatPriceDecimal(cartInstallments[k].amount),
+                            name :  cartInstallments[k].name
+                        })
+                        priceSummary[find].amount+=Generic.formatPriceDecimal(cartInstallments[k].amount)
+                    }
+                    else{
+                        let breakDown = [{
+                            type : cartInstallments[k].type,
+                            amount :  Generic.formatPriceDecimal(cartInstallments[k].amount),
+                            name :  cartInstallments[k].name
+                        }]
+                        priceSummary.push({
+                            instalmentStatus : cartInstallments[k].instalmentStatus,
+                            instalmentDate : cartInstallments[k].instalmentDate,
+                            amount : Generic.formatPriceDecimal(cartInstallments[k].amount),
+                            attempt: cartInstallments[k].attempt,
+                            instalmentNo: cartInstallments[k].instalmentNo,
+                            paymentStatus: cartInstallments[k].paymentStatus,
+                            breakdown : breakDown
+                        })
+                        
+                    }
+                }
+    
+                let nextInstallmentDate="";
+                let currentDate = moment().format("YYYY-MM-DD");
+                let isInstallmentOnTrack =false;
+                if(priceSummary.length){
+                    
+                    priceSummary.sort((a, b) => {
+                        var c = new Date(a.instalmentDate);
+                        var d = new Date(b.instalmentDate);
+                        return c > d ? 1 : -1;
+                    });
+                    let nextInstallmentIndex=priceSummary.findIndex(price=>price.paymentStatus==0);
+    
+                    nextInstallmentDate = priceSummary[nextInstallmentIndex].instalmentDate;
+                    
+                    let find=priceSummary.find(price=> {
+                        if(price.paymentStatus!=1 && moment(price.instalmentDate).isBefore(currentDate)){
+                            return true;
+                        }
+                    })
+                    isInstallmentOnTrack =find ?false:true;
+                }
+
+                for(let m=0;m<priceSummary.length;m++){
+                    if (
+                        priceSummary[m].paymentStatus ==
+                        PaymentStatus.CONFIRM
+                    ) {
+                        paidAmount += parseFloat(priceSummary[m].amount);
+                    } else {
+                        remainAmount += parseFloat(priceSummary[m].amount);
+                        pandinginstallment = pandinginstallment + 1;
+                    }
+                    if(m>0){
+                        totalInstallmentAmount += parseFloat(priceSummary[m].amount)
+                    }
                 }
 
                 let cartResponce = {};
@@ -1075,8 +1170,8 @@ export class BookingService {
                     totalAmount
                 );
                 cartResponce["totalInstallment"] = Generic.formatPriceDecimal(totalInstallmentAmount);
-                cartResponce["nextInstallmentDate"] =
-                    cart.bookings[0].nextInstalmentDate;
+                cartResponce["nextInstallmentDate"] =nextInstallmentDate;
+                cartResponce["totalDownpayment"] = Generic.formatPriceDecimal(downPayment);
                 if (installmentType) {
                     cartResponce["installmentType"] = installmentType;
                 }
