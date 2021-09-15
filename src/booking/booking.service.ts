@@ -1043,6 +1043,7 @@ export class BookingService {
                     });
                     //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
                 } */
+                
                 let downPayment=0;
                 for(let i=0; i < cart.bookings.length; i++){
                     if(cart.bookings[i].bookingType == BookingType.INSTALMENT){
@@ -1074,7 +1075,6 @@ export class BookingService {
                         totalAmount += parseFloat(cart.bookings[i].totalAmount);
                     }
                 }
-                //console.log("-----------------CART INSTALLMENT------------------", JSON.stringify(cartInstallments))
                 let priceSummary=[];
                 for(let k=0; k < cartInstallments.length; k++){
                     
@@ -1106,21 +1106,16 @@ export class BookingService {
                         
                     }
                 }
-    
-                let nextInstallmentDate="";
+                
+                
                 let currentDate = moment().format("YYYY-MM-DD");
                 let isInstallmentOnTrack =false;
                 if(priceSummary.length){
-                    
                     priceSummary.sort((a, b) => {
                         var c = new Date(a.instalmentDate);
                         var d = new Date(b.instalmentDate);
                         return c > d ? 1 : -1;
                     });
-                    let nextInstallmentIndex=priceSummary.findIndex(price=>price.paymentStatus==0);
-    
-                    nextInstallmentDate = priceSummary[nextInstallmentIndex].instalmentDate;
-                    
                     let find=priceSummary.find(price=> {
                         if(price.paymentStatus!=1 && moment(price.instalmentDate).isBefore(currentDate)){
                             return true;
@@ -1128,7 +1123,6 @@ export class BookingService {
                     })
                     isInstallmentOnTrack =find ?false:true;
                 }
-
                 for(let m=0;m<priceSummary.length;m++){
                     if (
                         priceSummary[m].paymentStatus ==
@@ -1143,7 +1137,6 @@ export class BookingService {
                         totalInstallmentAmount += parseFloat(priceSummary[m].amount)
                     }
                 }
-
                 let cartResponce = {};
                 cartResponce["id"] = cart.id;
                 const trackReport = await this.paidAmountByUser(
@@ -1170,7 +1163,7 @@ export class BookingService {
                     totalAmount
                 );
                 cartResponce["totalInstallment"] = Generic.formatPriceDecimal(totalInstallmentAmount);
-                cartResponce["nextInstallmentDate"] =nextInstallmentDate;
+                cartResponce["nextInstallmentDate"] ="";
                 cartResponce["totalDownpayment"] = Generic.formatPriceDecimal(downPayment);
                 if (installmentType) {
                     cartResponce["installmentType"] = installmentType;
