@@ -162,8 +162,8 @@ export class CartDataUtility {
                     })
                 }
             }
-            console.log("allItemResult",allItemResult)
-            console.log("cartInstallments",cartInstallments)
+            // console.log("allItemResult",allItemResult)
+            // console.log("cartInstallments",cartInstallments)
 
             /* if (baseBooking.length) {
                 for await (const baseInstallments of baseBooking) {
@@ -344,7 +344,6 @@ export class CartDataUtility {
                 };
                 bookingsData.push(b);
             }
-            //console.log('3');
 
             if (cartInstallments.length > 0) {
                 cartInstallments.sort((a, b) => {
@@ -352,8 +351,15 @@ export class CartDataUtility {
                     var d = new Date(b.date);
                     return c > d ? 1 : -1;
                 });
-                paidAmount += parseFloat(cartInstallments[0].amount)
+                // paidAmount += parseFloat(cartInstallments[0].amount)
             }
+            let amount = 0
+            for await (const iterator of cartInstallments) {
+                if(iterator.status == 'Paid'){
+                    amount = amount + iterator.amount
+                }
+            }
+            paidAmount = amount;
             remainAmount = totalAmount-paidAmount;
             
             param.orderId = cart.laytripCartId;
