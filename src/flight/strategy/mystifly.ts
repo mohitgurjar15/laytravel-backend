@@ -5564,30 +5564,22 @@ export class Mystifly implements StrategyAirline {
                 requestBody += `</mys1:PassengerName>`;
                 requestBody += `<mys1:PassengerNationality>${traveles.infants[i].country.iso2}</mys1:PassengerNationality>`;
                 requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`;
-                /* if(traveles.infants[i].passportExpiry && traveles.infants[i].passportNumber){
-
-                    requestBody += `<mys1:Passport>`
-                    requestBody += `<mys1:Country>${traveles.infants[i].country.iso2}</mys1:Country>`
-                    requestBody += `<mys1:ExpiryDate>${traveles.infants[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
-                    requestBody += `<mys1:PassportNumber>${traveles.infants[i].passportNumber}</mys1:PassportNumber>`
-                    requestBody += `</mys1:Passport>`
-                } */
                 requestBody += `</mys1:AirTraveler>`;
             }
         }
 
         requestBody += `</mys1:AirTravelers>`;
         requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`;
-        requestBody += `<mys1:CountryCode>44</mys1:CountryCode>`;
-        requestBody += `<mys1:Email>peter@gmail.com</mys1:Email>`;
-        requestBody += `<mys1:PhoneNumber>5467890</mys1:PhoneNumber>`;
+        requestBody += `<mys1:CountryCode>${traveles.adults[0].countryCode}</mys1:CountryCode>`;
+        requestBody += `<mys1:Email>${traveles.adults[0].email}</mys1:Email>`;
+        requestBody += `<mys1:PhoneNumber>${traveles.adults[0].phoneNo}</mys1:PhoneNumber>`;
         requestBody += `<mys1:PostCode>G1 1QN</mys1:PostCode>`;
         requestBody += `</mys1:TravelerInfo>`;
         requestBody += `</mys:rq>`;
         requestBody += `</mys:BookFlight>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-
+        console.log("requestBody",requestBody)
         /* Temp comment */
         let bookResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
