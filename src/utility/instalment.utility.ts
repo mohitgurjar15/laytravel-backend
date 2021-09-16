@@ -20,7 +20,7 @@ export class Instalment {
 
             nextInstalmentsDate = bookingDate;
             instalmentsDates.push(nextInstalmentsDate);
-            while (dayDiffernce > 7) {
+            while (dayDiffernce >= 7) {
                 
                 dayDiffernce = dayDiffernce - 7;
                 nextInstalmentsDate = moment(nextInstalmentsDate).add(7, 'days').format('YYYY-MM-DD')
@@ -84,7 +84,7 @@ export class Instalment {
 
             nextInstalmentsDate = bookingDate;
             instalmentsDates.push(nextInstalmentsDate);
-            while (dayDiffernce >14) {
+            while (dayDiffernce >=14) {
                 dayDiffernce = dayDiffernce - 14;
                 nextInstalmentsDate = moment(nextInstalmentsDate).add(14, 'days').format('YYYY-MM-DD')
                 instalmentsDates.push(nextInstalmentsDate);
@@ -135,7 +135,7 @@ export class Instalment {
 
             nextInstalmentsDate = bookingDate;
             instalmentsDates.push(nextInstalmentsDate);
-            while (dayDiffernce >30) {
+            while (dayDiffernce >=30) {
 
                 dayDiffernce = dayDiffernce - 30;
                 nextInstalmentsDate = moment(nextInstalmentsDate).add(30, 'days').format('YYYY-MM-DD')
