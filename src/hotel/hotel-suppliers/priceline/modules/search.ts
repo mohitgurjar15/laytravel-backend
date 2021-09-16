@@ -159,15 +159,17 @@ export class Search {
                                     downpayment,
                                     isPerenctageDownpayment
                                 );
+                                if(instalmentDetails2.instalment_available) {
 
-                                second_down_payment =
+                                    second_down_payment =
                                     instalmentDetails2.instalment_date[0]
-                                        .instalment_amount;
-                                secondary_start_price_2 =
+                                    .instalment_amount;
+                                    secondary_start_price_2 =
                                     instalmentDetails2.instalment_date[1]
-                                        .instalment_amount;
-                                no_of_weekly_installment_2 =
+                                    .instalment_amount;
+                                    no_of_weekly_installment_2 =
                                     instalmentDetails2.instalment_date.length - 1;
+                                }
                             }
 
 
@@ -187,15 +189,21 @@ export class Search {
                                     bookingDate,
                                     downpayment,
                                     isPerenctageDownpayment
-                                );
-                                third_down_payment =
+                                    );
+                                if(instalmentDetails3.instalment_available) {
+                                    
+                                    third_down_payment =
                                     instalmentDetails3.instalment_date[0]
-                                        .instalment_amount;
-                                secondary_start_price_3 =
+                                    .instalment_amount;
+                                    secondary_start_price_3 =
                                     instalmentDetails3.instalment_date[1]
-                                        .instalment_amount;
-                                no_of_weekly_installment_3 =
+                                    .instalment_amount;
+                                    no_of_weekly_installment_3 =
                                     instalmentDetails3.instalment_date.length - 1;
+                                }
+                                else{
+                                    paymentConfig.isMonthlyInstallmentAvailable=false;
+                                }
                             }
 
                             if(this.rate.is_cancellable=='false'){
