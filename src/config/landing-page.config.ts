@@ -190,7 +190,7 @@ export const LANDING_PAGE = {
       amount: 20
     }
   },
-  'sergio': {
+  'antinoty': {
     applicable: true,
     slides: [
       {
