@@ -4,9 +4,16 @@ import {
     RequestTimeoutException,
 } from "@nestjs/common";
 import Axios from "axios";
-import { exception } from "console";
+// import { exception } from "console";
+const axios = require('axios')
 import * as xml2js from "xml2js";
 import { Activity } from "./activity.utility";
+const pako = require('pako');
+let request = require('request');
+const zlib = require('zlib');
+const concat = require('concat-stream');
+import * as crypto from 'crypto';
+import { resolve } from "path";
 
 export class HttpRequest {
     static async mystiflyRequest(url, requestBody, headerAction, user = "") {
@@ -254,6 +261,29 @@ export class HttpRequest {
             //    throw new BadRequestException(
             //        err + " &&&availability&&&" + errorMessage
             //    );
+        }
+    }
+
+    static async pkFareRequest(url, param, user="") {
+        try {
+            
+            let requestTime = `${new Date()}`;
+            
+
+            // let url = "https://mwrlife-api.pkfare.com/shoppingV2?param=eyJhdXRoZW50aWNhdGlvbiI6eyJwYXJ0bmVySWQiOiJyNFp1OE8zeFJNWHZCbG84bXYrVVpyMHhlbVk9Iiwic2lnbiI6IjM2OTk4YzRhNDY2ODY3OTg5ZDM0M2NhZjhmZDNhMWQ4In0sInNlYXJjaCI6eyJhZHVsdHMiOiIxIiwiY2hpbGRyZW4iOiIwIiwiYWlybGluZSI6IiIsIm5vbnN0b3AiOjAsInNvbHV0aW9ucyI6MCwic2VhcmNoQWlyTGVncyI6W3siZGVwYXJ0dXJlRGF0ZSI6IjIwMjItMDItMTciLCJkZXN0aW5hdGlvbiI6IkhLRyIsIm9yaWdpbiI6IlNJTiIsImNhYmluQ2xhc3MiOiJFY29ub215In0seyJkZXBhcnR1cmVEYXRlIjoiMjAyMi0wMi0yMSIsImRlc3RpbmF0aW9uIjoiU0lOIiwib3JpZ2luIjoiSEtHIiwiY2FiaW5DbGFzcyI6IkVjb25vbXkifV19fQ==";
+
+            const { data } = await axios.get(url, { responseType: 'arraybuffer' })
+
+            return data;
+        } catch (error) {
+            console.log("===================TRUE", error)
+            // let logData = {};
+            // logData["url"] = url;
+            // logData["parameter"] = param;
+            // logData["responce"] = error.response.data;
+            // const fileName = `Flight-pkfare-Shopping_V2-${new Date().getTime()}`;
+            // Activity.createlogFile(fileName, logData, "Mustifly_errors");
+            throw new RequestTimeoutException(`Connection time out`);
         }
     }
 }

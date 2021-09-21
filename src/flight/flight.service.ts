@@ -92,6 +92,8 @@ import console = require("console");
 import { RouteCategory } from "src/utility/route-category.utility";
 import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
 import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
+import { PKFare } from "./strategy/pkfare";
+import { resolve } from "path";
 
 @Injectable()
 export class FlightService {
@@ -368,13 +370,20 @@ export class FlightService {
         const result = new Promise((resolve) =>
             resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
         );
+
+        const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+        const pkfareResult = new Promise((resolve) =>
+            resolve(pkfare.oneWaySearch(searchFlightDto, user, referralId))
+        )
+        // console.log("-----TRUE------")
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
             user.user_id,
             userIp
         );
-        return result;
+        // return result;
+        return pkfareResult
     }
 
     async searchOneWayZipFlight(searchFlightDto, headers, user, referralId = '') {
@@ -1635,6 +1644,11 @@ export class FlightService {
             resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
         );
 
+        const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+        const pkfareResult = new Promise((resolve) =>
+            resolve(pkfare.roundTripSearch(searchFlightDto, user, referralId))
+        );
+
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
@@ -1643,6 +1657,7 @@ export class FlightService {
         );
 
         return result;
+        // return "true"
     }
 
     async airRevalidate(routeIdDto, headers, user, referralId) {
