@@ -668,30 +668,28 @@ export class AdminDashboardService {
             var response = {};
 
             const ToBePaidForHotel = await getConnection().query(
-                `SELECT sum("booking_instalments"."amount") as "total" 
-				FROM booking
-				INNER JOIN booking_instalments
-				ON booking.id = booking_instalments.booking_id WHERE 1=1 AND "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" = 3
+                `SELECT sum("booking"."total_amount") as "total" 
+				FROM booking WHERE
+				"booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND module_id = 3
 				`
             );
+            console.log('ToBePaidForHotel',ToBePaidForHotel)
             response["to_be_paid_for_hotel"] =
             ToBePaidForHotel[0].total || 0;
 
             const ToBePaidForFlight = await getConnection().query(
-                `SELECT sum("booking_instalments"."amount") as "total" 
-				FROM booking
-				INNER JOIN booking_instalments
-				ON booking.id = booking_instalments.booking_id WHERE 1=1 AND "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" = 1
+                `SELECT sum("booking"."total_amount") as "total" 
+				FROM booking WHERE
+				"booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND module_id = 1
 				`
             );
             response["to_be_paid_for_flight"] =
             ToBePaidForFlight[0].total || 0;
 
             const ToBePaidForTotal = await getConnection().query(
-                `SELECT sum("booking_instalments"."amount") as "total" 
-				FROM booking
-				INNER JOIN booking_instalments
-				ON booking.id = booking_instalments.booking_id WHERE 1=1 AND "booking_instalments"."instalment_status" = ${PaymentStatus.PENDING} AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND "booking"."module_id" IN (1,3)
+                `SELECT sum("booking"."total_amount") as "total" 
+				FROM booking WHERE
+				"booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING}) AND module_id IN (1,3) 
 				`
             );
             response["to_be_paid_for_total"] =

@@ -573,7 +573,6 @@ export class Mystifly implements StrategyAirline {
                                 weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                                 weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                             );
-                            //console.log("I am in 1.1",instalmentDetails)
                             if (instalmentDetails.instalment_available) {
                                 route.start_price =
                                     instalmentDetails.instalment_date[0].instalment_amount;
@@ -582,6 +581,9 @@ export class Mystifly implements StrategyAirline {
                                     instalmentDetails.instalment_date[1].instalment_amount;
                                 route.no_of_weekly_installment =
                                     instalmentDetails.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isWeeklyInstallmentAvailable=false;
                             }
 
                         }
@@ -594,13 +596,17 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
-                            //console.log("I am in 1.2",instalmentDetails)
-                            route.second_down_payment =
-                                instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_2 =
-                                instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_2 =
-                                instalmentDetails2.instalment_date.length - 1;
+                            if (instalmentDetails2.instalment_available) {
+                                route.second_down_payment =
+                                    instalmentDetails2.instalment_date[0].instalment_amount;
+                                route.secondary_start_price_2 =
+                                    instalmentDetails2.instalment_date[1].instalment_amount;
+                                route.no_of_weekly_installment_2 =
+                                    instalmentDetails2.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -613,12 +619,18 @@ export class Mystifly implements StrategyAirline {
                                 paymentConfig.isDownPaymentInPercentage
                             );
                             //console.log("I am in 1.3",instalmentDetails)
-                            route.third_down_payment =
+                            if (instalmentDetails3.instalment_available) {
+
+                                route.third_down_payment =
                                 instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_3 =
+                                route.secondary_start_price_3 =
                                 instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_3 =
+                                route.no_of_weekly_installment_3 =
                                 instalmentDetails3.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isMonthlyInstallmentAvailable=false;
+                            }
                         }
 
                         
@@ -1136,35 +1148,6 @@ export class Mystifly implements StrategyAirline {
                     PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
                 );
 
-                //     let d = moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                //         "YYYY-MM-DD"
-                //     )
-                //     let downPayments = [40, 50, 60]
-                //     if (moment(d).diff(
-                //         moment().format("YYYY-MM-DD"),
-                //         "days"
-                //     ) > 90) {
-                //         downPayments = [20, 30, 40]
-                //     }
-
-                // let instalmentDetails = Instalment.weeklyInstalment(
-                //     route.selling_price,
-                //     moment(stops[0].departure_date, "DD/MM/YYYY").format(
-                //         "YYYY-MM-DD"
-                //     ),
-                //     bookingDate,
-                //     downPayments[0]
-                // );
-                // console.log("---------INSTALLMENT DETAILS---------", instalmentDetails)
-                // if (instalmentDetails.instalment_available) {
-                //     route.start_price =
-                //         instalmentDetails.instalment_date[0].instalment_amount;
-                //     route.secondary_start_price =
-                //         instalmentDetails.instalment_date[1].instalment_amount;
-                // } else {
-                //     route.start_price = 0;
-                //     route.secondary_start_price = 0;
-                // }
                 let searchData = { departure: stops[0].departure_code, arrival: stops[stops.length - 1].arrival_code, checkInDate: departure_date }
                 let referralId = "";
                 let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData)
@@ -1240,6 +1223,9 @@ export class Mystifly implements StrategyAirline {
                             route.no_of_weekly_installment =
                                 instalmentDetails.instalment_date.length - 1;
                         }
+                        else{
+                            paymentConfig.isWeeklyInstallmentAvailable=false;
+                        }
 
                     }
 
@@ -1252,13 +1238,18 @@ export class Mystifly implements StrategyAirline {
                             paymentConfig.isDownPaymentInPercentage
                         );
                         
-                        //console.log("I am in 1.2",instalmentDetails)
-                        route.second_down_payment =
+                        if(instalmentDetails2.instalment_available){
+
+                            route.second_down_payment =
                             instalmentDetails2.instalment_date[0].instalment_amount;
-                        route.secondary_start_price_2 =
+                            route.secondary_start_price_2 =
                             instalmentDetails2.instalment_date[1].instalment_amount;
-                        route.no_of_weekly_installment_2 =
+                            route.no_of_weekly_installment_2 =
                             instalmentDetails2.instalment_date.length - 1;
+                        }
+                        else{
+                            paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                        }
                     }
 
 
@@ -1270,14 +1261,18 @@ export class Mystifly implements StrategyAirline {
                             downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage
                         );
-                        
-                        //console.log("I am in 1.3",instalmentDetails)
-                        route.third_down_payment =
+                        if(instalmentDetails3.instalment_available){
+
+                            route.third_down_payment =
                             instalmentDetails3.instalment_date[0].instalment_amount;
-                        route.secondary_start_price_3 =
+                            route.secondary_start_price_3 =
                             instalmentDetails3.instalment_date[1].instalment_amount;
-                        route.no_of_weekly_installment_3 =
+                            route.no_of_weekly_installment_3 =
                             instalmentDetails3.instalment_date.length - 1;
+                        }
+                        else{
+                            paymentConfig.isMonthlyInstallmentAvailable=false;
+                        }
                     }                   
                     
                     //console.log("I am in 1.3.1",route.selling_price,route.discounted_selling_price,departure_date,bookingDate,weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage)
@@ -2023,13 +2018,18 @@ export class Mystifly implements StrategyAirline {
                             downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage
                         );
-
-                        route.second_down_payment =
+                        
+                        if(instalmentDetails2.instalment_available){
+                            route.second_down_payment =
                             instalmentDetails2.instalment_date[0].instalment_amount;
-                        route.secondary_start_price_2 =
+                            route.secondary_start_price_2 =
                             instalmentDetails2.instalment_date[1].instalment_amount;
-                        route.no_of_weekly_installment_2 =
+                            route.no_of_weekly_installment_2 =
                             instalmentDetails2.instalment_date.length - 1;
+                        }
+                        else{
+                            paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                        }
                     }
 
 
@@ -2041,12 +2041,18 @@ export class Mystifly implements StrategyAirline {
                             downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage
                         );
-                        route.third_down_payment =
+                        if(instalmentDetails3.instalment_available){
+
+                            route.third_down_payment =
                             instalmentDetails3.instalment_date[0].instalment_amount;
-                        route.secondary_start_price_3 =
+                            route.secondary_start_price_3 =
                             instalmentDetails3.instalment_date[1].instalment_amount;
-                        route.no_of_weekly_installment_3 =
+                            route.no_of_weekly_installment_3 =
                             instalmentDetails3.instalment_date.length - 1;
+                        }
+                        else{
+                            paymentConfig.isMonthlyInstallmentAvailable=false;
+                        }
                     }
 
 
@@ -2631,6 +2637,9 @@ export class Mystifly implements StrategyAirline {
                                 route.no_of_weekly_installment =
                                     instalmentDetails.instalment_date.length - 1;
                             }
+                            else{
+                                paymentConfig.isWeeklyInstallmentAvailable=false;
+                            }
 
                         }
 
@@ -2642,13 +2651,19 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
+                            
+                            if(instalmentDetails2.instalment_available){
 
-                            route.second_down_payment =
+                                route.second_down_payment =
                                 instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_2 =
+                                route.secondary_start_price_2 =
                                 instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_2 =
+                                route.no_of_weekly_installment_2 =
                                 instalmentDetails2.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -2660,12 +2675,19 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
-                            route.third_down_payment =
+
+                            if(instalmentDetails3.instalment_available){
+
+                                route.third_down_payment =
                                 instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_3 =
+                                route.secondary_start_price_3 =
                                 instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_3 =
+                                route.no_of_weekly_installment_3 =
                                 instalmentDetails3.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isMonthlyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -3346,6 +3368,9 @@ export class Mystifly implements StrategyAirline {
                                 route.no_of_weekly_installment =
                                     instalmentDetails.instalment_date.length - 1;
                             }
+                            else{
+                                paymentConfig.isWeeklyInstallmentAvailable=false;
+                            }
 
                         }
 
@@ -3357,13 +3382,18 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
+                            if(instalmentDetails2.instalment_available){
 
-                            route.second_down_payment =
+                                route.second_down_payment =
                                 instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_2 =
+                                route.secondary_start_price_2 =
                                 instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_2 =
+                                route.no_of_weekly_installment_2 =
                                 instalmentDetails2.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -3372,16 +3402,21 @@ export class Mystifly implements StrategyAirline {
                                 route.selling_price,
                                 departure_date,
                                 bookingDate,
-                                0,
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
-                            route.third_down_payment =
+                            if(instalmentDetails3.instalment_available){
+
+                                route.third_down_payment =
                                 instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_3 =
+                                route.secondary_start_price_3 =
                                 instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_3 =
+                                route.no_of_weekly_installment_3 =
                                 instalmentDetails3.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isMonthlyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -4334,6 +4369,9 @@ export class Mystifly implements StrategyAirline {
                                 route.no_of_weekly_installment =
                                     instalmentDetails.instalment_date.length - 1;
                             }
+                            else{
+                                paymentConfig.isWeeklyInstallmentAvailable=false;
+                            }
 
                         }
 
@@ -4345,13 +4383,18 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
+                            if (instalmentDetails2.instalment_available) {
 
-                            route.second_down_payment =
+                                route.second_down_payment =
                                 instalmentDetails2.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_2 =
+                                route.secondary_start_price_2 =
                                 instalmentDetails2.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_2 =
+                                route.no_of_weekly_installment_2 =
                                 instalmentDetails2.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -4363,12 +4406,18 @@ export class Mystifly implements StrategyAirline {
                                 downPaymentOption[0],
                                 paymentConfig.isDownPaymentInPercentage
                             );
-                            route.third_down_payment =
+                            if(instalmentDetails3.instalment_available){
+                                
+                                route.third_down_payment =
                                 instalmentDetails3.instalment_date[0].instalment_amount;
-                            route.secondary_start_price_3 =
+                                route.secondary_start_price_3 =
                                 instalmentDetails3.instalment_date[1].instalment_amount;
-                            route.no_of_weekly_installment_3 =
+                                route.no_of_weekly_installment_3 =
                                 instalmentDetails3.instalment_date.length - 1;
+                            }
+                            else{
+                                paymentConfig.isMonthlyInstallmentAvailable=false;
+                            }
                         }
 
 
@@ -5166,6 +5215,9 @@ export class Mystifly implements StrategyAirline {
                             route.no_of_weekly_installment =
                                 instalmentDetails.instalment_date.length - 1;
                         }
+                        else{
+                            paymentConfig.isWeeklyInstallmentAvailable=false;
+                        }
 
                     }
 
@@ -5177,13 +5229,19 @@ export class Mystifly implements StrategyAirline {
                             downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage
                         );
+                        
+                        if(instalmentDetails2.instalment_available){
 
-                        route.second_down_payment =
+                            route.second_down_payment =
                             instalmentDetails2.instalment_date[0].instalment_amount;
-                        route.secondary_start_price_2 =
+                            route.secondary_start_price_2 =
                             instalmentDetails2.instalment_date[1].instalment_amount;
-                        route.no_of_weekly_installment_2 =
+                            route.no_of_weekly_installment_2 =
                             instalmentDetails2.instalment_date.length - 1;
+                        }
+                        else{
+                            paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                        }
                     }
 
 
@@ -5195,12 +5253,19 @@ export class Mystifly implements StrategyAirline {
                             downPaymentOption[0],
                             paymentConfig.isDownPaymentInPercentage
                         );
-                        route.third_down_payment =
+
+                        if(instalmentDetails3.instalment_available){
+
+                            route.third_down_payment =
                             instalmentDetails3.instalment_date[0].instalment_amount;
-                        route.secondary_start_price_3 =
+                            route.secondary_start_price_3 =
                             instalmentDetails3.instalment_date[1].instalment_amount;
-                        route.no_of_weekly_installment_3 =
+                            route.no_of_weekly_installment_3 =
                             instalmentDetails3.instalment_date.length - 1;
+                        }
+                        else{
+                            paymentConfig.isMonthlyInstallmentAvailable=false;
+                        }
                     }
 
 
@@ -5557,30 +5622,22 @@ export class Mystifly implements StrategyAirline {
                 requestBody += `</mys1:PassengerName>`;
                 requestBody += `<mys1:PassengerNationality>${traveles.infants[i].country.iso2}</mys1:PassengerNationality>`;
                 requestBody += `<mys1:PassengerType>INF</mys1:PassengerType>`;
-                /* if(traveles.infants[i].passportExpiry && traveles.infants[i].passportNumber){
-
-                    requestBody += `<mys1:Passport>`
-                    requestBody += `<mys1:Country>${traveles.infants[i].country.iso2}</mys1:Country>`
-                    requestBody += `<mys1:ExpiryDate>${traveles.infants[i].passportExpiry}T00:00:00</mys1:ExpiryDate>`
-                    requestBody += `<mys1:PassportNumber>${traveles.infants[i].passportNumber}</mys1:PassportNumber>`
-                    requestBody += `</mys1:Passport>`
-                } */
                 requestBody += `</mys1:AirTraveler>`;
             }
         }
 
         requestBody += `</mys1:AirTravelers>`;
         requestBody += `<mys1:AreaCode>141</mys1:AreaCode>`;
-        requestBody += `<mys1:CountryCode>44</mys1:CountryCode>`;
-        requestBody += `<mys1:Email>peter@gmail.com</mys1:Email>`;
-        requestBody += `<mys1:PhoneNumber>5467890</mys1:PhoneNumber>`;
+        requestBody += `<mys1:CountryCode>${traveles.adults[0].countryCode}</mys1:CountryCode>`;
+        requestBody += `<mys1:Email>${traveles.adults[0].email}</mys1:Email>`;
+        requestBody += `<mys1:PhoneNumber>${traveles.adults[0].phoneNo}</mys1:PhoneNumber>`;
         requestBody += `<mys1:PostCode>G1 1QN</mys1:PostCode>`;
         requestBody += `</mys1:TravelerInfo>`;
         requestBody += `</mys:rq>`;
         requestBody += `</mys:BookFlight>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-
+        console.log("requestBody",requestBody)
         /* Temp comment */
         let bookResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
