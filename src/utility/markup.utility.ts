@@ -39,7 +39,6 @@ export class PriceMarkup{
     }
 
     static async getMarkup(moduleId,userType=null,bookingType=null){
-        
         userType = userType==null ? 7 : userType;
         bookingType = bookingType || 'no-instalment';
         let markupDetails =  await getManager()

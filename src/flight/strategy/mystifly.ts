@@ -95,7 +95,7 @@ export class Mystifly implements StrategyAirline {
         }
         //mystiflyConfig = { "account_number": "MCN001714","password": "Lay2020@xml","target": "Test", "user_name": "LayTrip_XML","url": "http://onepointdemo.myfarebox.com/V2/OnePoint.svc"}
         //mystiflyConfig['zipSearchUrl'] = 'http://onepointdemo.myfarebox.com/V2/OnePointGZip.svc';
-        console.log("mystiflyConfig",mystiflyConfig)
+        // console.log("mystiflyConfig",mystiflyConfig)
         return mystiflyConfig;
     }
     async createSession() {
@@ -151,6 +151,7 @@ export class Mystifly implements StrategyAirline {
     }
 
     async getMarkupDetails(departure_date, bookingDate, user, module) {
+        // console.log('myyyyyyyyyyyyy module ',module)
         let isInstalmentAvaible = Instalment.instalmentAvailbility(
             departure_date,
             bookingDate
@@ -2889,7 +2890,6 @@ export class Mystifly implements StrategyAirline {
             child_count,
             infant_count,
         } = searchFlightDto;
-
         let bookingDate = moment(new Date()).format("YYYY-MM-DD");
         const [caegory] = await getConnection().query(`select 
         (select name from laytrip_category where id = flight_route.category_id)as categoryName 
@@ -2897,6 +2897,8 @@ export class Mystifly implements StrategyAirline {
         where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
         let categoryName = caegory?.categoryname;
         let blacklistedAirports = await this.getBlacklistedAirports()
+console.log('------------------------come')
+
         //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
         let markup = await this.getMarkupDetails(
             departure_date,
@@ -2904,6 +2906,7 @@ export class Mystifly implements StrategyAirline {
             user,
             module
         );
+
         let markUpDetails = markup.markUpDetails;
         let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
         if (!markUpDetails) {
@@ -2911,6 +2914,7 @@ export class Mystifly implements StrategyAirline {
                 `Markup is not configured for flight&&&module&&&${errorMessage}`
             );
         }
+        console.log('+++++++++++')
 
         let requestBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:mys="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint.OnePointEntities"
 	xmlns:mys1="http://schemas.datacontract.org/2004/07/Mystifly.OnePoint" xmlns:arr="http://schemas.microsoft.com/2003/10/Serialization/Arrays">`;
@@ -4448,7 +4452,7 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                         route.payment_object['installment_type'] = t
-                        console.log("route.payment_object",route.payment_object)
+                        // console.log("route.payment_object",route.payment_object)
                         
                     } else {
                         route.payment_object = {
@@ -5579,7 +5583,7 @@ export class Mystifly implements StrategyAirline {
         requestBody += `</mys:BookFlight>`;
         requestBody += `</soapenv:Body>`;
         requestBody += `</soapenv:Envelope>`;
-        console.log("requestBody",requestBody)
+        // console.log("requestBody",requestBody)
         /* Temp comment */
         let bookResult = await HttpRequest.mystiflyRequest(
             mystiflyConfig.url,
