@@ -82,7 +82,7 @@ export class PKFare implements StrategyAirline {
             from flight_route 
             where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
             let categoryName = caegory?.categoryname;
-            // console.log("-----CategoryName------", categoryName)
+            
             let blacklistedAirports = await this.getBlacklistedAirports()
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
     
@@ -90,8 +90,6 @@ export class PKFare implements StrategyAirline {
                 departure_date,
                 bookingDate
             );
-    
-            // console.log("-----InstalmentAvailability------", isInstalmentAvaible)
     
             
             let markup = await this.getMarkupDetails(
@@ -110,12 +108,9 @@ export class PKFare implements StrategyAirline {
             const currencyDetails = await Generic.getAmountTocurrency(
                 this.headers.currency
             );
-            // console.log("-----Markup------", markup)
-            // console.log("-----MarkUpDetails------", markUpDetails)
-            // console.log("-----SecondaryMarkupDetails------", secondaryMarkUpDetails)
     
             const sign = await this.getSign();
-            // console.log("sign", sign)
+            
             let requestParam = "";
             requestParam += `{`;
             requestParam += `"authentication": {`;
@@ -146,17 +141,15 @@ export class PKFare implements StrategyAirline {
             requestParam += `}`;
             requestParam += `}`;
     
-            console.log("REQUEST BODY", requestParam)
-    
             let param = await this.convertToBase64(requestParam);
-            // console.log("param", param)
             
             let url = `${credential.pkfare_api_url}shoppingV2?param=${param}`;
             let responce: any = {};
     
             let searchResult = await HttpRequest.pkFareRequest(
                 url,
-                param
+                param,
+                "ShoppingV2"
             )
             
             let results: any = await new Promise((resolve) => { 
@@ -187,7 +180,7 @@ export class PKFare implements StrategyAirline {
 
 
                 for(let i = 0; i < flightRoutes.length; i++) {
-                    // console.log("flightRoutes", flightRoutes)
+                    
                     let blacklistedAirlinesFound = 0
                     let blacklistedAirportsFound = 0
                     route = new Route();
@@ -195,117 +188,52 @@ export class PKFare implements StrategyAirline {
                     totalDuration = 0;
                     uniqueCode = "";
                     flightSegments = flightRoutes[i].segmengtIds
-                    // console.log("flightSegments.length",flightSegments.length)
+                    
                     for(let j = 0; j < flightSegments.length; j++) {
                         segmentId = flightSegments[j]
-                        // console.log("segment id", segmentId)
-                        // console.log("true true")
-                        // let flightSegmentDetails;
+                        
                         flightSegmentDetails = results.data.segments.filter(item => item.segmentId == segmentId)
-                        // console.log(flightSegmentDetails) 
-                        // ------------------------------------------------------------------
-                        // for(let x = 0; x < results.data.segments.length; x++){
-                        //     // console.log("flightSegmentDetails[0].flightNum", flightSegmentDetails.flightNum)
-                        //     // console.log("segment id 2", results.data.segments[x].segmentId)
-                        //     if(results.data.segments[x].segmentId == segmentId) {
-                        //         flightSegmentDetails = results.data.segments[x];
-                        //         // console.log("flightSegmentDetails[0].flightNum", flightSegmentDetails);
-                        //         totalDuration += flightSegmentDetails.flightTime;
-                        //         stop = new Stop();
-                        //         // console.log("flightSegmentDetails",flightSegmentDetails.departure)
-                        //         stop.departure_code = flightSegmentDetails.departure;
-                        //         stop.departure_date = moment(flightSegmentDetails.departureDate).format("DD/MM/YYYY");
-                        //         // console.log("---DEP DATE---", moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY"))
-                        //         stop.departure_time = moment(flightSegmentDetails.strDepartureTime).format("h:mm A");
-                        //         stop.departure_date_time = " ";
-                        //         stop.departure_info = {};
-                        //         stop.arrival_code = flightSegmentDetails.arrival;
-                        //         stop.arrival_date = moment(flightSegmentDetails.arrivalDate).format("DD/MM/YYYY");
-                        //         stop.arrival_time = moment(flightSegmentDetails.strArrivalTime).format("h:mm A");
-                        //         stop.arrival_time = "";
-                        //         stop.arrival_date_time = "";
-                        //         stop.arrival_info = {};
-                        //         stop.eticket = true; // please check this
-                        //         stop.flight_number = flightSegmentDetails.flightNum;
-                        //         stop.cabin_class = flightSegmentDetails.cabinClass
-                        //         stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
-                        //             flightSegmentDetails.flightTime * 60
-                        //         );
-                        //         stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
-                        //         stop.airline = flightSegmentDetails.airline;
-                        //         stop.remaining_seat = parseInt(flightSegmentDetails.availabilityCount);
-                        //         stop.below_minimum_seat = parseInt(flightSegmentDetails.availabilityCount) < 5 ? true : false; // please correct this line
-                        //         stop.is_layover = false; // static
-                        //         stop.airline_name = airlines[flightSegmentDetails.airline];
-                        //         stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
-                        //         blacklistedAirportsFound = blacklistedAirports.includes(stop.departure_code) && blacklistedAirports.includes(stop.arrival_code) ? blacklistedAirportsFound + 1 : blacklistedAirportsFound
-                        //         blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
-                        //         stop.cabin_baggage = ""; // please check
-                        //         stop.checkin_baggage = ""; // please check
-                        //         stop.meal = "";
-                        //         if(stops.length > 0) {
-                        //             stop.is_layover = true;
-                        //             let layOverduration = DateTime.convertSecondsToHourMinutesSeconds(
-                        //                 moment(stop.departure_date_time).diff(
-                        //                     stops[stops.length - 1].arrival_date_time,
-                        //                     "seconds"
-                        //                 )
-                        //             );
-                        //             totalDuration += moment(stop.departure_date_time).diff(
-                        //                 stops[stops.length - 1].arrival_date_time,
-                        //                 "seconds"
-                        //             );
-                        //             stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`;
-                        //             stop.layover_airport_name = flightSegmentDetails.departure;
-
-                        //         }
-                        //     }
-                            
-                        // }
-                        //--------------------------------------------------------------------
-                        // console.log("<<<<<---------------->>>>>", flightSegmentDetails)
+                        
                         if(flightSegmentDetails) {
                             totalDuration += flightSegmentDetails[0].flightTime;
                             stop = new Stop();
-                            // console.log("-----------------")
-                            // console.log("1")
-
-                            const d = new Date(flightSegmentDetails[0].strDepartureTime);
-                            // console.log(flightSegmentDetails[0].strDepartureTime)
-                            console.log("FORMATTED TIME--->>>",moment(flightSegmentDetails[0].arrivalDate).format("DD/MM/YYYY")); // June 1, 2019
                             
-                            // console.log(`moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY")`,moment(flightSegmentDetails[0].strDepartureTime).format("h:mm A"))
                             stop.departure_code = flightSegmentDetails[0].departure;
-                            // console.log("2")
+                            
                             stop.departure_date = moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY");
-                            // console.log("---DEP DATE---", moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY"))
-                            // console.log("3")
+                            
                             stop.departure_time = moment(flightSegmentDetails[0].strDepartureTime,"HH:mm").format("h:mm A");
-                            // console.log("4")
+                            
                             let departure_date_time = flightSegmentDetails[0].strDepartureDate +'T'+ flightSegmentDetails[0].strDepartureTime;
-                            // console.log("COMBI-->>", moment(departure_date_time).format("YYYY-MM-DDTHH:mm:SS"))
+                            
                             stop.departure_date_time = moment(departure_date_time).format("YYYY-MM-DDTHH:mm:SS");
-                            stop.departure_info = {};
+                            stop.departure_info = 
+                                typeof airports[stop.departure_code] !== "undefined"
+                                ? airports[stop.departure_code]
+                                : {};
                             stop.arrival_code = flightSegmentDetails[0].arrival;
                             stop.arrival_date = moment(flightSegmentDetails[0].arrivalDate).format("DD/MM/YYYY");
                             stop.arrival_time = moment(flightSegmentDetails[0].strArrivalTime,"HH:mm").format("h:mm A");
-                            // stop.arrival_time = "";
+                            
                             let arrival_date_time = flightSegmentDetails[0].strArrivalDate +'T'+ flightSegmentDetails[0].strArrivalTime;
                             stop.arrival_date_time = moment(arrival_date_time).format("YYYY-MM-DDTHH:mm:SS");
-                            stop.arrival_info = {};
+                            stop.arrival_info = 
+                                typeof airports[stop.arrival_code] !== "undefined"
+                                        ? airports[stop.arrival_code]
+                                        : {};
                             stop.eticket = true; // please check this
                             stop.flight_number = flightSegmentDetails[0].flightNum;
                             stop.cabin_class = flightSegmentDetails[0].cabinClass
                             stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                 flightSegmentDetails[0].flightTime * 60
                             );
-                            console.log("--->>TIME", stopDuration)
+                            
                             stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
                             stop.airline = flightSegmentDetails[0].airline;
                             stop.remaining_seat = parseInt(flightSegmentDetails[0].availabilityCount);
                             stop.below_minimum_seat = parseInt(flightSegmentDetails[0].availabilityCount) < 5 ? true : false; // please correct this line
                             stop.is_layover = false; // static
-                            // console.log("6")
+                            
                             stop.airline_name = airlines[flightSegmentDetails[0].airline];
                             stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
                             blacklistedAirportsFound = blacklistedAirports.includes(stop.departure_code) && blacklistedAirports.includes(stop.arrival_code) ? blacklistedAirportsFound + 1 : blacklistedAirportsFound
@@ -313,13 +241,12 @@ export class PKFare implements StrategyAirline {
                             stop.cabin_baggage = ""; // please check
                             stop.checkin_baggage = ""; // please check
                             stop.meal = "";
-                            // console.log("7")
+                            
                             let layOverduration = "";
                             stop.is_layover = false;
                             stop.layover_duration = "";
                             stop.layover_airport_name = ""
                             if(stops.length > 0) {
-                                // console.log("true")
                                 stop.is_layover = true;
                                 let layOverduration = 
                                     DateTime.convertSecondsToHourMinutesSeconds(
@@ -337,19 +264,18 @@ export class PKFare implements StrategyAirline {
                                 stop.layover_airport_name = flightSegmentDetails[0].departure;
 
                             }
-                            // console.log("8")
                             uniqueCode += stop.flight_number;
                             uniqueCode += stop.airline;
                             uniqueCode += stop.cabin_class;
-                            // console.log(stops)
                             stops.push(stop);
+                            
                         }
                     }
-                        
+                       
                     if(blacklistedAirportsFound == 0 && blacklistedAirlinesFound == 0) {
                         routeType = new RouteType();
                         routeType.type = "outbound";
-                        // console.log("++++++++++++++++", stops)
+                        
                         routeType.stops = stops;
                         let duration = DateTime.convertSecondsToHourMinutesSeconds(
                             totalDuration
@@ -357,12 +283,10 @@ export class PKFare implements StrategyAirline {
                         routeType.duration = `${duration.hours}h ${duration.minutes}m`;
                         route.routes[0] = routeType;
                         route.route_code = flightRoutes[i].flightId;
-                        // console.log(route.route_code)
                         solutions = results.data.solutions.filter(item => item.journeys.journey_0 == flightRoutes[i].flightId)
                         route.fare_type = "" // discussion needed
-                        // console.log("--------SOLUTIONS----->>>", solutions)
+                        
                         let totalAmount = solutions[0].adtFare + solutions[0].adtTax + solutions[0].chdFare + solutions[0].chdTax + solutions[0].infFare + solutions[0].infTax +solutions[0].qCharge + solutions[0].tktFee;
-                        console.log("totalAMount--->>",totalAmount)
                         route.net_rate = Generic.convertAmountTocurrency(
                             totalAmount,
                             currencyDetails.liveRate
@@ -388,7 +312,6 @@ export class PKFare implements StrategyAirline {
                         route.discounted_start_price = 0;
                         route.discounted_secondary_start_price = 0;
                         route.no_of_weekly_installment = 0;
-                        //route.instalment_avail_after =routeDetails.category.installmentAvailableAfter;
                         let instalmentDetails;
                         let discountedInstalmentDetails;
                         let instalmentEligibility: {
@@ -416,12 +339,9 @@ export class PKFare implements StrategyAirline {
 
                         if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
                             paymentConfig = paymentConfigCase[configCaseIndex]
-                            //console.log("oldUsed", configCaseIndex, typeof paymentConfigCase[configCaseIndex])
-
                         } else {
                             paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(1, instalmentEligibility.categoryId, daysUtilDepature)
                             paymentConfigCase[configCaseIndex] = paymentConfig
-                            //console.log("new_config", configCaseIndex,typeof paymentConfigCase[configCaseIndex])
                         }
 
                         route.payment_config = paymentConfig || {}
@@ -438,7 +358,7 @@ export class PKFare implements StrategyAirline {
                                     weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
                                     weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
                                 );
-                                //console.log("I am in 1.1",instalmentDetails)
+                                
                                 if (instalmentDetails.instalment_available) {
                                     route.start_price =
                                         instalmentDetails.instalment_date[0].instalment_amount;
@@ -459,7 +379,7 @@ export class PKFare implements StrategyAirline {
                                     downPaymentOption[0],
                                     paymentConfig.isDownPaymentInPercentage
                                 );
-                                //console.log("I am in 1.2",instalmentDetails)
+                                
                                 route.second_down_payment =
                                     instalmentDetails2.instalment_date[0].instalment_amount;
                                 route.secondary_start_price_2 =
@@ -477,7 +397,7 @@ export class PKFare implements StrategyAirline {
                                     downPaymentOption[0],
                                     paymentConfig.isDownPaymentInPercentage
                                 );
-                                //console.log("I am in 1.3",instalmentDetails)
+                                
                                 route.third_down_payment =
                                     instalmentDetails3.instalment_date[0].instalment_amount;
                                 route.secondary_start_price_3 =
@@ -486,8 +406,6 @@ export class PKFare implements StrategyAirline {
                                     instalmentDetails3.instalment_date.length - 1;
                             }
     
-                            
-                            //console.log("I am in 1.3.1",route.selling_price,route.discounted_selling_price,departure_date,bookingDate,weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage)
                             discountedInstalmentDetails =await Instalment.weeklyInstalment(
                                 route.discounted_selling_price,
                                 departure_date,
@@ -575,7 +493,6 @@ export class PKFare implements StrategyAirline {
                         } else {
                             route.secondary_selling_price = 0;
                         }
-                        //route.instalment_details = instalmentDetails;
     
                         route.stop_count = stops.length - 1;
                         route.is_passport_required = null; // discussion needed
@@ -603,14 +520,10 @@ export class PKFare implements StrategyAirline {
                         route.unique_code = md5(uniqueCode);
                         route.category_name = categoryName;
                         route.offer_data = offerData;
-                        
-    
-                        routes.push(route);
-                        
-                    }
 
-                
-            }
+                        routes.push(route);                        
+                    }
+                }
                 let flightSearchResult = new FlightSearchResult();
                 flightSearchResult.items = routes;
 
@@ -632,7 +545,6 @@ export class PKFare implements StrategyAirline {
                     priceType
                 );
                 flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
-                //return flightSearchResult;
 
                 //Get Stops count and minprice
                 flightSearchResult.stop_data = this.getStopCounts(
@@ -664,10 +576,6 @@ export class PKFare implements StrategyAirline {
             } else {
                 throw new NotFoundException(`No flight founds`);
             }
-            
-            // console.log("--------RESULT------------",result)
-    
-            return results;
         }catch(error) {
             console.log("ERROR--->>>", error)
         }
@@ -682,51 +590,7 @@ export class PKFare implements StrategyAirline {
         module,
         currencyDetails
     ) {
-        const {
-            source_location,
-            destination_location,
-            departure_date,
-            flight_class,
-            adult_count,
-            child_count,
-            infant_count,
-        } = searchFlightDto;
-
-        const [caegory] = await getConnection().query(`select 
-        (select name from laytrip_category where id = flight_route.category_id)as categoryName 
-        from flight_route 
-        where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
-        let categoryName = caegory?.categoryname;
-        console.log("-----CategoryName------", categoryName)
-        let bookingDate = moment(new Date()).format("YYYY-MM-DD");
-
-        let isInstalmentAvaible = Instalment.instalmentAvailbility(
-            departure_date,
-            bookingDate
-        );
-
-        console.log("-----InstalmentAvailability------", isInstalmentAvaible)
-
-        module.name = "flight";
-        module.id = 1;
-        let markup = await this.getMarkupDetails(
-            departure_date,
-            bookingDate,
-            user,
-            module
-        );
-        let markUpDetails = markup.markUpDetails;
-        let secondaryMarkUpDetails = markup.secondaryMarkUpDetails;
-        if (!markUpDetails) {
-            throw new InternalServerErrorException(
-                `Markup is not configured for flight&&&module&&&${errorMessage}`
-            );
-        }
-        console.log("-----Markup------", markup)
-        console.log("-----MarkUpDetails------", markUpDetails)
-        console.log("-----SecondaryMarkupDetails------", secondaryMarkUpDetails)
-
-        return "true"
+        
     }
 
     async roundTripSearchZip(
@@ -781,41 +645,25 @@ export class PKFare implements StrategyAirline {
                 child_count,
                 infant_count,
             } = searchFlightDto;
-            console.log(searchFlightDto)
+            // console.log(searchFlightDto)
             const [caegory] = await getConnection().query(`select 
             (select name from laytrip_category where id = flight_route.category_id)as categoryName 
             from flight_route 
             where from_airport_code  = '${source_location}' and to_airport_code = '${destination_location}'`);
             let categoryName = caegory?.categoryname;
-            console.log("1")
-            // let module = await getManager()
-            //     .createQueryBuilder(Module, "module")
-            //     .where("module.name = :name", { name: "flight" })
-            //     .getOne();
-
-            // if (!module) {
-            //     throw new InternalServerErrorException(
-            //         `Flight module is not configured in database&&&module&&&${errorMessage}`
-            //     );
-            // }
-            console.log("2")
+            
             let blacklistedAirports = await this.getBlacklistedAirports()
             let bookingDate = moment(new Date()).format("YYYY-MM-DD");
             const currencyDetails = await Generic.getAmountTocurrency(
                 this.headers.currency
             );
-            console.log("3")
+            
             //const markUpDetails   = await PriceMarkup.getMarkup(module.id,user.roleId);
             let routeDetails: any = await RouteCategory.flightRouteAvailability(
                 source_location,
                 destination_location
             );
-            console.log("4")
-            // if (typeof routeDetails == "undefined") {
-            //     throw new NotAcceptableException(
-            //         `Sorry, location not served, coming soon. Please choose alternative.`
-            //     );
-            // }
+            
             let markup = await this.getMarkupDetails(
                 departure_date,
                 bookingDate,
@@ -830,9 +678,9 @@ export class PKFare implements StrategyAirline {
                 );
             }
 
-            console.log("5")
             const sign = await this.getSign();
-
+            // console.log("sign", sign)
+            
             const reqParamJson = {
                 "authentication": {
                     "partnerId": `${credential.pkfare_partner_id}`,
@@ -860,9 +708,597 @@ export class PKFare implements StrategyAirline {
                     "solutions": 0
                 }
             }
-            console.log("--->>", reqParamJson);
+            let param = await this.convertToBase64(JSON.stringify(reqParamJson) );
+            // console.log("param", param)
+            
+            let url = `${credential.pkfare_api_url}shoppingV2?param=${param}`;
+            let responce: any = {};
+    
+            let searchResult = await HttpRequest.pkFareRequest(
+                url,
+                param,
+                "ShoppingV2"
+            )
+            
+            let results: any = await new Promise((resolve) => { 
+                zlib.gunzip(searchResult, function (_err, output) {
+                    resolve(output.toString())
+                })
+            });
 
-            return "true"
+            results = JSON.parse(results);
+            let instalmentEligibilityCase = {}
+            let paymentConfigCase = {}
+            if(results.data.flights && results.data.flights.length > 0) {
+                let filteredListes = await this.getRoutes(source_location, destination_location, true)
+            
+                let flightRoutes = results.data.solutions;
+                // console.log("FLIGHT Routes", flightRoutes)
+                let stop: Stop;
+                let stops: Stop[] = [];
+                let routes: Route[] = [];
+                let route: Route;
+                let routeType: RouteType;
+                let outBoundflightSegments = [];
+                let inBoundflightSegments = [];
+                let stopDuration;
+                let otherSegments = [];
+                let j;
+                let totalDuration, inTotalDuration;
+                let uniqueCode;
+                let outboundFlightDetails;
+                let inboundFlightDetails;
+                let flightSegments;
+                let flightSegmentDetails;
+                let depatureOfInbound;
+                let arrivalCodeOfOutbound;
+                for (let i = 0; i < flightRoutes.length; i++) {
+                    let blacklistedAirlinesFound = 0
+                    let blacklistedAirportsFound = 0
+                    totalDuration = 0;
+                    inTotalDuration = 0;
+                    route = new Route();
+                    stops = [];
+                    j = 0;
+                    uniqueCode = "";
+                    outBoundflightSegments = flightRoutes[i].journeys.journey_0;
+                    inBoundflightSegments = flightRoutes[i].journeys.journey_1;
+                    outboundFlightDetails = results.data.flights.filter(item => item.flightId == outBoundflightSegments)
+                    inboundFlightDetails = results.data.flights.filter(item => item.flightId == inBoundflightSegments)
+                    // console.log(outBoundflightSegments,inBoundflightSegments,outboundFlightDetails)
+                    if(outboundFlightDetails) {
+
+                        flightSegments = outboundFlightDetails[0].segmengtIds
+                        // console.log("OUTBOUND FLIGHT SEGMENT LENGTH", flightSegments.length)
+                        for(let x = 0; x < flightSegments.length; x++) {
+                            
+                            flightSegmentDetails = results.data.segments.filter(item => item.segmentId == flightSegments[x])
+                            if(flightSegmentDetails) {
+                                stop = new Stop();
+                                totalDuration += flightSegmentDetails[0].flightTime;
+                                
+                                stop.departure_code = flightSegmentDetails[0].departure;
+                                
+                                stop.departure_date = moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY");
+                                
+                                stop.departure_time = moment(flightSegmentDetails[0].strDepartureTime,"HH:mm").format("h:mm A");
+                                
+                                let departure_date_time = flightSegmentDetails[0].strDepartureDate +'T'+ flightSegmentDetails[0].strDepartureTime;
+                                
+                                stop.departure_date_time = moment(departure_date_time).format("YYYY-MM-DDTHH:mm:SS");
+                                
+                                stop.departure_info = 
+                                typeof airports[stop.departure_code] !== "undefined"
+                                    ? airports[stop.departure_code]
+                                    : {};
+                                
+                                stop.arrival_code = flightSegmentDetails[0].arrival;
+                                stop.arrival_date = moment(flightSegmentDetails[0].arrivalDate).format("DD/MM/YYYY");
+                                stop.arrival_time = moment(flightSegmentDetails[0].strArrivalTime,"HH:mm").format("h:mm A");
+                                
+                                let arrival_date_time = flightSegmentDetails[0].strArrivalDate +'T'+ flightSegmentDetails[0].strArrivalTime;
+                                stop.arrival_date_time = moment(arrival_date_time).format("YYYY-MM-DDTHH:mm:SS");
+                                stop.arrival_info = 
+                                    typeof airports[stop.arrival_code] !== "undefined"
+                                    ? airports[stop.arrival_code]
+                                    : {};
+                                stop.eticket = true; // please check this
+                                stop.flight_number = flightSegmentDetails[0].flightNum;
+                                stop.cabin_class = flightSegmentDetails[0].cabinClass
+                                stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
+                                    flightSegmentDetails[0].flightTime * 60
+                                );
+                                
+                                stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
+                                stop.airline = flightSegmentDetails[0].airline;
+                                stop.remaining_seat = parseInt(flightSegmentDetails[0].availabilityCount);
+                                stop.below_minimum_seat = parseInt(flightSegmentDetails[0].availabilityCount) < 5 ? true : false; // please correct this line
+                                stop.is_layover = false; // static
+                                
+                                stop.airline_name = airlines[flightSegmentDetails[0].airline];
+                                stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                                blacklistedAirportsFound = blacklistedAirports.includes(stop.departure_code) && blacklistedAirports.includes(stop.arrival_code) ? blacklistedAirportsFound + 1 : blacklistedAirportsFound
+                                blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
+                                stop.cabin_baggage = ""; // please check
+                                stop.checkin_baggage = ""; // please check
+                                stop.meal = "";
+                                
+                                let layOverduration = "";
+                                stop.is_layover = false;
+                                stop.layover_duration = "";
+                                stop.layover_airport_name = ""
+                                if(stops.length > 0) {
+                                    stop.is_layover = true;
+                                    let layOverduration = 
+                                        DateTime.convertSecondsToHourMinutesSeconds(
+                                            moment(stop.departure_date_time).diff(
+                                                stops[stops.length - 1].arrival_date_time,
+                                                "seconds"
+                                            )
+                                        );
+                                    totalDuration +=  
+                                        moment(stop.departure_date_time).diff(
+                                            stops[stops.length - 1].arrival_date_time,
+                                            "seconds"
+                                        );
+                                    stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`;
+                                    stop.layover_airport_name = flightSegmentDetails[0].departure;
+
+                                }
+                                uniqueCode += stop.flight_number;
+                                uniqueCode += stop.airline;
+                                uniqueCode += stop.cabin_class;
+                                stops.push(stop);
+                            }
+                        }
+                        routeType = new RouteType();
+                        routeType.type = "outbound";
+                        routeType.stops = stops;
+                        
+                        let outBoundDuration = DateTime.convertSecondsToHourMinutesSeconds(
+                            totalDuration
+                        );
+                        
+                        routeType.duration = `${outBoundDuration.hours}h ${outBoundDuration.minutes}m`;
+                        route.routes[0] = routeType;
+                        route.is_passport_required = null; //
+                        depatureOfInbound = stops[0].departure_code
+                        route.departure_code = stops[0].departure_code;
+                        route.departure_date = stops[0].departure_date;
+                        route.departure_time = stops[0].departure_time;
+                        arrivalCodeOfOutbound =
+                            stops[stops.length - 1].arrival_code;
+                        route.stop_count = stops.length - 1;
+                    }
+
+                    
+                    stops = [];
+                    
+                    if(inboundFlightDetails) {
+                        
+                        flightSegments = inboundFlightDetails[0].segmengtIds
+                        
+                        for(let x = 0; x < flightSegments.length; x++) {
+                            
+                            flightSegmentDetails = results.data.segments.filter(item => item.segmentId == flightSegments[x])
+                            if(flightSegmentDetails) {
+                                stop = new Stop();
+                                
+                                inTotalDuration += flightSegmentDetails[0].flightTime;
+                                
+                                stop.departure_code = flightSegmentDetails[0].departure;
+                                
+                                stop.departure_date = moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY");
+                                
+                                stop.departure_time = moment(flightSegmentDetails[0].strDepartureTime,"HH:mm").format("h:mm A");
+                                
+                                let departure_date_time = flightSegmentDetails[0].strDepartureDate +'T'+ flightSegmentDetails[0].strDepartureTime;
+                                
+                                stop.departure_date_time = moment(departure_date_time).format("YYYY-MM-DDTHH:mm:SS");
+                                stop.departure_info = 
+                                typeof airports[stop.departure_code] !== "undefined"
+                                    ? airports[stop.departure_code]
+                                    : {};
+                                
+                                stop.arrival_code = flightSegmentDetails[0].arrival;
+                                stop.arrival_date = moment(flightSegmentDetails[0].arrivalDate).format("DD/MM/YYYY");
+                                stop.arrival_time = moment(flightSegmentDetails[0].strArrivalTime,"HH:mm").format("h:mm A");
+                                
+                                let arrival_date_time = flightSegmentDetails[0].strArrivalDate +'T'+ flightSegmentDetails[0].strArrivalTime;
+                                stop.arrival_date_time = moment(arrival_date_time).format("YYYY-MM-DDTHH:mm:SS");
+                                stop.arrival_info = 
+                                    typeof airports[stop.arrival_code] !== "undefined"
+                                    ? airports[stop.arrival_code]
+                                    : {};
+                                
+                                stop.eticket = true; // please check this
+                                stop.flight_number = flightSegmentDetails[0].flightNum;
+                                stop.cabin_class = flightSegmentDetails[0].cabinClass
+                                stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
+                                    flightSegmentDetails[0].flightTime * 60
+                                );
+                                
+                                stop.duration = `${stopDuration.hours}h ${stopDuration.minutes}m`;
+                                stop.airline = flightSegmentDetails[0].airline;
+                                stop.remaining_seat = parseInt(flightSegmentDetails[0].availabilityCount);
+                                stop.below_minimum_seat = parseInt(flightSegmentDetails[0].availabilityCount) < 5 ? true : false; // please correct this line
+                                stop.is_layover = false; // static
+                                
+                                stop.airline_name = airlines[flightSegmentDetails[0].airline];
+                                stop.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stop.airline}.png`;
+                                blacklistedAirportsFound = blacklistedAirports.includes(stop.departure_code) && blacklistedAirports.includes(stop.arrival_code) ? blacklistedAirportsFound + 1 : blacklistedAirportsFound
+                                blacklistedAirlinesFound = blacklistedAirlines.includes(stop.airline) ? blacklistedAirlinesFound + 1 : blacklistedAirlinesFound
+                                stop.cabin_baggage = ""; // please check
+                                stop.checkin_baggage = ""; // please check
+                                stop.meal = "";
+                                
+                                let layOverduration = "";
+                                stop.is_layover = false;
+                                stop.layover_duration = "";
+                                stop.layover_airport_name = ""
+                                if(stops.length > 0) {
+                                    stop.is_layover = true;
+                                    let layOverduration = 
+                                        DateTime.convertSecondsToHourMinutesSeconds(
+                                            moment(stop.departure_date_time).diff(
+                                                stops[stops.length - 1].arrival_date_time,
+                                                "seconds"
+                                            )
+                                        );
+                                    inTotalDuration +=  
+                                        moment(stop.departure_date_time).diff(
+                                            stops[stops.length - 1].arrival_date_time,
+                                            "seconds"
+                                        );
+                                    stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`;
+                                    stop.layover_airport_name = flightSegmentDetails[0].departure;
+
+                                }
+                                uniqueCode += stop.flight_number;
+                                uniqueCode += stop.airline;
+                                uniqueCode += stop.cabin_class;
+                                stops.push(stop);
+                                
+                            }
+                            
+                        }
+                        
+                        if(blacklistedAirportsFound == 0 && blacklistedAirlinesFound == 0) {
+                            routeType = new RouteType();
+                            routeType.type = "inbound";
+                            routeType.stops = stops;
+                            
+                            let duration = DateTime.convertSecondsToHourMinutesSeconds(
+                                inTotalDuration
+                            );
+                            
+                            routeType.duration = `${duration.hours}h ${duration.minutes}m`;
+                            route.routes[1] = routeType;
+                            route.route_code = flightRoutes[i].flightId;
+                            
+                            route.fare_type = "" // discussion needed
+                            
+                            let totalAmount = flightRoutes[i].adtFare + flightRoutes[i].adtTax + flightRoutes[i].chdFare + flightRoutes[i].chdTax + flightRoutes[i].infFare + flightRoutes[i].infTax + flightRoutes[i].qCharge + flightRoutes[i].tktFee;
+                            route.net_rate = Generic.convertAmountTocurrency(
+                                totalAmount,
+                                currencyDetails.liveRate
+                            );
+                            route.fare_break_dwon = [];
+                            if (
+                                typeof secondaryMarkUpDetails != "undefined" &&
+                                Object.keys(secondaryMarkUpDetails).length
+                            ) {
+                                route.secondary_fare_break_down = [];
+                            };
+                            route.selling_price = Generic.formatPriceDecimal(
+                                PriceMarkup.applyMarkup(route.net_rate, markUpDetails)
+                            )
+                            let searchData = { departure: depatureOfInbound, arrival: arrivalCodeOfOutbound, checkInDate: departure_date };
+                            
+                            let offerData = await LandingPage.getOfferData(referralId, 'flight', searchData);
+                            route.discounted_selling_price = LandingPage.applyDiscount(offerData, route.selling_price);
+                            if(offerData.applicable==true && route.discounted_selling_price<25){
+                                continue;
+                            }
+                            route.start_price = 0;
+                            route.secondary_start_price = 0;
+                            route.discounted_start_price = 0;
+                            route.discounted_secondary_start_price = 0;
+                            route.no_of_weekly_installment = 0;
+                            let instalmentDetails;
+                            let discountedInstalmentDetails;
+                            let instalmentEligibility: {
+                                available: boolean;
+                                categoryId: number;
+                            } | {
+                                available: boolean;
+                                categoryId?: undefined;
+                            }
+        
+                            let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`;
+                            if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
+                                instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
+                            } else {
+                                instalmentEligibility = await RouteCategory.checkInstalmentEligibility(
+                                    searchData
+                                );
+                                instalmentEligibilityCase[instalmentEligibilityIndex] = instalmentEligibility
+                            }
+    
+                            let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
+    
+                            let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
+                            let paymentConfig: PaymentConfiguration
+    
+                            if (typeof paymentConfigCase[configCaseIndex] != "undefined") {
+                                paymentConfig = paymentConfigCase[configCaseIndex]
+                            } else {
+                                paymentConfig = await PaymentConfigurationUtility.getPaymentConfig(1, instalmentEligibility.categoryId, daysUtilDepature)
+                                paymentConfigCase[configCaseIndex] = paymentConfig
+                            }
+    
+                            route.payment_config = paymentConfig || {}
+    
+                            if (instalmentEligibility.available && typeof paymentConfig != 'undefined') {
+    
+                                let weeklyCustomDownPayment = LandingPage.getDownPayment(offerData, 0);
+                                let downPaymentOption: any = paymentConfig.downPaymentOption
+                                if (paymentConfig.isWeeklyInstallmentAvailable) {
+                                    instalmentDetails = Instalment.weeklyInstalment(
+                                        route.selling_price,
+                                        departure_date,
+                                        bookingDate,
+                                        weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                                        weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
+                                    );
+                                    
+                                    if (instalmentDetails.instalment_available) {
+                                        route.start_price =
+                                            instalmentDetails.instalment_date[0].instalment_amount;
+        
+                                        route.secondary_start_price =
+                                            instalmentDetails.instalment_date[1].instalment_amount;
+                                        route.no_of_weekly_installment =
+                                            instalmentDetails.instalment_date.length - 1;
+                                    }
+        
+                                }
+        
+                                if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                                    let instalmentDetails2 = Instalment.biWeeklyInstalment(
+                                        route.selling_price,
+                                        departure_date,
+                                        bookingDate,
+                                        downPaymentOption[0],
+                                        paymentConfig.isDownPaymentInPercentage
+                                    );
+                                    
+                                    route.second_down_payment =
+                                        instalmentDetails2.instalment_date[0].instalment_amount;
+                                    route.secondary_start_price_2 =
+                                        instalmentDetails2.instalment_date[1].instalment_amount;
+                                    route.no_of_weekly_installment_2 =
+                                        instalmentDetails2.instalment_date.length - 1;
+                                }
+        
+        
+                                if (paymentConfig.isMonthlyInstallmentAvailable) {
+                                    let instalmentDetails3 = Instalment.monthlyInstalment(
+                                        route.selling_price,
+                                        departure_date,
+                                        bookingDate,
+                                        downPaymentOption[0],
+                                        paymentConfig.isDownPaymentInPercentage
+                                    );
+                                    
+                                    route.third_down_payment =
+                                        instalmentDetails3.instalment_date[0].instalment_amount;
+                                    route.secondary_start_price_3 =
+                                        instalmentDetails3.instalment_date[1].instalment_amount;
+                                    route.no_of_weekly_installment_3 =
+                                        instalmentDetails3.instalment_date.length - 1;
+                                }
+        
+                                discountedInstalmentDetails =await Instalment.weeklyInstalment(
+                                    route.discounted_selling_price,
+                                    departure_date,
+                                    bookingDate,
+                                    weeklyCustomDownPayment!=null?weeklyCustomDownPayment:downPaymentOption[0],
+                                    weeklyCustomDownPayment!=null?false:paymentConfig.isDownPaymentInPercentage
+                                );
+        
+                                if (discountedInstalmentDetails.instalment_available) {
+                                    route.discounted_start_price =
+                                        discountedInstalmentDetails.instalment_date[0].instalment_amount;
+        
+                                    route.discounted_secondary_start_price =
+                                        discountedInstalmentDetails.instalment_date[1].instalment_amount;
+        
+                                    route.discounted_no_of_weekly_installment =
+                                        discountedInstalmentDetails.instalment_date.length - 1;
+                                }
+                            }
+        
+                            if (offerData.applicable && typeof paymentConfig != 'undefined') {
+                                instalmentEligibility.available = true
+                                route.payment_object = {
+                                    installment_type: InstalmentType.WEEKLY,
+                                    weekly: {
+                                        down_payment: route.discounted_start_price,
+                                        installment: route.discounted_secondary_start_price,
+                                        installment_count: route.discounted_no_of_weekly_installment,
+                                        actual_installment: route.secondary_start_price
+                                    }
+                                }
+                            } else if (instalmentEligibility.available && typeof paymentConfig != 'undefined') {
+                                route.payment_object = {}
+                                let t
+                                if (paymentConfig.isWeeklyInstallmentAvailable) {
+                                    t = InstalmentType.WEEKLY
+        
+                                } else if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                                    t = InstalmentType.BIWEEKLY
+        
+                                } else if (paymentConfig.isMonthlyInstallmentAvailable) {
+                                    t = InstalmentType.MONTHLY
+                                }
+                                if (paymentConfig.isWeeklyInstallmentAvailable) {
+                                    route.payment_object[InstalmentType.WEEKLY] = {
+                                        down_payment: route.discounted_start_price,
+                                        installment: route.discounted_secondary_start_price,
+                                        installment_count: route.discounted_no_of_weekly_installment
+                                    }
+                                }
+                                if (paymentConfig.isBiWeeklyInstallmentAvailable) {
+                                    
+                                    route.payment_object[InstalmentType.BIWEEKLY] = {
+                                        down_payment: route.second_down_payment,
+                                        installment: route.secondary_start_price_2,
+                                        installment_count: route.no_of_weekly_installment_2
+                                    }
+                                }
+                                if (paymentConfig.isMonthlyInstallmentAvailable) {
+                                    route.payment_object[InstalmentType.MONTHLY] = {
+                                        down_payment: route.third_down_payment,
+                                        installment: route.secondary_start_price_3,
+                                        installment_count: route.no_of_weekly_installment_3
+                                    }
+                                }
+                                route.payment_object['installment_type'] = t
+        
+                            } else {
+                                route.payment_object = {
+                                    selling_price: route.discounted_selling_price
+                                }
+                            }
+                            route.instalment_details = instalmentDetails;
+                            route.is_installment_available = instalmentEligibility.available
+    
+                            if (
+                                typeof secondaryMarkUpDetails != "undefined" &&
+                                Object.keys(secondaryMarkUpDetails).length
+                            ) {
+                                route.secondary_selling_price = Generic.formatPriceDecimal(
+                                    PriceMarkup.applyMarkup(
+                                        route.net_rate,
+                                        secondaryMarkUpDetails
+                                    )
+                                );
+                            } else {
+                                route.secondary_selling_price = 0;
+                            }
+        
+                            route.inbound_stop_count = stops.length - 1;
+                            
+                            route.is_passport_required = null; // discussion needed
+                            let depatureCodeOfInbound = stops[0].departure_code;
+                            route.arrival_code = stops[stops.length - 1].arrival_code;
+                            route.departure_info =
+                                typeof airports[source_location] !== "undefined"
+                                    ? airports[source_location]
+                                    : {};
+                            route.arrival_info =
+                                typeof airports[destination_location] !== "undefined"
+                                    ? airports[destination_location]
+                                    : {};
+                            route.arrival_date = stops[stops.length - 1].arrival_date;
+                            route.arrival_time = stops[stops.length - 1].arrival_time;
+                            totalDuration += inTotalDuration
+                            
+                            let duartion = DateTime.convertSecondsToHourMinutesSeconds(
+                                totalDuration
+                            );
+                            
+                            route.total_duration = `${duartion.hours}h ${duartion.minutes}m`;
+                            route.airline = stops[0].airline;
+                            route.airline_name = airlines[stops[0].airline];
+                            route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
+                            route.is_refundable = false;
+                            route.unique_code = md5(uniqueCode);
+                            route.category_name = categoryName;
+                            route.offer_data = offerData;
+                            
+                            routes.push(route);                        
+                        }
+                    }
+                }
+                    
+                let flightSearchResult = new FlightSearchResult();
+                flightSearchResult.items = routes;
+
+                //Get min & max selling price
+                let priceRange = new PriceRange();
+                let priceType = "discounted_selling_price";
+                priceRange.min_price = this.getMinPrice(routes, priceType);
+                priceRange.max_price = this.getMaxPrice(routes, priceType);
+                flightSearchResult.price_range = priceRange;
+
+                //Get min & max partail payment price
+                let partialPaymentPriceRange = new PriceRange();
+                priceType = "discounted_secondary_start_price";
+                partialPaymentPriceRange.min_price = this.getMinPrice(
+                    routes,
+                    priceType
+                );
+                partialPaymentPriceRange.max_price = this.getMaxPrice(
+                    routes,
+                    priceType
+                );
+                flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
+                //return flightSearchResult;
+
+                //Get Stops count and minprice
+                flightSearchResult.stop_data = this.getStopCounts(
+                    routes,
+                    "stop_count"
+                );
+
+                //Get Stops count and minprice
+                flightSearchResult.inbound_stop_data = this.getStopCounts(
+                    routes,
+                    "inbound_stop_count"
+                );
+
+                //Get airline and min price
+                flightSearchResult.airline_list = this.getAirlineCounts(routes);
+                
+                //Get outbound Departure time slot
+                flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(
+                    routes,
+                    "departure_time",
+                    0
+                );
+                
+                //Get outbound Arrival time slot
+                flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(
+                    routes,
+                    "arrival_time",
+                    0
+                );
+
+                //Get inbound Departure time slot
+                // flightSearchResult.inbound_depature_time_slot = this.getArrivalDepartureTimeSlot(
+                //     routes,
+                //     "departure_time",
+                //     1
+                // );
+                
+                //Get inbound Arrival time slot
+                // flightSearchResult.inbound_arrival_time_slot = this.getArrivalDepartureTimeSlot(
+                //     routes,
+                //     "arrival_time",
+                //     1
+                // );
+                
+                flightSearchResult.category_name = categoryName;
+                return flightSearchResult;
+                // return results
+            } else {
+                throw new NotFoundException(`No flight founds`);
+            }
+                
+
+                
         } catch(error) {
             console.log("ERROR---->>", error)
         }
@@ -1018,7 +1454,7 @@ export class PKFare implements StrategyAirline {
                 .where(where, { fromLocations, toLocations })
                 .getMany()
 
-            //console.log('flightRoutes', flightRoutes)
+            
             if (flightRoutes.length) {
                 let res = []
                 for await (const iterator of flightRoutes) {

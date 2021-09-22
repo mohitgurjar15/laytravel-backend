@@ -264,25 +264,38 @@ export class HttpRequest {
         }
     }
 
-    static async pkFareRequest(url, param, user="") {
+    static async pkFareRequest(url, param, headerAction, user="") {
         try {
             
             let requestTime = `${new Date()}`;
             
 
-            // let url = "https://mwrlife-api.pkfare.com/shoppingV2?param=eyJhdXRoZW50aWNhdGlvbiI6eyJwYXJ0bmVySWQiOiJyNFp1OE8zeFJNWHZCbG84bXYrVVpyMHhlbVk9Iiwic2lnbiI6IjM2OTk4YzRhNDY2ODY3OTg5ZDM0M2NhZjhmZDNhMWQ4In0sInNlYXJjaCI6eyJhZHVsdHMiOiIxIiwiY2hpbGRyZW4iOiIwIiwiYWlybGluZSI6IiIsIm5vbnN0b3AiOjAsInNvbHV0aW9ucyI6MCwic2VhcmNoQWlyTGVncyI6W3siZGVwYXJ0dXJlRGF0ZSI6IjIwMjItMDItMTciLCJkZXN0aW5hdGlvbiI6IkhLRyIsIm9yaWdpbiI6IlNJTiIsImNhYmluQ2xhc3MiOiJFY29ub215In0seyJkZXBhcnR1cmVEYXRlIjoiMjAyMi0wMi0yMSIsImRlc3RpbmF0aW9uIjoiU0lOIiwib3JpZ2luIjoiSEtHIiwiY2FiaW5DbGFzcyI6IkVjb25vbXkifV19fQ==";
+            const { data } = await axios.get(url, { responseType: 'arraybuffer' });
+            let fileName = "";
+            let logData = {};
+            logData['url'] = url
+            logData['requestParam'] = param
+            logData["requestTime"] = requestTime;
+            let responceTime = `${new Date()}`;
+            logData["responceTime"] = responceTime;
+            
+            logData['responce'] = data;
 
-            const { data } = await axios.get(url, { responseType: 'arraybuffer' })
+            fileName = `Flight-pkfare-${headerAction}-${new Date().getTime()}`;
+            if (user) {
+                fileName += user;
+            }
+            Activity.createlogFile(fileName, logData, "flights");
 
             return data;
         } catch (error) {
-            console.log("===================TRUE", error)
-            // let logData = {};
-            // logData["url"] = url;
-            // logData["parameter"] = param;
-            // logData["responce"] = error.response.data;
-            // const fileName = `Flight-pkfare-Shopping_V2-${new Date().getTime()}`;
-            // Activity.createlogFile(fileName, logData, "Mustifly_errors");
+            console.log("----ERROR----", error)
+            let logData = {};
+            logData["url"] = url;
+            logData["parameter"] = param;
+            logData["responce"] = error.response.data;
+            const fileName = `Flight-pkfare-${headerAction}-${new Date().getTime()}`;
+            Activity.createlogFile(fileName, logData, "PkFare_error");
             throw new RequestTimeoutException(`Connection time out`);
         }
     }

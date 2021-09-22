@@ -4490,7 +4490,7 @@ export class Mystifly implements StrategyAirline {
                             }
                         }
                         route.payment_object['installment_type'] = t
-                        console.log("route.payment_object",route.payment_object)
+                        // console.log("route.payment_object",route.payment_object)
                         
                     } else {
                         route.payment_object = {

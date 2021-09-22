@@ -1639,10 +1639,10 @@ export class FlightService {
             user.roleId = Role.FREE_USER;
         }
         await this.validateHeaders(headers);
-        const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-        const result = new Promise((resolve) =>
-            resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
-        );
+        // const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+        // const result = new Promise((resolve) =>
+        //     resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
+        // );
 
         const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
         const pkfareResult = new Promise((resolve) =>
@@ -1656,8 +1656,8 @@ export class FlightService {
             userIp
         );
 
-        return result;
-        // return "true"
+        // return result;
+        return pkfareResult
     }
 
     async airRevalidate(routeIdDto, headers, user, referralId) {
