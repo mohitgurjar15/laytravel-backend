@@ -570,9 +570,9 @@ export class PKFare implements StrategyAirline {
                         0
                     );
                 flightSearchResult.category_name = categoryName;
-                // console.log("--->>>FLIGHT SEARCH RESULT---", flightSearchResult)
+                
                 return flightSearchResult;
-                // return results
+                
             } else {
                 throw new NotFoundException(`No flight founds`);
             }
@@ -645,7 +645,7 @@ export class PKFare implements StrategyAirline {
                 child_count,
                 infant_count,
             } = searchFlightDto;
-            // console.log(searchFlightDto)
+            
             const [caegory] = await getConnection().query(`select 
             (select name from laytrip_category where id = flight_route.category_id)as categoryName 
             from flight_route 
@@ -679,7 +679,7 @@ export class PKFare implements StrategyAirline {
             }
 
             const sign = await this.getSign();
-            // console.log("sign", sign)
+            
             
             const reqParamJson = {
                 "authentication": {
@@ -709,7 +709,7 @@ export class PKFare implements StrategyAirline {
                 }
             }
             let param = await this.convertToBase64(JSON.stringify(reqParamJson) );
-            // console.log("param", param)
+            
             
             let url = `${credential.pkfare_api_url}shoppingV2?param=${param}`;
             let responce: any = {};
@@ -733,7 +733,7 @@ export class PKFare implements StrategyAirline {
                 let filteredListes = await this.getRoutes(source_location, destination_location, true)
             
                 let flightRoutes = results.data.solutions;
-                // console.log("FLIGHT Routes", flightRoutes)
+                
                 let stop: Stop;
                 let stops: Stop[] = [];
                 let routes: Route[] = [];
@@ -765,11 +765,11 @@ export class PKFare implements StrategyAirline {
                     inBoundflightSegments = flightRoutes[i].journeys.journey_1;
                     outboundFlightDetails = results.data.flights.filter(item => item.flightId == outBoundflightSegments)
                     inboundFlightDetails = results.data.flights.filter(item => item.flightId == inBoundflightSegments)
-                    // console.log(outBoundflightSegments,inBoundflightSegments,outboundFlightDetails)
+                    
                     if(outboundFlightDetails) {
 
                         flightSegments = outboundFlightDetails[0].segmengtIds
-                        // console.log("OUTBOUND FLIGHT SEGMENT LENGTH", flightSegments.length)
+                        
                         for(let x = 0; x < flightSegments.length; x++) {
                             
                             flightSegmentDetails = results.data.segments.filter(item => item.segmentId == flightSegments[x])
@@ -1203,10 +1203,9 @@ export class PKFare implements StrategyAirline {
                                     : {};
                             route.arrival_date = stops[stops.length - 1].arrival_date;
                             route.arrival_time = stops[stops.length - 1].arrival_time;
-                            totalDuration += inTotalDuration
                             
                             let duartion = DateTime.convertSecondsToHourMinutesSeconds(
-                                totalDuration
+                                totalDuration + inTotalDuration
                             );
                             
                             route.total_duration = `${duartion.hours}h ${duartion.minutes}m`;
@@ -1291,6 +1290,7 @@ export class PKFare implements StrategyAirline {
                 // );
                 
                 flightSearchResult.category_name = categoryName;
+                console.log("results.data",JSON.stringify(results.data))
                 return flightSearchResult;
                 // return results
             } else {

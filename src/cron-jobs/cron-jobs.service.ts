@@ -574,11 +574,10 @@ export class CronJobsService {
                 "booking.laytripBookingId",
             ])
             .where(
-                `"booking"."supplier_status" = 0 and "booking"."supplier_booking_id" !=''`
+                `"booking"."supplier_status" = 0 and "booking"."module_id"=1  and "booking"."supplier_booking_id" !=''`
             );
 
         const result = await query.getMany();
-
         for (let booking of result) {
             let tripDetails: any = await this.flightService.tripDetails(
                 booking.supplierBookingId
