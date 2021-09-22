@@ -190,11 +190,11 @@ export const LANDING_PAGE = {
       amount: 20
     }
   },
-  'antinoty': {
+  'antinoti': {
     applicable: true,
     slides: [
       {
-        src: "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lay_banner.png",
+        src: "https://d2q1prebf1m2s9.cloudfront.net/assets/images/hero-image.jpg",
         location: {
           from: {
             airport_code: ''

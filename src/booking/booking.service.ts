@@ -378,6 +378,7 @@ export class BookingService {
 
             ////console.log(result);
 
+            console.log('****************my booking****************',result)
             for (let i in result.data) {
                 if (result.data[i].bookingInstalments.length > 0) {
                     result.data[i].bookingInstalments.sort(

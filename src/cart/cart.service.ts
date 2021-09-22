@@ -1530,6 +1530,7 @@ more than 10.`
             let nonPromotionalItem = []
             for (let index = 0; index < result.length; index++) {
                 const item = result[index];
+                console.log('********booked item********((((((((((())))))))))',item)
 
                 if (item.isPromotional == true) {
                     promotional++
