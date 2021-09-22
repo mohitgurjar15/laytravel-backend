@@ -190,11 +190,11 @@ export const LANDING_PAGE = {
       amount: 20
     }
   },
-  'antinoty': {
+  'antinoti': {
     applicable: true,
     slides: [
       {
-        src: "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lay_banner.png",
+        src: "https://d2q1prebf1m2s9.cloudfront.net/assets/images/hero-image.jpg",
         location: {
           from: {
             airport_code: ''
@@ -232,27 +232,7 @@ export const LANDING_PAGE = {
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
           to: { "code": "CUN", "name": "Cancun Intl.", "city": "Cancun", "country": "Mexico", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "key": "C" }
-        },
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "MCO", "name": "Orlando Intl.", "city": "Orlando", "country": "USA", "key": "O", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/orlando.png" }
-        },
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "LAS", "name": "Mc Carran Intl", "city": "Las Vegas", "country": "USA", "key": "L", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/lasvegas.png" }
-        },
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "DEN", "name": "Denver Intl.", "city": "Denver", "country": "USA", "key": "D", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/denver.png" }
-        },
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "MIA", "name": "Miami Intl. Arpt.", "city": "Miami", "country": "USA", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "key": "M" },
-        },
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "TUY", "name": "Tulum", "city": "Tulum", "country": "Mexico", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tulum.png", "key": "C" }
-        },
+        }
       ],
       hotel: [
         {
@@ -263,21 +243,6 @@ export const LANDING_PAGE = {
         },
         {
           location: { "title": "Cancún, Mexico", "city": "Cancún", "city_id": "800026864", "state": "", "country": "Mexico", "type": "city", "hotel_id": "", "lat": "21.1613", "long": "-86.8341", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Cancún"] }
-        },
-        {
-          location: { "title": "Orlando, Florida, United States", "city": "Orlando", "state": "Florida", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800047448", "lat": "28.5353", "long": "-81.3833", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/orlando.png", "city_names": ["Orlando"] }
-        },
-        {
-          location: { "title": "Las Vegas, Nevada, United States", "city": "Las Vegas", "state": "Nevada", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800049030", "lat": "36.1190", "long": "-115.1680", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/lasvegas.png", "city_names": ["Las Vegas"] }
-        },
-        {
-          location: { "title": "Denver, Colorado, United States", "city": "Denver", "state": "Colorado", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800047125", "lat": "39.7458", "long": "-104.9932", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/denver.png", "city_names": ["Denver City", "Denver"] }
-        },
-        {
-          location: { "title": "Miami Beach, Florida, United States", "city": "Miami Beach", "city_id": "800047419", "state": "", "country": "United States", "type": "city", "hotel_id": "", "lat": "25.7903", "long": "-80.1303", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "city_names": ["Miami Beach", "Miami Gardens", "Miami Lakes", "Miami Springs", "Miami"] }
-        },
-        {
-          location: { "title": "Tulum, Quintana Roo, Mexico", "city": "Tulum", "state": "Quintana Roo", "country": "Mexico", "type": "city", "hotel_id": "", "city_id": "800026663", "lat": "20.2107", "long": "-87.4630", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tulum.png", "city_names": ["Tulum"] }
         }
       ],
       flight_offer_location: [
