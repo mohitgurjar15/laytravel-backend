@@ -1349,13 +1349,17 @@ export class FlightService {
                 `Flight module is not configured in database&&&module&&&${errorMessage}`
             );
         }
+        let returnDate
         // dayDiffrence = 3
 
         if (request_date) {
+            var tourDiffrence = await this.getDifferenceInDays(
+                depatureDate,
+                arivalDate
+            );
             reqDates.push(request_date);
-            let date = moment(request_date).add(dayDiff, 'days').toDate()
-            let returnDate = moment(date).format('YYYY-MM-DD')
-            // console.log(returnDate)
+            let date = moment(request_date).add(tourDiffrence, 'days').toDate()
+            returnDate = moment(date).format('YYYY-MM-DD')
             secondDate.push(returnDate)
             let dto = {
                 source_location: source_location,
@@ -1413,12 +1417,11 @@ export class FlightService {
             }
 
 
-
             dayDiffrence = 3;
             var endDate = new Date(departure_date);
             endDate.setDate(endDate.getDate() + afterDateDiffrence);
             // console.log(endDate);
-            
+
 
             var resultIndex = 0;
 
@@ -1467,9 +1470,9 @@ export class FlightService {
                         .replace(/T/, " ") // replace T with a space
                         .replace(/\..+/, "");
                     // console.log("seatch dates", beforeDateString, afterDateString);
-                    reqDates.push(beforeDateString);
+                    // reqDates.push(beforeDateString);
                     // console.log('reqDates',reqDates)
-                    secondDate.push(afterDateString);
+                    // secondDate.push(afterDateString);
 
 
                     let dto = {
@@ -1596,11 +1599,13 @@ export class FlightService {
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
             let arrivalofDate = secondDate[reqDates.indexOf(date)];
-            // console.log('arrivalofDate',arrivalofDate)
-            let date2 = arrivalofDate.split("-");
-            date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
-
-
+            let date2;
+            if (request_date) {
+                date2 = returnDate
+            } else {
+                date2 = arrivalofDate.split("-");
+                date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
+            }
 
             if (obj == 0) {
 
@@ -1615,6 +1620,7 @@ export class FlightService {
                     isPriceInInstallment: false,
                     selling_price: 0
                 };
+                console.log()
                 returnResponce.push(output);
             }
         }
