@@ -32,6 +32,7 @@ import { editFileName } from "src/auth/file-validator";
 import { SiteUrl } from "src/decorator/site-url.decorator";
 import { uploadFileDto } from "src/general/dto/attachment.dto";
 import { GetReferralId } from "src/decorator/referral.decorator";
+import { newTripfluencerDto } from "./dto/tripfluencer-enquiry.dto";
 
 @ApiTags("Enquiry")
 @ApiHeader({
@@ -75,6 +76,7 @@ export class EnqiryController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async getFaqDetail(@Param("id") id: string): Promise<Enquiry> {
+        console.log('shjbsjdbfhkjbdhkjsbj')
         return await this.enqiryService.getEnquiry(id);
     }
 
@@ -86,7 +88,8 @@ export class EnqiryController {
     })
     @ApiResponse({ status: 404, description: "Not Found" })
     @ApiResponse({ status: 500, description: "Internal server error!" })
-    @Post()
+
+    /*@Post()
     @ApiConsumes("multipart/form-data")
     // @UseInterceptors(
     //     FileFieldsInterceptor([{ name: "file" }], {
@@ -125,6 +128,26 @@ export class EnqiryController {
             files,
             siteUrl,
             referralId
+        );
+    }*/
+
+    @Post("sadsad/sadadas/sadasd/tripfluencer")
+    // @ApiConsumes("multipart/form-data")
+    @ApiOperation({ summary: "Tripfluencer Enquiry Data using id " })
+    @ApiResponse({ status: 200, description: "Api success" })
+    @ApiResponse({
+        status: 422,
+        description: "Bad Request or API error message",
+    })
+    @ApiResponse({ status: 404, description: "Not Found" })
+    @ApiResponse({ status: 500, description: "Internal server error!" })
+    @HttpCode(200)
+    async createTripfluencerEnquiry(
+        @Body() newEnquiryDto: newTripfluencerDto
+    ): Promise<{ message: string }> {
+        console.log('in influ eadddad')
+        return await this.enqiryService.newTripfluencerEnquiry(
+            newEnquiryDto
         );
     }
 }
