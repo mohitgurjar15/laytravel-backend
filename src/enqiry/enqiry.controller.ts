@@ -89,7 +89,7 @@ export class EnqiryController {
     @ApiResponse({ status: 404, description: "Not Found" })
     @ApiResponse({ status: 500, description: "Internal server error!" })
 
-    /*@Post()
+    @Post()
     @ApiConsumes("multipart/form-data")
     // @UseInterceptors(
     //     FileFieldsInterceptor([{ name: "file" }], {
@@ -129,7 +129,7 @@ export class EnqiryController {
             siteUrl,
             referralId
         );
-    }*/
+    }
 
     @Post("sadsad/sadadas/sadasd/tripfluencer")
     // @ApiConsumes("multipart/form-data")
