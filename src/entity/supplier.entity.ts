@@ -32,6 +32,15 @@ export class Supplier extends BaseEntity {
   @Column("boolean", { name: "status", default: () => "true" })
   status: boolean;
 
+  @Column("boolean", { name: "mode", default: () => "false" })
+  mode: boolean;
+
+  @Column("text", { name: "live_credential", nullable:true })
+  liveCredential: string;
+
+  @Column("text", { name: "test_credential", nullable:true })
+  testCredential: string;
+
   @Column("date", { name: "updated_date" })
   updatedDate: string;
 
