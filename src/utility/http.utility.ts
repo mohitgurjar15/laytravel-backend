@@ -263,7 +263,7 @@ export class HttpRequest {
         }
     }
 
-    static async pkFareRequest(url, param, headerAction, user="") {
+    static async pkFareRequestGzip(url, param, headerAction, user="") {
         try {
             
             let requestTime = `${new Date()}`;
@@ -298,4 +298,41 @@ export class HttpRequest {
             throw new RequestTimeoutException(`Connection time out`);
         }
     }
+
+    static async pkFareRequest(url, param, headerAction, user="") {
+        try {
+            
+            let requestTime = `${new Date()}`;
+            
+
+            const { data } = await axios.get(url);
+            let fileName = "";
+            let logData = {};
+            logData['url'] = url
+            logData['requestParam'] = param
+            logData["requestTime"] = requestTime;
+            let responceTime = `${new Date()}`;
+            logData["responceTime"] = responceTime;
+            
+            logData['responce'] = data;
+
+            fileName = `Flight-pkfare-${headerAction}-${new Date().getTime()}`;
+            if (user) {
+                fileName += user;
+            }
+            Activity.createlogFile(fileName, logData, "flights");
+
+            return data;
+        } catch (error) {
+            console.log("----ERROR----", error)
+            let logData = {};
+            logData["url"] = url;
+            logData["parameter"] = param;
+            logData["responce"] = error.response.data;
+            const fileName = `Flight-pkfare-${headerAction}-${new Date().getTime()}`;
+            Activity.createlogFile(fileName, logData, "PkFare_error");
+            throw new RequestTimeoutException(`Connection time out`);
+        }
+    }
+    
 }

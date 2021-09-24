@@ -1663,10 +1663,16 @@ export class FlightService {
     async airRevalidate(routeIdDto, headers, user, referralId) {
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-        const result = new Promise((resolve) =>
-            resolve(mystifly.airRevalidate(routeIdDto, user, referralId))
+        // const result = new Promise((resolve) =>
+        //     resolve(mystifly.airRevalidate(routeIdDto, user, referralId))
+        // );
+
+        const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+        const pkfareResult = new Promise((resolve) => 
+            resolve(pkfare.airRevalidate(routeIdDto, user, referralId))
         );
-        return result;
+        return pkfareResult;
+        // return result;
     }
 
     async ticketFlight(id) {
