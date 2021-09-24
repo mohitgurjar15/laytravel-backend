@@ -129,7 +129,7 @@ export async function LaytripCartBookingTravelProviderConfirmtionMail(
                        "YYYY-MM-DD",
                        "MMMM DD, YYYY"
                    )}, Check-out ${DateTime.convertDateFormat(
-                    booking.hotelData.checkIn,
+                    booking.hotelData.checkOut,
                     "YYYY-MM-DD",
                     "MMMM DD, YYYY"
                 )}, ${booking.hotelData.room} Room 

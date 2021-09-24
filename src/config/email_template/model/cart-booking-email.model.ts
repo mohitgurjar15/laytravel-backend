@@ -18,6 +18,7 @@ class bookings {
 class hotelData {
     hotelName: string;
     checkIn: string;
+    checkOut:string;
     room: number;
     adult: number;
     child:number

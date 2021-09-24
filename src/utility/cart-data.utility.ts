@@ -328,7 +328,6 @@ export class CartDataUtility {
             };
             param.paymentDetail = cartInstallments;
             param.bookings = bookingsData;
-            console.log("param.cart",JSON.stringify(param))
             return { param, email: user.email, confirmed, referralId: cart?.referral?.name, currency };
         } else {
             return;
