@@ -358,7 +358,7 @@ export const LANDING_PAGE = {
           }
         },
         {
-          location: { "title": "Madrid, Spain", "city": "city", "city_id": "800039716", "state": "", "country": "Spain", "type": "city", "hotel_id": "", "lat": "40.4167", "long": "-3.7034", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Madrid"] }
+          location: { "title": "Madrid, Spain", "city": "Madrid", "city_id": "800039716", "state": "", "country": "Spain", "type": "city", "hotel_id": "", "lat": "40.4167", "long": "-3.7034", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Madrid"] }
         },
 
       ],
