@@ -390,7 +390,7 @@ export const LANDING_PAGE = {
       monthly: { applicable: false, visibilty: 'gray_out' }
     },
     down_payment_options: {
-      0: { applicable: true, visibilty: 'yes', amount: 8.99 },
+      0: { applicable: true, visibilty: 'yes', amount: 9.99 },
       1: { applicable: false, visibilty: 'none', amount: 0 },
       2: { applicable: false, visibilty: 'none', amount: 0 }
     },
