@@ -1,9 +1,9 @@
 export const LANDING_PAGE = {
   '421': {
     applicable: true,
-    banner_image:{
-      applicable :false,
-      url:""
+    banner_image: {
+      applicable: false,
+      url: ""
     },
     slides: [
       {
@@ -106,7 +106,7 @@ export const LANDING_PAGE = {
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "DEN", "name": "Denver Intl.", "city": "Denver", "country": "USA", "key": "D", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/denver.png" }
+          to: { "code": "PUJ", "name": "Denver Intl.", "city": "Denver", "country": "USA", "key": "D", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/denver.png" }
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
@@ -217,7 +217,7 @@ export const LANDING_PAGE = {
             }
           }
         }
-      } 
+      }
     ],
     deals: {
       flight: [
@@ -227,11 +227,65 @@ export const LANDING_PAGE = {
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "TPA", "name": "Tampa Intl.", "city": "Tampa", "country": "USA", "key": "T", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
+          to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "CUN", "name": "Cancun Intl.", "city": "Cancun", "country": "Mexico", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "key": "C" }
+          to: {
+            "name": "All Airports",
+            "code": "SDQ",
+            "latitude": "18.43",
+            "longitude": "-69.67",
+            "city": "Santo Domingo",
+            "country": "Dominican Republic",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
+          }
+        },
+        {
+          from: {
+            "name": "All Airports",
+            "code": "SDQ",
+            "latitude": "18.43",
+            "longitude": "-69.67",
+            "city": "Santo Domingo",
+            "country": "Dominican Republic",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
+          },
+          to: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
+        },
+        {
+          from: {
+            "name": "All Airports",
+            "code": "SDQ",
+            "latitude": "18.43",
+            "longitude": "-69.67",
+            "city": "Santo Domingo",
+            "country": "Dominican Republic",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
+          },
+          to:{
+            "name": "All Airports",
+            "code": "ORL",
+            "latitude": "28.55",
+            "longitude": "-81.33",
+            "city": "Orlando",
+            "country": "USA",
+            "key": "O",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
+          }
+        },
+        {
+          from: {
+            "name": "All Airports",
+            "code": "SDQ",
+            "latitude": "18.43",
+            "longitude": "-69.67",
+            "city": "Santo Domingo",
+            "country": "Dominican Republic",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
+          },
+          to: { "code": "MIA", "name": "Miami Intl. Arpt.", "city": "Miami", "country": "USA", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "key": "M" },
+
         }
       ],
       hotel: [
@@ -239,38 +293,78 @@ export const LANDING_PAGE = {
           location: { "title": "Punta Cana, Dominican Republic", "city": "Punta Cana", "state": "", "country": "Dominican Republic", "type": "city", "hotel_id": "", "city_id": "800013751", "lat": "18.6149", "long": "-68.3884", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "city_names": ["Punta Cana"] }
         },
         {
-          location: { "title": "Tampa, Florida, United States", "city": "Tampa", "state": "Florida", "country": "United States", "type": "city", "hotel_id": "", "city_id": "800047518", "lat": "27.9472", "long": "-82.4586", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png", "city_names": ["Tampa"] }
+          location: { "title": "Cancún, Mexico", "city": "Cancún", "city_id": "800026864", "state": "", "country": "Mexico", "type": "city", "hotel_id": "", "lat": "21.1613", "long": "-86.8341", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Cancún"] }
         },
         {
-          location: { "title": "Cancún, Mexico", "city": "Cancún", "city_id": "800026864", "state": "", "country": "Mexico", "type": "city", "hotel_id": "", "lat": "21.1613", "long": "-86.8341", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Cancún"] }
+          location: { "title": "Miami Beach, Florida, United States", "city": "Miami Beach", "city_id": "800047419", "state": "", "country": "United States", "type": "city", "hotel_id": "", "lat": "25.7903", "long": "-80.1303", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "city_names": ["Miami Beach", "Miami Gardens", "Miami Lakes", "Miami Springs", "Miami"] },
+        },
+        {
+          location:{
+            "title": "Puerto Plata",
+            "city": "Puerto Plata",
+            "state": "",
+            "type": "city",
+            "hotel_id": "",
+            "city_id": "800002570",
+            "lat": "19.8009",
+            "long": "-70.6900",
+             "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png",
+            "city_names": [
+              "Cancún"
+            ]
+          }
+        },
+        {
+          location:{
+            "title": "Boston Harbor Hotel, Boston, MA, US",
+            "city": "Boston",
+            "state": "MA",
+            "country": "US",
+            "type": "hotel",
+            "hotel_id": "700255396",
+            "lat": "42.3563",
+            "long": "-71.0504",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png",
+            "city_names": [
+              "Boston "
+            ]
+          }
+        },
+        {
+          location:{
+            "title": "New York City, New York, United States",
+            "city": "New York City",
+            "state": "New York",
+            "country": "United States",
+            "type": "city",
+            "hotel_id": "",
+            "city_id": "800049480",
+            "lat": "40.7681",
+            "long": "-73.9819",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png",
+            "city_names": [
+              "New York City"
+            ]
+          }
         }
+
       ],
       flight_offer_location: [
-        "EWR-CUN",
-        "EWR-DEN",
-        "EWR-FLL",
-        "EWR-LAS",
-        "EWR-MCO",
-        "EWR-MIA",
-        "EWR-PBI",
+        "EWR-POP",
+        "JFK-POP",
+        "LGA-POP",
         "EWR-PUJ",
-        "EWR-RSW",
-        "EWR-TPA",
-        "JFK-CUN",
-        "JFK-FLL",
-        "JFK-LAS",
-        "JFK-MCO",
-        "JFK-MIA",
         "JFK-PUJ",
-        "JFK-TPA",
-        "LGA-CUN",
-        "LGA-DEN",
-        "LGA-FLL",
-        "LGA-MCO",
-        "LGA-MIA",
-        "LGA-PBI",
         "LGA-PUJ",
-        "JAI-DEL"
+        "EWR-SDQ",
+        "JFK-SDQ",
+        "LGA-SDQ",
+        "SDQ-EWR",
+        "SDQ-JFK",
+        "SDQ-LGA",
+        "SDQ-MIA",
+        "SDQ-PBI",
+        "SDQ-MCO",
       ]
     },
     promotional: {
@@ -283,7 +377,7 @@ export const LANDING_PAGE = {
       monthly: { applicable: false, visibilty: 'gray_out' }
     },
     down_payment_options: {
-      0: { applicable: true, visibilty: 'yes', amount: 9.99 },
+      0: { applicable: true, visibilty: 'yes', amount: 8.99 },
       1: { applicable: false, visibilty: 'none', amount: 0 },
       2: { applicable: false, visibilty: 'none', amount: 0 }
     },
