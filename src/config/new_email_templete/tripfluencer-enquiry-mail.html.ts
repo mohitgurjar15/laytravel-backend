@@ -27,7 +27,7 @@ export function TripfluencerEnquiryHTML(
                  <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">
-                        User name:
+                        Name:
                         </span>
                         <span style="font-size: 18px" >
                         ${param.name}
@@ -38,7 +38,7 @@ export function TripfluencerEnquiryHTML(
                  <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                   <span  style="color: #000000; font-weight: 600;">
-                        User email:
+                        Email:
                         </span>
                         <span style="font-size: 18px" >
                         ${param.email}
@@ -49,7 +49,7 @@ export function TripfluencerEnquiryHTML(
                  <td align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 20px 25px 10px; display: block; line-height: 27px; color: #707070; text-align: left;">
                     <span  style="color: #000000; font-weight: 600;">
-                        Social Media User Name:
+                        Social User Name:
                         </span>
                         <span style="font-size: 18px" >
                         ${param.Tripfulencer}
