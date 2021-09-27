@@ -7,21 +7,24 @@ import { PricelineHotelIds } from "src/entity/hotel_ids.entity";
 import moment = require("moment");
 import { Instalment } from "./instalment.utility";
 import { PaymentType } from "src/enum/payment-type.enum";
+import { Supplier } from "src/entity/supplier.entity";
 
 export class Generic {
     static async getCredential(module_name: string) {
-        const credentail = await getConnection()
-            .createQueryBuilder()
-            .select([
-                "module.mode",
-                "module.testCredential",
-                "module.liveCredential",
-            ])
-            .from(Module, "module")
-            .where("module.name = :module_name", { module_name })
-            .cache(`${module_name}_module`, 43200000)
-            .getOne();
-        return credentail;
+        
+        const credential = await getConnection()
+        .createQueryBuilder()
+        .select([
+            "supplier.mode",
+            "supplier.testCredential",
+            "supplier.liveCredential",
+        ])
+        .from(Supplier, "supplier")
+        .where("supplier.name = :module_name", { module_name })
+        .cache(`${module_name}_module`, 43200000)
+        .getOne();
+
+        return credential;
     }
 
     static async getAmountTocurrency(code: string = 'USD') {
@@ -240,5 +243,205 @@ export class Generic {
         } catch(e) {
             console.log("Error---->>>",e)
         } 
+    }
+
+    static getMinPriceFlight(routes, priceType) {
+        return Math.min.apply(
+            null,
+            routes.map((item) => item[priceType])
+        );
+    }
+
+    static getMaxPriceFLight(routes, priceType) {
+        return Math.max.apply(
+            null,
+            routes.map((item) => item[priceType])
+        );
+    }
+
+    static getStopCounts(routes, type) {
+        let stopsData = {
+            non_stop: {
+                count: 0,
+                min_price: null,
+            },
+            one_stop: {
+                count: 0,
+                min_price: null,
+            },
+            two_and_two_plus_stop: {
+                count: 0,
+                min_price: null,
+            },
+        };
+        routes.forEach((route) => {
+            if (route[type] == 0) {
+                if (
+                    stopsData.non_stop.min_price == null ||
+                    stopsData.non_stop.min_price > route.selling_price
+                ) {
+                    stopsData.non_stop.min_price = route.selling_price;
+                }
+                stopsData.non_stop.count += 1;
+            }
+
+            if (route[type] == 1) {
+                if (
+                    stopsData.one_stop.min_price == null ||
+                    stopsData.one_stop.min_price > route.selling_price
+                ) {
+                    stopsData.one_stop.min_price = route.selling_price;
+                }
+                stopsData.one_stop.count += 1;
+            }
+
+            if (route[type] > 1) {
+                if (
+                    stopsData.two_and_two_plus_stop.min_price == null ||
+                    stopsData.two_and_two_plus_stop.min_price >
+                    route.selling_price
+                ) {
+                    stopsData.two_and_two_plus_stop.min_price =
+                        route.selling_price;
+                }
+                stopsData.two_and_two_plus_stop.count += 1;
+            }
+        });
+        return stopsData;
+    }
+
+    static getAirlineCounts(routes) {
+        let airlineList = [];
+        let airlineData = {};
+        routes.forEach((route) => {
+            airlineData = {};
+            airlineData["airline_name"] = route.airline_name;
+            airlineData["airline_code"] = route.airline;
+            airlineData["selling_price"] = route.selling_price;
+            airlineList.push(airlineData);
+        });
+
+        const result = [
+            ...airlineList
+                .reduce((mp, o) => {
+                    if (!mp.has(o.airline_code))
+                        mp.set(o.airline_code, { ...o, count: 0 });
+                    mp.get(o.airline_code).count++;
+                    return mp;
+                }, new Map())
+                .values(),
+        ];
+        return result;
+    }
+
+    /**
+     *
+     * @param routes
+     * @param type (departure_time, arrival_time)
+     * @param routeType (0=> Outbound 1=>Inbound)
+     */
+    static getArrivalDepartureTimeSlot(routes, type, routeType) {
+        let timeSlots = {
+            first_slot: {
+                min_price: 0,
+                count: 0,
+                from_time: "00:00 am",
+                to_time: "05:59 am",
+            },
+            second_slot: {
+                min_price: 0,
+                count: 0,
+                from_time: "06:00 am",
+                to_time: "11:59 am",
+            },
+            third_slot: {
+                min_price: 0,
+                count: 0,
+                from_time: "12:00 pm",
+                to_time: "05:59 pm",
+            },
+            fourth_slot: {
+                min_price: 0,
+                count: 0,
+                from_time: "06:00 pm",
+                to_time: "11:59 pm",
+            },
+        };
+        let sourceDate;
+        routes.forEach((route) => {
+            if (type == "departure_time") {
+                sourceDate = moment(
+                    route.routes[routeType].stops[0][type],
+                    "HH:mm:a"
+                );
+            } else {
+                sourceDate = moment(
+                    route.routes[routeType].stops[
+                    route.routes[routeType].stops.length - 1
+                    ][type],
+                    "HH:mm:a"
+                );
+            }
+            if (
+                sourceDate.isBetween(
+                    moment(timeSlots.first_slot.from_time, "HH:mm:a"),
+                    moment(timeSlots.first_slot.to_time, "HH:mm:a")
+                )
+            ) {
+                timeSlots.first_slot.count += 1;
+                if (
+                    timeSlots.first_slot.min_price == 0 ||
+                    timeSlots.first_slot.min_price > route.selling_price
+                ) {
+                    timeSlots.first_slot.min_price = route.selling_price;
+                }
+            }
+
+            if (
+                sourceDate.isBetween(
+                    moment(timeSlots.second_slot.from_time, "HH:mm:a"),
+                    moment(timeSlots.second_slot.to_time, "HH:mm:a")
+                )
+            ) {
+                timeSlots.second_slot.count += 1;
+                if (
+                    timeSlots.second_slot.min_price == 0 ||
+                    timeSlots.second_slot.min_price > route.selling_price
+                ) {
+                    timeSlots.second_slot.min_price = route.selling_price;
+                }
+            }
+
+            if (
+                sourceDate.isBetween(
+                    moment(timeSlots.third_slot.from_time, "HH:mm:a"),
+                    moment(timeSlots.third_slot.to_time, "HH:mm:a")
+                )
+            ) {
+                timeSlots.third_slot.count += 1;
+                if (
+                    timeSlots.third_slot.min_price == 0 ||
+                    timeSlots.third_slot.min_price > route.selling_price
+                ) {
+                    timeSlots.third_slot.min_price = route.selling_price;
+                }
+            }
+
+            if (
+                sourceDate.isBetween(
+                    moment(timeSlots.fourth_slot.from_time, "HH:mm:a"),
+                    moment(timeSlots.fourth_slot.to_time, "HH:mm:a")
+                )
+            ) {
+                timeSlots.fourth_slot.count += 1;
+                if (
+                    timeSlots.fourth_slot.min_price == 0 ||
+                    timeSlots.fourth_slot.min_price > route.selling_price
+                ) {
+                    timeSlots.fourth_slot.min_price = route.selling_price;
+                }
+            }
+        });
+        return timeSlots;
     }
 }

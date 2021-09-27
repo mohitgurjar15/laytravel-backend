@@ -225,7 +225,7 @@ export class PKFare implements StrategyAirline {
                                         : {};
                             stop.eticket = true; // please check this
                             stop.flight_number = flightSegmentDetails[0].flightNum;
-                            stop.cabin_class = flightSegmentDetails[0].cabinClass
+                            stop.cabin_class = flightSegmentDetails[0].cabinClass == "ECONOMY" ? "Economy" : flightSegmentDetails[0].cabinClass
                             stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                 flightSegmentDetails[0].flightTime * 60
                             );
@@ -389,6 +389,9 @@ export class PKFare implements StrategyAirline {
                                     route.no_of_weekly_installment =
                                         instalmentDetails.instalment_date.length - 1;
                                 }
+                                else{
+                                    paymentConfig.isWeeklyInstallmentAvailable=false;
+                                }
     
                             }
     
@@ -401,12 +404,18 @@ export class PKFare implements StrategyAirline {
                                     paymentConfig.isDownPaymentInPercentage
                                 );
                                 
-                                route.second_down_payment =
+                                if(instalmentDetails2.instalment_available){
+                                    route.second_down_payment =
                                     instalmentDetails2.instalment_date[0].instalment_amount;
-                                route.secondary_start_price_2 =
+                                    route.secondary_start_price_2 =
                                     instalmentDetails2.instalment_date[1].instalment_amount;
-                                route.no_of_weekly_installment_2 =
+                                    route.no_of_weekly_installment_2 =
                                     instalmentDetails2.instalment_date.length - 1;
+                                }
+                                else{
+                                    paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                                }
+                                
                             }
     
     
@@ -418,13 +427,19 @@ export class PKFare implements StrategyAirline {
                                     downPaymentOption[0],
                                     paymentConfig.isDownPaymentInPercentage
                                 );
-                                console.log("INSTALLMENT DETAILS", instalmentDetails3)
-                                route.third_down_payment =
+                                if (instalmentDetails3.instalment_available) {
+                                    // console.log("INSTALLMENT DETAILS", instalmentDetails3)
+                                    route.third_down_payment =
                                     instalmentDetails3.instalment_date[0].instalment_amount;
-                                route.secondary_start_price_3 =
+                                    route.secondary_start_price_3 =
                                     instalmentDetails3.instalment_date[1].instalment_amount;
-                                route.no_of_weekly_installment_3 =
+                                    route.no_of_weekly_installment_3 =
                                     instalmentDetails3.instalment_date.length - 1;
+                                }
+                                else{
+                                    paymentConfig.isMonthlyInstallmentAvailable=false;
+                                }
+                                
                             }
     
                             discountedInstalmentDetails =await Instalment.weeklyInstalment(
@@ -541,58 +556,12 @@ export class PKFare implements StrategyAirline {
                         route.unique_code = md5(uniqueCode);
                         route.category_name = categoryName;
                         route.offer_data = offerData;
-
+                        route.supplier = "pkfare";
                         routes.push(route);                        
                     }
                 }
-                let flightSearchResult = new FlightSearchResult();
-                flightSearchResult.items = routes;
-
-                let priceRange = new PriceRange();
-                let priceType = "discounted_selling_price";
-                priceRange.min_price = this.getMinPrice(routes, priceType);
-                priceRange.max_price = this.getMaxPrice(routes, priceType);
-                flightSearchResult.price_range = priceRange;
-
-                //Get min & max partail payment price
-                let partialPaymentPriceRange = new PriceRange();
-                priceType = "discounted_secondary_start_price";
-                partialPaymentPriceRange.min_price = this.getMinPrice(
-                    routes,
-                    priceType
-                );
-                partialPaymentPriceRange.max_price = this.getMaxPrice(
-                    routes,
-                    priceType
-                );
-                flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
-
-                //Get Stops count and minprice
-                flightSearchResult.stop_data = this.getStopCounts(
-                    routes,
-                    "stop_count"
-                );
-
-                //Get airline and min price
-                flightSearchResult.airline_list = this.getAirlineCounts(routes);
-
-                //Get Departure time slot
-                flightSearchResult.depature_time_slot =  
-                    this.getArrivalDepartureTimeSlot(
-                        routes,
-                        "departure_time",
-                        0
-                    );
-                //Get Arrival time slot
-                flightSearchResult.arrival_time_slot =
-                    this.getArrivalDepartureTimeSlot(
-                        routes,
-                        "arrival_time",
-                        0
-                    );
-                flightSearchResult.category_name = categoryName;
                 
-                return flightSearchResult;
+                return routes;
                 
             } else {
                 throw new NotFoundException(`No flight founds`);
@@ -1268,7 +1237,7 @@ export class PKFare implements StrategyAirline {
                             route.unique_code = md5(uniqueCode);
                             route.category_name = categoryName;
                             route.offer_data = offerData;
-                            
+                            route.supplier = "pkfare";
                             routes.push(route);                        
                         }
                     }
@@ -1458,7 +1427,7 @@ export class PKFare implements StrategyAirline {
                                 : {};
                             stop.eticket = true; // please check this
                             stop.flight_number = flightSegmentDetails[0].flightNum;
-                            stop.cabin_class = flightSegmentDetails[0].cabinClass
+                            stop.cabin_class = flightSegmentDetails[0].cabinClass == "ECONOMY" ? "Economy" : flightSegmentDetails[0].cabinClass
                             stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                 flightSegmentDetails[0].flightTime * 60
                             );
@@ -1948,6 +1917,7 @@ export class PKFare implements StrategyAirline {
                 route.category_name = categoryName;
                 route.log_file = logFile
                 route.markUpDetails = JSON.stringify(markUpDetails)
+                route.supplier = "pkfare";
                 // console.log("ROUTE", route)
                 routes.push(route);
             // }

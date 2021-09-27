@@ -94,6 +94,8 @@ import { PaymentConfiguration } from "src/entity/payment-configuration.entity";
 import { PaymentConfigurationUtility } from "src/utility/payment-config.utility";
 import { PKFare } from "./strategy/pkfare";
 import { resolve } from "path";
+import { DeduplicationFlight } from "src/utility/deduplication-flight.utility";
+import { FlightSearchResult, PriceRange, Route } from "./model/route.model";
 
 @Injectable()
 export class FlightService {
@@ -367,23 +369,75 @@ export class FlightService {
 
         await this.validateHeaders(headers);
         const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+        
         const result = new Promise((resolve) =>
             resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
         );
 
         const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+        
         const pkfareResult = new Promise((resolve) =>
             resolve(pkfare.oneWaySearch(searchFlightDto, user, referralId))
         )
-        // console.log("-----TRUE------")
+        let allResult = await Promise.all([pkfareResult,result]);
+
+        let deduplicationRes = await DeduplicationFlight.onewayDeduplicationFilter(allResult);
+        
+        let flightSearchResult = new FlightSearchResult();
+        
+        flightSearchResult.items = deduplicationRes;
+
+        let priceRange = new PriceRange();
+        let priceType = "discounted_selling_price";
+        priceRange.min_price = Generic.getMinPriceFlight(deduplicationRes, priceType);
+        priceRange.max_price = Generic.getMaxPriceFLight(deduplicationRes, priceType);
+        flightSearchResult.price_range = priceRange;
+
+        //Get min & max partail payment price
+        let partialPaymentPriceRange = new PriceRange();
+        priceType = "discounted_secondary_start_price";
+        partialPaymentPriceRange.min_price = Generic.getMinPriceFlight(deduplicationRes, priceType);
+        partialPaymentPriceRange.max_price = Generic.getMaxPriceFLight(deduplicationRes, priceType);
+        flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
+
+        //Get Stops count and minprice
+        flightSearchResult.stop_data = Generic.getStopCounts(
+            deduplicationRes,
+            "stop_count"
+        );
+
+        //Get airline and min price
+        flightSearchResult.airline_list = Generic.getAirlineCounts(deduplicationRes);
+
+        //Get Departure time slot
+        flightSearchResult.depature_time_slot =  
+            Generic.getArrivalDepartureTimeSlot(
+                deduplicationRes,
+                "departure_time",
+                0
+            );
+        //Get Arrival time slot
+        flightSearchResult.arrival_time_slot =
+            Generic.getArrivalDepartureTimeSlot(
+                deduplicationRes,
+                "arrival_time",
+                0
+            );
+
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${searchFlightDto.source_location}' and to_airport_code = '${searchFlightDto.destination_location}' and is_deleted=false`);
+        let categoryName = caegory?.categoryname;
+        flightSearchResult.category_name = categoryName;
+        
         Activity.addSearchLog(
             ModulesName.FLIGHT,
             searchFlightDto,
             user.user_id,
             userIp
         );
-        // return result;
-        return pkfareResult
+        return flightSearchResult;
     }
 
     async searchOneWayZipFlight(searchFlightDto, headers, user, referralId = '') {

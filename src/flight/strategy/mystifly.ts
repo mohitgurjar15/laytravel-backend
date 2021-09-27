@@ -82,7 +82,7 @@ export class Mystifly implements StrategyAirline {
     }
 
     async getMystiflyCredential() {
-        const config = await Generic.getCredential("flight");
+        const config = await Generic.getCredential("mystifly");
 
         let mystiflyConfig = JSON.parse(config.testCredential);
 
@@ -137,7 +137,7 @@ export class Mystifly implements StrategyAirline {
             //let currentTime = new Date();
             //let diff = moment(currentTime).diff(sessionDetails.created_time, 'seconds')
 
-            const config = await Generic.getCredential("flight");
+            const config = await Generic.getCredential("mystifly");
 
             let mystiflyConfig = JSON.parse(config.testCredential);
 
@@ -798,57 +798,12 @@ export class Mystifly implements StrategyAirline {
                     //         routes.push(route);
                     //     }
                     // }
+                    route.supplier = "mystifly";
                     routes.push(route);
                 }
             }
-            let flightSearchResult = new FlightSearchResult();
-            flightSearchResult.items = routes;
-
-
-            //Get min & max selling price
-            let priceRange = new PriceRange();
-            let priceType = "discounted_selling_price";
-            priceRange.min_price = this.getMinPrice(routes, priceType);
-            priceRange.max_price = this.getMaxPrice(routes, priceType);
-            flightSearchResult.price_range = priceRange;
-
-            //Get min & max partail payment price
-            let partialPaymentPriceRange = new PriceRange();
-            priceType = "discounted_secondary_start_price";
-            partialPaymentPriceRange.min_price = this.getMinPrice(
-                routes,
-                priceType
-            );
-            partialPaymentPriceRange.max_price = this.getMaxPrice(
-                routes,
-                priceType
-            );
-            flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
-            //return flightSearchResult;
-
-            //Get Stops count and minprice
-            flightSearchResult.stop_data = this.getStopCounts(
-                routes,
-                "stop_count"
-            );
-
-            //Get airline and min price
-            flightSearchResult.airline_list = this.getAirlineCounts(routes);
-
-            //Get Departure time slot
-            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(
-                routes,
-                "departure_time",
-                0
-            );
-            //Get Arrival time slot
-            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(
-                routes,
-                "arrival_time",
-                0
-            );
-            flightSearchResult.category_name = categoryName;
-            return flightSearchResult;
+            
+            return routes
         } else {
             throw new NotFoundException(`No flight founds`);
         }
@@ -1464,7 +1419,8 @@ export class Mystifly implements StrategyAirline {
             );
             flightSearchResult.category_name = categoryName;
             // console.log("------FLIGHT SEARCH RESULT-----",JSON.stringify(flightSearchResult))
-            return flightSearchResult;
+            // return flightSearchResult;
+            return routes;
         } else {
             return { message: "flight not found" };
         }

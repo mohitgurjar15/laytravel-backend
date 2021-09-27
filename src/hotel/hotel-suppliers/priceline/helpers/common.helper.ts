@@ -3,7 +3,7 @@ import { GenericHotel } from "src/hotel/helpers/generic.helper";
 export class CommonHelper {
     static async generateUrl(api: string, parameters: any = {}, hotel_id = "") {
         //let ppnConfig = config.get('ppn');
-        let config = await Generic.getCredential("hotel");
+        let config = await Generic.getCredential("priceline");
         let mode = "test";
         let ppnConfig = JSON.parse(config.testCredential);
         if (config.mode) {

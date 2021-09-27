@@ -74,6 +74,7 @@ export class Route {
     is_installment_available?: boolean
     payment_config?:any
     payment_object?:any
+    supplier:string;
 }
 
 export class RouteType {
