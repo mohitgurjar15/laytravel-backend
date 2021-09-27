@@ -76,7 +76,6 @@ export class EnqiryController {
     @ApiResponse({ status: 500, description: "Internal server error!" })
     @HttpCode(200)
     async getFaqDetail(@Param("id") id: string): Promise<Enquiry> {
-        console.log('shjbsjdbfhkjbdhkjsbj')
         return await this.enqiryService.getEnquiry(id);
     }
 
@@ -131,7 +130,7 @@ export class EnqiryController {
         );
     }
 
-    @Post("sadsad/sadadas/sadasd/tripfluencer")
+    @Post("tripfluencer")
     // @ApiConsumes("multipart/form-data")
     @ApiOperation({ summary: "Tripfluencer Enquiry Data using id " })
     @ApiResponse({ status: 200, description: "Api success" })
@@ -145,7 +144,6 @@ export class EnqiryController {
     async createTripfluencerEnquiry(
         @Body() newEnquiryDto: newTripfluencerDto
     ): Promise<{ message: string }> {
-        console.log('in influ eadddad')
         return await this.enqiryService.newTripfluencerEnquiry(
             newEnquiryDto
         );
