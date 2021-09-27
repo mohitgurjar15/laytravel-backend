@@ -524,7 +524,6 @@ more than 10.`
                 .set({ userId: user.userId, guestUserId: null })
                 .where("guest_user_id =:id", { id: guestUserId })
                 .execute();
-            //console.log(result);
             await getConnection()
                 .createQueryBuilder()
                 .delete()
@@ -570,7 +569,6 @@ more than 10.`
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -682,7 +680,6 @@ more than 10.`
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -722,7 +719,6 @@ more than 10.`
             user,
             Header
         );
-        // //console.log(homeInfo);
         if (homeInfo) {
             const check_in_date = homeInfo[0].check_in_date;
 
@@ -817,11 +813,6 @@ more than 10.`
                 }
             }
 
-            if (promotional > 0 && nonPromotional > 0) {
-                error = `In cart promotional and not promotional both inventry found.`
-                //cartIsConflicted = true
-            }
-
             let cartIsPromotional
             if (promotional > 0) {
                 cartIsPromotional = true
@@ -835,10 +826,7 @@ more than 10.`
             var unixTimestamp = Math.round(new Date().getTime() / 1000);
 
 
-
-            if (
-                typeof live_availiblity != "undefined" &&
-                live_availiblity == "yes"
+            if (typeof live_availiblity != "undefined" && live_availiblity == "yes"
             ) {
                 await this.flightService.validateHeaders(headers);
 
@@ -875,11 +863,8 @@ more than 10.`
                         var difference = unixTimestamp - (cart.timeStamp || 0);
 
                         var minuteDifference = Math.floor(difference / 60) % 60;
-                        if (minuteDifference > 5 || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)) {
-                            const bookingType =
-                                cart.moduleInfo[0].routes.length > 1
-                                    ? "RoundTrip"
-                                    : "oneway";
+                        if (minuteDifference > 5) {
+                            const bookingType =cart.moduleInfo[0].routes.length > 1? "RoundTrip": "oneway";
 
                             if (bookingType == "oneway") {
                                 let dto = {
@@ -903,7 +888,6 @@ more than 10.`
                                         ? cart.moduleInfo[0].infant_count
                                         : 0,
                                 };
-                                //console.log(dto);
 
                                 flightRequest[cart.id] = new Promise((resolve) =>
                                     resolve(
@@ -942,7 +926,6 @@ more than 10.`
                                         cart.moduleInfo[0].routes[1].stops[0].departure_date
                                     ),
                                 };
-                                //console.log(dto);
                                 flightRequest[cart.id] = new Promise((resolve) =>
                                     resolve(
                                         mystifly.roundTripSearchZip(
@@ -971,7 +954,6 @@ more than 10.`
 
                 var difference = unixTimestamp - (cart.timeStamp || 0);
                 var minuteDifference = Math.floor(difference / 60) % 60;
-
                 if (
                     (typeof live_availiblity != "undefined" &&
                         live_availiblity == "yes" && minuteDifference > 5) || (cartIsPromotional == false && referralId) || (cartIsPromotional == true && !referralId)
@@ -984,7 +966,6 @@ more than 10.`
                             user, headers,
                             cartIsPromotional ? referralId : ''
                         );
-
                         if (typeof value.message == "undefined") {
                             newCart["moduleInfo"] = [value];
                             let updatedDownpayment = 0;
@@ -1007,29 +988,6 @@ more than 10.`
                             newCart["isPromotional"] = value?.offer_data?.applicable
                             newCart["is_conflict"] = false;
 
-                            if (value?.offer_data?.applicable == true && cartIsPromotional == false) {
-                                error = `In cart not-promotional item found`
-                                if (cartIsConflicted) {
-                                    newCart["is_conflict"] = true;
-                                } else {
-                                    newCart["is_available"] = false;
-                                }
-
-                            }
-
-                            // if ((paymentType == BookingType.INSTALMENT && value?.is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && value?.is_installment_available == true)) {
-                            //     newCart["is_payment_type_conflicted"] = true;
-                            // }
-
-                            if (value?.offer_data?.applicable == false && cartIsPromotional == true) {
-                                error = `In cart promotional item found`
-                                if (cartIsConflicted) {
-                                    newCart["is_conflict"] = true;
-                                } else {
-                                    newCart["is_available"] = false;
-                                }
-                                // newCart["is_available"] = false;
-                            }
                             cart.moduleInfo = [value];
                             let inventryIsPromotional = false
                             if (cart.isPromotional == true && referralId) {
@@ -1045,6 +1003,7 @@ more than 10.`
 
                             //await cart.save();
                         } else {
+                            
                             newCart["is_available"] = false;
                             newCart["moduleInfo"] = cart.moduleInfo;
                         }
@@ -1070,7 +1029,6 @@ more than 10.`
                                 newCart["moduleInfo"] = roomDetails.data;
                                 let updatedDownpayment = 0;
                                 if(cart.paymentMethod === PaymentType.INSTALMENT) {
-                                    //console.log("roomDetails.data[][0]",roomDetails.data["items"][0])
                                     if(roomDetails.data["items"][0].is_refundable=='false'){
                                         updatedDownpayment = (roomDetails.data["items"][0].selling.total*60)/100;
                                         
@@ -1086,7 +1044,6 @@ more than 10.`
                                             updatedDownpayment = roomDetails.data.items[0].payment_object.monthly.down_payment;
                                         }
                                     }
-                                    console.log("===updatedDownpayment====",updatedDownpayment)
                                 }
                                 newCart["is_available"] = true;
                                 newCart["isPromotional"] = roomDetails.data["items"][0]?.offer_data?.applicable
@@ -1144,52 +1101,10 @@ more than 10.`
                     if (cart.moduleId == ModulesName.FLIGHT) {
                         newCart["is_available"] = true;
                         newCart["is_conflict"] = false;
-                        if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                            error = `In cart not-promotional item found`
-                            if (cartIsConflicted) {
-                                newCart["is_conflict"] = true;
-                            } else {
-                                newCart["is_available"] = false;
-                            }
-
-                        }
-
-                        if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                            error = `In cart promotional item found`
-                            if (cartIsConflicted) {
-                                newCart["is_conflict"] = true;
-                            } else {
-                                newCart["is_available"] = false;
-                            }
-                            // newCart["is_available"] = false;
-                        }
-
-
                     }
                     if (cart.moduleId == ModulesName.HOTEL) {
                         newCart["is_available"] = true;
                         newCart["is_conflict"] = false;
-                        if (cart.moduleInfo[0]?.offer_data?.applicable == true && cartIsPromotional == false) {
-                            //throw new ConflictException(`In cart not-promotional item found`)
-                            error = `In cart not-promotional item found`
-                            if (cartIsConflicted) {
-                                newCart["is_conflict"] = true;
-                            } else {
-                                newCart["is_available"] = false;
-                            }
-
-                        }
-
-                        if (cart.moduleInfo[0]?.offer_data?.applicable == false && cartIsPromotional == true) {
-                            error = `In cart promotional item found`
-                            if (cartIsConflicted) {
-                                newCart["is_conflict"] = true;
-                            } else {
-                                newCart["is_available"] = false;
-                            }
-
-                        }
-
                     }
                 }
                 if (cart.travelers.length) {
@@ -1224,7 +1139,6 @@ more than 10.`
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -1261,11 +1175,9 @@ more than 10.`
     async flightAvailiblity(cart, flights, user, headers, referralId) {
 
         var match = 0;
-
         if (flights?.items) {
 
             for await (const flight of flights.items) {
-
                 if (flight?.unique_code == cart.moduleInfo[0].unique_code) {
                     match = match + 1;
                     let revalidateFlight: any
@@ -1282,15 +1194,12 @@ more than 10.`
                         }
 
                     }
-                    //console.log('revalidateFlight', revalidateFlight)
                     return revalidateFlight;
                 }
             }
         }
-        ////console.log('loop empty');
 
         if (match == 0) {
-            ////console.log('match not found');
             return {
                 message:
                     "This booking is no longer available. Click “X” to delete to be able to proceed to Checkout.",
@@ -1418,7 +1327,6 @@ more than 10.`
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -1578,7 +1486,6 @@ more than 10.`
                         }
                     }
                     
-                    //console.log(item.moduleInfo[0]);
 
                     const arrivalDate = await this.flightService.changeDateFormat(
                         item.moduleInfo[0].arrival_date
@@ -1607,7 +1514,6 @@ more than 10.`
                             smallestCheckinDate = dipatureDate;
                         }
                     }
-                    //console.log(item.moduleInfo[0]);
 
                     const arrivalDate = item.moduleInfo[0].input_data.check_out;
                     if (largestDate == "") {
@@ -1780,7 +1686,6 @@ more than 10.`
             bookingLog.error = error
             await bookingLog.save()
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -1836,7 +1741,6 @@ more than 10.`
             .split(" ")[0];
 
         const totalAmount = parseFloat(sumOfTotalAmount[0].total_amount);
-        console.log(totalAmount);
 
         if (payment_type == PaymentType.INSTALMENT) {
             let instalmentDetails;
@@ -1922,10 +1826,7 @@ more than 10.`
                 `"booking"."cart_id" = '${cartId}' AND "BookingInstalments"."instalment_no" = 1  AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
             )
             .getMany();
-        //console.log(JSON.stringify(allBooking))
-        //console.log('payment_type', payment_type, PaymentType.INSTALMENT, payment_type == PaymentType.INSTALMENT)
         if (payment_type == PaymentType.INSTALMENT) {
-            //console.log('payment_type', payment_type)
             let captureAmount = 0
             if (allBooking.length) {
                 for await (const booking of allBooking) {
@@ -1983,7 +1884,6 @@ more than 10.`
                         else if (installment.instalmentNo == 2) {
                             installmentTotal += parseFloat(installment.amount)
                         }
-                        //console.log('installment.instalmentNo', installment.instalmentNo)
                         installmentAmount[installment.instalmentNo] = parseFloat(installment.amount)
                         totalAmount += parseFloat(installment.amount)
                         onIndexCalcualation[installment.instalmentNo] = onIndexCalcualation[installment.instalmentNo] ? onIndexCalcualation[installment.instalmentNo] + parseFloat(installment.amount) : parseFloat(installment.amount)
@@ -1992,11 +1892,6 @@ more than 10.`
                 installment[booking.id] = installmentAmount
                 bookingIds.push(booking.id)
             }
-            // console.log("downPayment", downPayment)
-            // console.log("totalAmount", totalAmount)
-            // console.log("installmentTotal", installmentTotal);
-            // console.table(onIndexCalcualation)
-            // console.log("bookingIds", bookingIds)
 
             if (installmentTotal < 5) {
                 let instalmentDetails;
@@ -2009,9 +1904,7 @@ more than 10.`
                 ) > 90) {
                     downPayments = [20, 30, 40]
                 }
-                //console.log("instalment_type", instalment_type, typeof instalment_type, InstalmentType.WEEKLY, typeof InstalmentType.WEEKLY, InstalmentType.WEEKLY == instalment_type)
                 if (instalment_type == InstalmentType.WEEKLY) {
-                    console.log('Weekly')
                     instalmentDetails = Instalment.weeklyInstalment(
                         totalAmount,
                         smallestDate,
@@ -2035,7 +1928,6 @@ more than 10.`
                         downPayments[0]
                     );
                 }
-                //console.log("instalmentDetails", instalmentDetails)
                 if (instalmentDetails?.instalment_date?.length) {
                     let totalLength = instalmentDetails?.instalment_date?.length
 
@@ -2048,11 +1940,6 @@ more than 10.`
                             let percentageOfBookingInstallment = (bookingInstallment * 100) / cartInstallment
                             let settlePercentageBaseAmount = (percentageOfBookingInstallment * newSettledInstallment) / 100
 
-                            // console.log("bookingInstallment", bookingInstallment)
-                            // console.log("cartInstallment", cartInstallment)
-                            // console.log("newSettledInstallment", newSettledInstallment)
-                            // console.log("percentageOfBookingInstallment", percentageOfBookingInstallment)
-                            // console.log("settlePercentageBaseAmount", settlePercentageBaseAmount)
                             await getConnection()
                                 .createQueryBuilder()
                                 .update(BookingInstalments)
@@ -2217,7 +2104,6 @@ more than 10.`
                         is_primary_traveler: traveler.traveler['is_primary_traveler'],
                     };
                     
-                    //console.log("traveler",traveler,countryId);
                     travelers.push(travelerUser);
                 }
                 //return false;
@@ -2606,10 +2492,8 @@ more than 10.`
                         ),
                     })
                     .then((res) => {
-                        //console.log("res", res);
                     })
                     .catch((err) => {
-                        //console.log("err", err);
                     });
             } else {
 
@@ -2625,10 +2509,8 @@ more than 10.`
                         ),
                     })
                     .then((res) => {
-                        console.log("res", res);
                     })
                     .catch((err) => {
-                        console.log("err", err);
                     });
 
             }
@@ -2636,11 +2518,8 @@ more than 10.`
 
 
                 let capturedAmount = parseFloat(metaData.transaction.amount) / 100
-                //console.log('capturedAmount', capturedAmount)
                 let cartAmount = responce?.param.cart.totalPaidInnumeric
-                //console.log('cartAmount', cartAmount)
                 let priceDiff = capturedAmount - cartAmount
-                //console.log('cartAmount', priceDiff)
                 //Commented from here
                 /* if (priceDiff > 1) {
                     let subject = `BOOKING ID ${responce.param.orderId} OVERCHARGED`
@@ -2659,10 +2538,8 @@ more than 10.`
                             ),
                         })
                         .then((res) => {
-                            //console.log("res", res);
                         })
                         .catch((err) => {
-                            //console.log("err", err);
                         });
                 } else if (priceDiff < -1) {
 
@@ -2684,10 +2561,8 @@ more than 10.`
                             ),
                         })
                         .then((res) => {
-                            //console.log("res", res);
                         })
                         .catch((err) => {
-                            //console.log("err", err);
                         });
                 } */
             }
@@ -2712,10 +2587,8 @@ more than 10.`
                     ),
                 })
                 .then((res) => {
-                    //console.log("res", res);
                 })
                 .catch((err) => {
-                    //console.log("err", err);
                 });
         }
         const failedBooking = await CartDataUtility.CartFailedMailModelDataGenerate(
@@ -2740,10 +2613,8 @@ more than 10.`
                     ),
                 })
                 .then((res) => {
-                    //console.log("res", res);
                 })
                 .catch((err) => {
-                    //console.log("err", err);
                 });
         }
     }
@@ -2856,7 +2727,6 @@ more than 10.`
             };
         } catch (error) {
             if (typeof error.response !== "undefined") {
-                //console.log("m");
                 switch (error.response.statusCode) {
                     case 404:
                         throw new NotFoundException(error.response.message);
@@ -2920,17 +2790,6 @@ more than 10.`
             user.userId || null,
             referralId
         );
-        // console.log("applicable", roomDetails.data["items"][0]?.offer_data?.applicable, typeof roomDetails.data[0]?.offer_data?.applicable && referralId)
-        /* if (roomDetails.data["items"][0]?.offer_data?.applicable == true && cartIsPromotional == false && referralId) {
-            throw new ConflictException(`In cart not-promotional item found`)
-        }
-        if (roomDetails.data["items"][0]?.offer_data?.applicable == false && cartIsPromotional == true && referralId) {
-            throw new ConflictException(`In cart promotional item found`)
-        } */
-
-        /* if ((paymentType == BookingType.INSTALMENT && roomDetails.data["items"][0].is_installment_available == false) || (paymentType == BookingType.NOINSTALMENT && roomDetails.data["items"][0].is_installment_available == true)) {
-            throw new NotAcceptableException(`Cart payment type and inventory payment type are mismatch`)
-        } */
 
         const cart = new Cart();
 
@@ -2955,7 +2814,6 @@ more than 10.`
         cart.expiryDate = depatureDate ? new Date(depatureDate) : new Date();
         cart.isDeleted = false;
         cart.createdDate = new Date();
-        console.log("I am in 2")
         let savedCart = await cart.save();
 
         return {
