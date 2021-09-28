@@ -223,11 +223,11 @@ export const LANDING_PAGE = {
       flight: [
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "code": "PUJ", "name": "Punta Cana Intl.", "city": "Punta Cana", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "key": "P" }
+          to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
+          to: { "code": "PUJ", "name": "Punta Cana Intl.", "city": "Punta Cana", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "key": "P" }
         },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
@@ -251,7 +251,19 @@ export const LANDING_PAGE = {
             "country": "Dominican Republic",
             "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
           },
-          to: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
+          to: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" ,"image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"},
+        },
+        {
+          from: {
+            "name": "All Airports",
+            "code": "SDQ",
+            "latitude": "18.43",
+            "longitude": "-69.67",
+            "city": "Santo Domingo",
+            "country": "Dominican Republic",
+            "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"
+          },
+          to: { "code": "MAD", "name": "Barajas", "city": "Madrid", "country": "Spain", "key": "M" ,"image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png"},
         },
         {
           from: {
@@ -293,17 +305,12 @@ export const LANDING_PAGE = {
           location: { "title": "Punta Cana, Dominican Republic", "city": "Punta Cana", "state": "", "country": "Dominican Republic", "type": "city", "hotel_id": "", "city_id": "800013751", "lat": "18.6149", "long": "-68.3884", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "city_names": ["Punta Cana"] }
         },
         {
-          location: { "title": "Cancún, Mexico", "city": "Cancún", "city_id": "800026864", "state": "", "country": "Mexico", "type": "city", "hotel_id": "", "lat": "21.1613", "long": "-86.8341", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Cancún"] }
-        },
-        {
-          location: { "title": "Miami Beach, Florida, United States", "city": "Miami Beach", "city_id": "800047419", "state": "", "country": "United States", "type": "city", "hotel_id": "", "lat": "25.7903", "long": "-80.1303", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "city_names": ["Miami Beach", "Miami Gardens", "Miami Lakes", "Miami Springs", "Miami"] },
-        },
-        {
           location:{
             "title": "Puerto Plata",
             "city": "Puerto Plata",
             "state": "",
             "type": "city",
+            "country": "Dominican Republic",
             "hotel_id": "",
             "city_id": "800002570",
             "lat": "19.8009",
@@ -313,6 +320,9 @@ export const LANDING_PAGE = {
               "Cancún"
             ]
           }
+        },
+        {
+          location: { "title": "Miami Beach, Florida, United States", "city": "Miami Beach", "city_id": "800047419", "state": "", "country": "United States", "type": "city", "hotel_id": "", "lat": "25.7903", "long": "-80.1303", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/miami.png", "city_names": ["Miami Beach", "Miami Gardens", "Miami Lakes", "Miami Springs", "Miami"] },
         },
         {
           location:{
@@ -346,7 +356,10 @@ export const LANDING_PAGE = {
               "New York City"
             ]
           }
-        }
+        },
+        {
+          location: { "title": "Madrid, Spain", "city": "city", "city_id": "800039716", "state": "", "country": "Spain", "type": "city", "hotel_id": "", "lat": "40.4167", "long": "-3.7034", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Madrid"] }
+        },
 
       ],
       flight_offer_location: [
