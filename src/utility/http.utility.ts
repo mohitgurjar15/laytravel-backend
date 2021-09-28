@@ -4,7 +4,6 @@ import {
     RequestTimeoutException,
 } from "@nestjs/common";
 import Axios from "axios";
-import { exception } from "console";
 import * as xml2js from "xml2js";
 import { Activity } from "./activity.utility";
 
@@ -33,7 +32,7 @@ export class HttpRequest {
                 logData['requestBody'] = requestBody
                 logData["requestTime"] = requestTime;
                 let responceTime = `${new Date()}`;
-                logData["responceTime"] = responceTime;
+                logData["responseTime"] = responceTime;
                 logData['headers'] = {
                     'content-type': 'text/xml',
                     'Accept-Encoding': 'gzip',
@@ -41,7 +40,7 @@ export class HttpRequest {
                     'charset': 'UTF-8',
                     'cache-control': 'no-cache'
                 }
-                logData['responce'] = result.data;
+                logData['response'] = result.data;
 
                 fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
                 if (user) {
@@ -68,7 +67,7 @@ export class HttpRequest {
                 charset: "UTF-8",
                 "cache-control": "no-cache",
             };
-            logData["responce"] = error.response.data;
+            logData["response"] = error.response.data;
             const fileName = `Flight-mystifly-${headerAction}-${new Date().getTime()}`;
             Activity.createlogFile(fileName, logData, "Mustifly_errors");
             throw new RequestTimeoutException(`Connection time out`);
@@ -241,7 +240,7 @@ export class HttpRequest {
             logData["url"] = url;
             logData["method"] = method;
             logData["requestBody"] = requestBody;
-            logData["responce"] = error.responce;
+            logData["response"] = error.responce;
 
             fileName = `Failed-hotel-priceline-${headerAction}-${new Date().getTime()}`;
             if (user) {
