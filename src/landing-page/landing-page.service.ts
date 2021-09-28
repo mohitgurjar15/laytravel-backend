@@ -232,10 +232,13 @@ export class LandingPageService {
                 "user.roleId",
                 "user.countryCode",
                 "user.phoneNo",
+                "user.createdDate"
             ])
             .where(where)
             .take(take)
             .skip(skip)
+            .addOrderBy("user.createdDate","DESC")
+            // .descBy("user.createdDate")
             .getManyAndCount();
         if (!users.length) {
             throw new NotFoundException(`No data found.`);
