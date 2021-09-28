@@ -21,7 +21,7 @@ export class CartDataUtility {
             );
 
         const cart = await query.getOne();
-        console.log('&&&&&&&&&&&&&&&&', cart)
+        // console.log('&&&&&&&&&&&&&&&&', cart)
         if (!cart) {
             return {
                 paidAmount: "",

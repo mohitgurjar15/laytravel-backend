@@ -84,7 +84,7 @@ export class BookingService {
         const responce = await CartDataUtility.CartMailModelDataGenerate(
             bookingId
         );
-        console.log('this is my response**********', response)
+        // console.log('this is my response**********', response)
         // if (responce?.param) {
         //     let subject =
         //         responce.param.bookingType == BookingType.INSTALMENT
@@ -429,8 +429,8 @@ export class BookingService {
                     valuations[result.data[i].laytripBookingId] || 0
                 );
 
-                console.log('booking id', result.data[i].laytripBookingId)
-                console.log("valuation", valuations);
+                // console.log('booking id', result.data[i].laytripBookingId)
+                // console.log("valuation", valuations);
                 if (valuations && typeof valuations['amount'] != "undefined" && typeof valuations['amount'][result.data[i].laytripBookingId] != "undefined") {
                     result.data[i]["paidAmount"] = Generic.formatPriceDecimal(valuations['amount'][result.data[i].laytripBookingId] || 0)
                 } else {
@@ -1311,7 +1311,7 @@ export class BookingService {
                     break;
                 }
             } */
-            console.log("cart.bookings", cart.bookings.length)
+            // console.log("cart.bookings", cart.bookings.length)
             let allItemResult = []
             for await (const booking of cart.bookings) {
 
@@ -1398,7 +1398,7 @@ export class BookingService {
                 //cartInstallments.sort((a, b) => a.instalmentDate - b.instalmentDate)
 
             }
-            console.log("paidAmount", paidAmount, totalAmount, remainAmount)
+            // console.log("paidAmount", paidAmount, totalAmount, remainAmount)
             remainAmount = totalAmount - paidAmount;
             let cartResponce = {};
             cartResponce["id"] = cart?.id;
@@ -1528,7 +1528,7 @@ export class BookingService {
                 paidAmount = JSON.parse(result.actualSellingPrice)
             }
             
-            console.log('eeeeeeeeeeeeeeeeeee',paidAmount)
+            // console.log('eeeeeeeeeeeeeeeeeee',paidAmount)
             //result["paidAmount"] =
             //    result.bookingType == BookingType.NOINSTALMENT &&
             //    result.paymentStatus == PaymentStatus.CONFIRM
@@ -1549,8 +1549,8 @@ export class BookingService {
                 valuations[result.laytripBookingId] || 0
             );
 
-            console.log("booking id", result.laytripBookingId);
-            console.log("valuation", valuations);
+            // console.log("booking id", result.laytripBookingId);
+            // console.log("valuation", valuations);
 
             result["paidAmount"] = paidAmount || 0
 
@@ -1693,13 +1693,13 @@ export class BookingService {
         }
         if (booking_status?.length) {
             if (typeof booking_status != "object") {
-                console.log(booking_status);
+                // console.log(booking_status);
 
                 let w = await BookingStatusUtility.filterCondition(
                     parseInt(booking_status),
                     "booking"
                 );
-                console.log(w);
+                // console.log(w);
 
                 if (w) {
                     where += `AND (${w})`;
@@ -1833,13 +1833,13 @@ export class BookingService {
         }
         if (booking_status?.length) {
             if (typeof booking_status != "object") {
-                console.log(booking_status);
+                // console.log(booking_status);
 
                 let w = await BookingStatusUtility.filterCondition(
                     parseInt(booking_status),
                     "booking"
                 );
-                console.log(w);
+                // console.log(w);
 
                 if (w) {
                     where += `AND (${w})`;
@@ -1976,13 +1976,13 @@ export class BookingService {
 
         if (booking_status?.length) {
             if (typeof booking_status != "object") {
-                console.log(booking_status);
+                // console.log(booking_status);
 
                 let w = await BookingStatusUtility.filterCondition(
                     parseInt(booking_status),
                     "booking"
                 );
-                console.log(w);
+                // console.log(w);
 
                 if (w) {
                     where += `AND (${w})`;
@@ -2056,13 +2056,13 @@ export class BookingService {
 
         if (booking_status?.length) {
             if (typeof booking_status != "object") {
-                console.log(booking_status);
+                // console.log(booking_status);
 
                 let w = await BookingStatusUtility.filterCondition(
                     parseInt(booking_status),
                     "booking"
                 );
-                console.log(w);
+                // console.log(w);
 
                 if (w) {
                     where += `AND (${w})`;
@@ -2147,7 +2147,7 @@ export class BookingService {
             const result = await this.bookingRepository.getPredictiveBookingDdata();
             let todayPrice = [];
             let availableBookingId = [];
-            console.log(result.data.length);
+            // console.log(result.data.length);
 
             for await (const data of result.data) {
                 const bookingData = data.booking;
@@ -3186,7 +3186,7 @@ export class BookingService {
                 break;
         }
         const responce = {};
-        console.log(flightInfo);
+        // console.log(flightInfo);
 
         responce["oldProductPrice"] = parseFloat(booking.totalAmount);
         responce["newProductPrice"] = parseFloat(flightInfo[0].selling_price);
