@@ -1488,7 +1488,6 @@ export class BookingService {
     async getBookingDetail(bookingId: string) {
         try {
             let result = await this.bookingRepository.bookingDetail(bookingId);
-            console.log('gggggggggggggggggggggg',result)
             let paidAmount = 0;
             let remainAmount = 0;
 
