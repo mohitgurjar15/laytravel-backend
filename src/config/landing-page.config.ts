@@ -221,10 +221,10 @@ export const LANDING_PAGE = {
     ],
     deals: {
       flight: [
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
-        },
+        // {
+        //   from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
+        //   to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
+        // },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
           to: { "code": "PUJ", "name": "Punta Cana Intl.", "city": "Punta Cana", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "key": "P" }
