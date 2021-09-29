@@ -221,10 +221,10 @@ export const LANDING_PAGE = {
     ],
     deals: {
       flight: [
-        {
-          from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
-          to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
-        },
+        // {
+        //   from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
+        //   to: { "name": "La Union", "code": "POP", "city": "Puerto Plata", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/tampa.png" }
+        // },
         {
           from: { "code": "NYC", "name": "All Airports", "city": "New York", "country": "USA", "key": "N" },
           to: { "code": "PUJ", "name": "Punta Cana Intl.", "city": "Punta Cana", "country": "Dominican Republic", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/puntacana.png", "key": "P" }
@@ -358,7 +358,7 @@ export const LANDING_PAGE = {
           }
         },
         {
-          location: { "title": "Madrid, Spain", "city": "city", "city_id": "800039716", "state": "", "country": "Spain", "type": "city", "hotel_id": "", "lat": "40.4167", "long": "-3.7034", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Madrid"] }
+          location: { "title": "Madrid, Spain", "city": "Madrid", "city_id": "800039716", "state": "", "country": "Spain", "type": "city", "hotel_id": "", "lat": "40.4167", "long": "-3.7034", "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/cancun.png", "city_names": ["Madrid"] }
         },
 
       ],
@@ -390,7 +390,7 @@ export const LANDING_PAGE = {
       monthly: { applicable: false, visibilty: 'gray_out' }
     },
     down_payment_options: {
-      0: { applicable: true, visibilty: 'yes', amount: 8.99 },
+      0: { applicable: true, visibilty: 'yes', amount: 9.99 },
       1: { applicable: false, visibilty: 'none', amount: 0 },
       2: { applicable: false, visibilty: 'none', amount: 0 }
     },
