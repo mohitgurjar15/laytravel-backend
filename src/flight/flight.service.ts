@@ -96,6 +96,7 @@ import { PKFare } from "./strategy/pkfare";
 import { resolve } from "path";
 import { DeduplicationFlight } from "src/utility/deduplication-flight.utility";
 import { FlightSearchResult, PriceRange, Route } from "./model/route.model";
+import { Supplier } from "src/entity/supplier.entity";
 
 @Injectable()
 export class FlightService {
@@ -366,20 +367,51 @@ export class FlightService {
             user.user_id = searchFlightDto.user_id;
             user.roleId = Role.FREE_USER;
         }
+        const flightStatus = await getConnection()
+        .createQueryBuilder()
+        .select([
+            "supplier.moduleId",
+            "supplier.name",
+            "supplier.status",
+        ])
+        .from(Supplier, "supplier")
+        .where("supplier.moduleId = :moduleId", { moduleId: 1 })
+        .getMany();
+
+        let mystiflyStatus;
+        let pkfareStatus;
+        for(let i = 0; i < flightStatus.length; i++ ) {
+            if(flightStatus[i].name == "mystifly"){
+                mystiflyStatus = flightStatus[i];
+            } else if(flightStatus[i].name == "pkfare") {
+                pkfareStatus = flightStatus[i];
+            }
+        }
 
         await this.validateHeaders(headers);
-        const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
         
-        const result = new Promise((resolve) =>
-            resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
-        );
+        let results=[];
+        if(mystiflyStatus.status == true){
+            const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
 
-        const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+            const result = new Promise((resolve) =>
+                resolve(mystifly.oneWaySearch(searchFlightDto, user, referralId))
+            );
+            results.push(result);
+        }
+
+
+        if(pkfareStatus.status == true){
+            const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+            
+            const pkfareResult = new Promise((resolve) =>
+                resolve(pkfare.oneWaySearch(searchFlightDto, user, referralId))
+            )
+            results.push(pkfareResult)
+        }
         
-        const pkfareResult = new Promise((resolve) =>
-            resolve(pkfare.oneWaySearch(searchFlightDto, user, referralId))
-        )
-        let allResult = await Promise.all([pkfareResult,result]);
+
+        let allResult = await Promise.all(results);
 
         let deduplicationRes = await DeduplicationFlight.onewayDeduplicationFilter(allResult);
         

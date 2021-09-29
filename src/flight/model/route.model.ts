@@ -75,6 +75,7 @@ export class Route {
     payment_config?:any
     payment_object?:any
     supplier:string;
+    route_codes?: {};
 }
 
 export class RouteType {

@@ -197,7 +197,7 @@ export class PKFare implements StrategyAirline {
                         flightSegmentDetails = results.data.segments.filter(item => item.segmentId == segmentId)
                         
                         if(flightSegmentDetails) {
-                            totalDuration += flightSegmentDetails[0].flightTime;
+                            totalDuration += flightSegmentDetails[0].flightTime * 60;
                             stop = new Stop();
                             
                             stop.departure_code = flightSegmentDetails[0].departure;
@@ -225,7 +225,7 @@ export class PKFare implements StrategyAirline {
                                         : {};
                             stop.eticket = true; // please check this
                             stop.flight_number = flightSegmentDetails[0].flightNum;
-                            stop.cabin_class = flightSegmentDetails[0].cabinClass == "ECONOMY" ? "Economy" : flightSegmentDetails[0].cabinClass
+                            stop.cabin_class = Generic.generateTitleCase(flightSegmentDetails[0].cabinClass)
                             stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                 flightSegmentDetails[0].flightTime * 60
                             );
@@ -769,7 +769,7 @@ export class PKFare implements StrategyAirline {
                             flightSegmentDetails = results.data.segments.filter(item => item.segmentId == flightSegments[x])
                             if(flightSegmentDetails) {
                                 stop = new Stop();
-                                totalDuration += flightSegmentDetails[0].flightTime;
+                                totalDuration += flightSegmentDetails[0].flightTime * 60;
                                 
                                 stop.departure_code = flightSegmentDetails[0].departure;
                                 
@@ -798,7 +798,7 @@ export class PKFare implements StrategyAirline {
                                     : {};
                                 stop.eticket = true; // please check this
                                 stop.flight_number = flightSegmentDetails[0].flightNum;
-                                stop.cabin_class = flightSegmentDetails[0].cabinClass
+                                stop.cabin_class = Generic.generateTitleCase(flightSegmentDetails[0].cabinClass);
                                 stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                     flightSegmentDetails[0].flightTime * 60
                                 );
@@ -891,7 +891,7 @@ export class PKFare implements StrategyAirline {
                             if(flightSegmentDetails) {
                                 stop = new Stop();
                                 
-                                inTotalDuration += flightSegmentDetails[0].flightTime;
+                                inTotalDuration += flightSegmentDetails[0].flightTime * 60;
                                 
                                 stop.departure_code = flightSegmentDetails[0].departure;
                                 
@@ -920,7 +920,7 @@ export class PKFare implements StrategyAirline {
                                 
                                 stop.eticket = true; // please check this
                                 stop.flight_number = flightSegmentDetails[0].flightNum;
-                                stop.cabin_class = flightSegmentDetails[0].cabinClass
+                                stop.cabin_class = Generic.generateTitleCase(flightSegmentDetails[0].cabinClass);
                                 stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                     flightSegmentDetails[0].flightTime * 60
                                 );
@@ -1081,6 +1081,8 @@ export class PKFare implements StrategyAirline {
                                             instalmentDetails.instalment_date[1].instalment_amount;
                                         route.no_of_weekly_installment =
                                             instalmentDetails.instalment_date.length - 1;
+                                    } else{
+                                        paymentConfig.isWeeklyInstallmentAvailable=false;
                                     }
         
                                 }
@@ -1094,12 +1096,17 @@ export class PKFare implements StrategyAirline {
                                         paymentConfig.isDownPaymentInPercentage
                                     );
                                     
-                                    route.second_down_payment =
+                                    if (instalmentDetails2.instalment_available) {
+                                        route.second_down_payment =
                                         instalmentDetails2.instalment_date[0].instalment_amount;
-                                    route.secondary_start_price_2 =
+                                        route.secondary_start_price_2 =
                                         instalmentDetails2.instalment_date[1].instalment_amount;
-                                    route.no_of_weekly_installment_2 =
+                                        route.no_of_weekly_installment_2 =
                                         instalmentDetails2.instalment_date.length - 1;
+                                    }else{
+                                        paymentConfig.isBiWeeklyInstallmentAvailable=false;
+                                    }
+                                    
                                 }
         
         
@@ -1111,13 +1118,17 @@ export class PKFare implements StrategyAirline {
                                         downPaymentOption[0],
                                         paymentConfig.isDownPaymentInPercentage
                                     );
-                                    
-                                    route.third_down_payment =
+                                    if(instalmentDetails3.instalment_available){
+                                        route.third_down_payment =
                                         instalmentDetails3.instalment_date[0].instalment_amount;
-                                    route.secondary_start_price_3 =
+                                        route.secondary_start_price_3 =
                                         instalmentDetails3.instalment_date[1].instalment_amount;
-                                    route.no_of_weekly_installment_3 =
+                                        route.no_of_weekly_installment_3 =
                                         instalmentDetails3.instalment_date.length - 1;
+                                    } else{
+                                        paymentConfig.isMonthlyInstallmentAvailable=false;
+                                    }
+                                    
                                 }
         
                                 discountedInstalmentDetails =await Instalment.weeklyInstalment(
@@ -1385,21 +1396,20 @@ export class PKFare implements StrategyAirline {
                 outboundJourney = [];
                 inboundJourney = [];
                 outBoundflightSegments = flightRoutes.journeys.journey_0;
-                // console.log("outBoundflightSegments", outBoundflightSegments)
+                
                 outboundFlightDetails = results.data.flights.filter(item => item.flightId == outBoundflightSegments);
-                // console.log("outbound", outboundFlightDetails)
-                console.log("I'm in 1")
+                
                 if(outboundFlightDetails) {
                     flightSegments = outboundFlightDetails[0].segmentIds
-                    console.log("I'm in 2")
+                    
                     for(let x = 0; x < flightSegments.length; x++) {
-                        console.log("I'm in 3")
+                        
                         flightSegmentDetails = results.data.segments.filter(item => item.segmentId == flightSegments[x])
                         if(flightSegmentDetails) {
-                            console.log("I'm in 4")          
+                                      
                             stop = new Stop();
-                            totalDuration += flightSegmentDetails[0].flightTime;
-                            
+                            totalDuration += flightSegmentDetails[0].flightTime * 60;
+                            console.log("Total Duration up", totalDuration)
                             stop.departure_code = flightSegmentDetails[0].departure;
                             
                             stop.departure_date = moment(flightSegmentDetails[0].departureDate).format("DD/MM/YYYY");
@@ -1427,7 +1437,7 @@ export class PKFare implements StrategyAirline {
                                 : {};
                             stop.eticket = true; // please check this
                             stop.flight_number = flightSegmentDetails[0].flightNum;
-                            stop.cabin_class = flightSegmentDetails[0].cabinClass == "ECONOMY" ? "Economy" : flightSegmentDetails[0].cabinClass
+                            stop.cabin_class = Generic.generateTitleCase(flightSegmentDetails[0].cabinClass)
                             stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                                 flightSegmentDetails[0].flightTime * 60
                             );
@@ -1458,11 +1468,13 @@ export class PKFare implements StrategyAirline {
                                             "seconds"
                                         )
                                     );
+                                
                                 totalDuration +=  
                                     moment(stop.departure_date_time).diff(
                                         stops[stops.length - 1].arrival_date_time,
                                         "seconds"
                                     );
+                                
                                 stop.layover_duration = `${layOverduration.hours}h ${layOverduration.minutes}m`;
                                 stop.layover_airport_name = flightSegmentDetails[0].departure;
 
@@ -1486,7 +1498,7 @@ export class PKFare implements StrategyAirline {
                             stops.push(stop);
                         }
                     }
-                    console.log("I'm in 5")
+                    
                     routeType = new RouteType();
                     routeType.type = "outbound";
                     routeType.stops = stops;
@@ -1494,7 +1506,7 @@ export class PKFare implements StrategyAirline {
                     let outBoundDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         totalDuration
                     );
-                    
+
                     routeType.duration = `${outBoundDuration.hours}h ${outBoundDuration.minutes}m`;
                     route.routes[0] = routeType;
                     route.is_passport_required = null; //
@@ -1504,23 +1516,23 @@ export class PKFare implements StrategyAirline {
                     route.arrival_code = stops[stops.length - 1].arrival_code;
                 }
                 if(flightRoutes.journeys.journey_1 != undefined) {
-                    console.log("I'm in 6")
+                    
                     stops = [];
                     inBoundflightSegments = flightRoutes.journeys.journey_1;
                     inboundFlightDetails = results.data.flights.filter(item => item.flightId == inBoundflightSegments);
 
                     if(inboundFlightDetails) {
-                        console.log("I'm in 7")
+                        
                         flightSegments = inboundFlightDetails[0].segmengtIds
                         
                         for(let x = 0; x < flightSegments.length; x++) {
-                            console.log("I'm in 8")
+                            
                             flightSegmentDetails = results.data.segments.filter(item => item.segmentId == flightSegments[x])
                             if(flightSegmentDetails) {
-                                console.log("I'm in 9")
+                                
                                 stop = new Stop();
                                 
-                                inTotalDuration += flightSegmentDetails[0].flightTime;
+                                inTotalDuration += flightSegmentDetails[0].flightTime * 60;
                                 
                                 stop.departure_code = flightSegmentDetails[0].departure;
                                 
@@ -1607,7 +1619,7 @@ export class PKFare implements StrategyAirline {
                                 stops.push(stop);
                             }
                         }
-                        console.log("I'm in 10")
+                        
                         routeType = new RouteType();
                         routeType.type = "inbound";
                         routeType.stops = stops;
@@ -1621,7 +1633,7 @@ export class PKFare implements StrategyAirline {
                         
                     }
                 }
-                console.log("I'm in 11")
+                
                 let markup = await this.getMarkupDetails(
                     moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
@@ -1640,7 +1652,7 @@ export class PKFare implements StrategyAirline {
                     );
                 }
 
-                console.log("I'm in 13")
+                
                 route.route_code = route_code; // i used it from requestBody;
                 route.fare_type = "" // discussion needed
                 // route.arrival_code = stops[stops.length - 1].arrival_code;
@@ -1667,7 +1679,7 @@ export class PKFare implements StrategyAirline {
                     route.arrival_code
                 );
 
-                console.log("I'm in 14")
+                
                 let searchData = {
                     departure: route.departure_code, arrival: route.arrival_code, checkInDate: moment(stops[0].departure_date, "DD/MM/YYYY").format(
                         "YYYY-MM-DD"
@@ -1687,7 +1699,7 @@ export class PKFare implements StrategyAirline {
                     categoryId?: undefined;
                 }
 
-                console.log("I'm in 15")
+                
                 let instalmentEligibilityIndex = `${searchData.departure}-${searchData.arrival}`
                 if (typeof instalmentEligibilityCase[instalmentEligibilityIndex] != "undefined") {
                     instalmentEligibility = instalmentEligibilityCase[instalmentEligibilityIndex]
@@ -1704,8 +1716,6 @@ export class PKFare implements StrategyAirline {
                     "YYYY-MM-DD"
                 )
                 let daysUtilDepature = moment(departure_date).diff(moment().format("YYYY-MM-DD"), 'days')
-
-                console.log("I'm in 16")
                 let configCaseIndex = `${instalmentEligibility.categoryId}-${daysUtilDepature}`
                 let paymentConfig: PaymentConfiguration
 
@@ -1820,7 +1830,6 @@ export class PKFare implements StrategyAirline {
                     }
                 }
 
-                console.log("I'm in 17")
                 if (offerData.applicable) {
                     instalmentEligibility.available = true
                     route.payment_object = {
@@ -1892,14 +1901,15 @@ export class PKFare implements StrategyAirline {
                 route.instalment_details = instalmentDetails;
                 route.stop_count = stops.length - 1;
 
-                console.log("I'm in 18")
                 route.arrival_date = stops[stops.length - 1].arrival_date;
                 route.arrival_time = stops[stops.length - 1].arrival_time;
                 let duration = DateTime.convertSecondsToHourMinutesSeconds(
                     totalDuration
                 );
+                console.log("Total Duration down", totalDuration);
+                console.log("duration", duration)
 
-                route.total_duration = `${totalDuration.hours}h ${totalDuration.minutes}m`;
+                route.total_duration = `${duration.hours}h ${duration.minutes}m`;
                 route.airline = stops[0].airline;
                 route.airline_name = airlines[stops[0].airline];
                 route.airline_logo = `${s3BucketUrl}/assets/images/airline/108x92/${stops[0].airline}.png`;
@@ -1907,7 +1917,7 @@ export class PKFare implements StrategyAirline {
                 route.fare_break_dwon = [];
                 route.unique_code = md5(uniqueCode);
                 route.offer_data = offerData;
-                console.log("I'm in 19")
+                
                 const [caegory] = await getConnection().query(`select 
                     (select name from laytrip_category where id = flight_route.category_id)as categoryName 
                     from flight_route 
@@ -1918,19 +1928,12 @@ export class PKFare implements StrategyAirline {
                 route.log_file = logFile
                 route.markUpDetails = JSON.stringify(markUpDetails)
                 route.supplier = "pkfare";
-                // console.log("ROUTE", route)
                 routes.push(route);
-            // }
-            // console.log("routes", routes)
-            // console.log("route", route)
-            return routes
-            // console.log("flightRoutes.journeys.journey_1",flightRoutes.journeys.journey_1)
-            
 
+            return routes
         } else {
             throw new NotFoundException(`Flight is not available now. Log File : ${logFile}`);
         }
-        // return results;
     }
 
     async bookFlight(

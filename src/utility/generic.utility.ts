@@ -444,4 +444,14 @@ export class Generic {
         });
         return timeSlots;
     }
+
+    static generateTitleCase(str) {
+        
+        var strAr = str.toLowerCase().split(' ');
+        for (var i = 0; i < strAr.length; i++) {
+            strAr[i] = strAr[i].charAt(0).toUpperCase() + strAr[i].slice(1);
+        }
+        return strAr.join(' ');
+    
+    }
 }
