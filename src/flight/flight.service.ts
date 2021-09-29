@@ -413,7 +413,7 @@ export class FlightService {
 
         let allResult = await Promise.all(results);
 
-        let deduplicationRes = await DeduplicationFlight.onewayDeduplicationFilter(allResult);
+        let deduplicationRes = await DeduplicationFlight.deduplicationFilter(allResult);
         
         let flightSearchResult = new FlightSearchResult();
         
@@ -1724,26 +1724,137 @@ export class FlightService {
             user.user_id = searchFlightDto.user_id;
             user.roleId = Role.FREE_USER;
         }
+
+        const [caegory] = await getConnection().query(`select 
+        (select name from laytrip_category where id = flight_route.category_id)as categoryname 
+        from flight_route 
+        where from_airport_code  = '${searchFlightDto.source_location}' and to_airport_code = '${searchFlightDto.destination_location}' and is_deleted=false`);
+        let categoryName = caegory?.categoryname;
+
+        const flightStatus = await getConnection()
+        .createQueryBuilder()
+        .select([
+            "supplier.moduleId",
+            "supplier.name",
+            "supplier.status",
+        ])
+        .from(Supplier, "supplier")
+        .where("supplier.moduleId = :moduleId", { moduleId: 1 })
+        .getMany();
+
+        let mystiflyStatus;
+        let pkfareStatus;
+        for(let i = 0; i < flightStatus.length; i++ ) {
+            if(flightStatus[i].name == "mystifly"){
+                mystiflyStatus = flightStatus[i];
+            } else if(flightStatus[i].name == "pkfare") {
+                pkfareStatus = flightStatus[i];
+            }
+        }
+        // mystiflyStatus.status = false
+        // pkfareStatus.status = false
         await this.validateHeaders(headers);
-        // const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-        // const result = new Promise((resolve) =>
-        //     resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
+        let results=[];
+        if(mystiflyStatus.status == true){
+            const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
+            const result = new Promise((resolve) =>
+                resolve(mystifly.roundTripSearch(searchFlightDto, user, referralId))
+            );
+            results.push(result);
+        }
+        
+        console.log("---MYSTIFLY FINISH---")
+        if(pkfareStatus.status == true){
+            
+            const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
+            
+            const pkfareResult = new Promise((resolve) =>
+                resolve(pkfare.roundTripSearch(searchFlightDto, user, referralId))
+            );
+            results.push(pkfareResult)
+        }
+
+        console.log("---PKFARE FINISH---")
+        let allResult = await Promise.all(results);
+        console.log("=====All Result====        ")
+        let deduplicationRes = await DeduplicationFlight.deduplicationFilter(allResult);
+
+        console.log("---DEDUPLICATION FINISH---")
+        let flightSearchResult = new FlightSearchResult();
+        flightSearchResult.items = deduplicationRes;
+
+        //Get min & max selling price
+        let priceRange = new PriceRange();
+        let priceType = "discounted_selling_price";
+        priceRange.min_price = Generic.getMinPriceFlight(deduplicationRes, priceType);
+        priceRange.max_price = Generic.getMaxPriceFLight(deduplicationRes, priceType);
+        flightSearchResult.price_range = priceRange;
+
+        //Get min & max partail payment price
+        let partialPaymentPriceRange = new PriceRange();
+        priceType = "discounted_secondary_start_price";
+        partialPaymentPriceRange.min_price = Generic.getMinPriceFlight(
+            deduplicationRes,
+            priceType
+        );
+        partialPaymentPriceRange.max_price = Generic.getMaxPriceFLight(
+            deduplicationRes,
+            priceType
+        );
+        flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
+        //return flightSearchResult;
+
+        //Get Stops count and minprice
+        flightSearchResult.stop_data = Generic.getStopCounts(
+            deduplicationRes,
+            "stop_count"
+        );
+
+        //Get Stops count and minprice
+        flightSearchResult.inbound_stop_data = Generic.getStopCounts(
+            deduplicationRes,
+            "inbound_stop_count"
+        );
+
+        //Get airline and min price
+        flightSearchResult.airline_list = Generic.getAirlineCounts(deduplicationRes);
+
+        //Get outbound Departure time slot
+        flightSearchResult.depature_time_slot = Generic.getArrivalDepartureTimeSlot(
+            deduplicationRes,
+            "departure_time",
+            0
+        );
+        //Get outbound Arrival time slot
+        flightSearchResult.arrival_time_slot = Generic.getArrivalDepartureTimeSlot(
+            deduplicationRes,
+            "arrival_time",
+            0
+        );
+
+        //Get inbound Departure time slot
+        flightSearchResult.inbound_depature_time_slot = Generic.getArrivalDepartureTimeSlot(
+            deduplicationRes,
+            "departure_time",
+            1
+        );
+        //Get inbound Arrival time slot
+        flightSearchResult.inbound_arrival_time_slot = Generic.getArrivalDepartureTimeSlot(
+            deduplicationRes,
+            "arrival_time",
+            1
+        );
+
+        flightSearchResult.category_name = categoryName;
+        return flightSearchResult;
+        // Activity.addSearchLog(
+        //     ModulesName.FLIGHT,
+        //     searchFlightDto,
+        //     user.user_id,   
+        //     userIp
         // );
-
-        const pkfare = new Strategy(new PKFare(headers, this.cacheManager));
-        const pkfareResult = new Promise((resolve) =>
-            resolve(pkfare.roundTripSearch(searchFlightDto, user, referralId))
-        );
-
-        Activity.addSearchLog(
-            ModulesName.FLIGHT,
-            searchFlightDto,
-            user.user_id,
-            userIp
-        );
-
-        // return result;
-        return pkfareResult
+        // console.log("---COMPLETE---")
+        // return flightSearchResult;
     }
 
     async airRevalidate(routeIdDto, headers, user, referralId) {

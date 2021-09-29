@@ -4568,76 +4568,77 @@ export class Mystifly implements StrategyAirline {
                     //         routes.push(route);
                     //     }
                     // }
+                    route.supplier = "mystifly";
                     routes.push(route);
                 }
             }
-            //return routes;
-            let flightSearchResult = new FlightSearchResult();
-            flightSearchResult.items = routes;
+            return routes;
+            // let flightSearchResult = new FlightSearchResult();
+            // flightSearchResult.items = routes;
 
-            //Get min & max selling price
-            let priceRange = new PriceRange();
-            let priceType = "discounted_selling_price";
-            priceRange.min_price = this.getMinPrice(routes, priceType);
-            priceRange.max_price = this.getMaxPrice(routes, priceType);
-            flightSearchResult.price_range = priceRange;
+            // //Get min & max selling price
+            // let priceRange = new PriceRange();
+            // let priceType = "discounted_selling_price";
+            // priceRange.min_price = this.getMinPrice(routes, priceType);
+            // priceRange.max_price = this.getMaxPrice(routes, priceType);
+            // flightSearchResult.price_range = priceRange;
 
-            //Get min & max partail payment price
-            let partialPaymentPriceRange = new PriceRange();
-            priceType = "discounted_secondary_start_price";
-            partialPaymentPriceRange.min_price = this.getMinPrice(
-                routes,
-                priceType
-            );
-            partialPaymentPriceRange.max_price = this.getMaxPrice(
-                routes,
-                priceType
-            );
-            flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
-            //return flightSearchResult;
+            // //Get min & max partail payment price
+            // let partialPaymentPriceRange = new PriceRange();
+            // priceType = "discounted_secondary_start_price";
+            // partialPaymentPriceRange.min_price = this.getMinPrice(
+            //     routes,
+            //     priceType
+            // );
+            // partialPaymentPriceRange.max_price = this.getMaxPrice(
+            //     routes,
+            //     priceType
+            // );
+            // flightSearchResult.partial_payment_price_range = partialPaymentPriceRange;
+            // //return flightSearchResult;
 
-            //Get Stops count and minprice
-            flightSearchResult.stop_data = this.getStopCounts(
-                routes,
-                "stop_count"
-            );
+            // //Get Stops count and minprice
+            // flightSearchResult.stop_data = this.getStopCounts(
+            //     routes,
+            //     "stop_count"
+            // );
 
-            //Get Stops count and minprice
-            flightSearchResult.inbound_stop_data = this.getStopCounts(
-                routes,
-                "inbound_stop_count"
-            );
+            // //Get Stops count and minprice
+            // flightSearchResult.inbound_stop_data = this.getStopCounts(
+            //     routes,
+            //     "inbound_stop_count"
+            // );
 
-            //Get airline and min price
-            flightSearchResult.airline_list = this.getAirlineCounts(routes);
+            // //Get airline and min price
+            // flightSearchResult.airline_list = this.getAirlineCounts(routes);
 
-            //Get outbound Departure time slot
-            flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(
-                routes,
-                "departure_time",
-                0
-            );
-            //Get outbound Arrival time slot
-            flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(
-                routes,
-                "arrival_time",
-                0
-            );
+            // //Get outbound Departure time slot
+            // flightSearchResult.depature_time_slot = this.getArrivalDepartureTimeSlot(
+            //     routes,
+            //     "departure_time",
+            //     0
+            // );
+            // //Get outbound Arrival time slot
+            // flightSearchResult.arrival_time_slot = this.getArrivalDepartureTimeSlot(
+            //     routes,
+            //     "arrival_time",
+            //     0
+            // );
 
-            //Get inbound Departure time slot
-            flightSearchResult.inbound_depature_time_slot = this.getArrivalDepartureTimeSlot(
-                routes,
-                "departure_time",
-                1
-            );
-            //Get inbound Arrival time slot
-            flightSearchResult.inbound_arrival_time_slot = this.getArrivalDepartureTimeSlot(
-                routes,
-                "arrival_time",
-                1
-            );
-            flightSearchResult.category_name = categoryName;
-            return flightSearchResult;
+            // //Get inbound Departure time slot
+            // flightSearchResult.inbound_depature_time_slot = this.getArrivalDepartureTimeSlot(
+            //     routes,
+            //     "departure_time",
+            //     1
+            // );
+            // //Get inbound Arrival time slot
+            // flightSearchResult.inbound_arrival_time_slot = this.getArrivalDepartureTimeSlot(
+            //     routes,
+            //     "arrival_time",
+            //     1
+            // );
+            // flightSearchResult.category_name = categoryName;
+            // return flightSearchResult;
         } else {
             throw new NotFoundException(`No flight founds`);
         }
