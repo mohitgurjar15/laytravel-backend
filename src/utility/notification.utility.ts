@@ -187,16 +187,22 @@ export class NotificationAlertUtility {
 
         console.log("booking id", bookingData.laytripBookingId);
         console.log("valuation", valuations);
+        console.log('--------------------valuations-----------------------------',valuations &&
+        typeof valuations["amount"] != "undefined" &&
+        typeof valuations["amount"][bookingData.laytripBookingId] !=
+        "undefined")
         if (
             valuations &&
             typeof valuations["amount"] != "undefined" &&
             typeof valuations["amount"][bookingData.laytripBookingId] !=
             "undefined"
         ) {
+            console.log('********************totalRecivedFromCustomer*************************',param.totalRecivedFromCustomer)
             param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
                 valuations["amount"][bookingData.laytripBookingId] || 0
             );
         } else {
+            console.log('**********other**********totalRecivedFromCustomer*************************',param.totalRecivedFromCustomer)
             param.totalRecivedFromCustomer = 0;
         }
 

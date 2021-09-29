@@ -52,7 +52,7 @@ export class Generic {
         return result;
     }
 
-    static formatPriceDecimal(price: number) {
+    static formatPriceDecimal(price) {
 
         if (typeof price != 'number'){
             price = parseFloat(price);

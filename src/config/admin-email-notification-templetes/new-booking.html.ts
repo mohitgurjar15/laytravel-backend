@@ -2,6 +2,7 @@ import { EmailNotificationModel } from "../email_template/model/notification.mod
 import { notificationHeader } from "./notification-header.html";
 import { notificationFooter } from "./notification-footer.html";
 import { bookingDetailUrl, NewEmailAssets } from "../base-url";
+import { Generic } from "src/utility/generic.utility";
 
 export async function AdminNewBookingMail(param: EmailNotificationModel) {
 let content = `
@@ -46,7 +47,7 @@ let content = `
                     Sale Price to Customer at Booking:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.sellingPrice}</td>
+                   ${param.currencySymbol}${Generic.formatPriceDecimal(param.sellingPrice)}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -54,7 +55,7 @@ let content = `
                     Supplier Cost at Customer Booking:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.netRate} </td>
+                   ${param.currencySymbol}${Generic.formatPriceDecimal(param.netRate)} </td>
             </tr>
             <tr>
                 <td align="left" valign="top"
@@ -62,7 +63,7 @@ let content = `
                     Supplier Cost Today:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.todayNetPrice} (${
+                   ${param.currencySymbol}${Generic.formatPriceDecimal(param.todayNetPrice)} (${
     param.todayNetpriceVarient
 }% <img src="${
     param.todayNetpriceVarient > 0
@@ -76,7 +77,7 @@ let content = `
                     Total Received from Customer:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.totalRecivedFromCustomer} (${
+                   ${param.currencySymbol}${Generic.formatPriceDecimal(param.totalRecivedFromCustomer)} (${
     param.totalRecivedFromCustomerPercentage
 }%)</td>
             </tr>

@@ -273,7 +273,7 @@ export class BookingRepository extends Repository<Booking> {
 
         
         data.sort(function (a, b) { return new Date(a.bookingDate) > new Date(b.bookingDate) ? -1:1 });
-        
+        console.log('************************data************************',data)
         return { data: data, total_count: count };
     }
 
