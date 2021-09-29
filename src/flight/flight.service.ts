@@ -595,7 +595,7 @@ export class FlightService {
         if (!DepatureDateData.message) {
             for await (const flightData of DepatureDateData.items) {
                 if (unique_token == flightData.unique_code) {
-                    console.log(flightData);
+                    // console.log(flightData);
                     const markupValue = await this.getValueWithPreductionPercentage(
                         flightData.net_rate
                     );
@@ -799,7 +799,7 @@ export class FlightService {
 
         } else {
             var count = 0
-            console.log(dayDiffrence)
+            // console.log(dayDiffrence)
             if (dayDiffrence <= 2) {
                 count = 0
             }
@@ -813,13 +813,13 @@ export class FlightService {
                     count = 3
                 }
             var nextCount = 7
-            console.log('nextCount', nextCount)
-            console.log('count', count)
+            // console.log('nextCount', nextCount)
+            // console.log('count', count)
             // var count = 4; 
             previousWeekDates.setDate(previousWeekDates.getDate() - count + 2);
             nextWeekDates.setDate(nextWeekDates.getDate() - count);
 
-            console.log('previousWeekDates'), previousWeekDates
+            // console.log('previousWeekDates'), previousWeekDates
 
 
 
@@ -870,8 +870,8 @@ export class FlightService {
                 nextdate = nextdate
                     .replace(/T/, " ") // replace T with a space
                     .replace(/\..+/, "");
-                console.log('nextdate', nextdate)
-                console.log("days", new Date(nextdate), moment().format('YYYY-MM-DD'), moment(nextdate).diff(moment().format('YYYY-MM-DD'), "days"))
+                // console.log('nextdate', nextdate)
+                // console.log("days", new Date(nextdate), moment().format('YYYY-MM-DD'), moment(nextdate).diff(moment().format('YYYY-MM-DD'), "days"))
                 if (
                     moment(new Date(nextdate)).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
                     2
@@ -979,7 +979,7 @@ export class FlightService {
                 // console.log(flightData.departure_date);
             }
         }
-        console.log(reqDates);
+        // console.log(reqDates);
 
         for await (const date of reqDates) {
             // let obj = returnResponce.find(o => function(o) {
@@ -1100,7 +1100,7 @@ export class FlightService {
                 .replace(/T/, " ") // replace T with a space
                 .replace(/\..+/, "");
             if (isRoundtrip && isRoundtrip == true) {
-                console.log(`Roundtrip`);
+                // console.log(`Roundtrip`);
                 let dto = {
                     source_location: source_location,
                     destination_location: destination_location,
@@ -1296,6 +1296,7 @@ export class FlightService {
             child_count,
             infant_count,
             arrival_date,
+            request_date
         } = serchFlightDto;
         const depatureDate = new Date(departure_date);
         const arivalDate = new Date(arrival_date);
@@ -1304,16 +1305,14 @@ export class FlightService {
             depatureDate,
             new Date()
         ); */
+        let reqDatess = []
         var dayDiffrence = moment(departure_date).diff(
             moment().format("YYYY-MM-DD"),
             "days"
         );
-        console.log('-=-=-=dayDiffrence=-=-=-', dayDiffrence)
+        // console.log('-=-=-=dayDiffrence=-=-=-', dayDiffrence)
         const dayDiff = dayDiffrence;
         dayDiffrence = dayDiffrence <= 3 ? dayDiffrence : 3;
-
-        // dayDiffrence = 3
-
         if (dayDiff <= 2) {
             count = 0
         }
@@ -1326,79 +1325,20 @@ export class FlightService {
             else if (dayDiff >= 5) {
                 count = 3
             }
-
-        var startDate = new Date(departure_date);
-        startDate.setDate(startDate.getDate() - count);
-
-        console.log('---===startDate===---', startDate);
-
-        var tourDiffrence = await this.getDifferenceInDays(
-            depatureDate,
-            arivalDate
-        );
-
-        //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
-        let afterDateDiffrence = 3;
-
-        //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
-        console.log("---dayDiff---", dayDiff);
-        if (dayDiff <= 2) {
-            afterDateDiffrence = 6;
-        }
-        if (dayDiff == 3) {
-            afterDateDiffrence = 5;
-        }
-
-        if (dayDiff == 4) {
-            afterDateDiffrence = 4;
-        }
-
-        if (dayDiff >= 5) {
-            afterDateDiffrence = 3;
-        }
-
-
-
-        console.log('---afterDateDiffrence---', afterDateDiffrence);
-        dayDiffrence = 3;
-        var endDate = new Date(departure_date);
-        console.log('-=-endDate-=-', endDate)
-        endDate.setDate(endDate.getDate() + afterDateDiffrence);
-        console.log(endDate);
-        var result = [];
-
-        var resultIndex = 0;
-
-        const depature = startDate;
-
-        var count = await this.getDifferenceInDays(startDate, endDate);
-        console.log('---count---', count)
-
-
-        //var count = 6
-
-        // if(dayDiff == 33){
-        //     count = 7
-        // }
-
-        // if(dayDiff == 32){
-        //     count = 8
-        // }
-
-        // if(dayDiff == 31){
-        //     count = 9
-        // }
-
         const mystiflyConfig = await new Promise((resolve) =>
             resolve(mystifly.getMystiflyCredential())
         );
-        console.log('---mystiflyConfig---', mystiflyConfig);
+        // console.log('---mystiflyConfig---', mystiflyConfig);
 
         const sessionToken = await new Promise((resolve) =>
             resolve(mystifly.startSession())
         );
-
-        console.log('---sessionToken---', sessionToken);
+        const currencyDetails = await Generic.getAmountTocurrency(
+            headers.currency
+        );
+        let reqDates = [];
+        let secondDate = [];
+        var result = [];
 
         let module = await getManager()
             .createQueryBuilder(Module, "module")
@@ -1409,62 +1349,162 @@ export class FlightService {
                 `Flight module is not configured in database&&&module&&&${errorMessage}`
             );
         }
-        let reqDates = [];
-        let secondDate = [];
-        const currencyDetails = await Generic.getAmountTocurrency(
-            headers.currency
-        );
+        let returnDate
+        // dayDiffrence = 3
 
-        for (let index = 0; index <= count; index++) {
-            if (
-                moment(depature).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
-                2
-            ) {
-                var beforeDateString = depature.toISOString().split("T")[0];
-                beforeDateString = beforeDateString
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-                console.log("Dept", depature, beforeDateString);
-
-                const arrival = new Date(depature);
-                arrival.setDate(depature.getDate() + tourDiffrence);
-                var afterDateString = arrival.toISOString().split("T")[0];
-                afterDateString = afterDateString
-                    .replace(/T/, " ") // replace T with a space
-                    .replace(/\..+/, "");
-                console.log("seatch dates", beforeDateString, afterDateString);
-                reqDates.push(beforeDateString);
-                secondDate.push(afterDateString);
-
-
-                let dto = {
-                    source_location: source_location,
-                    destination_location: destination_location,
-                    departure_date: beforeDateString,
-                    arrival_date: afterDateString,
-                    flight_class: flight_class,
-                    adult_count: adult_count,
-                    child_count: child_count,
-                    infant_count: infant_count,
-                };
-
-                result[resultIndex] = new Promise((resolve) =>
-                    resolve(
-                        mystifly.roundTripSearchZipWithFilter(
-                            dto,
-                            user,
-                            mystiflyConfig,
-                            sessionToken,
-                            module,
-                            currencyDetails,
-                            refferalId
-                        )
+        if (request_date) {
+            var tourDiffrence = await this.getDifferenceInDays(
+                depatureDate,
+                arivalDate
+            );
+            reqDates.push(request_date);
+            let date = moment(request_date).add(tourDiffrence, 'days').toDate()
+            returnDate = moment(date).format('YYYY-MM-DD')
+            secondDate.push(returnDate)
+            let dto = {
+                source_location: source_location,
+                destination_location: destination_location,
+                departure_date: request_date,
+                arrival_date: returnDate,
+                flight_class: flight_class,
+                adult_count: adult_count,
+                child_count: child_count,
+                infant_count: infant_count,
+            };
+            result[0] = new Promise((resolve) =>
+                resolve(
+                    mystifly.roundTripSearchZipWithFilter(
+                        dto,
+                        user,
+                        mystiflyConfig,
+                        sessionToken,
+                        module,
+                        currencyDetails,
+                        refferalId
                     )
-                );
-                resultIndex++;
+                )
+            );
+        } else {
+
+            var startDate = new Date(departure_date);
+            startDate.setDate(startDate.getDate() - count);
+
+            // console.log('---===startDate===---', startDate);
+
+            var tourDiffrence = await this.getDifferenceInDays(
+                depatureDate,
+                arivalDate
+            );
+
+            //const afterDateDiffrence = tourDiffrence <= 3 ? tourDiffrence : 3;
+            let afterDateDiffrence = 3;
+
+            //afterDateDiffrence = dayDiff < 33 ? 6 : afterDateDiffrence;
+            // console.log("---dayDiff---", dayDiff);
+            if (dayDiff <= 2) {
+                afterDateDiffrence = 6;
             }
-            depature.setDate(depature.getDate() + 1);
+            if (dayDiff == 3) {
+                afterDateDiffrence = 5;
+            }
+
+            if (dayDiff == 4) {
+                afterDateDiffrence = 4;
+            }
+
+            if (dayDiff >= 5) {
+                afterDateDiffrence = 3;
+            }
+
+
+            dayDiffrence = 3;
+            var endDate = new Date(departure_date);
+            endDate.setDate(endDate.getDate() + afterDateDiffrence);
+            // console.log(endDate);
+
+
+            var resultIndex = 0;
+
+            const depature = startDate;
+
+            var count = await this.getDifferenceInDays(startDate, endDate);
+
+
+            //var count = 6
+
+            // if(dayDiff == 33){
+            //     count = 7
+            // }
+
+            // if(dayDiff == 32){
+            //     count = 8
+            // }
+
+            // if(dayDiff == 31){
+            //     count = 9
+            // }
+
+
+
+            // console.log('---sessionToken---', sessionToken);
+
+
+
+
+
+            for (let index = 0; index <= count; index++) {
+                if (
+                    moment(depature).diff(moment(new Date()).format('YYYY-MM-DD'), "days") >=
+                    2
+                ) {
+                    var beforeDateString = depature.toISOString().split("T")[0];
+                    beforeDateString = beforeDateString
+                        .replace(/T/, " ") // replace T with a space
+                        .replace(/\..+/, "");
+                    // console.log("Dept", depature, beforeDateString);
+
+                    const arrival = new Date(depature);
+                    arrival.setDate(depature.getDate() + tourDiffrence);
+                    var afterDateString = arrival.toISOString().split("T")[0];
+                    afterDateString = afterDateString
+                        .replace(/T/, " ") // replace T with a space
+                        .replace(/\..+/, "");
+                    // console.log("seatch dates", beforeDateString, afterDateString);
+                    // reqDates.push(beforeDateString);
+                    // console.log('reqDates',reqDates)
+                    // secondDate.push(afterDateString);
+
+
+                    let dto = {
+                        source_location: source_location,
+                        destination_location: destination_location,
+                        departure_date: beforeDateString,
+                        arrival_date: afterDateString,
+                        flight_class: flight_class,
+                        adult_count: adult_count,
+                        child_count: child_count,
+                        infant_count: infant_count,
+                    };
+
+                    result[resultIndex] = new Promise((resolve) =>
+                        resolve(
+                            mystifly.roundTripSearchZipWithFilter(
+                                dto,
+                                user,
+                                mystiflyConfig,
+                                sessionToken,
+                                module,
+                                currencyDetails,
+                                refferalId
+                            )
+                        )
+                    );
+                    resultIndex++;
+                }
+                depature.setDate(depature.getDate() + 1);
+            }
         }
+
 
         const response = await Promise.all(result);
 
@@ -1543,6 +1583,7 @@ export class FlightService {
 
 
         for await (const date of reqDates) {
+            // console.log('date',date)
             let obj = 0;
 
             for await (const o of returnResponce) {
@@ -1558,10 +1599,13 @@ export class FlightService {
 
             date1 = `${date1[2]}/${date1[1]}/${date1[0]}`;
             let arrivalofDate = secondDate[reqDates.indexOf(date)];
-            let date2 = arrivalofDate.split("-");
-            date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
-
-
+            let date2;
+            if (request_date) {
+                date2 = returnDate
+            } else {
+                date2 = arrivalofDate.split("-");
+                date2 = `${date2[2]}/${date2[1]}/${date2[0]}`;
+            }
 
             if (obj == 0) {
 
@@ -1576,6 +1620,7 @@ export class FlightService {
                     isPriceInInstallment: false,
                     selling_price: 0
                 };
+                console.log()
                 returnResponce.push(output);
             }
         }
@@ -2409,7 +2454,7 @@ export class FlightService {
 
         let currencyId = headerDetails.currency.id;
         const userId = user.user_id;
-        console.log(`step - 2 call booking`);
+        // console.log(`step - 2 call booking`);
         const bookingResult = await mystifly.bookFlight(
             bookFlightDto,
             travelersDetails,
@@ -2420,7 +2465,7 @@ export class FlightService {
 
         if (bookingResult.booking_status == "success") {
 
-            console.log(`step - 3 save Booking`, bookingResult);
+            // console.log(`step - 3 save Booking`, bookingResult);
 
             let laytripBookingResult = await this.partialyBookingSave(
                 {
@@ -2454,7 +2499,7 @@ export class FlightService {
             //console.log(laytripBookingResult);
 
             //send email here
-            console.log(`step - 4 mail`);
+            // console.log(`step - 4 mail`);
             // this.sendBookingEmail(laytripBookingResult.laytripBookingId);
             // bookingResult.laytrip_booking_id = laytripBookingResult.id;
             // bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
@@ -2524,43 +2569,43 @@ export class FlightService {
 
         // primaryTraveler.save();
 
-        let i=0;
+        let i = 0;
         for await (var item of travelers) {
-                let userData = item.traveler;
-                
-                var birthDate = new Date(userData.dob);
-                var age = moment(new Date()).diff(moment(birthDate), "years");
+            let userData = item.traveler;
 
-                var user_type = "";
-                if (age < 2) {
-                    user_type = "infant";
-                } else if (age < 12) {
-                    user_type = "child";
-                } else {
-                    user_type = "adult";
-                }
-                const travelerInfo: TravelerInfoModel = {
-                    firstName: userData.firstName,
-                    passportExpiry: userData.passportExpiry || "",
-                    passportNumber: userData.passportNumber || "",
-                    lastName: userData.lastName || "",
-                    email: userData.email || "",
-                    phoneNo: userData.phoneNo || "",
-                    countryCode: userData.countryCode || "",
-                    dob: userData.dob,
-                    countryId: userData.countryId,
-                    gender: userData.gender,
-                    age: age,
-                    user_type: user_type,
-                };
-                var travelerUser = new TravelerInfo();
-                travelerUser.bookingId = bookingId;
-                //travelerUser.userId = travelerId;
-                travelerUser.isPrimary = userData.is_primary_traveler;
-                travelerUser.roleId = Role.TRAVELER_USER;
-                travelerUser.travelerInfo = travelerInfo;
-                await travelerUser.save();
-                i++;
+            var birthDate = new Date(userData.dob);
+            var age = moment(new Date()).diff(moment(birthDate), "years");
+
+            var user_type = "";
+            if (age < 2) {
+                user_type = "infant";
+            } else if (age < 12) {
+                user_type = "child";
+            } else {
+                user_type = "adult";
+            }
+            const travelerInfo: TravelerInfoModel = {
+                firstName: userData.firstName,
+                passportExpiry: userData.passportExpiry || "",
+                passportNumber: userData.passportNumber || "",
+                lastName: userData.lastName || "",
+                email: userData.email || "",
+                phoneNo: userData.phoneNo || "",
+                countryCode: userData.countryCode || "",
+                dob: userData.dob,
+                countryId: userData.countryId,
+                gender: userData.gender,
+                age: age,
+                user_type: user_type,
+            };
+            var travelerUser = new TravelerInfo();
+            travelerUser.bookingId = bookingId;
+            //travelerUser.userId = travelerId;
+            travelerUser.isPrimary = userData.is_primary_traveler;
+            travelerUser.roleId = Role.TRAVELER_USER;
+            travelerUser.travelerInfo = travelerInfo;
+            await travelerUser.save();
+            i++;
         }
     }
 
@@ -2598,10 +2643,10 @@ export class FlightService {
             children: [],
             infants: [],
         };
-        
+
         if (travelers.length > 0) {
             for (let item of travelers) {
-                let traveler=item.traveler;
+                let traveler = item.traveler;
                 let ageDiff = moment(new Date()).diff(
                     moment(traveler.dob),
                     "years"
@@ -3402,7 +3447,7 @@ export class FlightService {
 
                     const bookingId = bookingData.laytripBookingId;
 
-                    console.log(`step - 1 find booking`);
+                    // console.log(`step - 1 find booking`);
 
                     const query = await this.partiallyBookFlight(
                         bookingDto,
@@ -3482,7 +3527,7 @@ export class FlightService {
         let logData = {}
         try {
             let headerDetails = await this.validateHeaders(headers);
-            console.log("header validate");
+            // console.log("header validate");
             let {
                 travelers,
                 payment_type,
@@ -3506,7 +3551,7 @@ export class FlightService {
                 user,
                 cartIsPromotional == true ? referral_id : ''
             );
-            
+
 
             let isPassportRequired = false;
             let bookingRequestInfo: any = {};
@@ -3583,7 +3628,7 @@ export class FlightService {
                 travelers,
                 isPassportRequired
             );
-            
+
             let currencyId = headerDetails.currency.id;
             const userId = user.userId;
             if (adult_count != travelersDetails.adults.length) {
@@ -3661,7 +3706,7 @@ export class FlightService {
                 //save entry for future booking
 
                 let searchData = { departure: airRevalidateResult[0].departure_code, arrival: airRevalidateResult[0].arrival_code, checkInDate: departure_date }
-                let categoryData= await RouteCategory.checkInstalmentEligibility(
+                let categoryData = await RouteCategory.checkInstalmentEligibility(
                     searchData
                 );
 
@@ -3679,7 +3724,7 @@ export class FlightService {
                             custom_instalment_amount,
                             false,
                         );
-                        console.log(instalmentDetails)
+                        // console.log(instalmentDetails)
 
                     } else {
                         instalmentDetails = Instalment.weeklyInstalment(
@@ -3719,7 +3764,7 @@ export class FlightService {
                             firstInstalemntAmount - laycredit_points;
                     }
                     let bookingResult;
-                    console.log("====categoryData=====",categoryData)
+                    // console.log("====categoryData=====", categoryData)
                     if (categoryData.categoryName == 'Unclear') {
                         const mystifly = new Strategy(
                             new Mystifly(headers, this.cacheManager)
@@ -3731,7 +3776,7 @@ export class FlightService {
                         );
                     }
 
-                    console.log("req for save booking");
+                    // console.log("req for save booking");
                     let laytripBookingResult = await this.saveBooking(
                         bookingRequestInfo,
                         currencyId,
@@ -3747,7 +3792,7 @@ export class FlightService {
                         reservationId,
                         referral_id
                     );
-                    
+
                     return {
                         laytrip_booking_id: laytripBookingResult.id,
                         booking_status: "pending",
@@ -3782,7 +3827,7 @@ export class FlightService {
                         isPassportRequired
                     );
                     logData['supplier_side_booking_log'] = bookingResult['log_file']
-                    
+
                     if (bookingResult.booking_status == "success") {
                         let laytripBookingResult = await this.saveBooking(
                             bookingRequestInfo,
@@ -4024,7 +4069,7 @@ export class FlightService {
 
             if (airportObb[iterator.code]) {
                 if (iterator.child_id && airportObb[iterator.code].child.indexOf((a, b) => { a.id - b.id }) == -1) {
-                    console.log("Dome")
+                    // console.log("Dome")
                     let a = {
                         id: iterator.child_id,
                         name: iterator.child_name,
@@ -4090,7 +4135,6 @@ export class FlightService {
                 for (let j = 0; j < iterator.child.length; j++) {
                     const child = iterator.child[j];
                     let i = airportArray.findIndex(x => x.code == child.code)
-                    console.log()
                     if (i != -1 && i != index) {
                         airportArray.splice(i, 1);
                     }
@@ -4515,7 +4559,7 @@ export class FlightService {
                 (categoryData.status = true),
                 (categoryData.isDeleted = false);
 
-            console.log(categoryData);
+            // console.log(categoryData);
 
             await getConnection()
                 .createQueryBuilder()
