@@ -405,7 +405,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment["a:flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["a:cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["a:journeyduration"][0] * 60
@@ -1054,7 +1054,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment["flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["journeyduration"][0] * 60
@@ -1681,7 +1681,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment["flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["journeyduration"][0] * 60
@@ -1792,7 +1792,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment["flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["journeyduration"][0] * 60
@@ -2471,7 +2471,7 @@ export class Mystifly implements StrategyAirline {
                     stop.flight_number = flightSegment["flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["journeyduration"][0] * 60
@@ -3018,7 +3018,6 @@ console.log('------------------------come')
         });
 
         let jsonData: any = await Generic.xmlToJson(unCompressedData);
-
         if (jsonData.airlowfaresearchgziprs.success[0] == "true") {
             let paymentConfigCase = {}
             let instalmentEligibilityCase = {}
@@ -3097,9 +3096,10 @@ console.log('------------------------come')
                         flightSegment["eticket"][0] == "true" ? true : false;
 
                     stop.flight_number = flightSegment["flightnumber"][0];
+                    console.log("flightSegment[0]",i,"==",flightSegment["cabinclasscode"])
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["cabinclasscode"][0]
+                        typeof flightSegment["cabinclasscode"]!='undefined'?flightSegment["cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["journeyduration"][0] * 60
@@ -3212,7 +3212,7 @@ console.log('------------------------come')
                     stop.flight_number = flightSegment["flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["cabinclasscode"][0]
+                        typeof flightSegment["cabinclasscode"]!='undefined'?flightSegment["cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["journeyduration"][0] * 60
@@ -4077,7 +4077,7 @@ console.log('------------------------come')
                     stop.flight_number = flightSegment["a:flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["a:cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["a:journeyduration"][0] * 60
@@ -4195,7 +4195,7 @@ console.log('------------------------come')
                     stop.flight_number = flightSegment["a:flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["a:cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["a:journeyduration"][0] * 60
@@ -4901,7 +4901,7 @@ console.log('------------------------come')
                     stop.flight_number = flightSegment["a:flightnumber"][0];
                     stop.cabin_class = this.getKeyByValue(
                         flightClass,
-                        flightSegment["a:cabinclasscode"][0]
+                        typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                     );
                     stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                         flightSegment["a:journeyduration"][0] * 60
@@ -5026,7 +5026,7 @@ console.log('------------------------come')
                         stop.flight_number = flightSegment["a:flightnumber"][0];
                         stop.cabin_class = this.getKeyByValue(
                             flightClass,
-                            flightSegment["a:cabinclasscode"][0]
+                            typeof flightSegment["a:cabinclasscode"]!='undefined'?flightSegment["a:cabinclasscode"][0]:''
                         );
                         stopDuration = DateTime.convertSecondsToHourMinutesSeconds(
                             flightSegment["a:journeyduration"][0] * 60
@@ -5808,7 +5808,10 @@ console.log('------------------------come')
         return flightClass[className];
     }
 
-    getKeyByValue(object, value) {
+    getKeyByValue(object, value=null) {
+        if(value==''){
+            return value
+        }
         return Object.keys(object).find((key) => object[key] === value);
     }
 
