@@ -1463,7 +1463,6 @@ export class PaymentService {
     }
 
     async validate(bookDto: AuthoriseCartDto, headers, user: User) {
-        console.log(bookDto, headers, user);
         const {
             payment_type,
             laycredit_points,
@@ -1518,12 +1517,12 @@ export class PaymentService {
                 `Cart is empty.&&&cart&&&${errorMessage}`
             );
         }
-        let promotional = 0
+        /* let promotional = 0
         let nonPromotional = 0
         let promotionalItem = []
         let nonPromotionalItem = []
-        let paymentType = 0
-        for (let index = 0; index < result.length; index++) {
+        let paymentType = 0 */
+        /* for (let index = 0; index < result.length; index++) {
             const cart = result[index];
 
             if (cart.isPromotional == true) {
@@ -1533,208 +1532,26 @@ export class PaymentService {
                 nonPromotional++
                 nonPromotionalItem.push(cart.id)
             }
-        }
+        } */
 
-        if (promotional > 0 && nonPromotional > 0) {
+        /* if (promotional > 0 && nonPromotional > 0) {
             throw new ConflictException(`In cart promotional and not promotional both inventry found.`)
-        }
+        } */
 
         //console.log("promotional", promotional, "nonPromotional", nonPromotional)
 
-        let cartIsPromotional
+        /* let cartIsPromotional
         if (promotional > 0) {
             cartIsPromotional = true
             console.log("cartIsPromotional", cartIsPromotional)
         } else if (nonPromotional > 0) {
             cartIsPromotional = false
-        }
-
-        //console.log("cartIsPromotional", cartIsPromotional)
-        //console.log("result",JSON.stringify(result))
-
-
-        /* let smallestDate = "";
-        let totalAmount: number = 0;
-        let offerDownPayment:number=0
-
-        for await (const item of result) {
-           
-            if (item.moduleId == ModulesName.FLIGHT) {
-                const dipatureDate = await this.changeDateFormat(
-                    item.moduleInfo[0].departure_date
-                );
-                if (smallestDate == "") {
-                    smallestDate = dipatureDate;
-                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
-                    smallestDate = dipatureDate;
-                }
-                console.log(item.moduleInfo[0].selling_price);
-                console.log(item.moduleInfo[0].discounted_selling_price);
-
-                totalAmount += parseFloat(item.moduleInfo[0].discounted_selling_price) 
-                offerDownPayment += parseFloat(item.moduleInfo[0].discounted_start_price)
-            } else if (item.moduleId == ModulesName.HOTEL) {
-
-                const dipatureDate = item.moduleInfo[0].input_data.check_in;
-                if (smallestDate == "") {
-                    smallestDate = dipatureDate;
-                } else if (new Date(smallestDate) > new Date(dipatureDate)) {
-                    smallestDate = dipatureDate;
-                }
-                console.log(item.moduleInfo[0].selling);
-                totalAmount += parseFloat(item.moduleInfo[0].selling['discounted_total']);
-                offerDownPayment += parseFloat(item.moduleInfo[0].discounted_start_price)
-            }
-        }
-
-        if (payment_type == PaymentType.INSTALMENT) {
-            let instalmentDetails;
-
-            let totalAdditionalAmount = additional_amount || 0;
-            if (laycredit_points > 0) {
-                totalAdditionalAmount =
-                    totalAdditionalAmount + laycredit_points;
-            }
-            let downPayments = [40, 50, 60]
-            if (moment(smallestDate).diff(
-                moment().format("YYYY-MM-DD"),
-                "days"
-            ) > 90) {
-                downPayments = [20, 30, 40]
-            }
-            //save entry for future booking
-            if (instalment_type == InstalmentType.WEEKLY) {
-                if(cartIsPromotional){
-
-                    instalmentDetails = Instalment.weeklyInstalment(
-                        totalAmount,
-                        smallestDate,
-                        date1,
-                        0,
-                        null,
-                        null,
-                        0,
-                        false,
-                        offerDownPayment, true, downPayments
-                    );
-                    console.log("offerDownPayment", offerDownPayment)
-                    console.log(instalmentDetails)
-
-                }else{
-                    instalmentDetails = Instalment.weeklyInstalment(
-                    totalAmount,
-                    smallestDate,
-                    date1,
-                    totalAdditionalAmount,
-                    0,
-                    0,
-                    selected_down_payment,
-                    false,
-                        null, true, downPayments
-                );
-                }
-                
-            }
-            if (instalment_type == InstalmentType.BIWEEKLY) {
-                instalmentDetails = Instalment.biWeeklyInstalment(
-                    totalAmount,
-                    smallestDate,
-                    date1,
-                    totalAdditionalAmount,
-                    0,
-                    0,
-                    selected_down_payment,
-                    false,
-                    null, true, downPayments
-                );
-            }
-            if (instalment_type == InstalmentType.MONTHLY) {
-                instalmentDetails = Instalment.monthlyInstalment(
-                    totalAmount,
-                    smallestDate,
-                    date1,
-                    totalAdditionalAmount,
-                    0,
-                    0,
-                    selected_down_payment,
-                    false,
-                    null, true, downPayments
-                );
-            }
-
-            if (instalmentDetails.instalment_available) {
-                console.log("instalmentDetails.",instalmentDetails)
-                let firstInstalemntAmount =
-                    instalmentDetails.instalment_date[0].instalment_amount;
-                if (laycredit_points > 0) {
-                    firstInstalemntAmount =
-                        firstInstalemntAmount - laycredit_points;
-                }
-                authoriseAmount = Generic.formatPriceDecimal(
-                    firstInstalemntAmount
-                );
-            } else {
-                return {
-                    statusCode: 422,
-                    message: `Instalment option is not available for your search criteria`,
-                };
-            }
-        } else if (payment_type == PaymentType.NOINSTALMENT) {
-            let sellingPrice = totalAmount;
-            if (laycredit_points > 0) {
-                sellingPrice = totalAmount - laycredit_points;
-            }
-
-            if (sellingPrice > 0) {
-                authoriseAmount = Generic.formatPriceDecimal(sellingPrice);
-            }
-            // else {
-            // 	//for full laycredit rdeem
-            // 	const mystifly = new Strategy(new Mystifly(headers, this.cacheManager));
-            // 	const bookingResult = await mystifly.bookFlight(
-            // 		bookFlightDto,
-            // 		travelersDetails,
-            // 		isPassportRequired
-            // 	);
-            // 	if (bookingResult.booking_status == "success") {
-
-            // 		let laytripBookingResult = await this.saveBooking(
-            // 			bookingRequestInfo,
-            // 			currencyId,
-            // 			bookingDate,
-            // 			BookingType.NOINSTALMENT,
-            // 			userId,
-            // 			airRevalidateResult,
-            // 			null,
-            // 			null,
-            // 			bookingResult,
-            // 			travelers,
-            //			cartId
-            // 		);
-            // 		//send email here
-            // 		this.sendBookingEmail(laytripBookingResult.laytripBookingId);
-            // 		bookingResult.laytrip_booking_id = laytripBookingResult.id;
-
-            // 		bookingResult.booking_details = await this.bookingRepository.getBookingDetails(
-            // 			laytripBookingResult.laytripBookingId
-            // 		);
-            // 		return bookingResult;
-            // 	} else {
-
-            // 			return {
-            // 				status: 424,
-            // 				message: bookingResult.error_message,
-            // 			}
-            // 	}
-            // }
         } */
         
         for(let i=0; i < result.length; i++){
             result[i]['type'] = result[i].module.name;
         }
 
-        //console.log("authoriseAmount", authoriseAmount)
-        //console.log("result",JSON.stringify(result))
         let priceSummary = await Generic.calculatePriceSummary(result);
         authoriseAmount = priceSummary.total_downpayment;
 
@@ -1748,12 +1565,9 @@ export class PaymentService {
             user.userId,
             user.email
         );
-        //console.log(JSON.stringify(authCardResult));
 
-        // return authCardResult;
         if (authCardResult.meta_data) {
             let transaction = authCardResult.meta_data.transaction;
-            //this.cacheManager.set(uuid, { bookDto, headers, user }, { ttl: 3000 });
             response.transaction = transaction;
             response.redirection =
                 redirection + "?transaction_token=" + transaction.token;
