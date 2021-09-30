@@ -39,7 +39,7 @@ let content = `
                     Reservation Deadline:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                    ${param.reservationDeadline}</td>
+                    ${param.routeType != 'Unclear' ?  param.reservationDeadline: 'N/A'}</td>
             </tr>
             <tr>
                 <td align="left" valign="top"

@@ -30,7 +30,7 @@ export class NotificationAlertUtility {
         if (!bookingData) {
             return;
         }
-        console.log('*********************my booking data **********************', bookingData)
+        // console.log('*********************my booking data **********************', bookingData)
         if (bookingData.bookingInstalments.length > 0) {
             bookingData.bookingInstalments.sort((a, b) => a.id - b.id);
         }
@@ -54,22 +54,27 @@ export class NotificationAlertUtility {
             "days"
         );
 
-        let category: LaytripCategory;
-
+        let category = {
+            name:''
+        };
         if (bookingData?.categoryName) {
-            category = await getConnection()
+          let findCategory = await getConnection()
                 .createQueryBuilder(LaytripCategory, "category")
                 .where(`name = '${bookingData?.categoryName}'`)
                 .getOne();
+                category = {
+                    name:findCategory.name
+                }
         } else {
-            let routeDetails: any = await RouteCategory.flightRouteAvailability(
-                moduleInfo.departure_code,
-                moduleInfo.arrival_code
-            );
-            category = routeDetails?.category
+            // let routeDetails: any = await RouteCategory.flightRouteAvailability(
+            //     moduleInfo.departure_code,
+            //     moduleInfo.arrival_code
+            // );
+            category = {
+                name:'Unclear'
+            }
         }
 
-        // console.log('category', category)
 
         param.routeType = category?.name || 'N/A';
         param.alredyUnderDeadLine = false
@@ -99,7 +104,6 @@ export class NotificationAlertUtility {
             //console.log("categoryDays", categoryDays);
 
             if (param.remainDays < categoryDays) {
-                console.log('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn')
                 param.alredyUnderDeadLine = true
             }
 
