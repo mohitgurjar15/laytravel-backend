@@ -221,17 +221,14 @@ export class LandingPageService {
             .createQueryBuilder(User, "user")
             .select([
                 "user.userId",
-                "user.title",
                 "user.dob",
                 "user.firstName",
                 "user.lastName",
                 "user.email",
-                "user.profilePic",
-                "user.dob",
                 "user.gender",
                 "user.roleId",
                 "user.countryCode",
-                "user.phoneNo",
+                "user.createdDate"
             ])
             .where(where)
             .take(take)
@@ -240,6 +237,7 @@ export class LandingPageService {
         if (!users.length) {
             throw new NotFoundException(`No data found.`);
         }
+        console.log('*********users*************',users)
         return { data: users, count };
     }
 

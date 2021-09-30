@@ -30,7 +30,7 @@ export class NotificationAlertUtility {
         if (!bookingData) {
             return;
         }
-
+        // console.log('*********************my booking data **********************', bookingData)
         if (bookingData.bookingInstalments.length > 0) {
             bookingData.bookingInstalments.sort((a, b) => a.id - b.id);
         }
@@ -54,29 +54,34 @@ export class NotificationAlertUtility {
             "days"
         );
 
-        let category: LaytripCategory;
-
+        let category = {
+            name:''
+        };
         if (bookingData?.categoryName) {
-            category = await getConnection()
+          let findCategory = await getConnection()
                 .createQueryBuilder(LaytripCategory, "category")
                 .where(`name = '${bookingData?.categoryName}'`)
                 .getOne();
+                category = {
+                    name:findCategory.name
+                }
         } else {
-            let routeDetails: any = await RouteCategory.flightRouteAvailability(
-                moduleInfo.departure_code,
-                moduleInfo.arrival_code
-            );
-            category = routeDetails?.category
+            // let routeDetails: any = await RouteCategory.flightRouteAvailability(
+            //     moduleInfo.departure_code,
+            //     moduleInfo.arrival_code
+            // );
+            category = {
+                name:'Unclear'
+            }
         }
 
-        console.log('category', category)
 
         param.routeType = category?.name || 'N/A';
         param.alredyUnderDeadLine = false
-        console.log(category);
+        // console.log(category);
         if (category) {
             let deadLine = new Date(bookingData.checkInDate);
-            console.log("deadLine", deadLine);
+            // console.log("deadLine", deadLine);
 
 
             let categoryDays = 30
@@ -98,7 +103,7 @@ export class NotificationAlertUtility {
             }
             //console.log("categoryDays", categoryDays);
 
-            if (param.remainDays < categoryDays){
+            if (param.remainDays < categoryDays) {
                 param.alredyUnderDeadLine = true
             }
 
@@ -118,6 +123,9 @@ export class NotificationAlertUtility {
                 "YYYY-MM-DD",
                 "MMMM DD, YYYY"
             );
+            if(param.alredyUnderDeadLine === true){
+                param.reservationDeadline =   moment().format("YYYY/MM/DD")
+            }
         }
 
         param.sellingPrice = `${Generic.formatPriceDecimal(
@@ -143,7 +151,7 @@ export class NotificationAlertUtility {
 
         const predictiveData = await query.getOne();
 
-       
+
         param.todayNetPrice =
             `${Generic.formatPriceDecimal(predictiveData?.netPrice || 0)}` || '0';
 
@@ -187,6 +195,10 @@ export class NotificationAlertUtility {
 
         console.log("booking id", bookingData.laytripBookingId);
         console.log("valuation", valuations);
+        // console.log('--------------------valuations-----------------------------',valuations &&
+        // typeof valuations["amount"] != "undefined" &&
+        // typeof valuations["amount"][bookingData.laytripBookingId] !=
+        // "undefined")
         if (
             valuations &&
             typeof valuations["amount"] != "undefined" &&
@@ -196,7 +208,9 @@ export class NotificationAlertUtility {
             param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
                 valuations["amount"][bookingData.laytripBookingId] || 0
             );
+            // console.log('********************totalRecivedFromCustomer*************************',param.totalRecivedFromCustomer)
         } else {
+            // console.log('**********other**********totalRecivedFromCustomer*************************',param.totalRecivedFromCustomer)
             param.totalRecivedFromCustomer = 0;
         }
 
