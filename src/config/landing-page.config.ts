@@ -317,7 +317,7 @@ export const LANDING_PAGE = {
             "long": "-70.6900",
              "image": "https://d2q1prebf1m2s9.cloudfront.net/assets/images/lp_deals/HOTEL-PUERTO-PLATA.jpg",
             "city_names": [
-              "Cancún"
+              "Puerto Plata"
             ]
           }
         },
