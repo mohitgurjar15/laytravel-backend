@@ -17,7 +17,7 @@ export class ValuationPercentageUtility {
             .leftJoinAndSelect("booking.bookingInstalments", "instalments")
             .leftJoinAndSelect("booking.currency2", "currency")
             .where(
-                `"cartBooking"."laytrip_cart_id" =  '${cart_id}' AND "booking"."booking_status" IN (${BookingStatus.CONFIRM},${BookingStatus.PENDING})`
+                `"cartBooking"."laytrip_cart_id" =  '${cart_id}'`
             );
 
         const cart = await query.getOne();

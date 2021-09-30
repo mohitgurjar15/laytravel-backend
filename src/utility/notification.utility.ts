@@ -205,6 +205,7 @@ export class NotificationAlertUtility {
             typeof valuations["amount"][bookingData.laytripBookingId] !=
             "undefined"
         ) {
+            console.log('********************totalRecivedFromCustomer*************************',param.totalRecivedFromCustomer)
             param.totalRecivedFromCustomer = Generic.formatPriceDecimal(
                 valuations["amount"][bookingData.laytripBookingId] || 0
             );
