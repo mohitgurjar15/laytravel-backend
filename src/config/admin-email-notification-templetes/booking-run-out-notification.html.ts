@@ -2,6 +2,7 @@ import { EmailNotificationModel } from "../email_template/model/notification.mod
 import { notificationHeader } from "./notification-header.html";
 import { notificationFooter } from "./notification-footer.html";
 import { bookingDetailUrl, NewEmailAssets } from "../base-url";
+import { Generic } from "src/utility/generic.utility";
 
 export async function BookingRunoutNotificationMail(param: EmailNotificationModel) {
     let content = `
@@ -77,7 +78,7 @@ export async function BookingRunoutNotificationMail(param: EmailNotificationMode
                     Last Available Supplier Cost:</td>
                 <td align="left" valign="top"
                     style="width:70%; font-family: 'Poppins', sans-serif; font-weight: 100;font-size: 18px; padding: 0 25px 10px; line-height: 20px; color: #000000; text-align: left;">
-                   ${param.currencySymbol}${param.lastPrice} </td>
+                   ${param.currencySymbol}${Generic.formatPriceDecimal(param.lastPrice)} </td>
             </tr>`
 
             }

@@ -1,6 +1,7 @@
 import { BookingType } from "src/enum/booking-type.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { DateTime } from "src/utility/datetime.utility";
+import { Generic } from "src/utility/generic.utility";
 import { BookingLink, TermsConditonLink } from "../base-url";
 import { CartBookingEmailParameterModel } from "../email_template/model/cart-booking-email.model";
 import { LaytripFooter } from "./laytrip_footer.html";
@@ -165,7 +166,7 @@ export async function LaytripCartBookingConfirmtionMail(
                 <td
                     align="left" valign="top"
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                    #${index} ${payment.amount} ${
+                    #${index} ${Generic.formatPriceDecimal(payment.amount)} ${
                     payment.status
                 } ${DateTime.convertDateFormat(
                     payment.date,
