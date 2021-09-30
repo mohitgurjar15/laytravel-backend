@@ -58,7 +58,7 @@ export class ValuationPercentageUtility {
                     booking.bookingInstalments.sort((a, b) => a.id - b.id);
                 }
                 for await (const installment of booking.bookingInstalments) {
-                    if (installment.paymentStatus == PaymentStatus.CONFIRM) {
+                    if (installment.instalmentStatus == PaymentStatus.CONFIRM) {
                         paidAmount += parseFloat(installment.amount);
                     }
                 }
@@ -67,7 +67,6 @@ export class ValuationPercentageUtility {
 
             const avgValuation = (paidAmount * 100) / totalAmount;
 
-            console.log("avgValuation", avgValuation);
 
             if (flights.length > 0 && hotels.length == 0) {
                 console.log("all flight case");
