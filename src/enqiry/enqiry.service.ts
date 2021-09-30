@@ -24,6 +24,8 @@ import * as uuidValidator from "uuid-validate";
 import { extname } from "path";
 import { contentType } from "src/config/content-type";
 import {logUrl} from 'src/config/base-url'
+import { newTripfluencerDto } from "./dto/tripfluencer-enquiry.dto";
+import { TripfluencerEnquiryHTML } from "src/config/new_email_templete/tripfluencer-enquiry-mail.html";
 
 @Injectable()
 export class EnqiryService {
@@ -208,6 +210,43 @@ export class EnqiryService {
             }
             throw new NotFoundException(
                 `${error.message}&&&id&&&${error.message}`
+            );
+        }
+    }
+
+    async newTripfluencerEnquiry(newEnquiryDto: newTripfluencerDto) {
+        try {
+            const { name, email,social_user_name } = newEnquiryDto;
+            console.log('newEnquiryDto',newEnquiryDto)
+            this.mailerService
+                .sendMail({
+                    to: mailConfig.admin,
+                    from: mailConfig.from,
+                    bcc: mailConfig.BCC,
+                    subject: `New Tripfluencer Inquiry`,
+                    html: TripfluencerEnquiryHTML({
+                        name: name,
+                        email: email,
+                        Tripfulencer: social_user_name,
+                    }),
+                })
+                .then((res) => {
+                    console.log("res", res);
+                })
+                .catch((err) => {
+                    console.log("err", err);
+                });
+            return { message: `Message sent successfully.` };
+        } catch (error) {
+            if (
+                typeof error.response !== "undefined" &&
+                error.response.statusCode == 404
+            ) {
+                throw new NotFoundException(`No enquiry found&&&id`);
+            }
+
+            throw new InternalServerErrorException(
+                `${error.message}&&&id&&&${errorMessage}`
             );
         }
     }
