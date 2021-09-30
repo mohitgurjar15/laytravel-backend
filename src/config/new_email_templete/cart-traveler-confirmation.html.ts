@@ -1,6 +1,7 @@
 import { BookingType } from "src/enum/booking-type.enum";
 import { ModulesName } from "src/enum/module.enum";
 import { DateTime } from "src/utility/datetime.utility";
+import { Generic } from "src/utility/generic.utility";
 import { BookingLink } from "../base-url";
 import { CartBookingEmailParameterModel } from "../email_template/model/cart-booking-email.model";
 import { LaytripFooter } from "./laytrip_footer.html";
@@ -151,21 +152,21 @@ export async function LaytripCartBookingTravelProviderConfirmtionMail(
                 <td
                       align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                    <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${param.cart.totalAmount}</span>
+                    <span  style="color: #000000; font-weight: 600;">Total Price: </span> <span style="font-size: 18px" >${Generic.formatPriceDecimal(param.cart.totalAmount)}</span>
                 </td>
             </tr>
             <tr>
                 <td
                       align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                    <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${param.cart.totalPaid}</span>
+                    <span  style="color: #000000; font-weight: 600;">Total Paid: </span> <span style="font-size: 18px" >${Generic.formatPriceDecimal(param.cart.totalPaid)}</span>
                 </td>
             </tr>
             <tr>
                 <td
                       align="left" valign="top"bold;
                                         style="font-family: 'Poppins', sans-serif; font-weight: 300;font-size: 18px; padding: 0px 25px 5px; display: block; line-height: 27px; color: #707070; text-align: left;">
-                    <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >${param.cart.rememberAmount}</span>
+                    <span  style="color: #000000; font-weight: 600;">Balance Due: </span> <span style="font-size: 18px" >${Generic.formatPriceDecimal(param.cart.rememberAmount)}</span>
                 </td>
             </tr>`;
            for await (const booking of param.bookings) {
