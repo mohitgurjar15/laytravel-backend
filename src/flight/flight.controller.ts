@@ -40,6 +40,7 @@ import { query } from "express";
 import { SearchRouteDto } from "./dto/search-flight-route.dto";
 import { UserIpAddress } from "src/decorator/ip-address.decorator";
 import { GetReferralId } from "src/decorator/referral.decorator";
+import { ListExistFlightRouteDto } from "src/flight-route/dto/list-exist-route.dtos";
 
 @ApiTags("Flight")
 @Controller("flight")
@@ -603,4 +604,19 @@ export class FlightController {
         return await this.flightService.importCategory();
         //return await this.flightService.mapChildParentAirport(name);
     }
+
+    // @Get('search-flight-routes')
+    // @ApiOperation({ summary: "list all exist FlightRoute" })
+    // @ApiResponse({ status: 200, description: "Api success" })
+    // @ApiResponse({ status: 422, description: "Bad Request or API error message" })
+    // @ApiResponse({
+    //   status: 403,
+    //   description: "You are not allowed to access this resource.",
+    // })
+    // @ApiResponse({ status: 404, description: "city not found!" })
+    // @ApiResponse({ status: 500, description: "Internal server error!" })
+    // async getExistFlightRoute(
+    //       @Query() listExistFlightRouteDto: ListExistFlightRouteDto) {
+    //   return await this.flightService.getExistFlightRoute(listExistFlightRouteDto);
+    // }
 }

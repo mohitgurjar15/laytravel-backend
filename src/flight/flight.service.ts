@@ -4525,4 +4525,116 @@ export class FlightService {
                 .execute();
         }
     }
+
+    // async getExistFlightRoute(listExistFlightRouteDto:ListExistFlightRouteDto){
+    //     let  data;
+    //      try {
+    //          const { alternate_location, search,is_from_location } = listExistFlightRouteDto;
+    //          if(is_from_location == 'yes'){
+    //              if(alternate_location){
+    //                  console.log('***********************in From ******************alternate********************')
+    //                  data = await getConnection()
+    //              .createQueryBuilder(FlightRoute, "route")
+    //              .where(`"from_airport_code" = ${search} AND "to_airport_code"= ${alternate_location} AND "is_deleted" = false AND "status = true`)
+    //              .getMany();
+    //              }else{
+    //              console.log('***********************in From **************************************')
+ 
+    //                  data = await getConnection()
+    //                  .createQueryBuilder(FlightRoute, "route")
+    //                  .where(`"from_airport_code" = ${search} AND "is_deleted" = false AND "status = true`)
+    //                  .getMany();
+    //              }
+    //          }else{
+    //              if(alternate_location){
+    //              console.log('***********************in to ******************alternate********************')
+ 
+    //                  data = await getConnection()
+    //                  .createQueryBuilder(FlightRoute, "route")
+    //                  .where(`"to_airport_code" = ${search} AND "from_airport_code"= ${alternate_location} AND "is_deleted" = false AND "status = true`)
+    //                  .getMany();
+    //              }else{
+    //              console.log('***********************in to **************************************')
+ 
+    //                  data = await getConnection()
+    //                  .createQueryBuilder(FlightRoute, "route")
+    //                  .where(`"to_airport_code" = ${search} AND "is_deleted" = false AND "status = true`)
+    //                  .getMany();
+    //              }
+    //          }
+    //          // const route = await getConnection()
+    //          //     .createQueryBuilder(FlightRoute, "route")
+    //          //     .where(`"id" = ${id} AND "is_deleted" = false`)
+    //          //     .getOne();
+    //          // if (!route) {
+    //          //     throw new ConflictException("Given route not found.");
+    //          // }
+ 
+    //          // const category = await getConnection()
+    //          //     .createQueryBuilder(LaytripCategory, "category")
+    //          //     .where(`"id" =:id `, { id: category_id })
+    //          //     .getOne();
+ 
+    //          // if (!category) {
+    //          //     throw new BadRequestException("Given category id not found.");
+    //          // }
+    //          // const previous = JSON.stringify(route);
+    //          // route.updateDate = new Date();
+    //          // route.updateBy = user.userId;
+    //          // route.type = type;
+    //          // route.categoryId = category_id;
+ 
+    //          // const current = await route.save();
+    //          // Activity.logActivity(
+    //          //     user.userId,
+    //          //     "Flight Route",
+    //          //     `Flight route updated.`,
+    //          //     previous,
+    //          //     JSON.stringify(current)
+    //          // );
+    //          let route = []
+    //          for await (const iterator of data) {
+    //              route.push(airports[iterator])
+    //          }
+    //          data = route;
+    //          console.log(data)
+    //          return {
+    //              message: data 
+                 
+    //          };
+    //      } catch (error) {
+    //          if (typeof error.response !== "undefined") {
+    //              switch (error.response.statusCode) {
+    //                  case 404:
+ 
+    //                      throw new NotFoundException(error.response.message);
+    //                  case 409:
+    //                      throw new ConflictException(error.response.message);
+    //                  case 422:
+    //                      throw new BadRequestException(error.response.message);
+    //                  case 403:
+    //                      throw new ForbiddenException(error.response.message);
+    //                  case 500:
+    //                      throw new InternalServerErrorException(
+    //                          error.response.message
+    //                      );
+    //                  case 406:
+    //                      throw new NotAcceptableException(
+    //                          error.response.message
+    //                      );
+    //                  case 404:
+    //                      throw new NotFoundException(error.response.message);
+    //                  case 401:
+    //                      throw new UnauthorizedException(error.response.message);
+    //                  default:
+    //                      throw new InternalServerErrorException(
+    //                          `${error.message}&&&id&&&${error.Message}`
+    //                      );
+    //              }
+    //          }
+    //          throw new InternalServerErrorException(
+    //              `${error.message}&&&id&&&${errorMessage}`
+    //          );
+    //      }
+    //  }
 }

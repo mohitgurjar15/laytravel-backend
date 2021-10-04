@@ -44,6 +44,7 @@ import { ExportFlightRouteDto } from "./dto/export-flight-route.dto";
 import { BlacklistedUnblacklistedFlightRouteDto } from "./dto/blacklisted-unblacklisted-route.dto";
 import { ListAirportRouteDto } from "./dto/list-airport.dto";
 import { ListCityDto } from "./dto/list-city.dto";
+import { ListExistFlightRouteDto } from "./dto/list-exist-route.dtos";
 @ApiTags("Flight Route")
 @Controller("flight-route")
 @ApiBearerAuth()
@@ -391,4 +392,6 @@ export class FlightRouteController {
     async flightRoute(@Param("id") id: number) {
         return await this.flightRouteService.getFlightRoute(id);
     }
+
+   
 }
