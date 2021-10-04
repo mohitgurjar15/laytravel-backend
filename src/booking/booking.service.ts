@@ -1312,7 +1312,7 @@ export class BookingService {
                     break;
                 }
             } */
-            // console.log("cart.bookings", cart.bookings.length)
+            //console.log("cart.bookings", cart.bookings.length)
             let allItemResult = []
             for await (const booking of cart.bookings) {
 
@@ -1327,6 +1327,9 @@ export class BookingService {
 
                 if (find != -1) {
                     cartInstallments[find].amount += Generic.formatPriceDecimal(allItemResult[i].amount)
+                    if (allItemResult[i].instalmentStatus) {
+                        paidAmount += parseFloat(allItemResult[i].amount);
+                    }
                 }
                 else {
                     cartInstallments.push(
@@ -1353,28 +1356,11 @@ export class BookingService {
 
                     if (booking.bookingType == 2) {
                         paidAmount += parseFloat(booking.totalAmount)
+                        console.log("allItemResult[i].amount 1",booking.totalAmount)
                     }
                     totalAmount += parseFloat(booking.totalAmount);
                     actualAmount += parseFloat(booking.actualSellingPrice || '0');
                 }
-                /* if (booking.bookingStatus <= BookingStatus.CONFIRM) {
-                    if (booking?.bookingInstalments?.length) {
-                        for await (const installment of booking.bookingInstalments) {
-                            if (
-                                installment.paymentStatus ==
-                                PaymentStatus.CONFIRM
-                            ) {
-                                paidAmount += parseFloat(installment.amount);
-                            } else {
-                                remainAmount += parseFloat(installment.amount);
-                                pandinginstallment = pandinginstallment + 1;
-                            }
-                        }
-                    }
-
-                    totalAmount += parseFloat(booking.totalAmount);
-                    actualAmount += parseFloat(booking.actualSellingPrice || '0');
-                } */
 
                 delete booking?.currency2;
                 delete booking?.bookingInstalments;
